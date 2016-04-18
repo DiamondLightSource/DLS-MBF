@@ -1,0 +1,119 @@
+-- Board reset etc
+nCOLDRST                    in      -- External asynchronous reset
+nHRESET_REQ                 in      -- P2040 reset in progress
+nPROGRAM                    out     -- Reconfigure FPGA ???
+nWD                         out     -- Reset board payload ???
+
+-- Miscellaneous signals
+FPGA_UART_SIN               in      -- UART input when no P2040 present
+FPGA_UART_SOUT              out     -- UART output when no P2040
+ULED[0..3]                  out     -- Front panel LEDs
+nTHERM                      in      -- status input ???
+nWP                         in      -- status input ???
+nRDWR                       in      -- CPU GPIO 15
+nFPGA_CTRL                  in      -- CPU GPIO 27
+nFPGA_RST                   in      -- CPU GPIO 11
+nLVDS_CBS_RST               out     -- M-LVDS CBS ???
+
+-- Fixed frequency clocking resources
+CLK100MHZ0_{P,N}            in
+CLK100MHZ1_{P,N}            in
+CLK125MHZ0_{P,N}            in
+CLK125MHZ1_{P,N}            in
+CLK125MHZ4_{P,N}            in
+CLK125MHZ5_{P,N}            in
+CLK125MHZ6_{P,N}            in
+CLK125MHZ7_{P,N}            in
+CLK156_25MHZ1_{P,N}         in
+CLK156_25MHZ3_{P,N}         in
+CLK156_25MHZ4_{P,N}         in
+CLK156_25MHZ5_{P,N}         in
+CLK156_25MHZ6_{P,N}         in
+
+-- Programmable clocking resources via clock routing network and programmable
+-- QuadPLL device.
+-- Programmable clock routing network.
+FPCLKE_{P,N}                inout   -- Connections to crossbar-0
+FPCLKF_{P,N}                inout
+FPCLKG_{P,N}                inout
+FPCLKH_{P,N}                inout
+SCL_L                       inout   -- I2C clock to crossbar and QuadPLL control
+SDA_L                       inout   -- I2C data to crossbar and QuadPLL control
+
+-- QuadPLL (ZL30162) clocks and control
+FPGA_CLKOUT_{P,N}[0..3]     out     -- Output to QuadPLL
+FPCLKA_OUTX_{P,N}           in      -- Inputs from QuadPLL
+FPCLKB_OUTX_{P,N}           in
+FPCLKC_OUTX_{P,N}           in
+FPCLKD_OUTX_{P,N}           in
+ZDIR                        out     -- GPIO direction control
+ZGPIO[0..6]                 inout   -- GPIO connection to QuadPLL
+nOE_ZGPIO                   out     -- GPIO output enable
+nPLL_RST                    out     -- Reset QuadPLL
+
+-- Programmable oscillators with I2C connection.  Available frequencies are:
+-- 300MHz, 350MHz, 400MHz, 533MHz.
+CLK533MHZ0_{P,N}            in      -- First programmable oscillator
+SCL_PLLXO                   inout   -- I2C clock to first oscillator
+SDA_PLLXO                   inout   -- I2C data to first oscillator
+CLK533MHZ1_{P,N}            in      -- Second programmable oscillator
+SCL_DDRXO                   inout   -- I2C clock to second oscillator
+SDA_DDRXO                   inout   -- I2C data to second oscillator
+
+-- PC2040 local bus connections.  The pin directions and meaning are
+-- different when the CPU is not present.
+LA[2..30]                   in      -- Address
+LAD[0..15]                  inout   -- Data
+nFPGA_CS                    in      -- SelectMAP configuration select
+nBPI_FLASH_CS               in      -- Register access select
+nADV                        out     -- (unused with CPU option)
+nLOE                        in      -- Output enable
+nLWE[0..1]                  in      -- Byte strobes
+LCLK0                       in      -- Local bus clock
+LGPL4                       out     -- Transfer acknowledge handshake
+
+nDMA2_DREQ0                 out
+nDMA2_ACK0                  in
+nDMA2_DONE0                 in
+nIRQ02                      out
+
+-- AMC ethernet ports
+FPGA_AMCRX_{P,N}[0..1]      in
+FPGA_AMCTX_{P,N}[0..1]      out
+
+-- AMC fat pipe
+AMC_RX_{P,N}[4..11]         in
+AMC_TX_{P,N}[4..11]         out
+FCLKA_{P,N}                 in
+
+-- PCIe2 connection to P2040 (note, naming from perspecive of P2040)
+SD_RX04_{P,N}               out
+SD_TX04_{P,N}               in
+SD_RX05_{P,N}               out
+SD_TX05_{P,N}               in
+
+-- Ethernet connections to P2040
+SD_RX06_{P,N}               out
+SD_TX06_{P,N}               in
+SD_RX07_{P,N}               out
+SD_TX07_{P,N}               in
+
+-- FMC connections to FMC socket 0
+nPRSNT_M2C0                 in
+CLK_DIR0                    in
+FMC0_LA_{P,N}[0..33]        inout
+FMC0_HA_{P,N}[0..23]        inout
+FMC0_HB_{P,N}[0..21]        inout
+FMC0_GBTCLK_{P,N}[0..1]     in
+FMC0_RX_{P,N}[0..9]         in
+FMC0_TX_{P,N}[0..9]         out
+
+-- FMC connections to FMC socket 1
+nPRSNT_M2C1                 in
+CLK_DIR1                    in
+FMC1_LA_{P,N}[0..33]        inout
+FMC1_HA_{P,N}[0..23]        inout
+FMC1_HB_{P,N}[0..21]        inout
+FMC1_GBTCLK_{P,N}[0..1]     in
+FMC1_RX_{P,N}[0..9]         in
+FMC1_TX_{P,N}[0..9]         out

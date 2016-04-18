@@ -1,0 +1,7 @@
+-- We'll pass some clocks through to the front panel LEDs
+-- nCOLDRST                in
+ULED[0..3]              out     ULED[0..3]
+-- CLK533MHZ1_{P,N}        in
+CLK100MHZ0_{P,N}        in
+-- CLK125MHZ0_{P,N}        in
+-- FCLKA_{P,N}             in
