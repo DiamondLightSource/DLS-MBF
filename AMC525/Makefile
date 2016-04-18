@@ -1,22 +1,26 @@
-# Top level makefile for building VHDL project
+# This makefile is designed to be called after setting the working directory to
+# the target build directory.
+ifndef TOP
+$(error Do not call this file directly)
+endif
 
-TOP := $(CURDIR)
+SRCDIR = $(TOP)/AMC525
 
-BUILD_DIR = /scratch/tmp/LMBF/build
-VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2015.2/settings64.sh
-
-export LM_LICENSE_FILE = 2100@diamcslicserv01.dc.diamond.ac.uk
+VPATH = $(SRCDIR)
 
 
+RUN_VIVADO = source $(VIVADO) && vivado
 
-default: $(BUILD_DIR)
-	make -C $(BUILD_DIR) -f $(TOP)/vhd/Makefile \
-            TOP=$(TOP) VIVADO=$(VIVADO)
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+default: top.bit
 
-clean:
-	rm -rf $(BUILD_DIR)
+top.bit: top_entity.vhd $(wildcard $(SRCDIR)/vhd/*.vhd)
+	ln -sfn $(SRCDIR)/vhd vhd
+	mkdir -p output
+	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/build_fpga.tcl
 
-.PHONY: default clean
+
+top_entity.vhd: constr/signals constr/pins vhd/used
+	$(TOP)/scripts/make_entity.py $^ top
+
+.PHONY: default
