@@ -2,16 +2,19 @@
 
 TOP := $(CURDIR)
 
-BUILD_DIR = /scratch/tmp/LMBF
+BUILD_DIR = $(TOP)/build
 VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2015.2/settings64.sh
 
 export LM_LICENSE_FILE = 2100@diamcslicserv01.dc.diamond.ac.uk
 
+-include CONFIG
+
 
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 
+default: fpga
 
-default: $(FPGA_BUILD_DIR)
+fpga: $(FPGA_BUILD_DIR)
 	make -C $(FPGA_BUILD_DIR) -f $(TOP)/AMC525/Makefile \
             TOP=$(TOP) VIVADO=$(VIVADO)
 
@@ -22,3 +25,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 .PHONY: default clean
+.PHONY: fpga
