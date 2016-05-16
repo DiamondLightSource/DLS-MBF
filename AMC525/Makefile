@@ -4,6 +4,7 @@ ifndef TOP
 $(error Do not call this file directly)
 endif
 
+
 SRCDIR = $(TOP)/AMC525
 
 VPATH = $(SRCDIR)
@@ -12,15 +13,47 @@ VPATH = $(SRCDIR)
 RUN_VIVADO = source $(VIVADO) && vivado
 
 
-default: top.bit
+BUILT_FILES += built/top_entity.vhd
 
-top.bit: top_entity.vhd $(wildcard $(SRCDIR)/vhd/*.vhd)
-	ln -sfn $(SRCDIR)/vhd vhd
-	mkdir -p output
-	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/build_fpga.tcl
+SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)
+SOURCES += $(wildcard $(SRCDIR)/constr/*)
+
+BD_DIR = $(CURDIR)/bd
 
 
-top_entity.vhd: constr/signals constr/pins vhd/used
-	$(TOP)/scripts/make_entity.py $^ top
+# Default targets
+default: fpga
+fpga: amc525_lmbf.bit
+.PHONY: default fpga
 
-.PHONY: default
+
+# Target to edit the block design
+#
+edit_bd: $(BD_DIR)
+	$(RUN_VIVADO) -source $(SRCDIR)/edit_bd.tcl
+.PHONY: edit_bd
+
+$(BD_DIR):
+	mkdir -p bd
+	ln -sfn $(SRCDIR)/bd/* bd
+
+
+# Run vivado on project
+#
+vivado:
+	$(RUN_VIVADO) amc525_lmbf/amc525_lmbf.xpr
+.PHONY: vivado
+
+
+# Target build
+#
+amc525_lmbf.bit: $(BUILT_FILES) $(BD_DIR) $(SOURCES)
+	ln -sfn $(SRCDIR)/vhd .
+	mkdir -p reports checkpoints
+	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/build_top.tcl
+
+
+built/top_entity.vhd: constr/signals constr/pins constr/used
+	mkdir -p built
+	cd built  &&  $(TOP)/scripts/make_entity.py $^ top
+

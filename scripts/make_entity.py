@@ -42,6 +42,9 @@ xdc_template_line = '''\
 set_property PACKAGE_PIN %(location)s [get_ports {%(name)s%(index)s}]
 '''
 
+xdc_iostandard_line = '''\
+set_property IOSTANDARD %(iostandard)s [get_ports {%(name)s%(index)s}]
+'''
 
 
 def uncomment_file(file_name, comment):
@@ -156,16 +159,17 @@ def load_signals(signal_file):
 
 
 # Each line is a fully qualified signal name followed by a location identifier
+# followed by an IO specification
 #
 #   locations = location-line*
-#   location-line = name-index location
+#   location-line = name-index location iostandard
 #
 def load_locations(pins_file):
     pins = {}
     for line in uncomment_file(pins_file, '#'):
-        name, pin = line.split()
+        name, pin, iostandard = line.split()
         name, index = parse_name_index(name)
-        pins[(name, index)] = pin
+        pins[(name, index)] = (pin, iostandard)
     return pins
 
 
@@ -253,8 +257,11 @@ def write_xdc(locations, used_pins, xdc_file):
     with open(xdc_file, 'w') as file:
         for mapping in used_pins:
             mapped = map_used_pins(locations, mapping)
-            for name, index, location in mapped:
-                file.write(xdc_template_line % locals())
+            for name, index, (location, iostandard) in mapped:
+                if iostandard != 'MGT':
+                    file.write(xdc_template_line % locals())
+                    if iostandard != 'OMIT':
+                        file.write(xdc_iostandard_line % locals())
 
 
 signals = load_signals(signal_file)

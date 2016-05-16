@@ -1,670 +1,670 @@
 # ======== Bank 12 (HP/VCCO=1.8V) ========
-FPGA_CLKOUT_P[0]                AY27
-FPGA_CLKOUT_N[0]                AY28
-FPGA_CLKOUT_P[1]                AU29
-FPGA_CLKOUT_N[1]                AV29
-FPGA_CLKOUT_P[2]                BA26
-FPGA_CLKOUT_N[2]                BA27
-FPGA_CLKOUT_P[3]                BB28
-FPGA_CLKOUT_N[3]                BB29
-FPCLKA_OUTX_P                   AU28
-FPCLKA_OUTX_N                   AV28
-FPCLKB_OUTX_P                   AU26
-FPCLKB_OUTX_N                   AU27
-FPCLKC_OUTX_P                   AR27
-FPCLKC_OUTX_N                   AT27
-FPCLKD_OUTX_P                   AP27
-FPCLKD_OUTX_N                   AR28
-nPLL_RST                        AK27
-ZDIR                            AL27
-nOE_ZGPIO                       AM26
-ZGPIO[0]                        AM27
-ZGPIO[1]                        AK24
-ZGPIO[2]                        AK25
-ZGPIO[3]                        AL25
-ZGPIO[4]                        AL26
-ZGPIO[5]                        AJ25
-ZGPIO[6]                        AJ26
+FPGA_CLKOUT_P[0]                AY27    LVCMOS18
+FPGA_CLKOUT_N[0]                AY28    LVCMOS18
+FPGA_CLKOUT_P[1]                AU29    LVCMOS18
+FPGA_CLKOUT_N[1]                AV29    LVCMOS18
+FPGA_CLKOUT_P[2]                BA26    LVCMOS18
+FPGA_CLKOUT_N[2]                BA27    LVCMOS18
+FPGA_CLKOUT_P[3]                BB28    LVCMOS18
+FPGA_CLKOUT_N[3]                BB29    LVCMOS18
+FPCLKA_OUTX_P                   AU28    LVCMOS18
+FPCLKA_OUTX_N                   AV28    LVCMOS18
+FPCLKB_OUTX_P                   AU26    LVCMOS18
+FPCLKB_OUTX_N                   AU27    LVCMOS18
+FPCLKC_OUTX_P                   AR27    LVCMOS18
+FPCLKC_OUTX_N                   AT27    LVCMOS18
+FPCLKD_OUTX_P                   AP27    LVCMOS18
+FPCLKD_OUTX_N                   AR28    LVCMOS18
+nPLL_RST                        AK27    LVCMOS18
+ZDIR                            AL27    LVCMOS18
+nOE_ZGPIO                       AM26    LVCMOS18
+ZGPIO[0]                        AM27    LVCMOS18
+ZGPIO[1]                        AK24    LVCMOS18
+ZGPIO[2]                        AK25    LVCMOS18
+ZGPIO[3]                        AL25    LVCMOS18
+ZGPIO[4]                        AL26    LVCMOS18
+ZGPIO[5]                        AJ25    LVCMOS18
+ZGPIO[6]                        AJ26    LVCMOS18
 
 # ======== Bank 13 (HP/VCCO=1.5V) ========
 # Covered by DDR3 CH1 MIG constraints
 
 # ======== Bank 14 (HP/VCCO=1.8V) ========
-CLK_DIR0                        AH35
-LAD[15]                         AM36
-LAD[14]                         AN36
-LAD[13]                         AJ36
-LAD[12]                         AJ37
-nDMA2_DREQ0                     AP37
-LAD[11]                         AK37
-LAD[10]                         AL37
-LAD[9]                          AN35
-LAD[8]                          AP35
-nBPI_FLASH_CS                   AL36
-LAD[7]                          AM37
-LAD[6]                          AG33
-LAD[5]                          AH33
-LAD[4]                          AK35
-LAD[3]                          AL35
-nPRSNT_M2C0                     AH31
-LAD[2]                          AJ31
-LAD[1]                          AH34
-LAD[0]                          AJ35
-SCL_L                           AJ33
-SDA_L                           AK33
-LCLK0                           AK34
-LGPL4                           AL34
-CLK533MHZ0_P                    AJ32
-CLK533MHZ0_N                    AK32
-nCOLDRST                        AL31
-nDMA2_ACK0                      AL32
-nRDWR                           AM34
-nDMA2_DONE0                     AN34
-nFPGA_CS                        AM31
-LA[15]                          AM32
-LA[16]                          AM33
-LA[17]                          AN33
-LA[18]                          AL29
-LA[19]                          AL30
-LA[20]                          AH29
-LA[21]                          AH30
-LA[22]                          AJ30
-LA[23]                          AK30
-nFPGA_CTRL                      AF29
-LA[24]                          AG29
-LA[25]                          AK28
-LA[26]                          AK29
-LA[27]                          AF30
-LA[28]                          AG31
-LA[29]                          AH28
-LA[30]                          AJ28
-nLWE[1]                         AG32
+CLK_DIR0                        AH35    LVCMOS18
+LAD[15]                         AM36    LVCMOS18
+LAD[14]                         AN36    LVCMOS18
+LAD[13]                         AJ36    LVCMOS18
+LAD[12]                         AJ37    LVCMOS18
+nDMA2_DREQ0                     AP37    LVCMOS18
+LAD[11]                         AK37    LVCMOS18
+LAD[10]                         AL37    LVCMOS18
+LAD[9]                          AN35    LVCMOS18
+LAD[8]                          AP35    LVCMOS18
+nBPI_FLASH_CS                   AL36    LVCMOS18
+LAD[7]                          AM37    LVCMOS18
+LAD[6]                          AG33    LVCMOS18
+LAD[5]                          AH33    LVCMOS18
+LAD[4]                          AK35    LVCMOS18
+LAD[3]                          AL35    LVCMOS18
+nPRSNT_M2C0                     AH31    LVCMOS18
+LAD[2]                          AJ31    LVCMOS18
+LAD[1]                          AH34    LVCMOS18
+LAD[0]                          AJ35    LVCMOS18
+SCL_L                           AJ33    LVCMOS18
+SDA_L                           AK33    LVCMOS18
+LCLK0                           AK34    LVCMOS18
+LGPL4                           AL34    LVCMOS18
+CLK533MHZ0_P                    AJ32    LVCMOS18
+CLK533MHZ0_N                    AK32    LVCMOS18
+nCOLDRST                        AL31    LVCMOS18
+nDMA2_ACK0                      AL32    LVCMOS18
+nRDWR                           AM34    LVCMOS18
+nDMA2_DONE0                     AN34    LVCMOS18
+nFPGA_CS                        AM31    LVCMOS18
+LA[15]                          AM32    LVCMOS18
+LA[16]                          AM33    LVCMOS18
+LA[17]                          AN33    LVCMOS18
+LA[18]                          AL29    LVCMOS18
+LA[19]                          AL30    LVCMOS18
+LA[20]                          AH29    LVCMOS18
+LA[21]                          AH30    LVCMOS18
+LA[22]                          AJ30    LVCMOS18
+LA[23]                          AK30    LVCMOS18
+nFPGA_CTRL                      AF29    LVCMOS18
+LA[24]                          AG29    LVCMOS18
+LA[25]                          AK28    LVCMOS18
+LA[26]                          AK29    LVCMOS18
+LA[27]                          AF30    LVCMOS18
+LA[28]                          AG31    LVCMOS18
+LA[29]                          AH28    LVCMOS18
+LA[30]                          AJ28    LVCMOS18
+nLWE[1]                         AG32    LVCMOS18
 
 # ======== Bank 15 (HP/VCCO=1.8V) ========
-nHRESET_REQ                     AM38
-nPROGRAM                        AN38
-SDA_PLLXO                       AP38
-SCL_PLLXO                       AM41
-SDA_DDRXO                       AM42
-SCL_DDRXO                       AR38
-nFPGA_RST                       AR39
-nLVDS_CBS_RST                   AN40
-FPGA_UART_SIN                   AN41
-FPGA_UART_SOUT                  AR37
-nTHERM                          AT37
-nWP                             AM39
-ULED[0]                         AP40
-ULED[1]                         AR40
-ULED[2]                         AP41
-ULED[3]                         AP42
-nPRSNT_M2C1                     AT39
-CLK_DIR1                        AT40
-FPCLKE_P                        AU39
-FPCLKE_N                        AV39
-FPCLKF_P                        AU38
-FPCLKF_N                        AV38
-FPCLKG_P                        AV40
-FPCLKG_N                        AW40
-FPCLKH_P                        AY39
-FPCLKH_N                        AY40
-nADV                            AY37
-LA[2]                           BA37
-LA[3]                           BB37
-LA[4]                           AW38
-LA[5]                           AY38
-LA[6]                           BB38
-LA[7]                           BB39
-LA[8]                           BA39
-LA[9]                           BA40
-LA[10]                          AT41
-LA[11]                          AU42
-LA[12]                          BA42
-LA[13]                          AU41
-LA[14]                          AV41
-nLOE                            BA41
-nLWE[0]                         BB41
-nWD                             AW42
-nIRQ02                          AU37
+nHRESET_REQ                     AM38    LVCMOS18
+nPROGRAM                        AN38    LVCMOS18
+SDA_PLLXO                       AP38    LVCMOS18
+SCL_PLLXO                       AM41    LVCMOS18
+SDA_DDRXO                       AM42    LVCMOS18
+SCL_DDRXO                       AR38    LVCMOS18
+nFPGA_RST                       AR39    LVCMOS18
+nLVDS_CBS_RST                   AN40    LVCMOS18
+FPGA_UART_SIN                   AN41    LVCMOS18
+FPGA_UART_SOUT                  AR37    LVCMOS18
+nTHERM                          AT37    LVCMOS18
+nWP                             AM39    LVCMOS18
+ULED[0]                         AP40    LVCMOS18
+ULED[1]                         AR40    LVCMOS18
+ULED[2]                         AP41    LVCMOS18
+ULED[3]                         AP42    LVCMOS18
+nPRSNT_M2C1                     AT39    LVCMOS18
+CLK_DIR1                        AT40    LVCMOS18
+FPCLKE_P                        AU39    LVCMOS18
+FPCLKE_N                        AV39    LVCMOS18
+FPCLKF_P                        AU38    LVCMOS18
+FPCLKF_N                        AV38    LVCMOS18
+FPCLKG_P                        AV40    LVCMOS18
+FPCLKG_N                        AW40    LVCMOS18
+FPCLKH_P                        AY39    LVCMOS18
+FPCLKH_N                        AY40    LVCMOS18
+nADV                            AY37    LVCMOS18
+LA[2]                           BA37    LVCMOS18
+LA[3]                           BB37    LVCMOS18
+LA[4]                           AW38    LVCMOS18
+LA[5]                           AY38    LVCMOS18
+LA[6]                           BB38    LVCMOS18
+LA[7]                           BB39    LVCMOS18
+LA[8]                           BA39    LVCMOS18
+LA[9]                           BA40    LVCMOS18
+LA[10]                          AT41    LVCMOS18
+LA[11]                          AU42    LVCMOS18
+LA[12]                          BA42    LVCMOS18
+LA[13]                          AU41    LVCMOS18
+LA[14]                          AV41    LVCMOS18
+nLOE                            BA41    LVCMOS18
+nLWE[0]                         BB41    LVCMOS18
+nWD                             AW42    LVCMOS18
+nIRQ02                          AU37    LVCMOS18
 
 # ======== Bank 16 (HP/VCCO=1.5V) ========
 # Covered by DDR3 CH0 MIG constraints
 
 # ======== Bank 17 (HP/VCCO=1.5V) ========
 # Mostly covered by DDR3 CH0 MIG constraints
-CLK533MHZ1_P                    AF41
-CLK533MHZ1_N                    AG41
+CLK533MHZ1_P                    AF41    LVCMOS18
+CLK533MHZ1_N                    AG41    LVCMOS18
 
 # ======== Bank 18 (HP/VCCO=1.5V) ========
 # Covered by DDR3 CH0 MIG constraints
 
 # ======== Bank 19 (HP/VCCO=VIO_B_M2C/1) ========
-FMC1_HB_P[4]                    E40
-FMC1_HB_N[4]                    D40
-FMC1_HB_P[3]                    A40
-FMC1_HB_N[3]                    A41
-FMC1_HB_P[1]                    D41
-FMC1_HB_N[1]                    D42
-FMC1_HB_P[2]                    B41
-FMC1_HB_N[2]                    B42
-FMC1_HB_P[5]                    F42
-FMC1_HB_N[5]                    E42
-FMC1_HB_P[7]                    H40
-FMC1_HB_N[7]                    H41
-FMC1_HB_P[13]                   H39
-FMC1_HB_N[13]                   G39
-FMC1_HB_P[9]                    G41
-FMC1_HB_N[9]                    G42
-FMC1_HB_P[8]                    F40
-FMC1_HB_N[8]                    F41
-FMC1_HB_P[11]                   J40
-FMC1_HB_N[11]                   J41
-FMC1_HB_P[0]                    K39
-FMC1_HB_N[0]                    K40
-FMC1_HB_P[6]                    L39
-FMC1_HB_N[6]                    L40
-FMC1_HB_P[17]                   M41
-FMC1_HB_N[17]                   L41
-FMC1_HB_P[12]                   K42
-FMC1_HB_N[12]                   J42
-FMC1_HB_P[10]                   M42
-FMC1_HB_N[10]                   L42
-FMC1_HB_P[15]                   K37
-FMC1_HB_N[15]                   K38
-FMC1_HB_P[19]                   M36
-FMC1_HB_N[19]                   L37
-FMC1_HB_P[16]                   M37
-FMC1_HB_N[16]                   M38
-FMC1_HB_P[18]                   R42
-FMC1_HB_N[18]                   P42
-FMC1_HB_P[14]                   N38
-FMC1_HB_N[14]                   M39
-FMC1_HB_P[20]                   R40
-FMC1_HB_N[20]                   P40
-FMC1_HB_P[21]                   N39
-FMC1_HB_N[21]                   N40
+FMC1_HB_P[4]                    E40     LVCMOS18
+FMC1_HB_N[4]                    D40     LVCMOS18
+FMC1_HB_P[3]                    A40     LVCMOS18
+FMC1_HB_N[3]                    A41     LVCMOS18
+FMC1_HB_P[1]                    D41     LVCMOS18
+FMC1_HB_N[1]                    D42     LVCMOS18
+FMC1_HB_P[2]                    B41     LVCMOS18
+FMC1_HB_N[2]                    B42     LVCMOS18
+FMC1_HB_P[5]                    F42     LVCMOS18
+FMC1_HB_N[5]                    E42     LVCMOS18
+FMC1_HB_P[7]                    H40     LVCMOS18
+FMC1_HB_N[7]                    H41     LVCMOS18
+FMC1_HB_P[13]                   H39     LVCMOS18
+FMC1_HB_N[13]                   G39     LVCMOS18
+FMC1_HB_P[9]                    G41     LVCMOS18
+FMC1_HB_N[9]                    G42     LVCMOS18
+FMC1_HB_P[8]                    F40     LVCMOS18
+FMC1_HB_N[8]                    F41     LVCMOS18
+FMC1_HB_P[11]                   J40     LVCMOS18
+FMC1_HB_N[11]                   J41     LVCMOS18
+FMC1_HB_P[0]                    K39     LVCMOS18
+FMC1_HB_N[0]                    K40     LVCMOS18
+FMC1_HB_P[6]                    L39     LVCMOS18
+FMC1_HB_N[6]                    L40     LVCMOS18
+FMC1_HB_P[17]                   M41     LVCMOS18
+FMC1_HB_N[17]                   L41     LVCMOS18
+FMC1_HB_P[12]                   K42     LVCMOS18
+FMC1_HB_N[12]                   J42     LVCMOS18
+FMC1_HB_P[10]                   M42     LVCMOS18
+FMC1_HB_N[10]                   L42     LVCMOS18
+FMC1_HB_P[15]                   K37     LVCMOS18
+FMC1_HB_N[15]                   K38     LVCMOS18
+FMC1_HB_P[19]                   M36     LVCMOS18
+FMC1_HB_N[19]                   L37     LVCMOS18
+FMC1_HB_P[16]                   M37     LVCMOS18
+FMC1_HB_N[16]                   M38     LVCMOS18
+FMC1_HB_P[18]                   R42     LVCMOS18
+FMC1_HB_N[18]                   P42     LVCMOS18
+FMC1_HB_P[14]                   N38     LVCMOS18
+FMC1_HB_N[14]                   M39     LVCMOS18
+FMC1_HB_P[20]                   R40     LVCMOS18
+FMC1_HB_N[20]                   P40     LVCMOS18
+FMC1_HB_P[21]                   N39     LVCMOS18
+FMC1_HB_N[21]                   N40     LVCMOS18
 
 # ======== Bank 31 (HP/VCCO=+VADJ/1) ========
-FMC1_LA_P[19]                   AJ13
-FMC1_LA_N[19]                   AJ12
-FMC1_LA_P[20]                   AL16
-FMC1_LA_N[20]                   AL15
-FMC1_LA_P[21]                   AM13
-FMC1_LA_N[21]                   AN13
-FMC1_LA_P[22]                   AM12
-FMC1_LA_N[22]                   AM11
-FMC1_LA_P[23]                   AN15
-FMC1_LA_N[23]                   AN14
-FMC1_LA_P[27]                   AN11
-FMC1_LA_N[27]                   AP11
-FMC1_LA_P[17]                   AP13
-FMC1_LA_N[17]                   AR13
-FMC1_LA_P[18]                   AU14
-FMC1_LA_N[18]                   AU13
-FMC1_LA_P[26]                   AP12
-FMC1_LA_N[26]                   AR12
-FMC1_LA_P[25]                   AR15
-FMC1_LA_N[25]                   AT15
-FMC1_LA_P[24]                   AT12
-FMC1_LA_N[24]                   AU12
-FMC1_LA_P[28]                   AV15
-FMC1_LA_N[28]                   AV14
-FMC1_LA_P[31]                   AW12
-FMC1_LA_N[31]                   AY12
-FMC1_LA_P[30]                   BA15
-FMC1_LA_N[30]                   BA14
-FMC1_LA_P[29]                   AY14
-FMC1_LA_N[29]                   AY13
-FMC1_LA_P[32]                   BB14
-FMC1_LA_N[32]                   BB13
-FMC1_LA_P[33]                   BA12
-FMC1_LA_N[33]                   BB12
+FMC1_LA_P[19]                   AJ13    LVCMOS18
+FMC1_LA_N[19]                   AJ12    LVCMOS18
+FMC1_LA_P[20]                   AL16    LVCMOS18
+FMC1_LA_N[20]                   AL15    LVCMOS18
+FMC1_LA_P[21]                   AM13    LVCMOS18
+FMC1_LA_N[21]                   AN13    LVCMOS18
+FMC1_LA_P[22]                   AM12    LVCMOS18
+FMC1_LA_N[22]                   AM11    LVCMOS18
+FMC1_LA_P[23]                   AN15    LVCMOS18
+FMC1_LA_N[23]                   AN14    LVCMOS18
+FMC1_LA_P[27]                   AN11    LVCMOS18
+FMC1_LA_N[27]                   AP11    LVCMOS18
+FMC1_LA_P[17]                   AP13    LVCMOS18
+FMC1_LA_N[17]                   AR13    LVCMOS18
+FMC1_LA_P[18]                   AU14    LVCMOS18
+FMC1_LA_N[18]                   AU13    LVCMOS18
+FMC1_LA_P[26]                   AP12    LVCMOS18
+FMC1_LA_N[26]                   AR12    LVCMOS18
+FMC1_LA_P[25]                   AR15    LVCMOS18
+FMC1_LA_N[25]                   AT15    LVCMOS18
+FMC1_LA_P[24]                   AT12    LVCMOS18
+FMC1_LA_N[24]                   AU12    LVCMOS18
+FMC1_LA_P[28]                   AV15    LVCMOS18
+FMC1_LA_N[28]                   AV14    LVCMOS18
+FMC1_LA_P[31]                   AW12    LVCMOS18
+FMC1_LA_N[31]                   AY12    LVCMOS18
+FMC1_LA_P[30]                   BA15    LVCMOS18
+FMC1_LA_N[30]                   BA14    LVCMOS18
+FMC1_LA_P[29]                   AY14    LVCMOS18
+FMC1_LA_N[29]                   AY13    LVCMOS18
+FMC1_LA_P[32]                   BB14    LVCMOS18
+FMC1_LA_N[32]                   BB13    LVCMOS18
+FMC1_LA_P[33]                   BA12    LVCMOS18
+FMC1_LA_N[33]                   BB12    LVCMOS18
 
 # ======== Bank 32 (HP/VCCO=+VADJ/1) ========
-FMC1_LA_P[4]                    AL19
-FMC1_LA_N[4]                    AM19
-FMC1_LA_P[5]                    AK17
-FMC1_LA_N[5]                    AL17
-FMC1_LA_P[7]                    AM18
-FMC1_LA_N[7]                    AM17
-FMC1_LA_P[8]                    AK19
-FMC1_LA_N[8]                    AK18
-FMC1_LA_P[9]                    AM16
-FMC1_LA_N[9]                    AN16
-FMC1_LA_P[10]                   AP18
-FMC1_LA_N[10]                   AP17
-FMC1_LA_P[3]                    AP20
-FMC1_LA_N[3]                    AR19
-FMC1_LA_P[6]                    AN19
-FMC1_LA_N[6]                    AN18
-FMC1_LA_P[12]                   AR18
-FMC1_LA_N[12]                   AR17
-FMC1_LA_P[0]                    AT17
-FMC1_LA_N[0]                    AU17
-FMC1_LA_P[1]                    AY18
-FMC1_LA_N[1]                    AY17
-FMC1_LA_P[11]                   AU19
-FMC1_LA_N[11]                   AV19
-FMC1_LA_P[2]                    AT20
-FMC1_LA_N[2]                    AT19
-FMC1_LA_P[13]                   AV16
-FMC1_LA_N[13]                   AW16
-FMC1_LA_P[14]                   AT16
-FMC1_LA_N[14]                   AU16
-FMC1_LA_P[15]                   AV20
-FMC1_LA_N[15]                   AW20
-FMC1_LA_P[16]                   BA17
-FMC1_LA_N[16]                   BB17
+FMC1_LA_P[4]                    AL19    LVCMOS18
+FMC1_LA_N[4]                    AM19    LVCMOS18
+FMC1_LA_P[5]                    AK17    LVCMOS18
+FMC1_LA_N[5]                    AL17    LVCMOS18
+FMC1_LA_P[7]                    AM18    LVCMOS18
+FMC1_LA_N[7]                    AM17    LVCMOS18
+FMC1_LA_P[8]                    AK19    LVCMOS18
+FMC1_LA_N[8]                    AK18    LVCMOS18
+FMC1_LA_P[9]                    AM16    LVCMOS18
+FMC1_LA_N[9]                    AN16    LVCMOS18
+FMC1_LA_P[10]                   AP18    LVCMOS18
+FMC1_LA_N[10]                   AP17    LVCMOS18
+FMC1_LA_P[3]                    AP20    LVCMOS18
+FMC1_LA_N[3]                    AR19    LVCMOS18
+FMC1_LA_P[6]                    AN19    LVCMOS18
+FMC1_LA_N[6]                    AN18    LVCMOS18
+FMC1_LA_P[12]                   AR18    LVCMOS18
+FMC1_LA_N[12]                   AR17    LVCMOS18
+FMC1_LA_P[0]                    AT17    LVCMOS18
+FMC1_LA_N[0]                    AU17    LVCMOS18
+FMC1_LA_P[1]                    AY18    LVCMOS18
+FMC1_LA_N[1]                    AY17    LVCMOS18
+FMC1_LA_P[11]                   AU19    LVCMOS18
+FMC1_LA_N[11]                   AV19    LVCMOS18
+FMC1_LA_P[2]                    AT20    LVCMOS18
+FMC1_LA_N[2]                    AT19    LVCMOS18
+FMC1_LA_P[13]                   AV16    LVCMOS18
+FMC1_LA_N[13]                   AW16    LVCMOS18
+FMC1_LA_P[14]                   AT16    LVCMOS18
+FMC1_LA_N[14]                   AU16    LVCMOS18
+FMC1_LA_P[15]                   AV20    LVCMOS18
+FMC1_LA_N[15]                   AW20    LVCMOS18
+FMC1_LA_P[16]                   BA17    LVCMOS18
+FMC1_LA_N[16]                   BB17    LVCMOS18
 
 # ======== Bank 33 (HP/VCCO=+VADJ/1) ========
-FMC1_HA_P[6]                    AJ23
-FMC1_HA_N[6]                    AK23
-FMC1_HA_P[3]                    AK20
-FMC1_HA_N[3]                    AL20
-FMC1_HA_P[5]                    AJ22
-FMC1_HA_N[5]                    AK22
-FMC1_HA_P[4]                    AL21
-FMC1_HA_N[4]                    AM21
-FMC1_HA_P[2]                    AJ21
-FMC1_HA_N[2]                    AJ20
-FMC1_HA_P[7]                    AM24
-FMC1_HA_N[7]                    AN24
-FMC1_HA_P[9]                    AM23
-FMC1_HA_N[9]                    AN23
-FMC1_HA_P[8]                    AP23
-FMC1_HA_N[8]                    AP22
-FMC1_HA_P[10]                   AN21
-FMC1_HA_N[10]                   AP21
-FMC1_HA_P[1]                    AR23
-FMC1_HA_N[1]                    AR22
-FMC1_HA_P[0]                    AT22
-FMC1_HA_N[0]                    AU22
-FMC1_HA_P[11]                   AT21
-FMC1_HA_N[11]                   AU21
-FMC1_HA_P[12]                   AR24
-FMC1_HA_N[12]                   AT24
-FMC1_HA_P[13]                   AV21
-FMC1_HA_N[13]                   AW21
-FMC1_HA_P[14]                   AU24
-FMC1_HA_N[14]                   AV24
-FMC1_HA_P[15]                   AY25
-FMC1_HA_N[15]                   BA25
-FMC1_HA_P[16]                   BA22
-FMC1_HA_N[16]                   BB22
+FMC1_HA_P[6]                    AJ23    LVCMOS18
+FMC1_HA_N[6]                    AK23    LVCMOS18
+FMC1_HA_P[3]                    AK20    LVCMOS18
+FMC1_HA_N[3]                    AL20    LVCMOS18
+FMC1_HA_P[5]                    AJ22    LVCMOS18
+FMC1_HA_N[5]                    AK22    LVCMOS18
+FMC1_HA_P[4]                    AL21    LVCMOS18
+FMC1_HA_N[4]                    AM21    LVCMOS18
+FMC1_HA_P[2]                    AJ21    LVCMOS18
+FMC1_HA_N[2]                    AJ20    LVCMOS18
+FMC1_HA_P[7]                    AM24    LVCMOS18
+FMC1_HA_N[7]                    AN24    LVCMOS18
+FMC1_HA_P[9]                    AM23    LVCMOS18
+FMC1_HA_N[9]                    AN23    LVCMOS18
+FMC1_HA_P[8]                    AP23    LVCMOS18
+FMC1_HA_N[8]                    AP22    LVCMOS18
+FMC1_HA_P[10]                   AN21    LVCMOS18
+FMC1_HA_N[10]                   AP21    LVCMOS18
+FMC1_HA_P[1]                    AR23    LVCMOS18
+FMC1_HA_N[1]                    AR22    LVCMOS18
+FMC1_HA_P[0]                    AT22    LVCMOS18
+FMC1_HA_N[0]                    AU22    LVCMOS18
+FMC1_HA_P[11]                   AT21    LVCMOS18
+FMC1_HA_N[11]                   AU21    LVCMOS18
+FMC1_HA_P[12]                   AR24    LVCMOS18
+FMC1_HA_N[12]                   AT24    LVCMOS18
+FMC1_HA_P[13]                   AV21    LVCMOS18
+FMC1_HA_N[13]                   AW21    LVCMOS18
+FMC1_HA_P[14]                   AU24    LVCMOS18
+FMC1_HA_N[14]                   AV24    LVCMOS18
+FMC1_HA_P[15]                   AY25    LVCMOS18
+FMC1_HA_N[15]                   BA25    LVCMOS18
+FMC1_HA_P[16]                   BA22    LVCMOS18
+FMC1_HA_N[16]                   BB22    LVCMOS18
 
 # ======== Bank 34 (HP/VCCO=+VADJ/1) ========
-FMC1_HA_P[17]                   L31
-FMC1_HA_N[17]                   K32
-FMC1_HA_P[18]                   N30
-FMC1_HA_N[18]                   M31
-FMC1_HA_P[19]                   P30
-FMC1_HA_N[19]                   N31
-FMC1_HA_P[20]                   M28
-FMC1_HA_N[20]                   M29
-FMC1_HA_P[21]                   R28
-FMC1_HA_N[21]                   P28
-FMC1_HA_P[22]                   N28
-FMC1_HA_N[22]                   N29
-FMC1_HA_P[23]                   R30
-FMC1_HA_N[23]                   P31
+FMC1_HA_P[17]                   L31     LVCMOS18
+FMC1_HA_N[17]                   K32     LVCMOS18
+FMC1_HA_P[18]                   N30     LVCMOS18
+FMC1_HA_N[18]                   M31     LVCMOS18
+FMC1_HA_P[19]                   P30     LVCMOS18
+FMC1_HA_N[19]                   N31     LVCMOS18
+FMC1_HA_P[20]                   M28     LVCMOS18
+FMC1_HA_N[20]                   M29     LVCMOS18
+FMC1_HA_P[21]                   R28     LVCMOS18
+FMC1_HA_N[21]                   P28     LVCMOS18
+FMC1_HA_P[22]                   N28     LVCMOS18
+FMC1_HA_N[22]                   N29     LVCMOS18
+FMC1_HA_P[23]                   R30     LVCMOS18
+FMC1_HA_N[23]                   P31     LVCMOS18
 
 # ======== Bank 35 (HP/VCCO=VIO_B_M2C/0) ========
-FMC0_HB_P[5]                    B36
-FMC0_HB_N[5]                    A37
-FMC0_HB_P[9]                    B34
-FMC0_HB_N[9]                    A34
-FMC0_HB_P[3]                    B39
-FMC0_HB_N[3]                    A39
-FMC0_HB_P[4]                    A35
-FMC0_HB_N[4]                    A36
-FMC0_HB_P[2]                    C38
-FMC0_HB_N[2]                    C39
-FMC0_HB_P[13]                   E32
-FMC0_HB_N[13]                   D32
-FMC0_HB_P[7]                    B32
-FMC0_HB_N[7]                    B33
-FMC0_HB_P[12]                   E33
-FMC0_HB_N[12]                   D33
-FMC0_HB_P[8]                    C33
-FMC0_HB_N[8]                    C34
-FMC0_HB_P[16]                   D35
-FMC0_HB_N[16]                   D36
-FMC0_HB_P[0]                    C35
-FMC0_HB_N[0]                    C36
-FMC0_HB_P[6]                    E34
-FMC0_HB_N[6]                    E35
-FMC0_HB_P[17]                   D37
-FMC0_HB_N[17]                   D38
-FMC0_HB_P[11]                   G32
-FMC0_HB_N[11]                   F32
-FMC0_HB_P[21]                   F36
-FMC0_HB_N[21]                   F37
-FMC0_HB_P[14]                   F34
-FMC0_HB_N[14]                   F35
-FMC0_HB_P[19]                   H33
-FMC0_HB_N[19]                   G33
-FMC0_HB_P[18]                   G36
-FMC0_HB_N[18]                   G37
-FMC0_HB_P[1]                    F39
-FMC0_HB_N[1]                    E39
-FMC0_HB_P[15]                   J37
-FMC0_HB_N[15]                   J38
-FMC0_HB_P[10]                   H38
-FMC0_HB_N[10]                   G38
-FMC0_HB_P[20]                   J36
-FMC0_HB_N[20]                   H36
+FMC0_HB_P[5]                    B36     LVCMOS18
+FMC0_HB_N[5]                    A37     LVCMOS18
+FMC0_HB_P[9]                    B34     LVCMOS18
+FMC0_HB_N[9]                    A34     LVCMOS18
+FMC0_HB_P[3]                    B39     LVCMOS18
+FMC0_HB_N[3]                    A39     LVCMOS18
+FMC0_HB_P[4]                    A35     LVCMOS18
+FMC0_HB_N[4]                    A36     LVCMOS18
+FMC0_HB_P[2]                    C38     LVCMOS18
+FMC0_HB_N[2]                    C39     LVCMOS18
+FMC0_HB_P[13]                   E32     LVCMOS18
+FMC0_HB_N[13]                   D32     LVCMOS18
+FMC0_HB_P[7]                    B32     LVCMOS18
+FMC0_HB_N[7]                    B33     LVCMOS18
+FMC0_HB_P[12]                   E33     LVCMOS18
+FMC0_HB_N[12]                   D33     LVCMOS18
+FMC0_HB_P[8]                    C33     LVCMOS18
+FMC0_HB_N[8]                    C34     LVCMOS18
+FMC0_HB_P[16]                   D35     LVCMOS18
+FMC0_HB_N[16]                   D36     LVCMOS18
+FMC0_HB_P[0]                    C35     LVCMOS18
+FMC0_HB_N[0]                    C36     LVCMOS18
+FMC0_HB_P[6]                    E34     LVCMOS18
+FMC0_HB_N[6]                    E35     LVCMOS18
+FMC0_HB_P[17]                   D37     LVCMOS18
+FMC0_HB_N[17]                   D38     LVCMOS18
+FMC0_HB_P[11]                   G32     LVCMOS18
+FMC0_HB_N[11]                   F32     LVCMOS18
+FMC0_HB_P[21]                   F36     LVCMOS18
+FMC0_HB_N[21]                   F37     LVCMOS18
+FMC0_HB_P[14]                   F34     LVCMOS18
+FMC0_HB_N[14]                   F35     LVCMOS18
+FMC0_HB_P[19]                   H33     LVCMOS18
+FMC0_HB_N[19]                   G33     LVCMOS18
+FMC0_HB_P[18]                   G36     LVCMOS18
+FMC0_HB_N[18]                   G37     LVCMOS18
+FMC0_HB_P[1]                    F39     LVCMOS18
+FMC0_HB_N[1]                    E39     LVCMOS18
+FMC0_HB_P[15]                   J37     LVCMOS18
+FMC0_HB_N[15]                   J38     LVCMOS18
+FMC0_HB_P[10]                   H38     LVCMOS18
+FMC0_HB_N[10]                   G38     LVCMOS18
+FMC0_HB_P[20]                   J36     LVCMOS18
+FMC0_HB_N[20]                   H36     LVCMOS18
 
 # ======== Bank 36 (HP/VCCO=+VADJ/0) ========
-FMC0_LA_P[19]                   G21
-FMC0_LA_N[19]                   G22
-FMC0_LA_P[23]                   G26
-FMC0_LA_N[23]                   G27
-FMC0_LA_P[21]                   G28
-FMC0_LA_N[21]                   G29
-FMC0_LA_P[32]                   K28
-FMC0_LA_N[32]                   J28
-FMC0_LA_P[20]                   H28
-FMC0_LA_N[20]                   H29
-FMC0_LA_P[30]                   K27
-FMC0_LA_N[30]                   J27
-FMC0_LA_P[17]                   J25
-FMC0_LA_N[17]                   J26
-FMC0_LA_P[18]                   M24
-FMC0_LA_N[18]                   L24
-FMC0_LA_P[22]                   M22
-FMC0_LA_N[22]                   L22
-FMC0_LA_P[28]                   L25
-FMC0_LA_N[28]                   L26
-FMC0_LA_P[27]                   K22
-FMC0_LA_N[27]                   J22
-FMC0_LA_P[26]                   M21
-FMC0_LA_N[26]                   L21
-FMC0_LA_P[29]                   P25
-FMC0_LA_N[29]                   P26
-FMC0_LA_P[24]                   P22
-FMC0_LA_N[24]                   P23
-FMC0_LA_P[31]                   N25
-FMC0_LA_N[31]                   N26
-FMC0_LA_P[25]                   N23
-FMC0_LA_N[25]                   N24
-FMC0_LA_P[33]                   M27
-FMC0_LA_N[33]                   L27
+FMC0_LA_P[19]                   G21     LVCMOS18
+FMC0_LA_N[19]                   G22     LVCMOS18
+FMC0_LA_P[23]                   G26     LVCMOS18
+FMC0_LA_N[23]                   G27     LVCMOS18
+FMC0_LA_P[21]                   G28     LVCMOS18
+FMC0_LA_N[21]                   G29     LVCMOS18
+FMC0_LA_P[32]                   K28     LVCMOS18
+FMC0_LA_N[32]                   J28     LVCMOS18
+FMC0_LA_P[20]                   H28     LVCMOS18
+FMC0_LA_N[20]                   H29     LVCMOS18
+FMC0_LA_P[30]                   K27     LVCMOS18
+FMC0_LA_N[30]                   J27     LVCMOS18
+FMC0_LA_P[17]                   J25     LVCMOS18
+FMC0_LA_N[17]                   J26     LVCMOS18
+FMC0_LA_P[18]                   M24     LVCMOS18
+FMC0_LA_N[18]                   L24     LVCMOS18
+FMC0_LA_P[22]                   M22     LVCMOS18
+FMC0_LA_N[22]                   L22     LVCMOS18
+FMC0_LA_P[28]                   L25     LVCMOS18
+FMC0_LA_N[28]                   L26     LVCMOS18
+FMC0_LA_P[27]                   K22     LVCMOS18
+FMC0_LA_N[27]                   J22     LVCMOS18
+FMC0_LA_P[26]                   M21     LVCMOS18
+FMC0_LA_N[26]                   L21     LVCMOS18
+FMC0_LA_P[29]                   P25     LVCMOS18
+FMC0_LA_N[29]                   P26     LVCMOS18
+FMC0_LA_P[24]                   P22     LVCMOS18
+FMC0_LA_N[24]                   P23     LVCMOS18
+FMC0_LA_P[31]                   N25     LVCMOS18
+FMC0_LA_N[31]                   N26     LVCMOS18
+FMC0_LA_P[25]                   N23     LVCMOS18
+FMC0_LA_N[25]                   N24     LVCMOS18
+FMC0_LA_P[33]                   M27     LVCMOS18
+FMC0_LA_N[33]                   L27     LVCMOS18
 
 # ======== Bank 37 (HP/VCCO=+VADJ/0) ========
-FMC0_LA_P[12]                   B22
-FMC0_LA_N[12]                   A22
-FMC0_LA_P[11]                   A26
-FMC0_LA_N[11]                   A27
-FMC0_LA_P[13]                   C23
-FMC0_LA_N[13]                   B23
-FMC0_LA_P[14]                   B26
-FMC0_LA_N[14]                   B27
-FMC0_LA_P[15]                   F22
-FMC0_LA_N[15]                   E22
-FMC0_LA_P[16]                   F25
-FMC0_LA_N[16]                   E25
-FMC0_LA_P[0]                    C25
-FMC0_LA_N[0]                    C26
-FMC0_LA_P[1]                    D27
-FMC0_LA_N[1]                    D28
-FMC0_LA_P[10]                   B28
-FMC0_LA_N[10]                   B29
-FMC0_LA_P[7]                    A31
-FMC0_LA_N[7]                    A32
-FMC0_LA_P[9]                    A29
-FMC0_LA_N[9]                    A30
-FMC0_LA_P[5]                    C31
-FMC0_LA_N[5]                    B31
-FMC0_LA_P[2]                    D30
-FMC0_LA_N[2]                    C30
-FMC0_LA_P[3]                    E27
-FMC0_LA_N[3]                    E28
-FMC0_LA_P[8]                    F29
-FMC0_LA_N[8]                    E29
-FMC0_LA_P[4]                    F26
-FMC0_LA_N[4]                    F27
-FMC0_LA_P[6]                    F30
-FMC0_LA_N[6]                    F31
+FMC0_LA_P[12]                   B22     LVCMOS18
+FMC0_LA_N[12]                   A22     LVCMOS18
+FMC0_LA_P[11]                   A26     LVCMOS18
+FMC0_LA_N[11]                   A27     LVCMOS18
+FMC0_LA_P[13]                   C23     LVCMOS18
+FMC0_LA_N[13]                   B23     LVCMOS18
+FMC0_LA_P[14]                   B26     LVCMOS18
+FMC0_LA_N[14]                   B27     LVCMOS18
+FMC0_LA_P[15]                   F22     LVCMOS18
+FMC0_LA_N[15]                   E22     LVCMOS18
+FMC0_LA_P[16]                   F25     LVCMOS18
+FMC0_LA_N[16]                   E25     LVCMOS18
+FMC0_LA_P[0]                    C25     LVCMOS18
+FMC0_LA_N[0]                    C26     LVCMOS18
+FMC0_LA_P[1]                    D27     LVCMOS18
+FMC0_LA_N[1]                    D28     LVCMOS18
+FMC0_LA_P[10]                   B28     LVCMOS18
+FMC0_LA_N[10]                   B29     LVCMOS18
+FMC0_LA_P[7]                    A31     LVCMOS18
+FMC0_LA_N[7]                    A32     LVCMOS18
+FMC0_LA_P[9]                    A29     LVCMOS18
+FMC0_LA_N[9]                    A30     LVCMOS18
+FMC0_LA_P[5]                    C31     LVCMOS18
+FMC0_LA_N[5]                    B31     LVCMOS18
+FMC0_LA_P[2]                    D30     LVCMOS18
+FMC0_LA_N[2]                    C30     LVCMOS18
+FMC0_LA_P[3]                    E27     LVCMOS18
+FMC0_LA_N[3]                    E28     LVCMOS18
+FMC0_LA_P[8]                    F29     LVCMOS18
+FMC0_LA_N[8]                    E29     LVCMOS18
+FMC0_LA_P[4]                    F26     LVCMOS18
+FMC0_LA_N[4]                    F27     LVCMOS18
+FMC0_LA_P[6]                    F30     LVCMOS18
+FMC0_LA_N[6]                    F31     LVCMOS18
 
 # ======== Bank 38 (HP/VCCO=+VADJ/0) ========
-FMC0_HA_P[12]                   C19
-FMC0_HA_N[12]                   B19
-FMC0_HA_P[14]                   A16
-FMC0_HA_N[14]                   A15
-FMC0_HA_P[11]                   A20
-FMC0_HA_N[11]                   A19
-FMC0_HA_P[10]                   B17
-FMC0_HA_N[10]                   A17
-FMC0_HA_P[13]                   B21
-FMC0_HA_N[13]                   A21
-FMC0_HA_P[8]                    D20
-FMC0_HA_N[8]                    C20
-FMC0_HA_P[16]                   F17
-FMC0_HA_N[16]                   E17
-FMC0_HA_P[6]                    D21
-FMC0_HA_N[6]                    C21
-FMC0_HA_P[15]                   D18
-FMC0_HA_N[15]                   D17
-FMC0_HA_P[1]                    G19
-FMC0_HA_N[1]                    F19
-FMC0_HA_P[0]                    E19
-FMC0_HA_N[0]                    E18
-FMC0_HA_P[9]                    F20
-FMC0_HA_N[9]                    E20
-FMC0_HA_P[7]                    K17
-FMC0_HA_N[7]                    J17
-FMC0_HA_P[4]                    J20
-FMC0_HA_N[4]                    H20
-FMC0_HA_P[5]                    H18
-FMC0_HA_N[5]                    G17
-FMC0_HA_P[3]                    M17
-FMC0_HA_N[3]                    L17
-FMC0_HA_P[2]                    N19
-FMC0_HA_N[2]                    N18
+FMC0_HA_P[12]                   C19     LVCMOS18
+FMC0_HA_N[12]                   B19     LVCMOS18
+FMC0_HA_P[14]                   A16     LVCMOS18
+FMC0_HA_N[14]                   A15     LVCMOS18
+FMC0_HA_P[11]                   A20     LVCMOS18
+FMC0_HA_N[11]                   A19     LVCMOS18
+FMC0_HA_P[10]                   B17     LVCMOS18
+FMC0_HA_N[10]                   A17     LVCMOS18
+FMC0_HA_P[13]                   B21     LVCMOS18
+FMC0_HA_N[13]                   A21     LVCMOS18
+FMC0_HA_P[8]                    D20     LVCMOS18
+FMC0_HA_N[8]                    C20     LVCMOS18
+FMC0_HA_P[16]                   F17     LVCMOS18
+FMC0_HA_N[16]                   E17     LVCMOS18
+FMC0_HA_P[6]                    D21     LVCMOS18
+FMC0_HA_N[6]                    C21     LVCMOS18
+FMC0_HA_P[15]                   D18     LVCMOS18
+FMC0_HA_N[15]                   D17     LVCMOS18
+FMC0_HA_P[1]                    G19     LVCMOS18
+FMC0_HA_N[1]                    F19     LVCMOS18
+FMC0_HA_P[0]                    E19     LVCMOS18
+FMC0_HA_N[0]                    E18     LVCMOS18
+FMC0_HA_P[9]                    F20     LVCMOS18
+FMC0_HA_N[9]                    E20     LVCMOS18
+FMC0_HA_P[7]                    K17     LVCMOS18
+FMC0_HA_N[7]                    J17     LVCMOS18
+FMC0_HA_P[4]                    J20     LVCMOS18
+FMC0_HA_N[4]                    H20     LVCMOS18
+FMC0_HA_P[5]                    H18     LVCMOS18
+FMC0_HA_N[5]                    G17     LVCMOS18
+FMC0_HA_P[3]                    M17     LVCMOS18
+FMC0_HA_N[3]                    L17     LVCMOS18
+FMC0_HA_P[2]                    N19     LVCMOS18
+FMC0_HA_N[2]                    N18     LVCMOS18
 
 # ======== Bank 39 (HP/VCCO=+VADJ/0) ========
-FMC0_HA_P[17]                   G14
-FMC0_HA_N[17]                   G13
-FMC0_HA_P[18]                   H15
-FMC0_HA_N[18]                   H14
-FMC0_HA_P[21]                   J13
-FMC0_HA_N[21]                   H13
-FMC0_HA_P[22]                   K12
-FMC0_HA_N[22]                   J12
-FMC0_HA_P[20]                   K15
-FMC0_HA_N[20]                   J15
-FMC0_HA_P[19]                   K14
-FMC0_HA_N[19]                   K13
-FMC0_HA_P[23]                   L16
-FMC0_HA_N[23]                   L15
+FMC0_HA_P[17]                   G14     LVCMOS18
+FMC0_HA_N[17]                   G13     LVCMOS18
+FMC0_HA_P[18]                   H15     LVCMOS18
+FMC0_HA_N[18]                   H14     LVCMOS18
+FMC0_HA_P[21]                   J13     LVCMOS18
+FMC0_HA_N[21]                   H13     LVCMOS18
+FMC0_HA_P[22]                   K12     LVCMOS18
+FMC0_HA_N[22]                   J12     LVCMOS18
+FMC0_HA_P[20]                   K15     LVCMOS18
+FMC0_HA_N[20]                   J15     LVCMOS18
+FMC0_HA_P[19]                   K14     LVCMOS18
+FMC0_HA_N[19]                   K13     LVCMOS18
+FMC0_HA_P[23]                   L16     LVCMOS18
+FMC0_HA_N[23]                   L15     LVCMOS18
 
 # ======== Bank MGT111 ========
 # NOTE: SD nets are named from the P2040's perspective
-SD_RX04_P                       AW2
-SD_RX04_N                       AW1
-SD_TX04_P                       AW6
-SD_TX04_N                       AW5
-SD_RX05_P                       AY4
-SD_RX05_N                       AY3
-SD_TX05_P                       AY8
-SD_TX05_N                       AY7
-CLK100MHZ0_P                    BA10
-CLK100MHZ0_N                    BA9
-FMC1_TX_P[9]                    BA2
-FMC1_TX_N[9]                    BA1
-FMC1_RX_P[9]                    BA6
-FMC1_RX_N[9]                    BA5
-FMC1_TX_P[8]                    BB4
-FMC1_TX_N[8]                    BB3
-FMC1_RX_P[8]                    BB8
-FMC1_RX_N[8]                    BB7
-CLK125MHZ0_P                    AW10
-CLK125MHZ0_N                    AW9
+SD_RX04_P                       AW2     MGT
+SD_RX04_N                       AW1     MGT
+SD_TX04_P                       AW6     MGT
+SD_TX04_N                       AW5     MGT
+SD_RX05_P                       AY4     MGT
+SD_RX05_N                       AY3     MGT
+SD_TX05_P                       AY8     MGT
+SD_TX05_N                       AY7     MGT
+FMC1_TX_P[9]                    BA2     MGT
+FMC1_TX_N[9]                    BA1     MGT
+FMC1_RX_P[9]                    BA6     MGT
+FMC1_RX_N[9]                    BA5     MGT
+FMC1_TX_P[8]                    BB4     MGT
+FMC1_TX_N[8]                    BB3     MGT
+FMC1_RX_P[8]                    BB8     MGT
+FMC1_RX_N[8]                    BB7     MGT
+CLK100MHZ0_P                    BA10    LVCMOS18
+CLK100MHZ0_N                    BA9     LVCMOS18
+CLK125MHZ0_P                    AW10    LVCMOS18
+CLK125MHZ0_N                    AW9     LVCMOS18
 
 # ======== Bank MGT112 ========
-FMC1_TX_P[3]                    AR2
-FMC1_TX_N[3]                    AR1
-FMC1_RX_P[3]                    AP8
-FMC1_RX_N[3]                    AP7
-FMC1_TX_P[2]                    AT4
-FMC1_TX_N[2]                    AT3
-FMC1_RX_P[2]                    AR6
-FMC1_RX_N[2]                    AR5
-FMC1_TX_P[1]                    AU2
-FMC1_TX_N[1]                    AU1
-FMC1_RX_P[1]                    AU6
-FMC1_RX_N[1]                    AU5
-FMC1_TX_P[0]                    AV4
-FMC1_TX_N[0]                    AV3
-FMC1_RX_P[0]                    AV8
-FMC1_RX_N[0]                    AV7
-FMC1_GBTCLK_P[0]                AT8
-FMC1_GBTCLK_N[0]                AT7
-FMC1_GBTCLK_P[1]                AU10
-FMC1_GBTCLK_N[1]                AU9
+FMC1_TX_P[3]                    AR2     MGT
+FMC1_TX_N[3]                    AR1     MGT
+FMC1_RX_P[3]                    AP8     MGT
+FMC1_RX_N[3]                    AP7     MGT
+FMC1_TX_P[2]                    AT4     MGT
+FMC1_TX_N[2]                    AT3     MGT
+FMC1_RX_P[2]                    AR6     MGT
+FMC1_RX_N[2]                    AR5     MGT
+FMC1_TX_P[1]                    AU2     MGT
+FMC1_TX_N[1]                    AU1     MGT
+FMC1_RX_P[1]                    AU6     MGT
+FMC1_RX_N[1]                    AU5     MGT
+FMC1_TX_P[0]                    AV4     MGT
+FMC1_TX_N[0]                    AV3     MGT
+FMC1_RX_P[0]                    AV8     MGT
+FMC1_RX_N[0]                    AV7     MGT
+FMC1_GBTCLK_P[0]                AT8     LVCMOS18
+FMC1_GBTCLK_N[0]                AT7     LVCMOS18
+FMC1_GBTCLK_P[1]                AU10    LVCMOS18
+FMC1_GBTCLK_N[1]                AU9     LVCMOS18
 
 # ======== Bank MGT113 ========
-FMC1_TX_P[7]                    AL2
-FMC1_TX_N[7]                    AL1
-FMC1_RX_P[7]                    AJ6
-FMC1_RX_N[7]                    AJ5
-FMC1_TX_P[6]                    AM4
-FMC1_TX_N[6]                    AM3
-FMC1_RX_P[6]                    AL6
-FMC1_RX_N[6]                    AL5
-FMC1_TX_P[5]                    AN2
-FMC1_TX_N[5]                    AN1
-FMC1_RX_P[5]                    AM8
-FMC1_RX_N[5]                    AM7
-FMC1_TX_P[4]                    AP4
-FMC1_TX_N[4]                    AP3
-FMC1_RX_P[4]                    AN6
-FMC1_RX_N[4]                    AN5
-CLK156_25MHZ5_P                 AH8
-CLK156_25MHZ5_N                 AH7
-CLK125MHZ5_P                    AK8
-CLK125MHZ5_N                    AK7
+FMC1_TX_P[7]                    AL2     MGT
+FMC1_TX_N[7]                    AL1     MGT
+FMC1_RX_P[7]                    AJ6     MGT
+FMC1_RX_N[7]                    AJ5     MGT
+FMC1_TX_P[6]                    AM4     MGT
+FMC1_TX_N[6]                    AM3     MGT
+FMC1_RX_P[6]                    AL6     MGT
+FMC1_RX_N[6]                    AL5     MGT
+FMC1_TX_P[5]                    AN2     MGT
+FMC1_TX_N[5]                    AN1     MGT
+FMC1_RX_P[5]                    AM8     MGT
+FMC1_RX_N[5]                    AM7     MGT
+FMC1_TX_P[4]                    AP4     MGT
+FMC1_TX_N[4]                    AP3     MGT
+FMC1_RX_P[4]                    AN6     MGT
+FMC1_RX_N[4]                    AN5     MGT
+CLK156_25MHZ5_P                 AH8     LVCMOS18
+CLK156_25MHZ5_N                 AH7     LVCMOS18
+CLK125MHZ5_P                    AK8     LVCMOS18
+CLK125MHZ5_N                    AK7     LVCMOS18
 
 # ======== Bank MGT114 ========
-AMC_TX_P[8]                     AG2
-AMC_TX_N[8]                     AG1
-AMC_RX_P[8]                     AD4
-AMC_RX_N[8]                     AD3
-AMC_TX_P[9]                     AH4
-AMC_TX_N[9]                     AH3
-AMC_RX_P[9]                     AE6
-AMC_RX_N[9]                     AE5
-AMC_TX_P[10]                    AJ2
-AMC_TX_N[10]                    AJ1
-AMC_RX_P[10]                    AF4
-AMC_RX_N[10]                    AF3
-AMC_TX_P[11]                    AK4
-AMC_TX_N[11]                    AK3
-AMC_RX_P[11]                    AG6
-AMC_RX_N[11]                    AG5
-CLK125MHZ1_P                    AD8
-CLK125MHZ1_N                    AD7
-CLK156_25MHZ6_P                 AF8
-CLK156_25MHZ6_N                 AF7
+AMC_TX_P[8]                     AG2     MGT
+AMC_TX_N[8]                     AG1     MGT
+AMC_RX_P[8]                     AD4     MGT
+AMC_RX_N[8]                     AD3     MGT
+AMC_TX_P[9]                     AH4     MGT
+AMC_TX_N[9]                     AH3     MGT
+AMC_RX_P[9]                     AE6     MGT
+AMC_RX_N[9]                     AE5     MGT
+AMC_TX_P[10]                    AJ2     MGT
+AMC_TX_N[10]                    AJ1     MGT
+AMC_RX_P[10]                    AF4     MGT
+AMC_RX_N[10]                    AF3     MGT
+AMC_TX_P[11]                    AK4     MGT
+AMC_TX_N[11]                    AK3     MGT
+AMC_RX_P[11]                    AG6     MGT
+AMC_RX_N[11]                    AG5     MGT
+CLK125MHZ1_P                    AD8     LVCMOS18
+CLK125MHZ1_N                    AD7     LVCMOS18
+CLK156_25MHZ6_P                 AF8     LVCMOS18
+CLK156_25MHZ6_N                 AF7     LVCMOS18
 
 # ======== Bank MGT115 ========
-AMC_TX_P[4]                     W2
-AMC_TX_N[4]                     W1
-AMC_RX_P[4]                     Y4
-AMC_RX_N[4]                     Y3
-AMC_TX_P[5]                     AA2
-AMC_TX_N[5]                     AA1
-AMC_RX_P[5]                     AA6
-AMC_RX_N[5]                     AA5
-AMC_TX_P[6]                     AC2
-AMC_TX_N[6]                     AC1
-AMC_RX_P[6]                     AB4
-AMC_RX_N[6]                     AB3
-AMC_TX_P[7]                     AE2
-AMC_TX_N[7]                     AE1
-AMC_RX_P[7]                     AC6
-AMC_RX_N[7]                     AC5
-CLK100MHZ1_P                    Y8
-CLK100MHZ1_N                    Y7
-FCLKA_P                         AB8
-FCLKA_N                         AB7
+AMC_TX_P[4]                     W2      MGT
+AMC_TX_N[4]                     W1      MGT
+AMC_RX_P[4]                     Y4      MGT
+AMC_RX_N[4]                     Y3      MGT
+AMC_TX_P[5]                     AA2     MGT
+AMC_TX_N[5]                     AA1     MGT
+AMC_RX_P[5]                     AA6     MGT
+AMC_RX_N[5]                     AA5     MGT
+AMC_TX_P[6]                     AC2     MGT
+AMC_TX_N[6]                     AC1     MGT
+AMC_RX_P[6]                     AB4     MGT
+AMC_RX_N[6]                     AB3     MGT
+AMC_TX_P[7]                     AE2     MGT
+AMC_TX_N[7]                     AE1     MGT
+AMC_RX_P[7]                     AC6     MGT
+AMC_RX_N[7]                     AC5     MGT
+CLK100MHZ1_P                    Y8      LVCMOS18
+CLK100MHZ1_N                    Y7      LVCMOS18
+FCLKA_P                         AB8     OMIT
+FCLKA_N                         AB7     OMIT
 
 # ======== Bank MGT116 ========
 # NOTE: SD nets are named from the P2040's perspective
-SD_RX06_P                       P4
-SD_RX06_N                       P3
-SD_TX06_P                       R6
-SD_TX06_N                       R5
-SD_RX07_P                       R2
-SD_RX07_N                       R1
-SD_TX07_P                       U6
-SD_TX07_N                       U5
-FPGA_AMCTX_P[1]                 T4
-FPGA_AMCTX_N[1]                 T3
-FPGA_AMCRX_P[1]                 V4
-FPGA_AMCRX_N[1]                 V3
-FPGA_AMCTX_P[0]                 U2
-FPGA_AMCTX_N[0]                 U1
-FPGA_AMCRX_P[0]                 W6
-FPGA_AMCRX_N[0]                 W5
-CLK125MHZ4_P                    T8
-CLK125MHZ4_N                    T7
-CLK156_25MHZ3_P                 V8
-CLK156_25MHZ3_N                 V7
+SD_RX06_P                       P4      MGT
+SD_RX06_N                       P3      MGT
+SD_TX06_P                       R6      MGT
+SD_TX06_N                       R5      MGT
+SD_RX07_P                       R2      MGT
+SD_RX07_N                       R1      MGT
+SD_TX07_P                       U6      MGT
+SD_TX07_N                       U5      MGT
+FPGA_AMCTX_P[1]                 T4      MGT
+FPGA_AMCTX_N[1]                 T3      MGT
+FPGA_AMCRX_P[1]                 V4      MGT
+FPGA_AMCRX_N[1]                 V3      MGT
+FPGA_AMCTX_P[0]                 U2      MGT
+FPGA_AMCTX_N[0]                 U1      MGT
+FPGA_AMCRX_P[0]                 W6      MGT
+FPGA_AMCRX_N[0]                 W5      MGT
+CLK125MHZ4_P                    T8      LVCMOS18
+CLK125MHZ4_N                    T7      LVCMOS18
+CLK156_25MHZ3_P                 V8      LVCMOS18
+CLK156_25MHZ3_N                 V7      LVCMOS18
 
 # ======== Bank MGT117 ========
-FMC0_TX_P[7]                    K4
-FMC0_TX_N[7]                    K3
-FMC0_RX_P[7]                    J6
-FMC0_RX_N[7]                    J5
-FMC0_TX_P[6]                    L2
-FMC0_TX_N[6]                    L1
-FMC0_RX_P[6]                    L6
-FMC0_RX_N[6]                    L5
-FMC0_TX_P[5]                    M4
-FMC0_TX_N[5]                    M3
-FMC0_RX_P[5]                    N6
-FMC0_RX_N[5]                    N5
-FMC0_TX_P[4]                    N2
-FMC0_TX_N[4]                    N1
-FMC0_RX_P[4]                    P8
-FMC0_RX_N[4]                    P7
-CLK156_25MHZ1_P                 K8
-CLK156_25MHZ1_N                 K7
-CLK125MHZ7_P                    M8
-CLK125MHZ7_N                    M7
+FMC0_TX_P[7]                    K4      MGT
+FMC0_TX_N[7]                    K3      MGT
+FMC0_RX_P[7]                    J6      MGT
+FMC0_RX_N[7]                    J5      MGT
+FMC0_TX_P[6]                    L2      MGT
+FMC0_TX_N[6]                    L1      MGT
+FMC0_RX_P[6]                    L6      MGT
+FMC0_RX_N[6]                    L5      MGT
+FMC0_TX_P[5]                    M4      MGT
+FMC0_TX_N[5]                    M3      MGT
+FMC0_RX_P[5]                    N6      MGT
+FMC0_RX_N[5]                    N5      MGT
+FMC0_TX_P[4]                    N2      MGT
+FMC0_TX_N[4]                    N1      MGT
+FMC0_RX_P[4]                    P8      MGT
+FMC0_RX_N[4]                    P7      MGT
+CLK156_25MHZ1_P                 K8      LVCMOS18
+CLK156_25MHZ1_N                 K7      LVCMOS18
+CLK125MHZ7_P                    M8      LVCMOS18
+CLK125MHZ7_N                    M7      LVCMOS18
 
 # ======== Bank MGT118 ========
-FMC0_TX_P[3]                    F4
-FMC0_TX_N[3]                    F3
-FMC0_RX_P[3]                    E6
-FMC0_RX_N[3]                    E5
-FMC0_TX_P[2]                    G2
-FMC0_TX_N[2]                    G1
-FMC0_RX_P[2]                    F8
-FMC0_RX_N[2]                    F7
-FMC0_TX_P[1]                    H4
-FMC0_TX_N[1]                    H3
-FMC0_RX_P[1]                    G6
-FMC0_RX_N[1]                    G5
-FMC0_TX_P[0]                    J2
-FMC0_TX_N[0]                    J1
-FMC0_RX_P[0]                    H8
-FMC0_RX_N[0]                    H7
-FMC0_GBTCLK_P[0]                E10
-FMC0_GBTCLK_N[0]                E9
-FMC0_GBTCLK_P[1]                G10
-FMC0_GBTCLK_N[1]                G9
+FMC0_TX_P[3]                    F4      MGT
+FMC0_TX_N[3]                    F3      MGT
+FMC0_RX_P[3]                    E6      MGT
+FMC0_RX_N[3]                    E5      MGT
+FMC0_TX_P[2]                    G2      MGT
+FMC0_TX_N[2]                    G1      MGT
+FMC0_RX_P[2]                    F8      MGT
+FMC0_RX_N[2]                    F7      MGT
+FMC0_TX_P[1]                    H4      MGT
+FMC0_TX_N[1]                    H3      MGT
+FMC0_RX_P[1]                    G6      MGT
+FMC0_RX_N[1]                    G5      MGT
+FMC0_TX_P[0]                    J2      MGT
+FMC0_TX_N[0]                    J1      MGT
+FMC0_RX_P[0]                    H8      MGT
+FMC0_RX_N[0]                    H7      MGT
+FMC0_GBTCLK_P[0]                E10     LVCMOS18
+FMC0_GBTCLK_N[0]                E9      LVCMOS18
+FMC0_GBTCLK_P[1]                G10     LVCMOS18
+FMC0_GBTCLK_N[1]                G9      LVCMOS18
 
 # ======== Bank MGT119 ========
-FMC0_TX_P[9]                    D4
-FMC0_TX_N[9]                    D3
-FMC0_RX_P[9]                    C6
-FMC0_RX_N[9]                    C5
-FMC0_TX_P[8]                    E2
-FMC0_TX_N[8]                    E1
-FMC0_RX_P[8]                    D8
-FMC0_RX_N[8]                    D7
-CLK156_25MHZ4_P                 A10
-CLK156_25MHZ4_N                 A9
-CLK125MHZ6_P                    C10
-CLK125MHZ6_N                    C9
+FMC0_TX_P[9]                    D4      MGT
+FMC0_TX_N[9]                    D3      MGT
+FMC0_RX_P[9]                    C6      MGT
+FMC0_RX_N[9]                    C5      MGT
+FMC0_TX_P[8]                    E2      MGT
+FMC0_TX_N[8]                    E1      MGT
+FMC0_RX_P[8]                    D8      MGT
+FMC0_RX_N[8]                    D7      MGT
+CLK156_25MHZ4_P                 A10     LVCMOS18
+CLK156_25MHZ4_N                 A9      LVCMOS18
+CLK125MHZ6_P                    C10     LVCMOS18
+CLK125MHZ6_N                    C9      LVCMOS18

@@ -5,33 +5,43 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture top of top is
-    signal clk100mhz : std_logic;
-    signal ctr100mhz : unsigned(25 downto 0);
-begin
---     clk100in : IBUFDS port map (
---         I => CLK100MHZ0_P,
---         IB => CLK100MHZ0_N,
---         O => clk100mhz);
+library work;
 
-    clk100mhz0_ibufds_gte2_inst : IBUFDS_GTE2
+architecture top of top is
+    signal fclka : std_logic;
+    signal sys_rst_sync_n : std_logic;
+    signal sys_rst_n : std_logic;
+
+begin
+    -- Reference clock for MGT
+    fclka_inst : IBUFDS_GTE2
     generic map (
-        CLKCM_CFG   => TRUE,
-        CLKRCV_TRST         => TRUE,
-        CLKSWING_CFG        => "11" )
+        CLKCM_CFG    => TRUE,
+        CLKRCV_TRST  => TRUE,
+        CLKSWING_CFG => "11" )
     port map (
-         O      => clk100mhz,
+         O      => fclka,
          ODIV2  => open,
          CEB    => '0',
-         I      => CLK100MHZ0_P,
-         IB     => CLK100MHZ0_N
+         I      => FCLKA_P,
+         IB     => FCLKA_N
     );
 
-    process (clk100mhz) begin
-        if rising_edge(clk100mhz) then
-            ctr100mhz <= ctr100mhz + 1;
-        end if;
-    end process;
+    -- Synchronise reset to reference clock
+    reset_inst : entity work.sync_bit port map (
+        clk_i => fclka,
+        bit_i => nCOLDRST,
+        bit_o => sys_rst_sync_n);
+    sys_rst_n <= nCOLDRST and sys_rst_sync_n;
 
-    ULED <= std_logic_vector(ctr100mhz(25 downto 22));
+    -- Wire up the interconnect
+    interconnect_inst : entity work.interconnect_wrapper port map (
+        GPIO_tri_o => ULED,
+        pcie_mgt_rxn => AMC_RX_N,
+        pcie_mgt_rxp => AMC_RX_P,
+        pcie_mgt_txn => AMC_TX_N,
+        pcie_mgt_txp => AMC_TX_P,
+        refclk => fclka,
+        sys_rst_n => sys_rst_n
+    );
 end;

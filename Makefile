@@ -12,17 +12,22 @@ export LM_LICENSE_FILE = 2100@diamcslicserv01.dc.diamond.ac.uk
 
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 
+
+# The following targets are passed through to the FPGA build
+FPGA_TARGETS = fpga fpga_project vivado edit_bd
+.PHONY: $(FPGA_TARGETS)
+
 default: fpga
 
-fpga: $(FPGA_BUILD_DIR)
+
+$(FPGA_TARGETS): $(FPGA_BUILD_DIR)
 	make -C $(FPGA_BUILD_DIR) -f $(TOP)/AMC525/Makefile \
-            TOP=$(TOP) VIVADO=$(VIVADO)
+            TOP=$(TOP) VIVADO=$(VIVADO) $(MAKECMDGOALS)
 
 $(FPGA_BUILD_DIR):
 	mkdir -p $(FPGA_BUILD_DIR)
 
 clean:
-	echo rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 .PHONY: default clean
-.PHONY: fpga

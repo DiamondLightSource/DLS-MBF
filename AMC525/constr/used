@@ -1,0 +1,12 @@
+-- We'll pass some clocks through to the front panel LEDs
+ULED[0..3]              out     ULED[0..3]
+-- CLK533MHZ1_{P,N}        in
+-- CLK100MHZ0_{P,N}        in
+-- CLK125MHZ0_{P,N}        in
+
+-- Backplane clocking and reset
+nCOLDRST                in
+FCLKA_{P,N}             in
+-- Backplane AMC fat pipe
+AMC_RX_{P,N}[4..11]         in
+AMC_TX_{P,N}[4..11]         out
