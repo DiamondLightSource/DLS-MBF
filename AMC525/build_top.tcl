@@ -11,13 +11,15 @@ set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
 
 
 # Ensure we've read the block design and generated the associated files.
-read_bd -quiet bd/interconnect.bd
-generate_target all [get_files bd/interconnect.bd]
+read_bd -quiet interconnect/interconnect.bd
+open_bd_design interconnect/interconnect.bd
+validate_bd_design
+generate_target all [get_files interconnect/interconnect.bd]
 
 # Add the built files
 add_files built
 read_xdc built/top_pins.xdc
-add_files bd/hdl/interconnect_wrapper.vhd
+add_files interconnect/hdl/interconnect_wrapper.vhd
 
 # Add the remaining definition files
 add_files vhd

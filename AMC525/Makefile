@@ -18,7 +18,7 @@ BUILT_FILES += built/top_entity.vhd
 SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/constr/*)
 
-BD_DIR = $(CURDIR)/bd
+INTERCONNECT_BD = interconnect/interconnect.bd
 
 
 # Default targets
@@ -27,27 +27,32 @@ fpga: amc525_lmbf.bit
 .PHONY: default fpga
 
 
-# Target to edit the block design
-#
-edit_bd: $(BD_DIR)
+$(INTERCONNECT_BD): $(SRCDIR)/bd/interconnect.tcl
+	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/create_bd.tcl \
+            -tclargs $<
+
+edit_bd: $(INTERCONNECT_BD)
 	$(RUN_VIVADO) -source $(SRCDIR)/edit_bd.tcl
 .PHONY: edit_bd
 
-$(BD_DIR):
-	mkdir -p bd
-	ln -sfn $(SRCDIR)/bd/* bd
+# This target reconstructs bd/interconnect.tcl from an existing design
+save_bd:
+	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/save_bd.tcl \
+            -tclargs '$(SRCDIR)/bd/interconnect.tcl'
+	touch $(INTERCONNECT_BD)
+.PHONY: save_bd
 
 
 # Run vivado on project
 #
-vivado:
+runvivado:
 	$(RUN_VIVADO) amc525_lmbf/amc525_lmbf.xpr
-.PHONY: vivado
+.PHONY: runvivado
 
 
 # Target build
 #
-amc525_lmbf.bit: $(BUILT_FILES) $(BD_DIR) $(SOURCES)
+amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
 	ln -sfn $(SRCDIR)/vhd .
 	mkdir -p reports checkpoints
 	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/build_top.tcl
@@ -56,4 +61,3 @@ amc525_lmbf.bit: $(BUILT_FILES) $(BD_DIR) $(SOURCES)
 built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
 	cd built  &&  $(TOP)/scripts/make_entity.py $^ top
-
