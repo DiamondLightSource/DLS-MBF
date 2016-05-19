@@ -29,10 +29,10 @@ fpga: amc525_lmbf.bit
 
 $(INTERCONNECT_BD): $(SRCDIR)/bd/interconnect.tcl
 	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/create_bd.tcl \
-            -tclargs $<
+            -tclargs interconnect -tclargs $<
 
 edit_bd: $(INTERCONNECT_BD)
-	$(RUN_VIVADO) -source $(SRCDIR)/edit_bd.tcl
+	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/edit_bd.tcl
 .PHONY: edit_bd
 
 # This target reconstructs bd/interconnect.tcl from an existing design
