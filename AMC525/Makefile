@@ -53,7 +53,7 @@ runvivado:
 # Target build
 #
 amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
-	ln -sfn $(SRCDIR)/vhd .
+	ln -sfn $(SRCDIR)/vhd $(SRCDIR)/constr .
 	mkdir -p reports checkpoints
 	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/build_top.tcl
 
@@ -61,3 +61,6 @@ amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
 built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
 	cd built  &&  $(TOP)/scripts/make_entity.py $^ top
+
+top_entity: built/top_entity.vhd
+.PHONY: top_entity

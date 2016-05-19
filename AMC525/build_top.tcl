@@ -19,6 +19,7 @@ generate_target all [get_files interconnect/interconnect.bd]
 # Add the built files
 add_files built
 read_xdc built/top_pins.xdc
+read_xdc constr/clocks.xdc
 add_files interconnect/hdl/interconnect_wrapper.vhd
 
 # Add the remaining definition files

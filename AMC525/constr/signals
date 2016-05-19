@@ -117,3 +117,31 @@ FMC1_HB_{P,N}[0..21]        inout
 FMC1_GBTCLK_{P,N}[0..1]     in
 FMC1_RX_{P,N}[0..9]         in
 FMC1_TX_{P,N}[0..9]         out
+
+-- DDR3 x64
+C0_DDR3_DQ[63..0]           inout
+C0_DDR3_DQS_{P,N}[7..0]     inout
+C0_DDR3_ADDR[14..0]         out
+C0_DDR3_BA[2..0]            out
+C0_DDR3_RAS_N               out
+C0_DDR3_CAS_N               out
+C0_DDR3_WE_N                out
+C0_DDR3_RESET_N             out
+C0_DDR3_CK_{P,N}[0..0]      out
+C0_DDR3_CKE[0..0]           out
+C0_DDR3_DM[7..0]            out
+C0_DDR3_ODT[0..0]           out
+
+-- DDR3 x16
+C1_DDR3_DQ[15..0]           inout
+C1_DDR3_DQS_{P,N}[1..0]     inout
+C1_DDR3_ADDR[12..0]         out
+C1_DDR3_BA[2..0]            out
+C1_DDR3_RAS_N               out
+C1_DDR3_CAS_N               out
+C1_DDR3_WE_N                out
+C1_DDR3_RESET_N             out
+C1_DDR3_CK_{P,N}[0..0]      out
+C1_DDR3_CKE[0..0]           out
+C1_DDR3_DM[1..0]            out
+C1_DDR3_ODT[0..0]           out

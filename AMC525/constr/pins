@@ -54,8 +54,8 @@ SCL_L                           AJ33    LVCMOS18
 SDA_L                           AK33    LVCMOS18
 LCLK0                           AK34    LVCMOS18
 LGPL4                           AL34    LVCMOS18
-CLK533MHZ0_P                    AJ32    LVCMOS18
-CLK533MHZ0_N                    AK32    LVCMOS18
+CLK533MHZ0_P                    AJ32
+CLK533MHZ0_N                    AK32
 nCOLDRST                        AL31    LVCMOS18
 nDMA2_ACK0                      AL32    LVCMOS18
 nRDWR                           AM34    LVCMOS18
@@ -131,8 +131,8 @@ nIRQ02                          AU37    LVCMOS18
 
 # ======== Bank 17 (HP/VCCO=1.5V) ========
 # Mostly covered by DDR3 CH0 MIG constraints
-CLK533MHZ1_P                    AF41    LVCMOS18
-CLK533MHZ1_N                    AG41    LVCMOS18
+CLK533MHZ1_P                    AF41
+CLK533MHZ1_N                    AG41
 
 # ======== Bank 18 (HP/VCCO=1.5V) ========
 # Covered by DDR3 CH0 MIG constraints
@@ -495,10 +495,10 @@ FMC1_TX_P[8]                    BB4     MGT
 FMC1_TX_N[8]                    BB3     MGT
 FMC1_RX_P[8]                    BB8     MGT
 FMC1_RX_N[8]                    BB7     MGT
-CLK100MHZ0_P                    BA10    LVCMOS18
-CLK100MHZ0_N                    BA9     LVCMOS18
-CLK125MHZ0_P                    AW10    LVCMOS18
-CLK125MHZ0_N                    AW9     LVCMOS18
+CLK100MHZ0_P                    BA10
+CLK100MHZ0_N                    BA9
+CLK125MHZ0_P                    AW10
+CLK125MHZ0_N                    AW9
 
 # ======== Bank MGT112 ========
 FMC1_TX_P[3]                    AR2     MGT
@@ -517,10 +517,10 @@ FMC1_TX_P[0]                    AV4     MGT
 FMC1_TX_N[0]                    AV3     MGT
 FMC1_RX_P[0]                    AV8     MGT
 FMC1_RX_N[0]                    AV7     MGT
-FMC1_GBTCLK_P[0]                AT8     LVCMOS18
-FMC1_GBTCLK_N[0]                AT7     LVCMOS18
-FMC1_GBTCLK_P[1]                AU10    LVCMOS18
-FMC1_GBTCLK_N[1]                AU9     LVCMOS18
+FMC1_GBTCLK_P[0]                AT8
+FMC1_GBTCLK_N[0]                AT7
+FMC1_GBTCLK_P[1]                AU10
+FMC1_GBTCLK_N[1]                AU9
 
 # ======== Bank MGT113 ========
 FMC1_TX_P[7]                    AL2     MGT
@@ -539,10 +539,10 @@ FMC1_TX_P[4]                    AP4     MGT
 FMC1_TX_N[4]                    AP3     MGT
 FMC1_RX_P[4]                    AN6     MGT
 FMC1_RX_N[4]                    AN5     MGT
-CLK156_25MHZ5_P                 AH8     LVCMOS18
-CLK156_25MHZ5_N                 AH7     LVCMOS18
-CLK125MHZ5_P                    AK8     LVCMOS18
-CLK125MHZ5_N                    AK7     LVCMOS18
+CLK156_25MHZ5_P                 AH8
+CLK156_25MHZ5_N                 AH7
+CLK125MHZ5_P                    AK8
+CLK125MHZ5_N                    AK7
 
 # ======== Bank MGT114 ========
 AMC_TX_P[8]                     AG2     MGT
@@ -561,10 +561,10 @@ AMC_TX_P[11]                    AK4     MGT
 AMC_TX_N[11]                    AK3     MGT
 AMC_RX_P[11]                    AG6     MGT
 AMC_RX_N[11]                    AG5     MGT
-CLK125MHZ1_P                    AD8     LVCMOS18
-CLK125MHZ1_N                    AD7     LVCMOS18
-CLK156_25MHZ6_P                 AF8     LVCMOS18
-CLK156_25MHZ6_N                 AF7     LVCMOS18
+CLK125MHZ1_P                    AD8
+CLK125MHZ1_N                    AD7
+CLK156_25MHZ6_P                 AF8
+CLK156_25MHZ6_N                 AF7
 
 # ======== Bank MGT115 ========
 AMC_TX_P[4]                     W2      MGT
@@ -583,10 +583,10 @@ AMC_TX_P[7]                     AE2     MGT
 AMC_TX_N[7]                     AE1     MGT
 AMC_RX_P[7]                     AC6     MGT
 AMC_RX_N[7]                     AC5     MGT
-CLK100MHZ1_P                    Y8      LVCMOS18
-CLK100MHZ1_N                    Y7      LVCMOS18
-FCLKA_P                         AB8     OMIT
-FCLKA_N                         AB7     OMIT
+CLK100MHZ1_P                    Y8
+CLK100MHZ1_N                    Y7
+FCLKA_P                         AB8
+FCLKA_N                         AB7
 
 # ======== Bank MGT116 ========
 # NOTE: SD nets are named from the P2040's perspective
@@ -606,10 +606,10 @@ FPGA_AMCTX_P[0]                 U2      MGT
 FPGA_AMCTX_N[0]                 U1      MGT
 FPGA_AMCRX_P[0]                 W6      MGT
 FPGA_AMCRX_N[0]                 W5      MGT
-CLK125MHZ4_P                    T8      LVCMOS18
-CLK125MHZ4_N                    T7      LVCMOS18
-CLK156_25MHZ3_P                 V8      LVCMOS18
-CLK156_25MHZ3_N                 V7      LVCMOS18
+CLK125MHZ4_P                    T8
+CLK125MHZ4_N                    T7
+CLK156_25MHZ3_P                 V8
+CLK156_25MHZ3_N                 V7
 
 # ======== Bank MGT117 ========
 FMC0_TX_P[7]                    K4      MGT
@@ -628,10 +628,10 @@ FMC0_TX_P[4]                    N2      MGT
 FMC0_TX_N[4]                    N1      MGT
 FMC0_RX_P[4]                    P8      MGT
 FMC0_RX_N[4]                    P7      MGT
-CLK156_25MHZ1_P                 K8      LVCMOS18
-CLK156_25MHZ1_N                 K7      LVCMOS18
-CLK125MHZ7_P                    M8      LVCMOS18
-CLK125MHZ7_N                    M7      LVCMOS18
+CLK156_25MHZ1_P                 K8
+CLK156_25MHZ1_N                 K7
+CLK125MHZ7_P                    M8
+CLK125MHZ7_N                    M7
 
 # ======== Bank MGT118 ========
 FMC0_TX_P[3]                    F4      MGT
@@ -650,10 +650,10 @@ FMC0_TX_P[0]                    J2      MGT
 FMC0_TX_N[0]                    J1      MGT
 FMC0_RX_P[0]                    H8      MGT
 FMC0_RX_N[0]                    H7      MGT
-FMC0_GBTCLK_P[0]                E10     LVCMOS18
-FMC0_GBTCLK_N[0]                E9      LVCMOS18
-FMC0_GBTCLK_P[1]                G10     LVCMOS18
-FMC0_GBTCLK_N[1]                G9      LVCMOS18
+FMC0_GBTCLK_P[0]                E10
+FMC0_GBTCLK_N[0]                E9
+FMC0_GBTCLK_P[1]                G10
+FMC0_GBTCLK_N[1]                G9
 
 # ======== Bank MGT119 ========
 FMC0_TX_P[9]                    D4      MGT
@@ -664,7 +664,7 @@ FMC0_TX_P[8]                    E2      MGT
 FMC0_TX_N[8]                    E1      MGT
 FMC0_RX_P[8]                    D8      MGT
 FMC0_RX_N[8]                    D7      MGT
-CLK156_25MHZ4_P                 A10     LVCMOS18
-CLK156_25MHZ4_N                 A9      LVCMOS18
-CLK125MHZ6_P                    C10     LVCMOS18
-CLK125MHZ6_N                    C9      LVCMOS18
+CLK156_25MHZ4_P                 A10
+CLK156_25MHZ4_N                 A9
+CLK125MHZ6_P                    C10
+CLK125MHZ6_N                    C9

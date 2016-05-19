@@ -14,7 +14,7 @@ FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 
 
 # The following targets are passed through to the FPGA build
-FPGA_TARGETS = fpga fpga_project runvivado edit_bd save_bd
+FPGA_TARGETS = fpga fpga_project runvivado edit_bd save_bd top_entity
 .PHONY: $(FPGA_TARGETS)
 
 default: fpga
