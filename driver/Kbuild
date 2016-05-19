@@ -1,0 +1,16 @@
+EXTRA_CFLAGS += -std=gnu99
+EXTRA_CFLAGS += -Werror
+EXTRA_CFLAGS += -Wextra
+EXTRA_CFLAGS += -Wno-declaration-after-statement
+EXTRA_CFLAGS += -Wno-unused-parameter
+EXTRA_CFLAGS += -Wno-missing-field-initializers
+
+# Suppress some kernel error messages
+EXTRA_CFLAGS += -Wno-empty-body
+EXTRA_CFLAGS += -Wno-sign-compare
+
+obj-m := amc525_lmbf.o
+
+amc525_lmbf-objs += amc525_lmbf_core.o
+
+# vim: set filetype=make:
