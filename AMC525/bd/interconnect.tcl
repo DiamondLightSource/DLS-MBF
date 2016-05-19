@@ -729,6 +729,7 @@ CONFIG.en_axi_slave_if {false} \
 CONFIG.pcie_blk_locn {X0Y1} \
 CONFIG.pciebar2axibar_1 {0x10000000} \
 CONFIG.pciebar2axibar_2 {0x0000000040000000} \
+CONFIG.pf0_Use_Class_Code_Lookup_Assistant {false} \
 CONFIG.pf0_bar0_scale {Gigabytes} \
 CONFIG.pf0_bar0_size {1} \
 CONFIG.pf0_bar1_enabled {true} \
@@ -737,6 +738,8 @@ CONFIG.pf0_bar2_enabled {true} \
 CONFIG.pf0_bar2_prefetchable {true} \
 CONFIG.pf0_bar2_scale {Gigabytes} \
 CONFIG.pf0_bar2_size {4} \
+CONFIG.pf0_class_code {118000} \
+CONFIG.pf0_class_code_base {11} \
 CONFIG.pf0_device_id {7038} \
 CONFIG.pf0_interrupt_pin {NONE} \
 CONFIG.pf0_msi_enabled {false} \
