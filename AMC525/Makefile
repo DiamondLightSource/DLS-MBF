@@ -6,6 +6,8 @@ endif
 
 
 SRCDIR = $(TOP)/AMC525
+TCLDIR = $(SRCDIR)/tcl
+BDDIR = $(SRCDIR)/bd
 
 VPATH = $(SRCDIR)
 
@@ -27,18 +29,18 @@ fpga: amc525_lmbf.bit
 .PHONY: default fpga
 
 
-$(INTERCONNECT_BD): $(SRCDIR)/bd/interconnect.tcl
-	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/create_bd.tcl \
+$(INTERCONNECT_BD): $(BDDIR)/interconnect.tcl
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/create_bd.tcl \
             -tclargs interconnect -tclargs $<
 
 edit_bd: $(INTERCONNECT_BD)
-	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/edit_bd.tcl
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/edit_bd.tcl
 .PHONY: edit_bd
 
 # This target reconstructs bd/interconnect.tcl from an existing design
 save_bd:
-	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/save_bd.tcl \
-            -tclargs '$(SRCDIR)/bd/interconnect.tcl'
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/save_bd.tcl \
+            -tclargs '$(BDDIR)/interconnect.tcl'
 	touch $(INTERCONNECT_BD)
 .PHONY: save_bd
 
@@ -55,7 +57,7 @@ runvivado:
 amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
 	ln -sfn $(SRCDIR)/vhd $(SRCDIR)/constr .
 	mkdir -p reports checkpoints
-	$(RUN_VIVADO) -mode batch -source $(SRCDIR)/build_top.tcl
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_top.tcl
 
 
 built/top_entity.vhd: constr/signals constr/pins constr/used
