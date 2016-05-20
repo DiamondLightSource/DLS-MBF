@@ -33,6 +33,10 @@ $(FPGA_TARGETS): $(FPGA_BUILD_DIR)
 $(FPGA_BUILD_DIR):
 	mkdir -p $@
 
+clean_fpga:
+	rm -rf $(FPGA_BUILD_DIR)
+.PHONY: clean_fpga
+
 
 # ------------------------------------------------------------------------------
 # Driver build
