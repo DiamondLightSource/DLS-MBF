@@ -1,4 +1,12 @@
 # Used to edit an existing block design
+
+# Call this function to save the block design
+proc save_bd {} {
+    global argv
+    validate_bd_design
+    write_bd_tcl -bd_folder . -exclude_layout -force [lindex $argv 0]
+}
+
 open_project edit_bd/edit_bd.xpr
 set_property target_language Verilog [current_project]
 open_bd_design interconnect/interconnect.bd

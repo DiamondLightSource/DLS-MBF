@@ -34,7 +34,8 @@ $(INTERCONNECT_BD): $(BDDIR)/interconnect.tcl
             -tclargs interconnect -tclargs $<
 
 edit_bd: $(INTERCONNECT_BD)
-	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/edit_bd.tcl
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/edit_bd.tcl \
+            -tclargs '$(BDDIR)/interconnect.tcl'
 .PHONY: edit_bd
 
 # This target reconstructs bd/interconnect.tcl from an existing design
