@@ -30,12 +30,40 @@ MODULE_VERSION("0");
 /* All the driver specific state for a card is in this structure. */
 struct amc525_lmbf {
     struct cdev cdev;
+    struct pci_dev *dev;
     int board;              // Index number for this board
     int minor;              // Associated minor number
+
+    unsigned long reg_length;
+    void __iomem *reg_memory;
 };
+
+
+static int lmbf_reg_map(struct file *file, struct vm_area_struct *vma)
+{
+    struct amc525_lmbf *lmbf = file->private_data;
+
+    size_t size = vma->vm_end - vma->vm_start;
+    unsigned long end = (vma->vm_pgoff << PAGE_SHIFT) + size;
+    if (end > lmbf->reg_length)
+    {
+        printk(KERN_WARNING DEVICE_NAME " map area out of range\n");
+        return -EINVAL;
+    }
+
+    /* Good advice and examples on using this function here:
+     *  http://www.makelinux.net/ldd3/chp-15-sect-2
+     * Also see drivers/char/mem.c in kernel sources for guidelines. */
+    unsigned long base_page = pci_resource_start(lmbf->dev, 0) >> PAGE_SHIFT;
+    return io_remap_pfn_range(
+        vma, vma->vm_start, base_page + vma->vm_pgoff, size,
+        pgprot_noncached(vma->vm_page_prot));
+}
+
 
 static struct file_operations lmbf_reg_fops = {
     .owner = THIS_MODULE,
+    .mmap = lmbf_reg_map,
 };
 
 static struct file_operations lmbf_mem_fops = {
@@ -74,10 +102,14 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
         if (file->f_op->open)
             return file->f_op->open(inode, file);
         else
-            return -EIO;
+            return 0;
     }
     else
+    {
+        printk(KERN_ERR "Is this even possible?\n");
+        printk(KERN_ERR "Invalid minor %d\n", lmbf->minor);
         return -EINVAL;
+    }
 }
 
 
@@ -132,11 +164,14 @@ static int enable_board(struct pci_dev *pdev)
     rc = pci_request_regions(pdev, DEVICE_NAME);
     TEST_RC(rc, no_regions, "Unable to reserve resources");
 
-//     rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(64));
-//     pci_set_master(pdev);
+    rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(64));
+    TEST_RC(rc, no_dma_mask, "Unable to set DMA mask");
+
+    pci_set_master(pdev);
 
     return 0;
 
+no_dma_mask:
     pci_release_regions(pdev);
 no_regions:
     pci_disable_device(pdev);
@@ -147,9 +182,35 @@ no_device:
 
 static void disable_board(struct pci_dev *pdev)
 {
-//     pci_clear_master(pdev);
+    pci_clear_master(pdev);
     pci_release_regions(pdev);
     pci_disable_device(pdev);
+}
+
+
+static int initialise_board(struct pci_dev *pdev, struct amc525_lmbf *lmbf)
+{
+    int rc = 0;
+    pci_set_drvdata(pdev, lmbf);
+
+    /* Map the register bar. */
+    lmbf->reg_length = pci_resource_len(pdev, 0);
+    lmbf->reg_memory = pci_iomap(pdev, 0, lmbf->reg_length);
+    TEST_PTR(lmbf->reg_memory, rc, no_memory, "Unable to map bar");
+
+    printk(KERN_INFO "Mapped bar: %ld %p\n",
+        lmbf->reg_length, lmbf->reg_memory);
+    return 0;
+
+no_memory:
+    return rc;
+}
+
+
+static void terminate_board(struct pci_dev *pdev)
+{
+    struct amc525_lmbf *lmbf = pci_get_drvdata(pdev);
+    pci_iounmap(pdev, lmbf->reg_memory);
 }
 
 
@@ -169,12 +230,15 @@ static int amc525_lmbf_probe(
     /* Allocate state for our board. */
     struct amc525_lmbf *lmbf = kmalloc(sizeof(struct amc525_lmbf), GFP_KERNEL);
     TEST_PTR(lmbf, rc, no_memory, "Unable to allocate memory");
-    pci_set_drvdata(pdev, lmbf);
+    lmbf->dev = pdev;
     lmbf->board = board;
     lmbf->minor = minor;
 
     rc = enable_board(pdev);
     if (rc < 0)     goto no_enable;
+
+    rc = initialise_board(pdev, lmbf);
+    if (rc < 0)     goto no_initialise;
 
     cdev_init(&lmbf->cdev, &base_fops);
     lmbf->cdev.owner = THIS_MODULE;
@@ -191,6 +255,8 @@ static int amc525_lmbf_probe(
 
     cdev_del(&lmbf->cdev);
 no_cdev:
+    terminate_board(pdev);
+no_initialise:
     disable_board(pdev);
 no_enable:
     kfree(lmbf);
@@ -210,6 +276,7 @@ static void amc525_lmbf_remove(struct pci_dev *pdev)
     for (int i = 0; i < MINORS_PER_BOARD; i ++)
         device_destroy(device_class, MKDEV(major, lmbf->minor + i));
     cdev_del(&lmbf->cdev);
+    terminate_board(pdev);
     disable_board(pdev);
     kfree(lmbf);
     release_board(lmbf->board);

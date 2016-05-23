@@ -65,6 +65,8 @@ $(DRIVER_BUILD_DIR):
 insmod: $(DRIVER_KO)
 	cp $^ /tmp
 	sudo insmod /tmp/$(DRIVER_NAME).ko
+	sudo chgrp dcs /dev/amc525_lmbf.*
+	sudo chmod g+rw /dev/amc525_lmbf.*
 .PHONY: insmod
 
 rmmod:
