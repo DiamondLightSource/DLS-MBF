@@ -8,6 +8,7 @@ KERNEL_DIR = /lib/modules/$(shell uname -r)/build
 
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
+TOOLS_BUILD_DIR = $(BUILD_DIR)/tools
 
 export LM_LICENSE_FILE = 2100@diamcslicserv01.dc.diamond.ac.uk
 
@@ -71,6 +72,19 @@ insmod: $(DRIVER_KO)
 
 rmmod:
 	sudo rmmod $(DRIVER_NAME)
+
+
+# ------------------------------------------------------------------------------
+# Tools build
+
+tools: $(TOOLS_BUILD_DIR)
+	$(MAKE) -C $(TOOLS_BUILD_DIR) -f $(TOP)/tools/Makefile \
+            VPATH=$(TOP)/tools TOP=$(TOP)
+
+$(TOOLS_BUILD_DIR):
+	mkdir -p $@
+
+.PHONY: tools
 
 
 # ------------------------------------------------------------------------------
