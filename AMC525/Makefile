@@ -67,3 +67,11 @@ built/top_entity.vhd: constr/signals constr/pins constr/used
 
 top_entity: built/top_entity.vhd
 .PHONY: top_entity
+
+
+load_fpga: amc525_lmbf.bit
+	scp $^ ts-di-lmbf-02:/tmp
+	ssh ts-di-lmbf-02 scp /tmp/$^ root@192.168.40.200:/tmp
+	ssh ts-di-lmbf-02 ssh root@192.168.40.200 \
+            amc525_lbtool fpga_load /tmp/$^
+.PHONY: load_fpga
