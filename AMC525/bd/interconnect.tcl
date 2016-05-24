@@ -730,19 +730,25 @@ CONFIG.pcie_blk_locn {X0Y1} \
 CONFIG.pciebar2axibar_1 {0x10000000} \
 CONFIG.pciebar2axibar_2 {0x0000000040000000} \
 CONFIG.pf0_Use_Class_Code_Lookup_Assistant {false} \
-CONFIG.pf0_bar0_scale {Gigabytes} \
+CONFIG.pf0_bar0_64bit {true} \
+CONFIG.pf0_bar0_scale {Megabytes} \
 CONFIG.pf0_bar0_size {1} \
-CONFIG.pf0_bar1_enabled {true} \
-CONFIG.pf0_bar2_64bit {true} \
-CONFIG.pf0_bar2_enabled {true} \
-CONFIG.pf0_bar2_prefetchable {true} \
+CONFIG.pf0_bar1_enabled {false} \
+CONFIG.pf0_bar2_64bit {false} \
+CONFIG.pf0_bar2_enabled {false} \
+CONFIG.pf0_bar2_prefetchable {false} \
 CONFIG.pf0_bar2_scale {Gigabytes} \
 CONFIG.pf0_bar2_size {4} \
-CONFIG.pf0_class_code {118000} \
-CONFIG.pf0_class_code_base {11} \
+CONFIG.pf0_base_class_menu {Device_was_built_before_Class_Code_definitions_were_finalized} \
+CONFIG.pf0_class_code {000000} \
+CONFIG.pf0_class_code_base {00} \
+CONFIG.pf0_class_code_sub {00} \
 CONFIG.pf0_device_id {7038} \
 CONFIG.pf0_interrupt_pin {NONE} \
 CONFIG.pf0_msi_enabled {false} \
+CONFIG.pf0_msix_cap_pba_bir {BAR_1:0} \
+CONFIG.pf0_msix_cap_table_bir {BAR_1:0} \
+CONFIG.pf0_sub_class_interface_menu {All_currently_implemented_devices_except_VGA-compatible_devices} \
 CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
 CONFIG.pl_link_cap_max_link_width {X8} \
  ] $axi_pcie3
@@ -778,10 +784,10 @@ CONFIG.pl_link_cap_max_link_width {X8} \
   connect_bd_net -net util_vector_logic_1_Res [get_bd_pins interconnect/DRAM_C1_ARESETN] [get_bd_pins memory/c1_aresetn]
 
   # Create address segments
-  create_bd_addr_seg -range 0x00010000 -offset 0x10000000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs axi_gpio/S_AXI/Reg] SEG_axi_gpio_Reg
-  create_bd_addr_seg -range 0x10000000 -offset 0x00000000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs axi_pcie3/S_AXI_CTL/CTL0] SEG_axi_pcie3_CTL0
-  create_bd_addr_seg -range 0x80000000 -offset 0x80000000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
-  create_bd_addr_seg -range 0x08000000 -offset 0x40000000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr
+  create_bd_addr_seg -range 0x00001000 -offset 0x00001000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs axi_gpio/S_AXI/Reg] SEG_axi_gpio_Reg
+  create_bd_addr_seg -range 0x00001000 -offset 0x00000000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs axi_pcie3/S_AXI_CTL/CTL0] SEG_axi_pcie3_CTL0
+  create_bd_addr_seg -range 0x00080000 -offset 0x00080000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
+  create_bd_addr_seg -range 0x00040000 -offset 0x00040000 [get_bd_addr_spaces axi_pcie3/M_AXI] [get_bd_addr_segs memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr
 
 
   # Restore current instance
