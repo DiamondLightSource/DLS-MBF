@@ -58,6 +58,7 @@ runvivado:
 amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
 	ln -sfn $(SRCDIR)/vhd $(SRCDIR)/constr .
 	mkdir -p reports checkpoints
+	rm -rf amc525_lmbf
 	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_top.tcl
 
 

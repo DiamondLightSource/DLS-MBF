@@ -1,10 +1,4 @@
-# Open project or create if necessary.
-if [file isfile amc525_lmbf/amc525_lmbf.xpr] {
-    open_project amc525_lmbf/amc525_lmbf.xpr
-} else {
-    create_project -force amc525_lmbf amc525_lmbf -part xc7vx690tffg1761-2
-}
-
+create_project -force amc525_lmbf amc525_lmbf -part xc7vx690tffg1761-2
 
 set_property target_language VHDL [current_project]
 set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
