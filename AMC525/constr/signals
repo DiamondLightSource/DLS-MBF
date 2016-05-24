@@ -7,7 +7,7 @@ nWD                         out     -- Reset board payload ???
 -- Miscellaneous signals
 FPGA_UART_SIN               in      -- UART input when no P2040 present
 FPGA_UART_SOUT              out     -- UART output when no P2040
-ULED[0..3]                  out     -- Front panel LEDs
+ULED[3..0]                  out     -- Front panel LEDs
 nTHERM                      in      -- status input ???
 nWP                         in      -- status input ???
 nRDWR                       in      -- CPU GPIO 15

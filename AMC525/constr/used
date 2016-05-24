@@ -1,5 +1,5 @@
 -- We'll pass some clocks through to the front panel LEDs
-ULED[0..3]              out
+ULED[3..0]              out
 
 -- Backplane clocking and reset
 nCOLDRST                in
