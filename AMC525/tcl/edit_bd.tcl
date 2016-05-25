@@ -5,6 +5,7 @@ proc save_bd {} {
     global argv
     validate_bd_design
     write_bd_tcl -bd_folder . -exclude_layout -force [lindex $argv 0]
+    save_bd_design
 }
 
 open_project edit_bd/edit_bd.xpr
