@@ -11,6 +11,7 @@
 #include <linux/delay.h>
 
 #include "error.h"
+#include "amc525_lmbf_device.h"
 
 
 #define DEVICE_NAME     "amc525_lmbf"
@@ -61,8 +62,23 @@ static int lmbf_reg_map(struct file *file, struct vm_area_struct *vma)
 }
 
 
+static long lmbf_reg_ioctl(
+    struct file *file, unsigned int cmd, unsigned long arg)
+{
+    struct amc525_lmbf *lmbf = file->private_data;
+    switch (cmd)
+    {
+        case LMBF_MAP_SIZE:
+            return lmbf->reg_length;
+        default:
+            return -EINVAL;
+    }
+}
+
+
 static struct file_operations lmbf_reg_fops = {
     .owner = THIS_MODULE,
+    .unlocked_ioctl = lmbf_reg_ioctl,
     .mmap = lmbf_reg_map,
 };
 

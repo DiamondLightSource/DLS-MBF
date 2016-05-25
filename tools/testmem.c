@@ -10,7 +10,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/ioctl.h>
 
+#include "amc525_lmbf_device.h"
 #include "error.h"
 
 
@@ -22,7 +24,7 @@
 /* Device mapping. */
 
 static int map_file = -1;
-static size_t register_map_size = 1024 * 1024;
+static size_t register_map_size;
 static void *register_map;
 
 
@@ -31,8 +33,8 @@ static error__t initialise_hardware(void)
     return
         TEST_IO_(map_file = open(DEVICE, O_RDWR | O_SYNC),
             "Unable to open device " DEVICE)  ?:
-//         TEST_IO(register_map_size =
-//             (size_t) ioctl(map_file, LMBF_MAP_SIZE))  ?:
+        TEST_IO(register_map_size =
+            (size_t) ioctl(map_file, LMBF_MAP_SIZE))  ?:
         TEST_IO(register_map = mmap(
             0, register_map_size,
             PROT_READ | PROT_WRITE, MAP_SHARED, map_file, 0));
