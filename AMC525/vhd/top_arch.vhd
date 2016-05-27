@@ -92,6 +92,73 @@ begin
         CLK533MHZ0_clk_n => CLK533MHZ0_N,
 
         -- Reference timing clock for DDR3 controller
-        CLK100MHZ => clk100mhz_bufg
+        CLK100MHZ => clk100mhz_bufg,
+
+        -- AXI-Lite register slave interface
+        M_DSP_REGS_araddr => open,
+        M_DSP_REGS_arprot => open,
+        M_DSP_REGS_arready => '1',
+        M_DSP_REGS_arvalid => open,
+        M_DSP_REGS_awaddr => open,
+        M_DSP_REGS_awprot => open,
+        M_DSP_REGS_awready => '1',
+        M_DSP_REGS_awvalid => open,
+        M_DSP_REGS_bready => open,
+        M_DSP_REGS_bresp => "10",
+        M_DSP_REGS_bvalid => '1',
+        M_DSP_REGS_rdata => (others => '0'),
+        M_DSP_REGS_rready => open,
+        M_DSP_REGS_rresp => "10",
+        M_DSP_REGS_rvalid => '1',
+        M_DSP_REGS_wdata => open,
+        M_DSP_REGS_wready => '1',
+        M_DSP_REGS_wstrb => open,
+        M_DSP_REGS_wvalid => open,
+
+        -- AXI master interface to DDR block 0
+        S_DSP_DDR0_awaddr => (others => '0'),
+        S_DSP_DDR0_awburst => (others => '0'),
+        S_DSP_DDR0_awcache => (others => '0'),
+        S_DSP_DDR0_awlen => (others => '0'),
+        S_DSP_DDR0_awlock => (others => '0'),
+        S_DSP_DDR0_awprot => (others => '0'),
+        S_DSP_DDR0_awqos => (others => '0'),
+        S_DSP_DDR0_awready => open,
+        S_DSP_DDR0_awregion => (others => '0'),
+        S_DSP_DDR0_awsize => (others => '0'),
+        S_DSP_DDR0_awvalid => '0',
+        S_DSP_DDR0_bready => '0',
+        S_DSP_DDR0_bresp => open,
+        S_DSP_DDR0_bvalid => open,
+        S_DSP_DDR0_wdata => (others => '0'),
+        S_DSP_DDR0_wlast => '0',
+        S_DSP_DDR0_wready => open,
+        S_DSP_DDR0_wstrb => (others => '0'),
+        S_DSP_DDR0_wvalid => '0',
+
+        -- AXI master interface to DDR block 1
+        S_DSP_DDR1_awaddr => (others => '0'),
+        S_DSP_DDR1_awburst => (others => '0'),
+        S_DSP_DDR1_awcache => (others => '0'),
+        S_DSP_DDR1_awlen => (others => '0'),
+        S_DSP_DDR1_awlock => (others => '0'),
+        S_DSP_DDR1_awprot => (others => '0'),
+        S_DSP_DDR1_awqos => (others => '0'),
+        S_DSP_DDR1_awready => open,
+        S_DSP_DDR1_awregion => (others => '0'),
+        S_DSP_DDR1_awsize => (others => '0'),
+        S_DSP_DDR1_awvalid => '0',
+        S_DSP_DDR1_bready => '0',
+        S_DSP_DDR1_bresp => open,
+        S_DSP_DDR1_bvalid => open,
+        S_DSP_DDR1_wdata => (others => '0'),
+        S_DSP_DDR1_wlast => '0',
+        S_DSP_DDR1_wready => open,
+        S_DSP_DDR1_wstrb => (others => '0'),
+        S_DSP_DDR1_wvalid => '0',
+
+        -- DSP interface clock, running at half RF frequency
+        DSP_CLK => '0',
+        DSP_RESETN => '0'
     );
 end;
