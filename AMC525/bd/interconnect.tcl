@@ -1084,14 +1084,14 @@ CONFIG.en_axi_slave_if {true} \
 CONFIG.pcie_blk_locn {X0Y1} \
 CONFIG.pciebar2axibar_0 {0x0000100000000000} \
 CONFIG.pciebar2axibar_1 {0x0000000000000000} \
-CONFIG.pciebar2axibar_2 {0x0000000000000000} \
+CONFIG.pciebar2axibar_2 {0x0000200000000000} \
 CONFIG.pf0_Use_Class_Code_Lookup_Assistant {false} \
 CONFIG.pf0_bar0_64bit {true} \
 CONFIG.pf0_bar0_scale {Megabytes} \
 CONFIG.pf0_bar0_size {1} \
 CONFIG.pf0_bar1_enabled {false} \
-CONFIG.pf0_bar2_64bit {false} \
-CONFIG.pf0_bar2_enabled {false} \
+CONFIG.pf0_bar2_64bit {true} \
+CONFIG.pf0_bar2_enabled {true} \
 CONFIG.pf0_bar2_prefetchable {false} \
 CONFIG.pf0_bar2_scale {Kilobytes} \
 CONFIG.pf0_bar2_size {4} \
@@ -1139,7 +1139,7 @@ CONFIG.pl_link_cap_max_link_width {X8} \
 
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x100000010000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x100000030000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x200000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x100000020000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs axi_gpio/S_AXI/Reg] SEG_axi_gpio_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x100000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs axi_pcie3_bridge/S_AXI_CTL/CTL0] SEG_axi_pcie3_bridge_CTL0
   create_bd_addr_seg -range 0x800000000000 -offset 0x00000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs axi_pcie3_bridge/S_AXI/BAR0] SEG_axi_pcie3_bridge_BAR0
