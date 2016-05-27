@@ -11,15 +11,20 @@ architecture top of top is
     signal fclka : std_logic;
     signal clk100mhz : std_logic;
     signal clk100mhz_bufg : std_logic;
+    signal clk125mhz : std_logic;
+    signal clk125mhz_bufg : std_logic;
+    signal clk250mhz : std_logic;
+    signal clk250mhz_fb : std_logic;
+    signal clk250mhz_bufg : std_logic;
+    signal dsp_reset_n : std_logic;
 
 begin
     -- Reference clock for MGT
-    fclka_inst : IBUFDS_GTE2
-    generic map (
+    fclka_inst : IBUFDS_GTE2 generic map (
         CLKCM_CFG    => TRUE,
         CLKRCV_TRST  => TRUE,
-        CLKSWING_CFG => "11" )
-    port map (
+        CLKSWING_CFG => "11"
+    ) port map (
          O      => fclka,
          ODIV2  => open,
          CEB    => '0',
@@ -28,20 +33,64 @@ begin
     );
 
     -- Reference clock for DDR timing
-    clk100mhz_inst : IBUFDS_GTE2
-    generic map (
+    clk100mhz_inst : IBUFDS_GTE2 generic map (
         CLKCM_CFG    => TRUE,
         CLKRCV_TRST  => TRUE,
-        CLKSWING_CFG => "11" )
-    port map (
-         O      => clk100mhz,
-         ODIV2  => open,
-         CEB    => '0',
-         I      => CLK100MHZ1_P,
-         IB     => CLK100MHZ1_N
+        CLKSWING_CFG => "11"
+    ) port map (
+        ODIV2   => open,
+        CEB     => '0',
+        I       => CLK100MHZ1_P,
+        IB      => CLK100MHZ1_N,
+        O       => clk100mhz
     );
-    clk100mhz_bufg_inst : BUFG
-    port map (I => clk100mhz, O => clk100mhz_bufg);
+    clk100mhz_bufg_inst : BUFG port map (
+        I => clk100mhz,
+        O => clk100mhz_bufg
+    );
+
+    -- Dummy DSP 250 MHz clock
+    clk125mhz_inst : IBUFDS_GTE2 generic map (
+        CLKCM_CFG    => TRUE,
+        CLKRCV_TRST  => TRUE,
+        CLKSWING_CFG => "11"
+    ) port map (
+        ODIV2   => open,
+        CEB     => '0',
+        I       => CLK125MHZ0_P,
+        IB      => CLK125MHZ0_N,
+        O       => clk125mhz
+    );
+    clk125mhz_bufg_inst : BUFG port map (
+        I => clk125mhz,
+        O => clk125mhz_bufg
+    );
+    -- Note: internal PLL must run at frequency in range 800MHz..1.86GHz
+    clk250mhz_inst : PLLE2_BASE generic map (
+        CLKIN1_PERIOD => 8.0,   -- 8ns period for 125 MHz input clock
+        CLKFBOUT_MULT => 8,     -- PLL runs at 1000 MHz
+        CLKOUT0_DIVIDE => 4     -- Target clock at 250 MHz
+    ) port map (
+        -- Inputs
+        CLKIN1  => clk125mhz_bufg,
+        CLKFBIN => clk250mhz_fb,
+        RST     => nCOLDRST,
+        PWRDWN  => '0',
+        -- Outputs
+        CLKOUT0 => clk250mhz,
+        CLKOUT1 => open,
+        CLKOUT2 => open,
+        CLKOUT3 => open,
+        CLKOUT4 => open,
+        CLKOUT5 => open,
+        CLKFBOUT => clk250mhz_fb,
+        LOCKED  => dsp_reset_n
+    );
+    clk250mhz_bufg_inst : BUFG port map (
+        I => clk250mhz,
+        O => clk250mhz_bufg
+    );
+
 
     -- Wire up the interconnect
     interconnect_inst : entity work.interconnect_wrapper port map (
@@ -158,7 +207,7 @@ begin
         S_DSP_DDR1_wvalid => '0',
 
         -- DSP interface clock, running at half RF frequency
-        DSP_CLK => '0',
-        DSP_RESETN => '0'
+        DSP_CLK => clk250mhz_bufg,
+        DSP_RESETN => dsp_reset_n
     );
 end;
