@@ -309,7 +309,7 @@ proc write_mig_file_interconnect_mig_7series_0_0 { str_mig_prj_filepath } {
    puts $mig_prj_file {            <C0_C_RD_WR_ARB_ALGORITHM>WRITE_PRIORITY_REG</C0_C_RD_WR_ARB_ALGORITHM>}
    puts $mig_prj_file {            <C0_S_AXI_ADDR_WIDTH>31</C0_S_AXI_ADDR_WIDTH>}
    puts $mig_prj_file {            <C0_S_AXI_DATA_WIDTH>256</C0_S_AXI_DATA_WIDTH>}
-   puts $mig_prj_file {            <C0_S_AXI_ID_WIDTH>2</C0_S_AXI_ID_WIDTH>}
+   puts $mig_prj_file {            <C0_S_AXI_ID_WIDTH>1</C0_S_AXI_ID_WIDTH>}
    puts $mig_prj_file {            <C0_S_AXI_SUPPORTS_NARROW_BURST>0</C0_S_AXI_SUPPORTS_NARROW_BURST>}
    puts $mig_prj_file {        </AXIParameters>}
    puts $mig_prj_file {    </Controller>}
@@ -418,7 +418,7 @@ proc write_mig_file_interconnect_mig_7series_0_0 { str_mig_prj_filepath } {
    puts $mig_prj_file {            <C1_C_RD_WR_ARB_ALGORITHM>WRITE_PRIORITY_REG</C1_C_RD_WR_ARB_ALGORITHM>}
    puts $mig_prj_file {            <C1_S_AXI_ADDR_WIDTH>27</C1_S_AXI_ADDR_WIDTH>}
    puts $mig_prj_file {            <C1_S_AXI_DATA_WIDTH>64</C1_S_AXI_DATA_WIDTH>}
-   puts $mig_prj_file {            <C1_S_AXI_ID_WIDTH>2</C1_S_AXI_ID_WIDTH>}
+   puts $mig_prj_file {            <C1_S_AXI_ID_WIDTH>1</C1_S_AXI_ID_WIDTH>}
    puts $mig_prj_file {            <C1_S_AXI_SUPPORTS_NARROW_BURST>0</C1_S_AXI_SUPPORTS_NARROW_BURST>}
    puts $mig_prj_file {        </AXIParameters>}
    puts $mig_prj_file {    </Controller>}
@@ -434,446 +434,6 @@ proc write_mig_file_interconnect_mig_7series_0_0 { str_mig_prj_filepath } {
 # DESIGN PROCs
 ##################################################################
 
-
-# Hierarchical cell: wdma_couplers
-proc create_hier_cell_wdma_couplers { parentCell nameHier } {
-
-  variable script_folder
-
-  if { $parentCell eq "" || $nameHier eq "" } {
-     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_wdma_couplers() - Empty argument(s)!"}
-     return
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
-  # Create cell and set as current instance
-  set hier_obj [create_bd_cell -type hier $nameHier]
-  current_bd_instance $hier_obj
-
-  # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
-
-  # Create pins
-  create_bd_pin -dir I -type clk S_ACLK
-  create_bd_pin -dir I -type rst S_ARESETN
-
-  # Create instance: m02_data_fifo, and set properties
-  set m02_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 m02_data_fifo ]
-  set_property -dict [ list \
-CONFIG.READ_FIFO_DEPTH {0} \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
- ] $m02_data_fifo
-
-  # Create interface connections
-  connect_bd_intf_net -intf_net m02_couplers_to_m02_data_fifo [get_bd_intf_pins S_AXI] [get_bd_intf_pins m02_data_fifo/S_AXI]
-  connect_bd_intf_net -intf_net m02_data_fifo_M_AXI [get_bd_intf_pins M_AXI] [get_bd_intf_pins m02_data_fifo/M_AXI]
-
-  # Create port connections
-  connect_bd_net -net S_ACLK_1 [get_bd_pins S_ACLK] [get_bd_pins m02_data_fifo/aclk]
-  connect_bd_net -net S_ARESETN_1 [get_bd_pins S_ARESETN] [get_bd_pins m02_data_fifo/aresetn]
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-}
-
-# Hierarchical cell: sdma_couplers
-proc create_hier_cell_sdma_couplers { parentCell nameHier } {
-
-  variable script_folder
-
-  if { $parentCell eq "" || $nameHier eq "" } {
-     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_sdma_couplers() - Empty argument(s)!"}
-     return
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
-  # Create cell and set as current instance
-  set hier_obj [create_bd_cell -type hier $nameHier]
-  current_bd_instance $hier_obj
-
-  # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
-
-  # Create pins
-  create_bd_pin -dir I -type clk M_ACLK
-  create_bd_pin -dir I -type rst M_ARESETN
-
-  # Create instance: s02_data_fifo, and set properties
-  set s02_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 s02_data_fifo ]
-
-  # Create interface connections
-  connect_bd_intf_net -intf_net S_AXI_1 [get_bd_intf_pins S_AXI] [get_bd_intf_pins s02_data_fifo/S_AXI]
-  connect_bd_intf_net -intf_net s02_data_fifo_to_s02_couplers [get_bd_intf_pins M_AXI] [get_bd_intf_pins s02_data_fifo/M_AXI]
-
-  # Create port connections
-  connect_bd_net -net M_ACLK_1 [get_bd_pins M_ACLK] [get_bd_pins s02_data_fifo/aclk]
-  connect_bd_net -net M_ARESETN_1 [get_bd_pins M_ARESETN] [get_bd_pins s02_data_fifo/aresetn]
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-}
-
-# Hierarchical cell: dsp1_couplers
-proc create_hier_cell_dsp1_couplers { parentCell nameHier } {
-
-  variable script_folder
-
-  if { $parentCell eq "" || $nameHier eq "" } {
-     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_dsp1_couplers() - Empty argument(s)!"}
-     return
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
-  # Create cell and set as current instance
-  set hier_obj [create_bd_cell -type hier $nameHier]
-  current_bd_instance $hier_obj
-
-  # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
-
-  # Create pins
-  create_bd_pin -dir I -type clk M_ACLK
-  create_bd_pin -dir I -type rst M_ARESETN
-  create_bd_pin -dir I -type clk S_ACLK
-  create_bd_pin -dir I -type rst S_ARESETN
-
-  # Create instance: auto_cc, and set properties
-  set auto_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 auto_cc ]
-  set_property -dict [ list \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
- ] $auto_cc
-
-  # Create instance: auto_us, and set properties
-  set auto_us [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dwidth_converter:2.1 auto_us ]
-  set_property -dict [ list \
-CONFIG.MI_DATA_WIDTH {256} \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
-CONFIG.SI_DATA_WIDTH {64} \
- ] $auto_us
-
-  # Create instance: s01_data_fifo, and set properties
-  set s01_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 s01_data_fifo ]
-  set_property -dict [ list \
-CONFIG.READ_FIFO_DEPTH {0} \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
- ] $s01_data_fifo
-
-  # Create instance: s01_regslice, and set properties
-  set s01_regslice [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 s01_regslice ]
-  set_property -dict [ list \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
- ] $s01_regslice
-
-  # Create interface connections
-  connect_bd_intf_net -intf_net auto_cc_to_s01_data_fifo [get_bd_intf_pins auto_cc/M_AXI] [get_bd_intf_pins s01_data_fifo/S_AXI]
-  connect_bd_intf_net -intf_net auto_us_to_auto_cc [get_bd_intf_pins auto_cc/S_AXI] [get_bd_intf_pins auto_us/M_AXI]
-  connect_bd_intf_net -intf_net s01_couplers_to_s01_regslice [get_bd_intf_pins S_AXI] [get_bd_intf_pins s01_regslice/S_AXI]
-  connect_bd_intf_net -intf_net s01_data_fifo_to_s01_couplers [get_bd_intf_pins M_AXI] [get_bd_intf_pins s01_data_fifo/M_AXI]
-  connect_bd_intf_net -intf_net s01_regslice_to_auto_us [get_bd_intf_pins auto_us/S_AXI] [get_bd_intf_pins s01_regslice/M_AXI]
-
-  # Create port connections
-  connect_bd_net -net M_ACLK_1 [get_bd_pins M_ACLK] [get_bd_pins auto_cc/m_axi_aclk] [get_bd_pins s01_data_fifo/aclk]
-  connect_bd_net -net M_ARESETN_1 [get_bd_pins M_ARESETN] [get_bd_pins auto_cc/m_axi_aresetn] [get_bd_pins s01_data_fifo/aresetn]
-  connect_bd_net -net S_ACLK_1 [get_bd_pins S_ACLK] [get_bd_pins auto_cc/s_axi_aclk] [get_bd_pins auto_us/s_axi_aclk] [get_bd_pins s01_regslice/aclk]
-  connect_bd_net -net S_ARESETN_1 [get_bd_pins S_ARESETN] [get_bd_pins auto_cc/s_axi_aresetn] [get_bd_pins auto_us/s_axi_aresetn] [get_bd_pins s01_regslice/aresetn]
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-}
-
-# Hierarchical cell: dsp0_couplers
-proc create_hier_cell_dsp0_couplers { parentCell nameHier } {
-
-  variable script_folder
-
-  if { $parentCell eq "" || $nameHier eq "" } {
-     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_dsp0_couplers() - Empty argument(s)!"}
-     return
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
-  # Create cell and set as current instance
-  set hier_obj [create_bd_cell -type hier $nameHier]
-  current_bd_instance $hier_obj
-
-  # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
-
-  # Create pins
-  create_bd_pin -dir I -type clk M_ACLK
-  create_bd_pin -dir I -type rst M_ARESETN
-  create_bd_pin -dir I -type clk S_ACLK
-  create_bd_pin -dir I -type rst S_ARESETN
-
-  # Create instance: auto_cc, and set properties
-  set auto_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 auto_cc ]
-  set_property -dict [ list \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
- ] $auto_cc
-
-  # Create instance: auto_us, and set properties
-  set auto_us [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dwidth_converter:2.1 auto_us ]
-  set_property -dict [ list \
-CONFIG.MI_DATA_WIDTH {256} \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
-CONFIG.SI_DATA_WIDTH {64} \
- ] $auto_us
-
-  # Create instance: s00_data_fifo, and set properties
-  set s00_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 s00_data_fifo ]
-  set_property -dict [ list \
-CONFIG.READ_FIFO_DEPTH {0} \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
- ] $s00_data_fifo
-
-  # Create instance: s00_regslice, and set properties
-  set s00_regslice [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 s00_regslice ]
-  set_property -dict [ list \
-CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
- ] $s00_regslice
-
-  # Create interface connections
-  connect_bd_intf_net -intf_net auto_cc_to_s00_data_fifo [get_bd_intf_pins auto_cc/M_AXI] [get_bd_intf_pins s00_data_fifo/S_AXI]
-  connect_bd_intf_net -intf_net auto_us_to_auto_cc [get_bd_intf_pins auto_cc/S_AXI] [get_bd_intf_pins auto_us/M_AXI]
-  connect_bd_intf_net -intf_net s00_couplers_to_s00_regslice [get_bd_intf_pins S_AXI] [get_bd_intf_pins s00_regslice/S_AXI]
-  connect_bd_intf_net -intf_net s00_data_fifo_to_s00_couplers [get_bd_intf_pins M_AXI] [get_bd_intf_pins s00_data_fifo/M_AXI]
-  connect_bd_intf_net -intf_net s00_regslice_to_auto_us [get_bd_intf_pins auto_us/S_AXI] [get_bd_intf_pins s00_regslice/M_AXI]
-
-  # Create port connections
-  connect_bd_net -net M_ACLK_1 [get_bd_pins M_ACLK] [get_bd_pins auto_cc/m_axi_aclk] [get_bd_pins s00_data_fifo/aclk]
-  connect_bd_net -net M_ARESETN_1 [get_bd_pins M_ARESETN] [get_bd_pins auto_cc/m_axi_aresetn] [get_bd_pins s00_data_fifo/aresetn]
-  connect_bd_net -net S_ACLK_1 [get_bd_pins S_ACLK] [get_bd_pins auto_cc/s_axi_aclk] [get_bd_pins auto_us/s_axi_aclk] [get_bd_pins s00_regslice/aclk]
-  connect_bd_net -net S_ARESETN_1 [get_bd_pins S_ARESETN] [get_bd_pins auto_cc/s_axi_aresetn] [get_bd_pins auto_us/s_axi_aresetn] [get_bd_pins s00_regslice/aresetn]
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-}
-
-# Hierarchical cell: ddr1_couplers
-proc create_hier_cell_ddr1_couplers { parentCell nameHier } {
-
-  variable script_folder
-
-  if { $parentCell eq "" || $nameHier eq "" } {
-     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_ddr1_couplers() - Empty argument(s)!"}
-     return
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
-  # Create cell and set as current instance
-  set hier_obj [create_bd_cell -type hier $nameHier]
-  current_bd_instance $hier_obj
-
-  # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
-
-  # Create pins
-  create_bd_pin -dir I -type rst DDR1_ARESETN
-  create_bd_pin -dir I -type clk M_ACLK
-  create_bd_pin -dir I -type clk S_ACLK
-  create_bd_pin -dir I -type rst S_ARESETN
-
-  # Create instance: auto_cc, and set properties
-  set auto_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 auto_cc ]
-
-  # Create instance: auto_ds, and set properties
-  set auto_ds [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dwidth_converter:2.1 auto_ds ]
-  set_property -dict [ list \
-CONFIG.MI_DATA_WIDTH {64} \
-CONFIG.SI_DATA_WIDTH {256} \
- ] $auto_ds
-
-  # Create instance: m01_data_fifo, and set properties
-  set m01_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 m01_data_fifo ]
-
-  # Create instance: m01_regslice, and set properties
-  set m01_regslice [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 m01_regslice ]
-
-  # Create interface connections
-  connect_bd_intf_net -intf_net auto_cc_to_auto_ds [get_bd_intf_pins auto_cc/M_AXI] [get_bd_intf_pins auto_ds/S_AXI]
-  connect_bd_intf_net -intf_net auto_ds_to_m01_regslice [get_bd_intf_pins auto_ds/M_AXI] [get_bd_intf_pins m01_regslice/S_AXI]
-  connect_bd_intf_net -intf_net m01_couplers_to_m01_data_fifo [get_bd_intf_pins S_AXI] [get_bd_intf_pins m01_data_fifo/S_AXI]
-  connect_bd_intf_net -intf_net m01_data_fifo_to_auto_cc [get_bd_intf_pins auto_cc/S_AXI] [get_bd_intf_pins m01_data_fifo/M_AXI]
-  connect_bd_intf_net -intf_net m01_regslice_to_m01_couplers [get_bd_intf_pins M_AXI] [get_bd_intf_pins m01_regslice/M_AXI]
-
-  # Create port connections
-  connect_bd_net -net M_ACLK_1 [get_bd_pins M_ACLK] [get_bd_pins auto_cc/m_axi_aclk] [get_bd_pins auto_ds/s_axi_aclk] [get_bd_pins m01_regslice/aclk]
-  connect_bd_net -net S_ACLK_1 [get_bd_pins S_ACLK] [get_bd_pins auto_cc/s_axi_aclk] [get_bd_pins m01_data_fifo/aclk]
-  connect_bd_net -net S_ARESETN_1 [get_bd_pins S_ARESETN] [get_bd_pins auto_cc/s_axi_aresetn] [get_bd_pins m01_data_fifo/aresetn]
-  connect_bd_net -net m_axi_aresetn_1 [get_bd_pins DDR1_ARESETN] [get_bd_pins auto_cc/m_axi_aresetn] [get_bd_pins auto_ds/s_axi_aresetn] [get_bd_pins m01_regslice/aresetn]
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-}
-
-# Hierarchical cell: ddr0_couplers
-proc create_hier_cell_ddr0_couplers { parentCell nameHier } {
-
-  variable script_folder
-
-  if { $parentCell eq "" || $nameHier eq "" } {
-     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_ddr0_couplers() - Empty argument(s)!"}
-     return
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
-  # Create cell and set as current instance
-  set hier_obj [create_bd_cell -type hier $nameHier]
-  current_bd_instance $hier_obj
-
-  # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
-
-  # Create pins
-  create_bd_pin -dir I -type rst DDR0_ARESETN
-  create_bd_pin -dir I -type clk M_ACLK
-  create_bd_pin -dir I -type clk S_ACLK
-  create_bd_pin -dir I -type rst S_ARESETN
-
-  # Create instance: auto_cc, and set properties
-  set auto_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 auto_cc ]
-
-  # Create instance: m00_data_fifo, and set properties
-  set m00_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 m00_data_fifo ]
-
-  # Create instance: m00_regslice, and set properties
-  set m00_regslice [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 m00_regslice ]
-
-  # Create interface connections
-  connect_bd_intf_net -intf_net auto_cc_to_m00_regslice [get_bd_intf_pins auto_cc/M_AXI] [get_bd_intf_pins m00_regslice/S_AXI]
-  connect_bd_intf_net -intf_net m00_couplers_to_m00_data_fifo [get_bd_intf_pins S_AXI] [get_bd_intf_pins m00_data_fifo/S_AXI]
-  connect_bd_intf_net -intf_net m00_data_fifo_to_auto_cc [get_bd_intf_pins auto_cc/S_AXI] [get_bd_intf_pins m00_data_fifo/M_AXI]
-  connect_bd_intf_net -intf_net m00_regslice_to_m00_couplers [get_bd_intf_pins M_AXI] [get_bd_intf_pins m00_regslice/M_AXI]
-
-  # Create port connections
-  connect_bd_net -net M_ACLK_1 [get_bd_pins M_ACLK] [get_bd_pins auto_cc/m_axi_aclk] [get_bd_pins m00_regslice/aclk]
-  connect_bd_net -net S_ACLK_1 [get_bd_pins S_ACLK] [get_bd_pins auto_cc/s_axi_aclk] [get_bd_pins m00_data_fifo/aclk]
-  connect_bd_net -net S_ARESETN_1 [get_bd_pins S_ARESETN] [get_bd_pins auto_cc/s_axi_aresetn] [get_bd_pins m00_data_fifo/aresetn]
-  connect_bd_net -net m_axi_aresetn_1 [get_bd_pins DDR0_ARESETN] [get_bd_pins auto_cc/m_axi_aresetn] [get_bd_pins m00_regslice/aresetn]
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-}
 
 # Hierarchical cell: memory_interconnect
 proc create_hier_cell_memory_interconnect { parentCell nameHier } {
@@ -927,73 +487,126 @@ proc create_hier_cell_memory_interconnect { parentCell nameHier } {
   create_bd_pin -dir I -type rst DSP_ARESETN
   create_bd_pin -dir I -type clk DSP_CLK
 
-  # Create instance: ddr0_couplers
-  create_hier_cell_ddr0_couplers $hier_obj ddr0_couplers
-
-  # Create instance: ddr1_couplers
-  create_hier_cell_ddr1_couplers $hier_obj ddr1_couplers
-
-  # Create instance: dsp0_couplers
-  create_hier_cell_dsp0_couplers $hier_obj dsp0_couplers
-
-  # Create instance: dsp1_couplers
-  create_hier_cell_dsp1_couplers $hier_obj dsp1_couplers
-
-  # Create instance: sdma_couplers
-  create_hier_cell_sdma_couplers $hier_obj sdma_couplers
-
-  # Create instance: wdma_couplers
-  create_hier_cell_wdma_couplers $hier_obj wdma_couplers
-
-  # Create instance: xbar, and set properties
-  set xbar [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_crossbar:2.1 xbar ]
+  # Create instance: ddr0_crossbar, and set properties
+  set ddr0_crossbar [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_crossbar:2.1 ddr0_crossbar ]
   set_property -dict [ list \
 CONFIG.M00_S00_READ_CONNECTIVITY {0} \
 CONFIG.M00_S00_WRITE_CONNECTIVITY {1} \
+CONFIG.M00_S01_READ_CONNECTIVITY {1} \
+CONFIG.M00_S01_WRITE_CONNECTIVITY {0} \
+CONFIG.NUM_MI {1} \
+CONFIG.NUM_SI {2} \
+ ] $ddr0_crossbar
+
+  # Create instance: ddr0_data_fifo, and set properties
+  set ddr0_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 ddr0_data_fifo ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
+ ] $ddr0_data_fifo
+
+  # Create instance: ddr1_crossbar, and set properties
+  set ddr1_crossbar [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_crossbar:2.1 ddr1_crossbar ]
+  set_property -dict [ list \
+CONFIG.M00_S00_READ_CONNECTIVITY {0} \
+CONFIG.M00_S00_WRITE_CONNECTIVITY {1} \
+CONFIG.M00_S01_READ_CONNECTIVITY {1} \
+CONFIG.M00_S01_WRITE_CONNECTIVITY {0} \
+CONFIG.NUM_MI {1} \
+CONFIG.NUM_SI {2} \
+ ] $ddr1_crossbar
+
+  # Create instance: ddr1_data_fifo, and set properties
+  set ddr1_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 ddr1_data_fifo ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
+ ] $ddr1_data_fifo
+
+  # Create instance: dma_data_fifo, and set properties
+  set dma_data_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_data_fifo:2.1 dma_data_fifo ]
+
+  # Create instance: dma_ddr0_cc, and set properties
+  set dma_ddr0_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 dma_ddr0_cc ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {READ_ONLY} \
+ ] $dma_ddr0_cc
+
+  # Create instance: dma_ddr1_cc, and set properties
+  set dma_ddr1_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 dma_ddr1_cc ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {READ_ONLY} \
+ ] $dma_ddr1_cc
+
+  # Create instance: dma_ddr1_ds, and set properties
+  set dma_ddr1_ds [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dwidth_converter:2.1 dma_ddr1_ds ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {READ_ONLY} \
+ ] $dma_ddr1_ds
+
+  # Create instance: dma_xbar, and set properties
+  set dma_xbar [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_crossbar:2.1 dma_xbar ]
+  set_property -dict [ list \
+CONFIG.M00_S00_READ_CONNECTIVITY {1} \
+CONFIG.M00_S00_WRITE_CONNECTIVITY {0} \
 CONFIG.M00_S01_READ_CONNECTIVITY {0} \
 CONFIG.M00_S01_WRITE_CONNECTIVITY {0} \
 CONFIG.M00_S02_READ_CONNECTIVITY {1} \
 CONFIG.M00_S02_WRITE_CONNECTIVITY {0} \
-CONFIG.M01_S00_READ_CONNECTIVITY {0} \
+CONFIG.M01_S00_READ_CONNECTIVITY {1} \
 CONFIG.M01_S00_WRITE_CONNECTIVITY {0} \
 CONFIG.M01_S01_READ_CONNECTIVITY {0} \
 CONFIG.M01_S01_WRITE_CONNECTIVITY {1} \
 CONFIG.M01_S02_READ_CONNECTIVITY {1} \
 CONFIG.M01_S02_WRITE_CONNECTIVITY {0} \
 CONFIG.M02_S00_READ_CONNECTIVITY {0} \
-CONFIG.M02_S00_WRITE_CONNECTIVITY {0} \
+CONFIG.M02_S00_WRITE_CONNECTIVITY {1} \
 CONFIG.M02_S01_READ_CONNECTIVITY {0} \
 CONFIG.M02_S01_WRITE_CONNECTIVITY {0} \
 CONFIG.M02_S02_READ_CONNECTIVITY {0} \
 CONFIG.M02_S02_WRITE_CONNECTIVITY {1} \
 CONFIG.NUM_MI {3} \
-CONFIG.NUM_SI {3} \
+CONFIG.NUM_SI {1} \
 CONFIG.STRATEGY {0} \
- ] $xbar
+ ] $dma_xbar
+
+  # Create instance: dsp_ddr0_cc, and set properties
+  set dsp_ddr0_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 dsp_ddr0_cc ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
+ ] $dsp_ddr0_cc
+
+  # Create instance: dsp_ddr1_cc, and set properties
+  set dsp_ddr1_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 dsp_ddr1_cc ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
+ ] $dsp_ddr1_cc
 
   # Create interface connections
-  connect_bd_intf_net -intf_net axi_interconnect_0_to_s00_couplers [get_bd_intf_pins S_DSP_DDR0] [get_bd_intf_pins dsp0_couplers/S_AXI]
-  connect_bd_intf_net -intf_net axi_interconnect_0_to_s01_couplers [get_bd_intf_pins S_DSP_DDR1] [get_bd_intf_pins dsp1_couplers/S_AXI]
-  connect_bd_intf_net -intf_net axi_interconnect_0_to_s02_couplers [get_bd_intf_pins S_DMA] [get_bd_intf_pins sdma_couplers/S_AXI]
-  connect_bd_intf_net -intf_net m00_couplers_to_axi_interconnect_0 [get_bd_intf_pins M_DDR0] [get_bd_intf_pins ddr0_couplers/M_AXI]
-  connect_bd_intf_net -intf_net m01_couplers_to_axi_interconnect_0 [get_bd_intf_pins M_DDR1] [get_bd_intf_pins ddr1_couplers/M_AXI]
-  connect_bd_intf_net -intf_net m02_couplers_to_axi_interconnect_0 [get_bd_intf_pins M_DMA_W] [get_bd_intf_pins wdma_couplers/M_AXI]
-  connect_bd_intf_net -intf_net s00_couplers_to_xbar [get_bd_intf_pins dsp0_couplers/M_AXI] [get_bd_intf_pins xbar/S00_AXI]
-  connect_bd_intf_net -intf_net s01_couplers_to_xbar [get_bd_intf_pins dsp1_couplers/M_AXI] [get_bd_intf_pins xbar/S01_AXI]
-  connect_bd_intf_net -intf_net s02_couplers_to_xbar [get_bd_intf_pins sdma_couplers/M_AXI] [get_bd_intf_pins xbar/S02_AXI]
-  connect_bd_intf_net -intf_net xbar_to_m00_couplers [get_bd_intf_pins ddr0_couplers/S_AXI] [get_bd_intf_pins xbar/M00_AXI]
-  connect_bd_intf_net -intf_net xbar_to_m01_couplers [get_bd_intf_pins ddr1_couplers/S_AXI] [get_bd_intf_pins xbar/M01_AXI]
-  connect_bd_intf_net -intf_net xbar_to_m02_couplers [get_bd_intf_pins wdma_couplers/S_AXI] [get_bd_intf_pins xbar/M02_AXI]
+  connect_bd_intf_net -intf_net S_DMA_1 [get_bd_intf_pins S_DMA] [get_bd_intf_pins dma_data_fifo/S_AXI]
+  connect_bd_intf_net -intf_net S_DSP_DDR0_1 [get_bd_intf_pins S_DSP_DDR0] [get_bd_intf_pins ddr0_data_fifo/S_AXI]
+  connect_bd_intf_net -intf_net S_DSP_DDR1_1 [get_bd_intf_pins S_DSP_DDR1] [get_bd_intf_pins ddr1_data_fifo/S_AXI]
+  connect_bd_intf_net -intf_net auto_ds_M_AXI [get_bd_intf_pins dma_ddr1_cc/S_AXI] [get_bd_intf_pins dma_ddr1_ds/M_AXI]
+  connect_bd_intf_net -intf_net axi_crossbar_0_M00_AXI [get_bd_intf_pins M_DDR0] [get_bd_intf_pins ddr0_crossbar/M00_AXI]
+  connect_bd_intf_net -intf_net axi_crossbar_1_M00_AXI [get_bd_intf_pins M_DDR1] [get_bd_intf_pins ddr1_crossbar/M00_AXI]
+  connect_bd_intf_net -intf_net ddr0_data_fifo_M_AXI [get_bd_intf_pins ddr0_data_fifo/M_AXI] [get_bd_intf_pins dsp_ddr0_cc/S_AXI]
+  connect_bd_intf_net -intf_net ddr1_data_fifo_M_AXI [get_bd_intf_pins ddr1_data_fifo/M_AXI] [get_bd_intf_pins dsp_ddr1_cc/S_AXI]
+  connect_bd_intf_net -intf_net dma_data_fifo_M_AXI [get_bd_intf_pins dma_data_fifo/M_AXI] [get_bd_intf_pins dma_xbar/S00_AXI]
+  connect_bd_intf_net -intf_net dma_ddr0_cc_M_AXI [get_bd_intf_pins ddr0_crossbar/S01_AXI] [get_bd_intf_pins dma_ddr0_cc/M_AXI]
+  connect_bd_intf_net -intf_net dma_ddr1_cc_M_AXI [get_bd_intf_pins ddr1_crossbar/S01_AXI] [get_bd_intf_pins dma_ddr1_cc/M_AXI]
+  connect_bd_intf_net -intf_net dma_xbar_M00_AXI [get_bd_intf_pins dma_ddr0_cc/S_AXI] [get_bd_intf_pins dma_xbar/M00_AXI]
+  connect_bd_intf_net -intf_net dma_xbar_M01_AXI [get_bd_intf_pins dma_ddr1_ds/S_AXI] [get_bd_intf_pins dma_xbar/M01_AXI]
+  connect_bd_intf_net -intf_net dma_xbar_M02_AXI [get_bd_intf_pins M_DMA_W] [get_bd_intf_pins dma_xbar/M02_AXI]
+  connect_bd_intf_net -intf_net dsp_ddr0_cc_M_AXI [get_bd_intf_pins ddr0_crossbar/S00_AXI] [get_bd_intf_pins dsp_ddr0_cc/M_AXI]
+  connect_bd_intf_net -intf_net dsp_ddr1_cc_M_AXI [get_bd_intf_pins ddr1_crossbar/S00_AXI] [get_bd_intf_pins dsp_ddr1_cc/M_AXI]
 
   # Create port connections
-  connect_bd_net -net M00_ACLK_1 [get_bd_pins DDR0_ACLK] [get_bd_pins ddr0_couplers/M_ACLK]
-  connect_bd_net -net M01_ACLK_1 [get_bd_pins DDR1_ACLK] [get_bd_pins ddr1_couplers/M_ACLK]
-  connect_bd_net -net S00_ACLK_1 [get_bd_pins DSP_CLK] [get_bd_pins dsp0_couplers/S_ACLK] [get_bd_pins dsp1_couplers/S_ACLK]
-  connect_bd_net -net S00_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins dsp0_couplers/S_ARESETN] [get_bd_pins dsp1_couplers/S_ARESETN]
-  connect_bd_net -net axi_interconnect_0_ACLK_net [get_bd_pins DMA_ACLK] [get_bd_pins ddr0_couplers/S_ACLK] [get_bd_pins ddr1_couplers/S_ACLK] [get_bd_pins dsp0_couplers/M_ACLK] [get_bd_pins dsp1_couplers/M_ACLK] [get_bd_pins sdma_couplers/M_ACLK] [get_bd_pins wdma_couplers/S_ACLK] [get_bd_pins xbar/aclk]
-  connect_bd_net -net axi_interconnect_0_ARESETN_net [get_bd_pins DMA_ARESETN] [get_bd_pins ddr0_couplers/S_ARESETN] [get_bd_pins ddr1_couplers/S_ARESETN] [get_bd_pins dsp0_couplers/M_ARESETN] [get_bd_pins dsp1_couplers/M_ARESETN] [get_bd_pins sdma_couplers/M_ARESETN] [get_bd_pins wdma_couplers/S_ARESETN] [get_bd_pins xbar/aresetn]
-  connect_bd_net -net m_axi_aresetn_1 [get_bd_pins DDR0_ARESETN] [get_bd_pins ddr0_couplers/DDR0_ARESETN]
-  connect_bd_net -net m_axi_aresetn_2 [get_bd_pins DDR1_ARESETN] [get_bd_pins ddr1_couplers/DDR1_ARESETN]
+  connect_bd_net -net DDR0_ACLK_1 [get_bd_pins DDR0_ACLK] [get_bd_pins ddr0_crossbar/aclk] [get_bd_pins dma_ddr0_cc/m_axi_aclk] [get_bd_pins dsp_ddr0_cc/m_axi_aclk]
+  connect_bd_net -net DDR0_ARESETN_1 [get_bd_pins DDR0_ARESETN] [get_bd_pins ddr0_crossbar/aresetn] [get_bd_pins dma_ddr0_cc/m_axi_aresetn] [get_bd_pins dsp_ddr0_cc/m_axi_aresetn]
+  connect_bd_net -net DDR1_ACLK_1 [get_bd_pins DDR1_ACLK] [get_bd_pins ddr1_crossbar/aclk] [get_bd_pins dma_ddr1_cc/m_axi_aclk] [get_bd_pins dsp_ddr1_cc/m_axi_aclk]
+  connect_bd_net -net DDR1_ARESETN_1 [get_bd_pins DDR1_ARESETN] [get_bd_pins ddr1_crossbar/aresetn] [get_bd_pins dma_ddr1_cc/m_axi_aresetn] [get_bd_pins dsp_ddr1_cc/m_axi_aresetn]
+  connect_bd_net -net DMA_ACLK_1 [get_bd_pins DMA_ACLK] [get_bd_pins dma_data_fifo/aclk] [get_bd_pins dma_ddr0_cc/s_axi_aclk] [get_bd_pins dma_ddr1_cc/s_axi_aclk] [get_bd_pins dma_ddr1_ds/s_axi_aclk] [get_bd_pins dma_xbar/aclk]
+  connect_bd_net -net DMA_ARESETN_1 [get_bd_pins DMA_ARESETN] [get_bd_pins dma_data_fifo/aresetn] [get_bd_pins dma_ddr0_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_ds/s_axi_aresetn] [get_bd_pins dma_xbar/aresetn]
+  connect_bd_net -net DSP_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins ddr0_data_fifo/aresetn] [get_bd_pins ddr1_data_fifo/aresetn] [get_bd_pins dsp_ddr0_cc/s_axi_aresetn] [get_bd_pins dsp_ddr1_cc/s_axi_aresetn]
+  connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins ddr0_data_fifo/aclk] [get_bd_pins ddr1_data_fifo/aclk] [get_bd_pins dsp_ddr0_cc/s_axi_aclk] [get_bd_pins dsp_ddr1_cc/s_axi_aclk]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1097,7 +710,6 @@ CONFIG.MMCM_CLKIN2_PERIOD.VALUE_SRC {DEFAULT} \
 
   set_property -dict [ list \
 CONFIG.BOARD_MIG_PARAM {Custom} \
-CONFIG.MIG_DONT_TOUCH_PARAM {Custom} \
 CONFIG.RESET_BOARD_INTERFACE {Custom} \
 CONFIG.XML_INPUT_FILE {mig_a.prj} \
  ] $mig_7series_0
@@ -1381,7 +993,7 @@ CONFIG.ADDR_WIDTH {48} \
 CONFIG.ARUSER_WIDTH {0} \
 CONFIG.AWUSER_WIDTH {0} \
 CONFIG.BUSER_WIDTH {0} \
-CONFIG.DATA_WIDTH {64} \
+CONFIG.DATA_WIDTH {256} \
 CONFIG.FREQ_HZ {250000000} \
 CONFIG.HAS_BRESP {0} \
 CONFIG.HAS_BURST {0} \
