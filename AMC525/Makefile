@@ -56,10 +56,10 @@ runvivado:
 # Target build
 #
 amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
-	ln -sfn $(SRCDIR)/vhd $(SRCDIR)/constr .
 	mkdir -p reports checkpoints
 	rm -rf amc525_lmbf
-	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_top.tcl
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_top.tcl \
+            -tclargs '$(SRCDIR)'
 
 
 built/top_entity.vhd: constr/signals constr/pins constr/used
@@ -70,9 +70,9 @@ top_entity: built/top_entity.vhd
 .PHONY: top_entity
 
 
-load_fpga: amc525_lmbf.bit
-	scp $^ ts-di-lmbf-02:/tmp
-	ssh ts-di-lmbf-02 scp /tmp/$^ root@192.168.40.200:/tmp
+load_fpga:
+	scp amc525_lmbf.bit ts-di-lmbf-02:/tmp
+	ssh ts-di-lmbf-02 scp /tmp/amc525_lmbf.bit root@192.168.40.200:/tmp
 	ssh ts-di-lmbf-02 ssh root@192.168.40.200 \
-            amc525_lbtool fpga_load /tmp/$^
+            amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
 .PHONY: load_fpga

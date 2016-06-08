@@ -51,7 +51,7 @@ DRIVER_FILES = $(wildcard driver/*)
 driver: $(DRIVER_KO)
 .PHONY: driver
 
-# The usual dance for building kernel mouldes out of tree
+# The usual dance for building kernel modules out of tree
 DRIVER_BUILD_FILES := $(DRIVER_FILES:driver/%=$(DRIVER_BUILD_DIR)/%)
 $(DRIVER_BUILD_FILES): $(DRIVER_BUILD_DIR)/%: driver/%
 	ln -s $$(readlink -e $<) $@
