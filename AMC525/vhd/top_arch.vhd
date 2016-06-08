@@ -78,7 +78,6 @@ begin
 
     -- Wire up the interconnect
     interconnect_inst : entity work.interconnect_wrapper port map (
-        GPIO_tri_o => ULED,
         nCOLDRST => nCOLDRST,
 
         -- MTCA Backplane PCI Express interface
@@ -130,23 +129,23 @@ begin
         -- AXI-Lite register slave interface
         M_DSP_REGS_araddr => DSP_REGS_araddr,
         M_DSP_REGS_arprot => DSP_REGS_arprot,
-        M_DSP_REGS_arready => DSP_REGS_arready,
         M_DSP_REGS_arvalid => DSP_REGS_arvalid,
-        M_DSP_REGS_awaddr => DSP_REGS_awaddr,
-        M_DSP_REGS_awprot => DSP_REGS_awprot,
-        M_DSP_REGS_awready => DSP_REGS_awready,
-        M_DSP_REGS_awvalid => DSP_REGS_awvalid,
-        M_DSP_REGS_bready => DSP_REGS_bready,
-        M_DSP_REGS_bresp => DSP_REGS_bresp,
-        M_DSP_REGS_bvalid => DSP_REGS_bvalid,
+        M_DSP_REGS_arready => DSP_REGS_arready,
         M_DSP_REGS_rdata => DSP_REGS_rdata,
-        M_DSP_REGS_rready => DSP_REGS_rready,
         M_DSP_REGS_rresp => DSP_REGS_rresp,
         M_DSP_REGS_rvalid => DSP_REGS_rvalid,
+        M_DSP_REGS_rready => DSP_REGS_rready,
+        M_DSP_REGS_awaddr => DSP_REGS_awaddr,
+        M_DSP_REGS_awprot => DSP_REGS_awprot,
+        M_DSP_REGS_awvalid => DSP_REGS_awvalid,
+        M_DSP_REGS_awready => DSP_REGS_awready,
         M_DSP_REGS_wdata => DSP_REGS_wdata,
-        M_DSP_REGS_wready => DSP_REGS_wready,
         M_DSP_REGS_wstrb => DSP_REGS_wstrb,
         M_DSP_REGS_wvalid => DSP_REGS_wvalid,
+        M_DSP_REGS_wready => DSP_REGS_wready,
+        M_DSP_REGS_bresp => DSP_REGS_bresp,
+        M_DSP_REGS_bvalid => DSP_REGS_bvalid,
+        M_DSP_REGS_bready => DSP_REGS_bready,
 
         -- AXI master interface to DDR block 0
         S_DSP_DDR0_awaddr => (others => '0'),
@@ -277,5 +276,7 @@ begin
         0 => x"01234567",
         1 => x"89ABCDEF",
         others => x"55555555");
+
+    ULED <= register_file_0(0)(3 downto 0);
 
 end;
