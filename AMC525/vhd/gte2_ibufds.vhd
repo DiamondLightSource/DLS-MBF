@@ -9,7 +9,7 @@ use unisim.vcomponents.all;
 
 entity gte2_ibufds is
     generic (
-        BUFG : boolean := true
+        GEN_BUFG : boolean := true
     );
     port (
         clk_p_i : in std_logic;
@@ -21,7 +21,7 @@ end;
 architecture gte2_ibufds of gte2_ibufds is
     signal clock : std_logic;
 begin
-    ibufds_gte2_inst : unisim.vcomponents.IBUFDS_GTE2 generic map (
+    ibufds_gte2_inst : IBUFDS_GTE2 generic map (
         CLKCM_CFG    => TRUE,
         CLKRCV_TRST  => TRUE,
         CLKSWING_CFG => "11"
@@ -33,13 +33,13 @@ begin
          O      => clock
     );
 
-    if_bufg: if BUFG generate
-        bufg_inst : unisim.vcomponents.BUFG port map (
+    if_bufg: if GEN_BUFG generate
+        bufg_inst : BUFG port map (
             I => clock,
             O => clk_o
         );
     end generate;
-    if_not_bufg: if not BUFG generate
+    if_not_bufg: if not GEN_BUFG generate
         clk_o <= clock;
     end generate;
 end;

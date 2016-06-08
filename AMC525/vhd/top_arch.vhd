@@ -16,7 +16,7 @@ architecture top of top is
 begin
     -- Reference clock for MGT.  For this one we don't want the BUFG.
     fclka_inst : entity work.gte2_ibufds generic map (
-        BUFG => false
+        GEN_BUFG => false
     ) port map (
         clk_p_i => FCLKA_P,
         clk_n_i => FCLKA_N,
