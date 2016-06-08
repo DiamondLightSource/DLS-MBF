@@ -6,12 +6,48 @@ library unisim;
 use unisim.vcomponents.all;
 
 library work;
+use work.defines.all;
 
 architecture top of top is
+    -- Clocking and reset resources
     signal fclka : std_logic;
     signal clk100mhz : std_logic;
     signal dsp_clk : std_logic;
     signal dsp_reset_n : std_logic;
+
+    -- Wiring from AXI-Lite master to register slave
+    signal DSP_REGS_araddr : std_logic_vector(15 downto 0);
+    signal DSP_REGS_arprot : std_logic_vector(2 downto 0);
+    signal DSP_REGS_arready : std_logic;
+    signal DSP_REGS_arvalid : std_logic;
+    signal DSP_REGS_awaddr : std_logic_vector(15 downto 0);
+    signal DSP_REGS_awprot : std_logic_vector(2 downto 0);
+    signal DSP_REGS_awready : std_logic;
+    signal DSP_REGS_awvalid : std_logic;
+    signal DSP_REGS_bready : std_logic;
+    signal DSP_REGS_bresp : std_logic_vector(1 downto 0);
+    signal DSP_REGS_bvalid : std_logic;
+    signal DSP_REGS_rdata : std_logic_vector(31 downto 0);
+    signal DSP_REGS_rready : std_logic;
+    signal DSP_REGS_rresp : std_logic_vector(1 downto 0);
+    signal DSP_REGS_rvalid : std_logic;
+    signal DSP_REGS_wdata : std_logic_vector(31 downto 0);
+    signal DSP_REGS_wready : std_logic;
+    signal DSP_REGS_wstrb : std_logic_vector(3 downto 0);
+    signal DSP_REGS_wvalid : std_logic;
+
+    -- Internal register path
+    signal REGS_read_strobe : mod_strobe_t;
+    signal REGS_read_address : reg_addr_t;
+    signal REGS_read_data : reg_data_array_t(MOD_ADDR_RANGE);
+    signal REGS_read_ack : mod_strobe_t;
+    signal REGS_write_strobe : mod_strobe_t;
+    signal REGS_write_address : reg_addr_t;
+    signal REGS_write_data : reg_data_t;
+    signal REGS_write_ack : mod_strobe_t;
+
+    signal register_file_0 : reg_data_array_t(REG_ADDR_RANGE);
+    signal register_file_1 : reg_data_array_t(REG_ADDR_RANGE);
 
 begin
     -- Reference clock for MGT.  For this one we don't want the BUFG.
@@ -92,25 +128,25 @@ begin
         CLK100MHZ => clk100mhz,
 
         -- AXI-Lite register slave interface
-        M_DSP_REGS_araddr => open,
-        M_DSP_REGS_arprot => open,
-        M_DSP_REGS_arready => '1',
-        M_DSP_REGS_arvalid => open,
-        M_DSP_REGS_awaddr => open,
-        M_DSP_REGS_awprot => open,
-        M_DSP_REGS_awready => '1',
-        M_DSP_REGS_awvalid => open,
-        M_DSP_REGS_bready => open,
-        M_DSP_REGS_bresp => "10",
-        M_DSP_REGS_bvalid => '1',
-        M_DSP_REGS_rdata => (others => '0'),
-        M_DSP_REGS_rready => open,
-        M_DSP_REGS_rresp => "10",
-        M_DSP_REGS_rvalid => '1',
-        M_DSP_REGS_wdata => open,
-        M_DSP_REGS_wready => '1',
-        M_DSP_REGS_wstrb => open,
-        M_DSP_REGS_wvalid => open,
+        M_DSP_REGS_araddr => DSP_REGS_araddr,
+        M_DSP_REGS_arprot => DSP_REGS_arprot,
+        M_DSP_REGS_arready => DSP_REGS_arready,
+        M_DSP_REGS_arvalid => DSP_REGS_arvalid,
+        M_DSP_REGS_awaddr => DSP_REGS_awaddr,
+        M_DSP_REGS_awprot => DSP_REGS_awprot,
+        M_DSP_REGS_awready => DSP_REGS_awready,
+        M_DSP_REGS_awvalid => DSP_REGS_awvalid,
+        M_DSP_REGS_bready => DSP_REGS_bready,
+        M_DSP_REGS_bresp => DSP_REGS_bresp,
+        M_DSP_REGS_bvalid => DSP_REGS_bvalid,
+        M_DSP_REGS_rdata => DSP_REGS_rdata,
+        M_DSP_REGS_rready => DSP_REGS_rready,
+        M_DSP_REGS_rresp => DSP_REGS_rresp,
+        M_DSP_REGS_rvalid => DSP_REGS_rvalid,
+        M_DSP_REGS_wdata => DSP_REGS_wdata,
+        M_DSP_REGS_wready => DSP_REGS_wready,
+        M_DSP_REGS_wstrb => DSP_REGS_wstrb,
+        M_DSP_REGS_wvalid => DSP_REGS_wvalid,
 
         -- AXI master interface to DDR block 0
         S_DSP_DDR0_awaddr => (others => '0'),
@@ -158,4 +194,88 @@ begin
         DSP_CLK => dsp_clk,
         DSP_RESETN => dsp_reset_n
     );
+
+
+    -- Register AXI slave interface
+    register_axi_slave_inst : entity work.register_axi_slave port map (
+        rstn_i => dsp_reset_n,
+        clk_i => dsp_clk,
+
+        -- AXI-Lite read interface
+        araddr_i => DSP_REGS_araddr,
+        arprot_i => DSP_REGS_arprot,
+        arvalid_i => DSP_REGS_arvalid,
+        arready_o => DSP_REGS_arready,
+        rdata_o => DSP_REGS_rdata,
+        rresp_o => DSP_REGS_rresp,
+        rvalid_o => DSP_REGS_rvalid,
+        rready_i => DSP_REGS_rready,
+
+        -- AXI-Lite write interface
+        awaddr_i => DSP_REGS_awaddr,
+        awprot_i => DSP_REGS_awprot,
+        awvalid_i => DSP_REGS_awvalid,
+        awready_o => DSP_REGS_awready,
+        wdata_i => DSP_REGS_wdata,
+        wstrb_i => DSP_REGS_wstrb,
+        wvalid_i => DSP_REGS_wvalid,
+        wready_o => DSP_REGS_wready,
+        bready_i => DSP_REGS_bready,
+        bresp_o => DSP_REGS_bresp,
+        bvalid_o => DSP_REGS_bvalid,
+
+        -- Internal read interface
+        read_strobe_o => REGS_read_strobe,
+        read_address_o => REGS_read_address,
+        read_data_i => REGS_read_data,
+        read_ack_i => REGS_read_ack,
+
+        -- Internal write interface
+        write_strobe_o => REGS_write_strobe,
+        write_address_o => REGS_write_address,
+        write_data_o => REGS_write_data,
+        write_ack_i => REGS_write_ack
+    );
+
+    REGS_read_ack(2 to MOD_ADDR_COUNT-1) <= (others => '1');
+    REGS_write_ack(1 to MOD_ADDR_COUNT-1) <= (others => '1');
+    REGS_read_data(2 to MOD_ADDR_COUNT-1) <= (others => X"AAAAAAAA");
+
+    -- A simple register file with loopback
+    register_file_inst : entity work.register_file port map (
+        clk_i => dsp_clk,
+
+        write_strobe_i => REGS_write_strobe(0),
+        write_address_i => REGS_write_address,
+        write_data_i => REGS_write_data,
+        write_ack_o => REGS_write_ack(0),
+
+        register_data_o => register_file_0
+    );
+    register_read_inst0 : entity work.register_read port map (
+        clk_i => dsp_clk,
+
+        read_strobe_i => REGS_read_strobe(0),
+        read_address_i => REGS_read_address,
+        read_data_o => REGS_read_data(0),
+        read_ack_o => REGS_read_ack(0),
+
+        register_data_i => register_file_0
+    );
+    register_read_inst1 : entity work.register_read port map (
+        clk_i => dsp_clk,
+
+        read_strobe_i => REGS_read_strobe(1),
+        read_address_i => REGS_read_address,
+        read_data_o => REGS_read_data(1),
+        read_ack_o => REGS_read_ack(1),
+
+        register_data_i => register_file_1
+    );
+
+    register_file_1 <= (
+        0 => x"01234567",
+        1 => x"89ABCDEF",
+        others => x"55555555");
+
 end;
