@@ -46,7 +46,7 @@ begin
         -- Inputs
         CLKIN1  => clk125mhz,
         CLKFBIN => clk250mhz_fb,
-        RST     => nCOLDRST,
+        RST     => not nCOLDRST,
         PWRDWN  => '0',
         -- Outputs
         CLKOUT0 => clk250mhz,
