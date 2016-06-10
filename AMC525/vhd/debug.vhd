@@ -24,12 +24,11 @@ entity debug is
         write_strobe_i : in std_logic;
         write_address_i : in reg_addr_t;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
 
         read_strobe_i : in std_logic;
         read_address_i : in reg_addr_t;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic := '0'
+        read_ack_o : out std_logic
     );
 end;
 
@@ -163,5 +162,4 @@ begin
     end process;
 
     read_ack_o <= '1';
-    write_ack_o <= '1';
 end;

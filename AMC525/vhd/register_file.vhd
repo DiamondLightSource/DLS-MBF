@@ -14,7 +14,6 @@ entity register_file is
         write_strobe_i : in std_logic;
         write_address_i : in reg_addr_t;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
 
         -- Register array
         register_data_o : out reg_data_array_t(REG_ADDR_RANGE)
@@ -36,7 +35,5 @@ begin
         end if;
     end process;
 
-    -- Single cycle writes to registers don't need acknowledge
-    write_ack_o <= '1';
     register_data_o <= register_file;
 end;

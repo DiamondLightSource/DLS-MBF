@@ -44,7 +44,6 @@ architecture top of top is
     signal REGS_write_strobe : mod_strobe_t;
     signal REGS_write_address : reg_addr_t;
     signal REGS_write_data : reg_data_t;
-    signal REGS_write_ack : mod_strobe_t;
 
     -- Register file and debug
     type reg_file_array_t is
@@ -236,8 +235,7 @@ begin
         -- Internal write interface
         write_strobe_o => REGS_write_strobe,
         write_address_o => REGS_write_address,
-        write_data_o => REGS_write_data,
-        write_ack_i => REGS_write_ack
+        write_data_o => REGS_write_data
     );
 
 
@@ -249,7 +247,6 @@ begin
             write_strobe_i => REGS_write_strobe(n),
             write_address_i => REGS_write_address,
             write_data_i => REGS_write_data,
-            write_ack_o => REGS_write_ack(n),
 
             register_data_o => register_file(n)
         );
@@ -294,7 +291,6 @@ begin
         write_strobe_i => REGS_write_strobe(MOD_ADDR_COUNT-1),
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
-        write_ack_o => REGS_write_ack(MOD_ADDR_COUNT-1),
 
         read_strobe_i => REGS_read_strobe(MOD_ADDR_COUNT-1),
         read_address_i => REGS_read_address,
