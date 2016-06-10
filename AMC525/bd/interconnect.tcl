@@ -508,6 +508,9 @@ CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
 CONFIG.SI_DATA_WIDTH {64} \
  ] $ddr0_us
 
+  # Create instance: ddr1_buf, and set properties
+  set ddr1_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 ddr1_buf ]
+
   # Create instance: ddr1_crossbar, and set properties
   set ddr1_crossbar [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_crossbar:2.1 ddr1_crossbar ]
   set_property -dict [ list \
@@ -584,8 +587,9 @@ CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
   connect_bd_intf_net -intf_net S_DSP_DDR1_1 [get_bd_intf_pins S_DSP_DDR1] [get_bd_intf_pins ddr1_data_fifo/S_AXI]
   connect_bd_intf_net -intf_net auto_ds_M_AXI [get_bd_intf_pins dma_ddr1_cc/S_AXI] [get_bd_intf_pins dma_ddr1_ds/M_AXI]
   connect_bd_intf_net -intf_net axi_crossbar_0_M00_AXI [get_bd_intf_pins M_DDR0] [get_bd_intf_pins ddr0_crossbar/M00_AXI]
-  connect_bd_intf_net -intf_net axi_crossbar_1_M00_AXI [get_bd_intf_pins M_DDR1] [get_bd_intf_pins ddr1_crossbar/M00_AXI]
   connect_bd_intf_net -intf_net ddr0_us_M_AXI [get_bd_intf_pins ddr0_crossbar/S00_AXI] [get_bd_intf_pins ddr0_us/M_AXI]
+  connect_bd_intf_net -intf_net ddr1_buf_M_AXI [get_bd_intf_pins M_DDR1] [get_bd_intf_pins ddr1_buf/M_AXI]
+  connect_bd_intf_net -intf_net ddr1_crossbar_M00_AXI [get_bd_intf_pins ddr1_buf/S_AXI] [get_bd_intf_pins ddr1_crossbar/M00_AXI]
   connect_bd_intf_net -intf_net ddr1_data_fifo_M_AXI [get_bd_intf_pins ddr1_data_fifo/M_AXI] [get_bd_intf_pins dsp_ddr1_cc/S_AXI]
   connect_bd_intf_net -intf_net dma_data_fifo_M_AXI [get_bd_intf_pins dma_data_fifo/M_AXI] [get_bd_intf_pins dma_xbar/S00_AXI]
   connect_bd_intf_net -intf_net dma_ddr0_cc_M_AXI [get_bd_intf_pins ddr0_crossbar/S01_AXI] [get_bd_intf_pins dma_ddr0_cc/M_AXI]
@@ -598,8 +602,8 @@ CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
   # Create port connections
   connect_bd_net -net DDR0_ACLK_1 [get_bd_pins DDR0_ACLK] [get_bd_pins ddr0_crossbar/aclk] [get_bd_pins ddr0_us/m_axi_aclk] [get_bd_pins dma_ddr0_cc/m_axi_aclk]
   connect_bd_net -net DDR0_ARESETN_1 [get_bd_pins DDR0_ARESETN] [get_bd_pins ddr0_crossbar/aresetn] [get_bd_pins ddr0_us/m_axi_aresetn] [get_bd_pins dma_ddr0_cc/m_axi_aresetn]
-  connect_bd_net -net DDR1_ACLK_1 [get_bd_pins DDR1_ACLK] [get_bd_pins ddr1_crossbar/aclk] [get_bd_pins dma_ddr1_cc/m_axi_aclk] [get_bd_pins dsp_ddr1_cc/m_axi_aclk]
-  connect_bd_net -net DDR1_ARESETN_1 [get_bd_pins DDR1_ARESETN] [get_bd_pins ddr1_crossbar/aresetn] [get_bd_pins dma_ddr1_cc/m_axi_aresetn] [get_bd_pins dsp_ddr1_cc/m_axi_aresetn]
+  connect_bd_net -net DDR1_ACLK_1 [get_bd_pins DDR1_ACLK] [get_bd_pins ddr1_buf/aclk] [get_bd_pins ddr1_crossbar/aclk] [get_bd_pins dma_ddr1_cc/m_axi_aclk] [get_bd_pins dsp_ddr1_cc/m_axi_aclk]
+  connect_bd_net -net DDR1_ARESETN_1 [get_bd_pins DDR1_ARESETN] [get_bd_pins ddr1_buf/aresetn] [get_bd_pins ddr1_crossbar/aresetn] [get_bd_pins dma_ddr1_cc/m_axi_aresetn] [get_bd_pins dsp_ddr1_cc/m_axi_aresetn]
   connect_bd_net -net DMA_ACLK_1 [get_bd_pins DMA_ACLK] [get_bd_pins dma_data_fifo/aclk] [get_bd_pins dma_ddr0_cc/s_axi_aclk] [get_bd_pins dma_ddr1_cc/s_axi_aclk] [get_bd_pins dma_ddr1_ds/s_axi_aclk] [get_bd_pins dma_xbar/aclk]
   connect_bd_net -net DMA_ARESETN_1 [get_bd_pins DMA_ARESETN] [get_bd_pins dma_data_fifo/aresetn] [get_bd_pins dma_ddr0_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_ds/s_axi_aresetn] [get_bd_pins dma_xbar/aresetn]
   connect_bd_net -net DSP_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins ddr0_us/s_axi_aresetn] [get_bd_pins ddr1_data_fifo/aresetn] [get_bd_pins dsp_ddr1_cc/s_axi_aresetn]
@@ -910,6 +914,9 @@ proc create_hier_cell_axi_lite { parentCell nameHier } {
   # Create instance: axi_lite_interconnect, and set properties
   set axi_lite_interconnect [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_lite_interconnect ]
   set_property -dict [ list \
+CONFIG.M00_HAS_REGSLICE {4} \
+CONFIG.M01_HAS_REGSLICE {4} \
+CONFIG.M02_HAS_REGSLICE {4} \
 CONFIG.M03_HAS_REGSLICE {4} \
 CONFIG.NUM_MI {3} \
 CONFIG.S00_HAS_REGSLICE {4} \
