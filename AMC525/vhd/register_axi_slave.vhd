@@ -33,7 +33,7 @@ entity register_axi_slave is
         awvalid_i : in std_logic;
         --
         wdata_i : in std_logic_vector(DATA_BITS-1 downto 0);
-        wstrb_i : in std_logic_vector(DATA_BITS/8-1 downto 0);      -- Ignored
+        wstrb_i : in std_logic_vector(DATA_BITS/8-1 downto 0);
         wready_o : out std_logic;
         wvalid_i : in std_logic;
         --
@@ -102,12 +102,10 @@ architecture register_axi_slave of register_axi_slave is
     -- Writing state
 
     -- The data and address for writes can come separately.
-    type write_state_t is (WRITE_IDLE, WRITE_WRITING, WRITE_DONE);
+    type write_state_t is (WRITE_IDLE, WRITE_START, WRITE_WRITING, WRITE_DONE);
     signal write_state : write_state_t;
-    signal waddr_valid : std_logic;
-    signal wdata_valid : std_logic;
-    signal wcycle_valid : std_logic;
     signal write_module_address : MOD_ADDR_RANGE;
+    signal valid_write : std_logic;
 
     signal write_strobe : mod_strobe_t;
 
@@ -138,8 +136,8 @@ begin
                     read_state <= READ_READING;
                 when READ_READING =>
                     -- Wait for read acknowledge from module
+                    read_strobe_o <= (others => '0');
                     if read_ack = '1' then
-                        read_strobe_o <= (others => '0');
                         rdata_o <= read_data;
                         read_state <= READ_DONE;
                     end if;
@@ -163,52 +161,42 @@ begin
     process (rstn_i, clk_i) begin
         if rstn_i = '0' then
             write_state <= WRITE_IDLE;
-            waddr_valid <= '0';
-            wdata_valid <= '0';
         elsif rising_edge(clk_i) then
-            -- Wait for valid write address
-            if waddr_valid = '0' and awvalid_i = '1' then
-                write_address_o <= register_address(awaddr_i);
-                write_module_address <= module_address(awaddr_i);
-                waddr_valid <= '1';
-            end if;
-            -- Wait for valid write data
-            if wdata_valid = '0' and wvalid_i = '1' then
-                write_data_o <= wdata_i;
-                wcycle_valid <= vector_and(wstrb_i);
-                wdata_valid <= '1';
-            end if;
-
             case write_state is
                 when WRITE_IDLE =>
                     -- Wait for valid read and write data
-                    if waddr_valid = '1' and wdata_valid = '1' then
-                        if wcycle_valid = '1' then
-                            write_strobe_o <= write_strobe;
-                            write_state <= WRITE_WRITING;
-                        else
-                            -- On invalid write skip the output write stage
-                            write_state <= WRITE_DONE;
-                        end if;
+                    if awvalid_i = '1' and wvalid_i = '1' then
+                        write_address_o <= register_address(awaddr_i);
+                        write_module_address <= module_address(awaddr_i);
+                        write_data_o <= wdata_i;
+                        valid_write <= vector_and(wstrb_i);
+                        write_state <= WRITE_START;
                     end if;
+
+                when WRITE_START =>
+                    if valid_write = '1' then
+                        -- Generate write strobe for valid cycle
+                        write_strobe_o <= write_strobe;
+                        write_state <= WRITE_WRITING;
+                    else
+                        -- For invalid write go straight to completion
+                        write_state <= WRITE_DONE;
+                    end if;
+
                 when WRITE_WRITING =>
                     write_strobe_o <= (others => '0');
                     write_state <= WRITE_DONE;
+
                 when WRITE_DONE =>
                     -- Wait for master to accept our response
                     if bready_i = '1' then
                         write_state <= WRITE_IDLE;
                     end if;
-
-                    -- Accept a new write.  This could have been done earlier,
-                    -- but there's little point as the master is quite slow.
-                    waddr_valid <= '0';
-                    wdata_valid <= '0';
             end case;
         end if;
     end process;
-    awready_o <= not waddr_valid;
-    wready_o  <= not wdata_valid;
+    awready_o <= to_std_logic(write_state = WRITE_START);
+    wready_o  <= to_std_logic(write_state = WRITE_START);
     bvalid_o  <= to_std_logic(write_state = WRITE_DONE);
     bresp_o <= "00";
 
