@@ -107,6 +107,7 @@ architecture register_axi_slave of register_axi_slave is
     signal write_state : write_state_t;
     signal waddr_valid : std_logic;
     signal wdata_valid : std_logic;
+    signal wcycle_valid : std_logic;
     signal write_module_address : MOD_ADDR_RANGE;
 
     signal write_strobe : mod_strobe_t;
@@ -177,6 +178,7 @@ begin
             -- Wait for valid write data
             if wdata_valid = '0' and wvalid_i = '1' then
                 write_data_o <= wdata_i;
+                wcycle_valid <= vector_and(wstrb_i);
                 wdata_valid <= '1';
             end if;
 
@@ -184,24 +186,30 @@ begin
                 when WRITE_IDLE =>
                     -- Wait for valid read and write data
                     if waddr_valid = '1' and wdata_valid = '1' then
-                        write_strobe_o <= write_strobe;
-                        write_state <= WRITE_WRITING;
+                        if wcycle_valid = '1' then
+                            write_strobe_o <= write_strobe;
+                            write_state <= WRITE_WRITING;
+                        else
+                            -- On invalid write skip the output write stage
+                            write_state <= WRITE_DONE;
+                        end if;
                     end if;
                 when WRITE_WRITING =>
                     -- Wait for target module to complete
                     if write_ack = '1' then
                         write_strobe_o <= (others => '0');
                         write_state <= WRITE_DONE;
-
-                        -- At this point we can accept a new write
-                        waddr_valid <= '0';
-                        wdata_valid <= '0';
                     end if;
                 when WRITE_DONE =>
                     -- Wait for master to accept our response
                     if bready_i = '1' then
                         write_state <= WRITE_IDLE;
                     end if;
+
+                    -- Accept a new write.  This could have been done earlier,
+                    -- but there's little point as the master is quite slow.
+                    waddr_valid <= '0';
+                    wdata_valid <= '0';
             end case;
         end if;
     end process;
