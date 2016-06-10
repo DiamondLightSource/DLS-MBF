@@ -54,12 +54,12 @@ set timingreport [ \
     report_timing_summary -no_header -no_detailed_paths -return_string \
         -file reports/amc525_top_timing.rpt ]
 
+# generate a bitstream, even if timing failed
+#
+write_bitstream -force amc525_lmbf.bit
+
+# Make sure we fail if timing failed
 if {! [string match -nocase {*timing constraints are met*} $timingreport]} {
     send_msg_id showstopper-0 error "Timing constraints weren't met."
     return -code error
 }
-
-
-# generate a bitstream
-#
-write_bitstream -force amc525_lmbf.bit
