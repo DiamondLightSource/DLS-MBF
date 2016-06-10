@@ -54,6 +54,21 @@ static void terminate_hardware(void)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Args. */
 
+
+static error__t copy_block(void *destination, size_t max_length)
+{
+    char block[4096];
+    ssize_t read_size = read(STDIN_FILENO, block, sizeof(block));
+    if (read_size > (ssize_t) max_length)
+        read_size = (ssize_t) max_length;
+    printf("read_size = %zd, writing:\n", read_size);
+    return
+        TEST_IO(read_size)  ?:
+        DO(dump_binary(stdout, block, (size_t) read_size))  ?:
+        DO(memcpy(destination, block, (size_t) read_size));
+}
+
+
 static error__t do_command(int argc, char *argv[])
 {
     if (argc < 4)
@@ -72,6 +87,12 @@ static error__t do_command(int argc, char *argv[])
         *(int32_t *) (register_map + offset) = value;
         return ERROR_OK;
     }
+    else if (strcmp(argv[1], "b") == 0)
+    {
+        size_t offset = (size_t) atol(argv[2]);
+        size_t max_length = (size_t) atol(argv[3]);
+        return copy_block(register_map + offset, max_length);
+    }
     else
         return FAIL_("Unknown command");
 }
@@ -82,7 +103,6 @@ static error__t do_command(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-
     error__t error =
         initialise_hardware()  ?:
         do_command(argc, argv);

@@ -16,25 +16,25 @@ architecture top of top is
     signal dsp_reset_n : std_logic;
 
     -- Wiring from AXI-Lite master to register slave
-    signal DSP_REGS_araddr : std_logic_vector(15 downto 0);
+    signal DSP_REGS_araddr : std_logic_vector(15 downto 0);     -- AR
     signal DSP_REGS_arprot : std_logic_vector(2 downto 0);
     signal DSP_REGS_arready : std_logic;
     signal DSP_REGS_arvalid : std_logic;
-    signal DSP_REGS_awaddr : std_logic_vector(15 downto 0);
+    signal DSP_REGS_rdata : std_logic_vector(31 downto 0);      -- R
+    signal DSP_REGS_rresp : std_logic_vector(1 downto 0);
+    signal DSP_REGS_rready : std_logic;
+    signal DSP_REGS_rvalid : std_logic;
+    signal DSP_REGS_awaddr : std_logic_vector(15 downto 0);     -- AW
     signal DSP_REGS_awprot : std_logic_vector(2 downto 0);
     signal DSP_REGS_awready : std_logic;
     signal DSP_REGS_awvalid : std_logic;
-    signal DSP_REGS_bready : std_logic;
-    signal DSP_REGS_bresp : std_logic_vector(1 downto 0);
-    signal DSP_REGS_bvalid : std_logic;
-    signal DSP_REGS_rdata : std_logic_vector(31 downto 0);
-    signal DSP_REGS_rready : std_logic;
-    signal DSP_REGS_rresp : std_logic_vector(1 downto 0);
-    signal DSP_REGS_rvalid : std_logic;
-    signal DSP_REGS_wdata : std_logic_vector(31 downto 0);
-    signal DSP_REGS_wready : std_logic;
+    signal DSP_REGS_wdata : std_logic_vector(31 downto 0);      -- W
     signal DSP_REGS_wstrb : std_logic_vector(3 downto 0);
+    signal DSP_REGS_wready : std_logic;
     signal DSP_REGS_wvalid : std_logic;
+    signal DSP_REGS_bresp : std_logic_vector(1 downto 0);
+    signal DSP_REGS_bready : std_logic;                         -- B
+    signal DSP_REGS_bvalid : std_logic;
 
     -- Internal register path
     signal REGS_read_strobe : mod_strobe_t;
@@ -46,8 +46,12 @@ architecture top of top is
     signal REGS_write_data : reg_data_t;
     signal REGS_write_ack : mod_strobe_t;
 
-    signal register_file_0 : reg_data_array_t(REG_ADDR_RANGE);
-    signal register_file_1 : reg_data_array_t(REG_ADDR_RANGE);
+    -- Register file and debug
+    type reg_file_array_t is
+        array(MOD_ADDR_RANGE) of reg_data_array_t(REG_ADDR_RANGE);
+    signal register_file : reg_file_array_t;
+    signal counter : unsigned(15 downto 0);
+    signal debug_trigger : std_logic;
 
 begin
     -- Reference clock for MGT.  For this one we don't want the BUFG.
@@ -129,23 +133,23 @@ begin
         -- AXI-Lite register slave interface
         M_DSP_REGS_araddr => DSP_REGS_araddr,
         M_DSP_REGS_arprot => DSP_REGS_arprot,
-        M_DSP_REGS_arvalid => DSP_REGS_arvalid,
         M_DSP_REGS_arready => DSP_REGS_arready,
+        M_DSP_REGS_arvalid => DSP_REGS_arvalid,
         M_DSP_REGS_rdata => DSP_REGS_rdata,
         M_DSP_REGS_rresp => DSP_REGS_rresp,
-        M_DSP_REGS_rvalid => DSP_REGS_rvalid,
         M_DSP_REGS_rready => DSP_REGS_rready,
+        M_DSP_REGS_rvalid => DSP_REGS_rvalid,
         M_DSP_REGS_awaddr => DSP_REGS_awaddr,
         M_DSP_REGS_awprot => DSP_REGS_awprot,
-        M_DSP_REGS_awvalid => DSP_REGS_awvalid,
         M_DSP_REGS_awready => DSP_REGS_awready,
+        M_DSP_REGS_awvalid => DSP_REGS_awvalid,
         M_DSP_REGS_wdata => DSP_REGS_wdata,
         M_DSP_REGS_wstrb => DSP_REGS_wstrb,
-        M_DSP_REGS_wvalid => DSP_REGS_wvalid,
         M_DSP_REGS_wready => DSP_REGS_wready,
+        M_DSP_REGS_wvalid => DSP_REGS_wvalid,
         M_DSP_REGS_bresp => DSP_REGS_bresp,
-        M_DSP_REGS_bvalid => DSP_REGS_bvalid,
         M_DSP_REGS_bready => DSP_REGS_bready,
+        M_DSP_REGS_bvalid => DSP_REGS_bvalid,
 
         -- AXI master interface to DDR block 0
         S_DSP_DDR0_awaddr => (others => '0'),
@@ -236,47 +240,73 @@ begin
         write_ack_i => REGS_write_ack
     );
 
-    REGS_read_ack(2 to MOD_ADDR_COUNT-1) <= (others => '1');
-    REGS_write_ack(1 to MOD_ADDR_COUNT-1) <= (others => '1');
-    REGS_read_data(2 to MOD_ADDR_COUNT-1) <= (others => X"AAAAAAAA");
 
-    -- A simple register file with loopback
-    register_file_inst : entity work.register_file port map (
+    -- General purpose r/w registers filling all but one module
+    gen_register_file : for n in 0 to MOD_ADDR_COUNT-2 generate
+        register_file_inst : entity work.register_file port map (
+            clk_i => dsp_clk,
+
+            write_strobe_i => REGS_write_strobe(n),
+            write_address_i => REGS_write_address,
+            write_data_i => REGS_write_data,
+            write_ack_o => REGS_write_ack(n),
+
+            register_data_o => register_file(n)
+        );
+        register_read_inst : entity work.register_read port map (
+            clk_i => dsp_clk,
+
+            read_strobe_i => REGS_read_strobe(n),
+            read_address_i => REGS_read_address,
+            read_data_o => REGS_read_data(n),
+            read_ack_o => REGS_read_ack(n),
+
+            register_data_i => register_file(n)
+        );
+    end generate;
+
+
+    -- Debug for capturing writes.
+    debug_trigger <= DSP_REGS_awvalid or DSP_REGS_wvalid;
+    debug_inst : entity work.debug generic map (
+        WIDTH => 128,
+        DEPTH => 1024
+    ) port map (
         clk_i => dsp_clk,
 
-        write_strobe_i => REGS_write_strobe(0),
+        capture_i(15 downto 0) => std_logic_vector(counter),
+        capture_i(31 downto 16) => DSP_REGS_awaddr,
+        capture_i(63 downto 32) => DSP_REGS_wdata,
+        capture_i(95 downto 64) => REGS_write_data,
+        capture_i(111 downto 96) => REGS_write_strobe,
+        capture_i(116 downto 112) => std_logic_vector(REGS_write_address),
+        capture_i(117) => '0',
+        capture_i(121 downto 118) => DSP_REGS_wstrb,
+        capture_i(122) => DSP_REGS_awready,
+        capture_i(123) => DSP_REGS_awvalid,
+        capture_i(124) => DSP_REGS_wready,
+        capture_i(125) => DSP_REGS_wvalid,
+        capture_i(126) => DSP_REGS_bready,
+        capture_i(127) => DSP_REGS_bvalid,
+        enable_i => '1',
+        trigger_i => debug_trigger,
+
+        write_strobe_i => REGS_write_strobe(MOD_ADDR_COUNT-1),
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
-        write_ack_o => REGS_write_ack(0),
+        write_ack_o => REGS_write_ack(MOD_ADDR_COUNT-1),
 
-        register_data_o => register_file_0
-    );
-    register_read_inst0 : entity work.register_read port map (
-        clk_i => dsp_clk,
-
-        read_strobe_i => REGS_read_strobe(0),
+        read_strobe_i => REGS_read_strobe(MOD_ADDR_COUNT-1),
         read_address_i => REGS_read_address,
-        read_data_o => REGS_read_data(0),
-        read_ack_o => REGS_read_ack(0),
-
-        register_data_i => register_file_0
+        read_data_o => REGS_read_data(MOD_ADDR_COUNT-1),
+        read_ack_o => REGS_read_ack(MOD_ADDR_COUNT-1)
     );
-    register_read_inst1 : entity work.register_read port map (
-        clk_i => dsp_clk,
+    process (dsp_clk) begin
+        if rising_edge(dsp_clk) then
+            counter <= counter + 1;
+        end if;
+    end process;
 
-        read_strobe_i => REGS_read_strobe(1),
-        read_address_i => REGS_read_address,
-        read_data_o => REGS_read_data(1),
-        read_ack_o => REGS_read_ack(1),
-
-        register_data_i => register_file_1
-    );
-
-    register_file_1 <= (
-        0 => x"01234567",
-        1 => x"89ABCDEF",
-        others => x"55555555");
-
-    ULED <= register_file_0(0)(3 downto 0);
+    ULED <= register_file(0)(0)(3 downto 0);
 
 end;

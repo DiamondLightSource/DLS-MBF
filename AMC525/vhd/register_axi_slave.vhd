@@ -18,27 +18,27 @@ entity register_axi_slave is
         -- AXI-Lite read interface
         araddr_i : in std_logic_vector(ADDR_BITS-1 downto 0);
         arprot_i : in std_logic_vector(2 downto 0);                 -- Ignored
-        arvalid_i : in std_logic;
         arready_o : out std_logic;
+        arvalid_i : in std_logic;
         --
         rdata_o : out std_logic_vector(DATA_BITS-1 downto 0);
         rresp_o : out std_logic_vector(1 downto 0);
-        rvalid_o : out std_logic;
         rready_i : in std_logic;
+        rvalid_o : out std_logic;
 
         -- AXI-Lite write interface
         awaddr_i : in std_logic_vector(ADDR_BITS-1 downto 0);
         awprot_i : in std_logic_vector(2 downto 0);                 -- Ignored
-        awvalid_i : in std_logic;
         awready_o : out std_logic;
+        awvalid_i : in std_logic;
         --
         wdata_i : in std_logic_vector(DATA_BITS-1 downto 0);
         wstrb_i : in std_logic_vector(DATA_BITS/8-1 downto 0);      -- Ignored
-        wvalid_i : in std_logic;
         wready_o : out std_logic;
+        wvalid_i : in std_logic;
         --
-        bready_i : in std_logic;
         bresp_o : out std_logic_vector(1 downto 0);
+        bready_i : in std_logic;
         bvalid_o : out std_logic;
 
         -- Internal read interface
@@ -76,12 +76,19 @@ architecture register_axi_slave of register_axi_slave is
 
     -- Extracts module address from AXI address
     function module_address(addr : std_logic_vector) return MOD_ADDR_RANGE
-    is
-    begin
+    is begin
         return to_integer(unsigned(
             read_field(addr, MOD_ADDR_BITS, REG_ADDR_BITS + BYTE_BITS)));
     end;
 
+    -- Extracts register address from AXI address
+    function register_address(addr : std_logic_vector) return reg_addr_t
+    is begin
+        return unsigned(read_field(addr, REG_ADDR_BITS, BYTE_BITS));
+    end;
+
+
+    -- ------------------------------------------------------------------------
     -- Reading state
     type read_state_t is (READ_IDLE, READ_START, READ_READING, READ_DONE);
     signal read_state : read_state_t;
@@ -92,6 +99,8 @@ architecture register_axi_slave of register_axi_slave is
     signal read_data : reg_data_t;
 
 
+    -- ------------------------------------------------------------------------
+    -- Writing state
 
     -- The data and address for writes can come separately.
     type write_state_t is (WRITE_IDLE, WRITE_WRITING, WRITE_DONE);
@@ -121,8 +130,7 @@ begin
                     -- On valid read request latch read address
                     if arvalid_i = '1' then
                         read_module_address <= module_address(araddr_i);
-                        read_address_o <=
-                            read_field(araddr_i, REG_ADDR_BITS, BYTE_BITS);
+                        read_address_o <= register_address(araddr_i);
                         read_state <= READ_START;
                     end if;
                 when READ_START =>
@@ -162,8 +170,7 @@ begin
         elsif rising_edge(clk_i) then
             -- Wait for valid write address
             if waddr_valid = '0' and awvalid_i = '1' then
-                write_address_o <=
-                    read_field(awaddr_i, REG_ADDR_BITS, BYTE_BITS);
+                write_address_o <= register_address(awaddr_i);
                 write_module_address <= module_address(awaddr_i);
                 waddr_valid <= '1';
             end if;
@@ -202,6 +209,5 @@ begin
     wready_o  <= not wdata_valid;
     bvalid_o  <= to_std_logic(write_state = WRITE_DONE);
     bresp_o <= "00";
-
 
 end;

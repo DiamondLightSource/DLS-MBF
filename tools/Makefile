@@ -10,11 +10,14 @@ endif
 SHELL = bash
 
 
+TOOLS = testmem read_debug
+
+
 # Git version
 BUILD_DATE_TIME = $(shell date +'%Y-%m-%d %H:%M:%S')
 
 
-default: testmem
+default: $(TOOLS)
 .PHONY: default
 
 
@@ -75,9 +78,13 @@ endif
 testmem_SRCS += error.c
 testmem_SRCS += testmem.c
 
+read_debug_SRCS += error.c
+read_debug_SRCS += read_debug.c
+
 
 
 testmem: $(testmem_SRCS:.c=.o)
+read_debug: $(read_debug_SRCS:.c=.o)
 
 
 %.d: %.c
