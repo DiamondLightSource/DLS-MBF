@@ -1,5 +1,60 @@
 -- Implements register interface to LMBF system
 
+-- This is an AXI-Lite slave which only accepts full 32-bit writes.  The
+-- incoming 16-bit address is split into four parts:
+--
+--  +----------+---------------+---------------+------+
+--  | Ignored  | Module select | Reg address   | Byte |
+--  +----------+---------------+---------------+------+
+--              MOD_ADDR_BITS   REG_ADDR_BITS   BYTE_BITS
+--
+-- The module select field is used to determine which sub-module receives the
+-- associated read or write, and the reg address field is passed through to the
+-- sub-module.
+--
+-- The internal write interface is quite simple: the appropriate read_strobe as
+-- selected by "module select" is pulsed for one clock cycle after the
+-- write_address and write_data outputs are valid:
+--
+--  State           | IDLE  | START |WRITING| DONE  |
+--                           ________________________
+--  write_data_o,   XXXXXXXXX________________________
+--  write_address_o
+--                                    _______
+--  write_strobe_o  _________________/       \_______
+--
+-- This means that modules can implement a simple one-cycle write interface.
+--
+-- Inevitably, the read interface is a little more involved, and completion can
+-- be stretched by the module using the module specific read_ack signal.  For
+-- single cycle reads which don't depend on read_strobe, read_ack can be
+-- permanently high as shown here:
+--
+--  State           | IDLE  | START |READING| DONE  |
+--                           ________________________
+--  read_address_o  XXXXXXXXX________________________
+--                                    _______
+--  read_strobe_o   _________________/       \_______
+--                                   ________
+--  read_data_i     XXXXXXXXXXXXXXXXX________XXXXXXXX
+--                  _________________________________
+--  read_ack_i                                          (permanently high)
+--
+-- Alternatively read_ack can be generated some delay after read_strobe if it is
+-- necessary to delay the generation of read_data:
+--
+--  State           | IDLE  | START |READING|READING|READING| DONE  |
+--                           ________________________________________
+--  read_address_o  XXXXXXXXX________________________________________
+--                                    _______
+--  read_strobe_o   _________________/       \_______________________
+--                                                   ________
+--  read_data_i     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX________XXXXXXXX
+--                                                    _______
+--  read_ack_i      _________________________________/       \_______
+--
+
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -56,11 +111,6 @@ end;
 
 architecture register_axi_slave of register_axi_slave is
 
-    -- We split the address into four parts:
-    --  +----------+---------------+---------------+------+
-    --  | Ignored  | Module select | Reg address   | Byte |
-    --  +----------+---------------+---------------+------+
-    --              MOD_ADDR_BITS   REG_ADDR_BITS   BYTE_BITS
     constant BYTE_BITS : natural := 2;
 
 
