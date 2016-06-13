@@ -263,28 +263,27 @@ begin
     end generate;
 
 
-    -- Debug for capturing writes.
-    debug_trigger <= DSP_REGS_awvalid or DSP_REGS_wvalid;
+    -- Debug for capturing reads.
+    debug_trigger <= DSP_REGS_arvalid;
     debug_inst : entity work.debug generic map (
         WIDTH => 128,
         DEPTH => 1024
     ) port map (
         clk_i => dsp_clk,
 
-        capture_i(15 downto 0) => std_logic_vector(counter),
-        capture_i(31 downto 16) => DSP_REGS_awaddr,
-        capture_i(63 downto 32) => DSP_REGS_wdata,
-        capture_i(95 downto 64) => REGS_write_data,
-        capture_i(111 downto 96) => REGS_write_strobe,
-        capture_i(116 downto 112) => std_logic_vector(REGS_write_address),
-        capture_i(117) => '0',
-        capture_i(121 downto 118) => DSP_REGS_wstrb,
-        capture_i(122) => DSP_REGS_awready,
-        capture_i(123) => DSP_REGS_awvalid,
-        capture_i(124) => DSP_REGS_wready,
-        capture_i(125) => DSP_REGS_wvalid,
-        capture_i(126) => DSP_REGS_bready,
-        capture_i(127) => DSP_REGS_bvalid,
+        capture_i(15 downto 0) => REGS_read_ack,
+        capture_i(31 downto 16) => DSP_REGS_araddr,
+        capture_i(63 downto 32) => DSP_REGS_rdata,
+        capture_i(95 downto 64) => REGS_read_data(0),
+        capture_i(111 downto 96) => REGS_read_strobe,
+        capture_i(116 downto 112) => std_logic_vector(REGS_read_address),
+        capture_i(121 downto 117) => (others => '0'),
+        capture_i(122) => DSP_REGS_arready,
+        capture_i(123) => DSP_REGS_arvalid,
+        capture_i(124) => DSP_REGS_rready,
+        capture_i(125) => DSP_REGS_rvalid,
+        capture_i(126) => '0',
+        capture_i(127) => '0',
         enable_i => '1',
         trigger_i => debug_trigger,
 
