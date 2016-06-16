@@ -319,7 +319,11 @@ package body support is
     end;
 
     function to_integer(data : std_logic) return natural is begin
-        if data = '1' then return 1; else return 0; end if;
+        if data = '1' then
+            return 1;
+        else
+            return 0;
+        end if;
     end;
 
 

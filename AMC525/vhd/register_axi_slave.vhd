@@ -54,7 +54,6 @@
 --  read_ack_i      _________________________________/       \_______
 --
 
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -67,8 +66,8 @@ entity register_axi_slave is
         DATA_BITS : natural := 32
     );
     port (
-        rstn_i : in std_logic;
         clk_i : in std_logic;
+        rstn_i : in std_logic;
 
         -- AXI-Lite read interface
         araddr_i : in std_logic_vector(ADDR_BITS-1 downto 0);

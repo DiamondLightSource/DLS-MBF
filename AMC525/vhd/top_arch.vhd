@@ -36,6 +36,53 @@ architecture top of top is
     signal DSP_REGS_bready : std_logic;                         -- B
     signal DSP_REGS_bvalid : std_logic;
 
+    -- Wiring from DSP burst master to AXI DDR0 slave
+    signal DSP_DDR0_awaddr : std_logic_vector(47 downto 0);
+    signal DSP_DDR0_awburst : std_logic_vector(1 downto 0);
+    signal DSP_DDR0_awcache : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_awlen : std_logic_vector(7 downto 0);
+    signal DSP_DDR0_awlock : std_logic_vector(0 downto 0);
+    signal DSP_DDR0_awprot : std_logic_vector(2 downto 0);
+    signal DSP_DDR0_awqos : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_awregion : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_awsize : std_logic_vector(2 downto 0);
+    signal DSP_DDR0_awready : std_logic;
+    signal DSP_DDR0_awvalid : std_logic;
+    signal DSP_DDR0_wdata : std_logic_vector(63 downto 0);
+    signal DSP_DDR0_wlast : std_logic;
+    signal DSP_DDR0_wstrb : std_logic_vector(7 downto 0);
+    signal DSP_DDR0_wready : std_logic;
+    signal DSP_DDR0_wvalid : std_logic;
+    signal DSP_DDR0_bresp : std_logic_vector(1 downto 0);
+    signal DSP_DDR0_bready : std_logic;
+    signal DSP_DDR0_bvalid : std_logic;
+
+    -- Data from DSP to burst master
+    signal DSP_DDR0_dsp_data : std_logic_vector(63 downto 0);
+    signal DSP_DDR0_dsp_strobe : std_logic;
+    signal DSP_DDR0_dsp_enable : std_logic;
+
+    -- Wiring from DSP slow write master to AXI DDR1 slave
+    signal DSP_DDR1_awaddr : std_logic_vector(47 downto 0);
+    signal DSP_DDR1_awburst : std_logic_vector(1 downto 0);
+    signal DSP_DDR1_awcache : std_logic_vector(3 downto 0);
+    signal DSP_DDR1_awlen : std_logic_vector(7 downto 0);
+    signal DSP_DDR1_awlock : std_logic_vector(0 downto 0);
+    signal DSP_DDR1_awprot : std_logic_vector(2 downto 0);
+    signal DSP_DDR1_awqos : std_logic_vector(3 downto 0);
+    signal DSP_DDR1_awregion : std_logic_vector(3 downto 0);
+    signal DSP_DDR1_awsize : std_logic_vector(2 downto 0);
+    signal DSP_DDR1_awready : std_logic;
+    signal DSP_DDR1_awvalid : std_logic;
+    signal DSP_DDR1_wdata : std_logic_vector(63 downto 0);
+    signal DSP_DDR1_wlast : std_logic;
+    signal DSP_DDR1_wstrb : std_logic_vector(7 downto 0);
+    signal DSP_DDR1_wready : std_logic;
+    signal DSP_DDR1_wvalid : std_logic;
+    signal DSP_DDR1_bresp : std_logic_vector(1 downto 0);
+    signal DSP_DDR1_bready : std_logic;
+    signal DSP_DDR1_bvalid : std_logic;
+
     -- Internal register path
     signal REGS_read_strobe : mod_strobe_t;
     signal REGS_read_address : reg_addr_t;
@@ -45,11 +92,17 @@ architecture top of top is
     signal REGS_write_address : reg_addr_t;
     signal REGS_write_data : reg_data_t;
 
+    -- Some register file assignments
+    constant MOD_DDR0_MASTER : natural := 0;
+    constant MOD_DDR0_GEN : natural := 1;
+    constant MOD_DEBUG : natural := MOD_ADDR_COUNT-1;
+    -- Assign the remaining space to random r/w registers for now
+    subtype RW_REGISTERS is natural range 2 to MOD_ADDR_COUNT-2;
+
     -- Register file and debug
     type reg_file_array_t is
-        array(MOD_ADDR_RANGE) of reg_data_array_t(REG_ADDR_RANGE);
+        array(RW_REGISTERS) of reg_data_array_t(REG_ADDR_RANGE);
     signal register_file : reg_file_array_t;
-    signal counter : unsigned(15 downto 0);
     signal debug_trigger : std_logic;
 
 begin
@@ -129,7 +182,7 @@ begin
         -- Reference timing clock for DDR3 controller
         CLK100MHZ => clk100mhz,
 
-        -- AXI-Lite register slave interface
+        -- AXI-Lite register master interface
         M_DSP_REGS_araddr => DSP_REGS_araddr,
         M_DSP_REGS_arprot => DSP_REGS_arprot,
         M_DSP_REGS_arready => DSP_REGS_arready,
@@ -150,47 +203,47 @@ begin
         M_DSP_REGS_bready => DSP_REGS_bready,
         M_DSP_REGS_bvalid => DSP_REGS_bvalid,
 
-        -- AXI master interface to DDR block 0
-        S_DSP_DDR0_awaddr => (others => '0'),
-        S_DSP_DDR0_awburst => (others => '0'),
-        S_DSP_DDR0_awcache => (others => '0'),
-        S_DSP_DDR0_awlen => (others => '0'),
-        S_DSP_DDR0_awlock => (others => '0'),
-        S_DSP_DDR0_awprot => (others => '0'),
-        S_DSP_DDR0_awqos => (others => '0'),
-        S_DSP_DDR0_awready => open,
-        S_DSP_DDR0_awregion => (others => '0'),
-        S_DSP_DDR0_awsize => (others => '0'),
-        S_DSP_DDR0_awvalid => '0',
-        S_DSP_DDR0_bready => '0',
-        S_DSP_DDR0_bresp => open,
-        S_DSP_DDR0_bvalid => open,
-        S_DSP_DDR0_wdata => (others => '0'),
-        S_DSP_DDR0_wlast => '0',
-        S_DSP_DDR0_wready => open,
-        S_DSP_DDR0_wstrb => (others => '0'),
-        S_DSP_DDR0_wvalid => '0',
+        -- AXI slave interface to DDR block 0
+        S_DSP_DDR0_awaddr => DSP_DDR0_awaddr,
+        S_DSP_DDR0_awburst => DSP_DDR0_awburst,
+        S_DSP_DDR0_awcache => DSP_DDR0_awcache,
+        S_DSP_DDR0_awlen => DSP_DDR0_awlen,
+        S_DSP_DDR0_awlock => DSP_DDR0_awlock,
+        S_DSP_DDR0_awprot => DSP_DDR0_awprot,
+        S_DSP_DDR0_awqos => DSP_DDR0_awqos,
+        S_DSP_DDR0_awregion => DSP_DDR0_awregion,
+        S_DSP_DDR0_awsize => DSP_DDR0_awsize,
+        S_DSP_DDR0_awready => DSP_DDR0_awready,
+        S_DSP_DDR0_awvalid => DSP_DDR0_awvalid,
+        S_DSP_DDR0_wdata => DSP_DDR0_wdata,
+        S_DSP_DDR0_wlast => DSP_DDR0_wlast,
+        S_DSP_DDR0_wstrb => DSP_DDR0_wstrb,
+        S_DSP_DDR0_wready => DSP_DDR0_wready,
+        S_DSP_DDR0_wvalid => DSP_DDR0_wvalid,
+        S_DSP_DDR0_bresp => DSP_DDR0_bresp,
+        S_DSP_DDR0_bready => DSP_DDR0_bready,
+        S_DSP_DDR0_bvalid => DSP_DDR0_bvalid,
 
-        -- AXI master interface to DDR block 1
-        S_DSP_DDR1_awaddr => (others => '0'),
-        S_DSP_DDR1_awburst => (others => '0'),
-        S_DSP_DDR1_awcache => (others => '0'),
-        S_DSP_DDR1_awlen => (others => '0'),
-        S_DSP_DDR1_awlock => (others => '0'),
-        S_DSP_DDR1_awprot => (others => '0'),
-        S_DSP_DDR1_awqos => (others => '0'),
-        S_DSP_DDR1_awready => open,
-        S_DSP_DDR1_awregion => (others => '0'),
-        S_DSP_DDR1_awsize => (others => '0'),
-        S_DSP_DDR1_awvalid => '0',
-        S_DSP_DDR1_bready => '0',
-        S_DSP_DDR1_bresp => open,
-        S_DSP_DDR1_bvalid => open,
-        S_DSP_DDR1_wdata => (others => '0'),
-        S_DSP_DDR1_wlast => '0',
-        S_DSP_DDR1_wready => open,
-        S_DSP_DDR1_wstrb => (others => '0'),
-        S_DSP_DDR1_wvalid => '0',
+        -- AXI slave interface to DDR block 1
+        S_DSP_DDR1_awaddr => DSP_DDR1_awaddr,
+        S_DSP_DDR1_awburst => DSP_DDR1_awburst,
+        S_DSP_DDR1_awcache => DSP_DDR1_awcache,
+        S_DSP_DDR1_awlen => DSP_DDR1_awlen,
+        S_DSP_DDR1_awlock => DSP_DDR1_awlock,
+        S_DSP_DDR1_awprot => DSP_DDR1_awprot,
+        S_DSP_DDR1_awqos => DSP_DDR1_awqos,
+        S_DSP_DDR1_awready => DSP_DDR1_awready,
+        S_DSP_DDR1_awregion => DSP_DDR1_awregion,
+        S_DSP_DDR1_awsize => DSP_DDR1_awsize,
+        S_DSP_DDR1_awvalid => DSP_DDR1_awvalid,
+        S_DSP_DDR1_bready => DSP_DDR1_bready,
+        S_DSP_DDR1_bresp => DSP_DDR1_bresp,
+        S_DSP_DDR1_bvalid => DSP_DDR1_bvalid,
+        S_DSP_DDR1_wdata => DSP_DDR1_wdata,
+        S_DSP_DDR1_wlast => DSP_DDR1_wlast,
+        S_DSP_DDR1_wready => DSP_DDR1_wready,
+        S_DSP_DDR1_wstrb => DSP_DDR1_wstrb,
+        S_DSP_DDR1_wvalid => DSP_DDR1_wvalid,
 
         -- DSP interface clock, running at half RF frequency
         DSP_CLK => dsp_clk,
@@ -200,8 +253,8 @@ begin
 
     -- Register AXI slave interface
     register_axi_slave_inst : entity work.register_axi_slave port map (
-        rstn_i => dsp_reset_n,
         clk_i => dsp_clk,
+        rstn_i => dsp_reset_n,
 
         -- AXI-Lite read interface
         araddr_i => DSP_REGS_araddr,
@@ -239,8 +292,91 @@ begin
     );
 
 
+    -- AXI burst master for streaming data to DDR0 DRAM
+    axi_burst_master_inst : entity work.axi_burst_master port map (
+        clk_i => dsp_clk,
+        rstn_i => dsp_reset_n,
+
+        -- AXI write master
+        awaddr_o => DSP_DDR0_awaddr,
+        awburst_o => DSP_DDR0_awburst,
+        awsize_o => DSP_DDR0_awsize,
+        awlen_o => DSP_DDR0_awlen,
+        awcache_o => DSP_DDR0_awcache,
+        awlock_o => DSP_DDR0_awlock,
+        awprot_o => DSP_DDR0_awprot,
+        awqos_o => DSP_DDR0_awqos,
+        awregion_o => DSP_DDR0_awregion,
+        awvalid_o => DSP_DDR0_awvalid,
+        awready_i => DSP_DDR0_awready,
+        wdata_o => DSP_DDR0_wdata,
+        wlast_o => DSP_DDR0_wlast,
+        wstrb_o => DSP_DDR0_wstrb,
+        wvalid_o => DSP_DDR0_wvalid,
+        wready_i => DSP_DDR0_wready,
+        bresp_i => DSP_DDR0_bresp,
+        bvalid_i => DSP_DDR0_bvalid,
+        bready_o => DSP_DDR0_bready,
+
+        -- Register interface
+        write_strobe_i => REGS_write_strobe(MOD_DDR0_MASTER),
+        write_address_i => REGS_write_address,
+        write_data_i => REGS_write_data,
+
+        read_strobe_i => REGS_read_strobe(MOD_DDR0_MASTER),
+        read_address_i => REGS_read_address,
+        read_data_o => REGS_read_data(MOD_DDR0_MASTER),
+        read_ack_o => REGS_read_ack(MOD_DDR0_MASTER),
+
+        -- Data streaming interface
+        data_i => DSP_DDR0_dsp_data,
+        data_strobe_i => DSP_DDR0_dsp_strobe,
+        capture_enable_i => DSP_DDR0_dsp_enable
+    );
+
+    -- Pattern generator for burst generator
+    memory_generator_inst : entity work.memory_generator port map (
+        clk_i => dsp_clk,
+
+        write_strobe_i => REGS_write_strobe(MOD_DDR0_GEN),
+        write_address_i => REGS_write_address,
+        write_data_i => REGS_write_data,
+
+        read_strobe_i => REGS_read_strobe(MOD_DDR0_GEN),
+        read_address_i => REGS_read_address,
+        read_data_o => REGS_read_data(MOD_DDR0_GEN),
+        read_ack_o => REGS_read_ack(MOD_DDR0_GEN),
+
+        data_o => DSP_DDR0_dsp_data,
+        data_strobe_o => DSP_DDR0_dsp_strobe,
+        capture_enable_o => DSP_DDR0_dsp_enable
+    );
+
+
+    -- Dummy wiring for unused DDR1 DRAM connections
+    DSP_DDR1_awaddr <= (others => '0');
+    DSP_DDR1_awburst <= (others => '0');
+    DSP_DDR1_awcache <= (others => '0');
+    DSP_DDR1_awlen <= (others => '0');
+    DSP_DDR1_awlock <= (others => '0');
+    DSP_DDR1_awprot <= (others => '0');
+    DSP_DDR1_awqos <= (others => '0');
+--     DSP_DDR1_awready <= open;
+    DSP_DDR1_awregion <= (others => '0');
+    DSP_DDR1_awsize <= (others => '0');
+    DSP_DDR1_awvalid <= '0';
+    DSP_DDR1_bready <= '0';
+--     DSP_DDR1_bresp <= open;
+--     DSP_DDR1_bvalid <= open;
+    DSP_DDR1_wdata <= (others => '0');
+    DSP_DDR1_wlast <= '0';
+--     DSP_DDR1_wready <= open;
+    DSP_DDR1_wstrb <= (others => '0');
+    DSP_DDR1_wvalid <= '0';
+
+
     -- General purpose r/w registers filling all but one module
-    gen_register_file : for n in 0 to MOD_ADDR_COUNT-2 generate
+    gen_register_file : for n in RW_REGISTERS generate
         register_file_inst : entity work.register_file port map (
             clk_i => dsp_clk,
 
@@ -264,44 +400,40 @@ begin
 
 
     -- Debug for capturing reads.
-    debug_trigger <= DSP_REGS_arvalid;
+    debug_trigger <= DSP_DDR0_dsp_enable;
     debug_inst : entity work.debug generic map (
         WIDTH => 128,
         DEPTH => 1024
     ) port map (
         clk_i => dsp_clk,
 
-        capture_i(15 downto 0) => REGS_read_ack,
-        capture_i(31 downto 16) => DSP_REGS_araddr,
-        capture_i(63 downto 32) => DSP_REGS_rdata,
-        capture_i(95 downto 64) => REGS_read_data(0),
-        capture_i(111 downto 96) => REGS_read_strobe,
-        capture_i(116 downto 112) => std_logic_vector(REGS_read_address),
-        capture_i(121 downto 117) => (others => '0'),
-        capture_i(122) => DSP_REGS_arready,
-        capture_i(123) => DSP_REGS_arvalid,
-        capture_i(124) => DSP_REGS_rready,
-        capture_i(125) => DSP_REGS_rvalid,
-        capture_i(126) => '0',
-        capture_i(127) => '0',
+        capture_i(63 downto 0) => DSP_DDR0_wdata,
+        capture_i(95 downto 64) => DSP_DDR0_awaddr(31 downto 0),
+        capture_i(103 downto 96) => DSP_DDR0_wstrb,
+        capture_i(104) => DSP_DDR0_dsp_enable,
+        capture_i(105) => DSP_DDR0_wlast,
+        capture_i(107 downto 106) => DSP_DDR0_bresp,
+        capture_i(108) => DSP_DDR0_awready,
+        capture_i(109) => DSP_DDR0_awvalid,
+        capture_i(110) => DSP_DDR0_wready,
+        capture_i(111) => DSP_DDR0_wvalid,
+        capture_i(112) => DSP_DDR0_bready,
+        capture_i(113) => DSP_DDR0_bvalid,
+        capture_i(127 downto 114) => (others => '0'),
+
         enable_i => '1',
         trigger_i => debug_trigger,
 
-        write_strobe_i => REGS_write_strobe(MOD_ADDR_COUNT-1),
+        write_strobe_i => REGS_write_strobe(MOD_DEBUG),
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
 
-        read_strobe_i => REGS_read_strobe(MOD_ADDR_COUNT-1),
+        read_strobe_i => REGS_read_strobe(MOD_DEBUG),
         read_address_i => REGS_read_address,
-        read_data_o => REGS_read_data(MOD_ADDR_COUNT-1),
-        read_ack_o => REGS_read_ack(MOD_ADDR_COUNT-1)
+        read_data_o => REGS_read_data(MOD_DEBUG),
+        read_ack_o => REGS_read_ack(MOD_DEBUG)
     );
-    process (dsp_clk) begin
-        if rising_edge(dsp_clk) then
-            counter <= counter + 1;
-        end if;
-    end process;
 
-    ULED <= register_file(0)(0)(3 downto 0);
+    ULED <= register_file(2)(0)(3 downto 0);
 
 end;

@@ -115,8 +115,10 @@ static unsigned long read_field(
     const unsigned long *data = row;
     unsigned int word_bits = 8 * sizeof(unsigned long);
     unsigned long word = data[start / word_bits];
-    word = word >> start % word_bits;
-    word = word & ((1UL << width) - 1);
+    word >>= start % word_bits;
+    // It's more natural here to write the mask as (1UL<<width)-1, but alas when
+    // width=64 we end up with a zero mask.  Whoops.
+    word &= (unsigned long) -1 >> (word_bits - width);
     return word;
 }
 
