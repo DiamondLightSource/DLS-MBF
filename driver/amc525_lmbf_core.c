@@ -12,9 +12,8 @@
 
 #include "error.h"
 #include "amc525_lmbf_device.h"
+#include "dma_control.h"
 
-
-#define DEVICE_NAME     "amc525_lmbf"
 
 MODULE_AUTHOR("Michael Abbott, Diamond Light Source Ltd.");
 MODULE_DESCRIPTION("Driver for LMBF AMC525 FPGA MTCA card");
@@ -26,7 +25,15 @@ MODULE_VERSION("0");
 #define AMC525_DID      0x7038
 
 
+#define DMA_BLOCK_SHIFT     20  // Default DMA block size as power of 2
+
+static int dma_block_shift = DMA_BLOCK_SHIFT;
+module_param(dma_block_shift, int, S_IRUGO);
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Structures. */
+
 
 /* All the driver specific state for a card is in this structure. */
 struct amc525_lmbf {
@@ -35,10 +42,79 @@ struct amc525_lmbf {
     int board;              // Index number for this board
     int minor;              // Associated minor number
 
+    /* BAR0 memory mapped register region. */
     unsigned long reg_length;
     void __iomem *reg_memory;
+
+    /* DMA controller. */
+    struct dma_control *dma;
 };
 
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Memory device. */
+
+/* This provides read access to the DRAM via the DMA controller with registers
+ * in BAR2. */
+
+
+#define DDR0_BASE       0
+#define DDR0_LENGTH     0x80000000      // 2GB
+
+
+static ssize_t lmbf_mem_read(
+    struct file *file, char __user *buf, size_t count, loff_t *f_pos)
+{
+    printk(KERN_INFO "mem read: %zu %llu\n", count, *f_pos);
+
+    struct amc525_lmbf *lmbf = file->private_data;
+
+    /* Constrain read to valid region. */
+    loff_t offset = *f_pos;
+    if (offset >= DDR0_LENGTH)
+        return -EFAULT;
+
+    /* Clip read to buffer size and end of memory. */
+    size_t buffer_size = 1 << dma_block_shift;
+    if (count > buffer_size)
+        count = buffer_size;
+    if (count > DDR0_LENGTH - offset)
+        count = DDR0_LENGTH - offset;
+
+    /* Read the data, transfer it to user space, release. */
+    void *read_data = read_dma_memory(lmbf->dma, offset, count);
+    count -= copy_to_user(buf, read_data, count);
+    release_dma_memory(lmbf->dma);
+
+    *f_pos += count;
+    if (count == 0)
+        /* Looks like copy_to_user didn't copy anything. */
+        return -EFAULT;
+    else
+        return count;
+}
+
+
+static loff_t lmbf_mem_llseek(
+    struct file *file, loff_t f_pos, int whence)
+{
+    printk(KERN_INFO "mem seek: %llu (%d)\n", f_pos, whence);
+    return generic_file_llseek_size(
+        file, f_pos, whence, DDR0_LENGTH, DDR0_LENGTH);
+}
+
+
+static struct file_operations lmbf_mem_fops = {
+    .owner = THIS_MODULE,
+    .read = lmbf_mem_read,
+    .llseek = lmbf_mem_llseek,
+};
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Register map device. */
+
+/* This provides memory mapped access to the registers in BAR0. */
 
 static int lmbf_reg_map(struct file *file, struct vm_area_struct *vma)
 {
@@ -82,10 +158,6 @@ static struct file_operations lmbf_reg_fops = {
     .mmap = lmbf_reg_map,
 };
 
-static struct file_operations lmbf_mem_fops = {
-    .owner = THIS_MODULE,
-};
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Basic file operations. */
@@ -109,7 +181,6 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
     struct amc525_lmbf *lmbf = container_of(cdev, struct amc525_lmbf, cdev);
     file->private_data = lmbf;
 
-
     /* Replace the file's f_ops with our own. */
     int minor_index = iminor(inode) - lmbf->minor;
     if (0 <= minor_index  &&  minor_index < MINORS_PER_BOARD)
@@ -121,11 +192,8 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
             return 0;
     }
     else
-    {
-        printk(KERN_ERR "Is this even possible?\n");
-        printk(KERN_ERR "Invalid minor %d\n", lmbf->minor);
+        /* No idea how this can happen, to be honest. */
         return -EINVAL;
-    }
 }
 
 
@@ -212,12 +280,17 @@ static int initialise_board(struct pci_dev *pdev, struct amc525_lmbf *lmbf)
     /* Map the register bar. */
     lmbf->reg_length = pci_resource_len(pdev, 0);
     lmbf->reg_memory = pci_iomap(pdev, 0, lmbf->reg_length);
-    TEST_PTR(lmbf->reg_memory, rc, no_memory, "Unable to map bar");
+    TEST_PTR(lmbf->reg_memory, rc, no_memory, "Unable to map register bar");
 
-    printk(KERN_INFO "Mapped bar: %ld %p\n",
-        lmbf->reg_length, lmbf->reg_memory);
+    rc = initialise_dma_control(pdev, dma_block_shift, &lmbf->dma);
+    if (rc < 0)  goto no_dma;
+
     return 0;
 
+
+    terminate_dma_control(lmbf->dma);
+no_dma:
+    pci_iounmap(pdev, lmbf->reg_memory);
 no_memory:
     return rc;
 }
@@ -226,6 +299,8 @@ no_memory:
 static void terminate_board(struct pci_dev *pdev)
 {
     struct amc525_lmbf *lmbf = pci_get_drvdata(pdev);
+
+    terminate_dma_control(lmbf->dma);
     pci_iounmap(pdev, lmbf->reg_memory);
 }
 
@@ -265,6 +340,11 @@ static int amc525_lmbf_probe(
         device_create(
             device_class, &pdev->dev, MKDEV(major, minor + i), NULL,
             "%s.%d.%s", DEVICE_NAME, board, fops_info[i].name);
+
+
+//     rc = request_irq(
+//         pdev->irq, fa_sniffer_isr, IRQF_SHARED, DEVICE_NAME, open);
+//     TEST_RC(rc, no_irq, "Unable to request irq");
 
     return 0;
 
