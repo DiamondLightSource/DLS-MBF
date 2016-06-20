@@ -58,33 +58,73 @@ struct amc525_lmbf {
  * in BAR2. */
 
 
+/* Physical layout in DDR address space of the two memory areas. */
 #define DDR0_BASE       0
 #define DDR0_LENGTH     0x80000000      // 2GB
+#define DDR1_BASE       0x80000000
+#define DDR1_LENGTH     0x08000000      // 128MB
 
 
-static ssize_t lmbf_mem_read(
+struct dma_context {
+    struct dma_control *dma;        // DMA controller
+    size_t base;
+    size_t length;
+};
+
+
+static int lmbf_dma_open(
+    struct file *file, struct amc525_lmbf *lmbf, size_t base, size_t length)
+{
+    int rc = 0;
+    struct dma_context *context =
+        kmalloc(sizeof(struct dma_context), GFP_KERNEL);
+    TEST_PTR(context, rc, no_context, "Unable to allocate DMA context");
+
+    *context = (struct dma_context) {
+        .dma = lmbf->dma,
+        .base = base,
+        .length = length,
+    };
+
+    file->private_data = context;
+    return 0;
+
+no_context:
+    return rc;
+}
+
+
+static int lmbf_dma_release(struct inode *inode, struct file *file)
+{
+    kfree(file->private_data);
+    return 0;
+}
+
+
+static ssize_t lmbf_dma_read(
     struct file *file, char __user *buf, size_t count, loff_t *f_pos)
 {
     printk(KERN_INFO "mem read: %zu %llu\n", count, *f_pos);
 
-    struct amc525_lmbf *lmbf = file->private_data;
+    struct dma_context *context = file->private_data;
 
     /* Constrain read to valid region. */
     loff_t offset = *f_pos;
-    if (offset >= DDR0_LENGTH)
+    if (offset >= context->length)
         return -EFAULT;
 
     /* Clip read to buffer size and end of memory. */
     size_t buffer_size = 1 << dma_block_shift;
     if (count > buffer_size)
         count = buffer_size;
-    if (count > DDR0_LENGTH - offset)
-        count = DDR0_LENGTH - offset;
+    if (count > context->length - offset)
+        count = context->length - offset;
 
     /* Read the data, transfer it to user space, release. */
-    void *read_data = read_dma_memory(lmbf->dma, offset, count);
+    void *read_data = read_dma_memory(
+        context->dma, context->base + offset, count);
     count -= copy_to_user(buf, read_data, count);
-    release_dma_memory(lmbf->dma);
+    release_dma_memory(context->dma);
 
     *f_pos += count;
     if (count == 0)
@@ -95,19 +135,18 @@ static ssize_t lmbf_mem_read(
 }
 
 
-static loff_t lmbf_mem_llseek(
-    struct file *file, loff_t f_pos, int whence)
+static loff_t lmbf_dma_llseek(struct file *file, loff_t f_pos, int whence)
 {
-    printk(KERN_INFO "mem seek: %llu (%d)\n", f_pos, whence);
     return generic_file_llseek_size(
         file, f_pos, whence, DDR0_LENGTH, DDR0_LENGTH);
 }
 
 
-static struct file_operations lmbf_mem_fops = {
+static struct file_operations lmbf_dma_fops = {
     .owner = THIS_MODULE,
-    .read = lmbf_mem_read,
-    .llseek = lmbf_mem_llseek,
+    .release = lmbf_dma_release,
+    .read = lmbf_dma_read,
+    .llseek = lmbf_dma_llseek,
 };
 
 
@@ -167,10 +206,15 @@ static struct {
     struct file_operations *fops;
 } fops_info[] = {
     { .name = "reg",    .fops = &lmbf_reg_fops, },
-    { .name = "mem",    .fops = &lmbf_mem_fops, },
+    { .name = "ddr0",   .fops = &lmbf_dma_fops, },
+    { .name = "ddr1",   .fops = &lmbf_dma_fops, },
 };
 
 #define MINORS_PER_BOARD    ARRAY_SIZE(fops_info)
+
+#define MINOR_REG       0
+#define MINOR_DDR0      1
+#define MINOR_DDR1      2
 
 
 static int amc525_lmbf_open(struct inode *inode, struct file *file)
@@ -179,21 +223,25 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
      * so we'll copy the appropriate link to our file structure. */
     struct cdev *cdev = inode->i_cdev;
     struct amc525_lmbf *lmbf = container_of(cdev, struct amc525_lmbf, cdev);
-    file->private_data = lmbf;
 
-    /* Replace the file's f_ops with our own. */
+    /* Replace the file's f_ops with our own and perform any device specific
+     * initialisation. */
     int minor_index = iminor(inode) - lmbf->minor;
-    if (0 <= minor_index  &&  minor_index < MINORS_PER_BOARD)
+    file->f_op = fops_info[minor_index].fops;
+    switch (minor_index)
     {
-        file->f_op = fops_info[minor_index].fops;
-        if (file->f_op->open)
-            return file->f_op->open(inode, file);
-        else
+        case MINOR_REG:
+            file->private_data = lmbf;
             return 0;
+        case MINOR_DDR0:
+            return lmbf_dma_open(file, lmbf, DDR0_BASE, DDR0_LENGTH);
+        case MINOR_DDR1:
+            return lmbf_dma_open(file, lmbf, DDR1_BASE, DDR1_LENGTH);
+        default:
+            /* No idea how this could happen, to be honest. */
+            return -EINVAL;
     }
-    else
-        /* No idea how this can happen, to be honest. */
-        return -EINVAL;
+    return 0;
 }
 
 
