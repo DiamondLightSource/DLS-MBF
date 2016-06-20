@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# Simple script for sanity check on DDR0 memory.
+#
+# Register space:
+#
+#   AXI DDR0 Master
+#
+#       Read                                    Write
+#       ----                                    -----
+#  0    Data error count                        Reset data error count
+#  4    BRESP error count                       Reset BRESP error count
+#  8    Address error count                     Reset address error count
+#
+#   Memory generator
+#
+#  80   LSB initial data pattern                ditto
+#  84   MSB initial data pattern                ditto
+#  88   LSB data increment                      ditto
+#  8C   MSB data increment                      ditto
+#  90                                           Write count
+#
+#   Debug (currently configured for AXI write capture)
+#
+#  780  1 => armed, 0 => ready                  Arm capture
+#  784  Bits per captured row                   Reset read address
+#  788  Number of rows                          Advance read address
+#  790  Current readout row address
+#  794  Current readout column address
+#  7A0  Current readout value
+
+
+cd "$(dirname "$0")"
+cd ..
+
+# Set up initial write of 0, increment of 1, as 32-bit writes
+build/tools/testmem w 128 0
+build/tools/testmem w 132 1
+build/tools/testmem w 136 2
+build/tools/testmem w 140 2
+# Confirm written pattern
+echo Write pattern:
+build/tools/testmem r 128 16
+# Arm debug capture and confirm ready
+build/tools/testmem w $((0x780)) 0
+build/tools/testmem r $((0x780)) 4
+# Trigger write and confirm done
+build/tools/testmem w $((0x90))  256
+echo After write:
+build/tools/testmem r $((0x780)) 4
+build/tools/testmem r 128 8
+
+# Read out what's in the memory
+echo Memory:
+dd if=/dev/amc525_lmbf.0.ddr0 count=1 |hexdump -C |head -n 2
+
+# First few lines of write from debug
+cat <<EOF
+wdata            awaddr   wstrb
+|                |        |  enable
+|                |        |  | wlast
+|                |        |  | | bresp
+|                |        |  | | | awready
+|                |        |  | | | | awvalid
+|                |        |  | | | | | wready
+|                |        |  | | | | | | wvalid
+|                |        |  | | | | | | | bready
+|                |        |  | | | | | | | | bvalid
+|                |        |  | | | | | | | | |
+EOF
+build/tools/read_debug $(cat tools/debug_fields) |
+head -n 20
