@@ -145,8 +145,6 @@ begin
                 when 2 =>
                     -- Return memory depth
                     read_data_o <= std_logic_vector(to_unsigned(DEPTH, 32));
-                when 3 =>
-                    read_data_o <= x"12345678";
                 when 4 =>
                     read_data_o <=
                         std_logic_vector(resize(read_row_address, 32));

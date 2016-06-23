@@ -28,6 +28,7 @@ architecture dsp_clock of dsp_clock is
     signal clk250mhz_fb : std_logic;
     signal clk250mhz_locked : std_logic;
 
+    signal coldrst : std_logic;
     signal dsp_reset_n : std_logic;
 
 begin
@@ -38,6 +39,7 @@ begin
     );
 
     -- Note: internal PLL must run at frequency in range 800MHz..1.86GHz
+    coldrst <= not nCOLDRST;
     clk250mhz_inst : PLLE2_BASE generic map (
         CLKIN1_PERIOD => 8.0,   -- 8ns period for 125 MHz input clock
         CLKFBOUT_MULT => 8,     -- PLL runs at 1000 MHz
@@ -46,7 +48,7 @@ begin
         -- Inputs
         CLKIN1  => clk125mhz,
         CLKFBIN => clk250mhz_fb,
-        RST     => not nCOLDRST,
+        RST     => coldrst,
         PWRDWN  => '0',
         -- Outputs
         CLKOUT0 => clk250mhz,
