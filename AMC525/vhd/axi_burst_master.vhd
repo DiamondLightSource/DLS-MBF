@@ -96,6 +96,7 @@ architecture axi_burst_master of axi_burst_master is
     signal beat_counter : unsigned(BURST_BITS-1 downto 0)
         := (others => '0');
     signal wlast_early : boolean := false;
+    signal wlast_early_edge : boolean := false;
     signal wvalid : boolean := false;
     signal wlast : boolean := false;
 
@@ -181,7 +182,7 @@ begin
         capture_enable_i = '1' and not burst_active and not starting;
     first_write_inst : entity work.edge_detect port map (
         clk_i => clk_i,
-        data_i => to_std_logic(enable_request),
+        data_i => enable_request,
         edge_o => first_write);
 
     process (clk_i) begin
@@ -197,7 +198,7 @@ begin
             -- the next burst is ready.
             if write_done and burst_active then
                 next_burst <= true;
-            elsif wlast_early then
+            elsif wlast_early_edge then
                 next_burst <= false;
             end if;
 
@@ -205,7 +206,7 @@ begin
             -- time we have to generate a next burst.
             if first_burst = '1' then
                 burst_active <= true;
-            elsif wlast_early then
+            elsif wlast_early_edge then
                 burst_active <= next_burst;
             end if;
 
@@ -284,6 +285,10 @@ begin
     -- The next beat will be the last one.  This flag is required for updating
     -- burst_active, which must only be updated during the last beat.
     wlast_early <= beat_counter = BURST_LENGTH - 2 and wready_i = '1';
+    wlast_early_inst : entity work.edge_detect port map (
+        clk_i => clk_i,
+        data_i => wlast_early,
+        edge_o => wlast_early_edge);
 
     process (rstn_i, clk_i) begin
         if rstn_i = '0' then
@@ -335,7 +340,7 @@ begin
     -- address.
     half_burst_inst : entity work.edge_detect port map (
         clk_i => clk_i,
-        data_i => beat_counter(BURST_BITS-1),
+        data_i => to_boolean(beat_counter(BURST_BITS-1)),
         edge_o => half_burst);
 
     wvalid_o <= to_std_logic(wvalid);

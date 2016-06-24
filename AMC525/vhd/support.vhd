@@ -100,6 +100,7 @@ package support is
     -- Simple type conversions
     function to_std_logic(bool : boolean) return std_logic;
     function to_integer(data : std_logic) return natural;
+    function to_boolean(data : std_logic) return boolean;
 
 
     -- Helpers for reading and writing bit fields.
@@ -324,6 +325,10 @@ package body support is
         else
             return 0;
         end if;
+    end;
+
+    function to_boolean(data : std_logic) return boolean is begin
+        return data = '1';
     end;
 
 
