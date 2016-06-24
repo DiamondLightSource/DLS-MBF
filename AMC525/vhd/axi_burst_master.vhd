@@ -30,9 +30,11 @@ entity axi_burst_master is
         awvalid_o : out std_logic;
         awready_i : in std_logic;
         --
-        wdata_o : out std_logic_vector(DATA_WIDTH-1 downto 0);
-        wlast_o : out std_logic;
-        wstrb_o : out std_logic_vector(DATA_WIDTH/8-1 downto 0);
+        wdata_o : out std_logic_vector(DATA_WIDTH-1 downto 0)
+            := (others => '0');
+        wlast_o : out std_logic := '0';
+        wstrb_o : out std_logic_vector(DATA_WIDTH/8-1 downto 0)
+            := (others => '0');
         wvalid_o : out std_logic;
         wready_i : in std_logic;
         --
@@ -47,7 +49,8 @@ entity axi_burst_master is
         capture_enable_i : in std_logic;
         data_ready_o : out std_logic;
         -- This is the address of the currently written data word.
-        capture_address_o : out std_logic_vector(RAM_ADDR_WIDTH-1 downto 0);
+        capture_address_o : out std_logic_vector(RAM_ADDR_WIDTH-1 downto 0)
+            := (others => '0');
 
         -- Data to be written.  If data_ready_o is not set then data_strobe_i
         -- will be ignored and any data write will be lost.
@@ -56,9 +59,9 @@ entity axi_burst_master is
 
         -- Error detection flags.  These need to be latched externally as
         -- they're only set transiently.
-        data_error_o : out std_logic;   -- Data lost via wready_i
-        addr_error_o : out std_logic;   -- Should never happen
-        brsp_error_o : out std_logic    -- Non zero bresp received
+        data_error_o : out std_logic := '0';   -- Data lost via wready_i
+        addr_error_o : out std_logic := '0';   -- Should never happen
+        brsp_error_o : out std_logic := '0'    -- Non zero bresp received
     );
 end;
 
@@ -72,30 +75,29 @@ architecture axi_burst_master of axi_burst_master is
     constant FIRST_DELAY : natural := 4;
 
     -- State
-    signal write_done : boolean;
-    signal burst_active : boolean;
-    signal first_write_done : boolean;
-    signal first_burst_bit : std_logic;
-    signal first_burst : boolean;
-    signal delayed_enable : std_logic;
-    signal first_write : boolean;
-    signal starting : boolean;
-    signal next_burst : boolean;
-    signal data_active : boolean;
+    signal write_done : boolean := false;
+    signal burst_active : boolean := false;
+    signal first_write_done : boolean := false;
+    signal first_burst : std_logic := '0';
+    signal enable_request : boolean := false;
+    signal first_write : boolean := false;
+    signal starting : boolean := false;
+    signal next_burst : boolean := false;
+    signal data_active : boolean := false;
 
     -- Address channnel
-    signal half_burst : boolean;
-    signal write_address : boolean;
+    signal half_burst : boolean := false;
+    signal write_address : boolean := false;
     signal burst_address : unsigned(BURST_ADDR_WIDTH-1 downto 0)
         := (others => '0');
-    signal awvalid : boolean;
+    signal awvalid : boolean := false;
 
     -- Data channel
-    signal beat_counter : unsigned(BURST_BITS-1 downto 0);
-    signal wlast_early : boolean;
-    signal wvalid : boolean;
-    signal wlast : boolean;
-    signal last_half_burst : boolean;
+    signal beat_counter : unsigned(BURST_BITS-1 downto 0)
+        := (others => '0');
+    signal wlast_early : boolean := false;
+    signal wvalid : boolean := false;
+    signal wlast : boolean := false;
 
 begin
     -- Sanity check on parameters
@@ -172,18 +174,18 @@ begin
     ) port map (
         clk_i => clk_i,
         data_i(0) => to_std_logic(first_write_done),
-        data_o(0) => first_burst_bit);
-    first_burst <= first_burst_bit = '1';
+        data_o(0) => first_burst);
+
+    -- Use rising edge of capture_enable_i and inactivity to generate start.
+    enable_request <=
+        capture_enable_i = '1' and not burst_active and not starting;
+    first_write_inst : entity work.edge_detect port map (
+        clk_i => clk_i,
+        data_i => to_std_logic(enable_request),
+        edge_o => first_write);
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            -- Convert rising edge of capture_enable_i to start request if we're
-            -- not currently active.
-            delayed_enable <= capture_enable_i;
-            first_write <=
-                not burst_active and not starting and
-                capture_enable_i = '1' and delayed_enable = '0';
-
             -- Stay in starting state until we start writing bursts.
             if first_write then
                 starting <= true;
@@ -201,7 +203,7 @@ begin
 
             -- Enable burst engine on completion of the first burst and each
             -- time we have to generate a next burst.
-            if first_burst then
+            if first_burst = '1' then
                 burst_active <= true;
             elsif wlast_early then
                 burst_active <= next_burst;
@@ -209,7 +211,7 @@ begin
 
             -- Enable data as soon as we're about to start our first burst, and
             -- disable it when we're disabled or when we stop bursting.
-            if first_burst then
+            if first_burst = '1' then
                 data_active <= true;
             elsif capture_enable_i = '0' or not burst_active then
                 data_active <= false;
@@ -237,18 +239,18 @@ begin
         if rstn_i = '0' then
             awvalid <= false;
         elsif rising_edge(clk_i) then
-            -- If there's an outstanding address write then we ignore any new
-            -- request.
+            -- Start a write when asked if we can.
             if write_address and not awvalid then
-                if burst_active then
-                    burst_address <= burst_address + 1;
-                else
-                    -- Reset address to zero on first write
-                    burst_address <= (others => '0');
-                end if;
                 awvalid <= true;
             elsif awready_i = '1' then
                 awvalid <= false;
+            end if;
+
+            -- Manage burst address.
+            if first_write then
+                burst_address <= (others => '0');
+            elsif half_burst then
+                burst_address <= burst_address + 1;
             end if;
 
             -- One clock pulse when write successful.  This will trigger the
@@ -318,10 +320,6 @@ begin
                 wlast <= wlast_early;
             end if;
 
-            -- Generate a single pulse half way through the burst to trigger
-            -- the next address.
-            half_burst <= beat_counter = 2**(BURST_BITS-1);
-
             -- Detect a data write error if we've got data incoming and we've
             -- not managed to get rid of the last write.
             data_error_o <= to_std_logic(
@@ -332,6 +330,13 @@ begin
             brsp_error_o <= to_std_logic(bvalid_i = '1' and bresp_i /= "00");
         end if;
     end process;
+
+    -- Generate a single pulse half way through the burst to trigger the next
+    -- address.
+    half_burst_inst : entity work.edge_detect port map (
+        clk_i => clk_i,
+        data_i => beat_counter(BURST_BITS-1),
+        edge_o => half_burst);
 
     wvalid_o <= to_std_logic(wvalid);
     wlast_o <= to_std_logic(wlast);

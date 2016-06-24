@@ -40,27 +40,29 @@ architecture memory_generator of memory_generator is
     signal write_counter : unsigned(COUNT_WIDTH-1 downto 0)
         := (others => '0');
     signal data_pattern : std_logic_vector(DATA_WIDTH-1 downto 0)
-        := X"0102_0304_0506_0708";
+        := x"0000_0002_0000_0001";
     signal data_increment : std_logic_vector(DATA_WIDTH-1 downto 0)
-        := X"0001_0001_0001_0001";
+        := X"0000_0002_0000_0002";
 
-    signal writing : std_logic := '0';
+    signal writing : boolean := false;
 
-    signal data_error_count : unsigned(REG_DATA_WIDTH-1 downto 0);
-    signal addr_error_count : unsigned(REG_DATA_WIDTH-1 downto 0);
-    signal brsp_error_count : unsigned(REG_DATA_WIDTH-1 downto 0);
+    signal data_error_count : unsigned(REG_DATA_WIDTH-1 downto 0)
+        := (others => '0');
+    signal addr_error_count : unsigned(REG_DATA_WIDTH-1 downto 0)
+        := (others => '0');
+    signal brsp_error_count : unsigned(REG_DATA_WIDTH-1 downto 0)
+        := (others => '0');
 
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then
-            if writing = '1' and data_ready_i = '1' then
+            if writing and data_ready_i = '1' then
                 -- Ensure we emit the selected number of writes
                 if write_counter = 0 then
-                    writing <= '0';
+                    writing <= false;
                 else
                     write_counter <= write_counter - 1;
                 end if;
-                data_o <= data_pattern;
 
                 data_pattern <= std_logic_vector(
                     unsigned(data_pattern) + unsigned(data_increment));
@@ -78,15 +80,16 @@ begin
                     when 4 =>
                         write_counter <=
                             unsigned(write_data_i(COUNT_WIDTH-1 downto 0));
-                        writing <= '1';
+                        writing <= true;
                     when others =>
                 end case;
             end if;
         end if;
     end process;
 
+    data_o <= data_pattern;
     data_valid_o <= '1';
-    capture_enable_o <= writing;
+    capture_enable_o <= to_std_logic(writing);
 
 
     -- Readback of internal registers

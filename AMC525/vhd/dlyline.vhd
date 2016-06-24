@@ -1,5 +1,4 @@
--- This module implements a variable delay line for variable DW data
--- input.
+-- This module implements a variable delay line for variable DW data input.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -18,7 +17,7 @@ end;
 
 architecture dlyline of dlyline is
     type dlyline_t is array(DLY-1 downto 0) of std_logic_vector(DW-1 downto 0);
-    signal dlyline : dlyline_t;
+    signal dlyline : dlyline_t := (others => (others => '0'));
 
 begin
     process (clk_i) begin

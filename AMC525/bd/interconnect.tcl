@@ -489,6 +489,11 @@ proc create_hier_cell_memory_interconnect { parentCell nameHier } {
 
   # Create instance: ddr0_buf, and set properties
   set ddr0_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 ddr0_buf ]
+  set_property -dict [ list \
+CONFIG.REG_AR {1} \
+CONFIG.REG_AW {1} \
+CONFIG.REG_B {1} \
+ ] $ddr0_buf
 
   # Create instance: ddr0_crossbar, and set properties
   set ddr0_crossbar [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_crossbar:2.1 ddr0_crossbar ]
