@@ -430,7 +430,7 @@ begin
         capture_i(115) => DSP_DDR0_data_error,
         capture_i(116) => DSP_DDR0_addr_error,
         capture_i(117) => DSP_DDR0_brsp_error,
-        capture_i(127 downto 118) => DSP_DDR0_capture_address(9 downto 0),
+        capture_i(127 downto 118) => DSP_DDR0_capture_address(12 downto 3),
 
         enable_i => '1',
         trigger_i => debug_trigger,

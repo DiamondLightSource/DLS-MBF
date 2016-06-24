@@ -320,9 +320,7 @@ begin
 
             -- Generate a single pulse half way through the burst to trigger
             -- the next address.
-            last_half_burst <= half_burst;
-            half_burst <=
-                not last_half_burst and beat_counter(BURST_BITS-1) = '1';
+            half_burst <= beat_counter = 2**(BURST_BITS-1);
 
             -- Detect a data write error if we've got data incoming and we've
             -- not managed to get rid of the last write.
