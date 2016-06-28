@@ -916,14 +916,14 @@ proc create_hier_cell_interrupts { parentCell nameHier } {
   # Create instance: axi_intc, and set properties
   set axi_intc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc:4.1 axi_intc ]
   set_property -dict [ list \
-CONFIG.C_HAS_CIE {1} \
-CONFIG.C_HAS_ILR {1} \
-CONFIG.C_HAS_IPR {1} \
-CONFIG.C_HAS_IVR {1} \
-CONFIG.C_HAS_SIE {1} \
+CONFIG.C_HAS_CIE {0} \
+CONFIG.C_HAS_ILR {0} \
+CONFIG.C_HAS_IPR {0} \
+CONFIG.C_HAS_IVR {0} \
+CONFIG.C_HAS_SIE {0} \
 CONFIG.C_IRQ_CONNECTION {1} \
 CONFIG.C_IRQ_IS_LEVEL {0} \
-CONFIG.C_NUM_SW_INTR {1} \
+CONFIG.C_NUM_SW_INTR {0} \
 CONFIG.C_S_AXI_ACLK_FREQ_MHZ {250} \
  ] $axi_intc
 
