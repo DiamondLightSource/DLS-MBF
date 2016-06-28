@@ -4,6 +4,9 @@
 #include <linux/delay.h>
 
 #include "error.h"
+#include "debug.h"
+
+#include "dma_control.h"
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -60,14 +63,6 @@ struct dma_control {
 /* DMA. */
 
 
-static void probe_dma(struct dma_control *dma)
-{
-    uint32_t cdmacr = readl(&dma->regs->cdmacr);
-    uint32_t cdmasr = readl(&dma->regs->cdmasr);
-    printk(KERN_INFO "DMA: %08x %08x\n", cdmacr, cdmasr);
-}
-
-
 static void reset_dma_controller(struct dma_control *dma)
 {
     writel(CDMACR_Reset, &dma->regs->cdmacr);
@@ -108,8 +103,6 @@ static void wait_for_dma_completion(struct dma_control *dma)
 
 void *read_dma_memory(struct dma_control *dma, size_t start, size_t length)
 {
-    probe_dma(dma);
-
     mutex_lock(&dma->mutex);
 
     /* Hand the buffer over to the DMA engine. */
@@ -133,8 +126,6 @@ void *read_dma_memory(struct dma_control *dma, size_t start, size_t length)
     pci_dma_sync_single_for_cpu(
         dma->pdev, dma->buffer_dma, dma->buffer_size,  DMA_FROM_DEVICE);
 
-    probe_dma(dma);
-
     return dma->buffer;
 }
 
@@ -142,51 +133,6 @@ void *read_dma_memory(struct dma_control *dma, size_t start, size_t length)
 void release_dma_memory(struct dma_control *dma)
 {
     mutex_unlock(&dma->mutex);
-}
-
-
-void dump_binary(const void *buffer, size_t length)
-{
-    const uint8_t *dump = buffer;
-    char line[128];
-
-    for (size_t a = 0; a < length; a += 16)
-    {
-        char *l = line;
-        l += sprintf(l, "%08zx: ", a);
-        for (unsigned int i = 0; i < 16; i ++)
-        {
-            if (a + i < length)
-                l += sprintf(l, " %02x", dump[a+i]);
-            else
-                l += sprintf(l, "   ");
-            if (i % 16 == 7)
-                l += sprintf(l, " ");
-        }
-
-        l += sprintf(l, "  ");
-        for (unsigned int i = 0; i < 16; i ++)
-        {
-            uint8_t c = dump[a+i];
-            if (a + i < length)
-                l += sprintf(l, "%c", 32 <= c  &&  c < 127 ? c : '.');
-            else
-                l += sprintf(l, " ");
-            if (i % 16 == 7)
-                l += sprintf(l, " ");
-        }
-        printk(KERN_INFO "%s\n", line);
-    }
-    if (length % 16 != 0)
-        printk(KERN_INFO "%s\n", line);
-}
-
-
-static void test_dma(struct dma_control *dma)
-{
-    void *memory = read_dma_memory(dma, 0, 256);
-    dump_binary(memory, 256);
-    release_dma_memory(dma);
 }
 
 
@@ -228,11 +174,6 @@ int initialise_dma_control(
     /* Final initialisation, now ready to run. */
     mutex_init(&dma->mutex);
     reset_dma_controller(dma);
-
-
-    // Quick and dirty DMA test
-    test_dma(dma);
-
 
     return 0;
 

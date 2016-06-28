@@ -1,17 +1,29 @@
 EXTRA_CFLAGS += -std=gnu99
+
+# We can't enable as many warnings as I'd like for the kernel, but let's see
+# what we can do.
 EXTRA_CFLAGS += -Werror
 EXTRA_CFLAGS += -Wextra
+EXTRA_CFLAGS += -Wall
+
+EXTRA_CFLAGS += -Wundef
+EXTRA_CFLAGS += -Wcast-align
+EXTRA_CFLAGS += -Wmissing-prototypes
+EXTRA_CFLAGS += -Wmissing-declarations
+EXTRA_CFLAGS += -Wstrict-prototypes
+
+# Suppress some kernel error messages
 EXTRA_CFLAGS += -Wno-declaration-after-statement
 EXTRA_CFLAGS += -Wno-unused-parameter
 EXTRA_CFLAGS += -Wno-missing-field-initializers
-
-# Suppress some kernel error messages
 EXTRA_CFLAGS += -Wno-empty-body
 EXTRA_CFLAGS += -Wno-sign-compare
+
 
 obj-m := amc525_lmbf.o
 
 amc525_lmbf-objs += amc525_lmbf_core.o
 amc525_lmbf-objs += dma_control.o
+amc525_lmbf-objs += debug.o
 
 # vim: set filetype=make:
