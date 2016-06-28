@@ -37,6 +37,4 @@ void dump_binary(const void *buffer, size_t length)
         }
         printk(KERN_INFO "%s\n", line);
     }
-    if (length % 16 != 0)
-        printk(KERN_INFO "%s\n", line);
 }

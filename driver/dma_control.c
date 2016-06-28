@@ -2,6 +2,7 @@
 
 #include <linux/pci.h>
 #include <linux/delay.h>
+#include <linux/module.h>
 
 #include "error.h"
 #include "debug.h"
@@ -9,10 +10,17 @@
 #include "dma_control.h"
 
 
+#define DMA_BLOCK_SHIFT     20  // Default DMA block size as power of 2
+
+static int dma_block_shift = DMA_BLOCK_SHIFT;
+module_param(dma_block_shift, int, S_IRUGO);
+
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-/* Xilinx AXI DMA Controller, as defined in PG034 documentation. */
+/* Xilinx AXI DMA Controller, as defined in Xilinx PG034 documentation. */
 struct axi_dma_controller {
     uint32_t cdmacr;            // 00 CDMA control
     uint32_t cdmasr;            // 04 CDMA status
@@ -26,6 +34,7 @@ struct axi_dma_controller {
     uint32_t da_msb;            // 24 Destination address, upper 32 bits
     uint32_t btt;               // 28 Bytes to transfer, writing triggers DMA
 };
+
 
 /* Control bits. */
 #define CDMACR_Err_IrqEn    (1 << 14)   // Enable interrupt on error
@@ -79,6 +88,7 @@ static void reset_dma_controller(struct dma_control *dma)
 
     /* Now restore the default working state. */
     writel(0x00008000, &dma->regs->sa_msb);
+    writel(CDMACR_IrqEn | CDMACR_Err_IrqEn, &dma->regs->cdmacr);
 }
 
 
@@ -87,6 +97,14 @@ static void maybe_reset_dma(struct dma_control *dma)
     uint32_t status = readl(&dma->regs->cdmasr);
     if (status & (CDMASR_DMADecErr | CDMASR_DMASlvErr | CDMASR_DMAIntErr))
         reset_dma_controller(dma);
+}
+
+
+void dma_interrupt(struct dma_control *dma)
+{
+    uint32_t cdmasr = readl(&dma->regs->cdmasr);
+    printk(KERN_INFO "DMA interrupt: %08x\n", cdmasr);
+    writel(cdmasr, &dma->regs->cdmasr);
 }
 
 
@@ -101,8 +119,12 @@ static void wait_for_dma_completion(struct dma_control *dma)
 }
 
 
-void *read_dma_memory(struct dma_control *dma, size_t start, size_t length)
+void *read_dma_memory(struct dma_control *dma, size_t start, size_t *length)
 {
+    /* Ensure we only try to read as much as will fit in our buffer. */
+    if (*length > dma->buffer_size)
+        *length = dma->buffer_size;
+
     mutex_lock(&dma->mutex);
 
     /* Hand the buffer over to the DMA engine. */
@@ -116,7 +138,7 @@ void *read_dma_memory(struct dma_control *dma, size_t start, size_t length)
     writel((uint32_t) start, &dma->regs->sa);
     writel((uint32_t) dma->buffer_dma, &dma->regs->da);
     writel((uint32_t) (dma->buffer_dma >> 32), &dma->regs->da_msb);
-    writel(length, &dma->regs->btt);
+    writel(*length, &dma->regs->btt);
 
     /* Wait for transfer to complete. */
     wait_for_dma_completion(dma);
@@ -141,22 +163,18 @@ void release_dma_memory(struct dma_control *dma)
 
 
 int initialise_dma_control(
-    struct pci_dev *pdev, int dma_block_shift, struct dma_control **pdma)
+    struct pci_dev *pdev, void __iomem *regs, struct dma_control **pdma)
 {
     int rc = 0;
+    TEST_OK(dma_block_shift >= PAGE_SHIFT, rc = -EINVAL, no_memory,
+        "Invalid DMA buffer size");
 
     /* Create and return DMA control structure. */
     struct dma_control *dma = kmalloc(sizeof(struct dma_control), GFP_KERNEL);
     TEST_PTR(dma, rc, no_memory, "Unable to allocate DMA control");
     *pdma = dma;
     dma->pdev = pdev;
-
-    /* Map the DMA access bar.  This is separate from the remaining registers to
-     * protect system memory from incorrect access. */
-    unsigned long dma_length = pci_resource_len(pdev, 2);
-    TEST_OK(dma_length >= 4096, rc = -EIO, no_dma, "DMA bar not present");
-    dma->regs = pci_iomap(pdev, 2, 4096);
-    TEST_PTR(dma->regs, rc, no_dma, "Unable to map DMA bar");
+    dma->regs = regs;
 
     /* Allocate DMA buffer area. */
     dma->buffer_shift = dma_block_shift;
@@ -182,8 +200,6 @@ int initialise_dma_control(
 no_dma_map:
     free_pages((unsigned long) dma->buffer, dma->buffer_shift - PAGE_SHIFT);
 no_buffer:
-    pci_iounmap(pdev, dma->regs);
-no_dma:
     kfree(dma);
 no_memory:
     return rc;
@@ -195,6 +211,5 @@ void terminate_dma_control(struct dma_control *dma)
     pci_unmap_single(
         dma->pdev, dma->buffer_dma, dma->buffer_size, DMA_FROM_DEVICE);
     free_pages((unsigned long) dma->buffer, dma->buffer_shift - PAGE_SHIFT);
-    pci_iounmap(dma->pdev, dma->regs);
     kfree(dma);
 }

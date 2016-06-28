@@ -24,6 +24,7 @@ obj-m := amc525_lmbf.o
 
 amc525_lmbf-objs += amc525_lmbf_core.o
 amc525_lmbf-objs += dma_control.o
+amc525_lmbf-objs += memory.o
 amc525_lmbf-objs += debug.o
 
 # vim: set filetype=make:
