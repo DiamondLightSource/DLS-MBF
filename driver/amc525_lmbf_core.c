@@ -142,7 +142,7 @@ static irqreturn_t lmbf_isr(int ireq, void *context)
     uint32_t isr = readl(&lmbf->intc->isr);
     writel(isr, &lmbf->intc->iar);
 
-    printk(KERN_INFO "ISR %d (%p) received: %02x\n", ireq, lmbf, isr);
+    printk(KERN_INFO "ISR %d received: %02x\n", ireq, isr);
 
     /* Interrupt number 1 belongs to the DMA engine. */
     if (isr & 1)
@@ -168,11 +168,8 @@ static int initialise_interrupts(struct amc525_lmbf *lmbf)
     rc = request_irq(lmbf->dev->irq, lmbf_isr, 0, DEVICE_NAME, lmbf);
     TEST_RC(rc, no_irq, "Unable to request irq");
 
-    /* This should put the controller in normal operating mode. */
+    /* Put the controller in normal operating mode. */
     writel(3, &lmbf->intc->mer);
-
-    printk(KERN_INFO "Interrupt controller:\n");
-    dump_binary(lmbf->intc, sizeof(*lmbf->intc));
 
     return 0;
 
@@ -184,8 +181,8 @@ no_irq:
 
 static void terminate_interrupts(struct amc525_lmbf *lmbf)
 {
+    writel(0, &lmbf->intc->mer);            // Disable controller
     free_irq(lmbf->dev->irq, lmbf);
-    printk(KERN_INFO "free_irq returned\n");
 }
 
 

@@ -65,6 +65,9 @@ struct dma_control {
 
     /* Mutex for exclusive access to DMA engine. */
     struct mutex mutex;
+
+    /* Completion for DMA transfer. */
+    struct completion dma_done;
 };
 
 
@@ -84,7 +87,6 @@ static void reset_dma_controller(struct dma_control *dma)
     while (readl(&dma->regs->cdmacr) & CDMACR_Reset  &&
            time_before(jiffies, deadline))
         count += 1;
-    printk(KERN_INFO "Reset took %d cycles\n", count);
 
     /* Now restore the default working state. */
     writel(0x00008000, &dma->regs->sa_msb);
@@ -96,26 +98,20 @@ static void maybe_reset_dma(struct dma_control *dma)
 {
     uint32_t status = readl(&dma->regs->cdmasr);
     if (status & (CDMASR_DMADecErr | CDMASR_DMASlvErr | CDMASR_DMAIntErr))
+    {
+        printk(KERN_INFO "Forcing reset of DMA controller\n");
         reset_dma_controller(dma);
+    }
+    reinit_completion(&dma->dma_done);
 }
 
 
 void dma_interrupt(struct dma_control *dma)
 {
     uint32_t cdmasr = readl(&dma->regs->cdmasr);
-    printk(KERN_INFO "DMA interrupt: %08x\n", cdmasr);
     writel(cdmasr, &dma->regs->cdmasr);
-}
 
-
-static void wait_for_dma_completion(struct dma_control *dma)
-{
-    unsigned long deadline = jiffies + 2;
-    int count = 0;
-    while (!(readl(&dma->regs->cdmasr) & CDMASR_Idle)  &&
-           time_before(jiffies, deadline))
-        count += 1;
-    printk(KERN_INFO "DMA took %d cycles\n", count);
+    complete(&dma->dma_done);
 }
 
 
@@ -140,8 +136,10 @@ void *read_dma_memory(struct dma_control *dma, size_t start, size_t *length)
     writel((uint32_t) (dma->buffer_dma >> 32), &dma->regs->da_msb);
     writel(*length, &dma->regs->btt);
 
-    /* Wait for transfer to complete. */
-    wait_for_dma_completion(dma);
+    /* Wait for transfer to complete.  If we're killed the result isn't too
+     * important. */
+    if (wait_for_completion_killable(&dma->dma_done))
+        printk(KERN_ERR "DMA transfer killed\n");
 
     /* Restore the buffer to CPU access (really just flushes associated cache
      * entries). */
@@ -191,6 +189,8 @@ int initialise_dma_control(
 
     /* Final initialisation, now ready to run. */
     mutex_init(&dma->mutex);
+    init_completion(&dma->dma_done);
+
     reset_dma_controller(dma);
 
     return 0;

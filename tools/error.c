@@ -236,7 +236,7 @@ void dump_binary(FILE *out, const void *buffer, size_t length)
 
     for (size_t a = 0; a < length; a += 16)
     {
-        fprintf(out, "%08zx: ", a);
+        fprintf(out, "%08zx ", a);
         for (unsigned int i = 0; i < 16; i ++)
         {
             if (a + i < length)
@@ -260,6 +260,4 @@ void dump_binary(FILE *out, const void *buffer, size_t length)
         }
         fprintf(out, "\n");
     }
-    if (length % 16 != 0)
-        fprintf(out, "\n");
 }

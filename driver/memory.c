@@ -57,8 +57,6 @@ static int lmbf_dma_release(struct inode *inode, struct file *file)
 static ssize_t lmbf_dma_read(
     struct file *file, char __user *buf, size_t count, loff_t *f_pos)
 {
-    printk(KERN_INFO "mem read: %zu %llu\n", count, *f_pos);
-
     struct memory_context *context = file->private_data;
 
     /* Constrain read to valid region. */
