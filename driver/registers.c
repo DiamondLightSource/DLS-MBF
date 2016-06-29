@@ -10,16 +10,20 @@
 
 #include "error.h"
 #include "amc525_lmbf_device.h"
+#include "interrupts.h"
 #include "registers.h"
 
 
 struct register_context {
     unsigned long base_page;
     size_t length;
+    struct interrupt_control *interrupts;
 };
 
 
-int lmbf_reg_open(struct file *file, struct pci_dev *dev)
+int lmbf_reg_open(
+    struct file *file, struct pci_dev *dev,
+    struct interrupt_control *interrupts)
 {
     int rc = 0;
     struct register_context *context =
@@ -29,6 +33,7 @@ int lmbf_reg_open(struct file *file, struct pci_dev *dev)
     *context = (struct register_context) {
         .base_page = pci_resource_start(dev, 0) >> PAGE_SHIFT,
         .length = pci_resource_len(dev, 0),
+        .interrupts = interrupts,
     };
 
     file->private_data = context;
@@ -81,16 +86,28 @@ static long lmbf_reg_ioctl(
 }
 
 
+/* This will return one byte with the next available event mask. */
+static ssize_t lmbf_reg_read(
+    struct file *file, char __user *buf, size_t count, loff_t *f_pos)
+{
+    struct register_context *context = file->private_data;
+
+    int rc = wait_interrupt_events(context->interrupts);
+    if (rc < 0)
+        return rc;
+
+    char events = read_interrupt_events(context->interrupts);
+    if (copy_to_user(buf, &events, 1) == 0)
+        return 1;
+    else
+        return -EFAULT;
+}
+
+
 struct file_operations lmbf_reg_fops = {
     .owner = THIS_MODULE,
     .release = lmbf_reg_release,
     .unlocked_ioctl = lmbf_reg_ioctl,
     .mmap = lmbf_reg_mmap,
+    .read = lmbf_reg_read,
 };
-
-
-
-void event_interrupt(uint32_t events)
-{
-    printk(KERN_INFO "event_interrupt %02x\n", events);
-}

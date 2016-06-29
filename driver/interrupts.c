@@ -2,10 +2,12 @@
 
 #include <linux/pci.h>
 #include <linux/interrupt.h>
+#include <linux/sched.h>
+#include <linux/wait.h>
+#include <linux/atomic.h>
 
 #include "error.h"
 #include "dma_control.h"
-#include "registers.h"
 #include "interrupts.h"
 
 
@@ -28,14 +30,51 @@ struct axi_interrupt_controller {
 
 
 struct interrupt_control {
-    struct pci_dev *dev;
+    /* Interrupt controller register space. */
     struct axi_interrupt_controller __iomem *intc;
+    /* Handle for DMA interrupt event. */
     struct dma_control *dma;
+
+    /* Wait queue for user-space interrupt events. */
+    wait_queue_head_t wait_queue;
+    /* Set of user-space events seen. */
+    atomic_t events;
 };
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+char read_interrupt_events(struct interrupt_control *control)
+{
+    return (char) atomic_xchg(&control->events, 0);
+}
+
+
+int wait_interrupt_events(struct interrupt_control *control)
+{
+    printk("wait_interrupt_events: %d\n", atomic_read(&control->events));
+    return wait_event_interruptible(
+        control->wait_queue, atomic_read(&control->events));
+}
+
+
+static void event_interrupt(struct interrupt_control *control, uint32_t events)
+{
+    printk(KERN_INFO "event_interrupt %02x\n", events);
+
+    /* Add the new events into the current event mask. */
+    int old_events;
+    do
+        old_events = atomic_read(&control->events);
+    while (atomic_cmpxchg(
+        &control->events, old_events, old_events | events) != old_events);
+
+    /* Let any listeners know. */
+    wake_up_interruptible(&control->wait_queue);
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 static irqreturn_t lmbf_isr(int ireq, void *context)
 {
@@ -54,14 +93,14 @@ static irqreturn_t lmbf_isr(int ireq, void *context)
     /* The remaining interrupts are handed on to the event source. */
     isr >>= 1;
     if (isr)
-        event_interrupt(isr);
+        event_interrupt(control, isr);
 
     return IRQ_HANDLED;
 }
 
 
 int initialise_interrupt_control(
-    struct pci_dev *dev, void __iomem *regs,
+    struct pci_dev *pdev, void __iomem *regs,
     struct dma_control *dma,
     struct interrupt_control **pcontrol)
 {
@@ -72,21 +111,22 @@ int initialise_interrupt_control(
         kmalloc(sizeof(struct interrupt_control), GFP_KERNEL);
     TEST_PTR(control, rc, no_memory, "Unable to allocate interrupt control");
     *control = (struct interrupt_control) {
-        .dev = dev,
         .intc = regs,
         .dma = dma,
+        .events = (atomic_t) ATOMIC_INIT(0),
     };
     *pcontrol = control;
 
-    struct axi_interrupt_controller *intc = control->intc;
+    init_waitqueue_head(&control->wait_queue);
 
     /* Start with the interrupt controller disabled while we internally enable
      * everything and clear any acknowleges. */
+    struct axi_interrupt_controller *intc = control->intc;
     writel(0, &intc->mer);              // Disable controller
     writel(0xFFFFFFFF, &intc->iar);     // Ensure no pending interrupts
     writel(0xFFFFFFFF, &intc->ier);     // Enable all interrupts
 
-    rc = request_irq(dev->irq, lmbf_isr, 0, DEVICE_NAME, control);
+    rc = request_irq(pdev->irq, lmbf_isr, 0, DEVICE_NAME, control);
     TEST_RC(rc, no_irq, "Unable to request irq");
 
     /* Put the controller in normal operating mode. */
@@ -94,7 +134,7 @@ int initialise_interrupt_control(
 
     return 0;
 
-    free_irq(dev->irq, control);
+    free_irq(pdev->irq, control);
 no_irq:
     kfree(control);
 no_memory:
@@ -102,9 +142,10 @@ no_memory:
 }
 
 
-void terminate_interrupt_control(struct interrupt_control *control)
+void terminate_interrupt_control(
+    struct pci_dev *pdev, struct interrupt_control *control)
 {
     struct axi_interrupt_controller *intc = control->intc;
     writel(0, &intc->mer);              // Disable controller
-    free_irq(control->dev->irq, control);
+    free_irq(pdev->irq, control);
 }

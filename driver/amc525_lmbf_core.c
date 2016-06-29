@@ -103,7 +103,7 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
     switch (minor_index)
     {
         case MINOR_REG:
-            return lmbf_reg_open(file, lmbf->dev);
+            return lmbf_reg_open(file, lmbf->dev, lmbf->interrupts);
         case MINOR_DDR0:
             return lmbf_dma_open(file, lmbf->dma, DDR0_BASE, DDR0_LENGTH);
         case MINOR_DDR1:
@@ -256,7 +256,7 @@ static int initialise_board(struct pci_dev *pdev, struct amc525_lmbf *lmbf)
     return 0;
 
 
-    terminate_interrupt_control(lmbf->interrupts);
+    terminate_interrupt_control(pdev, lmbf->interrupts);
 no_irq:
     terminate_dma_control(lmbf->dma);
 no_dma:
@@ -269,7 +269,7 @@ no_bar2:
 static void terminate_board(struct pci_dev *pdev)
 {
     struct amc525_lmbf *lmbf = pci_get_drvdata(pdev);
-    terminate_interrupt_control(lmbf->interrupts);
+    terminate_interrupt_control(pdev, lmbf->interrupts);
     terminate_dma_control(lmbf->dma);
     pci_iounmap(pdev, lmbf->ctrl_memory);
 }
