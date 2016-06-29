@@ -908,7 +908,7 @@ proc create_hier_cell_interrupts { parentCell nameHier } {
 
   # Create pins
   create_bd_pin -dir I -from 0 -to 0 In0
-  create_bd_pin -dir I -from 2 -to 0 In1
+  create_bd_pin -dir I -from 7 -to 0 In1
   create_bd_pin -dir O -type intr irq
   create_bd_pin -dir I -type clk s_axi_aclk
   create_bd_pin -dir I -type rst s_axi_aresetn
@@ -1140,9 +1140,9 @@ CONFIG.FREQ_HZ {250000000} \
 CONFIG.CLK_DOMAIN {design_1_clk_wiz_0_0_clk_out1} \
 CONFIG.PHASE {0.0} \
  ] $FCLKA
-  set INTR [ create_bd_port -dir I -from 2 -to 0 -type intr INTR ]
+  set INTR [ create_bd_port -dir I -from 7 -to 0 -type intr INTR ]
   set_property -dict [ list \
-CONFIG.PortWidth {3} \
+CONFIG.PortWidth {8} \
 CONFIG.SENSITIVITY {EDGE_RISING} \
  ] $INTR
   set nCOLDRST [ create_bd_port -dir I -type rst nCOLDRST ]

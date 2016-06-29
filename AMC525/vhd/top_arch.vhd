@@ -15,7 +15,7 @@ architecture top of top is
     signal dsp_clk : std_logic;
     signal dsp_reset_n : std_logic;
 
-    signal INTR : std_logic_vector(2 downto 0);
+    signal INTR : std_logic_vector(7 downto 0);
 
     -- Wiring from AXI-Lite master to register slave
     signal DSP_REGS_araddr : std_logic_vector(15 downto 0);     -- AR
@@ -451,6 +451,6 @@ begin
     );
 
     ULED <= register_file(2)(0)(3 downto 0);
-    INTR <= register_file(2)(1)(2 downto 0);
+    INTR <= register_file(2)(1)(7 downto 0);
 
 end;
