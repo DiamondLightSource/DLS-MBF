@@ -13,6 +13,8 @@
 #include "error.h"
 #include "amc525_lmbf_device.h"
 #include "dma_control.h"
+#include "interrupts.h"
+#include "registers.h"
 #include "memory.h"
 #include "debug.h"
 
@@ -39,24 +41,14 @@ MODULE_VERSION("0");
 #define BAR2_LENGTH     16384           // 4 separate IO pages
 
 
+/* Address offsets into BAR2. */
+#define CDMA_OFFSET     0x0000
+#define INTC_OFFSET     0x2000
+
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Structures. */
-
-
-/* Register space for AXI interrupt controller (Xilinx PG099). */
-struct axi_interrupt_controller {
-    uint32_t isr;               // 00 Interrupt status
-    uint32_t ipr;               // 04 Interrupt pending
-    uint32_t ier;               // 08 Interrupt enable
-    uint32_t iar;               // 0C Interrupt acknowledge
-    uint32_t sie;               // 10 Set interrupt enables
-    uint32_t cie;               // 14 Clear interrupt enables
-    uint32_t ivr;               // 18 Interrupt vector
-    uint32_t mer;               // 1C Master enable
-    uint32_t imr;               // 20 Intterupt mode
-    uint32_t ilr;               // 24 Interrupt level
-};
 
 
 /* All the driver specific state for a card is in this structure. */
@@ -67,123 +59,15 @@ struct amc525_lmbf {
     int major;              // Major device number
     int minor;              // Associated minor number
 
-    /* BAR0 memory mapped register region. */
-    unsigned long reg_length;
-    void __iomem *reg_memory;
-
     /* BAR2 memory mapped region, used for driver control. */
     void __iomem *ctrl_memory;
 
     /* DMA controller. */
     struct dma_control *dma;
 
-    struct axi_interrupt_controller __iomem *intc;
+    /* Interrupt controller. */
+    struct interrupt_control *interrupts;
 };
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Register map device. */
-
-/* This provides memory mapped access to the registers in BAR0. */
-
-static int lmbf_reg_map(struct file *file, struct vm_area_struct *vma)
-{
-    struct amc525_lmbf *lmbf = file->private_data;
-
-    size_t size = vma->vm_end - vma->vm_start;
-    unsigned long end = (vma->vm_pgoff << PAGE_SHIFT) + size;
-    if (end > lmbf->reg_length)
-    {
-        printk(KERN_WARNING DEVICE_NAME " map area out of range\n");
-        return -EINVAL;
-    }
-
-    /* Good advice and examples on using this function here:
-     *  http://www.makelinux.net/ldd3/chp-15-sect-2
-     * Also see drivers/char/mem.c in kernel sources for guidelines. */
-    unsigned long base_page = pci_resource_start(lmbf->dev, 0) >> PAGE_SHIFT;
-    return io_remap_pfn_range(
-        vma, vma->vm_start, base_page + vma->vm_pgoff, size,
-        pgprot_noncached(vma->vm_page_prot));
-}
-
-
-static long lmbf_reg_ioctl(
-    struct file *file, unsigned int cmd, unsigned long arg)
-{
-    struct amc525_lmbf *lmbf = file->private_data;
-    switch (cmd)
-    {
-        case LMBF_MAP_SIZE:
-            return lmbf->reg_length;
-        default:
-            return -EINVAL;
-    }
-}
-
-
-static struct file_operations lmbf_reg_fops = {
-    .owner = THIS_MODULE,
-    .unlocked_ioctl = lmbf_reg_ioctl,
-    .mmap = lmbf_reg_map,
-};
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Interrupt handling. */
-
-
-static irqreturn_t lmbf_isr(int ireq, void *context)
-{
-    struct amc525_lmbf *lmbf = context;
-
-    /* Ask the interrupt controller for the active interrupts and acknowlege the
-     * ones we've seen. */
-    uint32_t isr = readl(&lmbf->intc->isr);
-    writel(isr, &lmbf->intc->iar);
-
-    printk(KERN_INFO "ISR %d received: %02x\n", ireq, isr);
-
-    /* Interrupt number 1 belongs to the DMA engine. */
-    if (isr & 1)
-        dma_interrupt(lmbf->dma);
-
-    return IRQ_HANDLED;
-}
-
-
-static int initialise_interrupts(struct amc525_lmbf *lmbf)
-{
-    int rc = 0;
-
-    /* Assign interrupt controller space at offset 2000. */
-    lmbf->intc = lmbf->ctrl_memory + 0x2000;
-
-    /* Start with the interrupt controller disabled while we internally enable
-     * everything and clear any acknowleges. */
-    writel(0, &lmbf->intc->mer);            // Disable controller
-    writel(0xFFFFFFFF, &lmbf->intc->iar);   // Ensure no pending interrupts
-    writel(0xFFFFFFFF, &lmbf->intc->ier);   // Enable all interrupts
-
-    rc = request_irq(lmbf->dev->irq, lmbf_isr, 0, DEVICE_NAME, lmbf);
-    TEST_RC(rc, no_irq, "Unable to request irq");
-
-    /* Put the controller in normal operating mode. */
-    writel(3, &lmbf->intc->mer);
-
-    return 0;
-
-    free_irq(lmbf->dev->irq, lmbf);
-no_irq:
-    return rc;
-}
-
-
-static void terminate_interrupts(struct amc525_lmbf *lmbf)
-{
-    writel(0, &lmbf->intc->mer);            // Disable controller
-    free_irq(lmbf->dev->irq, lmbf);
-}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -219,8 +103,7 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
     switch (minor_index)
     {
         case MINOR_REG:
-            file->private_data = lmbf;
-            return 0;
+            return lmbf_reg_open(file, lmbf->dev);
         case MINOR_DDR0:
             return lmbf_dma_open(file, lmbf->dma, DDR0_BASE, DDR0_LENGTH);
         case MINOR_DDR1:
@@ -258,6 +141,18 @@ static int create_device_nodes(
 
 no_cdev:
     return rc;
+}
+
+
+static void destroy_device_nodes(
+    struct amc525_lmbf *lmbf, struct class *device_class)
+{
+    int major = lmbf->major;
+    int minor = lmbf->minor;
+
+    for (int i = 0; i < MINORS_PER_BOARD; i ++)
+        device_destroy(device_class, MKDEV(major, minor + i));
+    cdev_del(&lmbf->cdev);
 }
 
 
@@ -342,11 +237,6 @@ static int initialise_board(struct pci_dev *pdev, struct amc525_lmbf *lmbf)
     int rc = 0;
     pci_set_drvdata(pdev, lmbf);
 
-    /* Map the register bar. */
-    lmbf->reg_length = pci_resource_len(pdev, 0);
-    lmbf->reg_memory = pci_iomap(pdev, 0, lmbf->reg_length);
-    TEST_PTR(lmbf->reg_memory, rc, no_memory, "Unable to map register BAR");
-
     /* Map the control area bar. */
     int bar2_length = pci_resource_len(pdev, 2);
     TEST_OK(bar2_length >= BAR2_LENGTH, rc = -EINVAL, no_bar2,
@@ -354,18 +244,24 @@ static int initialise_board(struct pci_dev *pdev, struct amc525_lmbf *lmbf)
     lmbf->ctrl_memory = pci_iomap(pdev, 2, BAR2_LENGTH);
     TEST_PTR(lmbf->ctrl_memory, rc, no_bar2, "Unable to map control BAR");
 
-    rc = initialise_dma_control(pdev, lmbf->ctrl_memory, &lmbf->dma);
+    rc = initialise_dma_control(
+        pdev, lmbf->ctrl_memory + CDMA_OFFSET, &lmbf->dma);
     if (rc < 0)  goto no_dma;
+
+    rc = initialise_interrupt_control(
+        pdev, lmbf->ctrl_memory + INTC_OFFSET, lmbf->dma,
+        &lmbf->interrupts);
+    if (rc < 0)  goto no_irq;
 
     return 0;
 
 
+    terminate_interrupt_control(lmbf->interrupts);
+no_irq:
     terminate_dma_control(lmbf->dma);
 no_dma:
     pci_iounmap(pdev, lmbf->ctrl_memory);
 no_bar2:
-    pci_iounmap(pdev, lmbf->reg_memory);
-no_memory:
     return rc;
 }
 
@@ -373,13 +269,14 @@ no_memory:
 static void terminate_board(struct pci_dev *pdev)
 {
     struct amc525_lmbf *lmbf = pci_get_drvdata(pdev);
-
+    terminate_interrupt_control(lmbf->interrupts);
     terminate_dma_control(lmbf->dma);
     pci_iounmap(pdev, lmbf->ctrl_memory);
-    pci_iounmap(pdev, lmbf->reg_memory);
 }
 
 
+/* Top level device probe method: called when AMC525 FPGA card with our firmware
+ * detected. */
 static int amc525_lmbf_probe(
     struct pci_dev *pdev, const struct pci_device_id *id)
 {
@@ -410,14 +307,10 @@ static int amc525_lmbf_probe(
     rc = create_device_nodes(pdev, lmbf, device_class);
     if (rc < 0)     goto no_cdev;
 
-    rc = initialise_interrupts(lmbf);
-    if (rc < 0)     goto no_irq;
-
     return 0;
 
 
-no_irq:
-    cdev_del(&lmbf->cdev);
+    destroy_device_nodes(lmbf, device_class);
 no_cdev:
     terminate_board(pdev);
 no_initialise:
@@ -435,13 +328,8 @@ static void amc525_lmbf_remove(struct pci_dev *pdev)
 {
     printk(KERN_INFO "Removing AMC525 device\n");
     struct amc525_lmbf *lmbf = pci_get_drvdata(pdev);
-    int major = MAJOR(device_major);
 
-    terminate_interrupts(lmbf);
-
-    for (int i = 0; i < MINORS_PER_BOARD; i ++)
-        device_destroy(device_class, MKDEV(major, lmbf->minor + i));
-    cdev_del(&lmbf->cdev);
+    destroy_device_nodes(lmbf, device_class);
     terminate_board(pdev);
     disable_board(pdev);
     kfree(lmbf);
