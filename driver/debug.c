@@ -5,7 +5,7 @@
 #include "debug.h"
 
 
-void dump_binary(const void *buffer, size_t length)
+void dump_bytes(const void *buffer, size_t length)
 {
     const uint8_t *dump = buffer;
     char line[128];
@@ -35,6 +35,26 @@ void dump_binary(const void *buffer, size_t length)
             if (i % 16 == 7)
                 l += sprintf(l, " ");
         }
+        printk(KERN_INFO "%s\n", line);
+    }
+}
+
+
+void dump_dwords(const void *buffer, size_t length)
+{
+    const uint32_t *dump = buffer;
+    char line[128];
+
+    for (size_t a = 0; a < length / 4; a += 4)
+    {
+        char *l = line;
+        l += sprintf(l, "%08zx: ", 4*a);
+        for (unsigned int i = 0; i < 4; i ++)
+        {
+            if (a + i < length)
+                l += sprintf(l, "  %08x", dump[a+i]);
+        }
+
         printk(KERN_INFO "%s\n", line);
     }
 }
