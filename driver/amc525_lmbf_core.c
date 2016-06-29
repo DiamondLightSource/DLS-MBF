@@ -43,8 +43,7 @@ MODULE_VERSION("0");
 
 /* Address offsets into BAR2. */
 #define CDMA_OFFSET     0x0000          // DMA controller       (PG034)
-#define PCIE_OFFSET     0x1000          // PCIe to AXI bridge   (PG194)
-#define INTC_OFFSET     0x2000          // Interrupt controller (PG099)
+#define INTC_OFFSET     0x1000          // Interrupt controller (PG099)
 
 
 

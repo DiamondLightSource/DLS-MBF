@@ -811,7 +811,7 @@ proc create_hier_cell_memory_dma { parentCell nameHier } {
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 DDR0_CLK
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 DDR1_CLK
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA_W
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DMA
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DMA_REGS
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DDR0
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DDR1
 
@@ -848,7 +848,7 @@ CONFIG.C_M_AXI_MAX_BURST_LEN {4} \
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins memory/M_DDR0] [get_bd_intf_pins memory_interconnect/M_DDR0]
   connect_bd_intf_net -intf_net axi_interconnect_0_M01_AXI [get_bd_intf_pins memory/M_DDR1] [get_bd_intf_pins memory_interconnect/M_DDR1]
   connect_bd_intf_net -intf_net axi_interconnect_0_M02_AXI [get_bd_intf_pins M_DMA_W] [get_bd_intf_pins memory_interconnect/M_DMA_W]
-  connect_bd_intf_net -intf_net axi_lite_interconnect_M02_AXI [get_bd_intf_pins S_DMA] [get_bd_intf_pins axi_cdma_0/S_AXI_LITE]
+  connect_bd_intf_net -intf_net axi_lite_interconnect_M02_AXI [get_bd_intf_pins S_DMA_REGS] [get_bd_intf_pins axi_cdma_0/S_AXI_LITE]
   connect_bd_intf_net -intf_net mig_7series_0_C0_DDR3 [get_bd_intf_pins C0_DDR3] [get_bd_intf_pins memory/C0_DDR3]
   connect_bd_intf_net -intf_net mig_7series_0_C1_DDR3 [get_bd_intf_pins C1_DDR3] [get_bd_intf_pins memory/C1_DDR3]
 
@@ -904,7 +904,7 @@ proc create_hier_cell_interrupts { parentCell nameHier } {
   current_bd_instance $hier_obj
 
   # Create interface pins
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_INTC_REGS
 
   # Create pins
   create_bd_pin -dir I -from 0 -to 0 In0
@@ -931,7 +931,7 @@ CONFIG.C_S_AXI_ACLK_FREQ_MHZ {250} \
   set xlconcat [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat ]
 
   # Create interface connections
-  connect_bd_intf_net -intf_net axi_lite_M03_AXI [get_bd_intf_pins s_axi] [get_bd_intf_pins axi_intc/s_axi]
+  connect_bd_intf_net -intf_net axi_lite_M03_AXI [get_bd_intf_pins S_INTC_REGS] [get_bd_intf_pins axi_intc/s_axi]
 
   # Create port connections
   connect_bd_net -net INTR_1 [get_bd_pins In1] [get_bd_pins xlconcat/In1]
@@ -980,10 +980,9 @@ proc create_hier_cell_axi_lite { parentCell nameHier } {
   current_bd_instance $hier_obj
 
   # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA_REGS
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DSP_REGS
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_INTR_REGS
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_PCIE_CTL
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_INTC_REGS
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_PCIE
 
   # Create pins
@@ -998,23 +997,21 @@ proc create_hier_cell_axi_lite { parentCell nameHier } {
 CONFIG.M00_HAS_REGSLICE {4} \
 CONFIG.M01_HAS_REGSLICE {4} \
 CONFIG.M02_HAS_REGSLICE {4} \
-CONFIG.M03_HAS_REGSLICE {4} \
-CONFIG.NUM_MI {4} \
+CONFIG.NUM_MI {3} \
 CONFIG.S00_HAS_REGSLICE {4} \
  ] $axi_lite_interconnect
 
   # Create interface connections
-  connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins M_INTR_REGS] [get_bd_intf_pins axi_lite_interconnect/M03_AXI]
+  connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins M_INTC_REGS] [get_bd_intf_pins axi_lite_interconnect/M02_AXI]
   connect_bd_intf_net -intf_net axi_lite_interconnect_M00_AXI [get_bd_intf_pins M_DSP_REGS] [get_bd_intf_pins axi_lite_interconnect/M00_AXI]
-  connect_bd_intf_net -intf_net axi_lite_interconnect_M01_AXI [get_bd_intf_pins M_PCIE_CTL] [get_bd_intf_pins axi_lite_interconnect/M01_AXI]
-  connect_bd_intf_net -intf_net axi_lite_interconnect_M02_AXI [get_bd_intf_pins M_DMA] [get_bd_intf_pins axi_lite_interconnect/M02_AXI]
+  connect_bd_intf_net -intf_net axi_lite_interconnect_M02_AXI [get_bd_intf_pins M_DMA_REGS] [get_bd_intf_pins axi_lite_interconnect/M01_AXI]
   connect_bd_intf_net -intf_net axi_pcie3_M_AXI [get_bd_intf_pins S_PCIE] [get_bd_intf_pins axi_lite_interconnect/S00_AXI]
 
   # Create port connections
   connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins axi_lite_interconnect/M00_ACLK]
   connect_bd_net -net DSP_RESETN_1 [get_bd_pins DSP_RESETN] [get_bd_pins axi_lite_interconnect/M00_ARESETN]
-  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK] [get_bd_pins axi_lite_interconnect/M03_ACLK] [get_bd_pins axi_lite_interconnect/S00_ACLK]
-  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN] [get_bd_pins axi_lite_interconnect/M03_ARESETN] [get_bd_pins axi_lite_interconnect/S00_ARESETN]
+  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK]  [get_bd_pins axi_lite_interconnect/S00_ACLK]
+  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN]  [get_bd_pins axi_lite_interconnect/S00_ARESETN]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1200,10 +1197,9 @@ CONFIG.pl_link_cap_max_link_width {X8} \
   connect_bd_intf_net -intf_net DSP_AXI_DDR1_1 [get_bd_intf_ports S_DSP_DDR1] [get_bd_intf_pins memory_dma/S_DSP_DDR1]
   connect_bd_intf_net -intf_net S01_AXI_1 [get_bd_intf_ports S_DSP_DDR0] [get_bd_intf_pins memory_dma/S_DSP_DDR0]
   connect_bd_intf_net -intf_net axi_crossbar_0_M01_AXI [get_bd_intf_pins axi_pcie3_bridge/S_AXI] [get_bd_intf_pins memory_dma/M_DMA_W]
-  connect_bd_intf_net -intf_net axi_lite_M03_AXI [get_bd_intf_pins axi_lite/M_INTR_REGS] [get_bd_intf_pins interrupts/s_axi]
-  connect_bd_intf_net -intf_net axi_lite_M_DMA [get_bd_intf_pins axi_lite/M_DMA] [get_bd_intf_pins memory_dma/S_DMA]
+  connect_bd_intf_net -intf_net axi_lite_M03_AXI [get_bd_intf_pins axi_lite/M_INTC_REGS] [get_bd_intf_pins interrupts/S_INTC_REGS]
+  connect_bd_intf_net -intf_net axi_lite_M_DMA [get_bd_intf_pins axi_lite/M_DMA_REGS] [get_bd_intf_pins memory_dma/S_DMA_REGS]
   connect_bd_intf_net -intf_net axi_lite_M_DSP_REGS [get_bd_intf_ports M_DSP_REGS] [get_bd_intf_pins axi_lite/M_DSP_REGS]
-  connect_bd_intf_net -intf_net axi_lite_M_PCIE_CTL [get_bd_intf_pins axi_lite/M_PCIE_CTL] [get_bd_intf_pins axi_pcie3_bridge/S_AXI_CTL]
   connect_bd_intf_net -intf_net axi_pcie3_bridge_M_AXI [get_bd_intf_pins axi_lite/S_PCIE] [get_bd_intf_pins axi_pcie3_bridge/M_AXI]
   connect_bd_intf_net -intf_net axi_pcie3_pcie_7x_mgt [get_bd_intf_ports pcie_mgt] [get_bd_intf_pins axi_pcie3_bridge/pcie_7x_mgt]
   connect_bd_intf_net -intf_net mig_7series_0_C0_DDR3 [get_bd_intf_ports C0_DDR3] [get_bd_intf_pins memory_dma/C0_DDR3]
@@ -1224,8 +1220,7 @@ CONFIG.pl_link_cap_max_link_width {X8} \
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x200000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg
   create_bd_addr_seg -range 0x00001000 -offset 0x400000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x400000002000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/s_axi/Reg] SEG_axi_intc_0_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x400000001000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs axi_pcie3_bridge/S_AXI_CTL/CTL0] SEG_axi_pcie3_bridge_CTL0
+  create_bd_addr_seg -range 0x00001000 -offset 0x400000001000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/s_axi/Reg] SEG_axi_intc_0_Reg
   create_bd_addr_seg -range 0x800000000000 -offset 0x00000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs axi_pcie3_bridge/S_AXI/BAR0] SEG_axi_pcie3_bridge_BAR0
   create_bd_addr_seg -range 0x80000000 -offset 0x800000000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
   create_bd_addr_seg -range 0x08000000 -offset 0x800080000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr
