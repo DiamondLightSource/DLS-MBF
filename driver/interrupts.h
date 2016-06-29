@@ -11,8 +11,12 @@ int initialise_interrupt_control(
 void terminate_interrupt_control(
     struct pci_dev *pdev, struct interrupt_control *control);
 
-/* Waits for the event mask to be non zero, returns error if interrupted. */
-int wait_interrupt_events(struct interrupt_control *control);
+/* Blocks until non zero event mask can be returned. */
+int read_interrupt_events(
+    struct interrupt_control *control, bool no_wait, char *events);
 
-/* Reads and consumes current event mask.  May return zero. */
-char read_interrupt_events(struct interrupt_control *control);
+/* Checks if a non zero event mask is available to read. */
+bool interrupt_events_ready(struct interrupt_control *control);
+
+/* Returns wait queue for interrupt status updates. */
+wait_queue_head_t *interrupts_wait_queue(struct interrupt_control *control);

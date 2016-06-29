@@ -2,7 +2,12 @@
 
 # Simple script to report interrupt events.
 
-f = open('/dev/amc525_lmbf.0.reg')
+import os
+import select
+
+
+f = os.open('/dev/amc525_lmbf.0.reg', os.O_NONBLOCK)
 
 while True:
-    print ord(f.read(1))
+    r, w, x = select.select([f], [], [])
+    print ord(os.read(f, 1))

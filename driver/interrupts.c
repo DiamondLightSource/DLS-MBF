@@ -44,24 +44,40 @@ struct interrupt_control {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-char read_interrupt_events(struct interrupt_control *control)
+
+bool interrupt_events_ready(struct interrupt_control *control)
 {
-    return (char) atomic_xchg(&control->events, 0);
+    return atomic_read(&control->events);
 }
 
 
-int wait_interrupt_events(struct interrupt_control *control)
+int read_interrupt_events(
+    struct interrupt_control *control, bool no_wait, char *events)
 {
-    printk("wait_interrupt_events: %d\n", atomic_read(&control->events));
-    return wait_event_interruptible(
-        control->wait_queue, atomic_read(&control->events));
+    if (no_wait)
+    {
+        *events = (char) atomic_xchg(&control->events, 0);
+        return 0;
+    }
+    else
+        /* Tricksy code here: we rely on the side effect of the condition,
+         * because we want to genuinely get the current value.  This ensures
+         * that we'll never return a non zero value unless no_wait is true. */
+        return wait_event_interruptible(
+            control->wait_queue,
+            (*events = (char) atomic_xchg(&control->events, 0)));
 }
 
 
+wait_queue_head_t *interrupts_wait_queue(struct interrupt_control *control)
+{
+    return &control->wait_queue;
+}
+
+
+/* Stores user space interrupt events and notifies as appropriate. */
 static void event_interrupt(struct interrupt_control *control, uint32_t events)
 {
-    printk(KERN_INFO "event_interrupt %02x\n", events);
-
     /* Add the new events into the current event mask. */
     int old_events;
     do

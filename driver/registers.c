@@ -7,6 +7,7 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/pci.h>
+#include <linux/poll.h>
 
 #include "error.h"
 #include "amc525_lmbf_device.h"
@@ -92,15 +93,36 @@ static ssize_t lmbf_reg_read(
 {
     struct register_context *context = file->private_data;
 
-    int rc = wait_interrupt_events(context->interrupts);
+    /* In non blocking mode if we're not ready say so. */
+    bool no_wait = file->f_flags & O_NONBLOCK;
+    if (no_wait  &&  !interrupt_events_ready(context->interrupts))
+        return -EAGAIN;
+
+    char events;
+    int rc = read_interrupt_events(context->interrupts, no_wait, &events);
     if (rc < 0)
         return rc;
-
-    char events = read_interrupt_events(context->interrupts);
-    if (copy_to_user(buf, &events, 1) == 0)
-        return 1;
-    else
+    else if (copy_to_user(buf, &events, 1) > 0)
         return -EFAULT;
+    else if (events == 0)
+        /* This can happen if we're fighting with a concurrent reader and
+         * O_NONBLOCK was set. */
+        return -EAGAIN;
+    else
+        return 1;
+}
+
+
+static unsigned int lmbf_reg_poll(
+    struct file *file, struct poll_table_struct *poll)
+{
+    struct register_context *context = file->private_data;
+
+    poll_wait(file, interrupts_wait_queue(context->interrupts), poll);
+    if (interrupt_events_ready(context->interrupts))
+        return POLLIN | POLLRDNORM;
+    else
+        return 0;
 }
 
 
@@ -110,4 +132,5 @@ struct file_operations lmbf_reg_fops = {
     .unlocked_ioctl = lmbf_reg_ioctl,
     .mmap = lmbf_reg_mmap,
     .read = lmbf_reg_read,
+    .poll = lmbf_reg_poll,
 };
