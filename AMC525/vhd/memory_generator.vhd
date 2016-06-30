@@ -110,6 +110,8 @@ begin
                     read_data_o <= std_logic_vector(addr_error_count);
                 when 6 =>
                     read_data_o <= std_logic_vector(brsp_error_count);
+                when 7 =>
+                    read_data_o <= (0 => to_std_logic(writing), others => '0');
                 when others =>
                     read_data_o <= (others => '0');
             end case;

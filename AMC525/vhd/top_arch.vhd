@@ -451,6 +451,9 @@ begin
     );
 
     ULED <= register_file(2)(0)(3 downto 0);
-    INTR <= register_file(2)(1)(7 downto 0);
+
+    INTR(0) <= DSP_DDR0_capture_enable;
+    INTR(1) <= not DSP_DDR0_capture_enable;
+    INTR(7 downto 2) <= register_file(2)(1)(7 downto 2);
 
 end;
