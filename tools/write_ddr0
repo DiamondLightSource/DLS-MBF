@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+# Sets selected region of DDR0 to requested value
+
+import sys
+
+from driver import *
+
+
+class Ticker:
+    ticks = '|/-\\'
+    def __init__(self):
+        self.state = 0
+    def tick(self):
+        sys.stdout.write(self.ticks[self.state] + '\r')
+        sys.stdout.flush()
+        self.state = (self.state + 1) % 4
+
+
+K = 1024
+M = K * K
+
+
+if len(sys.argv) > 1:
+    value = numpy.uint32(sys.argv[1])
+else:
+    value = 0
+
+if len(sys.argv) > 2:
+    length = int(sys.argv[2])
+else:
+    length = 256*M - 1
+
+mem_gen_regs[0] = value
+mem_gen_regs[1] = value
+mem_gen_regs[2] = 0
+mem_gen_regs[3] = 0
+
+print 'Setting %d bytes of DDR0 to %08x' % (8*length, value)
+mem_gen_regs[4] = length
+
+# Wait for write to complete.
+ticker = Ticker()
+while mem_gen_regs[7] & 1:
+    ticker.tick()

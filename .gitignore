@@ -1,2 +1,3 @@
 /CONFIG
 /build
+*.pyc
