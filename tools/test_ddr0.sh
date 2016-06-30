@@ -4,21 +4,15 @@
 #
 # Register space:
 #
-#   AXI DDR0 Master
+#   Memory generator
 #
 #       Read                                    Write
 #       ----                                    -----
-#  0    Data error count                        Reset data error count
-#  4    BRESP error count                       Reset BRESP error count
-#  8    Address error count                     Reset address error count
-#
-#   Memory generator
-#
-#  80   LSB initial data pattern                ditto
-#  84   MSB initial data pattern                ditto
-#  88   LSB data increment                      ditto
-#  8C   MSB data increment                      ditto
-#  90                                           Write count
+#   0   LSB initial data pattern                ditto
+#   4   MSB initial data pattern                ditto
+#   8   LSB data increment                      ditto
+#   C   MSB data increment                      ditto
+#  10                                           Write count
 #
 #   Debug (currently configured for AXI write capture)
 #
@@ -34,21 +28,22 @@ cd "$(dirname "$0")"
 cd ..
 
 # Set up initial write of 0, increment of 1, as 32-bit writes
-build/tools/testmem w 128 0
-build/tools/testmem w 132 1
-build/tools/testmem w 136 2
-build/tools/testmem w 140 2
+build/tools/testmem w 0 0
+build/tools/testmem w 4 1
+build/tools/testmem w 8 2
+build/tools/testmem w 12 2
 # Confirm written pattern
 echo Write pattern:
-build/tools/testmem r 128 16
+build/tools/testmem r 0 16
 # Arm debug capture and confirm ready
-build/tools/testmem w $((0x780)) 0
-build/tools/testmem r $((0x780)) 4
+build/tools/testmem w 1920 0            # 0x780 ARM
+build/tools/testmem r 1920 4            # 0x780 Should read 1
 # Trigger write and confirm done
-build/tools/testmem w $((0x90))  256
+build/tools/testmem w 16 256            # 0x90 Write 256 words
 echo After write:
-build/tools/testmem r $((0x780)) 4
+build/tools/testmem r 1920 4            # 0x780 SHould read 0
 build/tools/testmem r 128 8
+build/tools/testmem r 0 32
 
 # Read out what's in the memory
 echo Memory:
