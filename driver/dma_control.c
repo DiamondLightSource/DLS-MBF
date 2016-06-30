@@ -156,6 +156,12 @@ void release_dma_memory(struct dma_control *dma)
 }
 
 
+size_t dma_buffer_size(struct dma_control *dma)
+{
+    return dma->buffer_size;
+}
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Initialisation and shutdown. */
 

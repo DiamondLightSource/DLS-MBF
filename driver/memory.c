@@ -6,6 +6,7 @@
 #include <linux/fs.h>
 
 #include "error.h"
+#include "amc525_lmbf_device.h"
 #include "dma_control.h"
 
 #include "memory.h"
@@ -91,9 +92,24 @@ static loff_t lmbf_dma_llseek(struct file *file, loff_t f_pos, int whence)
 }
 
 
+static long lmbf_mem_ioctl(
+    struct file *file, unsigned int cmd, unsigned long arg)
+{
+    struct memory_context *context = file->private_data;
+    switch (cmd)
+    {
+        case LMBF_BUF_SIZE:
+            return dma_buffer_size(context->dma);
+        default:
+            return -EINVAL;
+    }
+}
+
+
 struct file_operations lmbf_dma_fops = {
     .owner = THIS_MODULE,
     .release = lmbf_dma_release,
     .read = lmbf_dma_read,
     .llseek = lmbf_dma_llseek,
+    .unlocked_ioctl = lmbf_mem_ioctl,
 };

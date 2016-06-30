@@ -66,7 +66,11 @@ $(DRIVER_BUILD_DIR):
 
 insmod: $(DRIVER_KO)
 	cp $^ /tmp
+ifdef DMA_BUF_SHIFT
+	sudo insmod /tmp/$(DRIVER_NAME).ko dma_block_shift=$(DMA_BUF_SHIFT)
+else
 	sudo insmod /tmp/$(DRIVER_NAME).ko
+endif
 	sudo chgrp dcs /dev/amc525_lmbf.*
 	sudo chmod g+rw /dev/amc525_lmbf.*
 .PHONY: insmod

@@ -22,3 +22,6 @@ void release_dma_memory(struct dma_control *dma);
 
 /* To be called each time a DMA completion interrupt is seen. */
 void dma_interrupt(struct dma_control *dma);
+
+/* Returns available DMA buffer size. */
+size_t dma_buffer_size(struct dma_control *dma);

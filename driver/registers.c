@@ -93,7 +93,7 @@ static ssize_t lmbf_reg_read(
 {
     struct register_context *context = file->private_data;
 
-    /* In non blocking mode if we're not ready say so. */
+    /* In non blocking mode if we're not ready then say so. */
     bool no_wait = file->f_flags & O_NONBLOCK;
     if (no_wait  &&  !interrupt_events_ready(context->interrupts))
         return -EAGAIN;
@@ -101,8 +101,10 @@ static ssize_t lmbf_reg_read(
     char events;
     int rc = read_interrupt_events(context->interrupts, no_wait, &events);
     if (rc < 0)
+        /* Read was interrupted. */
         return rc;
     else if (copy_to_user(buf, &events, 1) > 0)
+        /* Invalid buffer specified by user process, couldn't copy. */
         return -EFAULT;
     else if (events == 0)
         /* This can happen if we're fighting with a concurrent reader and
