@@ -70,17 +70,21 @@ static ssize_t lmbf_dma_read(
         count = context->length - offset;
 
     /* Read the data, transfer it to user space, release. */
-    void *read_data = read_dma_memory(
-        context->dma, context->base + offset, &count);
-    count -= copy_to_user(buf, read_data, count);
+    void *read_data;
+    ssize_t read_count = read_dma_memory(
+        context->dma, context->base + offset, count, &read_data);
+    if (read_count < 0)
+        return read_count;
+
+    read_count -= copy_to_user(buf, read_data, read_count);
     release_dma_memory(context->dma);
 
-    *f_pos += count;
-    if (count == 0)
+    *f_pos += read_count;
+    if (read_count == 0)
         /* Looks like copy_to_user didn't copy anything. */
         return -EFAULT;
     else
-        return count;
+        return read_count;
 }
 
 

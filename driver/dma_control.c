@@ -115,13 +115,15 @@ void dma_interrupt(struct dma_control *dma)
 }
 
 
-void *read_dma_memory(struct dma_control *dma, size_t start, size_t *length)
+ssize_t read_dma_memory(
+    struct dma_control *dma, size_t start, size_t count, void **buffer)
 {
     /* Ensure we only try to read as much as will fit in our buffer. */
-    if (*length > dma->buffer_size)
-        *length = dma->buffer_size;
+    if (count > dma->buffer_size)
+        count = dma->buffer_size;
 
     mutex_lock(&dma->mutex);
+    *buffer = dma->buffer;
 
     /* Hand the buffer over to the DMA engine. */
     pci_dma_sync_single_for_device(
@@ -134,19 +136,22 @@ void *read_dma_memory(struct dma_control *dma, size_t start, size_t *length)
     writel((uint32_t) start, &dma->regs->sa);
     writel((uint32_t) dma->buffer_dma, &dma->regs->da);
     writel((uint32_t) (dma->buffer_dma >> 32), &dma->regs->da_msb);
-    writel(*length, &dma->regs->btt);
+    writel(count, &dma->regs->btt);
 
-    /* Wait for transfer to complete.  If we're killed the result isn't too
-     * important. */
-    if (wait_for_completion_killable(&dma->dma_done))
-        printk(KERN_ERR "DMA transfer killed\n");
+    /* Wait for transfer to complete.  If we're killed, unlock and bail. */
+    ssize_t rc = wait_for_completion_killable(&dma->dma_done);
+    TEST_RC(rc, killed, "DMA transfer killed");
 
     /* Restore the buffer to CPU access (really just flushes associated cache
      * entries). */
     pci_dma_sync_single_for_cpu(
         dma->pdev, dma->buffer_dma, dma->buffer_size,  DMA_FROM_DEVICE);
 
-    return dma->buffer;
+    return count;
+
+killed:
+    mutex_unlock(&dma->mutex);
+    return rc;
 }
 
 

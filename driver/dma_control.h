@@ -15,7 +15,8 @@ void terminate_dma_control(struct dma_control *dma);
  * buffer which is returned.  This buffer *must* be released when finished with
  * so that other readers can proceed.  The length parameter is updated with the
  * number of bytes actually read. */
-void *read_dma_memory(struct dma_control *dma, size_t start, size_t *length);
+ssize_t read_dma_memory(
+    struct dma_control *dma, size_t start, size_t count, void **buffer);
 
 /* Must be called after read_dma_memory() to release access to memory. */
 void release_dma_memory(struct dma_control *dma);
