@@ -155,20 +155,16 @@ def load_signals(signal_file):
 
 
 # Each line is a fully qualified signal name followed by a location identifier
-# followed by an IO specification
 #
 #   locations = location-line*
-#   location-line = name-index location iostandard
+#   location-line = name-index location
 #
 def load_locations(pins_file):
-    def parse_line(name, pin, iostandard=None):
-        return name, pin, iostandard
-
     pins = {}
     for line in uncomment_file(pins_file, '#'):
-        name, pin, iostandard = parse_line(*line.split())
+        name, pin = line.split()
         name, index = parse_name_index(name)
-        pins[(name, index)] = (pin, iostandard)
+        pins[(name, index)] = pin
     return pins
 
 
@@ -259,10 +255,8 @@ def map_used_pins(locations, mapping):
 def write_xdc(locations, used_pins, xdc_file):
     with open(xdc_file, 'w') as file:
         for mapping in used_pins:
-            mapped = map_used_pins(locations, mapping)
-            for name, index, (location, iostandard) in mapped:
-                if iostandard != 'MGT':
-                    file.write(xdc_template_line % locals())
+            for name, index, location in map_used_pins(locations, mapping):
+                file.write(xdc_template_line % locals())
 
 
 signals = load_signals(signal_file)

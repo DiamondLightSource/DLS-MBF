@@ -82,8 +82,8 @@ FPGA_AMCRX_{P,N}[0..1]      in
 FPGA_AMCTX_{P,N}[0..1]      out
 
 -- AMC fat pipe
-AMC_RX_{P,N}[4..11]         in
-AMC_TX_{P,N}[4..11]         out
+AMC_RX_{P,N}[11..4]         in
+AMC_TX_{P,N}[11..4]         out
 FCLKA_{P,N}                 in
 
 -- PCIe2 connection to P2040 (note, naming from perspecive of P2040)

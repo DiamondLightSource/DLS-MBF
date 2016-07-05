@@ -479,110 +479,110 @@ FMC0_HA_N[23]                   L15
 
 # ======== Bank MGT111 ========
 # NOTE: SD nets are named from the P2040's perspective
-SD_RX04_P                       AW2     MGT
-SD_RX04_N                       AW1     MGT
-SD_TX04_P                       AW6     MGT
-SD_TX04_N                       AW5     MGT
-SD_RX05_P                       AY4     MGT
-SD_RX05_N                       AY3     MGT
-SD_TX05_P                       AY8     MGT
-SD_TX05_N                       AY7     MGT
-FMC1_TX_P[9]                    BA2     MGT
-FMC1_TX_N[9]                    BA1     MGT
-FMC1_RX_P[9]                    BA6     MGT
-FMC1_RX_N[9]                    BA5     MGT
-FMC1_TX_P[8]                    BB4     MGT
-FMC1_TX_N[8]                    BB3     MGT
-FMC1_RX_P[8]                    BB8     MGT
-FMC1_RX_N[8]                    BB7     MGT
+SD_RX04_P                       AW2
+SD_RX04_N                       AW1
+SD_TX04_P                       AW6
+SD_TX04_N                       AW5
+SD_RX05_P                       AY4
+SD_RX05_N                       AY3
+SD_TX05_P                       AY8
+SD_TX05_N                       AY7
+FMC1_TX_P[9]                    BA2
+FMC1_TX_N[9]                    BA1
+FMC1_RX_P[9]                    BA6
+FMC1_RX_N[9]                    BA5
+FMC1_TX_P[8]                    BB4
+FMC1_TX_N[8]                    BB3
+FMC1_RX_P[8]                    BB8
+FMC1_RX_N[8]                    BB7
 CLK100MHZ0_P                    BA10
 CLK100MHZ0_N                    BA9
 CLK125MHZ0_P                    AW10
 CLK125MHZ0_N                    AW9
 
 # ======== Bank MGT112 ========
-FMC1_TX_P[3]                    AR2     MGT
-FMC1_TX_N[3]                    AR1     MGT
-FMC1_RX_P[3]                    AP8     MGT
-FMC1_RX_N[3]                    AP7     MGT
-FMC1_TX_P[2]                    AT4     MGT
-FMC1_TX_N[2]                    AT3     MGT
-FMC1_RX_P[2]                    AR6     MGT
-FMC1_RX_N[2]                    AR5     MGT
-FMC1_TX_P[1]                    AU2     MGT
-FMC1_TX_N[1]                    AU1     MGT
-FMC1_RX_P[1]                    AU6     MGT
-FMC1_RX_N[1]                    AU5     MGT
-FMC1_TX_P[0]                    AV4     MGT
-FMC1_TX_N[0]                    AV3     MGT
-FMC1_RX_P[0]                    AV8     MGT
-FMC1_RX_N[0]                    AV7     MGT
+FMC1_TX_P[3]                    AR2
+FMC1_TX_N[3]                    AR1
+FMC1_RX_P[3]                    AP8
+FMC1_RX_N[3]                    AP7
+FMC1_TX_P[2]                    AT4
+FMC1_TX_N[2]                    AT3
+FMC1_RX_P[2]                    AR6
+FMC1_RX_N[2]                    AR5
+FMC1_TX_P[1]                    AU2
+FMC1_TX_N[1]                    AU1
+FMC1_RX_P[1]                    AU6
+FMC1_RX_N[1]                    AU5
+FMC1_TX_P[0]                    AV4
+FMC1_TX_N[0]                    AV3
+FMC1_RX_P[0]                    AV8
+FMC1_RX_N[0]                    AV7
 FMC1_GBTCLK_P[0]                AT8
 FMC1_GBTCLK_N[0]                AT7
 FMC1_GBTCLK_P[1]                AU10
 FMC1_GBTCLK_N[1]                AU9
 
 # ======== Bank MGT113 ========
-FMC1_TX_P[7]                    AL2     MGT
-FMC1_TX_N[7]                    AL1     MGT
-FMC1_RX_P[7]                    AJ6     MGT
-FMC1_RX_N[7]                    AJ5     MGT
-FMC1_TX_P[6]                    AM4     MGT
-FMC1_TX_N[6]                    AM3     MGT
-FMC1_RX_P[6]                    AL6     MGT
-FMC1_RX_N[6]                    AL5     MGT
-FMC1_TX_P[5]                    AN2     MGT
-FMC1_TX_N[5]                    AN1     MGT
-FMC1_RX_P[5]                    AM8     MGT
-FMC1_RX_N[5]                    AM7     MGT
-FMC1_TX_P[4]                    AP4     MGT
-FMC1_TX_N[4]                    AP3     MGT
-FMC1_RX_P[4]                    AN6     MGT
-FMC1_RX_N[4]                    AN5     MGT
+FMC1_TX_P[7]                    AL2
+FMC1_TX_N[7]                    AL1
+FMC1_RX_P[7]                    AJ6
+FMC1_RX_N[7]                    AJ5
+FMC1_TX_P[6]                    AM4
+FMC1_TX_N[6]                    AM3
+FMC1_RX_P[6]                    AL6
+FMC1_RX_N[6]                    AL5
+FMC1_TX_P[5]                    AN2
+FMC1_TX_N[5]                    AN1
+FMC1_RX_P[5]                    AM8
+FMC1_RX_N[5]                    AM7
+FMC1_TX_P[4]                    AP4
+FMC1_TX_N[4]                    AP3
+FMC1_RX_P[4]                    AN6
+FMC1_RX_N[4]                    AN5
 CLK156_25MHZ5_P                 AH8
 CLK156_25MHZ5_N                 AH7
 CLK125MHZ5_P                    AK8
 CLK125MHZ5_N                    AK7
 
 # ======== Bank MGT114 ========
-AMC_TX_P[8]                     AG2     MGT
-AMC_TX_N[8]                     AG1     MGT
-AMC_RX_P[8]                     AD4     MGT
-AMC_RX_N[8]                     AD3     MGT
-AMC_TX_P[9]                     AH4     MGT
-AMC_TX_N[9]                     AH3     MGT
-AMC_RX_P[9]                     AE6     MGT
-AMC_RX_N[9]                     AE5     MGT
-AMC_TX_P[10]                    AJ2     MGT
-AMC_TX_N[10]                    AJ1     MGT
-AMC_RX_P[10]                    AF4     MGT
-AMC_RX_N[10]                    AF3     MGT
-AMC_TX_P[11]                    AK4     MGT
-AMC_TX_N[11]                    AK3     MGT
-AMC_RX_P[11]                    AG6     MGT
-AMC_RX_N[11]                    AG5     MGT
+AMC_TX_P[8]                     AG2
+AMC_TX_N[8]                     AG1
+AMC_RX_P[8]                     AD4
+AMC_RX_N[8]                     AD3
+AMC_TX_P[9]                     AH4
+AMC_TX_N[9]                     AH3
+AMC_RX_P[9]                     AE6
+AMC_RX_N[9]                     AE5
+AMC_TX_P[10]                    AJ2
+AMC_TX_N[10]                    AJ1
+AMC_RX_P[10]                    AF4
+AMC_RX_N[10]                    AF3
+AMC_TX_P[11]                    AK4
+AMC_TX_N[11]                    AK3
+AMC_RX_P[11]                    AG6
+AMC_RX_N[11]                    AG5
 CLK125MHZ1_P                    AD8
 CLK125MHZ1_N                    AD7
 CLK156_25MHZ6_P                 AF8
 CLK156_25MHZ6_N                 AF7
 
 # ======== Bank MGT115 ========
-AMC_TX_P[4]                     W2      MGT
-AMC_TX_N[4]                     W1      MGT
-AMC_RX_P[4]                     Y4      MGT
-AMC_RX_N[4]                     Y3      MGT
-AMC_TX_P[5]                     AA2     MGT
-AMC_TX_N[5]                     AA1     MGT
-AMC_RX_P[5]                     AA6     MGT
-AMC_RX_N[5]                     AA5     MGT
-AMC_TX_P[6]                     AC2     MGT
-AMC_TX_N[6]                     AC1     MGT
-AMC_RX_P[6]                     AB4     MGT
-AMC_RX_N[6]                     AB3     MGT
-AMC_TX_P[7]                     AE2     MGT
-AMC_TX_N[7]                     AE1     MGT
-AMC_RX_P[7]                     AC6     MGT
-AMC_RX_N[7]                     AC5     MGT
+AMC_TX_P[4]                     W2
+AMC_TX_N[4]                     W1
+AMC_RX_P[4]                     Y4
+AMC_RX_N[4]                     Y3
+AMC_TX_P[5]                     AA2
+AMC_TX_N[5]                     AA1
+AMC_RX_P[5]                     AA6
+AMC_RX_N[5]                     AA5
+AMC_TX_P[6]                     AC2
+AMC_TX_N[6]                     AC1
+AMC_RX_P[6]                     AB4
+AMC_RX_N[6]                     AB3
+AMC_TX_P[7]                     AE2
+AMC_TX_N[7]                     AE1
+AMC_RX_P[7]                     AC6
+AMC_RX_N[7]                     AC5
 CLK100MHZ1_P                    Y8
 CLK100MHZ1_N                    Y7
 FCLKA_P                         AB8
@@ -590,80 +590,80 @@ FCLKA_N                         AB7
 
 # ======== Bank MGT116 ========
 # NOTE: SD nets are named from the P2040's perspective
-SD_RX06_P                       P4      MGT
-SD_RX06_N                       P3      MGT
-SD_TX06_P                       R6      MGT
-SD_TX06_N                       R5      MGT
-SD_RX07_P                       R2      MGT
-SD_RX07_N                       R1      MGT
-SD_TX07_P                       U6      MGT
-SD_TX07_N                       U5      MGT
-FPGA_AMCTX_P[1]                 T4      MGT
-FPGA_AMCTX_N[1]                 T3      MGT
-FPGA_AMCRX_P[1]                 V4      MGT
-FPGA_AMCRX_N[1]                 V3      MGT
-FPGA_AMCTX_P[0]                 U2      MGT
-FPGA_AMCTX_N[0]                 U1      MGT
-FPGA_AMCRX_P[0]                 W6      MGT
-FPGA_AMCRX_N[0]                 W5      MGT
+SD_RX06_P                       P4
+SD_RX06_N                       P3
+SD_TX06_P                       R6
+SD_TX06_N                       R5
+SD_RX07_P                       R2
+SD_RX07_N                       R1
+SD_TX07_P                       U6
+SD_TX07_N                       U5
+FPGA_AMCTX_P[1]                 T4
+FPGA_AMCTX_N[1]                 T3
+FPGA_AMCRX_P[1]                 V4
+FPGA_AMCRX_N[1]                 V3
+FPGA_AMCTX_P[0]                 U2
+FPGA_AMCTX_N[0]                 U1
+FPGA_AMCRX_P[0]                 W6
+FPGA_AMCRX_N[0]                 W5
 CLK125MHZ4_P                    T8
 CLK125MHZ4_N                    T7
 CLK156_25MHZ3_P                 V8
 CLK156_25MHZ3_N                 V7
 
 # ======== Bank MGT117 ========
-FMC0_TX_P[7]                    K4      MGT
-FMC0_TX_N[7]                    K3      MGT
-FMC0_RX_P[7]                    J6      MGT
-FMC0_RX_N[7]                    J5      MGT
-FMC0_TX_P[6]                    L2      MGT
-FMC0_TX_N[6]                    L1      MGT
-FMC0_RX_P[6]                    L6      MGT
-FMC0_RX_N[6]                    L5      MGT
-FMC0_TX_P[5]                    M4      MGT
-FMC0_TX_N[5]                    M3      MGT
-FMC0_RX_P[5]                    N6      MGT
-FMC0_RX_N[5]                    N5      MGT
-FMC0_TX_P[4]                    N2      MGT
-FMC0_TX_N[4]                    N1      MGT
-FMC0_RX_P[4]                    P8      MGT
-FMC0_RX_N[4]                    P7      MGT
+FMC0_TX_P[7]                    K4
+FMC0_TX_N[7]                    K3
+FMC0_RX_P[7]                    J6
+FMC0_RX_N[7]                    J5
+FMC0_TX_P[6]                    L2
+FMC0_TX_N[6]                    L1
+FMC0_RX_P[6]                    L6
+FMC0_RX_N[6]                    L5
+FMC0_TX_P[5]                    M4
+FMC0_TX_N[5]                    M3
+FMC0_RX_P[5]                    N6
+FMC0_RX_N[5]                    N5
+FMC0_TX_P[4]                    N2
+FMC0_TX_N[4]                    N1
+FMC0_RX_P[4]                    P8
+FMC0_RX_N[4]                    P7
 CLK156_25MHZ1_P                 K8
 CLK156_25MHZ1_N                 K7
 CLK125MHZ7_P                    M8
 CLK125MHZ7_N                    M7
 
 # ======== Bank MGT118 ========
-FMC0_TX_P[3]                    F4      MGT
-FMC0_TX_N[3]                    F3      MGT
-FMC0_RX_P[3]                    E6      MGT
-FMC0_RX_N[3]                    E5      MGT
-FMC0_TX_P[2]                    G2      MGT
-FMC0_TX_N[2]                    G1      MGT
-FMC0_RX_P[2]                    F8      MGT
-FMC0_RX_N[2]                    F7      MGT
-FMC0_TX_P[1]                    H4      MGT
-FMC0_TX_N[1]                    H3      MGT
-FMC0_RX_P[1]                    G6      MGT
-FMC0_RX_N[1]                    G5      MGT
-FMC0_TX_P[0]                    J2      MGT
-FMC0_TX_N[0]                    J1      MGT
-FMC0_RX_P[0]                    H8      MGT
-FMC0_RX_N[0]                    H7      MGT
+FMC0_TX_P[3]                    F4
+FMC0_TX_N[3]                    F3
+FMC0_RX_P[3]                    E6
+FMC0_RX_N[3]                    E5
+FMC0_TX_P[2]                    G2
+FMC0_TX_N[2]                    G1
+FMC0_RX_P[2]                    F8
+FMC0_RX_N[2]                    F7
+FMC0_TX_P[1]                    H4
+FMC0_TX_N[1]                    H3
+FMC0_RX_P[1]                    G6
+FMC0_RX_N[1]                    G5
+FMC0_TX_P[0]                    J2
+FMC0_TX_N[0]                    J1
+FMC0_RX_P[0]                    H8
+FMC0_RX_N[0]                    H7
 FMC0_GBTCLK_P[0]                E10
 FMC0_GBTCLK_N[0]                E9
 FMC0_GBTCLK_P[1]                G10
 FMC0_GBTCLK_N[1]                G9
 
 # ======== Bank MGT119 ========
-FMC0_TX_P[9]                    D4      MGT
-FMC0_TX_N[9]                    D3      MGT
-FMC0_RX_P[9]                    C6      MGT
-FMC0_RX_N[9]                    C5      MGT
-FMC0_TX_P[8]                    E2      MGT
-FMC0_TX_N[8]                    E1      MGT
-FMC0_RX_P[8]                    D8      MGT
-FMC0_RX_N[8]                    D7      MGT
+FMC0_TX_P[9]                    D4
+FMC0_TX_N[9]                    D3
+FMC0_RX_P[9]                    C6
+FMC0_RX_N[9]                    C5
+FMC0_TX_P[8]                    E2
+FMC0_TX_N[8]                    E1
+FMC0_RX_P[8]                    D8
+FMC0_RX_N[8]                    D7
 CLK156_25MHZ4_P                 A10
 CLK156_25MHZ4_N                 A9
 CLK125MHZ6_P                    C10
