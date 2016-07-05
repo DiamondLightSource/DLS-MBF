@@ -15,6 +15,9 @@ architecture top of top is
     signal dsp_clk : std_logic;
     signal dsp_reset_n : std_logic;
 
+    signal n_coldrst_in : std_logic;
+    signal uled_out : std_logic_vector(3 downto 0);
+
     signal INTR : std_logic_vector(7 downto 0);
 
     -- Wiring from AXI-Lite master to register slave
@@ -116,6 +119,12 @@ architecture top of top is
     signal dio_inputs : std_logic_vector(4 downto 0);
 
 begin
+    -- Reset in.
+    ncoldrst_inst : entity work.ibuf_array port map (
+        i_i(0) => nCOLDRST,
+        o_o(0) => n_coldrst_in
+    );
+
     -- Reference clock for MGT.  For this one we don't want the BUFG.
     fclka_inst : entity work.gte2_ibufds generic map (
         GEN_BUFG => false
@@ -136,7 +145,7 @@ begin
     dsp_clock_inst : entity work.dsp_clock port map (
         CLK125MHZ0_P => CLK125MHZ0_P,
         CLK125MHZ0_N => CLK125MHZ0_N,
-        nCOLDRST => nCOLDRST,
+        nCOLDRST => n_coldrst_in,
         dsp_clk_o => dsp_clk,
         dsp_rst_n_o => dsp_reset_n
     );
@@ -144,7 +153,7 @@ begin
 
     -- Wire up the interconnect
     interconnect_inst : entity work.interconnect_wrapper port map (
-        nCOLDRST => nCOLDRST,
+        nCOLDRST => n_coldrst_in,
 
         -- Interrupt interface
         INTR => INTR,
@@ -472,7 +481,13 @@ begin
         read_ack_o => REGS_read_ack(MOD_DEBUG)
     );
 
-    ULED <= register_file(2)(0)(3 downto 0);
+    uled_out <= register_file(2)(0)(3 downto 0);
+    uled_inst : entity work.obuf_array generic map (
+        COUNT => 4
+    ) port map (
+        i_i => uled_out,
+        o_o => ULED
+    );
 
     INTR(0) <= DSP_DDR0_capture_enable;
     INTR(1) <= not DSP_DDR0_capture_enable;

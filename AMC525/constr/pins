@@ -1,130 +1,130 @@
 # ======== Bank 12 (HP/VCCO=1.8V) ========
-FPGA_CLKOUT_P[0]                AY27    LVCMOS18
-FPGA_CLKOUT_N[0]                AY28    LVCMOS18
-FPGA_CLKOUT_P[1]                AU29    LVCMOS18
-FPGA_CLKOUT_N[1]                AV29    LVCMOS18
-FPGA_CLKOUT_P[2]                BA26    LVCMOS18
-FPGA_CLKOUT_N[2]                BA27    LVCMOS18
-FPGA_CLKOUT_P[3]                BB28    LVCMOS18
-FPGA_CLKOUT_N[3]                BB29    LVCMOS18
-FPCLKA_OUTX_P                   AU28    LVCMOS18
-FPCLKA_OUTX_N                   AV28    LVCMOS18
-FPCLKB_OUTX_P                   AU26    LVCMOS18
-FPCLKB_OUTX_N                   AU27    LVCMOS18
-FPCLKC_OUTX_P                   AR27    LVCMOS18
-FPCLKC_OUTX_N                   AT27    LVCMOS18
-FPCLKD_OUTX_P                   AP27    LVCMOS18
-FPCLKD_OUTX_N                   AR28    LVCMOS18
-nPLL_RST                        AK27    LVCMOS18
-ZDIR                            AL27    LVCMOS18
-nOE_ZGPIO                       AM26    LVCMOS18
-ZGPIO[0]                        AM27    LVCMOS18
-ZGPIO[1]                        AK24    LVCMOS18
-ZGPIO[2]                        AK25    LVCMOS18
-ZGPIO[3]                        AL25    LVCMOS18
-ZGPIO[4]                        AL26    LVCMOS18
-ZGPIO[5]                        AJ25    LVCMOS18
-ZGPIO[6]                        AJ26    LVCMOS18
+FPGA_CLKOUT_P[0]                AY27
+FPGA_CLKOUT_N[0]                AY28
+FPGA_CLKOUT_P[1]                AU29
+FPGA_CLKOUT_N[1]                AV29
+FPGA_CLKOUT_P[2]                BA26
+FPGA_CLKOUT_N[2]                BA27
+FPGA_CLKOUT_P[3]                BB28
+FPGA_CLKOUT_N[3]                BB29
+FPCLKA_OUTX_P                   AU28
+FPCLKA_OUTX_N                   AV28
+FPCLKB_OUTX_P                   AU26
+FPCLKB_OUTX_N                   AU27
+FPCLKC_OUTX_P                   AR27
+FPCLKC_OUTX_N                   AT27
+FPCLKD_OUTX_P                   AP27
+FPCLKD_OUTX_N                   AR28
+nPLL_RST                        AK27
+ZDIR                            AL27
+nOE_ZGPIO                       AM26
+ZGPIO[0]                        AM27
+ZGPIO[1]                        AK24
+ZGPIO[2]                        AK25
+ZGPIO[3]                        AL25
+ZGPIO[4]                        AL26
+ZGPIO[5]                        AJ25
+ZGPIO[6]                        AJ26
 
 # ======== Bank 13 (HP/VCCO=1.5V) ========
 # Covered by DDR3 CH1 MIG constraints
 
 # ======== Bank 14 (HP/VCCO=1.8V) ========
-CLK_DIR0                        AH35    LVCMOS18
-LAD[15]                         AM36    LVCMOS18
-LAD[14]                         AN36    LVCMOS18
-LAD[13]                         AJ36    LVCMOS18
-LAD[12]                         AJ37    LVCMOS18
-nDMA2_DREQ0                     AP37    LVCMOS18
-LAD[11]                         AK37    LVCMOS18
-LAD[10]                         AL37    LVCMOS18
-LAD[9]                          AN35    LVCMOS18
-LAD[8]                          AP35    LVCMOS18
-nBPI_FLASH_CS                   AL36    LVCMOS18
-LAD[7]                          AM37    LVCMOS18
-LAD[6]                          AG33    LVCMOS18
-LAD[5]                          AH33    LVCMOS18
-LAD[4]                          AK35    LVCMOS18
-LAD[3]                          AL35    LVCMOS18
-nPRSNT_M2C0                     AH31    LVCMOS18
-LAD[2]                          AJ31    LVCMOS18
-LAD[1]                          AH34    LVCMOS18
-LAD[0]                          AJ35    LVCMOS18
-SCL_L                           AJ33    LVCMOS18
-SDA_L                           AK33    LVCMOS18
-LCLK0                           AK34    LVCMOS18
-LGPL4                           AL34    LVCMOS18
+CLK_DIR0                        AH35
+LAD[15]                         AM36
+LAD[14]                         AN36
+LAD[13]                         AJ36
+LAD[12]                         AJ37
+nDMA2_DREQ0                     AP37
+LAD[11]                         AK37
+LAD[10]                         AL37
+LAD[9]                          AN35
+LAD[8]                          AP35
+nBPI_FLASH_CS                   AL36
+LAD[7]                          AM37
+LAD[6]                          AG33
+LAD[5]                          AH33
+LAD[4]                          AK35
+LAD[3]                          AL35
+nPRSNT_M2C0                     AH31
+LAD[2]                          AJ31
+LAD[1]                          AH34
+LAD[0]                          AJ35
+SCL_L                           AJ33
+SDA_L                           AK33
+LCLK0                           AK34
+LGPL4                           AL34
 CLK533MHZ0_P                    AJ32
 CLK533MHZ0_N                    AK32
-nCOLDRST                        AL31    LVCMOS18
-nDMA2_ACK0                      AL32    LVCMOS18
-nRDWR                           AM34    LVCMOS18
-nDMA2_DONE0                     AN34    LVCMOS18
-nFPGA_CS                        AM31    LVCMOS18
-LA[15]                          AM32    LVCMOS18
-LA[16]                          AM33    LVCMOS18
-LA[17]                          AN33    LVCMOS18
-LA[18]                          AL29    LVCMOS18
-LA[19]                          AL30    LVCMOS18
-LA[20]                          AH29    LVCMOS18
-LA[21]                          AH30    LVCMOS18
-LA[22]                          AJ30    LVCMOS18
-LA[23]                          AK30    LVCMOS18
-nFPGA_CTRL                      AF29    LVCMOS18
-LA[24]                          AG29    LVCMOS18
-LA[25]                          AK28    LVCMOS18
-LA[26]                          AK29    LVCMOS18
-LA[27]                          AF30    LVCMOS18
-LA[28]                          AG31    LVCMOS18
-LA[29]                          AH28    LVCMOS18
-LA[30]                          AJ28    LVCMOS18
-nLWE[1]                         AG32    LVCMOS18
+nCOLDRST                        AL31
+nDMA2_ACK0                      AL32
+nRDWR                           AM34
+nDMA2_DONE0                     AN34
+nFPGA_CS                        AM31
+LA[15]                          AM32
+LA[16]                          AM33
+LA[17]                          AN33
+LA[18]                          AL29
+LA[19]                          AL30
+LA[20]                          AH29
+LA[21]                          AH30
+LA[22]                          AJ30
+LA[23]                          AK30
+nFPGA_CTRL                      AF29
+LA[24]                          AG29
+LA[25]                          AK28
+LA[26]                          AK29
+LA[27]                          AF30
+LA[28]                          AG31
+LA[29]                          AH28
+LA[30]                          AJ28
+nLWE[1]                         AG32
 
 # ======== Bank 15 (HP/VCCO=1.8V) ========
-nHRESET_REQ                     AM38    LVCMOS18
-nPROGRAM                        AN38    LVCMOS18
-SDA_PLLXO                       AP38    LVCMOS18
-SCL_PLLXO                       AM41    LVCMOS18
-SDA_DDRXO                       AM42    LVCMOS18
-SCL_DDRXO                       AR38    LVCMOS18
-nFPGA_RST                       AR39    LVCMOS18
-nLVDS_CBS_RST                   AN40    LVCMOS18
-FPGA_UART_SIN                   AN41    LVCMOS18
-FPGA_UART_SOUT                  AR37    LVCMOS18
-nTHERM                          AT37    LVCMOS18
-nWP                             AM39    LVCMOS18
-ULED[0]                         AP40    LVCMOS18
-ULED[1]                         AR40    LVCMOS18
-ULED[2]                         AP41    LVCMOS18
-ULED[3]                         AP42    LVCMOS18
-nPRSNT_M2C1                     AT39    LVCMOS18
-CLK_DIR1                        AT40    LVCMOS18
-FPCLKE_P                        AU39    LVCMOS18
-FPCLKE_N                        AV39    LVCMOS18
-FPCLKF_P                        AU38    LVCMOS18
-FPCLKF_N                        AV38    LVCMOS18
-FPCLKG_P                        AV40    LVCMOS18
-FPCLKG_N                        AW40    LVCMOS18
-FPCLKH_P                        AY39    LVCMOS18
-FPCLKH_N                        AY40    LVCMOS18
-nADV                            AY37    LVCMOS18
-LA[2]                           BA37    LVCMOS18
-LA[3]                           BB37    LVCMOS18
-LA[4]                           AW38    LVCMOS18
-LA[5]                           AY38    LVCMOS18
-LA[6]                           BB38    LVCMOS18
-LA[7]                           BB39    LVCMOS18
-LA[8]                           BA39    LVCMOS18
-LA[9]                           BA40    LVCMOS18
-LA[10]                          AT41    LVCMOS18
-LA[11]                          AU42    LVCMOS18
-LA[12]                          BA42    LVCMOS18
-LA[13]                          AU41    LVCMOS18
-LA[14]                          AV41    LVCMOS18
-nLOE                            BA41    LVCMOS18
-nLWE[0]                         BB41    LVCMOS18
-nWD                             AW42    LVCMOS18
-nIRQ02                          AU37    LVCMOS18
+nHRESET_REQ                     AM38
+nPROGRAM                        AN38
+SDA_PLLXO                       AP38
+SCL_PLLXO                       AM41
+SDA_DDRXO                       AM42
+SCL_DDRXO                       AR38
+nFPGA_RST                       AR39
+nLVDS_CBS_RST                   AN40
+FPGA_UART_SIN                   AN41
+FPGA_UART_SOUT                  AR37
+nTHERM                          AT37
+nWP                             AM39
+ULED[0]                         AP40
+ULED[1]                         AR40
+ULED[2]                         AP41
+ULED[3]                         AP42
+nPRSNT_M2C1                     AT39
+CLK_DIR1                        AT40
+FPCLKE_P                        AU39
+FPCLKE_N                        AV39
+FPCLKF_P                        AU38
+FPCLKF_N                        AV38
+FPCLKG_P                        AV40
+FPCLKG_N                        AW40
+FPCLKH_P                        AY39
+FPCLKH_N                        AY40
+nADV                            AY37
+LA[2]                           BA37
+LA[3]                           BB37
+LA[4]                           AW38
+LA[5]                           AY38
+LA[6]                           BB38
+LA[7]                           BB39
+LA[8]                           BA39
+LA[9]                           BA40
+LA[10]                          AT41
+LA[11]                          AU42
+LA[12]                          BA42
+LA[13]                          AU41
+LA[14]                          AV41
+nLOE                            BA41
+nLWE[0]                         BB41
+nWD                             AW42
+nIRQ02                          AU37
 
 # ======== Bank 16 (HP/VCCO=1.5V) ========
 # Covered by DDR3 CH0 MIG constraints

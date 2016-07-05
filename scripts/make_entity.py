@@ -42,10 +42,6 @@ xdc_template_line = '''\
 set_property PACKAGE_PIN %(location)s [get_ports {%(name)s%(index)s}]
 '''
 
-xdc_iostandard_line = '''\
-set_property IOSTANDARD %(iostandard)s [get_ports {%(name)s%(index)s}]
-'''
-
 
 def uncomment_file(file_name, comment):
     for line in file(file_name):
@@ -267,8 +263,6 @@ def write_xdc(locations, used_pins, xdc_file):
             for name, index, (location, iostandard) in mapped:
                 if iostandard != 'MGT':
                     file.write(xdc_template_line % locals())
-                    if iostandard:
-                        file.write(xdc_iostandard_line % locals())
 
 
 signals = load_signals(signal_file)

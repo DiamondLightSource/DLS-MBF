@@ -11,7 +11,7 @@ use unisim.vcomponents.all;
 
 entity ibufds_array is
     generic (
-        COUNT : natural
+        COUNT : natural := 1
     );
     port (
         p_i : in  std_logic_vector(COUNT-1 downto 0);
