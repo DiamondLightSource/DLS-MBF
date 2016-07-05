@@ -101,15 +101,19 @@ architecture top of top is
 
     -- Some register file assignments
     constant MOD_DDR0_GEN : natural := 0;
+    constant MOD_DIO : natural := 1;
     constant MOD_DEBUG : natural := MOD_ADDR_COUNT-1;
     -- Assign the remaining space to random r/w registers for now
-    subtype RW_REGISTERS is natural range 1 to MOD_ADDR_COUNT-2;
+    subtype RW_REGISTERS is natural range 2 to MOD_ADDR_COUNT-2;
 
     -- Register file and debug
     type reg_file_array_t is
         array(RW_REGISTERS) of reg_data_array_t(REG_ADDR_RANGE);
     signal register_file : reg_file_array_t;
     signal debug_trigger : std_logic;
+
+    -- Digitial IO inputs
+    signal dio_inputs : std_logic_vector(4 downto 0);
 
 begin
     -- Reference clock for MGT.  For this one we don't want the BUFG.
@@ -363,6 +367,24 @@ begin
         addr_error_i => DSP_DDR0_addr_error,
         brsp_error_i => DSP_DDR0_brsp_error
     );
+
+
+    -- FMC0 Digital I/O
+    fmc_digital_io_inst : entity work.fmc_digital_io port map (
+        clk_i => dsp_clk,
+        FMC_LA_P => FMC0_LA_P,
+        FMC_LA_N => FMC0_LA_N,
+
+        write_strobe_i => REGS_write_strobe(MOD_DIO),
+        write_address_i => REGS_write_address,
+        write_data_i => REGS_write_data,
+
+        output_i => (others => '0'),    -- Left disconnected for now
+        input_o => dio_inputs
+    );
+    REGS_read_data(MOD_DIO)(4 downto 0) <= dio_inputs;
+    REGS_read_data(MOD_DIO)(31 downto 5) <= (others => '0');
+    REGS_read_ack(MOD_DIO) <= '1';
 
 
     -- Dummy wiring for unused DDR1 DRAM connections

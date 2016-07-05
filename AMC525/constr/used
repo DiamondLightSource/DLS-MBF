@@ -44,3 +44,6 @@ CLK100MHZ1_{P,N}            in
 
 -- Dummy clock for DSP clock
 CLK125MHZ0_{P,N}            in
+
+-- FMC 0 connected to CERN 5 channel digital I/O
+FMC0_LA_{P,N}[0..33]        inout
