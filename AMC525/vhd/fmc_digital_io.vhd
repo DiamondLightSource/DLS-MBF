@@ -8,9 +8,6 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 entity fmc_digital_io is
     port (
         clk_i : in std_logic;
@@ -31,22 +28,15 @@ entity fmc_digital_io is
 end;
 
 architecture fmc_digital_io of fmc_digital_io is
-    signal buf_output_p : std_logic_vector(4 downto 0);
-    signal buf_output_n : std_logic_vector(4 downto 0);
     signal buf_output : std_logic_vector(4 downto 0);
 
-    signal buf_input_p : std_logic_vector(4 downto 0);
-    signal buf_input_n : std_logic_vector(4 downto 0);
     signal buf_input : std_logic_vector(4 downto 0);
 
-    signal out_enable_io : std_logic_vector(4 downto 0);
     signal n_out_enable : std_logic_vector(4 downto 0);
     signal out_enable : std_logic_vector(4 downto 0);
 
-    signal term_enable_io : std_logic_vector(4 downto 0);
     signal term_enable : std_logic_vector(4 downto 0);
 
-    signal leds_io : std_logic_vector(1 downto 0);
     signal leds : std_logic_vector(1 downto 0);
 
 begin
@@ -91,78 +81,61 @@ begin
     FMC_LA_N(32) <= 'Z';
 
     -- Input buffer
-    buf_input_p(0) <= FMC_LA_P(33);
-    buf_input_n(0) <= FMC_LA_N(33);
-    buf_input_p(1) <= FMC_LA_P(20);
-    buf_input_n(1) <= FMC_LA_N(20);
-    buf_input_p(2) <= FMC_LA_P(16);
-    buf_input_n(2) <= FMC_LA_N(16);
-    buf_input_p(3) <= FMC_LA_P(3);
-    buf_input_n(3) <= FMC_LA_N(3);
-    buf_input_p(4) <= FMC_LA_P(0);
-    buf_input_n(4) <= FMC_LA_N(0);
     input_inst : entity work.ibufds_array generic map (
         COUNT => 5
     ) port map (
-        p_i => buf_input_p,
-        n_i => buf_input_n,
+        p_i(0) => FMC_LA_P(33),     n_i(0) => FMC_LA_N(33),
+        p_i(1) => FMC_LA_P(20),     n_i(1) => FMC_LA_N(20),
+        p_i(2) => FMC_LA_P(16),     n_i(2) => FMC_LA_N(16),
+        p_i(3) => FMC_LA_P( 3),     n_i(3) => FMC_LA_N( 3),
+        p_i(4) => FMC_LA_P( 0),     n_i(4) => FMC_LA_N( 0),
         o_o => buf_input
     );
 
     -- Output buffer
-    FMC_LA_P(29) <= buf_output_p(0);
-    FMC_LA_N(29) <= buf_output_n(0);
-    FMC_LA_P(28) <= buf_output_p(1);
-    FMC_LA_N(28) <= buf_output_n(1);
-    FMC_LA_P(8)  <= buf_output_p(2);
-    FMC_LA_N(8)  <= buf_output_n(2);
-    FMC_LA_P(7)  <= buf_output_p(3);
-    FMC_LA_N(7)  <= buf_output_n(3);
-    FMC_LA_P(4)  <= buf_output_p(4);
-    FMC_LA_N(4)  <= buf_output_n(4);
     output_inst : entity work.obufds_array generic map (
         COUNT => 5
     ) port map (
         i_i => buf_output,
-        p_o => buf_output_p,
-        n_o => buf_output_n
+        p_o(0) => FMC_LA_P(29),     n_o(0) => FMC_LA_N(29),
+        p_o(1) => FMC_LA_P(28),     n_o(1) => FMC_LA_N(28),
+        p_o(2) => FMC_LA_P( 8),     n_o(2) => FMC_LA_N( 8),
+        p_o(3) => FMC_LA_P( 7),     n_o(3) => FMC_LA_N( 7),
+        p_o(4) => FMC_LA_P( 4),     n_o(4) => FMC_LA_N( 4)
     );
 
     -- Output enables
-    FMC_LA_P(30) <= out_enable_io(0);
-    FMC_LA_N(24) <= out_enable_io(1);
-    FMC_LA_N(15) <= out_enable_io(2);
-    FMC_LA_P(11) <= out_enable_io(3);
-    FMC_LA_P(5)  <= out_enable_io(4);
     n_out_enable <= not out_enable;
     out_enable_inst : entity work.obuf_array generic map (
         COUNT => 5
     ) port map (
         i_i => n_out_enable,
-        o_o => out_enable_io
+        o_o(0) => FMC_LA_P(30),
+        o_o(1) => FMC_LA_N(24),
+        o_o(2) => FMC_LA_N(15),
+        o_o(3) => FMC_LA_P(11),
+        o_o(4) => FMC_LA_P(5)
     );
 
     -- Input terminations
-    FMC_LA_N(30) <= term_enable_io(0);
-    FMC_LA_N(6)  <= term_enable_io(1);
-    FMC_LA_N(5)  <= term_enable_io(2);
-    FMC_LA_P(9)  <= term_enable_io(3);
-    FMC_LA_N(9)  <= term_enable_io(4);
     term_enable_inst : entity work.obuf_array generic map (
         COUNT => 5
     ) port map (
         i_i => term_enable,
-        o_o => term_enable_io
+        o_o(0) => FMC_LA_N(30),
+        o_o(1) => FMC_LA_N(6),
+        o_o(2) => FMC_LA_N(5),
+        o_o(3) => FMC_LA_P(9),
+        o_o(4) => FMC_LA_N(9)
     );
 
     -- LEDs
-    FMC_LA_P(1) <= leds_io(0);
-    FMC_LA_N(1) <= leds_io(1);
     leds_inst : entity work.obuf_array generic map (
         COUNT => 2
     ) port map (
         i_i => leds,
-        o_o => leds_io
+        o_o(0) => FMC_LA_P(1),
+        o_o(1) => FMC_LA_N(1)
     );
 
 
