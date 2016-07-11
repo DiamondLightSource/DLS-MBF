@@ -11,7 +11,7 @@ use work.support.all;
 
 entity spi_master is
     generic (
-        LOG_SCLK_DIVISOR : natural := 4;
+        LOG_SCLK_DIVISOR : natural := 3;
         ADDRESS_BITS : natural := 15;
         DATA_BITS : natural := 8
     );
