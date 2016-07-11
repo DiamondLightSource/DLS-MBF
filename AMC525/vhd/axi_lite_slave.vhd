@@ -60,7 +60,7 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 
-entity register_axi_slave is
+entity axi_lite_slave is
     generic (
         ADDR_BITS : natural := 16;
         DATA_BITS : natural := 32
@@ -108,7 +108,7 @@ entity register_axi_slave is
     );
 end;
 
-architecture register_axi_slave of register_axi_slave is
+architecture axi_lite_slave of axi_lite_slave is
 
     constant BYTE_BITS : natural := 2;
 

@@ -274,7 +274,7 @@ begin
 
 
     -- Register AXI slave interface
-    register_axi_slave_inst : entity work.register_axi_slave port map (
+    axi_lite_slave_inst : entity work.axi_lite_slave port map (
         clk_i => dsp_clk,
         rstn_i => dsp_reset_n,
 
