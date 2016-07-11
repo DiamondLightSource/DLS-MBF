@@ -1,0 +1,24 @@
+# Makefile fragment for simulation to be included before TOP is defined
+
+# The following is concerned with setting up the build directory and moving the
+# rest of the make process over to the build directory.
+
+TOP := $(shell cd ../../..; pwd)
+COMMON_DIR := $(shell cd ../common; pwd)
+SIMNAME := $(shell basename '$(CURDIR)')
+
+BUILD_DIR := /scratch/tmp/LMBF/sim/$(SIMNAME)
+
+default $(filter-out clean,$(MAKECMDGOALS)): $(BUILD_DIR)
+	VPATH=$(CURDIR) $(MAKE) -f $(CURDIR)/Makefile -C $< \
+            SIMDIR=$(CURDIR) TOP=$(TOP) COMMON_DIR=$(COMMON_DIR) $@
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+.PHONY: default clean
+
+# vim: set filetype=make:

@@ -6,9 +6,6 @@ entity testbench is
 end testbench;
 
 
-library work;
-use work.defines.all;
-
 architecture testbench of testbench is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
         variable i : natural;

@@ -3,19 +3,18 @@ set vhd_dir $env(VHD_DIR)
 set bench_dir $env(BENCH_DIR)
 
 
+# Our own local entities including device under test
 vcom -64 -93 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     $vhd_dir/dlyline.vhd \
     $vhd_dir/edge_detect.vhd \
     $vhd_dir/axi_burst_master.vhd \
-    $vhd_dir/memory_generator.vhd \
+    $vhd_dir/memory_generator.vhd
 
-vcom -64 -93 -work xil_defaultlib $bench_dir/interconnect_tb.vhd
-
-
-# compile glbl module
-vlog -work xil_defaultlib $bench_dir/glbl.v
+# The test bench
+vcom -64 -93 -work xil_defaultlib \
+    $bench_dir/interconnect_tb.vhd
 
 # Libraries taken from generated interconnect_wrapper_elaborate.do
 vopt -64 +acc -L unisims_ver -L unimacro_ver -L secureip -L xil_defaultlib -L \
@@ -36,7 +35,6 @@ add wave -group "Top" sim:*
 add wave -group "Mem Gen" sim:/interconnect_tb/memory_generator_inst/*
 # add wave -group "Master" sim:/interconnect_tb/axi_burst_master_inst/*
 add wave sim:/interconnect_tb/axi_burst_master_inst/*
-
 
 run 1us
 

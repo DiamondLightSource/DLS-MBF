@@ -2,11 +2,11 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
-entity testbench is
-end testbench;
+entity test_spi_master is
+end test_spi_master;
 
 
-architecture testbench of testbench is
+architecture test_spi_master of test_spi_master is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
         variable i : natural;
     begin
@@ -78,4 +78,4 @@ begin
     end process;
 
 
-end testbench;
+end;
