@@ -43,7 +43,7 @@ begin
     ) port map (
         clk_i => dsp_clk,
 
-        csb_o => open,
+        csn_o => open,
         sclk_o => open,
         mosi_o => spi_data,
         moen_o => open,

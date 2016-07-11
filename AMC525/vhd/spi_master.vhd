@@ -19,7 +19,7 @@ entity spi_master is
         clk_i : in std_logic;
 
         -- SPI interface
-        csb_o : out std_logic := '1';   -- SPI slave chip select
+        csn_o : out std_logic := '1';   -- SPI slave chip select
         sclk_o : out std_logic;         -- SPI clock
         mosi_o : out std_logic;         -- SPI data to slave
         moen_o : out std_logic := '0';  -- Output enable for mosi_o
@@ -78,7 +78,7 @@ begin
                     end if;
                 when STARTING =>
                     if sclk_falling then
-                        csb_o <= '0';
+                        csn_o <= '0';
                         moen_o <= '1';
                         state <= COMMAND;
                     end if;
@@ -100,7 +100,7 @@ begin
                     end if;
                 when ENDING =>
                     if sclk_rising then
-                        csb_o <= '1';
+                        csn_o <= '1';
                     end if;
                     if sclk_falling then
                         state <= IDLE;

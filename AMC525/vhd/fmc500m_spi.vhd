@@ -61,7 +61,7 @@ architecture fmc500m_spi of fmc500m_spi is
     signal spi15_start : std_logic := '0';
     signal spi15_busy : std_logic;
     signal spi15_response : std_logic_vector(7 downto 0);
-    signal spi15_csb : std_logic;
+    signal spi15_csn : std_logic;
     signal spi15_sclk : std_logic;
     signal spi15_mosi : std_logic;
     signal spi15_moen : std_logic;
@@ -69,7 +69,7 @@ architecture fmc500m_spi of fmc500m_spi is
     signal spi7_start : std_logic;
     signal spi7_busy : std_logic;
     signal spi7_response : std_logic_vector(7 downto 0);
-    signal spi7_csb : std_logic;
+    signal spi7_csn : std_logic;
     signal spi7_sclk : std_logic;
     signal spi7_mosi : std_logic;
     signal spi7_moen : std_logic;
@@ -179,7 +179,7 @@ begin
         busy_o => spi15_busy,
         response_o => spi15_response,
 
-        csb_o  => spi15_csb,
+        csn_o  => spi15_csn,
         sclk_o => spi15_sclk,
         mosi_o => spi15_mosi,
         moen_o => spi15_moen,
@@ -200,7 +200,7 @@ begin
         busy_o => spi7_busy,
         response_o => spi7_response,
 
-        csb_o  => spi7_csb,
+        csn_o  => spi7_csn,
         sclk_o => spi7_sclk,
         mosi_o => spi7_mosi,
         moen_o => spi7_moen,
@@ -214,9 +214,9 @@ begin
     -- -------------------------------------------------------------------------
     -- SPI outputs
 
-    pll_cs <= spi15_csb = '0' and selection = PLL;
-    adc_cs <= spi15_csb = '0' and selection = ADC;
-    dac_cs <= spi7_csb = '0'  and selection = DAC;
+    pll_cs <= spi15_csn = '0' and selection = PLL;
+    adc_cs <= spi15_csn = '0' and selection = ADC;
+    dac_cs <= spi7_csn = '0'  and selection = DAC;
 
     pll_spi_csn_o <= to_std_logic(not pll_cs);
     adc_spi_csn_o <= to_std_logic(not adc_cs);
