@@ -87,7 +87,7 @@ begin
 
     -- Loop back the SPI inputs and outputs
     pll_spi_sdo <= pll_spi_sdi;
-    adc_spi_sdo <= adc_spi_sdi;
+    adc_spi_sdo <= adc_spi_sdi when adc_spi_sdio_en = '1' else 'Z';
     dac_spi_sdo <= dac_spi_sdi;
 
 
