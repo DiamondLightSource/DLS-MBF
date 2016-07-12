@@ -47,3 +47,7 @@ CLK125MHZ0_{P,N}            in
 
 -- FMC 0 connected to CERN 5 channel digital I/O
 FMC0_LA_{P,N}[0..33]        inout
+
+-- FMC 1 connected to Innovative Integration FMC-500M A/D
+FMC1_LA_{P,N}[0..33]        inout
+FMC1_HB_{P,N}[0..21]        inout

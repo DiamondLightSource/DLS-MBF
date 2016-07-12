@@ -105,9 +105,10 @@ architecture top of top is
     -- Some register file assignments
     constant MOD_DDR0_GEN : natural := 0;
     constant MOD_DIO : natural := 1;
+    constant MOD_FMC500 : natural := 2;
     constant MOD_DEBUG : natural := MOD_ADDR_COUNT-1;
     -- Assign the remaining space to random r/w registers for now
-    subtype RW_REGISTERS is natural range 2 to MOD_ADDR_COUNT-2;
+    subtype RW_REGISTERS is natural range 3 to MOD_ADDR_COUNT-2;
 
     -- Register file and debug
     type reg_file_array_t is
@@ -396,6 +397,25 @@ begin
     REGS_read_ack(MOD_DIO) <= '1';
 
 
+    -- FMC1 FMC500M ADC/DAC and clock source
+    fmc500m_top_inst : entity work.fmc500m_top port map (
+        clk_i => dsp_clk,
+
+        FMC_LA_P => FMC1_LA_P,
+        FMC_LA_N => FMC1_LA_N,
+        FMC_HB_P => FMC1_HB_P,
+        FMC_HB_N => FMC1_HB_N,
+
+        write_strobe_i => REGS_write_strobe(MOD_FMC500),
+        write_address_i => REGS_write_address,
+        write_data_i => REGS_write_data,
+        read_strobe_i => REGS_read_strobe(MOD_FMC500),
+        read_address_i => REGS_read_address,
+        read_data_o => REGS_read_data(MOD_FMC500),
+        read_ack_o => REGS_read_ack(MOD_FMC500)
+    );
+
+
     -- Dummy wiring for unused DDR1 DRAM connections
     DSP_DDR1_awaddr <= (others => '0');
     DSP_DDR1_awburst <= (others => '0');
@@ -481,7 +501,7 @@ begin
         read_ack_o => REGS_read_ack(MOD_DEBUG)
     );
 
-    uled_out <= register_file(2)(0)(3 downto 0);
+    uled_out <= register_file(3)(0)(3 downto 0);
     uled_inst : entity work.obuf_array generic map (
         COUNT => 4
     ) port map (
@@ -491,6 +511,6 @@ begin
 
     INTR(0) <= DSP_DDR0_capture_enable;
     INTR(1) <= not DSP_DDR0_capture_enable;
-    INTR(7 downto 2) <= register_file(2)(1)(7 downto 2);
+    INTR(7 downto 2) <= register_file(3)(1)(7 downto 2);
 
 end;
