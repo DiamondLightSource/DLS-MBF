@@ -26,6 +26,7 @@ package defines is
     constant REG_ADDR_COUNT : natural := 2**REG_ADDR_BITS;
     subtype REG_ADDR_RANGE is natural range 0 to REG_ADDR_COUNT-1;
     subtype reg_addr_t is unsigned(REG_ADDR_BITS-1 downto 0);
+    subtype reg_strobe_t is std_logic_vector(REG_ADDR_RANGE);
 
 
 end package;

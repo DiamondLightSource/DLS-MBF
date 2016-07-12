@@ -15,7 +15,7 @@ entity iobuf_array is
     );
     port (
         i_i : in std_logic_vector(COUNT-1 downto 0);
-        en_i : in std_logic_vector(COUNT-1 downto 0);
+        t_i : in std_logic_vector(COUNT-1 downto 0);
         o_o : out std_logic_vector(COUNT-1 downto 0);
         io : inout std_logic_vector(COUNT-1 downto 0)
     );
@@ -29,7 +29,7 @@ begin
             IOSTANDARD => "LVCMOS18"
         ) port map (
             I => i_i(i),
-            T => en_i(i),
+            T => t_i(i),
             O => o_o(i),
             IO => io(i)
         );

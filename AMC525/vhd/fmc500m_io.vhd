@@ -79,12 +79,22 @@ entity fmc500m_io is
 end;
 
 architecture fmc500m_io of fmc500m_io is
+    signal adc_spi_sdio_tri : std_logic;
     signal adc_data_p : std_logic_vector(13 downto 0);
     signal adc_data_n : std_logic_vector(13 downto 0);
     signal dac_data_p : std_logic_vector(15 downto 0);
     signal dac_data_n : std_logic_vector(15 downto 0);
 
 begin
+    -- These lines for simulation only, they quell rather a lot of error
+    -- messages from the simulation!
+    -- synthesis translate_off
+    FMC_LA_P <= (others => 'Z');
+    FMC_LA_N <= (others => 'Z');
+    FMC_HB_P <= (others => 'Z');
+    FMC_HB_N <= (others => 'Z');
+    -- synthesis translate_on
+
     -- Unused pins
     FMC_HB_P(2) <= 'Z';     -- dac_ext_sync, unused input
     FMC_HB_N(2) <= 'Z';
@@ -203,10 +213,11 @@ begin
     );
 
     -- SPI
+    adc_spi_sdio_tri <= not adc_spi_sdio_en_i;
     adc_spi_sdio_inst : entity work.iobuf_array port map (
         o_o(0) => adc_spi_sdio_o,
         i_i(0) => adc_spi_sdio_i,
-        en_i(0) => adc_spi_sdio_en_i,
+        t_i(0) => adc_spi_sdio_tri,
         io(0) => FMC_LA_N(6)
     );
     adc_spi_csn_inst : entity work.obuf_array port map (
