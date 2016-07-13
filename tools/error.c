@@ -230,7 +230,7 @@ void _error_panic(char *extra, const char *filename, int line)
 /* Utility function with no proper home, occasionally very useful for debug. */
 
 
-void dump_binary(FILE *out, const void *buffer, size_t length)
+void dump_bytes(FILE *out, const void *buffer, size_t length)
 {
     const uint8_t *dump = buffer;
 
@@ -257,6 +257,23 @@ void dump_binary(FILE *out, const void *buffer, size_t length)
                 fprintf(out, " ");
             if (i % 16 == 7)
                 fprintf(out, " ");
+        }
+        fprintf(out, "\n");
+    }
+}
+
+
+void dump_words(FILE *out, const void *buffer, size_t length)
+{
+    const uint32_t *dump = buffer;
+
+    for (size_t a = 0; a < length; a += 8)
+    {
+        fprintf(out, "%04zx ", a);
+        for (unsigned int i = 0; i < 8; i ++)
+        {
+            if (a + i < length)
+                fprintf(out, " %08x", dump[a+i]);
         }
         fprintf(out, "\n");
     }

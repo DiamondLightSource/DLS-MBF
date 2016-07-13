@@ -6,7 +6,7 @@ from driver import *
 
 regs = regs[2]
 
-args = map(int, sys.argv[1:])
+args = [int(arg, 0) for arg in sys.argv[1:]]
 
 dev  = args[0] & 3
 addr = args[1] & 0xFFF
@@ -17,10 +17,12 @@ if len(args) == 2:
     # Read
     regs[0] = command | 0x80000000
     data = regs[0]
-    print '%d %03X => %02X' % (dev, addr, data)
+    print '%d %03X => %02X (%d)' % (dev, addr, data, data)
 elif len(args) == 3:
     # Write
     data = args[2] & 0xFF
     regs[0] = command | data
+    # Readback to ensure write has completed
+    resp = regs[0]
 else:
     assert False

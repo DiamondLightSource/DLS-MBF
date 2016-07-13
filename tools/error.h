@@ -304,4 +304,5 @@ void start_logging(const char *ident);
 
 
 /* Debug utility for dumping binary data in ASCII format. */
-void dump_binary(FILE *out, const void *buffer, size_t length);
+void dump_bytes(FILE *out, const void *buffer, size_t length);
+void dump_words(FILE *out, const void *buffer, size_t length);

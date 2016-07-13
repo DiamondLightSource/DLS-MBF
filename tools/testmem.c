@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 
 #include "amc525_lmbf_device.h"
 #include "error.h"
@@ -25,7 +26,7 @@
 
 static int map_file = -1;
 static size_t register_map_size;
-static void *register_map;
+static uint32_t *register_map;
 
 
 static error__t initialise_hardware(void)
@@ -54,6 +55,48 @@ static void terminate_hardware(void)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Args. */
 
+static error__t read_arg(char ***argv, const char **result)
+{
+    return
+        TEST_OK_(**argv, "Not enough arguments")  ?:
+        DO(*result = *(*argv)++);
+}
+
+
+static error__t parse_uint(char ***argv, unsigned long int *result)
+{
+    errno = 0;
+    const char *start;
+    char *end;
+    return
+        read_arg(argv, &start)  ?:
+        DO(*result = strtoul(start, &end, 0))  ?:
+        TEST_OK_(end > start, "Number missing")  ?:
+        TEST_IO_(errno == 0, "Error converting number");
+}
+
+
+static error__t read_words(char *argv[])
+{
+    unsigned long int start;
+    unsigned long int length = 1;
+    return
+        parse_uint(&argv, &start)  ?:
+        IF(*argv, parse_uint(&argv, &length))  ?:
+        DO(dump_words(stdout, register_map + start, length));
+}
+
+
+static error__t write_words(char *argv[])
+{
+    unsigned long int offset;
+    unsigned long int value;
+    return
+        parse_uint(&argv, &offset)  ?:
+        parse_uint(&argv, &value)  ?:
+        DO(register_map[offset] = (uint32_t) value);
+}
+
 
 static error__t copy_block(void *destination, size_t max_length)
 {
@@ -64,39 +107,39 @@ static error__t copy_block(void *destination, size_t max_length)
     printf("read_size = %zd, writing:\n", read_size);
     return
         TEST_IO(read_size)  ?:
-        DO(dump_binary(stdout, block, (size_t) read_size))  ?:
+        DO(dump_bytes(stdout, block, (size_t) read_size))  ?:
         DO(memcpy(destination, block, (size_t) read_size));
+}
+
+
+static error__t read_block(char *argv[])
+{
+    unsigned long int offset;
+    unsigned long int max_length;
+    return
+        parse_uint(&argv, &offset)  ?:
+        parse_uint(&argv, &max_length)  ?:
+        copy_block(register_map + offset, max_length);
 }
 
 
 static error__t do_command(int argc, char *argv[])
 {
-    if (argc < 4)
-        return FAIL_("Not enough arguments");
-    else if (strcmp(argv[1], "r") == 0)
-    {
-        size_t start = (size_t) atol(argv[2]);
-        size_t length = (size_t) atol(argv[3]);
-        dump_binary(stdout, register_map + start, length);
-        return ERROR_OK;
-    }
-    else if (strcmp(argv[1], "w") == 0)
-    {
-        size_t offset = (size_t) atol(argv[2]);
-        int32_t value = atoi(argv[3]);
-        *(int32_t *) (register_map + offset) = value;
-        return ERROR_OK;
-    }
-    else if (strcmp(argv[1], "b") == 0)
-    {
-        size_t offset = (size_t) atol(argv[2]);
-        size_t max_length = (size_t) atol(argv[3]);
-        return copy_block(register_map + offset, max_length);
-    }
-    else
-        return FAIL_("Unknown command");
+    argv += 1;
+    const char *action;
+    return
+        read_arg(&argv, &action)  ?:
+        IF_ELSE(strcmp(action, "r") == 0,
+            read_words(argv),
+        //else
+        IF_ELSE(strcmp(action, "w") == 0,
+            write_words(argv),
+        //else
+        IF_ELSE(strcmp(action, "b") == 0,
+            read_block(argv),
+        //else
+            FAIL_("Unknown command"))));
 }
-
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
