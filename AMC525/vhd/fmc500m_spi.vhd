@@ -167,7 +167,7 @@ begin
 
     -- SPI controller with 15-bit addresses for PLL and ADC
     spi_15_bit : entity work.spi_master generic map (
-        LOG_SCLK_DIVISOR => 3,
+        LOG_SCLK_DIVISOR => 6,
         ADDRESS_BITS => 15
     ) port map (
         clk_i => clk_i,
@@ -188,7 +188,7 @@ begin
 
     -- SPI controller with 7-bit addresses for DAC
     spi_7_bit : entity work.spi_master generic map (
-        LOG_SCLK_DIVISOR => 2,
+        LOG_SCLK_DIVISOR => 5,
         ADDRESS_BITS => 7
     ) port map (
         clk_i => clk_i,
