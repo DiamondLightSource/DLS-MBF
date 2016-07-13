@@ -25,7 +25,12 @@ entity fmc500m_top is
         read_strobe_i : in std_logic;
         read_address_i : in reg_addr_t;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic
+        read_ack_o : out std_logic;
+
+        -- Debug
+        debug_enable_o : out std_logic;
+        debug_trigger_o : out std_logic;
+        debug_capture_o : out std_logic_vector(63 downto 0)
     );
 end;
 
@@ -92,7 +97,7 @@ architecture fmc500m_top of fmc500m_top is
     signal power_status : reg_data_t;
 
 begin
-    -- Default values for all outputs
+    -- Default values for outputs we're not using yet
     pll_sync <= '0';
     dac_data <= (others => '0');
     dac_dci <= '0';
@@ -220,8 +225,8 @@ begin
     pll_pwr_en <= power_control(0);
     adc_pwr_en <= power_control(1);
     dac_pwr_en <= power_control(2);
-    adc_pdwn   <= power_control(5);
-    dac_rstn   <= power_control(6);
+    adc_pdwn   <= power_control(3);
+    dac_rstn   <= power_control(4);
     pll_clkin_sel0 <= power_control(8);
     pll_clkin_sel1 <= power_control(9);
 
@@ -232,5 +237,28 @@ begin
     power_status(4) <= pll_status_ld1;
     power_status(5) <= pll_status_ld2;
     power_status(31 downto 6) <= (others => '0');
+
+
+    -- Debug
+    debug_enable_o <= '1';
+    debug_trigger_o <= write_strobe_i;
+    debug_capture_o(31 downto 0) <= write_data_i;
+    debug_capture_o(39 downto 32) <= read_data(SPI_REG)(7 downto 0);
+    debug_capture_o(40) <= pll_spi_csn;
+    debug_capture_o(41) <= pll_spi_sclk;
+    debug_capture_o(42) <= pll_spi_sdi;
+    debug_capture_o(43) <= pll_spi_sdo;
+    debug_capture_o(44) <= adc_spi_csn;
+    debug_capture_o(45) <= adc_spi_sclk;
+    debug_capture_o(46) <= adc_spi_sdi;
+    debug_capture_o(47) <= adc_spi_sdo;
+    debug_capture_o(48) <= adc_spi_sdio_en;
+    debug_capture_o(49) <= dac_spi_csn;
+    debug_capture_o(50) <= dac_spi_sclk;
+    debug_capture_o(51) <= dac_spi_sdi;
+    debug_capture_o(52) <= dac_spi_sdo;
+    debug_capture_o(57 downto 53) <= power_control(4 downto 0);
+    debug_capture_o(60 downto 58) <= power_status(2 downto 0);
+    debug_capture_o(63 downto 61) <= "000";
 
 end;

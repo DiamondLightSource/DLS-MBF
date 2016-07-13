@@ -114,7 +114,9 @@ architecture top of top is
     type reg_file_array_t is
         array(RW_REGISTERS) of reg_data_array_t(REG_ADDR_RANGE);
     signal register_file : reg_file_array_t;
+    signal debug_enable : std_logic;
     signal debug_trigger : std_logic;
+    signal debug_capture : std_logic_vector(63 downto 0);
 
     -- Digitial IO inputs
     signal dio_inputs : std_logic_vector(4 downto 0);
@@ -412,7 +414,11 @@ begin
         read_strobe_i => REGS_read_strobe(MOD_FMC500),
         read_address_i => REGS_read_address,
         read_data_o => REGS_read_data(MOD_FMC500),
-        read_ack_o => REGS_read_ack(MOD_FMC500)
+        read_ack_o => REGS_read_ack(MOD_FMC500),
+
+        debug_enable_o => debug_enable,
+        debug_trigger_o => debug_trigger,
+        debug_capture_o => debug_capture
     );
 
 
@@ -463,32 +469,14 @@ begin
 
 
     -- Debug for capturing reads.
-    debug_trigger <= DSP_DDR0_capture_enable;
     debug_inst : entity work.debug generic map (
-        WIDTH => 128,
+        WIDTH => 64,
         DEPTH => 1024
     ) port map (
         clk_i => dsp_clk,
 
-        capture_i(63 downto 0) => DSP_DDR0_wdata,
-        capture_i(95 downto 64) => DSP_DDR0_awaddr(31 downto 0),
-        capture_i(103 downto 96) => DSP_DDR0_wstrb,
-        capture_i(104) => DSP_DDR0_capture_enable,
-        capture_i(105) => DSP_DDR0_wlast,
-        capture_i(107 downto 106) => DSP_DDR0_bresp,
-        capture_i(108) => DSP_DDR0_awready,
-        capture_i(109) => DSP_DDR0_awvalid,
-        capture_i(110) => DSP_DDR0_wready,
-        capture_i(111) => DSP_DDR0_wvalid,
-        capture_i(112) => DSP_DDR0_bready,
-        capture_i(113) => DSP_DDR0_bvalid,
-        capture_i(114) => DSP_DDR0_data_ready,
-        capture_i(115) => DSP_DDR0_data_error,
-        capture_i(116) => DSP_DDR0_addr_error,
-        capture_i(117) => DSP_DDR0_brsp_error,
-        capture_i(127 downto 118) => DSP_DDR0_capture_address(12 downto 3),
-
-        enable_i => '1',
+        capture_i => debug_capture,
+        enable_i  => debug_enable,
         trigger_i => debug_trigger,
 
         write_strobe_i => REGS_write_strobe(MOD_DEBUG),
