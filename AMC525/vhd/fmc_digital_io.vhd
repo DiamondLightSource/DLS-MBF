@@ -158,14 +158,12 @@ begin
                         out_enable <= write_data_i(4 downto 0);
                     when 2 =>
                         term_enable <= write_data_i(4 downto 0);
-                    when 3 =>
-                        buf_output <= write_data_i(4 downto 0);
                     when others =>
                 end case;
             end if;
         end if;
     end process;
 
---     buf_output <= output_i;
+    buf_output <= output_i;
     input_o <= buf_input;
 end;

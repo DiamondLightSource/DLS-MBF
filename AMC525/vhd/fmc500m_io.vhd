@@ -31,7 +31,7 @@ entity fmc500m_io is
         pll_sync_i : in std_logic;
         -- Internal clocks from PLL.  Probably will be discarded
         pll_dclkout2_o : out std_logic;     -- On CC pin
-        pll_dclkout3_o : out std_logic;
+        pll_sdclkout3_o : out std_logic;
 
         -- ADC -----------------------------------------------------------------
         -- Data and clocking
@@ -67,10 +67,10 @@ entity fmc500m_io is
         -- Power management
         adc_pwr_en_i : in std_logic;
         dac_pwr_en_i : in std_logic;
-        pll_pwr_en_i : in std_logic;
+        vcxo_pwr_en_i : in std_logic;
         adc_pwr_good_o : out std_logic;
         dac_pwr_good_o : out std_logic;
-        pll_pwr_good_o : out std_logic;
+        vcxo_pwr_good_o : out std_logic;
         -- External trigger
         ext_trig_o : out std_logic;
         -- Temperature alert
@@ -158,9 +158,9 @@ begin
         o_o(0) => pll_dclkout2_o
     );
     -- This one isn't on a CC pair, so seems even less useful...
-    pll_dclkout3_inst : entity work.ibufds_array port map (
+    pll_sdclkout3_inst : entity work.ibufds_array port map (
         p_i(0) => FMC_LA_P(19),     n_i(0) => FMC_LA_N(19),
-        o_o(0) => pll_dclkout3_o
+        o_o(0) => pll_sdclkout3_o
     );
 
 
@@ -308,13 +308,13 @@ begin
     -- Miscellaneous
 
     -- Custom power management controllers
-    pll_pwr_en_inst : entity work.obuf_array port map (
-        i_i(0) => pll_pwr_en_i,
+    vcxo_pwr_en_inst : entity work.obuf_array port map (
+        i_i(0) => vcxo_pwr_en_i,
         o_o(0) => FMC_LA_P(30)
     );
-    pll_pwr_good_inst : entity work.ibuf_array port map (
+    vcxo_pwr_good_inst : entity work.ibuf_array port map (
         i_i(0) => FMC_LA_P(27),
-        o_o(0) => pll_pwr_good_o
+        o_o(0) => vcxo_pwr_good_o
     );
 
     adc_pwr_en_inst : entity work.obuf_array port map (

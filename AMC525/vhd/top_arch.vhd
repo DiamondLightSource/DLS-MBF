@@ -120,6 +120,9 @@ architecture top of top is
 
     -- Digitial IO inputs
     signal dio_inputs : std_logic_vector(4 downto 0);
+    signal dio_outputs : std_logic_vector(4 downto 0);
+    signal pll_dclkout2 : std_logic;
+    signal pll_sdclkout3 : std_logic;
 
 begin
     -- Reset in.
@@ -391,12 +394,15 @@ begin
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
 
-        output_i => (others => '0'),    -- Left disconnected for now
+        output_i => dio_outputs,
         input_o => dio_inputs
     );
     REGS_read_data(MOD_DIO)(4 downto 0) <= dio_inputs;
     REGS_read_data(MOD_DIO)(31 downto 5) <= (others => '0');
     REGS_read_ack(MOD_DIO) <= '1';
+    dio_outputs(0) <= pll_dclkout2;
+    dio_outputs(1) <= pll_sdclkout3;
+    dio_outputs(4 downto 2) <= "000";
 
 
     -- FMC1 FMC500M ADC/DAC and clock source
@@ -415,6 +421,9 @@ begin
         read_address_i => REGS_read_address,
         read_data_o => REGS_read_data(MOD_FMC500),
         read_ack_o => REGS_read_ack(MOD_FMC500),
+
+        pll_dclkout2_o => pll_dclkout2,
+        pll_sdclkout3_o => pll_sdclkout3,
 
         debug_enable_o => debug_enable,
         debug_trigger_o => debug_trigger,

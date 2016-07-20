@@ -27,6 +27,10 @@ entity fmc500m_top is
         read_data_o : out reg_data_t;
         read_ack_o : out std_logic;
 
+        -- Other signals
+        pll_dclkout2_o : out std_logic;
+        pll_sdclkout3_o : out std_logic;
+
         -- Debug
         debug_enable_o : out std_logic;
         debug_trigger_o : out std_logic;
@@ -47,7 +51,7 @@ architecture fmc500m_top of fmc500m_top is
     signal pll_clkin_sel1 : std_logic;
     signal pll_sync : std_logic;
     signal pll_dclkout2 : std_logic;     -- On CC pin
-    signal pll_dclkout3 : std_logic;
+    signal pll_sdclkout3 : std_logic;
 
     -- ADC
     signal adc_dco : std_logic;          -- Will be master DSP clock
@@ -76,10 +80,10 @@ architecture fmc500m_top of fmc500m_top is
     -- Misc
     signal adc_pwr_en : std_logic;
     signal dac_pwr_en : std_logic;
-    signal pll_pwr_en : std_logic;
+    signal vcxo_pwr_en : std_logic;
     signal adc_pwr_good : std_logic;
     signal dac_pwr_good : std_logic;
-    signal pll_pwr_good : std_logic;
+    signal vcxo_pwr_good : std_logic;
     signal ext_trig : std_logic;
     signal temp_alert : std_logic;
 
@@ -91,14 +95,14 @@ architecture fmc500m_top of fmc500m_top is
 
     constant SPI_REG : natural := 0;
     constant PWR_REG : natural := 1;
-    subtype UNUSED_REGS is natural range 2 to REG_ADDR_COUNT-1;
+    constant STA_REG : natural := 2;
+    subtype UNUSED_REGS is natural range 3 to REG_ADDR_COUNT-1;
 
     signal power_control : reg_data_t;
     signal power_status : reg_data_t;
 
 begin
     -- Default values for outputs we're not using yet
-    pll_sync <= '0';
     dac_data <= (others => '0');
     dac_dci <= '0';
     dac_frame <= '0';
@@ -123,7 +127,7 @@ begin
         pll_clkin_sel1_i => pll_clkin_sel1,
         pll_sync_i => pll_sync,
         pll_dclkout2_o => pll_dclkout2,
-        pll_dclkout3_o => pll_dclkout3,
+        pll_sdclkout3_o => pll_sdclkout3,
 
         -- ADC
         adc_dco_o => adc_dco,
@@ -152,10 +156,10 @@ begin
         -- Miscellaneous
         adc_pwr_en_i => adc_pwr_en,
         dac_pwr_en_i => dac_pwr_en,
-        pll_pwr_en_i => pll_pwr_en,
+        vcxo_pwr_en_i => vcxo_pwr_en,
         adc_pwr_good_o => adc_pwr_good,
         dac_pwr_good_o => dac_pwr_good,
-        pll_pwr_good_o => pll_pwr_good,
+        vcxo_pwr_good_o => vcxo_pwr_good,
         ext_trig_o => ext_trig,
         temp_alert_o => temp_alert
     );
@@ -214,7 +218,10 @@ begin
     );
 
     read_acks(PWR_REG) <= '1';
-    read_data(PWR_REG) <= power_status;
+    read_data(PWR_REG) <= power_control;
+
+    read_acks(STA_REG) <= '1';
+    read_data(STA_REG) <= power_status;
 
     -- Unused registers
     read_acks(UNUSED_REGS) <= (others => '1');
@@ -222,15 +229,16 @@ begin
 
 
     -- Power control and other miscellaneous controls
-    pll_pwr_en <= power_control(0);
+    vcxo_pwr_en <= power_control(0);
     adc_pwr_en <= power_control(1);
     dac_pwr_en <= power_control(2);
     adc_pdwn   <= power_control(3);
     dac_rstn   <= power_control(4);
     pll_clkin_sel0 <= power_control(8);
     pll_clkin_sel1 <= power_control(9);
+    pll_sync   <= power_control(10);
 
-    power_status(0) <= pll_pwr_good;
+    power_status(0) <= vcxo_pwr_good;
     power_status(1) <= adc_pwr_good;
     power_status(2) <= dac_pwr_good;
     power_status(3) <= '0';
@@ -238,6 +246,10 @@ begin
     power_status(5) <= pll_status_ld2;
     power_status(31 downto 6) <= (others => '0');
 
+
+    -- For IO observation only
+    pll_dclkout2_o <= pll_dclkout2;
+    pll_sdclkout3_o <= pll_sdclkout3;
 
     -- Debug
     debug_enable_o <= '1';
