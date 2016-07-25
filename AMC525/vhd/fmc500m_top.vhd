@@ -30,6 +30,8 @@ entity fmc500m_top is
         -- Other signals
         pll_dclkout2_o : out std_logic;
         pll_sdclkout3_o : out std_logic;
+        pll_status_ld1_o : out std_logic;
+        pll_status_ld2_o : out std_logic;
 
         -- Debug
         debug_enable_o : out std_logic;
@@ -250,6 +252,8 @@ begin
     -- For IO observation only
     pll_dclkout2_o <= pll_dclkout2;
     pll_sdclkout3_o <= pll_sdclkout3;
+    pll_status_ld1_o <= pll_status_ld1;
+    pll_status_ld2_o <= pll_status_ld2;
 
     -- Debug
     debug_enable_o <= '1';

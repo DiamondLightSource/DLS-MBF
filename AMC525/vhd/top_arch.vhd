@@ -121,8 +121,11 @@ architecture top of top is
     -- Digitial IO inputs
     signal dio_inputs : std_logic_vector(4 downto 0);
     signal dio_outputs : std_logic_vector(4 downto 0);
+    signal dio_leds : std_logic_vector(1 downto 0);
     signal pll_dclkout2 : std_logic;
     signal pll_sdclkout3 : std_logic;
+    signal pll_status_ld1 : std_logic;
+    signal pll_status_ld2 : std_logic;
 
 begin
     -- Reset in.
@@ -386,15 +389,15 @@ begin
 
     -- FMC0 Digital I/O
     fmc_digital_io_inst : entity work.fmc_digital_io port map (
-        clk_i => dsp_clk,
         FMC_LA_P => FMC0_LA_P,
         FMC_LA_N => FMC0_LA_N,
 
-        write_strobe_i => REGS_write_strobe(MOD_DIO),
-        write_address_i => REGS_write_address,
-        write_data_i => REGS_write_data,
+        -- Configure I/O #5 as terminated input, the other four are outputs.
+        out_enable_i  => "01111",
+        term_enable_i => "10000",
 
         output_i => dio_outputs,
+        leds_i => dio_leds,
         input_o => dio_inputs
     );
     REGS_read_data(MOD_DIO)(4 downto 0) <= dio_inputs;
@@ -402,7 +405,11 @@ begin
     REGS_read_ack(MOD_DIO) <= '1';
     dio_outputs(0) <= pll_dclkout2;
     dio_outputs(1) <= pll_sdclkout3;
-    dio_outputs(4 downto 2) <= "000";
+    dio_outputs(2) <= pll_status_ld1;
+    dio_outputs(3) <= pll_status_ld2;
+    dio_outputs(4) <= '0';
+    dio_leds(0) <= pll_status_ld1;
+    dio_leds(1) <= pll_status_ld2;
 
 
     -- FMC1 FMC500M ADC/DAC and clock source
@@ -424,6 +431,8 @@ begin
 
         pll_dclkout2_o => pll_dclkout2,
         pll_sdclkout3_o => pll_sdclkout3,
+        pll_status_ld1_o => pll_status_ld1,
+        pll_status_ld2_o => pll_status_ld2,
 
         debug_enable_o => debug_enable,
         debug_trigger_o => debug_trigger,
