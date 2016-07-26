@@ -5,336 +5,17 @@
 # SNAS605 and the datasheet is avaliable at http://www.ti.com/lit/pdf/snas605
 # Revision SNAS605AR dated December 2015 was used for this script.
 
+from config_pll import SettingsBase
+
 from driver import PLL
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-# This rather convoluted code is concerned with providing a bridge between the
-# nearly 300 field and register definitions for this device so that at the end
-# of this file we can simply concentrate on assigning values to named fields.
-#   There are two FieldWriter subclasses: the Output class used for defining
-# each of the 7 pairs of clock outpus, and the SettingsBase class used for all
-# the remaining settings.
-#   Each subclass must define a _Fields attribute.  This contains all the field
-# definitions as either single or multiple sub-fields, see the definitions of
-# OutputFields and AllFields below.
-class FieldWriter:
-    _Exclusions = []    # Field names not to check
-
-    def __init__(self, **kargs):
-        # Gather list of valid field names in format for processing.
-        self.__names = {}
-        for name, field_def in self._Fields.__dict__.items():
-            if name[0] != '_':  # Need to filter out built-in names etc
-                assert name not in self.__names
-                # Convert field_def into working format: a field value followed
-                # by a list of register sub-fields in byte order.  At this point
-                # we need to separate single byte and multiple byte definitions.
-                if isinstance(field_def[0], int):
-                    # Simple case: single field
-                    self.__names[name] = [field_def[3], (field_def[0:3],)]
-                else:
-                    # More complicated.
-                    # First assemble the default value
-                    default = field_def[0][3]
-                    for _, width, _, value in field_def[1:]:
-                        default = (default << width) | value
-
-                    # Next extract the list of field definitions in little
-                    # endian order for register generation.
-                    fields = [field[0:3] for field in field_def]
-                    fields.reverse()
-                    self.__names[name] = [default, tuple(fields)]
-
-        # Validate field assignments for this subclass
-        for name in self.__class__.__dict__.keys():
-            assert \
-                name[0] == '_' or name in self.__names or \
-                name in self._Exclusions, \
-                'Invalid class attribute "%s"' % name
-
-        # Use keyword arguments to set extra attributes
-        for name, value in kargs.items():
-            setattr(self, name, value)
-
-    def __setattr__(self, name, value):
-        assert name[0] == '_' or name in self.__names, \
-            'Invalid attribute "%s"' % name
-        self.__dict__[name] = value
-
-    def __compute_registers(self):
-        registers = {}
-        for name, field_def in self.__names.items():
-            default, fields = field_def
-            value = getattr(self, name, default)
-            for reg, width, offset in fields:
-                reg_value = registers.setdefault(reg, 0)
-                field_value = (value & ((1 << width) - 1)) << offset
-                registers[reg] = reg_value | field_value
-                value >>= width
-        return registers
-
-    def write_fields(self, base = 0, first = 0, last = 0xFFF):
-        registers = self.__compute_registers()
-        for reg in sorted(registers):
-            if first <= reg <= last:
-                PLL[base + reg] = registers[reg]
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Field definitions.
-#
-# For each named field we specify the associated register, the width in bits,
-# the starting offset of the field, and the default power-on reset value.
-#    If a named field is split across multiple registers then we represent this
-# as a list of field definitions.
-
-# Each output is controlled by a group of seven registers offset from 0x100+8*n
-class OutputFields:
-    # Name                 f  w  o  d   field/width/offset/default
-    #
-    CLK_ODL             = (0, 1, 6, 0)      # Output drive level
-    CLK_IDL             = (0, 1, 5, 0)      # Input drive level
-    DCLK_DIV            = (0, 5, 0, 0)      # Clock output divisor
-    DCLK_DDLY_CNTH      = (1, 4, 4, 5)      # Digital delay high count
-    DCLK_DDLY_CNTL      = (1, 4, 0, 5)      # Digital delay low count
-    DCLK_ALDY           = (3, 5, 3, 0)      # Analogue delay
-    DCLK_ADLY_MUX       = (3, 1, 2, 0)      # Enable duty cycle correction
-    DCLK_MUX            = (3, 2, 0, 0)      # DCLK output mux
-    DCLK_HS             = (4, 1, 6, 0)      # DCLK half step
-    SDCLK_MUX           = (4, 1, 5, 0)      # Select SDCLK source
-    SDCLK_DDLY          = (4, 4, 1, 0)      # SDCLK delay
-    SDCLK_HS            = (4, 1, 0, 0)      # SDCLK half step
-    SDCLK_ADLY_EN       = (5, 1, 4, 0)      # Enable SDCLK analogue delay
-    SDCLK_ADLY          = (5, 4, 0, 0)      # SDCLK analogue delay
-    DCLK_DDLY_PD        = (6, 1, 7, 1)
-    DCLK_HSg_PD         = (6, 1, 6, 1)
-    DCLK_ADLYg_PD       = (6, 1, 5, 1)
-    DCLK_ADLY_PD        = (6, 1, 4, 1)
-    CLK_PD              = (6, 1, 3, 1)
-    SDCLK_DIS_MODE      = (6, 2, 1, 0)
-    SDCLK_PD            = (6, 1, 0, 1)
-    SDCLK_POL           = (7, 1, 7, 0)
-    SDCLK_FMT           = (7, 3, 4, 0)
-    DCLK_PLL            = (7, 1, 3, 0)
-    DCLK_FMT            = (7, 2, 0, 0)
-
-
-# This contains definitions of all the other fields.
-class AllFields:
-    # Name                 field  w  o  d   width/offset/default
-    #
-    VCO_MUX             = (0x138, 2, 5, 0)  # Selects internal VCO0
-    OSCout_MUX          = (0x138, 1, 4, 0)
-    # Configure OSCout/CLKin2 as CLKin2 input (not actually used)
-    OSCout_FMT          = (0x138, 3, 0, 0)
-    SYSREF_CLKin0_MUX   = (0x139, 1, 2, 0)  # SYSREF from MUX or CLKin0
-    SYSREF_MUX          = (0x139, 2, 0, 0)  # SYSREF source
-    SYSREF_DIV          = [(0x13A, 5, 0, 12),   (0x13B, 8, 0, 0)]
-    SYSREF_DDLY         = [(0x13C, 5, 0, 0),    (0x13D, 8, 0, 8)]
-    SYSREF_PULSE_CNT    = (0x13E, 2, 0, 3)
-    PLL2_NCLK_MUX       = (0x13F, 1, 4, 0)  # PLL2 N divider input
-    PLL1_NCLK_MUX       = (0x13F, 1, 3, 0)  # PLL1 N delay input
-    FB_MUX              = (0x13F, 2, 1, 0)  # PLL1 feedback mux
-    FB_MUX_EN           = (0x13F, 1, 0, 0)  # Enable 0-delay feedback mux
-    # Power down controls for various functions
-    PLL1_PD             = (0x140, 1, 7, 0)  # Power down PLL1
-    VCO_LDO_PD          = (0x140, 1, 6, 0)  # Power down ??
-    VCO_PD              = (0x140, 1, 5, 0)  # Power down VCO
-    OSCin_PD            = (0x140, 1, 4, 0)  # Power down OSCin port
-    SYSREF_GBL_PD       = (0x140, 1, 3, 0)  # Global SYSREF power down control
-    SYSREF_PD           = (0x140, 1, 2, 0)  # Power down SYSREF
-    SYSREF_DDLY_PD      = (0x140, 1, 1, 0)  # Power down SYSREF digital delay
-    SYSREF_PLSR_PD      = (0x140, 1, 0, 0)  # Power down SYSREF pulse generator
-    # Dynamic digital delay enables and control
-    DDLYd_SYSREF_EN     = (0x141, 1, 7, 0)  # Enable SYSREF dynamic delay
-    DDLYd12_EN          = (0x141, 1, 6, 0)  # Enable DCLK digital delay
-    DDLYd10_EN          = (0x141, 1, 5, 0)
-    DDLYd8_EN           = (0x141, 1, 4, 0)
-    DDLYd6_EN           = (0x141, 1, 3, 0)
-    DDLYd4_EN           = (0x141, 1, 2, 0)
-    DDLYd2_EN           = (0x141, 1, 1, 0)
-    DDLYd0_EN           = (0x141, 1, 0, 0)
-    DDLYd_STEP_CNT      = (0x142, 4, 0, 0)  # Digital delay control
-    # SYSREEF and SYNC control
-    SYSREF_CLR          = (0x143, 1, 7, 1)  # Must be reset to 0
-    SYNC_1SHOT_EN       = (0x143, 1, 6, 0)
-    SYNC_POL            = (0x143, 1, 5, 0)
-    SYNC_EN             = (0x143, 1, 4, 1)
-    SYNC_PLL2_DLD       = (0x143, 1, 3, 0)
-    SYNC_PLL1_DLD       = (0x143, 1, 2, 0)
-    SYNC_MODE           = (0x143, 2, 0, 1)  # SYNC event generation control
-    # Control of whether SYNC events disturb DCLK outputs
-    SYNC_DISSYSREF      = (0x144, 1, 7, 0)
-    SYNC_DIS12          = (0x144, 1, 6, 0)
-    SYNC_DIS10          = (0x144, 1, 5, 0)
-    SYNC_DIS8           = (0x144, 1, 4, 0)
-    SYNC_DIS6           = (0x144, 1, 3, 0)
-    SYNC_DIS4           = (0x144, 1, 2, 0)
-    SYNC_DIS2           = (0x144, 1, 1, 0)
-    SYNC_DIS0           = (0x144, 1, 0, 0)
-    # Fixed register
-    __0x145_8_0         = (0x145, 8, 0, 127)    # Always program to 127!
-    # CLKin control
-    CLKin2_EN           = (0x146, 1, 5, 0)  # Enable auto-switching
-    CLKin1_EN           = (0x146, 1, 4, 1)  # Enable auto-switching
-    CLKin0_EN           = (0x146, 1, 3, 1)  # Enable auto-switching
-    CLKin2_TYPE         = (0x146, 1, 2, 0)  # Bipolar input
-    CLKin1_TYPE         = (0x146, 1, 1, 0)  # Bipolar input
-    CLKin0_TYPE         = (0x146, 1, 0, 0)  # Bipolar input
-    CLKin_SEL_POL       = (0x147, 1, 7, 0)
-    CLKin_SEL_MODE      = (0x147, 3, 4, 3)  # Select PLL1 reference
-    CLKin1_OUT_MUX      = (0x147, 2, 2, 2)  # Select CLKin1 destination
-    CLKin0_OUT_MUX      = (0x147, 2, 0, 2)  # Select CLKin0 destination
-    CLKin_SEL0_MUX      = (0x148, 3, 3, 0)  # Not used
-    CLKin_SEL0_TYPE     = (0x148, 3, 0, 2)  # Input with pull-down
-    SDIO_RDBK_TYPE      = (0x149, 1, 6, 1)  # Open collector SPI SDIO output
-    CLKin_SEL1_MUX      = (0x149, 3, 3, 0)  # Not used
-    CLKin_SEL1_TYPE     = (0x149, 3, 0, 2)  # Input with pull-down
-    RESET_MUX           = (0x14A, 3, 3, 0)  # Not used
-    RESET_TYPE          = (0x14A, 3, 0, 2)  # Input with pull-down
-    # Holdover functionality (not used)
-    LOS_TIMEOUT         = (0x14B, 2, 6, 0)
-    LOS_EN              = (0x14B, 1, 5, 0)
-    TRACK_EN            = (0x14B, 1, 4, 1)
-    HOLDOVER_FORCE      = (0x14B, 1, 3, 0)
-    MAN_DAC_EN          = (0x14B, 1, 2, 1)
-    MAN_DAC             = [(0x14B, 2, 0, 2),    (0x14C, 8, 0, 0)]
-    DAC_TRIP_LOW        = (0x14D, 6, 0, 0)  # Holdover mode high threshold
-    DAC_CLK_MULT        = (0x14E, 2, 6, 0)
-    DAC_TRIP_HIGH       = (0x14E, 6, 0, 0)  # Holdover mode low threshold
-    DAC_CLK_CNTR        = (0x14F, 8, 0, 127)
-    CLKin_OVERRIDE      = (0x150, 1, 6, 0)
-    HOLDOVER_PLL1_DET   = (0x150, 1, 4, 0)
-    HOLDOVER_LOS_DET    = (0x150, 1, 3, 0)
-    HOLDOVER_VTUNE_DET  = (0x150, 1, 2, 0)
-    HOLDOVER_HITLESS_SWITCH = (0x150, 1, 1, 1)
-    HOLDOVER_EN         = (0x150, 1, 0, 1)  # Holdover enabled by default
-    HOLDOVER_DLD_CNT    = [(0x151, 6, 0, 2),    (0x152, 8, 0, 0)]
-    CLKin0_R            = [(0x153, 6, 0, 0),    (0x154, 8, 0, 120)]
-    CLKin1_R            = [(0x155, 6, 0, 0),    (0x156, 8, 0, 150)]
-    CLKin2_R            = [(0x157, 6, 0, 0),    (0x158, 8, 0, 150)]
-    PLL1_N              = [(0x159, 6, 0, 0),    (0x15A, 8, 0, 120)]
-    PLL1_WND_SIZE       = (0x15B, 2, 6, 3)  # Lock detect window
-    PLL1_CP_TRI         = (0x15B, 1, 5, 0)
-    PLL1_CP_POL         = (0x15B, 1, 4, 1)
-    PLL1_CP_GAIN        = (0x15B, 4, 0, 4)
-    PLL1_DLD_CNT        = [(0x15C, 6, 0, 32),   (0x15D, 8, 0, 0)]
-    PLL1_R_DLY          = (0x15E, 3, 3, 0)
-    PLL1_N_DLY          = (0x15E, 3, 0, 0)
-    PLL1_LD_MUX         = (0x15F, 5, 3, 1)  # Select output to Status_LD1 pin
-    PLL1_LD_TYPE        = (0x15F, 3, 0, 6)  # Open drain output
-    PLL2_P              = (0x162, 3, 5, 2)
-    OSCin_FREQ          = (0x162, 3, 2, 7)
-    PLL2_XTAL_EN        = (0x162, 1, 1, 0)
-    PLL2_REF_2X_EN      = (0x162, 1, 0, 1)
-    PLL2_FCAL_DIS       = (0x166, 1, 2, 0)
-    PLL2_R              = [(0x160, 4, 0, 0),    (0x161, 8, 0, 2)]
-    PLL2_N_CAL          = [
-        (0x163, 2, 0, 0),   (0x164, 8, 0, 0),   (0x165, 8, 0, 12)]
-    PLL2_N              = [
-        (0x166, 2, 0, 0),   (0x167, 8, 0, 0),   (0x168, 8, 0, 12)]
-    PLL2_WND_SIZE       = (0x169, 2, 5, 2)  # Must be left at this value!
-    PLL2_CP_GAIN        = (0x169, 2, 3, 3)
-    PLL2_CP_POL         = (0x169, 1, 2, 0)
-    PLL2_CP_TRI         = (0x169, 1, 1, 0)
-    __0x169_1_0         = (0x169, 1, 0, 1)  # Always program to 1!
-    SYSREF_REQ_EN       = (0x16A, 1, 6, 0)
-    PLL2_DLD_CNT        = [(0x16A, 6, 0, 32),   (0x16B, 8, 0, 0)]
-    PLL2_LF_R4          = (0x16C, 3, 3, 0)
-    PLL2_LF_R3          = (0x16C, 3, 0, 0)
-    PLL2_LF_C4          = (0x16D, 4, 4, 0)
-    PLL2_LF_C3          = (0x16D, 4, 0, 0)
-    PLL2_LD_MUX         = (0x16E, 5, 3, 2)
-    PLL2_LD_TYPE        = (0x16E, 3, 0, 6)
-    PLL2_PRE_PD         = (0x173, 1, 6, 0)
-    PLL2_PD             = (0x173, 1, 5, 1)
-
-
-# Some useful constant definitions
-class Const:
-    # Output settings for [S]DCLK_FMT fields
-    FMT_LVDS = 1
-    FMT_HSDS8 = 3
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-class Output(FieldWriter):
-    _Fields = OutputFields
-
-
-class SettingsBase(FieldWriter):
-    _Fields = AllFields
-
-    def __write_outputs(self):
-        self.out0_1  .write_fields(base = 0x100)
-        self.out2_3  .write_fields(base = 0x108)
-        self.out4_5  .write_fields(base = 0x110)
-        self.out6_7  .write_fields(base = 0x118)
-        self.out8_9  .write_fields(base = 0x120)
-        self.out10_11.write_fields(base = 0x128)
-        self.out12_13.write_fields(base = 0x130)
-
-    def __fixed_setup(self):
-        # Completion programming sequence according to page 49 9.5.1
-        PLL[0x171] = 0xAA
-        PLL[0x172] = 0x02
-        PLL[0x17C] = 21     # Write this before 0x168
-        PLL[0x17D] = 51     # and this.
-
-    # Writes PLL configuration as described on Page 49 9.5.1
-    def write_config(self):
-        # 1. Reset the device
-        PLL[0] = 0x80
-        # 2. Program outputs (registers 0x100 to 0x137)
-        self.__write_outputs()
-        #    Program first block of registers (0x138 to 0x165)
-        self.write_fields(last = 0x165)
-        # 3-5. Program special registers with fixed values
-        self.__fixed_setup()
-        # 6. Program remaining registers
-        self.write_fields(first = 0x166)
-
-
-# This is called to populate the given dictionary with the default output
-# definitions.
-def create_outputs(outputs):
-    #   0   LVDS        FMC GBTCLK1_M2C     Unused
-    #  S1   HSDS 8mA    ADC SYNC
-    outputs['out0_1'] = Output(SDCLK_FMT = Const.FMT_HSDS8)
-    #   2   LVDS        FMC HB[0]           pll_dclkout2
-    #  S3   LVDS        FMC LA[19]          pll_sdclkout3
-    # Temporary testing outputs, will be unused in working system.
-    outputs['out2_3'] = Output(
-        DCLK_FMT = Const.FMT_LVDS, SDCLK_FMT = Const.FMT_LVDS)
-    #   4   LVDS        DAC DACCLK
-    #  S5                                   Unused
-    outputs['out4_5'] = Output(DCLK_FMT = Const.FMT_LVDS)
-    #   6   LVDS        DAC REFCLK
-    #  S7                                   Unused
-    outputs['out6_7'] = Output(DCLK_FMT = Const.FMT_LVDS)
-    #   8   Used for internal 0-delay feedback
-    #  S9                                   Unused
-    outputs['out8_9'] = Output()
-    #   10  HSDS 8mA    J12
-    #  S11                                  Unused
-    outputs['out10_11'] = Output(DCLK_FMT = Const.FMT_HSDS8)
-    #   12  LVDS        FMC GBTCLK0_M2C     Unused
-    #  S13  HSDS 8mA    ADC CLK
-    outputs['out12_13'] = Output(SDCLK_FMT = Const.FMT_HSDS8)
-
-    # Mark all these names to be excluded from name check.
-    outputs['_Exclusions'] = outputs.keys()
-
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-class Settings(SettingsBase):
-    create_outputs(locals())
+# Simple setup with input clock directly exported as system clock
+class SysclkSetup(SettingsBase):
+    SettingsBase.create_outputs(locals())
 
     # Configure SDCLKout3 with a copy of SYSREF
     out2_3.CLK_PD = 0           # Enable clock group
@@ -348,5 +29,173 @@ class Settings(SettingsBase):
     SYNC_EN = 1                 # Enable SYNC (needed for SYSREF)
     SYSREF_CLR = 0              # Take SYSREF out of reset
 
+# SysclkSetup().write_config(PLL)
+# sys.exit()
 
-Settings().write_config()
+
+zero_delay = True
+clk_source = 'CLKin0'           # 100 MHz internal crystal
+clk_source = 'CLKin1'           # 500 MHz external reference
+
+class Settings(SettingsBase):
+    SettingsBase.create_outputs(locals())
+
+    # Enable 2/3 and 8/9 clock groups
+    out2_3.CLK_PD = 0
+    out8_9.CLK_PD = 0
+    out10_11.CLK_PD = 0
+
+    # Configure DCLKout2
+    out2_3.DCLK_DIV = 30        # 100 MHz on front panel
+    out2_3.DCLK_MUX = 0         # Divider output, no delay
+
+    # Front panel connector on DCLKout10
+    out10_11.DCLK_DIV = 6
+    out10_11.DCLK_MUX = 0
+
+    # Configure SDCLKout3 with a copy of DCLK
+    out2_3.SDCLK_PD = 0         # and enable SDCLK
+    out2_3.SDCLK_MUX = 0        # Output DCLK to SDCLK
+
+    SYSREF_CLR = 0              # Take SYSREF out of reset
+    SYNC_EN = 0
+
+
+    # Tried using the TI (actually NI) Clock Design Tool, downloaded from
+    # http://www.ti.com/tool/clockdesigntool to compute PLL parameters, but
+    # there is an unexpected constraint: the VCXO runs at 100 MHz +-10 kHz,
+    # which really rather constrains our options!  Also it appears that the PLL1
+    # phase detector can't run much below 1 MHz.
+    #
+    # In this attempt we can lock onto and regenerate 500 MHz, and the input
+    # frequency can be pulled to +-50 kHz before losing lock.  The table below
+    # shows the selected frequencies (note PDF is Phase Detector Frequency):
+    #                                               Valid range
+    #   VCXO frequency: 100 MHz                     99.99 to 100.01 MHz
+    #   PLL1 PDF:       33 +1/3 ~= 33.3 MHz         1 to 40 MHz
+    #   VCO frequency:  3GHz (VCO1)                 2370-2630 or 2930-3080 MHz
+    #   PLL2 PDF:       100 MHz                     < 155 MHz
+    #
+    # Corresponding counters:
+    #
+    #   R1 = 3 (input 100 MHz) or 15 (input 500 MHz)
+    #   N1 = 3 (dual loop)     or 15 (nested 0 delay)
+    #   R2 = 1
+    #   N2 = 2 * 15 (must be composite with prescaler in range 2 to 8
+    #
+    #   PLL1:   R = 15  N = 30
+    #   PLL2:   R = 3   N = 7 * 3   (Prescaler and divider)
+    #   Fout:   D = 6
+    #
+    # The governing equations are (f_1 = VCXO frequency, f_2 = VCO frequency,
+    # f_ref = input reference, f_out = output, f_fb = chosen feedback frequency,
+    # either f_1 or f_out):
+    #
+    #   PDF1 = f_in / R1 = f_fb / N1    =>  f_fb = (N1 / R1) * f_in
+    #   PDF2 = f_1 / R2  = f_2 / N2     =>  f_2  = (N2 / R2) * f_1
+    #   f_out = f_2 / D
+    #
+    # Thus, for f_fb = f_1 (simple dual loop):
+    #
+    #   f_1   = f_in * N1 / R1
+    #   f_2   = f_in * N1 * N2 / (R1 * R2)
+    #   f_out = f_in * N1 * N2 / (R1 * R2 * D)
+    #
+    # and for f_fb = f_out (nested 0-delay dual loop):
+    #
+    #   f_1   = f_in * R2 * N1 * D / (R1 * N2)
+    #   f_2   = f_in * N1 * D / R1
+    #   f_out = f_in * N1 / R1
+
+    # PLL1 R (reference) input.
+    # Select appropriate reference clock input, either built-in 100 MHz
+    # reference or external 500 MHz RF clock.
+    if clk_source == 'CLKin0':
+        # PLL1 R (reference) input from 100 MHz crystal
+        CLKin0_EN = 1
+        CLKin1_EN = 0
+        CLKin0_OUT_MUX = 2      # 100 MHz on CLKin0 routed to PLL1
+        CLKin_SEL_MODE = 0      # Use CLKin0 as PLL1 reference
+        CLKin0_R = 3            # PDF1 = 100 / 3 MHz = 33 +1/3
+    elif clk_source == 'CLKin1':
+        # PLL1 R (reference) input from 500 MHz RF
+        CLKin0_EN = 0
+        CLKin1_EN = 1
+        CLKin0_OUT_MUX = 3
+        CLKin1_OUT_MUX = 2      # 500 MHz on CLKin1 routed to PLL1
+        CLKin_SEL_MODE = 1      # Use CLKin1 as PLL1 reference
+        CLKin1_R = 15           # PDF1 = 500 / 15 MHz = 33 +1/3
+    else:
+        assert False, 'Invalid clk_source'
+
+    # PLL1 N (feedback) input.
+    # Select either OSCin for direct feedback or DCLKout8 for 0-delay
+    if zero_delay:
+        # For Nested 0-delay Dual Loop Mode we take the PLL1 feedback from the
+        # DCLKout8 output.  This will ensure that our output phase has a fixed
+        # relationship to our input clock.
+        FB_MUX_EN = 1           # Enable feedback mux and
+        FB_MUX = 1              # select DCLKout8 as feedback source
+        PLL1_NCLK_MUX = 1       # Use feedback mux for PLL1 feedback
+        PLL1_N = 15             # PDF1 = 500 / 15 MHz
+
+        # Also need to configure DCLKout8
+        out8_9.DCLK_DIV = 6     # Reduce VCO = 3G to 500 MHz output
+        out8_9.DCLK_MUX = 0     # Divider only output
+    else:
+        # For simple Dual Loop Mode we take PLL1 feedback from the PLL1
+        # oscillator.
+        PLL1_NCLK_MUX = 0       # Use OSCin for PLL1 feedback
+        PLL1_N = 3              # Determines VCXO frequency directly
+
+    # PLL1 control.
+    PLL1_PD = 0                 # Ensure PLL1 is operating
+    OSCin_PD = 0                # Enable OSCin from external VCXO
+    PLL1_CP_GAIN = 15           # 1.55 mA charge pump current (from CD Tool)
+
+
+    # For PLL2 we have less choice once f1 has been determined, the only real
+    # choice is between VCO0 running at 2.5GHz or VCO1 running at 3GHz.
+    VCO_MUX = 1                 # Use VCO1 running at 3GHz
+    OSCin_FREQ = 4              # 255 to 500 MHz frequency range
+    PLL2_PD = 0                 # Ensure PLL2 and
+    PLL2_PRE_PD = 0             #  prescaler are enabled
+
+    # PLL2 reference R
+    PLL2_REF_2X_EN = 0          # No frequency doubling on f1
+    PLL2_R = 1                  # PDF2 = f1
+
+    # PLL2 feedback N
+    PLL2_NCLK_MUX = 0           # Use direct output feedback
+    PLL2_P = 2                  # Feedback N with prescale is 30 for PDF2
+    PLL2_N = 15                 # equal to to f1
+    PLL2_N_CAL = 15
+
+    # PLL2 integrated loop resistors and capacitors, values taken from Clock
+    # Design Tool
+    PLL2_LF_R3 = 0              # 200 Ohms
+    PLL2_LF_R4 = 0              # 200 Ohms
+    PLL2_LF_C3 = 0              # 10 pF
+    PLL2_LF_C4 = 0              # 10 pF
+
+
+    # Lock detect status bits
+    PLL1_LD_MUX = 1             # PLL1 DLD (Digital lock detect)
+    PLL2_LD_MUX = 2             # PLL2 DLD (Digital lock detect)
+
+    HOLDOVER_EN = 0
+
+
+
+
+#     # Hack: bypass all the above and pass CLKin1 straight through to clock path.
+#     CLKin1_OUT_MUX = 0          # Fin internal path
+#     VCO_MUX = 2                 # Use CLKin1 as output
+
+
+s = Settings(PLL)
+s.write_config()
+
+# s.SYNC_POL = 1
+# s.SYNC_POL = 0
+# s.SYSREF_CLR = 0

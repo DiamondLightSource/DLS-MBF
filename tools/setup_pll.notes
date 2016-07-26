@@ -1,0 +1,64 @@
+Some notes on LMK04828 setup
+----------------------------
+
+
+PLL1_WND_SIZE and PLL1_DLD_CNT computed in Lmk04820::SetPLL1_WindowSize from
+parameter PLL1 PFD rate according to rule:
+
+    =============== =================== ===============
+    PFD range (MHz) PLL1_WND_SIZE       PLL1_DLD_CNT
+    =============== =================== ===============
+    <= 19.7         3 (43 ns)           0x2000
+    19.7 .. 44      2 (19 ns)           0x1000
+    44 .. 94        1 (9 ns)            0x800
+    94 .. 212       0 (4 ns)            0x400
+    =============== =================== ===============
+
+Looks as if PLL1 PDF is the operating frequency of the PLL1 Phase Detector
+(Phase Detector Frequency), so is input frequency over divider.
+
+The maximum operating frequency for PLL1 PDF is 40 MHz according to the data
+sheet, and for PLL2 PDF is 155 MHz
+
+
+PLL feedback chain
+------------------
+
+Input to PLL1 Phase Detector R::
+
+    CLKin0 -- [CLKin0_OUT_MUX] -- [CLKin0_R] --|
+    CLKin1 -- [CLKin0_OUT_MUX] -- [CLKin1_R] --| [CLKin_SEL_MODE] >-- ...
+    CLKin2 ---------------------- [CLKin2_R] --|
+
+        ... -- [PLL1_R_DLY] --> PD1 R
+
+Shared feedback mux::
+
+    CLKout6 --|
+    CLKout8 --| [FB_MUX_EN]
+    SYS div --| [FB_MUX]    >-- FB mux
+
+Input to PLL1 Phase Detector N::
+
+    FB mux --|
+    OSCin ---| [PLL1_NCLK_MUX] -- [PLL1_R_DLY] -- [PLL1_N] --> PD1 N
+
+Note that PD1 R and N frequencies must be < 40MHz.
+
+Input to PLL2 Phase Detector R::
+
+    OSCin -- [PLL2_REF_2X_EN] -- [PLL2_R] --> PD2 R
+
+Input to PLL2 Phase Detector N::
+
+    VCO0 --|
+    VCO1 --| [VCO_MUX] >--+-- [PLL2_P] --> PLL2 P
+    Fin ---|              |
+                          +--> clock distribution
+
+             +--------------------------------+
+    PLL2 P --+--|                             +--|
+    FB mux -----| [PLL2_NCLK_MUX] >- [PLL2_N] ---| freq cal --> PD2 N
+
+..
+    vim: set filetype=rst:

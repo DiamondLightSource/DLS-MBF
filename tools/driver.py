@@ -36,7 +36,7 @@ class Regs:
         regs = regs[:MOD_ADDR_COUNT * REG_ADDR_COUNT]
         regs = regs.reshape((MOD_ADDR_COUNT, REG_ADDR_COUNT))
 
-
+        self.regs = regs
         self.mem_gen = regs[0]
         self.dig_io  = regs[1]
         self.fmc500  = regs[2]
