@@ -77,6 +77,7 @@ class FieldWriter:
             field_value = (value << offset) & field_mask
             self.__registers[reg] = reg_value | field_value
             value >>= width
+        assert value == 0, 'Value for %s too large for field' % name
 
 
     def write_pll(self, reg, value = None):

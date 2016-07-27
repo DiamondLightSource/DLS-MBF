@@ -33,9 +33,27 @@ class SysclkSetup(SettingsBase):
 # sys.exit()
 
 
-zero_delay = True
-clk_source = 'CLKin0'           # 100 MHz internal crystal
-clk_source = 'CLKin1'           # 500 MHz external reference
+# 30 / 1 @ 3GHz => 500 MHz
+VCO = 1
+VCO_DIV = 6
+R2 = 1
+N2P = 2
+N2N = 15
+
+# 3028 / 101 @ 3GHz => 499.670 MHz
+VCO = 1
+VCO_DIV = 6
+R2 = 101
+N2P = 4
+N2N = 757   # 3028 / 101
+
+# 1549 / 62 @ 2.5GHz => 499.672 MHz
+VCO = 0
+VCO_DIV = 5
+R2 = 61
+N2P = 4
+N2N = 381
+
 
 class Settings(SettingsBase):
     SettingsBase.create_outputs(locals())
@@ -46,11 +64,11 @@ class Settings(SettingsBase):
     out10_11.CLK_PD = 0
 
     # Configure DCLKout2
-    out2_3.DCLK_DIV = 30        # 100 MHz on front panel
+    out2_3.DCLK_DIV = 5 * VCO_DIV   # 100 MHz on front panel
     out2_3.DCLK_MUX = 0         # Divider output, no delay
 
     # Front panel connector on DCLKout10
-    out10_11.DCLK_DIV = 6
+    out10_11.DCLK_DIV = VCO_DIV
     out10_11.DCLK_MUX = 0
 
     # Configure SDCLKout3 with a copy of DCLK
@@ -107,46 +125,25 @@ class Settings(SettingsBase):
     #   f_2   = f_in * N1 * D / R1
     #   f_out = f_in * N1 / R1
 
-    # PLL1 R (reference) input.
-    # Select appropriate reference clock input, either built-in 100 MHz
-    # reference or external 500 MHz RF clock.
-    if clk_source == 'CLKin0':
-        # PLL1 R (reference) input from 100 MHz crystal
-        CLKin0_EN = 1
-        CLKin1_EN = 0
-        CLKin0_OUT_MUX = 2      # 100 MHz on CLKin0 routed to PLL1
-        CLKin_SEL_MODE = 0      # Use CLKin0 as PLL1 reference
-        CLKin0_R = 3            # PDF1 = 100 / 3 MHz = 33 +1/3
-    elif clk_source == 'CLKin1':
-        # PLL1 R (reference) input from 500 MHz RF
-        CLKin0_EN = 0
-        CLKin1_EN = 1
-        CLKin0_OUT_MUX = 3
-        CLKin1_OUT_MUX = 2      # 500 MHz on CLKin1 routed to PLL1
-        CLKin_SEL_MODE = 1      # Use CLKin1 as PLL1 reference
-        CLKin1_R = 15           # PDF1 = 500 / 15 MHz = 33 +1/3
-    else:
-        assert False, 'Invalid clk_source'
+    # PLL1 R (reference) input, RF clock at 499.96 MHz
+    CLKin0_EN = 0
+    CLKin1_EN = 1
+    CLKin0_OUT_MUX = 3
+    CLKin1_OUT_MUX = 2      # 500 MHz on CLKin1 routed to PLL1
+    CLKin_SEL_MODE = 1      # Use CLKin1 as PLL1 reference
+    CLKin1_R = 15           # PDF1 = 500 / 15 MHz = 33 +1/3
 
-    # PLL1 N (feedback) input.
-    # Select either OSCin for direct feedback or DCLKout8 for 0-delay
-    if zero_delay:
-        # For Nested 0-delay Dual Loop Mode we take the PLL1 feedback from the
-        # DCLKout8 output.  This will ensure that our output phase has a fixed
-        # relationship to our input clock.
-        FB_MUX_EN = 1           # Enable feedback mux and
-        FB_MUX = 1              # select DCLKout8 as feedback source
-        PLL1_NCLK_MUX = 1       # Use feedback mux for PLL1 feedback
-        PLL1_N = 15             # PDF1 = 500 / 15 MHz
-
-        # Also need to configure DCLKout8
-        out8_9.DCLK_DIV = 6     # Reduce VCO = 3G to 500 MHz output
-        out8_9.DCLK_MUX = 0     # Divider only output
-    else:
-        # For simple Dual Loop Mode we take PLL1 feedback from the PLL1
-        # oscillator.
-        PLL1_NCLK_MUX = 0       # Use OSCin for PLL1 feedback
-        PLL1_N = 3              # Determines VCXO frequency directly
+    # PLL1 N (feedback) input from DCLKout8 for Nested 0-delay
+    # For Nested 0-delay Dual Loop Mode we take the PLL1 feedback from the
+    # DCLKout8 output.  This will ensure that our output phase has a fixed
+    # relationship to our input clock.
+    FB_MUX_EN = 1           # Enable feedback mux and
+    FB_MUX = 1              # select DCLKout8 as feedback source
+    PLL1_NCLK_MUX = 1       # Use feedback mux for PLL1 feedback
+    PLL1_N = 15             # PDF1 = 500 / 15 MHz
+    # Also need to configure DCLKout8
+    out8_9.DCLK_DIV = VCO_DIV     # Reduce VCO = 3G to 500 MHz output
+    out8_9.DCLK_MUX = 0     # Divider only output
 
     # PLL1 control.
     PLL1_PD = 0                 # Ensure PLL1 is operating
@@ -156,19 +153,19 @@ class Settings(SettingsBase):
 
     # For PLL2 we have less choice once f1 has been determined, the only real
     # choice is between VCO0 running at 2.5GHz or VCO1 running at 3GHz.
-    VCO_MUX = 1                 # Use VCO1 running at 3GHz
+    VCO_MUX = VCO               # Use VCO1 running at 3GHz
     OSCin_FREQ = 4              # 255 to 500 MHz frequency range
     PLL2_PD = 0                 # Ensure PLL2 and
     PLL2_PRE_PD = 0             #  prescaler are enabled
 
     # PLL2 reference R
     PLL2_REF_2X_EN = 0          # No frequency doubling on f1
-    PLL2_R = 1                  # PDF2 = f1
+    PLL2_R = R2                 # PDF2 = f1
 
     # PLL2 feedback N
     PLL2_NCLK_MUX = 0           # Use direct output feedback
-    PLL2_P = 2                  # Feedback N with prescale is 30 for PDF2
-    PLL2_N = 15                 # equal to to f1
+    PLL2_P = N2P                # Feedback N with prescale is 30 for PDF2
+    PLL2_N = N2N                # equal to to f1
     PLL2_N_CAL = 15
 
     # PLL2 integrated loop resistors and capacitors, values taken from Clock
