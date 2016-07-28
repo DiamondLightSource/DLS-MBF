@@ -62,7 +62,10 @@ static ssize_t lmbf_dma_read(
 
     /* Constrain read to valid region. */
     loff_t offset = *f_pos;
-    if (offset >= context->length)
+    if (offset == context->length)
+        return 0;
+    else if (offset > context->length)
+        /* Treat seeks off end of memory block as an error. */
         return -EFAULT;
 
     /* Clip read to end of memory. */
