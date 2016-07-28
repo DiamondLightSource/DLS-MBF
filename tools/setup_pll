@@ -33,27 +33,6 @@ class SysclkSetup(SettingsBase):
 # sys.exit()
 
 
-# 30 / 1 @ 3GHz => 500 MHz
-VCO = 1
-VCO_DIV = 6
-R2 = 1
-N2P = 2
-N2N = 15
-
-# 3028 / 101 @ 3GHz => 499.670 MHz
-VCO = 1
-VCO_DIV = 6
-R2 = 101
-N2P = 4
-N2N = 757   # 3028 / 101
-
-# 1549 / 62 @ 2.5GHz => 499.672 MHz
-VCO = 0
-VCO_DIV = 5
-R2 = 61
-N2P = 4
-N2N = 381
-
 
 class Settings(SettingsBase):
     SettingsBase.create_outputs(locals())
@@ -64,11 +43,11 @@ class Settings(SettingsBase):
     out10_11.CLK_PD = 0
 
     # Configure DCLKout2
-    out2_3.DCLK_DIV = 5 * VCO_DIV   # 100 MHz on front panel
+    out2_3.DCLK_DIV = 10        # 100 MHz on front panel
     out2_3.DCLK_MUX = 0         # Divider output, no delay
 
     # Front panel connector on DCLKout10
-    out10_11.DCLK_DIV = VCO_DIV
+    out10_11.DCLK_DIV = 5
     out10_11.DCLK_MUX = 0
 
     # Configure SDCLKout3 with a copy of DCLK
@@ -79,59 +58,53 @@ class Settings(SettingsBase):
     SYNC_EN = 0
 
 
-    # Tried using the TI (actually NI) Clock Design Tool, downloaded from
-    # http://www.ti.com/tool/clockdesigntool to compute PLL parameters, but
-    # there is an unexpected constraint: the VCXO runs at 100 MHz +-10 kHz,
-    # which really rather constrains our options!  Also it appears that the PLL1
-    # phase detector can't run much below 1 MHz.
+    # We run the clock controller in Nested 0-delay Dual Loop mode: this means
+    # that the regenerated RF output clock is used as feedback to the input:
     #
-    # In this attempt we can lock onto and regenerate 500 MHz, and the input
-    # frequency can be pulled to +-50 kHz before losing lock.  The table below
-    # shows the selected frequencies (note PDF is Phase Detector Frequency):
-    #                                               Valid range
-    #   VCXO frequency: 100 MHz                     99.99 to 100.01 MHz
-    #   PLL1 PDF:       33 +1/3 ~= 33.3 MHz         1 to 40 MHz
-    #   VCO frequency:  3GHz (VCO1)                 2370-2630 or 2930-3080 MHz
-    #   PLL2 PDF:       100 MHz                     < 155 MHz
+    #   f_RF -- /R1 --|
+    #                 | PD1 >-- VCXO -- /R2 --|
+    #       +-- /N1 --|                       | PD2 >-- VCO --+-- /D --+-- f_RF
+    #       |                       +-- /N2 --|               |        |
+    #       |                       +-------------------------+        |
+    #       +----------------------------------------------------------+
     #
-    # Corresponding counters:
+    # The governing equations of the system above (put f_in = f_RF, f_out =
+    # regenerated f_RF, f1 = VCXO frequency, f2 = VCO frequency, d1 = first
+    # Phase Detector frequency, d2 = second Phase Detector frequency) are:
     #
-    #   R1 = 3 (input 100 MHz) or 15 (input 500 MHz)
-    #   N1 = 3 (dual loop)     or 15 (nested 0 delay)
-    #   R2 = 1
-    #   N2 = 2 * 15 (must be composite with prescaler in range 2 to 8
+    #   (1)     d1 = f_in / R1 = f_out / N1
+    #   (2)     d2 = f1 / R2 = f2 / N2
+    #   (3)     f_out = f2 / D
     #
-    #   PLL1:   R = 15  N = 30
-    #   PLL2:   R = 3   N = 7 * 3   (Prescaler and divider)
-    #   Fout:   D = 6
+    # Our operating constraints are quite tight:
     #
-    # The governing equations are (f_1 = VCXO frequency, f_2 = VCO frequency,
-    # f_ref = input reference, f_out = output, f_fb = chosen feedback frequency,
-    # either f_1 or f_out):
+    #   (4)     f_in = f_out = 499.655 to 499.681 MHz
+    #   (5)     f1 = 100 MHz +-10 kHz
+    #   (6)     f2 = 2.4 to 2.6 GHz or 2.9 to 3.1 GHz (VCO0 or VCO1)
+    #   (7)     d1 < 40 MHz, d2 < 155 MHz but otherwise as large as possible.
     #
-    #   PDF1 = f_in / R1 = f_fb / N1    =>  f_fb = (N1 / R1) * f_in
-    #   PDF2 = f_1 / R2  = f_2 / N2     =>  f_2  = (N2 / R2) * f_1
-    #   f_out = f_2 / D
+    # From (1, 4) we get R1 = N1 and from (7) we get N1, R1 >= 13.  From (3, 6)
+    # we have D = 5 or 6 (depending on choice of VCO), and from the remaining
+    # constraints and equations we have
     #
-    # Thus, for f_fb = f_1 (simple dual loop):
+    #       N2 / R2 = D * f_in / 100 MHz ~= 24.983 or 29.979
     #
-    #   f_1   = f_in * N1 / R1
-    #   f_2   = f_in * N1 * N2 / (R1 * R2)
-    #   f_out = f_in * N1 * N2 / (R1 * R2 * D)
+    # We want R2 to be as small as possible, as this determines d2 = f1/R2, and
+    # there is also the constraint that N2 must be divisible by a small prime
+    # (2, 3, 5, or 7).  Examining the candidates we find:
     #
-    # and for f_fb = f_out (nested 0-delay dual loop):
+    #   N2 = 1524, R2 = 61 => f2 = 2498 MHz => f_out = 499.672 MHz
     #
-    #   f_1   = f_in * R2 * N1 * D / (R1 * N2)
-    #   f_2   = f_in * N1 * D / R1
-    #   f_out = f_in * N1 / R1
+    # This gives us an accessible range 499.622 to 499.722 MHz.  Our nominal
+    # operating points are 499.656 (pre DDBA) and 499.681 (post DBA).
 
-    # PLL1 R (reference) input, RF clock at 499.96 MHz
+    # PLL1 R (reference) input, RF clock at 499.97 MHz
     CLKin0_EN = 0
     CLKin1_EN = 1
     CLKin0_OUT_MUX = 3
     CLKin1_OUT_MUX = 2      # 500 MHz on CLKin1 routed to PLL1
     CLKin_SEL_MODE = 1      # Use CLKin1 as PLL1 reference
-    CLKin1_R = 15           # PDF1 = 500 / 15 MHz = 33 +1/3
+    CLKin1_R = 15           # PDF1 = 500 / 15 = 33 +1/3 MHz
 
     # PLL1 N (feedback) input from DCLKout8 for Nested 0-delay
     # For Nested 0-delay Dual Loop Mode we take the PLL1 feedback from the
@@ -140,9 +113,9 @@ class Settings(SettingsBase):
     FB_MUX_EN = 1           # Enable feedback mux and
     FB_MUX = 1              # select DCLKout8 as feedback source
     PLL1_NCLK_MUX = 1       # Use feedback mux for PLL1 feedback
-    PLL1_N = 15             # PDF1 = 500 / 15 MHz
+    PLL1_N = 15             # PDF1 = 500 / 15 = 33 +1/3 MHz
     # Also need to configure DCLKout8
-    out8_9.DCLK_DIV = VCO_DIV     # Reduce VCO = 3G to 500 MHz output
+    out8_9.DCLK_DIV = 5     # Reduce VCO = 2.5G to 500 MHz output
     out8_9.DCLK_MUX = 0     # Divider only output
 
     # PLL1 control.
@@ -153,30 +126,23 @@ class Settings(SettingsBase):
 
     # For PLL2 we have less choice once f1 has been determined, the only real
     # choice is between VCO0 running at 2.5GHz or VCO1 running at 3GHz.
-    VCO_MUX = VCO               # Use VCO1 running at 3GHz
-    OSCin_FREQ = 4              # 255 to 500 MHz frequency range
+    VCO_MUX = 0                 # Use VCO0 running at 2.5GHz
+    OSCin_FREQ = 1              # OSCin running at 100 MHz (63 to 127 MHz)
     PLL2_PD = 0                 # Ensure PLL2 and
     PLL2_PRE_PD = 0             #  prescaler are enabled
 
     # PLL2 reference R
     PLL2_REF_2X_EN = 0          # No frequency doubling on f1
-    PLL2_R = R2                 # PDF2 = f1
+    PLL2_R = 61                 # PDF2 = f1
 
     # PLL2 feedback N
     PLL2_NCLK_MUX = 0           # Use direct output feedback
-    PLL2_P = N2P                # Feedback N with prescale is 30 for PDF2
-    PLL2_N = N2N                # equal to to f1
-    PLL2_N_CAL = 15
-
-    # PLL2 integrated loop resistors and capacitors, values taken from Clock
-    # Design Tool
-    PLL2_LF_R3 = 0              # 200 Ohms
-    PLL2_LF_R4 = 0              # 200 Ohms
-    PLL2_LF_C3 = 0              # 10 pF
-    PLL2_LF_C4 = 0              # 10 pF
+    PLL2_P = 4                  # Feedback N with prescale is 30 for PDF2
+    PLL2_N = 381                # equal to to f1
+    PLL2_N_CAL = 381
 
 
-    # Lock detect status bits
+    # Publish lock state of the two PLLs on the Status_LD{1,2} pins
     PLL1_LD_MUX = 1             # PLL1 DLD (Digital lock detect)
     PLL2_LD_MUX = 2             # PLL2 DLD (Digital lock detect)
 
