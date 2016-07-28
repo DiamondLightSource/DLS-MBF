@@ -36,8 +36,7 @@ entity memory_generator is
 end entity;
 
 architecture memory_generator of memory_generator is
-    constant COUNT_WIDTH : natural := 28;
-    signal write_counter : unsigned(COUNT_WIDTH-1 downto 0)
+    signal write_counter : unsigned(REG_DATA_WIDTH-1 downto 0)
         := (others => '0');
     signal data_pattern : std_logic_vector(DATA_WIDTH-1 downto 0)
         := x"0000_0002_0000_0001";
@@ -78,8 +77,7 @@ begin
                     when 3 =>
                         data_increment(63 downto 32) <= write_data_i;
                     when 4 =>
-                        write_counter <=
-                            unsigned(write_data_i(COUNT_WIDTH-1 downto 0));
+                        write_counter <= unsigned(write_data_i);
                         writing <= true;
                     when others =>
                 end case;

@@ -532,6 +532,9 @@ CONFIG.NUM_SI {2} \
 
   # Create instance: dma_buf, and set properties
   set dma_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 dma_buf ]
+  set_property -dict [ list \
+CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
+ ] $dma_buf
 
   # Create instance: dma_ddr0_cc, and set properties
   set dma_ddr0_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 dma_ddr0_cc ]
