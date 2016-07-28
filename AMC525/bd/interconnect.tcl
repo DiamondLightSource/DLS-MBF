@@ -830,7 +830,7 @@ proc create_hier_cell_memory_dma { parentCell nameHier } {
 CONFIG.C_ADDR_WIDTH {48} \
 CONFIG.C_INCLUDE_SG {0} \
 CONFIG.C_M_AXI_DATA_WIDTH {256} \
-CONFIG.C_M_AXI_MAX_BURST_LEN {4} \
+CONFIG.C_M_AXI_MAX_BURST_LEN {128} \
  ] $axi_cdma_0
 
   # Create instance: memory
@@ -1010,8 +1010,8 @@ CONFIG.S00_HAS_REGSLICE {4} \
   # Create port connections
   connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins axi_lite_interconnect/M00_ACLK]
   connect_bd_net -net DSP_RESETN_1 [get_bd_pins DSP_RESETN] [get_bd_pins axi_lite_interconnect/M00_ARESETN]
-  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK]  [get_bd_pins axi_lite_interconnect/S00_ACLK]
-  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN]  [get_bd_pins axi_lite_interconnect/S00_ARESETN]
+  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK] [get_bd_pins axi_lite_interconnect/S00_ACLK]
+  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN] [get_bd_pins axi_lite_interconnect/S00_ARESETN]
 
   # Restore current instance
   current_bd_instance $oldCurInst
