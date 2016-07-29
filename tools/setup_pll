@@ -147,6 +147,7 @@ class Settings(SettingsBase):
     PLL2_LD_MUX = 2             # PLL2 DLD (Digital lock detect)
 
     HOLDOVER_EN = 0
+    CLKin_OVERRIDE = 1          # Force use of selected clock input
 
 
 
