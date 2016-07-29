@@ -1174,16 +1174,14 @@ CONFIG.pf0_bar2_enabled {true} \
 CONFIG.pf0_bar2_prefetchable {false} \
 CONFIG.pf0_bar2_scale {Kilobytes} \
 CONFIG.pf0_bar2_size {64} \
-CONFIG.pf0_base_class_menu {Device_was_built_before_Class_Code_definitions_were_finalized} \
-CONFIG.pf0_class_code {000000} \
-CONFIG.pf0_class_code_base {00} \
-CONFIG.pf0_class_code_sub {00} \
+CONFIG.pf0_class_code {118000} \
+CONFIG.pf0_class_code_base {11} \
+CONFIG.pf0_class_code_sub {80} \
 CONFIG.pf0_device_id {7038} \
 CONFIG.pf0_interrupt_pin {NONE} \
 CONFIG.pf0_msi_enabled {true} \
 CONFIG.pf0_msix_cap_pba_bir {BAR_1:0} \
 CONFIG.pf0_msix_cap_table_bir {BAR_1:0} \
-CONFIG.pf0_sub_class_interface_menu {All_currently_implemented_devices_except_VGA-compatible_devices} \
 CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
 CONFIG.pl_link_cap_max_link_width {X8} \
  ] $axi_pcie3_bridge
