@@ -4,9 +4,9 @@ import fcntl
 import numpy
 
 # Driver device names
-DDR0 = '/dev/amc525_lmbf.0.ddr0'
-DDR1 = '/dev/amc525_lmbf.0.ddr1'
-REGS = '/dev/amc525_lmbf.0.reg'
+DDR0_NAME = '/dev/amc525_lmbf.0.ddr0'
+DDR1_NAME = '/dev/amc525_lmbf.0.ddr1'
+REGS_NAME = '/dev/amc525_lmbf.0.reg'
 
 # Register area size ioctl code
 LMBF_MAP_SIZE = ord('L') << 8           # _IO('L', 0)
@@ -18,7 +18,7 @@ REG_ADDR_COUNT = 2**5
 
 
 # Interrogate DMA buffer size
-ddr0_file = os.open(DDR0, os.O_RDONLY)
+ddr0_file = os.open(DDR0_NAME, os.O_RDONLY)
 DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, LMBF_BUF_SIZE)
 os.close(ddr0_file)
 
@@ -74,11 +74,12 @@ class SPI:
     __setitem__ = write
 
 
-regs = Regs(REGS)
+regs = Regs(REGS_NAME)
 
+REGS = regs.regs
 PLL = SPI(regs, 0)
 ADC = SPI(regs, 1)
 DAC = SPI(regs, 2)
 
 
-__all__ = ['DDR0', 'DDR1', 'DDR0_BUF_LEN', 'regs', 'PLL', 'ADC', 'DAC']
+__all__ = ['DDR0_BUF_LEN', 'regs', 'PLL', 'ADC', 'DAC']

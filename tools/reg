@@ -2,20 +2,25 @@
 
 import sys
 
-from driver import regs
+from driver import REGS
 
 args = [int(arg, 0) for arg in sys.argv[1:]]
 
-bank = regs.regs[args[0]]
+bank = REGS[args[0]]
 if len(args) == 1:
     # Read block
-    print bank
+    for n, val in enumerate(bank):
+        if n % 8 == 0:
+            print '%02x: ' % n,
+        print '%08x' % val,
+        if n % 8 == 7:
+            print
 elif len(args) == 2:
     # Read one register
     val = bank[args[1]]
     print '%d => %08X (%d)' % (args[1], val, val)
 elif len(args) == 3:
-    # Write
+    # Write one register
     bank[args[1]] = args[2]
 else:
     assert False

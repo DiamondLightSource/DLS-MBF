@@ -131,7 +131,7 @@ class OutputFields:
     DCLK_DIV            = (0, 5, 0, 0)      # Clock output divisor
     DCLK_DDLY_CNTH      = (1, 4, 4, 5)      # Digital delay high count
     DCLK_DDLY_CNTL      = (1, 4, 0, 5)      # Digital delay low count
-    DCLK_ALDY           = (3, 5, 3, 0)      # Analogue delay
+    DCLK_ADLY           = (3, 5, 3, 0)      # Analogue delay
     DCLK_ADLY_MUX       = (3, 1, 2, 0)      # Enable duty cycle correction
     DCLK_MUX            = (3, 2, 0, 0)      # DCLK output mux
     DCLK_HS             = (4, 1, 6, 0)      # DCLK half step
