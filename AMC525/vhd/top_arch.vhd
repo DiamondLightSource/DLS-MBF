@@ -11,9 +11,10 @@ use work.defines.all;
 architecture top of top is
     -- Clocking and reset resources
     signal fclka : std_logic;
-    signal clk100mhz : std_logic;
     signal dsp_clk : std_logic;
     signal dsp_reset_n : std_logic;
+    signal dram_ref_clk : std_logic;
+    signal dram_ref_rst_n : std_logic;
 
     signal n_coldrst_in : std_logic;
     signal uled_out : std_logic_vector(3 downto 0);
@@ -143,20 +144,15 @@ begin
         clk_o => fclka
     );
 
-    -- Reference clock for DDR timing
-    clk100mhz_inst : entity work.gte2_ibufds port map (
-        clk_p_i => CLK100MHZ1_P,
-        clk_n_i => CLK100MHZ1_N,
-        clk_o => clk100mhz
-    );
-
     -- Dummy DSP 250 MHz clock
     dsp_clock_inst : entity work.dsp_clock port map (
         CLK125MHZ0_P => CLK125MHZ0_P,
         CLK125MHZ0_N => CLK125MHZ0_N,
         nCOLDRST => n_coldrst_in,
         dsp_clk_o => dsp_clk,
-        dsp_rst_n_o => dsp_reset_n
+        dsp_rst_n_o => dsp_reset_n,
+        dram_ref_clk_o => dram_ref_clk,
+        dram_ref_rst_n_o => dram_ref_rst_n
     );
 
 
@@ -211,7 +207,8 @@ begin
         CLK533MHZ0_clk_n => CLK533MHZ0_N,
 
         -- Reference timing clock for DDR3 controller
-        CLK100MHZ => clk100mhz,
+        CLK200MHZ => dram_ref_clk,
+        CLK200MHZ_RSTN => dram_ref_rst_n,
 
         -- AXI-Lite register master interface
         M_DSP_REGS_araddr => DSP_REGS_araddr,

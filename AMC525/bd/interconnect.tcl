@@ -661,48 +661,12 @@ proc create_hier_cell_memory { parentCell nameHier } {
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DDR1
 
   # Create pins
-  create_bd_pin -dir I -type clk CLK100MHZ
+  create_bd_pin -dir I -type clk CLKREF
+  create_bd_pin -dir I -type rst CLKREF_RSTN
   create_bd_pin -dir O -type clk DDR0_ACLK
   create_bd_pin -dir O DDR0_ARESETN
   create_bd_pin -dir O -type clk DDR1_ACLK
   create_bd_pin -dir O DDR1_ARESETN
-  create_bd_pin -dir I -type rst nCOLDRST
-
-  # Create instance: clk_wiz_0, and set properties
-  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:5.3 clk_wiz_0 ]
-  set_property -dict [ list \
-CONFIG.CLKOUT1_DRIVES {BUFG} \
-CONFIG.CLKOUT1_JITTER {114.829} \
-CONFIG.CLKOUT1_PHASE_ERROR {98.575} \
-CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} \
-CONFIG.CLKOUT2_DRIVES {BUFG} \
-CONFIG.CLKOUT3_DRIVES {BUFG} \
-CONFIG.CLKOUT4_DRIVES {BUFG} \
-CONFIG.CLKOUT5_DRIVES {BUFG} \
-CONFIG.CLKOUT6_DRIVES {BUFG} \
-CONFIG.CLKOUT7_DRIVES {BUFG} \
-CONFIG.JITTER_SEL {No_Jitter} \
-CONFIG.MMCM_CLKFBOUT_MULT_F {10} \
-CONFIG.MMCM_CLKIN1_PERIOD {10.0} \
-CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
-CONFIG.MMCM_CLKOUT0_DIVIDE_F {5} \
-CONFIG.MMCM_CLKOUT0_DUTY_CYCLE {0.5} \
-CONFIG.MMCM_COMPENSATION {ZHOLD} \
-CONFIG.MMCM_DIVCLK_DIVIDE {1} \
-CONFIG.PRIMITIVE {PLL} \
-CONFIG.PRIM_SOURCE {No_buffer} \
-CONFIG.RESET_PORT {resetn} \
-CONFIG.RESET_TYPE {ACTIVE_LOW} \
-CONFIG.SECONDARY_SOURCE {Single_ended_clock_capable_pin} \
-CONFIG.USE_MIN_POWER {true} \
-CONFIG.USE_PHASE_ALIGNMENT {false} \
- ] $clk_wiz_0
-
-  # Need to retain value_src of defaults
-  set_property -dict [ list \
-CONFIG.MMCM_CLKIN1_PERIOD.VALUE_SRC {DEFAULT} \
-CONFIG.MMCM_CLKIN2_PERIOD.VALUE_SRC {DEFAULT} \
- ] $clk_wiz_0
 
   # Create instance: mig_7series_0, and set properties
   set mig_7series_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mig_7series:3.0 mig_7series_0 ]
@@ -757,14 +721,12 @@ CONFIG.LOGO_FILE {data/sym_notgate.png} \
   connect_bd_intf_net -intf_net mig_7series_0_C1_DDR3 [get_bd_intf_pins C1_DDR3] [get_bd_intf_pins mig_7series_0/C1_DDR3]
 
   # Create port connections
-  connect_bd_net -net clk_in1_1 [get_bd_pins CLK100MHZ] [get_bd_pins clk_wiz_0/clk_in1]
-  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins mig_7series_0/clk_ref_i]
-  connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins mig_7series_0/sys_rst]
+  connect_bd_net -net CLK200MHZ_1 [get_bd_pins CLKREF] [get_bd_pins mig_7series_0/clk_ref_i]
   connect_bd_net -net mig_7series_0_c0_ui_clk [get_bd_pins DDR0_ACLK] [get_bd_pins mig_7series_0/c0_ui_clk]
   connect_bd_net -net mig_7series_0_c0_ui_clk_sync_rst [get_bd_pins mig_7series_0/c0_ui_clk_sync_rst] [get_bd_pins util_vector_logic_0/Op1]
   connect_bd_net -net mig_7series_0_c1_ui_clk [get_bd_pins DDR1_ACLK] [get_bd_pins mig_7series_0/c1_ui_clk]
   connect_bd_net -net mig_7series_0_c1_ui_clk_sync_rst [get_bd_pins mig_7series_0/c1_ui_clk_sync_rst] [get_bd_pins util_vector_logic_1/Op1]
-  connect_bd_net -net resetn_1 [get_bd_pins nCOLDRST] [get_bd_pins clk_wiz_0/resetn]
+  connect_bd_net -net nCOLDRST_1 [get_bd_pins CLKREF_RSTN] [get_bd_pins mig_7series_0/sys_rst]
   connect_bd_net -net util_reduced_logic_0_Res [get_bd_pins DDR0_ARESETN] [get_bd_pins mig_7series_0/c0_aresetn] [get_bd_pins util_reduced_logic_0/Res]
   connect_bd_net -net util_reduced_logic_1_Res [get_bd_pins DDR1_ARESETN] [get_bd_pins mig_7series_0/c1_aresetn] [get_bd_pins util_reduced_logic_1/Res]
   connect_bd_net -net util_vector_logic_0_Res [get_bd_pins util_reduced_logic_0/Op1] [get_bd_pins util_vector_logic_0/Res]
@@ -819,13 +781,13 @@ proc create_hier_cell_memory_dma { parentCell nameHier } {
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DDR1
 
   # Create pins
-  create_bd_pin -dir I -type clk CLK100MHZ
+  create_bd_pin -dir I -type clk CLK200MHZ
+  create_bd_pin -dir I -type rst CLK200MHZ_RSTN
   create_bd_pin -dir I -type clk DMA_ACLK
   create_bd_pin -dir I -type rst DMA_ARESETN
   create_bd_pin -dir O -type intr DMA_INT_REQ
   create_bd_pin -dir I -type clk DSP_CLK
   create_bd_pin -dir I -type rst DSP_RESETN
-  create_bd_pin -dir I -type rst nCOLDRST
 
   # Create instance: axi_cdma_0, and set properties
   set axi_cdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_cdma:4.1 axi_cdma_0 ]
@@ -862,11 +824,11 @@ CONFIG.C_M_AXI_MAX_BURST_LEN {128} \
   connect_bd_net -net axi_cdma_0_cdma_introut [get_bd_pins DMA_INT_REQ] [get_bd_pins axi_cdma_0/cdma_introut]
   connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins DMA_ACLK] [get_bd_pins axi_cdma_0/m_axi_aclk] [get_bd_pins axi_cdma_0/s_axi_lite_aclk] [get_bd_pins memory_interconnect/DMA_ACLK]
   connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins DMA_ARESETN] [get_bd_pins axi_cdma_0/s_axi_lite_aresetn] [get_bd_pins memory_interconnect/DMA_ARESETN]
-  connect_bd_net -net clk_in1_1 [get_bd_pins CLK100MHZ] [get_bd_pins memory/CLK100MHZ]
+  connect_bd_net -net clk_in1_1 [get_bd_pins CLK200MHZ] [get_bd_pins memory/CLKREF]
   connect_bd_net -net memory_DDR1_ARESETN1 [get_bd_pins memory/DDR1_ARESETN] [get_bd_pins memory_interconnect/DDR1_ARESETN]
   connect_bd_net -net memory_c0_ui_clk [get_bd_pins memory/DDR0_ACLK] [get_bd_pins memory_interconnect/DDR0_ACLK]
   connect_bd_net -net memory_c1_ui_clk [get_bd_pins memory/DDR1_ACLK] [get_bd_pins memory_interconnect/DDR1_ACLK]
-  connect_bd_net -net reset_rtl_0_1 [get_bd_pins nCOLDRST] [get_bd_pins memory/nCOLDRST]
+  connect_bd_net -net reset_rtl_0_1 [get_bd_pins CLK200MHZ_RSTN] [get_bd_pins memory/CLKREF_RSTN]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1127,7 +1089,11 @@ CONFIG.WUSER_WIDTH {0} \
   set pcie_mgt [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pcie_mgt ]
 
   # Create ports
-  set CLK100MHZ [ create_bd_port -dir I -type clk CLK100MHZ ]
+  set CLK200MHZ [ create_bd_port -dir I -type clk CLK200MHZ ]
+  set_property -dict [ list \
+CONFIG.ASSOCIATED_RESET {CLK200MHZ_RSTN} \
+ ] $CLK200MHZ
+  set CLK200MHZ_RSTN [ create_bd_port -dir I -type rst CLK200MHZ_RSTN ]
   set DSP_CLK [ create_bd_port -dir I -type clk DSP_CLK ]
   set_property -dict [ list \
 CONFIG.ASSOCIATED_BUSIF {S_DSP_DDR0:M_DSP_REGS:S_DSP_DDR1} \
@@ -1207,16 +1173,17 @@ CONFIG.pl_link_cap_max_link_width {X8} \
   connect_bd_intf_net -intf_net mig_7series_0_C1_DDR3 [get_bd_intf_ports C1_DDR3] [get_bd_intf_pins memory_dma/C1_DDR3]
 
   # Create port connections
+  connect_bd_net -net CLK200MHZ_RSTN_1 [get_bd_ports CLK200MHZ_RSTN] [get_bd_pins memory_dma/CLK200MHZ_RSTN]
   connect_bd_net -net DSPCLK_1 [get_bd_ports DSP_CLK] [get_bd_pins axi_lite/DSP_CLK] [get_bd_pins memory_dma/DSP_CLK]
   connect_bd_net -net DSPRSTN_1 [get_bd_ports DSP_RESETN] [get_bd_pins axi_lite/DSP_RESETN] [get_bd_pins memory_dma/DSP_RESETN]
   connect_bd_net -net INTR_1 [get_bd_ports INTR] [get_bd_pins interrupts/In1]
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_pcie3_bridge/intx_msi_request] [get_bd_pins interrupts/irq]
   connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins axi_lite/PCIE_ACLK] [get_bd_pins axi_pcie3_bridge/axi_aclk] [get_bd_pins axi_pcie3_bridge/axi_ctl_aclk] [get_bd_pins interrupts/s_axi_aclk] [get_bd_pins memory_dma/DMA_ACLK]
   connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins axi_lite/PCIE_ARESETN] [get_bd_pins axi_pcie3_bridge/axi_aresetn] [get_bd_pins interrupts/s_axi_aresetn] [get_bd_pins memory_dma/DMA_ARESETN]
-  connect_bd_net -net clk_in1_1 [get_bd_ports CLK100MHZ] [get_bd_pins memory_dma/CLK100MHZ]
+  connect_bd_net -net clk_in1_1 [get_bd_ports CLK200MHZ] [get_bd_pins memory_dma/CLK200MHZ]
   connect_bd_net -net memory_dma_DMA_INT_REQ [get_bd_pins interrupts/In0] [get_bd_pins memory_dma/DMA_INT_REQ]
+  connect_bd_net -net nCOLDRST_1 [get_bd_ports nCOLDRST] [get_bd_pins axi_pcie3_bridge/sys_rst_n]
   connect_bd_net -net refclk_1 [get_bd_ports FCLKA] [get_bd_pins axi_pcie3_bridge/refclk]
-  connect_bd_net -net reset_rtl_0_1 [get_bd_ports nCOLDRST] [get_bd_pins axi_pcie3_bridge/sys_rst_n] [get_bd_pins memory_dma/nCOLDRST]
 
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x200000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg

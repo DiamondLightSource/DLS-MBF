@@ -39,9 +39,6 @@ C1_DDR3_DM[1..0]            out
 C1_DDR3_ODT[0..0]           out
 CLK533MHZ0_{P,N}            in
 
--- Reference clock for DDR timing
-CLK100MHZ1_{P,N}            in
-
 -- Dummy clock for DSP clock
 CLK125MHZ0_{P,N}            in
 
