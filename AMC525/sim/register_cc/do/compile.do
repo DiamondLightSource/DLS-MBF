@@ -10,6 +10,7 @@ vcom -64 -93 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     $vhd_dir/sync_bit.vhd \
+    $vhd_dir/sync_reset.vhd \
     $vhd_dir/edge_detect.vhd \
     $vhd_dir/register_strobe_cc.vhd \
     $vhd_dir/register_cc.vhd \

@@ -73,10 +73,15 @@ else
 endif
 	sudo chgrp dcs /dev/amc525_lmbf.*
 	sudo chmod g+rw /dev/amc525_lmbf.*
-.PHONY: insmod
 
 rmmod:
 	sudo rmmod $(DRIVER_NAME)
+
+modperm:
+	sudo chgrp dcs /dev/amc525_lmbf.*
+	sudo chmod g+rw /dev/amc525_lmbf.*
+
+.PHONY: insmod rmmod modperm
 
 
 # ------------------------------------------------------------------------------

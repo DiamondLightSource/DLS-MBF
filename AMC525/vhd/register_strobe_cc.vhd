@@ -32,11 +32,12 @@ architecture register_strobe_cc of register_strobe_cc is
     signal axi_response : std_logic;
     signal axi_ack : std_logic;
     signal axi_dsp_rst_n : std_logic;
-    signal dsp_reset : boolean;
+    signal axi_dsp_reset_n : std_logic;
     type axi_state_t is (AXI_IDLE, AXI_BUSY, AXI_DONE);
     signal axi_state : axi_state_t := AXI_IDLE;
 
     -- DSP clock
+    signal dsp_reset_n : std_logic;
     signal dsp_request : std_logic;
     signal dsp_response : std_logic;
     type dsp_state_t is (DSP_IDLE, DSP_BUSY, DSP_DONE);
@@ -66,20 +67,20 @@ begin
                         axi_state <= AXI_BUSY;
                     end if;
                 when AXI_BUSY =>
-                    if axi_response = '1' or dsp_reset then
+                    if axi_response = '1' or axi_dsp_reset_n = '0' then
                         axi_state <= AXI_DONE;
                     end if;
                 when AXI_DONE =>
-                    if axi_response = '0' or dsp_reset then
+                    if axi_response = '0' or axi_dsp_reset_n = '0' then
                         axi_state <= AXI_IDLE;
                     end if;
             end case;
 
             -- Ensure we only come out of dsp reset in idle state.
             if axi_dsp_rst_n = '0' then
-                dsp_reset <= true;
+                axi_dsp_reset_n <= '0';
             elsif axi_dsp_rst_n = '1' and axi_state = AXI_IDLE then
-                dsp_reset <= false;
+                axi_dsp_reset_n <= '1';
             end if;
         end if;
     end process;
@@ -102,8 +103,14 @@ begin
         bit_o => dsp_request
     );
 
-    process (dsp_clk_i, dsp_reset) begin
-        if dsp_reset then
+    dsp_reset_inst : entity work.sync_reset port map (
+        clk_i => dsp_clk_i,
+        clk_ok_i => axi_dsp_reset_n,
+        sync_clk_ok_o => dsp_reset_n
+    );
+
+    process (dsp_clk_i, dsp_reset_n) begin
+        if dsp_reset_n = '0' then
             dsp_state <= DSP_IDLE;
         elsif rising_edge(dsp_clk_i) then
             case dsp_state is
