@@ -9,7 +9,7 @@ use work.defines.all;
 
 entity fmc500m_top is
     port (
-        clk_i : in std_logic;
+        axi_clk_i : in std_logic;
 
         -- FMC
         FMC_LA_P : inout std_logic_vector(0 to 33);
@@ -165,7 +165,7 @@ begin
 
     -- SPI controller
     fmc500m_spi_inst : entity work.fmc500m_spi port map (
-        clk_i => clk_i,
+        clk_i => axi_clk_i,
 
         -- Register control
         write_strobe_i => write_strobes(SPI_REG),
@@ -211,7 +211,7 @@ begin
 
     -- Register for custom power etc
     pwr_reg_inst : entity work.single_register port map (
-        clk_i => clk_i,
+        clk_i => axi_clk_i,
         register_o => power_control,
         write_strobe_i => write_strobes(PWR_REG),
         write_data_i => write_data_i

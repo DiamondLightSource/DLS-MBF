@@ -12,9 +12,11 @@ architecture top of top is
     -- Clocking and reset resources
     signal fclka : std_logic;
     signal dsp_clk : std_logic;
-    signal dsp_reset_n : std_logic;
+    signal dsp_rst_n : std_logic;
     signal dram_ref_clk : std_logic;
     signal dram_ref_rst_n : std_logic;
+    signal axi_clk : std_logic;
+    signal axi_rst_n : std_logic;
 
     signal n_coldrst_in : std_logic;
     signal uled_out : std_logic_vector(3 downto 0);
@@ -104,6 +106,13 @@ architecture top of top is
     signal REGS_write_data : reg_data_t;
     signal REGS_write_ack : mod_strobe_t;
 
+    -- Clock converted fields for DDR0_GEN
+    signal DDR0_GEN_write_strobe : std_logic;
+    signal DDR0_GEN_write_ack : std_logic;
+    signal DDR0_GEN_read_strobe : std_logic;
+    signal DDR0_GEN_read_data : reg_data_t;
+    signal DDR0_GEN_read_ack : std_logic;
+
     -- Some register file assignments
     constant MOD_DDR0_GEN : natural := 0;
     constant MOD_DIO : natural := 1;
@@ -147,7 +156,7 @@ begin
         CLK125MHZ0_N => CLK125MHZ0_N,
         nCOLDRST => n_coldrst_in,
         dsp_clk_o => dsp_clk,
-        dsp_rst_n_o => dsp_reset_n,
+        dsp_rst_n_o => dsp_rst_n,
         dram_ref_clk_o => dram_ref_clk,
         dram_ref_rst_n_o => dram_ref_rst_n
     );
@@ -159,6 +168,10 @@ begin
 
         -- Interrupt interface
         INTR => INTR,
+
+        -- AXI clocking for register interface
+        AXI_CLK => axi_clk,
+        AXI_RSTn => axi_rst_n,
 
         -- MTCA Backplane PCI Express interface
         pcie_mgt_rxn => AMC_RX_N,
@@ -272,14 +285,14 @@ begin
 
         -- DSP interface clock, running at half RF frequency
         DSP_CLK => dsp_clk,
-        DSP_RESETN => dsp_reset_n
+        DSP_RESETN => dsp_rst_n
     );
 
 
     -- Register AXI slave interface
     axi_lite_slave_inst : entity work.axi_lite_slave port map (
-        clk_i => dsp_clk,
-        rstn_i => dsp_reset_n,
+        clk_i => axi_clk,
+        rstn_i => axi_rst_n,
 
         -- AXI-Lite read interface
         araddr_i => DSP_REGS_araddr,
@@ -323,7 +336,7 @@ begin
         BURST_LENGTH => 32
     ) port map (
         clk_i => dsp_clk,
-        rstn_i => dsp_reset_n,
+        rstn_i => dsp_rst_n,
 
         -- AXI write master
         awaddr_o => DSP_DDR0_awaddr,
@@ -363,14 +376,15 @@ begin
     memory_generator_inst : entity work.memory_generator port map (
         clk_i => dsp_clk,
 
-        write_strobe_i => REGS_write_strobe(MOD_DDR0_GEN),
+        write_strobe_i => DDR0_GEN_write_strobe,
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
+        write_ack_o => DDR0_GEN_write_ack,
 
-        read_strobe_i => REGS_read_strobe(MOD_DDR0_GEN),
+        read_strobe_i => DDR0_GEN_read_strobe,
         read_address_i => REGS_read_address,
-        read_data_o => REGS_read_data(MOD_DDR0_GEN),
-        read_ack_o => REGS_read_ack(MOD_DDR0_GEN),
+        read_data_o => DDR0_GEN_read_data,
+        read_ack_o => DDR0_GEN_read_ack,
 
         capture_enable_o => DSP_DDR0_capture_enable,
         data_ready_i => DSP_DDR0_data_ready,
@@ -379,6 +393,25 @@ begin
         data_error_i => DSP_DDR0_data_error,
         addr_error_i => DSP_DDR0_addr_error,
         brsp_error_i => DSP_DDR0_brsp_error
+    );
+
+    -- Clock converter between burst generator and AXI
+    memory_generatory_cc_inst : entity work.register_cc port map (
+        axi_clk_i => axi_clk,
+        dsp_clk_i => dsp_clk,
+        dsp_rst_n_i => dsp_rst_n,
+
+        axi_write_strobe_i => REGS_write_strobe(MOD_DDR0_GEN),
+        axi_write_ack_o => REGS_write_ack(MOD_DDR0_GEN),
+        dsp_write_strobe_o => DDR0_GEN_write_strobe,
+        dsp_write_ack_i => DDR0_GEN_write_ack,
+
+        axi_read_strobe_i => REGS_read_strobe(MOD_DDR0_GEN),
+        axi_read_data_o => REGS_read_data(MOD_DDR0_GEN),
+        axi_read_ack_o => REGS_read_ack(MOD_DDR0_GEN),
+        dsp_read_strobe_o => DDR0_GEN_read_strobe,
+        dsp_read_data_i => DDR0_GEN_read_data,
+        dsp_read_ack_i => DDR0_GEN_read_ack
     );
 
 
@@ -409,7 +442,7 @@ begin
 
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
-        clk_i => dsp_clk,
+        axi_clk_i => axi_clk,
 
         FMC_LA_P => FMC1_LA_P,
         FMC_LA_N => FMC1_LA_N,
@@ -457,7 +490,7 @@ begin
     -- General purpose r/w registers filling all unused modules
     gen_register_file : for n in RW_REGISTERS generate
         register_file_inst : entity work.register_file port map (
-            clk_i => dsp_clk,
+            clk_i => axi_clk,
 
             write_strobe_i => REGS_write_strobe(n),
             write_address_i => REGS_write_address,
@@ -467,7 +500,7 @@ begin
             register_data_o => register_file(n)
         );
         register_read_inst : entity work.register_read port map (
-            clk_i => dsp_clk,
+            clk_i => axi_clk,
 
             read_strobe_i => REGS_read_strobe(n),
             read_address_i => REGS_read_address,
@@ -490,6 +523,6 @@ begin
     -- Interrupt events on register 3:1 and DDR0 capture
     INTR(0) <= DSP_DDR0_capture_enable;
     INTR(1) <= not DSP_DDR0_capture_enable;
-    INTR(7 downto 2) <= register_file(3)(1)(7 downto 2);
+    INTR(7 downto 2) <= register_file(3)(1)(5 downto 0);
 
 end;

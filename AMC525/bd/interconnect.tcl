@@ -951,8 +951,6 @@ proc create_hier_cell_axi_lite { parentCell nameHier } {
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_PCIE
 
   # Create pins
-  create_bd_pin -dir I -type clk DSP_CLK
-  create_bd_pin -dir I -type rst DSP_RESETN
   create_bd_pin -dir I -type clk PCIE_ACLK
   create_bd_pin -dir I -type rst PCIE_ARESETN
 
@@ -973,10 +971,8 @@ CONFIG.S00_HAS_REGSLICE {4} \
   connect_bd_intf_net -intf_net axi_pcie3_M_AXI [get_bd_intf_pins S_PCIE] [get_bd_intf_pins axi_lite_interconnect/S00_AXI]
 
   # Create port connections
-  connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins axi_lite_interconnect/M00_ACLK]
-  connect_bd_net -net DSP_RESETN_1 [get_bd_pins DSP_RESETN] [get_bd_pins axi_lite_interconnect/M00_ARESETN]
-  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK] [get_bd_pins axi_lite_interconnect/S00_ACLK]
-  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN] [get_bd_pins axi_lite_interconnect/S00_ARESETN]
+  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M00_ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK] [get_bd_pins axi_lite_interconnect/S00_ACLK]
+  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M00_ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN] [get_bd_pins axi_lite_interconnect/S00_ARESETN]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1023,7 +1019,6 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
 CONFIG.ADDR_WIDTH {16} \
 CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {250000000} \
 CONFIG.HAS_BRESP {0} \
 CONFIG.HAS_PROT {0} \
 CONFIG.HAS_RRESP {0} \
@@ -1089,6 +1084,12 @@ CONFIG.WUSER_WIDTH {0} \
   set pcie_mgt [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pcie_mgt ]
 
   # Create ports
+  set AXI_CLK [ create_bd_port -dir O -type clk AXI_CLK ]
+  set_property -dict [ list \
+CONFIG.ASSOCIATED_BUSIF {M_DSP_REGS} \
+CONFIG.ASSOCIATED_RESET {AXI_RSTn} \
+ ] $AXI_CLK
+  set AXI_RSTn [ create_bd_port -dir O -type rst AXI_RSTn ]
   set CLK200MHZ [ create_bd_port -dir I -type clk CLK200MHZ ]
   set_property -dict [ list \
 CONFIG.ASSOCIATED_RESET {CLK200MHZ_RSTN} \
@@ -1096,7 +1097,7 @@ CONFIG.ASSOCIATED_RESET {CLK200MHZ_RSTN} \
   set CLK200MHZ_RSTN [ create_bd_port -dir I -type rst CLK200MHZ_RSTN ]
   set DSP_CLK [ create_bd_port -dir I -type clk DSP_CLK ]
   set_property -dict [ list \
-CONFIG.ASSOCIATED_BUSIF {S_DSP_DDR0:M_DSP_REGS:S_DSP_DDR1} \
+CONFIG.ASSOCIATED_BUSIF {S_DSP_DDR0:S_DSP_DDR1} \
 CONFIG.ASSOCIATED_RESET {DSP_RESETN} \
 CONFIG.FREQ_HZ {250000000} \
  ] $DSP_CLK
@@ -1174,12 +1175,12 @@ CONFIG.pl_link_cap_max_link_width {X8} \
 
   # Create port connections
   connect_bd_net -net CLK200MHZ_RSTN_1 [get_bd_ports CLK200MHZ_RSTN] [get_bd_pins memory_dma/CLK200MHZ_RSTN]
-  connect_bd_net -net DSPCLK_1 [get_bd_ports DSP_CLK] [get_bd_pins axi_lite/DSP_CLK] [get_bd_pins memory_dma/DSP_CLK]
-  connect_bd_net -net DSPRSTN_1 [get_bd_ports DSP_RESETN] [get_bd_pins axi_lite/DSP_RESETN] [get_bd_pins memory_dma/DSP_RESETN]
+  connect_bd_net -net DSPCLK_1 [get_bd_ports DSP_CLK] [get_bd_pins memory_dma/DSP_CLK]
+  connect_bd_net -net DSPRSTN_1 [get_bd_ports DSP_RESETN] [get_bd_pins memory_dma/DSP_RESETN]
   connect_bd_net -net INTR_1 [get_bd_ports INTR] [get_bd_pins interrupts/In1]
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_pcie3_bridge/intx_msi_request] [get_bd_pins interrupts/irq]
-  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins axi_lite/PCIE_ACLK] [get_bd_pins axi_pcie3_bridge/axi_aclk] [get_bd_pins axi_pcie3_bridge/axi_ctl_aclk] [get_bd_pins interrupts/s_axi_aclk] [get_bd_pins memory_dma/DMA_ACLK]
-  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins axi_lite/PCIE_ARESETN] [get_bd_pins axi_pcie3_bridge/axi_aresetn] [get_bd_pins interrupts/s_axi_aresetn] [get_bd_pins memory_dma/DMA_ARESETN]
+  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_ports AXI_CLK] [get_bd_pins axi_lite/PCIE_ACLK] [get_bd_pins axi_pcie3_bridge/axi_aclk] [get_bd_pins axi_pcie3_bridge/axi_ctl_aclk] [get_bd_pins interrupts/s_axi_aclk] [get_bd_pins memory_dma/DMA_ACLK]
+  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_ports AXI_RSTn] [get_bd_pins axi_lite/PCIE_ARESETN] [get_bd_pins axi_pcie3_bridge/axi_aresetn] [get_bd_pins interrupts/s_axi_aresetn] [get_bd_pins memory_dma/DMA_ARESETN]
   connect_bd_net -net clk_in1_1 [get_bd_ports CLK200MHZ] [get_bd_pins memory_dma/CLK200MHZ]
   connect_bd_net -net memory_dma_DMA_INT_REQ [get_bd_pins interrupts/In0] [get_bd_pins memory_dma/DMA_INT_REQ]
   connect_bd_net -net nCOLDRST_1 [get_bd_ports nCOLDRST] [get_bd_pins axi_pcie3_bridge/sys_rst_n]
