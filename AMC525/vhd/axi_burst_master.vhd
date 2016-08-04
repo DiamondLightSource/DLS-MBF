@@ -79,14 +79,14 @@ architecture axi_burst_master of axi_burst_master is
     signal burst_active : boolean := false;
     signal first_write_done : boolean := false;
     signal first_burst : std_logic := '0';
-    signal enable_request : boolean := false;
-    signal first_write : boolean := false;
+    signal enable_request : std_logic := '0';
+    signal first_write : std_logic := '0';
     signal starting : boolean := false;
     signal next_burst : boolean := false;
     signal data_active : boolean := false;
 
     -- Address channnel
-    signal half_burst : boolean := false;
+    signal half_burst : std_logic := '0';
     signal write_address : boolean := false;
     signal burst_address : unsigned(BURST_ADDR_WIDTH-1 downto 0)
         := (others => '0');
@@ -95,8 +95,8 @@ architecture axi_burst_master of axi_burst_master is
     -- Data channel
     signal beat_counter : unsigned(BURST_BITS-1 downto 0)
         := (others => '0');
-    signal wlast_early : boolean := false;
-    signal wlast_early_edge : boolean := false;
+    signal wlast_early : std_logic;
+    signal wlast_early_edge : std_logic := '0';
     signal wvalid : boolean := false;
     signal wlast : boolean := false;
 
@@ -178,8 +178,8 @@ begin
         data_o(0) => first_burst);
 
     -- Use rising edge of capture_enable_i and inactivity to generate start.
-    enable_request <=
-        capture_enable_i = '1' and not burst_active and not starting;
+    enable_request <= to_std_logic(
+        capture_enable_i = '1' and not burst_active and not starting);
     first_write_inst : entity work.edge_detect port map (
         clk_i => clk_i,
         data_i => enable_request,
@@ -188,7 +188,7 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Stay in starting state until we start writing bursts.
-            if first_write then
+            if first_write = '1' then
                 starting <= true;
             elsif burst_active then
                 starting <= false;
@@ -198,7 +198,7 @@ begin
             -- the next burst is ready.
             if write_done and burst_active then
                 next_burst <= true;
-            elsif wlast_early_edge then
+            elsif wlast_early_edge = '1' then
                 next_burst <= false;
             end if;
 
@@ -206,7 +206,7 @@ begin
             -- time we have to generate a next burst.
             if first_burst = '1' then
                 burst_active <= true;
-            elsif wlast_early_edge then
+            elsif wlast_early_edge = '1' then
                 burst_active <= next_burst;
             end if;
 
@@ -234,7 +234,7 @@ begin
 
     -- Generate write on startup or half way through each burst, so long as
     -- we're still actively taking data.
-    write_address <= first_write or (data_active and half_burst);
+    write_address <= first_write = '1' or (data_active and half_burst = '1');
 
     process (rstn_i, clk_i) begin
         if rstn_i = '0' then
@@ -248,9 +248,9 @@ begin
             end if;
 
             -- Manage burst address.
-            if first_write then
+            if first_write = '1' then
                 burst_address <= (others => '0');
-            elsif half_burst then
+            elsif half_burst = '1' then
                 burst_address <= burst_address + 1;
             end if;
 
@@ -284,7 +284,8 @@ begin
 
     -- The next beat will be the last one.  This flag is required for updating
     -- burst_active, which must only be updated during the last beat.
-    wlast_early <= beat_counter = BURST_LENGTH - 2 and wready_i = '1';
+    wlast_early <= to_std_logic(
+        beat_counter = BURST_LENGTH - 2 and wready_i = '1');
     wlast_early_inst : entity work.edge_detect port map (
         clk_i => clk_i,
         data_i => wlast_early,
@@ -322,7 +323,7 @@ begin
             -- Count each completed beat
             if wvalid and wready_i = '1' then
                 beat_counter <= beat_counter + 1;
-                wlast <= wlast_early;
+                wlast <= wlast_early = '1';
             end if;
 
             -- Detect a data write error if we've got data incoming and we've
@@ -340,7 +341,7 @@ begin
     -- address.
     half_burst_inst : entity work.edge_detect port map (
         clk_i => clk_i,
-        data_i => to_boolean(beat_counter(BURST_BITS-1)),
+        data_i => beat_counter(BURST_BITS-1),
         edge_o => half_burst);
 
     wvalid_o <= to_std_logic(wvalid);

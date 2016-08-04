@@ -6,13 +6,13 @@ use ieee.std_logic_1164.all;
 entity edge_detect is
     port (
         clk_i : in std_logic;
-        data_i : in boolean;
-        edge_o : out boolean
+        data_i : in std_logic;
+        edge_o : out std_logic
     );
 end;
 
 architecture edge_detect of edge_detect is
-    signal last_data : boolean;
+    signal last_data : std_logic := '0';
 
 begin
     process (clk_i) begin
