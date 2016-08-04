@@ -5,4 +5,5 @@ set_clock_groups -asynchronous \
     -group [get_clocks -include_generated_clocks CLK125MHZ] \
     -group [get_clocks -include_generated_clocks FCLKA] \
     -group [get_clocks -include_generated_clocks CLK533MHZ0_P] \
-    -group [get_clocks -include_generated_clocks CLK533MHZ1_P]
+    -group [get_clocks -include_generated_clocks CLK533MHZ1_P] \
+    -group [get_clocks -include_generated_clocks txoutclk_x0y1]
