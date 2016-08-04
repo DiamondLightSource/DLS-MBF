@@ -81,7 +81,7 @@ begin
 
     -- Now generate synchronous locked signals for each generated clock from the
     -- clk_locked signal.
-    process (dsp_clk) begin
+    process (dsp_clk, clk_locked, nCOLDRST) begin
         if clk_locked = '0' or nCOLDRST = '0' then
             dsp_rst_n_o <= '0';
         elsif rising_edge(dsp_clk) then
@@ -89,7 +89,7 @@ begin
         end if;
     end process;
 
-    process (dram_ref_clk) begin
+    process (dram_ref_clk, clk_locked, nCOLDRST) begin
         if clk_locked = '0' or nCOLDRST = '0' then
             dram_ref_rst_n_o <= '0';
         elsif rising_edge(dram_ref_clk) then
