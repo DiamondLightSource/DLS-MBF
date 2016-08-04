@@ -32,12 +32,7 @@ entity fmc500m_top is
         pll_dclkout2_o : out std_logic;
         pll_sdclkout3_o : out std_logic;
         pll_status_ld1_o : out std_logic;
-        pll_status_ld2_o : out std_logic;
-
-        -- Debug
-        debug_enable_o : out std_logic;
-        debug_trigger_o : out std_logic;
-        debug_capture_o : out std_logic_vector(63 downto 0)
+        pll_status_ld2_o : out std_logic
     );
 end;
 
@@ -257,27 +252,5 @@ begin
     pll_sdclkout3_o <= pll_sdclkout3;
     pll_status_ld1_o <= pll_status_ld1;
     pll_status_ld2_o <= pll_status_ld2;
-
-    -- Debug
-    debug_enable_o <= '1';
-    debug_trigger_o <= write_strobe_i;
-    debug_capture_o(31 downto 0) <= write_data_i;
-    debug_capture_o(39 downto 32) <= read_data(SPI_REG)(7 downto 0);
-    debug_capture_o(40) <= pll_spi_csn;
-    debug_capture_o(41) <= pll_spi_sclk;
-    debug_capture_o(42) <= pll_spi_sdi;
-    debug_capture_o(43) <= pll_spi_sdo;
-    debug_capture_o(44) <= adc_spi_csn;
-    debug_capture_o(45) <= adc_spi_sclk;
-    debug_capture_o(46) <= adc_spi_sdi;
-    debug_capture_o(47) <= adc_spi_sdo;
-    debug_capture_o(48) <= adc_spi_sdio_en;
-    debug_capture_o(49) <= dac_spi_csn;
-    debug_capture_o(50) <= dac_spi_sclk;
-    debug_capture_o(51) <= dac_spi_sdi;
-    debug_capture_o(52) <= dac_spi_sdo;
-    debug_capture_o(57 downto 53) <= power_control(4 downto 0);
-    debug_capture_o(60 downto 58) <= power_status(2 downto 0);
-    debug_capture_o(63 downto 61) <= "000";
 
 end;

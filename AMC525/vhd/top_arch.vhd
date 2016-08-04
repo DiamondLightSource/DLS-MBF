@@ -108,17 +108,13 @@ architecture top of top is
     constant MOD_DDR0_GEN : natural := 0;
     constant MOD_DIO : natural := 1;
     constant MOD_FMC500 : natural := 2;
-    constant MOD_DEBUG : natural := MOD_ADDR_COUNT-1;
     -- Assign the remaining space to random r/w registers for now
-    subtype RW_REGISTERS is natural range 3 to MOD_ADDR_COUNT-2;
+    subtype RW_REGISTERS is natural range 3 to MOD_ADDR_COUNT-1;
 
-    -- Register file and debug
+    -- Register file
     type reg_file_array_t is
         array(RW_REGISTERS) of reg_data_array_t(REG_ADDR_RANGE);
     signal register_file : reg_file_array_t;
-    signal debug_enable : std_logic;
-    signal debug_trigger : std_logic;
-    signal debug_capture : std_logic_vector(63 downto 0);
 
     -- Digitial IO inputs
     signal dio_inputs : std_logic_vector(4 downto 0);
@@ -432,11 +428,7 @@ begin
         pll_dclkout2_o => pll_dclkout2,
         pll_sdclkout3_o => pll_sdclkout3,
         pll_status_ld1_o => pll_status_ld1,
-        pll_status_ld2_o => pll_status_ld2,
-
-        debug_enable_o => debug_enable,
-        debug_trigger_o => debug_trigger,
-        debug_capture_o => debug_capture
+        pll_status_ld2_o => pll_status_ld2
     );
 
 
@@ -462,7 +454,7 @@ begin
     DSP_DDR1_wvalid <= '0';
 
 
-    -- General purpose r/w registers filling all but one module
+    -- General purpose r/w registers filling all unused modules
     gen_register_file : for n in RW_REGISTERS generate
         register_file_inst : entity work.register_file port map (
             clk_i => dsp_clk,
@@ -486,28 +478,7 @@ begin
         );
     end generate;
 
-
-    -- Debug for capturing reads.
-    debug_inst : entity work.debug generic map (
-        WIDTH => 64,
-        DEPTH => 1024
-    ) port map (
-        clk_i => dsp_clk,
-
-        capture_i => debug_capture,
-        enable_i  => debug_enable,
-        trigger_i => debug_trigger,
-
-        write_strobe_i => REGS_write_strobe(MOD_DEBUG),
-        write_address_i => REGS_write_address,
-        write_data_i => REGS_write_data,
-
-        read_strobe_i => REGS_read_strobe(MOD_DEBUG),
-        read_address_i => REGS_read_address,
-        read_data_o => REGS_read_data(MOD_DEBUG),
-        read_ack_o => REGS_read_ack(MOD_DEBUG)
-    );
-
+    -- Front panel LEDs on register 3:0
     uled_out <= register_file(3)(0)(3 downto 0);
     uled_inst : entity work.obuf_array generic map (
         COUNT => 4
@@ -516,6 +487,7 @@ begin
         o_o => ULED
     );
 
+    -- Interrupt events on register 3:1 and DDR0 capture
     INTR(0) <= DSP_DDR0_capture_enable;
     INTR(1) <= not DSP_DDR0_capture_enable;
     INTR(7 downto 2) <= register_file(3)(1)(7 downto 2);
