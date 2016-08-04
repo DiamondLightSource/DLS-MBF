@@ -22,6 +22,7 @@ entity memory_generator is
         write_strobe_i : in std_logic;
         write_address_i : in reg_addr_t;
         write_data_i : in reg_data_t;
+        write_ack_o : out std_logic;
 
         -- Interface to streaming AXI master
         capture_enable_o : out std_logic;
@@ -85,6 +86,7 @@ begin
         end if;
     end process;
 
+    write_ack_o <= '1';
     data_o <= data_pattern;
     data_valid_o <= '1';
     capture_enable_o <= to_std_logic(writing);

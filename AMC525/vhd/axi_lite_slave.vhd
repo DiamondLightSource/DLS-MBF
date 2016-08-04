@@ -104,7 +104,8 @@ entity axi_lite_slave is
         -- Internal write interface
         write_strobe_o : out mod_strobe_t;  -- Write select per module
         write_address_o : out reg_addr_t;   -- Shared write address and
-        write_data_o : out reg_data_t       --  data
+        write_data_o : out reg_data_t;      --  data
+        write_ack_i : in mod_strobe_t       -- Module write acknowledge
     );
 end;
 
@@ -157,6 +158,7 @@ architecture axi_lite_slave of axi_lite_slave is
     signal valid_write : std_logic;
 
     signal write_strobe : mod_strobe_t;
+    signal write_ack : std_logic;
 
 begin
 
@@ -206,6 +208,7 @@ begin
     -- ------------------------------------------------------------------------
     -- Write interface.
     write_strobe <= compute_strobe(write_module_address);
+    write_ack <= write_ack_i(write_module_address);
 
     process (rstn_i, clk_i) begin
         if rstn_i = '0' then
@@ -234,7 +237,9 @@ begin
 
                 when WRITE_WRITING =>
                     write_strobe_o <= (others => '0');
-                    write_state <= WRITE_DONE;
+                    if write_ack = '1' then
+                        write_state <= WRITE_DONE;
+                    end if;
 
                 when WRITE_DONE =>
                     -- Wait for master to accept our response

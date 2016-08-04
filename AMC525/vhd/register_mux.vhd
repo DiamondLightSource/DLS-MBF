@@ -25,8 +25,10 @@ entity register_mux is
         -- Register write.
         write_strobe_i : in std_logic;
         write_address_i : in reg_addr_t;
+        write_ack_o : out std_logic;
 
-        write_strobe_o : out reg_strobe_t
+        write_strobe_o : out reg_strobe_t;
+        write_ack_i : in reg_strobe_t
     );
 end;
 
@@ -35,11 +37,12 @@ architecture register_mux of register_mux is
     signal write_address : natural;
 
 begin
-    read_address  <= to_integer(read_address_i);
-    write_address <= to_integer(write_address_i);
-
+    read_address <= to_integer(read_address_i);
     read_data_o <= read_data_i(read_address);
     read_ack_o  <= read_ack_i(read_address);
+
+    write_address <= to_integer(write_address_i);
+    write_ack_o <= write_ack_i(write_address);
 
     gen_strobe :
     for i in REG_ADDR_RANGE generate

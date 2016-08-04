@@ -21,6 +21,7 @@ entity fmc500m_top is
         write_strobe_i : in std_logic;
         write_address_i : in reg_addr_t;
         write_data_i : in reg_data_t;
+        write_ack_o : out std_logic;
         --
         read_strobe_i : in std_logic;
         read_address_i : in reg_addr_t;
@@ -202,6 +203,8 @@ begin
         write_strobe_i => write_strobe_i,
         write_address_i => write_address_i,
         write_strobe_o => write_strobes,
+        write_ack_i => (others => '1'),
+        write_ack_o => write_ack_o,
         read_strobe_i => read_strobe_i,
         read_address_i => read_address_i,
         read_data_o => read_data_o,

@@ -102,6 +102,7 @@ architecture top of top is
     signal REGS_write_strobe : mod_strobe_t;
     signal REGS_write_address : reg_addr_t;
     signal REGS_write_data : reg_data_t;
+    signal REGS_write_ack : mod_strobe_t;
 
     -- Some register file assignments
     constant MOD_DDR0_GEN : natural := 0;
@@ -316,7 +317,8 @@ begin
         -- Internal write interface
         write_strobe_o => REGS_write_strobe,
         write_address_o => REGS_write_address,
-        write_data_o => REGS_write_data
+        write_data_o => REGS_write_data,
+        write_ack_i => REGS_write_ack
     );
 
 
@@ -421,6 +423,7 @@ begin
         write_strobe_i => REGS_write_strobe(MOD_FMC500),
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
+        write_ack_o => REGS_write_ack(MOD_FMC500),
         read_strobe_i => REGS_read_strobe(MOD_FMC500),
         read_address_i => REGS_read_address,
         read_data_o => REGS_read_data(MOD_FMC500),
@@ -467,6 +470,7 @@ begin
             write_strobe_i => REGS_write_strobe(n),
             write_address_i => REGS_write_address,
             write_data_i => REGS_write_data,
+            write_ack_o => REGS_write_ack(n),
 
             register_data_o => register_file(n)
         );
