@@ -169,7 +169,7 @@ begin
 
     -- The ADC data clock (edge synchronous with data) will be used as our data
     -- processing clock throughout the system.
-    adc_dco_inst : entity work.ibufgds_array port map (
+    adc_dco_inst : entity work.ibufds_array port map (
         p_i(0) => FMC_LA_P(0),      n_i(0) => FMC_LA_N(0),
         o_o(0) => adc_dco_o
     );

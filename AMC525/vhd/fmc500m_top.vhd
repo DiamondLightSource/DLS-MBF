@@ -10,6 +10,8 @@ use work.defines.all;
 entity fmc500m_top is
     port (
         axi_clk_i : in std_logic;
+        ref_clk_i : in std_logic;
+        ref_clk_ok_i : in std_logic;
 
         -- FMC
         FMC_LA_P : inout std_logic_vector(0 to 33);
@@ -37,7 +39,9 @@ entity fmc500m_top is
 end;
 
 architecture fmc500m_top of fmc500m_top is
+    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     -- Signal interfaces to IO.
+
     -- PLL
     signal pll_spi_csn : std_logic;
     signal pll_spi_sclk : std_logic;
@@ -85,8 +89,24 @@ architecture fmc500m_top of fmc500m_top is
     signal ext_trig : std_logic;
     signal temp_alert : std_logic;
 
+    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    -- ADC input and control
+    signal adc_clk : std_logic;
+    signal dsp_clk : std_logic;
+    signal dsp_clk_ok : std_logic;
+    signal adc_data_a : std_logic_vector(13 downto 0);
+    signal adc_data_b : std_logic_vector(13 downto 0);
+
+    signal ADC_write_strobe : std_logic;
+    signal ADC_write_ack : std_logic;
+    signal ADC_read_strobe : std_logic;
+    signal ADC_read_data : reg_data_t;
+    signal ADC_read_ack : std_logic;
+
     -- Register interface
     signal write_strobes : reg_strobe_t;
+    signal write_acks : reg_strobe_t;
     signal read_strobes : reg_strobe_t;
     signal read_acks : reg_strobe_t;
     signal read_data : reg_data_array_t(REG_ADDR_RANGE);
@@ -94,7 +114,8 @@ architecture fmc500m_top of fmc500m_top is
     constant SPI_REG : natural := 0;
     constant PWR_REG : natural := 1;
     constant STA_REG : natural := 2;
-    subtype UNUSED_REGS is natural range 3 to REG_ADDR_COUNT-1;
+    constant ADC_REG : natural := 3;
+    subtype UNUSED_REGS is natural range 4 to REG_ADDR_COUNT-1;
 
     signal power_control : reg_data_t;
     signal power_status : reg_data_t;
@@ -193,12 +214,36 @@ begin
     );
 
 
+    -- ADC input
+    fmc500m_adc_inst : entity work.fmc500m_adc port map (
+        ref_clk_i => ref_clk_i,
+        ref_clk_ok_i => ref_clk_ok_i,
+
+        write_strobe_i => ADC_write_strobe,
+        write_data_i => write_data_i,
+        write_ack_o => ADC_write_ack,
+        read_strobe_i => ADC_read_strobe,
+        read_data_o => ADC_read_data,
+        read_ack_o => ADC_read_ack,
+
+        adc_dco_i => adc_dco,
+        adc_data_i => adc_data,
+
+        adc_clk_o => adc_clk,
+        dsp_clk_o => dsp_clk,
+        dsp_clk_ok_o => dsp_clk_ok,
+
+        adc_data_a_o => adc_data_a,
+        adc_data_b_o => adc_data_b
+    );
+
+
     -- Top level register control
     register_mux_inst : entity work.register_mux port map (
         write_strobe_i => write_strobe_i,
         write_address_i => write_address_i,
         write_strobe_o => write_strobes,
-        write_ack_i => (others => '1'),
+        write_ack_i => write_acks,
         write_ack_o => write_ack_o,
         read_strobe_i => read_strobe_i,
         read_address_i => read_address_i,
@@ -218,13 +263,35 @@ begin
     );
 
     read_acks(PWR_REG) <= '1';
+    write_acks(PWR_REG) <= '1';
     read_data(PWR_REG) <= power_control;
 
     read_acks(STA_REG) <= '1';
+    write_acks(STA_REG) <= '1';
     read_data(STA_REG) <= power_status;
+
+    -- Clock domain crossing for ADC register control
+    adc_register_inst : entity work.register_cc port map (
+        axi_clk_i => axi_clk_i,
+        dsp_clk_i => ref_clk_i,
+        dsp_rst_n_i => ref_clk_ok_i,
+
+        axi_write_strobe_i => write_strobes(ADC_REG),
+        axi_write_ack_o => write_acks(ADC_REG),
+        dsp_write_strobe_o => ADC_write_strobe,
+        dsp_write_ack_i => ADC_write_ack,
+
+        axi_read_strobe_i => read_strobes(ADC_REG),
+        axi_read_data_o => read_data(ADC_REG),
+        axi_read_ack_o => read_acks(ADC_REG),
+        dsp_read_strobe_o => ADC_read_strobe,
+        dsp_read_data_i => ADC_read_data,
+        dsp_read_ack_i => ADC_read_ack
+    );
 
     -- Unused registers
     read_acks(UNUSED_REGS) <= (others => '1');
+    write_acks(UNUSED_REGS) <= (others => '1');
     read_data(UNUSED_REGS) <= (others => (others => '0'));
 
 

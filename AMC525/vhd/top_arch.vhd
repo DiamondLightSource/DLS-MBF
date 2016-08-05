@@ -443,6 +443,8 @@ begin
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
         axi_clk_i => axi_clk,
+        ref_clk_i => dram_ref_clk,
+        ref_clk_ok_i => dram_ref_rst_n,
 
         FMC_LA_P => FMC1_LA_P,
         FMC_LA_N => FMC1_LA_N,

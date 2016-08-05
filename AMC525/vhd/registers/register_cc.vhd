@@ -14,8 +14,8 @@ entity register_cc is
     port (
         -- Clocks
         axi_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        dsp_rst_n_i : in std_logic;
+        dsp_clk_i : in std_logic;       -- rename to reg_clk
+        dsp_rst_n_i : in std_logic;     -- rename to reg_clk_ok
 
         -- Write interface
         axi_write_strobe_i : in std_logic;

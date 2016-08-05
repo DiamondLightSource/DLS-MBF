@@ -35,8 +35,8 @@ report_timing_summary -file reports/post_synth_timing_summary.rpt
 # run placement and logic optimzation, report utilization and timing estimates,
 #
 opt_design
-# place_design
-place_design -directive ExtraTimingOpt
+place_design
+# place_design -directive ExtraTimingOpt
 phys_opt_design
 write_checkpoint -force checkpoints/post_place
 report_timing_summary -file reports/post_place_timing_summary.rpt
