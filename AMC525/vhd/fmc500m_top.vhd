@@ -192,6 +192,7 @@ begin
         -- Register control
         write_strobe_i => write_strobes(SPI_REG),
         write_data_i => write_data_i,
+        write_ack_o => write_acks(SPI_REG),
         read_strobe_i => read_strobes(SPI_REG),
         read_data_o => read_data(SPI_REG),
         read_ack_o => read_acks(SPI_REG),

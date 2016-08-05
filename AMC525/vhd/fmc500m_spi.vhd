@@ -31,6 +31,7 @@ entity fmc500m_spi is
         -- Register control
         write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
+        write_ack_o : out std_logic;
         --
         read_strobe_i : in std_logic;
         read_data_o : out reg_data_t;
@@ -129,6 +130,7 @@ begin
             end if;
         end if;
     end process;
+    write_ack_o <= '1';
 
 
     -- Reading needs to block while busy.
