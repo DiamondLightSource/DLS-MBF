@@ -83,6 +83,10 @@ package support is
     -- Helper function for extracting sign bit for data
     function sign_bit(data : signed) return std_logic;
 
+    -- Sign extend a std_logic_vector
+    function sign_extend(data : std_logic_vector; width : natural)
+        return std_logic_vector;
+
 
     -- Vectorised functions for mapping logic operations over bit arrays
     function vector_and(data : std_logic_vector) return std_logic;
@@ -261,6 +265,12 @@ package body support is
     function sign_bit(data : signed) return std_logic is
     begin
         return data(data'left);
+    end;
+
+    function sign_extend(data : std_logic_vector; width : natural)
+        return std_logic_vector is
+    begin
+        return std_logic_vector(resize(signed(data), width));
     end;
 
     function vector_and(data : std_logic_vector) return std_logic is

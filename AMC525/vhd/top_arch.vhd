@@ -11,10 +11,11 @@ use work.defines.all;
 architecture top of top is
     -- Clocking and reset resources
     signal fclka : std_logic;
+    signal adc_clk : std_logic;
     signal dsp_clk : std_logic;
-    signal dsp_rst_n : std_logic;
-    signal dram_ref_clk : std_logic;
-    signal dram_ref_rst_n : std_logic;
+    signal dsp_clk_ok : std_logic;
+    signal ref_clk : std_logic;
+    signal ref_clk_ok : std_logic;
     signal axi_clk : std_logic;
     signal axi_rst_n : std_logic;
 
@@ -134,6 +135,10 @@ architecture top of top is
     signal pll_status_ld1 : std_logic;
     signal pll_status_ld2 : std_logic;
 
+    -- ADC data
+    signal adc_data_a : std_logic_vector(13 downto 0);
+    signal adc_data_b : std_logic_vector(13 downto 0);
+
 begin
     -- Reset in.
     ncoldrst_inst : entity work.ibuf_array port map (
@@ -150,15 +155,13 @@ begin
         clk_o => fclka
     );
 
-    -- Dummy DSP 250 MHz clock
-    dsp_clock_inst : entity work.dsp_clock port map (
+    -- 200 MHz timing reference clock
+    ref_clock_inst : entity work.ref_clock port map (
         CLK125MHZ0_P => CLK125MHZ0_P,
         CLK125MHZ0_N => CLK125MHZ0_N,
         nCOLDRST => n_coldrst_in,
-        dsp_clk_o => dsp_clk,
-        dsp_rst_n_o => dsp_rst_n,
-        dram_ref_clk_o => dram_ref_clk,
-        dram_ref_rst_n_o => dram_ref_rst_n
+        ref_clk_o => ref_clk,
+        ref_clk_ok_o => ref_clk_ok
     );
 
 
@@ -217,8 +220,8 @@ begin
         CLK533MHZ0_clk_n => CLK533MHZ0_N,
 
         -- Reference timing clock for DDR3 controller
-        CLK200MHZ => dram_ref_clk,
-        CLK200MHZ_RSTN => dram_ref_rst_n,
+        CLK200MHZ => ref_clk,
+        CLK200MHZ_RSTN => ref_clk_ok,
 
         -- AXI-Lite register master interface
         M_DSP_REGS_araddr => DSP_REGS_araddr,
@@ -285,7 +288,7 @@ begin
 
         -- DSP interface clock, running at half RF frequency
         DSP_CLK => dsp_clk,
-        DSP_RESETN => dsp_rst_n
+        DSP_RESETN => dsp_clk_ok
     );
 
 
@@ -336,7 +339,7 @@ begin
         BURST_LENGTH => 32
     ) port map (
         clk_i => dsp_clk,
-        rstn_i => dsp_rst_n,
+        rstn_i => dsp_clk_ok,
 
         -- AXI write master
         awaddr_o => DSP_DDR0_awaddr,
@@ -372,24 +375,51 @@ begin
         brsp_error_o => DSP_DDR0_brsp_error
     );
 
-    -- Pattern generator for burst generator
-    memory_generator_inst : entity work.memory_generator port map (
-        clk_i => dsp_clk,
+--     -- Pattern generator for burst generator
+--     memory_generator_inst : entity work.memory_generator port map (
+--         clk_i => dsp_clk,
+-- 
+--         write_strobe_i => DDR0_GEN_write_strobe,
+--         write_address_i => REGS_write_address,
+--         write_data_i => REGS_write_data,
+--         write_ack_o => DDR0_GEN_write_ack,
+-- 
+--         read_strobe_i => DDR0_GEN_read_strobe,
+--         read_address_i => REGS_read_address,
+--         read_data_o => DDR0_GEN_read_data,
+--         read_ack_o => DDR0_GEN_read_ack,
+-- 
+--         capture_enable_o => DSP_DDR0_capture_enable,
+--         data_ready_i => DSP_DDR0_data_ready,
+--         data_o => DSP_DDR0_data,
+--         data_valid_o => DSP_DDR0_data_valid,
+--         data_error_i => DSP_DDR0_data_error,
+--         addr_error_i => DSP_DDR0_addr_error,
+--         brsp_error_i => DSP_DDR0_brsp_error
+--     );
+
+    -- ADC to DRAM capture
+    adc_capture_inst : entity work.adc_dram_capture port map (
+        adc_clk_i => adc_clk,
+        dsp_clk_i => dsp_clk,
 
         write_strobe_i => DDR0_GEN_write_strobe,
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
         write_ack_o => DDR0_GEN_write_ack,
-
         read_strobe_i => DDR0_GEN_read_strobe,
         read_address_i => REGS_read_address,
         read_data_o => DDR0_GEN_read_data,
         read_ack_o => DDR0_GEN_read_ack,
 
+        adc_data_a_i => adc_data_a,
+        adc_data_b_i => adc_data_b,
+
         capture_enable_o => DSP_DDR0_capture_enable,
         data_ready_i => DSP_DDR0_data_ready,
         data_o => DSP_DDR0_data,
         data_valid_o => DSP_DDR0_data_valid,
+        capture_address_i => DSP_DDR0_capture_address,
         data_error_i => DSP_DDR0_data_error,
         addr_error_i => DSP_DDR0_addr_error,
         brsp_error_i => DSP_DDR0_brsp_error
@@ -399,7 +429,7 @@ begin
     memory_generatory_cc_inst : entity work.register_cc port map (
         axi_clk_i => axi_clk,
         dsp_clk_i => dsp_clk,
-        dsp_rst_n_i => dsp_rst_n,
+        dsp_rst_n_i => dsp_clk_ok,
 
         axi_write_strobe_i => REGS_write_strobe(MOD_DDR0_GEN),
         axi_write_ack_o => REGS_write_ack(MOD_DDR0_GEN),
@@ -443,8 +473,8 @@ begin
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
         axi_clk_i => axi_clk,
-        ref_clk_i => dram_ref_clk,
-        ref_clk_ok_i => dram_ref_rst_n,
+        ref_clk_i => ref_clk,
+        ref_clk_ok_i => ref_clk_ok,
 
         FMC_LA_P => FMC1_LA_P,
         FMC_LA_N => FMC1_LA_N,
@@ -459,6 +489,12 @@ begin
         read_address_i => REGS_read_address,
         read_data_o => REGS_read_data(MOD_FMC500),
         read_ack_o => REGS_read_ack(MOD_FMC500),
+
+        adc_clk_o => adc_clk,
+        dsp_clk_o => dsp_clk,
+        dsp_clk_ok_o => dsp_clk_ok,
+        adc_data_a_o => adc_data_a,
+        adc_data_b_o => adc_data_b,
 
         pll_dclkout2_o => pll_dclkout2,
         pll_sdclkout3_o => pll_sdclkout3,

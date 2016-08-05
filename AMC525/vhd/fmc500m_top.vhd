@@ -30,6 +30,13 @@ entity fmc500m_top is
         read_data_o : out reg_data_t;
         read_ack_o : out std_logic;
 
+        -- ADC clock and data
+        adc_clk_o : out std_logic;
+        dsp_clk_o : out std_logic;
+        dsp_clk_ok_o : out std_logic;
+        adc_data_a_o : out std_logic_vector(13 downto 0);
+        adc_data_b_o : out std_logic_vector(13 downto 0);
+
         -- Other signals
         pll_dclkout2_o : out std_logic;
         pll_sdclkout3_o : out std_logic;
@@ -92,12 +99,6 @@ architecture fmc500m_top of fmc500m_top is
     -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     -- ADC input and control
-    signal adc_clk : std_logic;
-    signal dsp_clk : std_logic;
-    signal dsp_clk_ok : std_logic;
-    signal adc_data_a : std_logic_vector(13 downto 0);
-    signal adc_data_b : std_logic_vector(13 downto 0);
-
     signal ADC_write_strobe : std_logic;
     signal ADC_write_ack : std_logic;
     signal ADC_read_strobe : std_logic;
@@ -229,12 +230,12 @@ begin
         adc_dco_i => adc_dco,
         adc_data_i => adc_data,
 
-        adc_clk_o => adc_clk,
-        dsp_clk_o => dsp_clk,
-        dsp_clk_ok_o => dsp_clk_ok,
+        adc_clk_o => adc_clk_o,
+        dsp_clk_o => dsp_clk_o,
+        dsp_clk_ok_o => dsp_clk_ok_o,
 
-        adc_data_a_o => adc_data_a,
-        adc_data_b_o => adc_data_b
+        adc_data_a_o => adc_data_a_o,
+        adc_data_b_o => adc_data_b_o
     );
 
 

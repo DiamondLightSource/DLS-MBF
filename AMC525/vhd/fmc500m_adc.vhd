@@ -54,7 +54,8 @@ architecture fmc500m_adc of fmc500m_adc is
     signal ref_clk_reset : std_logic;
 
     -- PLL
-    signal clk_fb : std_logic;
+    signal pll_fb_out : std_logic;
+    signal pll_fb_buf : std_logic;
     signal pll_adc_clk : std_logic;
     signal pll_dsp_clk : std_logic;
     signal pll_locked : std_logic;
@@ -120,25 +121,26 @@ begin
         LDPIPEEN => '0'
     );
 
---     ref_clk_reset <= not ref_clk_ok_i;
---     idelayctrl_inst : IDELAYCTRL port map (
---         REFCLK => ref_clk_i,
---         RST => ref_clk_reset,
---         RDY => open
---     );
+    ref_clk_reset <= not ref_clk_ok_i;
+    idelayctrl_inst : IDELAYCTRL port map (
+        REFCLK => ref_clk_i,
+        RST => ref_clk_reset,
+        RDY => open
+    );
 
 
     -- PLL
-    -- Note: internal PLL must run at frequency in range 800MHz..1.86GHz
     adc_clk_pll_inst : PLLE2_BASE generic map (
+        -- Parameters from Clocking Wizard
         CLKIN1_PERIOD => 2.0,   -- 2ns period for 500 MHz input clock
-        CLKFBOUT_MULT => 2,     -- PLL runs at 1000 MHz
-        CLKOUT0_DIVIDE => 1,    -- ADC clock at 500 MHz
-        CLKOUT1_DIVIDE => 2     -- DSP clock at 500 MHz
+        CLKFBOUT_MULT => 4,     -- PLL runs at 1000 MHz
+        DIVCLK_DIVIDE => 2,
+        CLKOUT0_DIVIDE => 2,    -- ADC clock at 500 MHz
+        CLKOUT1_DIVIDE => 4     -- DSP clock at 250 MHz
     ) port map (
         -- Inputs
         CLKIN1  => adc_dco_delay,
-        CLKFBIN => clk_fb,
+        CLKFBIN => pll_fb_buf,
         RST     => pll_reset,
         PWRDWN  => '0',
         -- Outputs
@@ -148,8 +150,12 @@ begin
         CLKOUT3 => open,
         CLKOUT4 => open,
         CLKOUT5 => open,
-        CLKFBOUT => clk_fb,
+        CLKFBOUT => pll_fb_out,
         LOCKED  => pll_locked
+    );
+    pll_bufg_inst : BUFG port map (
+        I => pll_fb_out,
+        O => pll_fb_buf
     );
     adc_bufg_inst : BUFG port map (
         I => pll_adc_clk,
