@@ -17,6 +17,9 @@ while (control[0] & 2) == 0:
 ADC[0] = 0x81
 time.sleep(0.005)
 
+# 100 Ohm input termination
+ADC[0x016] = 0x2C
+
 # Configure settings for DC to 250MHz input, as described in table 9, page 26.
 ADC[0x018] = 0x20               # 2.0x buffer current
 ADC[0x025] = 0x0C               # 2.06 V p-p
