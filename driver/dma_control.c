@@ -16,6 +16,14 @@ static int dma_block_shift = DMA_BLOCK_SHIFT;
 module_param(dma_block_shift, int, S_IRUGO);
 
 
+/* All DMA transfers must occur on a 32-byte alignment, I guess this is the
+ * 256-bit transfer size.  Alas, if this rule is violated then the DMA engine
+ * simply locks up without reporting an error. */
+#define DMA_ALIGNMENT       32
+/* The DMA transfer count is limited to 23 bits, so the maximum transfer size is
+ * 2^23-1 = 8388607 bytes, and we align the limit. */
+#define MAX_DMA_TRANSFER    (((1 << 23) - 1) & ~(DMA_ALIGNMENT - 1))
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -97,7 +105,10 @@ static void reset_dma_controller(struct dma_control *dma)
 static void maybe_reset_dma(struct dma_control *dma)
 {
     uint32_t status = readl(&dma->regs->cdmasr);
-    if (status & (CDMASR_DMADecErr | CDMASR_DMASlvErr | CDMASR_DMAIntErr))
+    bool error =
+        status & (CDMASR_DMADecErr | CDMASR_DMASlvErr | CDMASR_DMAIntErr);
+    bool idle = status & CDMASR_Idle;
+    if (error || !idle)
     {
         printk(KERN_INFO "Forcing reset of DMA controller\n");
         reset_dma_controller(dma);
@@ -118,12 +129,28 @@ void dma_interrupt(struct dma_control *dma)
 ssize_t read_dma_memory(
     struct dma_control *dma, size_t start, size_t count, void **buffer)
 {
+    /* Adjust the dma start and byte count to be multiples of the alignment so
+     * that we don't upset the DMA engine. */
+    size_t align_mask_low = DMA_ALIGNMENT - 1;
+    size_t align_mask_high = ~align_mask_low;
+    size_t dma_start = start & align_mask_high;
+    size_t start_offset = start & align_mask_low;
+    /* For the count we have to add in the starting offset we've missed and
+     * ensure that the entire transfer is rounded up. */
+    size_t dma_count =
+        (start_offset + count + align_mask_low) & align_mask_high;
+
     /* Ensure we only try to read as much as will fit in our buffer. */
-    if (count > dma->buffer_size)
-        count = dma->buffer_size;
+    size_t max_count = dma->buffer_size < MAX_DMA_TRANSFER ?
+        dma->buffer_size : MAX_DMA_TRANSFER;
+    if (dma_count > max_count)
+    {
+        dma_count = max_count;
+        count = dma_count - start_offset;
+    }
 
     mutex_lock(&dma->mutex);
-    *buffer = dma->buffer;
+    *buffer = dma->buffer + start_offset;
 
     /* Hand the buffer over to the DMA engine. */
     pci_dma_sync_single_for_device(
@@ -133,12 +160,17 @@ ssize_t read_dma_memory(
     maybe_reset_dma(dma);
 
     /* Configure the engine for transfer. */
-    writel((uint32_t) start, &dma->regs->sa);
+    writel((uint32_t) dma_start, &dma->regs->sa);
     writel((uint32_t) dma->buffer_dma, &dma->regs->da);
     writel((uint32_t) (dma->buffer_dma >> 32), &dma->regs->da_msb);
-    writel(count, &dma->regs->btt);
+    /* Ensure we don't request an under sized buffer. */
+    writel(dma_count, &dma->regs->btt);
 
-    /* Wait for transfer to complete.  If we're killed, unlock and bail. */
+    /* Wait for transfer to complete.  If we're killed, unlock and bail.  Note
+     * that this call is only killable (kill -9) and not interruptible because
+     * if the DMA engine does fail to complete then we have a bit of a problem
+     * anyway, and if this completion were to be interrupted normally there
+     * would be a hazard from the residual DMA in progress. */
     ssize_t rc = wait_for_completion_killable(&dma->dma_done);
     TEST_RC(rc, killed, "DMA transfer killed");
 
