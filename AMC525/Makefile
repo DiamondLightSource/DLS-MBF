@@ -18,6 +18,7 @@ RUN_VIVADO = source $(VIVADO) && vivado
 BUILT_FILES += built/top_entity.vhd
 
 SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)
+SOURCES += $(wildcard $(SRCDIR)/vhd/*/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/constr/*)
 
 INTERCONNECT_BD = interconnect/interconnect.bd
