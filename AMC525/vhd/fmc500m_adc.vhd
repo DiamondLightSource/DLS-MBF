@@ -170,7 +170,7 @@ begin
     pll_locked_inst : entity work.sync_reset port map (
         clk_i => dsp_clk,
         clk_ok_i => pll_locked,
-        sync_clk_ok_o => dsp_clk_ok_o
+        sync_clk_ok_o => dsp_clk_ok
     );
 
     -- On request we force the PLL into reset for the duration of our counter.
