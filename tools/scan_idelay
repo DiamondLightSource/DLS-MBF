@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import driver
+from driver import REGS, ADC
+import numpy
+
+# Configure checkerboard ADC capture
+ADC[0x550] = 4
+
+def capture(count = 1024):
+    # Each counted capture corresponds to 8 captured bytes
+    bytes = 8 * count
+    REGS[0, 4] = count
+    with open(driver.DDR0_NAME) as ddr0:
+        buf = numpy.frombuffer(ddr0.read(bytes), dtype = numpy.uint16)
+    return buf.reshape((-1, 2, 2))
+
+for delay in range(32):
+    REGS[2, 3] = 0x100 + delay
+    c = capture(1024*1024)
+    m = c.std(0).mean()
+    print delay, m
