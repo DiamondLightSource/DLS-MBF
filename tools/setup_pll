@@ -185,14 +185,13 @@ class Settings(SettingsBase):
 
 
 # To bypass all the above and pass CLKin1 straight through to clock path:
-#     CLKin1_OUT_MUX = 0          # Fin internal path
-#     VCO_MUX = 2                 # Use CLKin1 as output
-#     out10_11.DCLK_MUX = 2
+    CLKin1_OUT_MUX = 0          # Fin internal path
+    VCO_MUX = 2                 # Use CLKin1 as output
+    out10_11.DCLK_MUX = 2
+    out12_13.DCLK_MUX = 2
+    out10_11.DCLK_DIV = 1         # 
+    out12_13.DCLK_DIV = 1         # 
 
 
 s = Settings(PLL)
 s.write_config()
-
-# s.SYNC_POL = 1
-# s.SYNC_POL = 0
-# s.SYSREF_CLR = 0

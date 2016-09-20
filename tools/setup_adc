@@ -33,7 +33,14 @@ assert ADC[0x11c] == 1, 'No clock detected'
 #   04  alternating checkerboard (1555/2AAA)
 #   07  Alternating 0000/3FFF
 #   0F  ramp output
-ADC[0x550] = 0x04
+ADC[0x550] = 0x00
 
 # Configure dual converter parallel interleaved output mode
 ADC[0x568] = 0x01               # parallel interleaved mode (two converters)
+
+
+# # Set up data capture from ADC
+# ./reg 0 5 1
+# # Configure best idelay
+# ./reg 2 3 0x112
+REGS[0, 5] = 1

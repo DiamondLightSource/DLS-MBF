@@ -94,6 +94,7 @@ R/W 2, 3    Increment for data pattern
 R   4, 5, 6 Data transfer error counters, should NEVER be non zero!
 R   7[0]    Set to 1 during writing
 R   7[1]    Set to 1 if ADC data selected, 0 if pattern data selected
+R   8       Current capture address for writing to DRAM
 
 W   4       When written triggers write of selected number of 64-bit transfers
 W   5[0]    Write 1 for ADC capture
@@ -175,3 +176,30 @@ Capture is triggered by writing the capture length to 0:4:
 A length of 0xFFFFFFE will fill the entire 2GB buffer.
 
 Data can be read out by reading /dev/amc525_lmbf.0.ddr0
+
+
+A note on the ADC clock
+-----------------------
+
+If the clock changes externally then the internal PLL will unlock and will need
+to be manually reset.  The clock unlock status will show in bit 2:3[31] (run
+command `./reg 2 3`) and can be reset by setting the same bit (run command
+`./reg 2 3 0x80000000`).
+
+The easiest way to configure the PLL for passthrough is to uncomment the three
+labelled lines near the bottom of setup_pll.
+
+
+BUGS
+----
+
+There's something wrong about how the first 256 bytes are written.  I think
+there are two bugs here:
+
+1. It looks as if writes start at offset 0x100, not 0 ... how can that have
+changed?  It certainly used to work!
+
+2. Something seems to go wrong with the last burst ... but I can't reliably
+reproduce it, it seems that the behaviour changes subtly.
+
+I'm inclined to fear a timing error as well as a logic error.  Ho hum.

@@ -18,7 +18,7 @@ if len(args) == 1:
 elif len(args) == 2:
     # Read one register
     val = bank[args[1]]
-    print '%d => %08X (%d)' % (args[1], val, val)
+    print '%d:%d => %08X (%d)' % (args[0], args[1], val, val)
 elif len(args) == 3:
     # Write one register
     bank[args[1]] = args[2]
