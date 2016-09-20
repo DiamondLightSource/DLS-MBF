@@ -7,10 +7,10 @@ set bench_dir $env(BENCH_DIR)
 vcom -64 -93 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
-    $vhd_dir/dlyline.vhd \
-    $vhd_dir/edge_detect.vhd \
+    $vhd_dir/util/dlyline.vhd \
+    $vhd_dir/util/edge_detect.vhd \
     $vhd_dir/axi_burst_master.vhd \
-    $vhd_dir/memory_generator.vhd
+    $vhd_dir/adc_dram_capture.vhd
 
 # The test bench
 vcom -64 -93 -work xil_defaultlib \
@@ -32,8 +32,7 @@ vsim -t 1ps \
 view wave
 
 add wave -group "Top" sim:*
-add wave -group "Mem Gen" sim:/interconnect_tb/memory_generator_inst/*
-# add wave -group "Master" sim:/interconnect_tb/axi_burst_master_inst/*
+add wave -group "ADC Mem" sim:/interconnect_tb/adc_dram_capture_inst/*
 add wave sim:/interconnect_tb/axi_burst_master_inst/*
 
 run 1us

@@ -84,6 +84,7 @@ begin
                 when '1' =>
                     adc_data(47 downto 32) <= sign_extend(adc_data_a, 16);
                     adc_data(63 downto 48) <= sign_extend(adc_data_b, 16);
+                when others =>  -- Simulation only!
             end case;
         end if;
     end process;
@@ -129,6 +130,7 @@ begin
             case select_adc_data is
                 when '0' => data_o <= data_pattern;
                 when '1' => data_o <= adc_data_pl;
+                when others =>  -- Simulation only!
             end case;
         end if;
     end process;

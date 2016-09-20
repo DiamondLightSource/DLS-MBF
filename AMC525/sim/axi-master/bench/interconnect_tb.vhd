@@ -61,8 +61,12 @@ architecture STRUCTURE of interconnect_tb is
     signal DSP_DDR0_wstrb : STD_LOGIC_VECTOR ( 7 downto 0 );
     signal DSP_DDR0_wvalid : STD_LOGIC;
 
+    signal adc_clk : STD_LOGIC := '0';
     signal dsp_clk : STD_LOGIC := '0';
     signal dsp_reset_n : STD_LOGIC := '0';
+
+    signal adc_data_a : unsigned(13 downto 0) := to_unsigned(0, 14);
+    signal adc_data_b : unsigned(13 downto 0) := to_unsigned(0, 14);
 
     -- Data from DSP to burst master
     signal DSP_DDR0_capture_enable : std_logic;
@@ -113,7 +117,10 @@ architecture STRUCTURE of interconnect_tb is
 begin
 
     dsp_reset_n <= '1' after 50 ns;
+    adc_clk <= not adc_clk after 1 ns;
     dsp_clk <= not dsp_clk after 2 ns;
+    adc_data_a <= adc_data_a + 1 after 2 ns;
+    adc_data_b <= adc_data_b + 1 after 2 ns;
 
     DSP_DDR0_arvalid <= '0';
     DSP_DDR0_rready <= '1';
@@ -204,22 +211,28 @@ begin
     );
 
     -- Pattern generator for burst generator
-    memory_generator_inst : entity work.memory_generator port map (
-        clk_i => dsp_clk,
+    adc_dram_capture_inst : entity work.adc_dram_capture port map (
+        adc_clk_i => adc_clk,
+        dsp_clk_i => dsp_clk,
 
         write_strobe_i => REGS_write_strobe,
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
+        write_ack_o => open,
 
         read_strobe_i => '0',
         read_address_i => (others => '0'),
         read_data_o => open,
         read_ack_o => open,
 
+        adc_data_a_i => std_logic_vector(adc_data_a),
+        adc_data_b_i => std_logic_vector(adc_data_b),
+
         capture_enable_o => DSP_DDR0_capture_enable,
         data_ready_i => DSP_DDR0_data_ready,
         data_o => DSP_DDR0_data,
         data_valid_o => open,
+        capture_address_i => DSP_DDR0_capture_address,
 
         data_error_i => DSP_DDR0_data_error,
         addr_error_i => DSP_DDR0_addr_error,
