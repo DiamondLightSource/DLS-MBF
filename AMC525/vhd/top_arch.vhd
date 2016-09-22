@@ -16,8 +16,8 @@ architecture top of top is
     signal dsp_clk_ok : std_logic;
     signal ref_clk : std_logic;
     signal ref_clk_ok : std_logic;
-    signal axi_clk : std_logic;
-    signal axi_rst_n : std_logic;
+    signal reg_clk : std_logic;
+    signal reg_clk_ok : std_logic;
 
     signal n_coldrst_in : std_logic;
     signal uled_out : std_logic_vector(3 downto 0);
@@ -156,12 +156,14 @@ begin
     );
 
     -- 200 MHz timing reference clock
-    ref_clock_inst : entity work.ref_clock port map (
+    clocking_inst : entity work.ref_clock port map (
         CLK125MHZ0_P => CLK125MHZ0_P,
         CLK125MHZ0_N => CLK125MHZ0_N,
         nCOLDRST => n_coldrst_in,
         ref_clk_o => ref_clk,
-        ref_clk_ok_o => ref_clk_ok
+        ref_clk_ok_o => ref_clk_ok,
+        reg_clk_o => reg_clk,
+        reg_clk_ok_o => reg_clk_ok
     );
 
 
@@ -172,9 +174,9 @@ begin
         -- Interrupt interface
         INTR => INTR,
 
-        -- AXI clocking for register interface
-        AXI_CLK => axi_clk,
-        AXI_RSTn => axi_rst_n,
+        -- Clocking for register interface
+        REG_CLK => reg_clk,
+        REG_RESETn => reg_clk_ok,
 
         -- MTCA Backplane PCI Express interface
         pcie_mgt_rxn => AMC_RX_N,
@@ -294,8 +296,8 @@ begin
 
     -- Register AXI slave interface
     axi_lite_slave_inst : entity work.axi_lite_slave port map (
-        clk_i => axi_clk,
-        rstn_i => axi_rst_n,
+        clk_i => reg_clk,
+        rstn_i => reg_clk_ok,
 
         -- AXI-Lite read interface
         araddr_i => DSP_REGS_araddr,
@@ -427,7 +429,7 @@ begin
 
     -- Clock converter between burst generator and AXI
     memory_generatory_cc_inst : entity work.register_cc port map (
-        axi_clk_i => axi_clk,
+        axi_clk_i => reg_clk,
         dsp_clk_i => dsp_clk,
         dsp_rst_n_i => dsp_clk_ok,
 
@@ -472,7 +474,7 @@ begin
 
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
-        axi_clk_i => axi_clk,
+        axi_clk_i => reg_clk,
         ref_clk_i => ref_clk,
         ref_clk_ok_i => ref_clk_ok,
 
@@ -528,7 +530,7 @@ begin
     -- General purpose r/w registers filling all unused modules
     gen_register_file : for n in RW_REGISTERS generate
         register_file_inst : entity work.register_file port map (
-            clk_i => axi_clk,
+            clk_i => reg_clk,
 
             write_strobe_i => REGS_write_strobe(n),
             write_address_i => REGS_write_address,
@@ -538,7 +540,7 @@ begin
             register_data_o => register_file(n)
         );
         register_read_inst : entity work.register_read port map (
-            clk_i => axi_clk,
+            clk_i => reg_clk,
 
             read_strobe_i => REGS_read_strobe(n),
             read_address_i => REGS_read_address,
