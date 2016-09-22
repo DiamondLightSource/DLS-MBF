@@ -963,20 +963,29 @@ CONFIG.M00_HAS_REGSLICE {4} \
 CONFIG.M01_HAS_REGSLICE {4} \
 CONFIG.M02_HAS_REGSLICE {4} \
 CONFIG.NUM_MI {3} \
-CONFIG.S00_HAS_REGSLICE {4} \
+CONFIG.S00_HAS_REGSLICE {0} \
  ] $axi_lite_interconnect
+
+  # Create instance: axi_register_slice_0, and set properties
+  set axi_register_slice_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 axi_register_slice_0 ]
+  set_property -dict [ list \
+CONFIG.REG_AR {1} \
+CONFIG.REG_AW {1} \
+CONFIG.REG_B {1} \
+ ] $axi_register_slice_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins M_INTC_REGS] [get_bd_intf_pins axi_lite_interconnect/M02_AXI]
+  connect_bd_intf_net -intf_net S_PCIE_1 [get_bd_intf_pins S_PCIE] [get_bd_intf_pins axi_register_slice_0/S_AXI]
   connect_bd_intf_net -intf_net axi_lite_interconnect_M00_AXI [get_bd_intf_pins M_DSP_REGS] [get_bd_intf_pins axi_lite_interconnect/M00_AXI]
   connect_bd_intf_net -intf_net axi_lite_interconnect_M02_AXI [get_bd_intf_pins M_DMA_REGS] [get_bd_intf_pins axi_lite_interconnect/M01_AXI]
-  connect_bd_intf_net -intf_net axi_pcie3_M_AXI [get_bd_intf_pins S_PCIE] [get_bd_intf_pins axi_lite_interconnect/S00_AXI]
+  connect_bd_intf_net -intf_net axi_register_slice_0_M_AXI [get_bd_intf_pins axi_lite_interconnect/S00_AXI] [get_bd_intf_pins axi_register_slice_0/M_AXI]
 
   # Create port connections
   connect_bd_net -net DSP_CLK_1 [get_bd_pins REG_CLK] [get_bd_pins axi_lite_interconnect/M00_ACLK]
   connect_bd_net -net DSP_RESETN_1 [get_bd_pins REG_RESETN] [get_bd_pins axi_lite_interconnect/M00_ARESETN]
-  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK] [get_bd_pins axi_lite_interconnect/S00_ACLK]
-  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN] [get_bd_pins axi_lite_interconnect/S00_ARESETN]
+  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK] [get_bd_pins axi_lite_interconnect/S00_ACLK] [get_bd_pins axi_register_slice_0/aclk]
+  connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN] [get_bd_pins axi_lite_interconnect/S00_ARESETN] [get_bd_pins axi_register_slice_0/aresetn]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1198,7 +1207,7 @@ CONFIG.pl_link_cap_max_link_width {X8} \
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x200000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg
   create_bd_addr_seg -range 0x00001000 -offset 0x400000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x400000001000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/s_axi/Reg] SEG_axi_intc_0_Reg
+  create_bd_addr_seg -range 0x00001000 -offset 0x400000001000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/s_axi/Reg] SEG_axi_intc_Reg
   create_bd_addr_seg -range 0x800000000000 -offset 0x00000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs axi_pcie3_bridge/S_AXI/BAR0] SEG_axi_pcie3_bridge_BAR0
   create_bd_addr_seg -range 0x80000000 -offset 0x800000000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
   create_bd_addr_seg -range 0x08000000 -offset 0x800080000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr
