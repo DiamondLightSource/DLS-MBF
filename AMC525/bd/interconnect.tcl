@@ -963,7 +963,7 @@ CONFIG.M00_HAS_REGSLICE {4} \
 CONFIG.M01_HAS_REGSLICE {4} \
 CONFIG.M02_HAS_REGSLICE {4} \
 CONFIG.NUM_MI {3} \
-CONFIG.S00_HAS_REGSLICE {0} \
+CONFIG.S00_HAS_REGSLICE {3} \
  ] $axi_lite_interconnect
 
   # Create instance: axi_register_slice_0, and set properties

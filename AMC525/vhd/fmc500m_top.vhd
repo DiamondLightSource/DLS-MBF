@@ -9,7 +9,7 @@ use work.defines.all;
 
 entity fmc500m_top is
     port (
-        axi_clk_i : in std_logic;
+        reg_clk_i : in std_logic;
         ref_clk_i : in std_logic;
         ref_clk_ok_i : in std_logic;
 
@@ -187,7 +187,7 @@ begin
 
     -- SPI controller
     fmc500m_spi_inst : entity work.fmc500m_spi port map (
-        clk_i => axi_clk_i,
+        clk_i => reg_clk_i,
 
         -- Register control
         write_strobe_i => write_strobes(SPI_REG),
@@ -258,7 +258,7 @@ begin
 
     -- Register for custom power etc
     pwr_reg_inst : entity work.single_register port map (
-        clk_i => axi_clk_i,
+        clk_i => reg_clk_i,
         register_o => power_control,
         write_strobe_i => write_strobes(PWR_REG),
         write_data_i => write_data_i
@@ -274,21 +274,21 @@ begin
 
     -- Clock domain crossing for ADC register control
     adc_register_inst : entity work.register_cc port map (
-        axi_clk_i => axi_clk_i,
-        dsp_clk_i => ref_clk_i,
-        dsp_rst_n_i => ref_clk_ok_i,
+        reg_clk_i => reg_clk_i,
+        out_clk_i => ref_clk_i,
+        out_rst_n_i => ref_clk_ok_i,
 
-        axi_write_strobe_i => write_strobes(ADC_REG),
-        axi_write_ack_o => write_acks(ADC_REG),
-        dsp_write_strobe_o => ADC_write_strobe,
-        dsp_write_ack_i => ADC_write_ack,
+        reg_write_strobe_i => write_strobes(ADC_REG),
+        reg_write_ack_o => write_acks(ADC_REG),
+        out_write_strobe_o => ADC_write_strobe,
+        out_write_ack_i => ADC_write_ack,
 
-        axi_read_strobe_i => read_strobes(ADC_REG),
-        axi_read_data_o => read_data(ADC_REG),
-        axi_read_ack_o => read_acks(ADC_REG),
-        dsp_read_strobe_o => ADC_read_strobe,
-        dsp_read_data_i => ADC_read_data,
-        dsp_read_ack_i => ADC_read_ack
+        reg_read_strobe_i => read_strobes(ADC_REG),
+        reg_read_data_o => read_data(ADC_REG),
+        reg_read_ack_o => read_acks(ADC_REG),
+        out_read_strobe_o => ADC_read_strobe,
+        out_read_data_i => ADC_read_data,
+        out_read_ack_i => ADC_read_ack
     );
 
     -- Unused registers

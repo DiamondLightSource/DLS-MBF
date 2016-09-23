@@ -116,9 +116,9 @@ architecture top of top is
     signal DDR0_GEN_read_ack : std_logic;
 
     -- Some register file assignments
-    constant MOD_DDR0_GEN : natural := 0;
-    constant MOD_DIO : natural := 1;
-    constant MOD_FMC500 : natural := 2;
+    constant MOD_DDR0_GEN : natural := 0;   -- Memory generator
+    constant MOD_DIO : natural := 1;        -- Digital IO control
+    constant MOD_FMC500 : natural := 2;     -- FMC 500 control
     -- Assign the remaining space to random r/w registers for now
     subtype RW_REGISTERS is natural range 3 to MOD_ADDR_COUNT-1;
 
@@ -432,23 +432,23 @@ begin
         brsp_error_i => DSP_DDR0_brsp_error
     );
 
-    -- Clock converter between burst generator and AXI
+    -- Clock converter between burst generator and register clock
     memory_generatory_cc_inst : entity work.register_cc port map (
-        axi_clk_i => reg_clk,
-        dsp_clk_i => dsp_clk,
-        dsp_rst_n_i => dsp_clk_ok,
+        reg_clk_i => reg_clk,
+        out_clk_i => dsp_clk,
+        out_rst_n_i => dsp_clk_ok,
 
-        axi_write_strobe_i => REGS_write_strobe(MOD_DDR0_GEN),
-        axi_write_ack_o => REGS_write_ack(MOD_DDR0_GEN),
-        dsp_write_strobe_o => DDR0_GEN_write_strobe,
-        dsp_write_ack_i => DDR0_GEN_write_ack,
+        reg_write_strobe_i => REGS_write_strobe(MOD_DDR0_GEN),
+        reg_write_ack_o => REGS_write_ack(MOD_DDR0_GEN),
+        out_write_strobe_o => DDR0_GEN_write_strobe,
+        out_write_ack_i => DDR0_GEN_write_ack,
 
-        axi_read_strobe_i => REGS_read_strobe(MOD_DDR0_GEN),
-        axi_read_data_o => REGS_read_data(MOD_DDR0_GEN),
-        axi_read_ack_o => REGS_read_ack(MOD_DDR0_GEN),
-        dsp_read_strobe_o => DDR0_GEN_read_strobe,
-        dsp_read_data_i => DDR0_GEN_read_data,
-        dsp_read_ack_i => DDR0_GEN_read_ack
+        reg_read_strobe_i => REGS_read_strobe(MOD_DDR0_GEN),
+        reg_read_data_o => REGS_read_data(MOD_DDR0_GEN),
+        reg_read_ack_o => REGS_read_ack(MOD_DDR0_GEN),
+        out_read_strobe_o => DDR0_GEN_read_strobe,
+        out_read_data_i => DDR0_GEN_read_data,
+        out_read_ack_i => DDR0_GEN_read_ack
     );
 
 
@@ -479,7 +479,7 @@ begin
 
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
-        axi_clk_i => reg_clk,
+        reg_clk_i => reg_clk,
         ref_clk_i => ref_clk,
         ref_clk_ok_i => ref_clk_ok,
 
