@@ -1,5 +1,14 @@
 set src_dir [lindex $argv 0]
 
+# We put the timing check here so that at the point of call we don't have the
+# error message visible to us.
+proc check_timing {timingreport} {
+    if {! [string match -nocase {*timing constraints are met*} $timingreport]} {
+        send_msg_id showstopper-0 error "Timing constraints weren't met."
+        return -code error
+    }
+}
+
 create_project -force amc525_lmbf amc525_lmbf -part xc7vx690tffg1761-2
 
 set_property target_language VHDL [current_project]
@@ -59,8 +68,5 @@ set timingreport [ \
 #
 write_bitstream -force amc525_lmbf.bit
 
-# Make sure we fail if timing failed
-if {! [string match -nocase {*timing constraints are met*} $timingreport]} {
-    send_msg_id showstopper-0 error "Timing constraints weren't met."
-    return -code error
-}
+# Finally check that we met timing.
+check_timing $timingreport
