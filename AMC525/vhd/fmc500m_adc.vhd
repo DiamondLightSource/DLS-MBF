@@ -43,16 +43,8 @@ entity fmc500m_adc is
 end;
 
 architecture fmc500m_adc of fmc500m_adc is
-    -- IDELAY control
-    signal delay_in : std_logic_vector(4 downto 0);
-    signal delay_strobe : std_logic;
-    signal inc_decn : std_logic;
-    signal inc_decn_strobe : std_logic;
-    signal delay_out : std_logic_vector(4 downto 0);
-
-    -- IDELAY
     signal adc_dco_delay : std_logic;       -- Delayed input clock from IDELAY
-    signal ref_clk_reset : std_logic;
+    signal read_data : reg_data_t;
 
     -- PLL
     signal pll_fb_out : std_logic;
@@ -70,64 +62,25 @@ architecture fmc500m_adc of fmc500m_adc is
     signal pll_reset : std_logic;
 
 begin
-    -- Clock control
-    -- Set the IDELAY with value of form 0x1xx for xx in range 0 to 31.
-    delay_in <= write_data_i(4 downto 0);
-    delay_strobe <= write_data_i(8) and write_strobe_i;
-    -- Increment IDELAY by writing 0x3000, decrement with 0x1000.
-    inc_decn <= write_data_i(13);
-    inc_decn_strobe <= write_data_i(12) and write_strobe_i;
-    -- Read current value
-    read_data_o(4 downto 0) <= delay_out;
-    read_data_o(30 downto 5) <= (others => '0');
-    read_data_o(31) <= not dsp_clk_ok;
     -- PLL reset request
     pll_reset_request <= write_data_i(31) and write_strobe_i;
 
-    write_ack_o <= '1';
-    read_ack_o <= '1';
-
-
-    -- IDELAY
-    --
-    -- Note that the documentation indicates that we need an IDELAYCTRL instance
-    -- in the same clock region as this IDELAYE2 instance ... however, it turns
-    -- out that the tool only requires one IDELAYCTRL to be declared globally
-    -- (the required regional instances are created automatically), and there's
-    -- one already in the MIG DRAM interface.
-    idelay_inst : IDELAYE2 generic map (
-        IDELAY_TYPE => "VAR_LOAD",
-        DELAY_SRC => "IDATAIN",
-        SIGNAL_PATTERN => "CLOCK",
-        REFCLK_FREQUENCY => 200.0,
-        HIGH_PERFORMANCE_MODE => "TRUE"
-    ) port map (
-        C => ref_clk_i,
-
-        -- Value control
-        LD => delay_strobe,
-        CNTVALUEIN => delay_in,
-        CNTVALUEOUT => delay_out,
-        CE => inc_decn_strobe,
-        INC => inc_decn,
-
-        -- Delayed clock
-        IDATAIN => adc_dco_i,
-        DATAOUT => adc_dco_delay,
-
-        -- Unused
-        DATAIN => '0',
-        CINVCTRL => '0',
-        REGRST => '0',
-        LDPIPEEN => '0'
+    idelay_inst : entity work.idelay_control port map (
+        ref_clk_i => ref_clk_i,
+        ref_clk_ok_i => ref_clk_ok_i,
+        signal_i => adc_dco_i,
+        signal_o => adc_dco_delay,
+        write_strobe_i => write_strobe_i,
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o,
+        read_strobe_i => read_strobe_i,
+        read_data_o => read_data,
+        read_ack_o => read_ack_o
     );
 
-    ref_clk_reset <= not ref_clk_ok_i;
-    idelayctrl_inst : IDELAYCTRL port map (
-        REFCLK => ref_clk_i,
-        RST => ref_clk_reset,
-        RDY => open
-    );
+    -- Temporary fixup of read_data_o
+    read_data_o(30 downto 0) <= read_data(30 downto 0);
+    read_data_o(31) <= not dsp_clk_ok;
 
 
     -- PLL
