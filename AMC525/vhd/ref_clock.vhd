@@ -13,8 +13,7 @@ library work;
 entity ref_clock is
     port (
         -- Raw pin inputs
-        CLK125MHZ0_P : in std_logic;
-        CLK125MHZ0_N : in std_logic;
+        clk125mhz_i : in std_logic;
         nCOLDRST : in std_logic;
 
         -- 200 MHz DRAM timing reference clock
@@ -28,7 +27,7 @@ entity ref_clock is
 end;
 
 architecture ref_clock of ref_clock is
-    signal clk125mhz_in : std_logic;    -- Incoming buffered clock
+    signal clk125mhz_in : std_logic;
     signal clk200mhz : std_logic;
     signal clk125mhz : std_logic;
     signal pll_feedback : std_logic;
@@ -41,10 +40,11 @@ architecture ref_clock of ref_clock is
     signal reset_pll : std_logic;
 
 begin
-    clk125mhz_inst : entity work.gte2_ibufds port map (
-        clk_p_i => CLK125MHZ0_P,
-        clk_n_i => CLK125MHZ0_N,
-        clk_o => clk125mhz_in
+    -- This BUFG is needed to transport the incoming 125MHz reference clock to
+    -- wherever the PLL is placed.
+    clk125_bufg_inst : BUFG port map (
+        I => clk125mhz_i,
+        O => clk125mhz_in
     );
 
     -- Note: internal PLL must run at frequency in range 800MHz..1.86GHz

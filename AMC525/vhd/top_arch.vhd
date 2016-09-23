@@ -11,6 +11,8 @@ use work.defines.all;
 architecture top of top is
     -- Clocking and reset resources
     signal fclka : std_logic;
+    signal n_coldrst_in : std_logic;
+    signal clk125mhz : std_logic;
     signal adc_clk : std_logic;
     signal dsp_clk : std_logic;
     signal dsp_clk_ok : std_logic;
@@ -19,7 +21,6 @@ architecture top of top is
     signal reg_clk : std_logic;
     signal reg_clk_ok : std_logic;
 
-    signal n_coldrst_in : std_logic;
     signal uled_out : std_logic_vector(3 downto 0);
 
     signal INTR : std_logic_vector(7 downto 0);
@@ -146,19 +147,23 @@ begin
         o_o(0) => n_coldrst_in
     );
 
-    -- Reference clock for MGT.  For this one we don't want the BUFG.
-    fclka_inst : entity work.gte2_ibufds generic map (
-        GEN_BUFG => false
-    ) port map (
-        clk_p_i => FCLKA_P,
-        clk_n_i => FCLKA_N,
-        clk_o => fclka
+    -- Reference clock for MGT.
+    fclka_inst : entity work.ibufds_gte2_array port map (
+        p_i(0) => FCLKA_P,
+        n_i(0) => FCLKA_N,
+        o_o(0) => fclka
+    );
+
+    -- Fixed 125 MHz reference clock
+    clk125mhz_inst : entity work.ibufds_gte2_array port map (
+        p_i(0) => CLK125MHZ0_P,
+        n_i(0) => CLK125MHZ0_N,
+        o_o(0) => clk125mhz
     );
 
     -- 200 MHz timing reference clock
     clocking_inst : entity work.ref_clock port map (
-        CLK125MHZ0_P => CLK125MHZ0_P,
-        CLK125MHZ0_N => CLK125MHZ0_N,
+        clk125mhz_i => clk125mhz,
         nCOLDRST => n_coldrst_in,
         ref_clk_o => ref_clk,
         ref_clk_ok_o => ref_clk_ok,

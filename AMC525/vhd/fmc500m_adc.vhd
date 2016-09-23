@@ -19,6 +19,7 @@ entity fmc500m_adc is
         ref_clk_ok_i : in std_logic;    -- Reference clock status
 
         -- Register interface for IDELAY
+        -- This entire interface *must* be clocked by ref_clk
         write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
         write_ack_o : out std_logic;
