@@ -9,11 +9,11 @@ vlib msim/xil_defaultlib
 vcom -64 -93 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
-    $vhd_dir/sync_bit.vhd \
-    $vhd_dir/sync_reset.vhd \
-    $vhd_dir/edge_detect.vhd \
-    $vhd_dir/register_strobe_cc.vhd \
-    $vhd_dir/register_cc.vhd \
+    $vhd_dir/util/sync_bit.vhd \
+    $vhd_dir/util/sync_reset.vhd \
+    $vhd_dir/util/edge_detect.vhd \
+    $vhd_dir/registers/register_strobe_cc.vhd \
+    $vhd_dir/registers/register_cc.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/testbench.vhd
