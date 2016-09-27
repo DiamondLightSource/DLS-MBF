@@ -480,6 +480,7 @@ begin
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
         reg_clk_i => reg_clk,
+        reg_clk_ok_i => reg_clk_ok,
         ref_clk_i => ref_clk,
         ref_clk_ok_i => ref_clk_ok,
 

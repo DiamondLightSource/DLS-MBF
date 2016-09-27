@@ -11,6 +11,9 @@ use work.defines.all;
 
 entity register_mux is
     port (
+        clk_i : in std_logic;
+        clk_ok_i : in std_logic;
+
         -- Register read.
         read_strobe_i : in std_logic;
         read_address_i : in reg_addr_t;
@@ -34,19 +37,42 @@ end;
 
 architecture register_mux of register_mux is
     signal read_address : natural;
-    signal write_address : natural;
+    signal read_data : reg_data_t;
+    signal read_ack : std_logic;
 
 begin
+    write_strobe_inst : entity work.register_mux_strobe port map (
+        clk_i => clk_i,
+        clk_ok_i => clk_ok_i,
+        strobe_i => write_strobe_i,
+        address_i => write_address_i,
+        ack_o => write_ack_o,
+        strobe_o => write_strobe_o,
+        ack_i => write_ack_i
+    );
+
+    read_strobe_inst : entity work.register_mux_strobe port map (
+        clk_i => clk_i,
+        clk_ok_i => clk_ok_i,
+        strobe_i => read_strobe_i,
+        address_i => read_address_i,
+        ack_o => read_ack,
+        strobe_o => read_strobe_o,
+        ack_i => read_ack_i
+    );
+
+    -- Read data needs to be demultiplexed and latched at the right point, and
+    -- need to delay the read acknowledge out at the same time.
     read_address <= to_integer(read_address_i);
-    read_data_o <= read_data_i(read_address);
-    read_ack_o  <= read_ack_i(read_address);
 
-    write_address <= to_integer(write_address_i);
-    write_ack_o <= write_ack_i(write_address);
+    process (clk_i) begin
+        if rising_edge(clk_i) then
+            read_data <= read_data_i(read_address);
+            if read_ack = '1' then
+                read_data_o <= read_data;
+            end if;
+            read_ack_o <= read_ack;
+        end if;
+    end process;
 
-    gen_strobe :
-    for i in REG_ADDR_RANGE generate
-        read_strobe_o(i)  <= read_strobe_i  when read_address  = i else '0';
-        write_strobe_o(i) <= write_strobe_i when write_address = i else '0';
-    end generate;
 end;

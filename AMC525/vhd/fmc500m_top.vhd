@@ -10,6 +10,7 @@ use work.defines.all;
 entity fmc500m_top is
     port (
         reg_clk_i : in std_logic;
+        reg_clk_ok_i : in std_logic;
         ref_clk_i : in std_logic;
         ref_clk_ok_i : in std_logic;
 
@@ -242,6 +243,8 @@ begin
 
     -- Top level register control
     register_mux_inst : entity work.register_mux port map (
+        clk_i => reg_clk_i,
+        clk_ok_i => reg_clk_ok_i,
         write_strobe_i => write_strobe_i,
         write_address_i => write_address_i,
         write_strobe_o => write_strobes,
