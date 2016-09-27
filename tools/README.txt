@@ -54,7 +54,7 @@ The currently active banks are:
     0   Memory capture controller
     1   Digital IO card controller
     2   FMC500M controller
-    3   Miscellaneous
+    4   Clocking control
 
 reg bank
     Reads entire bank of 32 registers
@@ -139,21 +139,17 @@ R   2[2]    DAC power status
 R   2[4]    PLL VCXO locked
 R   2[5]    PLL VCO locked
 
-W   3[4:0]  IDELAY value
-W   3[8]    Enable write to IDELAY, so write number of form 0x1xx
-W   3[12]   Enable increment or decrement of IDELAY
-W   3[13]   Increment if 1, decrement if 0
-W   3[31]   Setting this bit forces a reset of the ADC PLL
-
-R   3[4:0]  Current IDELAY setting
-R   3[31]   Set to 1 if ADC clock not locked
-
 
 Bank 3 registers
 ~~~~~~~~~~~~~~~~
 
-W   0[3:0]  Front panel LEDs
-W   1[5:0]  Interrupt events
+W   0[4:0]  IDELAY value
+W   0[8]    Enable write to IDELAY, so write number of form 0x1xx
+W   0[12]   Enable increment or decrement of IDELAY
+W   0[13]   Increment if 1, decrement if 0
+
+R   0[4:0]  Current IDELAY setting
+
 
 
 Data capture

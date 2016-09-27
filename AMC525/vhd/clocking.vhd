@@ -1,0 +1,217 @@
+-- Internal 200MHz reference clock.  This is used for IDELAY elements on our
+-- own data DDR inputs and for the DRAM I/O
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library unisim;
+use unisim.vcomponents.all;
+
+use work.support.all;
+use work.defines.all;
+
+entity clocking is
+    port (
+        -- Raw input clocks and reset
+        nCOLDRST : in std_logic;
+        clk125mhz_i : in std_logic;
+        adc_dco_i : in std_logic;
+
+        -- 200 MHz DRAM timing reference clock
+        ref_clk_o : out std_logic;
+        ref_clk_ok_o : out std_logic;
+
+        -- ADC/DSP/REG clocks.
+        adc_clk_o : out std_logic;      -- 500 MHz data clock
+        dsp_clk_o : out std_logic;      -- 250 MHz clock = ADC/2
+        dsp_clk_ok_o : out std_logic;
+        reg_clk_o : out std_logic;      -- 125 MHz clock
+        reg_clk_ok_o : out std_logic;
+
+        -- Register control interface: one register for clock management.  The
+        -- register interface is clocked by reg_clk_o
+        write_strobe_i : in std_logic;
+        write_address_i : in reg_addr_t;
+        write_data_i : in reg_data_t;
+        write_ack_o : out std_logic;
+        read_strobe_i : in std_logic;
+        read_address_i : in reg_addr_t;
+        read_data_o : out reg_data_t;
+        read_ack_o : out std_logic
+    );
+end;
+
+architecture clocking of clocking is
+    -- Processed incoming signals
+    signal clk125mhz : std_logic;
+    signal adc_dco_delay : std_logic;
+
+    -- Generated clocks
+    signal ref_clk_pll : std_logic;
+    signal ref_clk : std_logic;
+    signal ref_clk_ok : std_logic;
+    signal reg_clk_pll : std_logic;
+    signal reg_clk : std_logic;
+    signal reg_clk_ok : std_logic;
+    signal adc_clk_pll : std_logic;
+    signal adc_clk : std_logic;
+    signal dsp_clk_pll : std_logic;
+    signal dsp_clk : std_logic;
+
+    -- 125 MHz reference clock PLL
+    signal ref_pll_reset : std_logic;
+    signal ref_pll_feedback : std_logic;
+    signal ref_pll_locked : std_logic;
+    signal ref_pll_ok : std_logic;
+
+    -- ADC clock PLL
+    signal adc_pll_reset : std_logic;
+    signal adc_pll_feedback : std_logic;
+    signal adc_pll_feedback_bufg : std_logic;
+    signal adc_pll_ok : std_logic;
+
+begin
+    -- PLL reset request
+--     pll_reset_request <= write_data_i(31) and write_strobe_i;
+
+    -- Programmable delay for adc_dco input
+    idelay_inst : entity work.idelay_control port map (
+        ref_clk_i => ref_clk,
+        ref_clk_ok_i => ref_clk_ok,
+        signal_i => adc_dco_i,
+        signal_o => adc_dco_delay,
+
+        reg_clk_i => reg_clk,
+        reg_clk_ok_i => reg_clk_ok,
+        write_strobe_i => write_strobe_i,
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o,
+        read_strobe_i => read_strobe_i,
+        read_data_o => read_data_o,
+        read_ack_o => read_ack_o
+    );
+
+--     -- Temporary fixup of read_data_o
+--     read_data_o(30 downto 0) <= read_data(30 downto 0);
+--     read_data_o(31) <= not dsp_clk_ok;
+
+
+    -- -------------------------------------------------------------------------
+    -- Timing reference clock and register clock.
+
+    -- This BUFG is needed to transport the incoming 125MHz reference clock to
+    -- wherever the PLL is placed.
+    clk125_bufg_inst : BUFG port map (
+        I => clk125mhz_i,
+        O => clk125mhz
+    );
+
+    -- Note: internal PLL must run at frequency in range 800MHz..1.86GHz
+    ref_pll_reset <= not nCOLDRST;
+    -- Note: the name of this PLL instance appears in the constraints file.
+    pll_inst : PLLE2_BASE generic map (
+        CLKIN1_PERIOD => 8.0,   -- 8ns period for 125 MHz input clock
+        CLKFBOUT_MULT => 8,     -- PLL runs at 1000 MHz
+        CLKOUT0_DIVIDE => 5,    -- DRAM reference clock at 200 MHz
+        CLKOUT1_DIVIDE => 8     -- Register interface clock at 125 MHz
+    ) port map (
+        -- Inputs
+        CLKIN1  => clk125mhz,
+        CLKFBIN => ref_pll_feedback,
+        RST     => ref_pll_reset,
+        PWRDWN  => '0',
+        -- Outputs
+        CLKOUT0 => ref_clk_pll, -- 200 MHz for timing reference
+        CLKOUT1 => reg_clk_pll, -- 125 MHz for register clock
+        CLKOUT2 => open,
+        CLKOUT3 => open,
+        CLKOUT4 => open,
+        CLKOUT5 => open,
+        CLKFBOUT => ref_pll_feedback,
+        LOCKED  => ref_pll_locked
+    );
+    ref_clk_bufg_inst : BUFG port map (
+        I => ref_clk_pll,
+        O => ref_clk
+    );
+    reg_clk_bufg_inst : BUFG port map (
+        I => reg_clk_pll,
+        O => reg_clk
+    );
+
+
+    -- Generate synchronised resets for the generated clocks.
+    -- Don't report ok until we're out of reset and the PLL is locked.
+    ref_pll_ok <= ref_pll_locked and nCOLDRST;
+    ref_reset_inst : entity work.sync_reset port map (
+        clk_i => ref_clk,
+        clk_ok_i => ref_pll_ok,
+        sync_clk_ok_o => ref_clk_ok
+    );
+    reg_reset_inst : entity work.sync_reset port map (
+        clk_i => reg_clk,
+        clk_ok_i => ref_pll_ok,
+        sync_clk_ok_o => reg_clk_ok_o
+    );
+
+    ref_clk_o <= ref_clk;
+    ref_clk_ok_o <= ref_clk_ok;
+    reg_clk_o <= reg_clk;
+    reg_clk_ok_o <= reg_clk_ok;
+
+
+    -- -------------------------------------------------------------------------
+    -- ADC clock and derived DSP clock.
+
+    -- ADC clocking
+
+    -- PLL
+    adc_pll_reset <= not nCOLDRST;
+    adc_pll_inst : PLLE2_BASE generic map (
+        -- Parameters from Clocking Wizard
+        CLKIN1_PERIOD => 2.0,   -- 2ns period for 500 MHz input clock
+        CLKFBOUT_MULT => 4,     -- PLL runs at 1000 MHz
+        DIVCLK_DIVIDE => 2,
+        CLKOUT0_DIVIDE => 2,    -- ADC clock at 500 MHz
+        CLKOUT1_DIVIDE => 4     -- DSP clock at 250 MHz
+    ) port map (
+        -- Inputs
+        CLKIN1  => adc_dco_delay,
+        CLKFBIN => adc_pll_feedback_bufg,
+        RST     => adc_pll_reset,
+        PWRDWN  => '0',
+        -- Outputs
+        CLKOUT0 => adc_clk_pll,
+        CLKOUT1 => dsp_clk_pll,
+        CLKOUT2 => open,
+        CLKOUT3 => open,
+        CLKOUT4 => open,
+        CLKOUT5 => open,
+        CLKFBOUT => adc_pll_feedback,
+        LOCKED  => adc_pll_ok
+    );
+    pll_bufg_inst : BUFG port map (
+        I => adc_pll_feedback,
+        O => adc_pll_feedback_bufg
+    );
+    adc_bufg_inst : BUFG port map (
+        I => adc_clk_pll,
+        O => adc_clk
+    );
+    dsp_bufg_inst : BUFG port map (
+        I => dsp_clk_pll,
+        O => dsp_clk
+    );
+
+    -- Convert locked signal into a synchronous status
+    pll_locked_inst : entity work.sync_reset port map (
+        clk_i => dsp_clk,
+        clk_ok_i => adc_pll_ok,
+        sync_clk_ok_o => dsp_clk_ok_o
+    );
+
+    adc_clk_o <= adc_clk;
+    dsp_clk_o <= dsp_clk;
+
+end;

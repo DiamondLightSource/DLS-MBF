@@ -13,6 +13,7 @@ architecture top of top is
     signal fclka : std_logic;
     signal n_coldrst_in : std_logic;
     signal clk125mhz : std_logic;
+    signal adc_dco : std_logic;
     signal adc_clk : std_logic;
     signal dsp_clk : std_logic;
     signal dsp_clk_ok : std_logic;
@@ -115,12 +116,20 @@ architecture top of top is
     signal DDR0_GEN_read_data : reg_data_t;
     signal DDR0_GEN_read_ack : std_logic;
 
+    -- Clock converted fields for CLK
+    signal CLK_write_strobe : std_logic;
+    signal CLK_write_ack : std_logic;
+    signal CLK_read_strobe : std_logic;
+    signal CLK_read_data : reg_data_t;
+    signal CLK_read_ack : std_logic;
+
     -- Some register file assignments
     constant MOD_DDR0_GEN : natural := 0;   -- Memory generator
     constant MOD_DIO : natural := 1;        -- Digital IO control
     constant MOD_FMC500 : natural := 2;     -- FMC 500 control
+    constant MOD_CLK : natural := 3;        -- Reference clock control
     -- Assign the remaining space to random r/w registers for now
-    subtype RW_REGISTERS is natural range 3 to MOD_ADDR_COUNT-1;
+    subtype RW_REGISTERS is natural range 4 to MOD_ADDR_COUNT-1;
 
     -- Register file
     type reg_file_array_t is
@@ -141,6 +150,19 @@ architecture top of top is
     signal adc_data_b : std_logic_vector(13 downto 0);
 
 begin
+    -- -------------------------------------------------------------------------
+    -- Clocking resources and I/O
+
+    -- First the IO instances.
+
+    -- Front panel LEDs
+    uled_inst : entity work.obuf_array generic map (
+        COUNT => 4
+    ) port map (
+        i_i => uled_out,
+        o_o => ULED
+    );
+
     -- Reset in.
     ncoldrst_inst : entity work.ibuf_array port map (
         i_i(0) => nCOLDRST,
@@ -161,16 +183,34 @@ begin
         o_o(0) => clk125mhz
     );
 
-    -- 200 MHz timing reference clock
-    clocking_inst : entity work.ref_clock port map (
-        clk125mhz_i => clk125mhz,
+    -- General clocking resources.
+    clocking_inst : entity work.clocking port map (
         nCOLDRST => n_coldrst_in,
+        clk125mhz_i => clk125mhz,
+        adc_dco_i => adc_dco,
+
         ref_clk_o => ref_clk,
         ref_clk_ok_o => ref_clk_ok,
+
+        adc_clk_o => adc_clk,
+        dsp_clk_o => dsp_clk,
+        dsp_clk_ok_o => dsp_clk_ok,
         reg_clk_o => reg_clk,
-        reg_clk_ok_o => reg_clk_ok
+        reg_clk_ok_o => reg_clk_ok,
+
+        write_strobe_i => REGS_write_strobe(MOD_CLK),
+        write_address_i => REGS_write_address,
+        write_data_i => REGS_write_data,
+        write_ack_o => REGS_write_ack(MOD_CLK),
+        read_strobe_i => REGS_read_strobe(MOD_CLK),
+        read_address_i => REGS_read_address,
+        read_data_o => REGS_read_data(MOD_CLK),
+        read_ack_o => REGS_read_ack(MOD_CLK)
     );
 
+
+    -- -------------------------------------------------------------------------
+    -- Interconnect: PCIe and DRAM
 
     -- Wire up the interconnect
     interconnect_inst : entity work.interconnect_wrapper port map (
@@ -299,6 +339,7 @@ begin
     );
 
 
+    -- -------------------------------------------------------------------------
     -- Register AXI slave interface
     axi_lite_slave_inst : entity work.axi_lite_slave port map (
         clk_i => reg_clk,
@@ -382,29 +423,6 @@ begin
         brsp_error_o => DSP_DDR0_brsp_error
     );
 
---     -- Pattern generator for burst generator
---     memory_generator_inst : entity work.memory_generator port map (
---         clk_i => dsp_clk,
--- 
---         write_strobe_i => DDR0_GEN_write_strobe,
---         write_address_i => REGS_write_address,
---         write_data_i => REGS_write_data,
---         write_ack_o => DDR0_GEN_write_ack,
--- 
---         read_strobe_i => DDR0_GEN_read_strobe,
---         read_address_i => REGS_read_address,
---         read_data_o => DDR0_GEN_read_data,
---         read_ack_o => DDR0_GEN_read_ack,
--- 
---         capture_enable_o => DSP_DDR0_capture_enable,
---         data_ready_i => DSP_DDR0_data_ready,
---         data_o => DSP_DDR0_data,
---         data_valid_o => DSP_DDR0_data_valid,
---         data_error_i => DSP_DDR0_data_error,
---         addr_error_i => DSP_DDR0_addr_error,
---         brsp_error_i => DSP_DDR0_brsp_error
---     );
-
     -- ADC to DRAM capture
     adc_capture_inst : entity work.adc_dram_capture port map (
         adc_clk_i => adc_clk,
@@ -479,15 +497,13 @@ begin
 
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
-        reg_clk_i => reg_clk,
-        reg_clk_ok_i => reg_clk_ok,
-        ref_clk_i => ref_clk,
-        ref_clk_ok_i => ref_clk_ok,
-
         FMC_LA_P => FMC1_LA_P,
         FMC_LA_N => FMC1_LA_N,
         FMC_HB_P => FMC1_HB_P,
         FMC_HB_N => FMC1_HB_N,
+
+        reg_clk_i => reg_clk,
+        reg_clk_ok_i => reg_clk_ok,
 
         write_strobe_i => REGS_write_strobe(MOD_FMC500),
         write_address_i => REGS_write_address,
@@ -498,9 +514,8 @@ begin
         read_data_o => REGS_read_data(MOD_FMC500),
         read_ack_o => REGS_read_ack(MOD_FMC500),
 
-        adc_clk_o => adc_clk,
-        dsp_clk_o => dsp_clk,
-        dsp_clk_ok_o => dsp_clk_ok,
+        adc_dco_o => adc_dco,
+        adc_clk_i => adc_clk,
         adc_data_a_o => adc_data_a,
         adc_data_b_o => adc_data_b,
 
@@ -557,18 +572,12 @@ begin
         );
     end generate;
 
-    -- Front panel LEDs on register 3:0
-    uled_out <= register_file(3)(0)(3 downto 0);
-    uled_inst : entity work.obuf_array generic map (
-        COUNT => 4
-    ) port map (
-        i_i => uled_out,
-        o_o => ULED
-    );
+    -- Front panel LEDs
+    uled_out <= (others => '0');
 
     -- Interrupt events on register 3:1 and DDR0 capture
     INTR(0) <= DSP_DDR0_capture_enable;
     INTR(1) <= not DSP_DDR0_capture_enable;
-    INTR(7 downto 2) <= register_file(3)(1)(5 downto 0);
+    INTR(7 downto 2) <= (others => '0');
 
 end;

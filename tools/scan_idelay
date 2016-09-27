@@ -5,6 +5,7 @@ from driver import REGS, ADC
 import numpy
 
 # Configure checkerboard ADC capture
+idelay = REGS[3, 0] & 0xFF
 ADC[0x550] = 4
 
 def capture(count = 1024):
@@ -15,8 +16,22 @@ def capture(count = 1024):
         buf = numpy.frombuffer(ddr0.read(bytes), dtype = numpy.uint16)
     return buf.reshape((-1, 2, 2))
 
+def show(a):
+    return '%04x %04x %04x %04x' % (a[0, 0], a[0, 1], a[1, 0], a[1, 1])
+
+def assess(c):
+    v = c.std(0).mean()
+    return v == 0 and (numpy.diff(c.mean(0)) == 0).all()
+
+good = numpy.zeros(32, dtype = bool)
 for delay in range(32):
-    REGS[2, 3] = 0x100 + delay
+    REGS[3, 0] = 0x100 + delay
     c = capture(1024*1024)
     m = c.std(0).mean()
-    print delay, m
+    good[delay] = assess(c)
+    print delay, m, show(c.mean(0)), good[delay]
+print good
+
+# Restore previous state
+ADC[0x550] = 0
+REGS[3, 0] = 0x100 + idelay

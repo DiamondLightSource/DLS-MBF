@@ -9,11 +9,6 @@ use work.defines.all;
 
 entity fmc500m_top is
     port (
-        reg_clk_i : in std_logic;
-        reg_clk_ok_i : in std_logic;
-        ref_clk_i : in std_logic;
-        ref_clk_ok_i : in std_logic;
-
         -- FMC
         FMC_LA_P : inout std_logic_vector(0 to 33);
         FMC_LA_N : inout std_logic_vector(0 to 33);
@@ -21,6 +16,9 @@ entity fmc500m_top is
         FMC_HB_N : inout std_logic_vector(0 to 21);
 
         -- Register control
+        reg_clk_i : in std_logic;
+        reg_clk_ok_i : in std_logic;
+
         write_strobe_i : in std_logic;
         write_address_i : in reg_addr_t;
         write_data_i : in reg_data_t;
@@ -32,9 +30,8 @@ entity fmc500m_top is
         read_ack_o : out std_logic;
 
         -- ADC clock and data
-        adc_clk_o : out std_logic;
-        dsp_clk_o : out std_logic;
-        dsp_clk_ok_o : out std_logic;
+        adc_dco_o : out std_logic;      -- Raw data clock from ADC
+        adc_clk_i : in std_logic;       -- Derived ADC clock
         adc_data_a_o : out std_logic_vector(13 downto 0);
         adc_data_b_o : out std_logic_vector(13 downto 0);
 
@@ -64,7 +61,6 @@ architecture fmc500m_top of fmc500m_top is
     signal pll_sdclkout3 : std_logic;
 
     -- ADC
-    signal adc_dco : std_logic;          -- Will be master DSP clock
     signal adc_data : std_logic_vector(13 downto 0);
     signal adc_status : std_logic;
     signal adc_fd_a : std_logic;
@@ -99,13 +95,6 @@ architecture fmc500m_top of fmc500m_top is
 
     -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    -- ADC input and control
-    signal ADC_write_strobe : std_logic;
-    signal ADC_write_ack : std_logic;
-    signal ADC_read_strobe : std_logic;
-    signal ADC_read_data : reg_data_t;
-    signal ADC_read_ack : std_logic;
-
     -- Register interface
     signal write_strobes : reg_strobe_t;
     signal write_acks : reg_strobe_t;
@@ -116,8 +105,7 @@ architecture fmc500m_top of fmc500m_top is
     constant SPI_REG : natural := 0;
     constant PWR_REG : natural := 1;
     constant STA_REG : natural := 2;
-    constant ADC_REG : natural := 3;
-    subtype UNUSED_REGS is natural range 4 to REG_ADDR_COUNT-1;
+    subtype UNUSED_REGS is natural range 3 to REG_ADDR_COUNT-1;
 
     signal power_control : reg_data_t;
     signal power_status : reg_data_t;
@@ -151,7 +139,7 @@ begin
         pll_sdclkout3_o => pll_sdclkout3,
 
         -- ADC
-        adc_dco_o => adc_dco,
+        adc_dco_o => adc_dco_o,
         adc_data_o => adc_data,
         adc_status_o => adc_status,
         adc_fd_a_o => adc_fd_a,
@@ -216,30 +204,16 @@ begin
         dac_spi_sdo_i => dac_spi_sdo
     );
 
-
-    -- ADC input
-    fmc500m_adc_inst : entity work.fmc500m_adc port map (
-        ref_clk_i => ref_clk_i,
-        ref_clk_ok_i => ref_clk_ok_i,
-
-        write_strobe_i => ADC_write_strobe,
-        write_data_i => write_data_i,
-        write_ack_o => ADC_write_ack,
-        read_strobe_i => ADC_read_strobe,
-        read_data_o => ADC_read_data,
-        read_ack_o => ADC_read_ack,
-
-        adc_dco_i => adc_dco,
-        adc_data_i => adc_data,
-
-        adc_clk_o => adc_clk_o,
-        dsp_clk_o => dsp_clk_o,
-        dsp_clk_ok_o => dsp_clk_ok_o,
-
-        adc_data_a_o => adc_data_a_o,
-        adc_data_b_o => adc_data_b_o
+    -- DDR data from ADC input
+    adc_data_inst : entity work.iddr_array generic map (
+        COUNT => 14
+    ) port map (
+        clk_i => adc_clk_i,
+        ce_i => '1',
+        d_i => adc_data,
+        q1_o => adc_data_a_o,
+        q2_o => adc_data_b_o
     );
-
 
     -- Top level register control
     register_mux_inst : entity work.register_mux port map (
@@ -274,25 +248,6 @@ begin
     read_acks(STA_REG) <= '1';
     write_acks(STA_REG) <= '1';
     read_data(STA_REG) <= power_status;
-
-    -- Clock domain crossing for ADC register control
-    adc_register_inst : entity work.register_cc port map (
-        reg_clk_i => reg_clk_i,
-        out_clk_i => ref_clk_i,
-        out_rst_n_i => ref_clk_ok_i,
-
-        reg_write_strobe_i => write_strobes(ADC_REG),
-        reg_write_ack_o => write_acks(ADC_REG),
-        out_write_strobe_o => ADC_write_strobe,
-        out_write_ack_i => ADC_write_ack,
-
-        reg_read_strobe_i => read_strobes(ADC_REG),
-        reg_read_data_o => read_data(ADC_REG),
-        reg_read_ack_o => read_acks(ADC_REG),
-        out_read_strobe_o => ADC_read_strobe,
-        out_read_data_i => ADC_read_data,
-        out_read_ack_i => ADC_read_ack
-    );
 
     -- Unused registers
     read_acks(UNUSED_REGS) <= (others => '1');
