@@ -116,7 +116,6 @@ architecture STRUCTURE of interconnect_tb is
 
 begin
 
-    dsp_reset_n <= '1' after 50 ns;
     adc_clk <= not adc_clk after 1 ns;
     dsp_clk <= not dsp_clk after 2 ns;
     adc_data_a <= adc_data_a + 1 after 2 ns;
@@ -245,24 +244,6 @@ begin
     DSP_wready <= DSP_DDR0_wready;
     DSP_DDR0_wvalid <= DSP_wvalid;
 
---     process (dsp_clk) begin
---         if rising_edge(dsp_clk) then
---             if wdelay > 0 then
---                 wdelay <= wdelay - 1;
---                 if wdelay = 1 then
---                     DSP_DDR0_wvalid <= '1';
---                     DSP_wready <= '1';
---                 end if;
---             else
---                 DSP_DDR0_wvalid <= '0';
---                 DSP_wready <= '0';
---                 if DSP_wvalid = '1' then
---                     wdelay <= "10";
---                 end if;
---             end if;
---         end if;
---     end process;
-
     process
         procedure write_reg(reg : natural; value : reg_data_t) is
         begin
@@ -273,10 +254,26 @@ begin
 
     begin
         REGS_write_strobe <= '0';
+        dsp_reset_n <= '0';
+        tick_wait(10);
+        dsp_reset_n <= '1';
+        tick_wait(2);
+
         tick_wait(25);
         write_reg(4, std_logic_vector(to_unsigned(64, 32)));
         tick_wait(90);
         write_reg(4, std_logic_vector(to_unsigned(15, 32)));
+        tick_wait(90);
+
+        dsp_reset_n <= '0';
+        tick_wait(10);
+        dsp_reset_n <= '1';
+        tick_wait(2);
+
+        write_reg(4, std_logic_vector(to_unsigned(64, 32)));
+        tick_wait(90);
+        write_reg(4, std_logic_vector(to_unsigned(15, 32)));
+        tick_wait(90);
 
         wait;
     end process;
@@ -289,7 +286,6 @@ begin
             DSP_DDR0_data_valid <= not DSP_DDR0_data_valid;
         end loop;
     end process;
-
 
 
 end STRUCTURE;

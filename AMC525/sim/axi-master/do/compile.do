@@ -33,8 +33,9 @@ view wave
 
 add wave -group "Top" sim:*
 add wave -group "ADC Mem" sim:/interconnect_tb/adc_dram_capture_inst/*
-add wave sim:/interconnect_tb/axi_burst_master_inst/*
+add wave -group "Master" sim:/interconnect_tb/axi_burst_master_inst/*
+add wave -group "BFM" sim:/interconnect_tb/interconnect_i/cdn_axi_bfm_0/*
 
-run 1us
+run 1.8 us
 
 # vim: set filetype=tcl:
