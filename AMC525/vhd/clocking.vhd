@@ -28,6 +28,9 @@ entity clocking is
         dsp_clk_ok_o : out std_logic;
         reg_clk_o : out std_logic;      -- 125 MHz clock
         reg_clk_ok_o : out std_logic;
+        -- Separate DSP reset.  This is only deasserted at startup (after
+        -- coming out of nCOLDRST).
+        dsp_reset_n_o : out std_logic;
 
         -- Register control interface: one register for clock management.  The
         -- register interface is clocked by reg_clk_o
@@ -38,7 +41,10 @@ entity clocking is
         read_strobe_i : in std_logic;
         read_address_i : in reg_addr_t;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic
+        read_ack_o : out std_logic;
+
+        -- This is a diagnostic signal, shouldn't need to be checked!
+        adc_pll_ok_o : out std_logic
     );
 end;
 
@@ -67,15 +73,19 @@ architecture clocking of clocking is
     signal ref_pll_ok : std_logic;
 
     -- ADC clock PLL
-    signal adc_pll_reset : std_logic;
+    signal adc_pll_reset_request : std_logic;
+    signal adc_pll_reset_timer : unsigned(2 downto 0);
+    signal adc_pll_reset : std_logic := '1';
     signal adc_pll_feedback : std_logic;
     signal adc_pll_feedback_bufg : std_logic;
     signal adc_pll_locked : std_logic;
     signal adc_pll_ok : std_logic;
 
+    signal read_data : reg_data_t;
+
 begin
-    -- PLL reset request
---     pll_reset_request <= write_data_i(31) and write_strobe_i;
+    -- ADC PLL reset request
+    adc_pll_reset_request <= write_data_i(31) and write_strobe_i;
 
     -- Programmable delay for adc_dco input
     idelay_inst : entity work.idelay_control port map (
@@ -90,13 +100,13 @@ begin
         write_data_i => write_data_i,
         write_ack_o => write_ack_o,
         read_strobe_i => read_strobe_i,
-        read_data_o => read_data_o,
+        read_data_o => read_data,
         read_ack_o => read_ack_o
     );
 
---     -- Temporary fixup of read_data_o
---     read_data_o(30 downto 0) <= read_data(30 downto 0);
---     read_data_o(31) <= not dsp_clk_ok;
+    -- Temporary fixup of read_data_o
+    read_data_o(30 downto 0) <= read_data(30 downto 0);
+    read_data_o(31) <= not dsp_clk_ok;
 
 
     -- -------------------------------------------------------------------------
@@ -166,10 +176,20 @@ begin
     -- -------------------------------------------------------------------------
     -- ADC clock and derived DSP clock.
 
-    -- ADC clocking
+    -- ADC PLL reset.  We stretch the reset
+    process (ref_clk) begin
+        if rising_edge(ref_clk) then
+            if adc_pll_reset_request = '1' then
+                adc_pll_reset_timer <= (others => '1');
+            elsif adc_pll_reset_timer > 0 then
+                adc_pll_reset_timer <= adc_pll_reset_timer - 1;
+            end if;
+            adc_pll_reset <=
+                not nCOLDRST or to_std_logic(adc_pll_reset_timer > 0);
+        end if;
+    end process;
 
     -- PLL
-    adc_pll_reset <= not nCOLDRST;
     adc_pll_inst : PLLE2_BASE generic map (
         -- Parameters from Clocking Wizard
         CLKIN1_PERIOD => 2.0,   -- 2ns period for 500 MHz input clock
@@ -197,15 +217,34 @@ begin
         I => adc_pll_feedback,
         O => adc_pll_feedback_bufg
     );
-    adc_bufg_inst : BUFGCE port map (
-        CE => adc_pll_ok,
-        I => adc_clk_pll,
-        O => adc_clk
+
+    -- We use BUFGCTRL instead of BUFGCE because it seems that BUFGCE can
+    -- generate a glitch, but this configuration of BUFGCTRL may be glitch free.
+    adc_bufg_inst : BUFGCTRL port map (
+        S0 => adc_pll_locked,
+        I0 => adc_clk_pll,
+        O => adc_clk,
+        -- Don't use CE or IGNORE
+        CE0 => '1',
+        IGNORE0 => '0',
+        -- Ignore I1 altogether
+        I1 => '0',
+        S1 => '0',
+        CE1 => '0',
+        IGNORE1 => '1'
     );
-    dsp_bufg_inst : BUFGCE port map (
-        CE => adc_pll_ok,
-        I => dsp_clk_pll,
-        O => dsp_clk
+    dsp_bufg_inst : BUFGCTRL port map (
+        S0 => adc_pll_locked,
+        I0 => dsp_clk_pll,
+        O => dsp_clk,
+        -- Don't use CE or IGNORE
+        CE0 => '1',
+        IGNORE0 => '0',
+        -- Ignore I1 altogether
+        I1 => '0',
+        S1 => '0',
+        CE1 => '0',
+        IGNORE1 => '1'
     );
 
     -- Convert locked signal into a synchronous status
@@ -220,4 +259,17 @@ begin
     dsp_clk_o <= dsp_clk;
     dsp_clk_ok_o <= dsp_clk_ok;
 
+    -- Special one shot DSP reset
+    process (dsp_clk, nCOLDRST) begin
+        if nCOLDRST = '0' then
+            dsp_reset_n_o <= '0';
+        elsif rising_edge(dsp_clk) then
+            if dsp_clk_ok = '1' then
+                dsp_reset_n_o <= '1';
+            end if;
+        end if;
+    end process;
+
+    -- Debug signals
+    adc_pll_ok_o <= adc_pll_locked;
 end;

@@ -17,10 +17,13 @@ architecture top of top is
     signal adc_clk : std_logic;
     signal dsp_clk : std_logic;
     signal dsp_clk_ok : std_logic;
+    signal dsp_reset_n : std_logic;
     signal ref_clk : std_logic;
     signal ref_clk_ok : std_logic;
     signal reg_clk : std_logic;
     signal reg_clk_ok : std_logic;
+    -- Pll diagnostic
+    signal adc_pll_ok : std_logic;
 
     signal uled_out : std_logic_vector(3 downto 0);
 
@@ -223,6 +226,7 @@ begin
         dsp_clk_ok_o => dsp_clk_ok,
         reg_clk_o => reg_clk,
         reg_clk_ok_o => reg_clk_ok,
+        dsp_reset_n_o => dsp_reset_n,
 
         write_strobe_i => REGS_write_strobe(MOD_CLK),
         write_address_i => REGS_write_address,
@@ -231,7 +235,9 @@ begin
         read_strobe_i => REGS_read_strobe(MOD_CLK),
         read_address_i => REGS_read_address,
         read_data_o => REGS_read_data(MOD_CLK),
-        read_ack_o => REGS_read_ack(MOD_CLK)
+        read_ack_o => REGS_read_ack(MOD_CLK),
+
+        adc_pll_ok_o => adc_pll_ok
     );
 
 
@@ -361,7 +367,7 @@ begin
 
         -- DSP interface clock, running at half RF frequency
         DSP_CLK => dsp_clk,
-        DSP_RESETN => dsp_clk_ok
+        DSP_RESETN => dsp_reset_n
     );
 
 
@@ -413,7 +419,7 @@ begin
         BURST_LENGTH => 32
     ) port map (
         clk_i => dsp_clk,
-        rstn_i => dsp_clk_ok,
+        rstn_i => dsp_reset_n,
 
         -- AXI write master
         awaddr_o => DSP_DDR0_awaddr,
@@ -481,7 +487,7 @@ begin
     memory_generatory_cc_inst : entity work.register_cc port map (
         reg_clk_i => reg_clk,
         out_clk_i => dsp_clk,
-        out_rst_n_i => dsp_clk_ok,
+        out_clk_ok_i => dsp_clk_ok,
 
         reg_write_strobe_i => REGS_write_strobe(MOD_DDR0_GEN),
         reg_write_ack_o => REGS_write_ack(MOD_DDR0_GEN),
@@ -600,7 +606,12 @@ begin
     end generate;
 
     -- Front panel LEDs
-    uled_out <= (others => '0');
+    uled_out <= (
+        0 => dsp_clk_ok,
+        1 => adc_pll_ok,
+        2 => reg_clk_ok,
+        3 => dsp_reset_n
+    );
 
     -- Interrupt events on register 3:1 and DDR0 capture
     INTR(0) <= DSP_DDR0_capture_enable;
