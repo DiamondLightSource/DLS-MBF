@@ -17,6 +17,7 @@ end entity;
 
 architecture sync_reset of sync_reset is
     signal clk_ok_meta : std_logic;
+    signal clk_ok_delay : std_logic;    -- Delay to help with reset distribution
 
     -- Not sure if this requires metastability management: we can come out of
     -- reset at an entirely unpredictable time relative to the clock, so I'm
@@ -29,10 +30,12 @@ begin
     process (clk_ok_i, clk_i) begin
         if clk_ok_i = '0' then
             clk_ok_meta <= '0';
+            clk_ok_delay <= '0';
             sync_clk_ok_o <= '0';
         elsif rising_edge(clk_i) then
             clk_ok_meta <= '1';
-            sync_clk_ok_o <= clk_ok_meta;
+            clk_ok_delay <= clk_ok_meta;
+            sync_clk_ok_o <= clk_ok_delay;
         end if;
     end process;
 end;

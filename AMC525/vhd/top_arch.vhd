@@ -150,10 +150,9 @@ architecture top of top is
     signal adc_data_b : std_logic_vector(13 downto 0);
 
 begin
-    -- -------------------------------------------------------------------------
-    -- Clocking resources and I/O
 
-    -- First the IO instances.
+    -- -------------------------------------------------------------------------
+    -- IO instances.
 
     -- Front panel LEDs
     uled_inst : entity work.obuf_array generic map (
@@ -183,7 +182,34 @@ begin
         o_o(0) => clk125mhz
     );
 
-    -- General clocking resources.
+
+    -- -------------------------------------------------------------------------
+    -- Clocking
+
+    -- We work with the following external clocking sources:
+    --
+    --  FCLKA           Dedicated 100 MHz PCIe reference clock
+    --  CLK533MHZ{1,2}  Dedicated DDR DRAM clocks
+    --  CLK125MHZ       General purpose fixed frequency clock
+    --  ADC_DCO         ADC data clock, not always available or valid
+    --
+    -- The first three clocks are routed directly to the corresponding Xilinix
+    -- modules and are not visible outside of the interconnect block diagram.
+    --
+    -- Here we process clk125mhz and adc_dco to generate the following internal
+    -- clocks:
+    --
+    --  CLK125MHZ generates:
+    --      ref_clk     200 MHz reference clock needed for FPGA timing control
+    --      reg_clk     Slow (125 MHz) register clock for control interface
+    --
+    --  ADC_DCO generates:
+    --      adc_clk     500 MHz RF clock for raw ADC and DAC data
+    --      dsp_clk     Signal processing clock running at half adc_clk speed
+    --
+    -- Note that ADC_DCO is not always available, so also adc_clk and dsp_clk
+    -- can lose availability.
+
     clocking_inst : entity work.clocking port map (
         nCOLDRST => n_coldrst_in,
         clk125mhz_i => clk125mhz,
@@ -427,6 +453,7 @@ begin
     adc_capture_inst : entity work.adc_dram_capture port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
+        dsp_clk_ok_i => dsp_clk_ok,
 
         write_strobe_i => DDR0_GEN_write_strobe,
         write_address_i => REGS_write_address,

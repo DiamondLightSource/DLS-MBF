@@ -58,6 +58,7 @@ architecture clocking of clocking is
     signal adc_clk : std_logic;
     signal dsp_clk_pll : std_logic;
     signal dsp_clk : std_logic;
+    signal dsp_clk_ok : std_logic;
 
     -- 125 MHz reference clock PLL
     signal ref_pll_reset : std_logic;
@@ -69,6 +70,7 @@ architecture clocking of clocking is
     signal adc_pll_reset : std_logic;
     signal adc_pll_feedback : std_logic;
     signal adc_pll_feedback_bufg : std_logic;
+    signal adc_pll_locked : std_logic;
     signal adc_pll_ok : std_logic;
 
 begin
@@ -152,7 +154,7 @@ begin
     reg_reset_inst : entity work.sync_reset port map (
         clk_i => reg_clk,
         clk_ok_i => ref_pll_ok,
-        sync_clk_ok_o => reg_clk_ok_o
+        sync_clk_ok_o => reg_clk_ok
     );
 
     ref_clk_o <= ref_clk;
@@ -189,29 +191,33 @@ begin
         CLKOUT4 => open,
         CLKOUT5 => open,
         CLKFBOUT => adc_pll_feedback,
-        LOCKED  => adc_pll_ok
+        LOCKED  => adc_pll_locked
     );
     pll_bufg_inst : BUFG port map (
         I => adc_pll_feedback,
         O => adc_pll_feedback_bufg
     );
-    adc_bufg_inst : BUFG port map (
+    adc_bufg_inst : BUFGCE port map (
+        CE => adc_pll_ok,
         I => adc_clk_pll,
         O => adc_clk
     );
-    dsp_bufg_inst : BUFG port map (
+    dsp_bufg_inst : BUFGCE port map (
+        CE => adc_pll_ok,
         I => dsp_clk_pll,
         O => dsp_clk
     );
 
     -- Convert locked signal into a synchronous status
+    adc_pll_ok <= adc_pll_locked and nCOLDRST;
     pll_locked_inst : entity work.sync_reset port map (
         clk_i => dsp_clk,
         clk_ok_i => adc_pll_ok,
-        sync_clk_ok_o => dsp_clk_ok_o
+        sync_clk_ok_o => dsp_clk_ok
     );
 
     adc_clk_o <= adc_clk;
     dsp_clk_o <= dsp_clk;
+    dsp_clk_ok_o <= dsp_clk_ok;
 
 end;

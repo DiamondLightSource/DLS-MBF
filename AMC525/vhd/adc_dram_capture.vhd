@@ -13,6 +13,7 @@ entity adc_dram_capture is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
+        dsp_clk_ok_i : in std_logic;
 
         -- Register control interface
         read_strobe_i : in std_logic;
@@ -43,7 +44,8 @@ entity adc_dram_capture is
 end;
 
 architecture adc_dram_capture of adc_dram_capture is
-    signal adc_phase : std_logic := '0';
+    signal adc_phase_reset : boolean;
+    signal adc_phase : std_logic;
     signal adc_data_a : std_logic_vector(13 downto 0);
     signal adc_data_b : std_logic_vector(13 downto 0);
     signal adc_data : std_logic_vector(DATA_WIDTH-1 downto 0);
@@ -71,10 +73,46 @@ architecture adc_dram_capture of adc_dram_capture is
         := (others => '0');
 
 begin
+    -- Timing for ADC to DSP conversion including coming out of reset.
+    --
+    --             _     ___     ___     ___     ___     ___     ___     ___
+    --  adc_clk     \___/   \___/   \___/   \___/   \___/   \___/   \___/
+    --                   _______         _______         _______         ___
+    --  dsp_clk    _____/       \_______/       \_______/       \_______/
+    --                   ___________________________________________________
+    --  dsp_clk_ok _____/
+    --             _____________
+    --  adc_phase_reset         \___________________________________________
+    --                                   _______         _______         ___
+    --  adc_phase  _____________________/       \_______/       \_______/
+    --             _____ _______ _______ _______ _______ _______ _______ ___
+    --  adc_data   _D0__X__D1___X__D2___X__D3___X__D4___X__D5___X__D6___X___
+    --             _____ _______ _______ _______________ _______________ ___
+    --  dsp_data_0 _____X__D0___X__D1___X__D2___________X__D4___________X___
+    --             _____________________________ _______________ ___________
+    --  dsp_data_1 _____________________________X__D3___________X__D4_______
+    --             _____ _______________ _______________ _______________ ___
+    --  dsp_data_o _____X_______________X_______________X__D2:D3________X___
+    --
+    -- We separate the ADC phase reset from the data capture to help with timing
+    -- for the reset signal.
+    process (adc_clk_i, dsp_clk_ok_i) begin
+        if dsp_clk_ok_i = '0' then
+            adc_phase_reset <= true;
+        elsif rising_edge(adc_clk_i) then
+            adc_phase_reset <= false;
+        end if;
+    end process;
+
     -- Gather ADC data for DDR capture
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            adc_phase <= not adc_phase;
+            if adc_phase_reset then
+                adc_phase <= '0';
+            else
+                adc_phase <= not adc_phase;
+            end if;
+
             adc_data_a <= adc_data_a_i;
             adc_data_b <= adc_data_b_i;
             case adc_phase is
