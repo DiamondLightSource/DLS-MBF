@@ -65,7 +65,7 @@ begin
     register_cc_inst : entity work.register_cc port map (
         reg_clk_i => reg_clk_i,
         out_clk_i => ref_clk_i,
-        out_rst_n_i => ref_clk_ok_i,
+        out_clk_ok_i => ref_clk_ok_i,
 
         reg_write_strobe_i => write_strobe_i,
         reg_write_ack_o => write_ack_o,

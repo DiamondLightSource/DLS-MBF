@@ -14,7 +14,7 @@ entity register_strobe_cc is
         -- Clocks plus reset for out clock
         reg_clk_i : in std_logic;
         out_clk_i : in std_logic;
-        out_rst_n_i : in std_logic;
+        out_clk_ok_i : in std_logic;
 
         -- Strobe from REG to OUT clock
         reg_strobe_i : in std_logic;
@@ -49,7 +49,7 @@ begin
 
     sync_reset_inst : entity work.sync_bit port map (
         clk_i => reg_clk_i,
-        bit_i => out_rst_n_i,
+        bit_i => out_clk_ok_i,
         bit_o => reg_dsp_rst_n
     );
 
