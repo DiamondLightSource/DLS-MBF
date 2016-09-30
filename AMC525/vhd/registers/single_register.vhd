@@ -11,10 +11,11 @@ entity single_register is
     port (
         clk_i : in std_logic;
 
-        register_o : out reg_data_t := (others => '0');
-
         write_strobe_i : in std_logic;
-        write_data_i : in reg_data_t
+        write_data_i : in reg_data_t;
+        write_ack_o : out std_logic;
+
+        register_o : out reg_data_t := (others => '0')
     );
 end;
 
@@ -27,4 +28,5 @@ begin
             end if;
         end if;
     end process;
+    write_ack_o <= '1';
 end;

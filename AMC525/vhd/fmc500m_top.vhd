@@ -9,37 +9,37 @@ use work.defines.all;
 
 entity fmc500m_top is
     port (
+        adc_clk_i : in std_logic;       -- Derived ADC clock
+        dsp_clk_ok_i : in std_logic;
+        reg_clk_i : in std_logic;       -- Register clock
+
         -- FMC
         FMC_LA_P : inout std_logic_vector(0 to 33);
         FMC_LA_N : inout std_logic_vector(0 to 33);
         FMC_HB_P : inout std_logic_vector(0 to 21);
         FMC_HB_N : inout std_logic_vector(0 to 21);
 
-        -- Register control
-        reg_clk_i : in std_logic;
-        reg_clk_ok_i : in std_logic;
-
-        write_strobe_i : in std_logic;
-        write_address_i : in reg_addr_t;
-        write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
-        --
-        read_strobe_i : in std_logic;
-        read_address_i : in reg_addr_t;
-        read_data_o : out reg_data_t;
-        read_ack_o : out std_logic;
+        -- SPI Register control
+        spi_write_strobe_i : in std_logic;
+        spi_write_data_i : in reg_data_t;
+        spi_write_ack_o : out std_logic;
+        spi_read_strobe_i : in std_logic;
+        spi_read_data_o : out reg_data_t;
+        spi_read_ack_o : out std_logic;
 
         -- ADC clock and data
         adc_dco_o : out std_logic;      -- Raw data clock from ADC
-        adc_clk_i : in std_logic;       -- Derived ADC clock
-        adc_data_a_o : out std_logic_vector(13 downto 0);
-        adc_data_b_o : out std_logic_vector(13 downto 0);
+        adc_data_a_o : out adc_inp_t;
+        adc_data_b_o : out adc_inp_t;
 
-        -- Other signals
-        pll_dclkout2_o : out std_logic;
-        pll_sdclkout3_o : out std_logic;
-        pll_status_ld1_o : out std_logic;
-        pll_status_ld2_o : out std_logic
+        -- DAC clock and data (clocked by ADC clock)
+        dac_data_a_i : dac_out_t;
+        dac_data_b_i : dac_out_t;
+
+        -- Miscellaneous IO signals
+        ext_trig_o : out std_logic;     -- Fast external trigger
+        misc_outputs_i : in fmc500_outputs_t;
+        misc_inputs_o : out fmc500_inputs_t
     );
 end;
 
@@ -93,30 +93,8 @@ architecture fmc500m_top of fmc500m_top is
     signal ext_trig : std_logic;
     signal temp_alert : std_logic;
 
-    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    -- Register interface
-    signal write_strobes : reg_strobe_t;
-    signal write_acks : reg_strobe_t;
-    signal read_strobes : reg_strobe_t;
-    signal read_acks : reg_strobe_t;
-    signal read_data : reg_data_array_t(REG_ADDR_RANGE);
-
-    constant SPI_REG : natural := 0;
-    constant PWR_REG : natural := 1;
-    constant STA_REG : natural := 2;
-    subtype UNUSED_REGS is natural range 3 to REG_ADDR_COUNT-1;
-
-    signal power_control : reg_data_t;
-    signal power_status : reg_data_t;
 
 begin
-    -- Default values for outputs we're not using yet
-    dac_data <= (others => '0');
-    dac_dci <= '0';
-    dac_frame <= '0';
-
-
     -- Wire up the IO
     fmc500m_io_inst : entity work.fmc500m_io port map (
         -- FMC
@@ -179,12 +157,12 @@ begin
         clk_i => reg_clk_i,
 
         -- Register control
-        write_strobe_i => write_strobes(SPI_REG),
-        write_data_i => write_data_i,
-        write_ack_o => write_acks(SPI_REG),
-        read_strobe_i => read_strobes(SPI_REG),
-        read_data_o => read_data(SPI_REG),
-        read_ack_o => read_acks(SPI_REG),
+        write_strobe_i => spi_write_strobe_i,
+        write_data_i => spi_write_data_i,
+        write_ack_o => spi_write_ack_o,
+        read_strobe_i => spi_read_strobe_i,
+        read_data_o => spi_read_data_o,
+        read_ack_o => spi_read_ack_o,
 
         -- PLL SPI
         pll_spi_csn_o => pll_spi_csn,
@@ -204,6 +182,7 @@ begin
         dac_spi_sdo_i => dac_spi_sdo
     );
 
+
     -- DDR data from ADC input
     adc_data_inst : entity work.iddr_array generic map (
         COUNT => 14
@@ -211,73 +190,36 @@ begin
         clk_i => adc_clk_i,
         ce_i => '1',
         d_i => adc_data,
-        q1_o => adc_data_a_o,
-        q2_o => adc_data_b_o
+        signed(q1_o) => adc_data_a_o,
+        signed(q2_o) => adc_data_b_o
     );
 
-    -- Top level register control
-    register_mux_inst : entity work.register_mux port map (
-        clk_i => reg_clk_i,
-        clk_ok_i => reg_clk_ok_i,
-        write_strobe_i => write_strobe_i,
-        write_address_i => write_address_i,
-        write_strobe_o => write_strobes,
-        write_ack_i => write_acks,
-        write_ack_o => write_ack_o,
-        read_strobe_i => read_strobe_i,
-        read_address_i => read_address_i,
-        read_data_o => read_data_o,
-        read_ack_o => read_ack_o,
-        read_data_i => read_data,
-        read_strobe_o => read_strobes,
-        read_ack_i => read_acks
-    );
 
-    -- Register for custom power etc
-    pwr_reg_inst : entity work.single_register port map (
-        clk_i => reg_clk_i,
-        register_o => power_control,
-        write_strobe_i => write_strobes(PWR_REG),
-        write_data_i => write_data_i
-    );
-
-    read_acks(PWR_REG) <= '1';
-    write_acks(PWR_REG) <= '1';
-    read_data(PWR_REG) <= power_control;
-
-    read_acks(STA_REG) <= '1';
-    write_acks(STA_REG) <= '1';
-    read_data(STA_REG) <= power_status;
-
-    -- Unused registers
-    read_acks(UNUSED_REGS) <= (others => '1');
-    write_acks(UNUSED_REGS) <= (others => '1');
-    read_data(UNUSED_REGS) <= (others => (others => '0'));
+    -- DAC
+    dac_data <= (others => '0');
+    dac_dci <= '0';
+    dac_frame <= '0';
 
 
-    -- Power control and other miscellaneous controls
-    vcxo_pwr_en <= power_control(0);
-    adc_pwr_en <= power_control(1);
-    dac_pwr_en <= power_control(2);
-    adc_pdwn   <= power_control(3);
-    dac_rstn   <= power_control(4);
-    pll_clkin_sel0 <= power_control(8);
-    pll_clkin_sel1 <= power_control(9);
-    pll_sync   <= power_control(10);
+    -- Connection to I/O records
+    adc_pwr_en <= misc_outputs_i.adc_pwr_en;
+    dac_pwr_en <= misc_outputs_i.dac_pwr_en;
+    vcxo_pwr_en <= misc_outputs_i.vcxo_pwr_en;
+    pll_clkin_sel0 <= misc_outputs_i.pll_clkin_sel0;
+    pll_clkin_sel1 <= misc_outputs_i.pll_clkin_sel1;
+    pll_sync <= misc_outputs_i.pll_sync;
 
-    power_status(0) <= vcxo_pwr_good;
-    power_status(1) <= adc_pwr_good;
-    power_status(2) <= dac_pwr_good;
-    power_status(3) <= '0';
-    power_status(4) <= pll_status_ld1;
-    power_status(5) <= pll_status_ld2;
-    power_status(31 downto 6) <= (others => '0');
+    misc_inputs_o.vcxo_pwr_good <= vcxo_pwr_good;
+    misc_inputs_o.adc_pwr_good <= adc_pwr_good;
+    misc_inputs_o.dac_pwr_good <= dac_pwr_good;
+    misc_inputs_o.pll_status_ld1 <= pll_status_ld1;
+    misc_inputs_o.pll_status_ld2 <= pll_status_ld2;
+    misc_inputs_o.pll_dclkout2 <= pll_dclkout2;
+    misc_inputs_o.pll_sdclkout3 <= pll_sdclkout3;
+    misc_inputs_o.temp_alert <= temp_alert;
 
 
-    -- For IO observation only
-    pll_dclkout2_o <= pll_dclkout2;
-    pll_sdclkout3_o <= pll_sdclkout3;
-    pll_status_ld1_o <= pll_status_ld1;
-    pll_status_ld2_o <= pll_status_ld2;
-
+    -- Fixed reset state
+    adc_pdwn <= '0';        -- Don't need to set ADC powerdown
+    dac_rstn <= '1';        -- Don't want DAC in reset
 end;

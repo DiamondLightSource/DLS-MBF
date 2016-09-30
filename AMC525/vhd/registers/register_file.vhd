@@ -11,31 +11,30 @@ entity register_file is
         clk_i : in std_logic;
 
         -- Write interface
-        write_strobe_i : in std_logic;
-        write_address_i : in reg_addr_t;
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_logic_vector;
 
         -- Register array
-        register_data_o : out reg_data_array_t(REG_ADDR_RANGE)
+        register_data_o : out reg_data_array_t
     );
 end;
 
 architecture register_file of register_file is
-    signal register_file : reg_data_array_t(REG_ADDR_RANGE) :=
+    signal register_file : reg_data_array_t(register_data_o'RANGE) :=
         (others => (others => '0'));
-    signal register_address : REG_ADDR_RANGE;
 
 begin
-    register_address <= to_integer(unsigned(write_address_i));
     process (clk_i) begin
         if rising_edge(clk_i) then
-            if write_strobe_i = '1' then
-                register_file(register_address) <= write_data_i;
-            end if;
+            for r in write_strobe_i'RANGE loop
+                if write_strobe_i(r) = '1' then
+                    register_file(r) <= write_data_i;
+                end if;
+            end loop;
         end if;
     end process;
 
-    write_ack_o <= '1';
+    write_ack_o <= (others => '1');
     register_data_o <= register_file;
 end;

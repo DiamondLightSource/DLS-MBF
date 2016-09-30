@@ -5,7 +5,7 @@ use ieee.std_logic_1164.all;
 
 entity dlyline is
     generic (
-        DLY : natural := 3;
+        DLY : natural := 1;
         DW  : natural := 1
     );
     port (
@@ -20,6 +20,7 @@ architecture dlyline of dlyline is
     signal dlyline : dlyline_t := (others => (others => '0'));
 
 begin
+    assert DLY > 0;
     process (clk_i) begin
         if rising_edge(clk_i) then
             dlyline(0) <= data_i;

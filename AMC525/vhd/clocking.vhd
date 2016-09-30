@@ -33,15 +33,10 @@ entity clocking is
         dsp_reset_n_o : out std_logic;
 
         -- Register control interface: one register for clock management.  The
-        -- register interface is clocked by reg_clk_o
+        -- register interface is clocked by ref_clk_o
         write_strobe_i : in std_logic;
-        write_address_i : in reg_addr_t;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
-        read_strobe_i : in std_logic;
-        read_address_i : in reg_addr_t;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic;
 
         -- This is a diagnostic signal, shouldn't need to be checked!
         adc_pll_ok_o : out std_logic
@@ -94,14 +89,9 @@ begin
         signal_i => adc_dco_i,
         signal_o => adc_dco_delay,
 
-        reg_clk_i => reg_clk,
-        reg_clk_ok_i => reg_clk_ok,
         write_strobe_i => write_strobe_i,
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o,
-        read_strobe_i => read_strobe_i,
-        read_data_o => read_data,
-        read_ack_o => read_ack_o
+        read_data_o => read_data
     );
 
     -- Temporary fixup of read_data_o

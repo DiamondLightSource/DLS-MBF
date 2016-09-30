@@ -11,24 +11,27 @@ proc check_timing {timingreport} {
 
 create_project -force amc525_lmbf amc525_lmbf -part xc7vx690tffg1761-2
 
+set_param project.enableVHDL2008 1
 set_property target_language VHDL [current_project]
 set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
 
+# Add our files and set them to VHDL 2008.  This needs to be done before reading
+# any externally generated files, particularly the interconnect.
+add_files built
+add_files $src_dir/vhd
+set_property FILE_TYPE "VHDL 2008" [get_files *.vhd]
 
 # Ensure we've read the block design and generated the associated files.
 read_bd interconnect/interconnect.bd
 open_bd_design interconnect/interconnect.bd
 validate_bd_design
 generate_target all [get_files interconnect/interconnect.bd]
-
-# Add the built files
-add_files built
-read_xdc built/top_pins.xdc
-read_xdc $src_dir/constr/clocks.xdc
 add_files interconnect/hdl/interconnect_wrapper.vhd
 
-# Add the remaining definition files
-add_files $src_dir/vhd
+# Load the constraints
+read_xdc built/top_pins.xdc
+read_xdc $src_dir/constr/clocks.xdc
+
 
 # Report IP Status before starting P&R
 report_ip_status
