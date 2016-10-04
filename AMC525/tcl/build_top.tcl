@@ -1,4 +1,6 @@
 set src_dir [lindex $argv 0]
+set hierarchy rebuilt
+# set hierarchy none
 
 # We put the timing check here so that at the point of call we don't have the
 # error message visible to us.
@@ -39,7 +41,7 @@ report_ip_status
 
 # run synthesis, report utilization and timing estimates, write checkpoint
 #
-synth_design -top top -flatten_hierarchy rebuilt
+synth_design -top top -flatten_hierarchy $hierarchy
 write_checkpoint -force checkpoints/post_synth
 report_timing_summary -file reports/post_synth_timing_summary.rpt
 
