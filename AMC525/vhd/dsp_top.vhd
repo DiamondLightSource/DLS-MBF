@@ -48,7 +48,9 @@ architecture dsp_top of dsp_top is
     signal command_register : reg_data_t;
 
     signal reset_dummy_adc : std_logic;
+    signal reset_dummy_adc_dsp : std_logic;
     signal dummy_adc : adc_inp_t;
+    signal dummy_adc_pl : adc_inp_t;
     signal dummy_dsp : adc_inp_channels;
     signal dummy_dsp_out : ddr0_data_channels;
     signal dsp_data_in : adc_inp_channels;
@@ -72,7 +74,20 @@ begin
     command_register <= register_file(COMMAND_REG);
     output_mux_select <= command_register(0);
 
-    reset_dummy_adc <= dsp_control_i.dummy;
+    reset_dummy_inst : entity work.dlyline generic map (
+        DLY => 2
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i(0) => dsp_control_i.dummy,
+        data_o(0) => reset_dummy_adc_dsp
+    );
+    reset_dummy_adc_inst : entity work.dlyline generic map (
+        DLY => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => reset_dummy_adc_dsp,
+        data_o(0) => reset_dummy_adc
+    );
 
 
     -- Unused registers
@@ -89,6 +104,7 @@ begin
             else
                 dummy_adc <= dummy_adc + 1;
             end if;
+            dummy_adc_pl <= dummy_adc;
         end if;
     end process;
 
@@ -97,7 +113,7 @@ begin
         dsp_clk_i => dsp_clk_i,
         dsp_clk_ok_i => dsp_clk_ok_i,
 
-        adc_data_i => dummy_adc,
+        adc_data_i => dummy_adc_pl,
         dsp_data_o => dummy_dsp
     );
 
