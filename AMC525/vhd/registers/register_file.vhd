@@ -14,6 +14,9 @@ entity register_file is
         write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
         write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- Register array
         register_data_o : out reg_data_array_t
@@ -36,5 +39,8 @@ begin
     end process;
 
     write_ack_o <= (others => '1');
+    read_ack_o <= (others => '1');
+    read_data_o <= register_file;
+
     register_data_o <= register_file;
 end;

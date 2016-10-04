@@ -63,6 +63,9 @@ begin
         write_strobe_i => write_strobe_i(REG_FILE_RANGE),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(REG_FILE_RANGE),
+        read_strobe_i => read_strobe_i(REG_FILE_RANGE),
+        read_data_o => read_data_o(REG_FILE_RANGE),
+        read_ack_o => read_ack_o(REG_FILE_RANGE),
         register_data_o => register_file
     );
 

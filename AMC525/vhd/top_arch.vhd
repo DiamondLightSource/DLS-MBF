@@ -161,7 +161,6 @@ architecture top of top is
     signal idelay_read_data : reg_data_t;
     -- FMC500 SPI interface
     signal fmc500m_spi_write_strobe : std_logic;
-    signal fmc500m_spi_write_data : reg_data_t;
     signal fmc500m_spi_write_ack : std_logic;
     signal fmc500m_spi_read_strobe : std_logic;
     signal fmc500m_spi_read_data : reg_data_t;
@@ -564,7 +563,7 @@ begin
         FMC_HB_N => FMC1_HB_N,
 
         spi_write_strobe_i => fmc500m_spi_write_strobe,
-        spi_write_data_i => fmc500m_spi_write_data,
+        spi_write_data_i => REGS_write_data,
         spi_write_ack_o => fmc500m_spi_write_ack,
         spi_read_strobe_i => fmc500m_spi_read_strobe,
         spi_read_data_o => fmc500m_spi_read_data,

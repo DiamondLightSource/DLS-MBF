@@ -76,6 +76,9 @@ begin
             end if;
         end if;
     end process;
+    write_ack_o(CONTROL_BITS_REG) <= '0';
+    read_data_o(CONTROL_BITS_REG) <= (others => '0');
+    read_ack_o(CONTROL_BITS_REG) <= '0';
 
     -- Memory generator.
     process (dsp_clk_i) begin
@@ -90,6 +93,7 @@ begin
             end if;
         end if;
     end process;
+    write_ack_o(MEM_GEN_REG) <= '1';
 
     pulsed_bits <= (
         0 => ddr0_data_error_i,

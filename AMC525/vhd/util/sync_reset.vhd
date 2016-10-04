@@ -24,7 +24,7 @@ architecture sync_reset of sync_reset is
     -- guessing that clk_ok_meta can be forced into an uncomfortable state.
     attribute async_reg : string;
     attribute async_reg of clk_ok_meta : signal is "TRUE";
-    attribute async_reg of sync_clk_ok_o : signal is "TRUE";
+    attribute async_reg of clk_ok_delay : signal is "TRUE";
 
 begin
     process (clk_ok_i, clk_i) begin

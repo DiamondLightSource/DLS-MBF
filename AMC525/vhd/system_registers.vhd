@@ -46,10 +46,10 @@ end;
 architecture system_registers of system_registers is
     constant VERSION_REG : natural := 0;
     constant STATUS_REG : natural := 1;
-    constant CONTROL_REG : natural := STATUS_REG;
-    constant IDELAY_REG : natural := 2;
-    constant FMC_SPI_REG : natural := 3;
-    subtype UNUSED_REG is natural range 4 to REG_ADDR_COUNT-1;
+    constant CONTROL_REG : natural := 2;
+    constant IDELAY_REG : natural := 3;
+    constant FMC_SPI_REG : natural := 4;
+    subtype UNUSED_REG is natural range 5 to REG_ADDR_COUNT-1;
 
     signal status_read_data : reg_data_t;
 
@@ -60,6 +60,7 @@ begin
     read_ack_o(VERSION_REG) <= '1';
 
     -- Status bits register, read only.
+    write_ack_o(STATUS_REG) <= '1';
     read_data_o(STATUS_REG) <= status_read_data;
     read_ack_o(STATUS_REG) <= '1';
     -- Pipeline the status to avoid annoying timing problems.
@@ -77,6 +78,10 @@ begin
         write_strobe_i => write_strobe_i(CONTROL_REG),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(CONTROL_REG),
+        read_strobe_i => read_strobe_i(CONTROL_REG),
+        read_data_o => read_data_o(CONTROL_REG),
+        read_ack_o => read_ack_o(CONTROL_REG),
+
         register_o => control_data_o
     );
 
