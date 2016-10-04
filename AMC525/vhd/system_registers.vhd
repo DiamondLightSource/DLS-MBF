@@ -32,10 +32,12 @@ entity system_registers is
         -- IDELAY control register on REF clock.  No ack on this interface, no
         -- read strobe required.
         idelay_write_strobe_o : out std_logic;
+        idelay_write_data_o : out reg_data_t;
         idelay_read_data_i : in reg_data_t;
 
         -- FMC500 SPI control
         fmc500m_spi_write_strobe_o : out std_logic;
+        fmc500m_spi_write_data_o : out reg_data_t;
         fmc500m_spi_write_ack_i : in std_logic;
         fmc500m_spi_read_strobe_o : out std_logic;
         fmc500m_spi_read_data_i : in reg_data_t;
@@ -92,8 +94,10 @@ begin
         out_clk_ok_i => ref_clk_ok_i,
 
         reg_write_strobe_i => write_strobe_i(IDELAY_REG),
+        reg_write_data_i => write_data_i,
         reg_write_ack_o => write_ack_o(IDELAY_REG),
         out_write_strobe_o => idelay_write_strobe_o,
+        out_write_data_o => idelay_write_data_o,
         out_write_ack_i => '1',
 
         reg_read_strobe_i => read_strobe_i(IDELAY_REG),
@@ -106,6 +110,7 @@ begin
 
     -- FMC SPI register
     fmc500m_spi_write_strobe_o <= write_strobe_i(FMC_SPI_REG);
+    fmc500m_spi_write_data_o <= write_data_i;
     write_ack_o(FMC_SPI_REG) <= fmc500m_spi_write_ack_i;
     fmc500m_spi_read_strobe_o <= read_strobe_i(FMC_SPI_REG);
     read_data_o(FMC_SPI_REG) <= fmc500m_spi_read_data_i;

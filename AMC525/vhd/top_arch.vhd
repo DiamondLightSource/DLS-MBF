@@ -131,21 +131,28 @@ architecture top of top is
 
     -- Top register wiring
     signal system_write_strobe : reg_strobe_t;
+    signal system_write_data : reg_data_t;
     signal system_write_ack : reg_strobe_t;
     signal system_read_strobe : reg_strobe_t;
     signal system_read_data : reg_data_array_t(REG_ADDR_RANGE);
     signal system_read_ack : reg_strobe_t;
+
     signal ctrl_write_strobe : reg_strobe_t;
+    signal ctrl_write_data : reg_data_t;
     signal ctrl_write_ack : reg_strobe_t;
     signal ctrl_read_strobe : reg_strobe_t;
     signal ctrl_read_data : reg_data_array_t(REG_ADDR_RANGE);
     signal ctrl_read_ack : reg_strobe_t;
+
     signal dsp0_write_strobe : reg_strobe_t;
+    signal dsp0_write_data : reg_data_t;
     signal dsp0_write_ack : reg_strobe_t;
     signal dsp0_read_strobe : reg_strobe_t;
     signal dsp0_read_data : reg_data_array_t(REG_ADDR_RANGE);
     signal dsp0_read_ack : reg_strobe_t;
+
     signal dsp1_write_strobe : reg_strobe_t;
+    signal dsp1_write_data : reg_data_t;
     signal dsp1_write_ack : reg_strobe_t;
     signal dsp1_read_strobe : reg_strobe_t;
     signal dsp1_read_data : reg_data_array_t(REG_ADDR_RANGE);
@@ -158,9 +165,12 @@ architecture top of top is
     signal control_data : reg_data_t;
     -- IDELAY control
     signal idelay_write_strobe : std_logic;
+    signal idelay_write_data : reg_data_t;
     signal idelay_read_data : reg_data_t;
+
     -- FMC500 SPI interface
     signal fmc500m_spi_write_strobe : std_logic;
+    signal fmc500m_spi_write_data : reg_data_t;
     signal fmc500m_spi_write_ack : std_logic;
     signal fmc500m_spi_read_strobe : std_logic;
     signal fmc500m_spi_read_data : reg_data_t;
@@ -289,7 +299,7 @@ begin
         dsp_reset_n_o => dsp_reset_n,
 
         write_strobe_i => idelay_write_strobe,
-        write_data_i => REGS_write_data,
+        write_data_i => idelay_write_data,
         read_data_o => idelay_read_data,
 
         adc_pll_ok_o => adc_pll_ok
@@ -563,7 +573,7 @@ begin
         FMC_HB_N => FMC1_HB_N,
 
         spi_write_strobe_i => fmc500m_spi_write_strobe,
-        spi_write_data_i => REGS_write_data,
+        spi_write_data_i => fmc500m_spi_write_data,
         spi_write_ack_o => fmc500m_spi_write_ack,
         spi_read_strobe_i => fmc500m_spi_read_strobe,
         spi_read_data_o => fmc500m_spi_read_data,
@@ -605,24 +615,28 @@ begin
         read_ack_o => REGS_read_ack,
 
         system_write_strobe_o => system_write_strobe,
+        system_write_data_o => system_write_data,
         system_write_ack_i => system_write_ack,
         system_read_strobe_o => system_read_strobe,
         system_read_data_i => system_read_data,
         system_read_ack_i => system_read_ack,
 
         ctrl_write_strobe_o => ctrl_write_strobe,
+        ctrl_write_data_o => ctrl_write_data,
         ctrl_write_ack_i => ctrl_write_ack,
         ctrl_read_strobe_o => ctrl_read_strobe,
         ctrl_read_data_i => ctrl_read_data,
         ctrl_read_ack_i => ctrl_read_ack,
 
         dsp0_write_strobe_o => dsp0_write_strobe,
+        dsp0_write_data_o => dsp0_write_data,
         dsp0_write_ack_i => dsp0_write_ack,
         dsp0_read_strobe_o => dsp0_read_strobe,
         dsp0_read_data_i => dsp0_read_data,
         dsp0_read_ack_i => dsp0_read_ack,
 
         dsp1_write_strobe_o => dsp1_write_strobe,
+        dsp1_write_data_o => dsp1_write_data,
         dsp1_write_ack_i => dsp1_write_ack,
         dsp1_read_strobe_o => dsp1_read_strobe,
         dsp1_read_data_i => dsp1_read_data,
@@ -637,7 +651,7 @@ begin
         ref_clk_ok_i => ref_clk_ok,
 
         write_strobe_i => system_write_strobe,
-        write_data_i => REGS_write_data,
+        write_data_i => system_write_data,
         write_ack_o => system_write_ack,
         read_strobe_i => system_read_strobe,
         read_data_o => system_read_data,
@@ -648,9 +662,11 @@ begin
         control_data_o => control_data,
 
         idelay_write_strobe_o => idelay_write_strobe,
+        idelay_write_data_o => idelay_write_data,
         idelay_read_data_i => idelay_read_data,
 
         fmc500m_spi_write_strobe_o => fmc500m_spi_write_strobe,
+        fmc500m_spi_write_data_o => fmc500m_spi_write_data,
         fmc500m_spi_write_ack_i => fmc500m_spi_write_ack,
         fmc500m_spi_read_strobe_o => fmc500m_spi_read_strobe,
         fmc500m_spi_read_data_i => fmc500m_spi_read_data,
@@ -662,7 +678,7 @@ begin
         dsp_clk_ok_i => dsp_clk_ok,
 
         write_strobe_i => ctrl_write_strobe,
-        write_data_i => REGS_write_data,
+        write_data_i => ctrl_write_data,
         write_ack_o => ctrl_write_ack,
         read_strobe_i => ctrl_read_strobe,
         read_data_o => ctrl_read_data,
@@ -695,7 +711,7 @@ begin
         dac_data_o => dsp0_dac_data,
 
         write_strobe_i => dsp0_write_strobe,
-        write_data_i => REGS_write_data,
+        write_data_i => dsp0_write_data,
         write_ack_o => dsp0_write_ack,
         read_strobe_i => dsp0_read_strobe,
         read_data_o => dsp0_read_data,
@@ -719,7 +735,7 @@ begin
         dac_data_o => dsp1_dac_data,
 
         write_strobe_i => dsp1_write_strobe,
-        write_data_i => REGS_write_data,
+        write_data_i => dsp1_write_data,
         write_ack_o => dsp1_write_ack,
         read_strobe_i => dsp1_read_strobe,
         read_data_o => dsp1_read_data,

@@ -19,9 +19,11 @@ entity register_cc is
 
         -- Write interface
         reg_write_strobe_i : in std_logic;
+        reg_write_data_i : in reg_data_t;
         reg_write_ack_o : out std_logic;
 
         out_write_strobe_o : out std_logic;
+        out_write_data_o : out reg_data_t;
         out_write_ack_i : in std_logic;
 
         -- Read interface
@@ -82,5 +84,6 @@ begin
         out_ack_i => out_write_ack_i,
         reg_ack_o => reg_write_ack_o
     );
+    out_write_data_o <= reg_write_data_i;
 
 end;

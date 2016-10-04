@@ -28,9 +28,11 @@ entity register_mux is
         -- Register write.
         write_strobe_i : in std_logic;
         write_address_i : in reg_addr_t;
+        write_data_i : in reg_data_t;
         write_ack_o : out std_logic;
 
         write_strobe_o : out reg_strobe_t;
+        write_data_o : out reg_data_t;
         write_ack_i : in reg_strobe_t
     );
 end;
@@ -74,5 +76,8 @@ begin
             read_ack_o <= read_ack;
         end if;
     end process;
+
+    -- Write data can just be allowed to propagate
+    write_data_o <= write_data_i;
 
 end;

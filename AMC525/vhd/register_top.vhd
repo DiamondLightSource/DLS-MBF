@@ -28,6 +28,7 @@ entity register_top is
 
         -- System registers.
         system_write_strobe_o : out reg_strobe_t;
+        system_write_data_o : out reg_data_t;
         system_write_ack_i : in reg_strobe_t;
         system_read_strobe_o : out reg_strobe_t;
         system_read_data_i : in reg_data_array_t;
@@ -37,6 +38,7 @@ entity register_top is
 
         -- Control registers.
         ctrl_write_strobe_o : out reg_strobe_t;
+        ctrl_write_data_o : out reg_data_t;
         ctrl_write_ack_i : in reg_strobe_t;
         ctrl_read_strobe_o : out reg_strobe_t;
         ctrl_read_data_i : in reg_data_array_t;
@@ -44,6 +46,7 @@ entity register_top is
 
         -- Register output to DSP0
         dsp0_write_strobe_o : out reg_strobe_t;
+        dsp0_write_data_o : out reg_data_t;
         dsp0_write_ack_i : in reg_strobe_t;
         dsp0_read_strobe_o : out reg_strobe_t;
         dsp0_read_data_i : in reg_data_array_t;
@@ -51,6 +54,7 @@ entity register_top is
 
         -- Register output to DSP1
         dsp1_write_strobe_o : out reg_strobe_t;
+        dsp1_write_data_o : out reg_data_t;
         dsp1_write_ack_i : in reg_strobe_t;
         dsp1_read_strobe_o : out reg_strobe_t;
         dsp1_read_data_i : in reg_data_array_t;
@@ -66,6 +70,7 @@ architecture register_top of register_top is
 
     -- CTRL clock domain crossing
     signal ctrl_write_strobe : std_logic;
+    signal ctrl_write_data : reg_data_t;
     signal ctrl_write_ack : std_logic;
     signal ctrl_read_strobe : std_logic;
     signal ctrl_read_data : reg_data_t;
@@ -73,6 +78,7 @@ architecture register_top of register_top is
 
     -- DSP0 clock domain crossing
     signal dsp0_write_strobe : std_logic;
+    signal dsp0_write_data : reg_data_t;
     signal dsp0_write_ack : std_logic;
     signal dsp0_read_strobe : std_logic;
     signal dsp0_read_data : reg_data_t;
@@ -80,6 +86,7 @@ architecture register_top of register_top is
 
     -- DSP1 clock domain crossing
     signal dsp1_write_strobe : std_logic;
+    signal dsp1_write_data : reg_data_t;
     signal dsp1_write_ack : std_logic;
     signal dsp1_read_strobe : std_logic;
     signal dsp1_read_data : reg_data_t;
@@ -102,15 +109,17 @@ begin
 
         write_strobe_i => write_strobe_i(SYSTEM_MOD),
         write_address_i => write_address_i,
+        write_data_i => write_data_i,
         write_ack_o => write_ack_o(SYSTEM_MOD),
 
         write_strobe_o => system_write_strobe_o,
+        write_data_o => system_write_data_o,
         write_ack_i => system_write_ack_i
     );
 
 
     -- -------------------------------------------------------------------------
-    -- All the remaining registers are clock domain crossed.
+    -- All the remaining registers are clock domain crossed to the DSP clock.
 
     -- Clock domain crossing to dsp clock domain for CTRL and DSP registers.
     ctrl_register_cc_inst : entity work.register_cc port map (
@@ -119,8 +128,10 @@ begin
         out_clk_ok_i => dsp_clk_ok_i,
 
         reg_write_strobe_i => write_strobe_i(CTRL_MOD),
+        reg_write_data_i => write_data_i,
         reg_write_ack_o => write_ack_o(CTRL_MOD),
         out_write_strobe_o => ctrl_write_strobe,
+        out_write_data_o => ctrl_write_data,
         out_write_ack_i => ctrl_write_ack,
 
         reg_read_strobe_i => read_strobe_i(CTRL_MOD),
@@ -137,8 +148,10 @@ begin
         out_clk_ok_i => dsp_clk_ok_i,
 
         reg_write_strobe_i => write_strobe_i(DSP0_MOD),
+        reg_write_data_i => write_data_i,
         reg_write_ack_o => write_ack_o(DSP0_MOD),
         out_write_strobe_o => dsp0_write_strobe,
+        out_write_data_o => dsp0_write_data,
         out_write_ack_i => dsp0_write_ack,
 
         reg_read_strobe_i => read_strobe_i(DSP0_MOD),
@@ -155,8 +168,10 @@ begin
         out_clk_ok_i => dsp_clk_ok_i,
 
         reg_write_strobe_i => write_strobe_i(DSP1_MOD),
+        reg_write_data_i => write_data_i,
         reg_write_ack_o => write_ack_o(DSP1_MOD),
         out_write_strobe_o => dsp1_write_strobe,
+        out_write_data_o => dsp1_write_data,
         out_write_ack_i => dsp1_write_ack,
 
         reg_read_strobe_i => read_strobe_i(DSP1_MOD),
@@ -187,9 +202,11 @@ begin
 
         write_strobe_i => ctrl_write_strobe,
         write_address_i => write_address_i,
+        write_data_i => ctrl_write_data,
         write_ack_o => ctrl_write_ack,
 
         write_strobe_o => ctrl_write_strobe_o,
+        write_data_o => ctrl_write_data_o,
         write_ack_i => ctrl_write_ack_i
     );
 
@@ -208,9 +225,11 @@ begin
 
         write_strobe_i => dsp0_write_strobe,
         write_address_i => write_address_i,
+        write_data_i => dsp0_write_data,
         write_ack_o => dsp0_write_ack,
 
         write_strobe_o => dsp0_write_strobe_o,
+        write_data_o => dsp0_write_data_o,
         write_ack_i => dsp0_write_ack_i
     );
 
@@ -229,9 +248,11 @@ begin
 
         write_strobe_i => dsp1_write_strobe,
         write_address_i => write_address_i,
+        write_data_i => dsp1_write_data,
         write_ack_o => dsp1_write_ack,
 
         write_strobe_o => dsp1_write_strobe_o,
+        write_data_o => dsp1_write_data_o,
         write_ack_i => dsp1_write_ack_i
     );
 
