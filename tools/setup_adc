@@ -7,10 +7,8 @@ import time
 from driver import REGS, ADC
 
 # Power on the ADC and take it out of power down
-control = REGS[2, 1:2]
-c = control[0]
-control[0] = c | 2
-while (control[0] & 2) == 0:
+REGS[0, 2] |= 1
+while REGS[0, 1] & (1 << 3) == 0:
     pass
 
 # Start by resetting the ADC, must sleep for 5ms before doing anything more.
@@ -43,5 +41,6 @@ ADC[0x568] = 0x01               # parallel interleaved mode (two converters)
 # ./reg 0 5 1
 # # Configure best idelay
 # ./reg 3 0 0x112
-REGS[0, 5] = 1
-REGS[3, 0] = 0x112
+REGS[2, 0] = 1
+REGS[3, 0] = 1
+REGS[0, 3] = 0x10c

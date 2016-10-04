@@ -51,10 +51,10 @@ Usage:  reg bank [reg [value]]
 Registers are grouped into banks with (at present) 32 registers in each bank.
 The currently active banks are:
 
-    0   Memory capture controller
-    1   Digital IO card controller
-    2   FMC500M controller
-    4   Clocking control
+    0   System registers: top level hardware control
+    1   Control registers: common control interface for DSP control
+    2   DSP 0 control
+    4   DSP 1 control
 
 reg bank
     Reads entire bank of 32 registers
@@ -86,70 +86,64 @@ Registers
 Bank 0 registers
 ~~~~~~~~~~~~~~~~
 
-Memory control
+Hardware control registers
 
-R/W 0, 1    Initial value for data pattern
-R/W 2, 3    Increment for data pattern
-
-R   4, 5, 6 Data transfer error counters, should NEVER be non zero!
-R   7[0]    Set to 1 during writing
-R   7[1]    Set to 1 if ADC data selected, 0 if pattern data selected
-R   8       Current capture address for writing to DRAM
-
-W   4       When written triggers write of selected number of 64-bit transfers
-W   5[0]    Write 1 for ADC capture
-
-So to capture a full memory bank of ADC data, perform:
-
-    $ ./reg 0 5 1           # Select ADC capture
-    $ ./reg 0 4 0xFFFFFFE   # (Actually two more writes than selected occur!)
+R   0       For version info, currently reads as 0
+R   1       Status register
+R   1[0]        Set if DSP clock is currently good
+R   1[1]        Set during capture to DDR0
+R   1[2]        FMC500 VCXO power ok
+R   1[3]        FMC500 ADC power ok
+R   1[4]        FMC500 DAC power ok
+R   1[5]        FMC500 PLL status LD1: VCXO locked
+R   1[6]        FMC500 PLL status LD2: VCO locked
+R   1[7]        FMC500 DCLKout2
+R   1[8]        FMC500 SDCLKout3
+R   1[9]        FMC500 temperature alert
+RW  2       Control register
+RW  2[0]        FMC500 ADC power enable
+RW  2[1]        FMC500 DAC power enable
+RW  2[2]        FMC500 VCXO power enable
+RW  2[3]        FMC500 PLL clkin sel0
+RW  2[4]        FMC500 PLL clkin sel1
+RW  2[5]        FMC500 PLL sync
+RW  3       ADC DCO IDELAY control
+W   3[4:0]      IDELAY value
+W   3[8]        Enable write to IDELAY, so write number of form 0x1xx
+W   3[12]       Enable increment or decrement of IDELAY
+W   3[13]       Increment if 1, decrement if 0
+W   3[31]       Force reset of ADC PLL
+R   3[4:0]      Current IDELAY setting
+R   3[31]       Set if ADC PLL not locked
+RW  4       FMC500 SPI control
 
 
 Bank 1 registers
 ~~~~~~~~~~~~~~~~
 
-Digitial I/O
+General DSP control
 
-R   0-31    Returns current value on DIO pins (input or output)
-
-The available DIO outputs are current assigned thus:
-
-    0   Output  PLL DCLKout2
-    1   Output  PLL SDCLKout3
-    2   Output  PLL VCXO lock (also on top LED)
-    3   Output  PLL VCO lock (also on bottom LED)
-    4   Input
-
-
-Bank 2 registers
-~~~~~~~~~~~~~~~~
-
-R/W 0       SPI control
-
-R/W 1[0]    Enable VCXO power (doesn't actually seem to do anything
-R/W 1[1]    Enable ADC power
-R/W 1[2]    Enable DAC power
-R/W 1[3]    ADC power down input
-R/W 1[4]    DAC reset input
-R/W 1[10:8] Miscellaneous unused PLL inputs
-
-R   2[0]    VCXO power status (always 1)
-R   2[1]    ADC power status
-R   2[2]    DAC power status
-R   2[4]    PLL VCXO locked
-R   2[5]    PLL VCO locked
+RW  0       Captures single clock pulsed events.  Write a bit pattern to reset
+            those bits and latch the current state for reading.
+    0[0]        Set if DDR0 data error detected
+    0[1]        Set if DDR0 address error detected
+    0[2]        Set if DDR0 write error detected
+W   1       Reserved for strobed control bits
+W   2       Initiate capture to DDR0 of requested number of samples
+R   2       Returns current DDR0 capture address
 
 
-Bank 3 registers
-~~~~~~~~~~~~~~~~
+Bank 2,3 registers
+~~~~~~~~~~~~~~~~~~
 
-W   0[4:0]  IDELAY value
-W   0[8]    Enable write to IDELAY, so write number of form 0x1xx
-W   0[12]   Enable increment or decrement of IDELAY
-W   0[13]   Increment if 1, decrement if 0
+W   0[0]    Select DDR0 output: 0 => dummy data, 1 => incoming ADC data
 
-R   0[4:0]  Current IDELAY setting
 
+So to capture a full memory bank of ADC data, perform:
+
+    $ ./reg 2 0 1           # Select ADC capture
+    $ ./reg 3 0 1           # Select ADC capture
+    $ ./reg 1 2 0xFFFFFFE   # (Actually two more writes than selected occur!)
 
 
 Data capture
@@ -165,9 +159,9 @@ where setting can be one of the following:
    0x07  Alternating 0000/3FFF
    0x0F  ramp output
 
-Capture is triggered by writing the capture length to 0:4:
+Capture is triggered by writing the capture length to 1:2:
 
-    $ ./reg 0 4 length
+    $ ./reg 1 2 length
 
 A length of 0xFFFFFFE will fill the entire 2GB buffer.
 
@@ -177,25 +171,10 @@ Data can be read out by reading /dev/amc525_lmbf.0.ddr0
 A note on the ADC clock
 -----------------------
 
-If the clock changes externally then the internal PLL will unlock and will need
-to be manually reset.  The clock unlock status will show in bit 2:3[31] (run
-command `./reg 2 3`) and can be reset by setting the same bit (run command
-`./reg 2 3 0x80000000`).
+If the clock changes externally then the internal PLL will unlock and may need
+to be manually reset (though I've not yet seen this actually needed).  The clock
+unlock status will show in bit 0:3[31] (run command `./reg 0 3`) and can be
+reset by setting the same bit (run command `./reg 0 3 0x80000000`).
 
-The easiest way to configure the PLL for passthrough is to uncomment the three
+The easiest way to configure the PLL for passthrough is to uncomment the
 labelled lines near the bottom of setup_pll.
-
-
-BUGS
-----
-
-There's something wrong about how the first 256 bytes are written.  I think
-there are two bugs here:
-
-1. It looks as if writes start at offset 0x100, not 0 ... how can that have
-changed?  It certainly used to work!
-
-2. Something seems to go wrong with the last burst ... but I can't reliably
-reproduce it, it seems that the behaviour changes subtly.
-
-I'm inclined to fear a timing error as well as a logic error.  Ho hum.

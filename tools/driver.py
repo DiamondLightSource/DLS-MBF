@@ -13,7 +13,7 @@ LMBF_MAP_SIZE = ord('L') << 8           # _IO('L', 0)
 LMBF_BUF_SIZE = (ord('L') << 8) | 1     # _IO('L', 1)
 
 # Register map parameters.  These must match definitions in vhd/defines.vhd
-MOD_ADDR_COUNT = 2**4
+MOD_ADDR_COUNT = 2**2
 REG_ADDR_COUNT = 2**5
 
 
@@ -37,12 +37,7 @@ class Regs:
         regs = regs.reshape((MOD_ADDR_COUNT, REG_ADDR_COUNT))
 
         self.regs = regs
-        self.mem_gen = regs[0]
-        self.dig_io  = regs[1]
-        self.fmc500  = regs[2]
-        self.debug   = regs[15]
-
-        self.spi_reg = self.fmc500[0:1]
+        self.spi_reg = self.regs[0, 4:5]
 
     def spi_read(self, dev, addr):
         dev &= 3

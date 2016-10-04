@@ -4,14 +4,18 @@ import driver
 from driver import REGS, ADC
 import numpy
 
+CAPTURE = 1024*1024
+
 # Configure checkerboard ADC capture
-idelay = REGS[3, 0] & 0xFF
+idelay = REGS[0, 3] & 0xFF
 ADC[0x550] = 4
 
-def capture(count = 1024):
+def capture(count):
     # Each counted capture corresponds to 8 captured bytes
     bytes = 8 * count
-    REGS[0, 4] = count
+    REGS[1, 2] = count + 32
+    while REGS[0, 1] & 2:
+        pass
     with open(driver.DDR0_NAME) as ddr0:
         buf = numpy.frombuffer(ddr0.read(bytes), dtype = numpy.uint16)
     return buf.reshape((-1, 2, 2))
@@ -23,15 +27,18 @@ def assess(c):
     v = c.std(0).mean()
     return v == 0 and (numpy.diff(c.mean(0)) == 0).all()
 
-good = numpy.zeros(32, dtype = bool)
-for delay in range(32):
-    REGS[3, 0] = 0x100 + delay
-    c = capture(1024*1024)
+# The IDELAY step size is 1/(32 * 2 * f_REF) with f_REF = 200 MHz, which comes
+# to 78.125 ps, so 25 steps covers the 2ns input clock
+N = 26
+good = numpy.zeros(N, dtype = bool)
+for delay in range(N):
+# for delay in [12]:
+    REGS[0, 3] = 0x100 + delay
+    c = capture(CAPTURE)
     m = c.std(0).mean()
     good[delay] = assess(c)
-    print delay, m, show(c.mean(0)), good[delay]
-print good
+    print '%02x' % delay, m, show(c.mean(0)), good[delay]
 
 # Restore previous state
 ADC[0x550] = 0
-REGS[3, 0] = 0x100 + idelay
+REGS[0, 3] = 0x100 + idelay
