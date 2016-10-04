@@ -84,16 +84,17 @@ begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             if write_strobe_i(MEM_GEN_REG) = '1' then
-                ddr0_data_valid_o <= '1';
+                ddr0_capture_enable_o <= '1';
                 write_counter <= unsigned(write_data_i(DDR0_ADDR_RANGE));
             elsif write_counter > 0 then
                 write_counter <= write_counter - 1;
             else
-                ddr0_data_valid_o <= '0';
+                ddr0_capture_enable_o <= '0';
             end if;
         end if;
     end process;
     write_ack_o(MEM_GEN_REG) <= '1';
+    ddr0_data_valid_o <= '1';
 
     pulsed_bits <= (
         0 => ddr0_data_error_i,
