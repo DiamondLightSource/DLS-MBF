@@ -141,6 +141,13 @@ begin
         end if;
     end process;
 
-    dac_data_o <= (others => '0');
+    adc_to_dac_inst : entity work.dlyreg generic map (
+        DLY => 3,
+        DW => 16
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(adc_data_i) & "00",
+        signed(data_o) => dac_data_o
+    );
 
 end;

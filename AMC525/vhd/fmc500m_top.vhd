@@ -194,10 +194,24 @@ begin
         signed(q2_o) => adc_data_b_o
     );
 
-
-    -- DAC
-    dac_data <= (others => '0');
-    dac_dci <= '0';
+    -- DDR data to DAC output
+    dac_data_inst : entity work.oddr_array generic map (
+        COUNT => 16
+    ) port map (
+        clk_i => adc_clk_i,
+        ce_i => '1',
+        d1_i => std_logic_vector(dac_data_a_i),
+        d2_i => std_logic_vector(dac_data_b_i),
+        q_o => dac_data
+    );
+    dac_dci_inst : entity work.oddr_array port map (
+        clk_i => adc_clk_i,
+        ce_i => '1',
+        d1_i(0) => '1',
+        d2_i(0) => '0',
+        q_o(0) => dac_dci
+    );
+    -- In word mode we don't use the frame signal
     dac_frame <= '0';
 
 
