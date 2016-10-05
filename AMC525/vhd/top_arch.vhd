@@ -7,6 +7,7 @@ use unisim.vcomponents.all;
 
 library work;
 use work.defines.all;
+use work.fmc500m_defs.all;
 
 architecture top of top is
     -- IO instances
@@ -770,9 +771,7 @@ begin
         4 => fmc500_inputs.dac_pwr_good,
         5 => fmc500_inputs.pll_status_ld1,
         6 => fmc500_inputs.pll_status_ld2,
-        7 => fmc500_inputs.pll_dclkout2,
-        8 => fmc500_inputs.pll_sdclkout3,
-        9 => fmc500_inputs.temp_alert,
+        7 => not fmc500_inputs.temp_alert_n,
         others => '0'
     );
 

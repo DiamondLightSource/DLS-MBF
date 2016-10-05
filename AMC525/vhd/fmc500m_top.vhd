@@ -6,6 +6,7 @@ use ieee.numeric_std.all;
 
 use work.support.all;
 use work.defines.all;
+use work.fmc500m_defs.all;
 
 entity fmc500m_top is
     port (
@@ -91,7 +92,7 @@ architecture fmc500m_top of fmc500m_top is
     signal dac_pwr_good : std_logic;
     signal vcxo_pwr_good : std_logic;
     signal ext_trig : std_logic;
-    signal temp_alert : std_logic;
+    signal temp_alert_n : std_logic;
 
 
 begin
@@ -148,7 +149,7 @@ begin
         dac_pwr_good_o => dac_pwr_good,
         vcxo_pwr_good_o => vcxo_pwr_good,
         ext_trig_o => ext_trig,
-        temp_alert_o => temp_alert
+        temp_alert_o => temp_alert_n
     );
 
 
@@ -230,7 +231,7 @@ begin
     misc_inputs_o.pll_status_ld2 <= pll_status_ld2;
     misc_inputs_o.pll_dclkout2 <= pll_dclkout2;
     misc_inputs_o.pll_sdclkout3 <= pll_sdclkout3;
-    misc_inputs_o.temp_alert <= temp_alert;
+    misc_inputs_o.temp_alert_n <= temp_alert_n;
 
 
     -- Fixed reset state

@@ -74,16 +74,12 @@ begin
     command_register <= register_file(COMMAND_REG);
     output_mux_select <= command_register(0);
 
-    reset_dummy_inst : entity work.dlyline generic map (
-        DLY => 2
-    ) port map (
+    reset_dummy_inst : entity work.dlyreg port map (
         clk_i => dsp_clk_i,
         data_i(0) => dsp_control_i.dummy,
         data_o(0) => reset_dummy_adc_dsp
     );
-    reset_dummy_adc_inst : entity work.dlyline generic map (
-        DLY => 2
-    ) port map (
+    reset_dummy_adc_inst : entity work.dlyreg port map (
         clk_i => adc_clk_i,
         data_i(0) => reset_dummy_adc_dsp,
         data_o(0) => reset_dummy_adc

@@ -97,9 +97,7 @@ R   1[3]        FMC500 ADC power ok
 R   1[4]        FMC500 DAC power ok
 R   1[5]        FMC500 PLL status LD1: VCXO locked
 R   1[6]        FMC500 PLL status LD2: VCO locked
-R   1[7]        FMC500 DCLKout2
-R   1[8]        FMC500 SDCLKout3
-R   1[9]        FMC500 temperature alert
+R   1[7]        FMC500 temperature alert
 RW  2       Control register
 RW  2[0]        FMC500 ADC power enable
 RW  2[1]        FMC500 DAC power enable
