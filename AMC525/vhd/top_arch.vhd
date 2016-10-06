@@ -2,10 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
-library work;
 use work.defines.all;
 use work.fmc500m_defs.all;
 
@@ -126,6 +122,9 @@ architecture top of top is
     signal dsp1_adc_data : adc_inp_t;
     signal dsp0_dac_data : dac_out_t;
     signal dsp1_dac_data : dac_out_t;
+    signal dac_data_a : dac_out_t;
+    signal dac_data_b : dac_out_t;
+    signal dac_frame : std_logic;
     signal fast_ext_trigger : std_logic;
     signal fmc500_outputs : fmc500_outputs_t;
     signal fmc500_inputs : fmc500_inputs_t;
@@ -168,6 +167,9 @@ architecture top of top is
     signal idelay_write_strobe : std_logic;
     signal idelay_write_data : reg_data_t;
     signal idelay_read_data : reg_data_t;
+    -- DAC test
+    signal dac_test_pattern : reg_data_array_t(0 to 1);
+    signal dac_test_mode : std_logic;
 
     -- FMC500 SPI interface
     signal fmc500m_spi_write_strobe : std_logic;
@@ -584,8 +586,9 @@ begin
         adc_data_a_o => dsp0_adc_data,
         adc_data_b_o => dsp1_adc_data,
 
-        dac_data_a_i => dsp0_dac_data,
-        dac_data_b_i => dsp1_dac_data,
+        dac_data_a_i => dac_data_a,
+        dac_data_b_i => dac_data_b,
+        dac_frame_i => dac_frame,
 
         ext_trig_o => fast_ext_trigger,
         misc_outputs_i => fmc500_outputs,
@@ -671,7 +674,9 @@ begin
         fmc500m_spi_write_ack_i => fmc500m_spi_write_ack,
         fmc500m_spi_read_strobe_o => fmc500m_spi_read_strobe,
         fmc500m_spi_read_data_i => fmc500m_spi_read_data,
-        fmc500m_spi_read_ack_i => fmc500m_spi_read_ack
+        fmc500m_spi_read_ack_i => fmc500m_spi_read_ack,
+
+        dac_test_pattern_o => dac_test_pattern
     );
 
     control_top_inst : entity work.control_top port map (
@@ -751,6 +756,19 @@ begin
         dsp_status_o => dsp1_status
     );
 
+
+    -- Generate DAC test data if necessary
+    dac_test_pattern_inst : entity work.dac_test_pattern port map (
+        adc_clk_i => adc_clk,
+        test_mode_i => dac_test_mode,
+        test_pattern_i => dac_test_pattern,
+        dac_data_a_i => dsp0_dac_data,
+        dac_data_b_i => dsp1_dac_data,
+        dac_data_a_o => dac_data_a,
+        dac_data_b_o => dac_data_b,
+        dac_frame_o => dac_frame
+    );
+
     -- Reorder DDR0 data: we want alternating dsp0/dsp1 values.
     DSP_DDR0_data(15 downto  0) <= dsp0_ddr0_data(0);
     DSP_DDR0_data(31 downto 16) <= dsp1_ddr0_data(0);
@@ -771,7 +789,8 @@ begin
         4 => fmc500_inputs.dac_pwr_good,
         5 => fmc500_inputs.pll_status_ld1,
         6 => fmc500_inputs.pll_status_ld2,
-        7 => not fmc500_inputs.temp_alert_n,
+        7 => fmc500_inputs.dac_irqn,
+        8 => not fmc500_inputs.temp_alert_n,
         others => '0'
     );
 
@@ -781,5 +800,6 @@ begin
     fmc500_outputs.pll_clkin_sel0 <= control_data(3);
     fmc500_outputs.pll_clkin_sel1 <= control_data(4);
     fmc500_outputs.pll_sync <= control_data(5);
+    dac_test_mode <= control_data(6);
 
 end;

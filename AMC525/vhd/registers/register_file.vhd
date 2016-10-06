@@ -24,7 +24,7 @@ entity register_file is
 end;
 
 architecture register_file of register_file is
-    signal register_file : reg_data_array_t(register_data_o'RANGE) :=
+    signal register_file : reg_data_array_t(write_strobe_i'RANGE) :=
         (others => (others => '0'));
 
 begin

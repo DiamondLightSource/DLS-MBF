@@ -34,8 +34,9 @@ entity fmc500m_top is
         adc_data_b_o : out adc_inp_t;
 
         -- DAC clock and data (clocked by ADC clock)
-        dac_data_a_i : dac_out_t;
-        dac_data_b_i : dac_out_t;
+        dac_data_a_i : in dac_out_t;
+        dac_data_b_i : in dac_out_t;
+        dac_frame_i : in std_logic;
 
         -- Miscellaneous IO signals
         ext_trig_o : out std_logic;     -- Fast external trigger
@@ -76,7 +77,6 @@ architecture fmc500m_top of fmc500m_top is
     -- DAC
     signal dac_data : std_logic_vector(15 downto 0);
     signal dac_dci : std_logic;
-    signal dac_frame : std_logic;
     signal dac_spi_csn : std_logic;
     signal dac_spi_sclk : std_logic;
     signal dac_spi_sdi : std_logic;
@@ -133,7 +133,7 @@ begin
         -- DAC
         dac_data_i => dac_data,
         dac_dci_i => dac_dci,
-        dac_frame_i => dac_frame,
+        dac_frame_i => dac_frame_i,
         dac_spi_csn_i => dac_spi_csn,
         dac_spi_sclk_i => dac_spi_sclk,
         dac_spi_sdi_i => dac_spi_sdi,
@@ -189,7 +189,6 @@ begin
         COUNT => 14
     ) port map (
         clk_i => adc_clk_i,
-        ce_i => '1',
         d_i => adc_data,
         signed(q1_o) => adc_data_a_o,
         signed(q2_o) => adc_data_b_o
@@ -200,20 +199,16 @@ begin
         COUNT => 16
     ) port map (
         clk_i => adc_clk_i,
-        ce_i => '1',
         d1_i => std_logic_vector(dac_data_a_i),
         d2_i => std_logic_vector(dac_data_b_i),
         q_o => dac_data
     );
     dac_dci_inst : entity work.oddr_array port map (
         clk_i => adc_clk_i,
-        ce_i => '1',
         d1_i(0) => '1',
         d2_i(0) => '0',
         q_o(0) => dac_dci
     );
-    -- In word mode we don't use the frame signal
-    dac_frame <= '0';
 
 
     -- Connection to I/O records
@@ -231,6 +226,7 @@ begin
     misc_inputs_o.pll_status_ld2 <= pll_status_ld2;
     misc_inputs_o.pll_dclkout2 <= pll_dclkout2;
     misc_inputs_o.pll_sdclkout3 <= pll_sdclkout3;
+    misc_inputs_o.dac_irqn <= dac_irqn;
     misc_inputs_o.temp_alert_n <= temp_alert_n;
 
 

@@ -41,7 +41,10 @@ entity system_registers is
         fmc500m_spi_write_ack_i : in std_logic;
         fmc500m_spi_read_strobe_o : out std_logic;
         fmc500m_spi_read_data_i : in reg_data_t;
-        fmc500m_spi_read_ack_i : in std_logic
+        fmc500m_spi_read_ack_i : in std_logic;
+
+        -- DAC test pattern
+        dac_test_pattern_o : out reg_data_array_t(0 to 1)
     );
 end;
 
@@ -51,7 +54,8 @@ architecture system_registers of system_registers is
     constant CONTROL_REG : natural := 2;
     constant IDELAY_REG : natural := 3;
     constant FMC_SPI_REG : natural := 4;
-    subtype UNUSED_REG is natural range 5 to REG_ADDR_COUNT-1;
+    subtype DAC_TEST_REG is natural range 5 to 6;
+    subtype UNUSED_REG is natural range 7 to REG_ADDR_COUNT-1;
 
     signal status_read_data : reg_data_t;
 
@@ -115,6 +119,18 @@ begin
     fmc500m_spi_read_strobe_o <= read_strobe_i(FMC_SPI_REG);
     read_data_o(FMC_SPI_REG) <= fmc500m_spi_read_data_i;
     read_ack_o(FMC_SPI_REG) <= fmc500m_spi_read_ack_i;
+
+    -- DAC test pattern
+    dac_test_pattern_inst : entity work.register_file port map (
+        clk_i => reg_clk_i,
+        write_strobe_i => write_strobe_i(DAC_TEST_REG),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DAC_TEST_REG),
+        read_strobe_i => read_strobe_i(DAC_TEST_REG),
+        read_data_o => read_data_o(DAC_TEST_REG),
+        read_ack_o => read_ack_o(DAC_TEST_REG),
+        register_data_o => dac_test_pattern_o
+    );
 
     -- Unused registers
     write_ack_o(UNUSED_REG) <= (others => '1');
