@@ -78,17 +78,17 @@ begin
         data_o => status_read_data
     );
 
-    -- Control bits register, write only.
-    control_inst : entity work.single_register port map (
+    -- Control bits register
+    control_inst : entity work.register_file port map (
         clk_i => reg_clk_i,
-        write_strobe_i => write_strobe_i(CONTROL_REG),
+        write_strobe_i(0) => write_strobe_i(CONTROL_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CONTROL_REG),
-        read_strobe_i => read_strobe_i(CONTROL_REG),
-        read_data_o => read_data_o(CONTROL_REG),
-        read_ack_o => read_ack_o(CONTROL_REG),
+        write_ack_o(0) => write_ack_o(CONTROL_REG),
+        read_strobe_i(0) => read_strobe_i(CONTROL_REG),
+        read_data_o(0) => read_data_o(CONTROL_REG),
+        read_ack_o(0) => read_ack_o(CONTROL_REG),
 
-        register_o => control_data_o
+        register_data_o(0) => control_data_o
     );
 
     -- Clock domain crossing for IDELAY control.

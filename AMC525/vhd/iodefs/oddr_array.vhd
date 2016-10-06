@@ -15,7 +15,6 @@ entity oddr_array is
     );
     port (
         clk_i : in std_logic;
-        ce_i : in std_logic;
         d1_i : in std_logic_vector(COUNT-1 downto 0);
         d2_i : in std_logic_vector(COUNT-1 downto 0);
         q_o : out std_logic_vector(COUNT-1 downto 0)
@@ -31,7 +30,7 @@ begin
         ) port map (
             S => '0',
             C => clk_i,
-            CE => ce_i,
+            CE => '1',
             D1 => d1_i(i),
             D2 => d2_i(i),
             Q => q_o(i)

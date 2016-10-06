@@ -29,6 +29,8 @@ package fmc500m_defs is
         -- Clocks from PLL to FPGA
         pll_dclkout2 : std_logic;
         pll_sdclkout3 : std_logic;
+        -- Interrupt from DAC
+        dac_irqn : std_logic;
         -- On board temperature sensor
         temp_alert_n : std_logic;
     end record;
