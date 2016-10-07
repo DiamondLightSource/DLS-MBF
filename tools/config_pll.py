@@ -150,7 +150,7 @@ class OutputFields:
     SDCLK_POL           = (7, 1, 7, 0)
     SDCLK_FMT           = (7, 3, 4, 0)
     DCLK_PLL            = (7, 1, 3, 0)
-    DCLK_FMT            = (7, 2, 0, 0)
+    DCLK_FMT            = (7, 3, 0, 0)
 
 
 # This contains definitions of all the other fields.
@@ -329,6 +329,10 @@ class SettingsBase(FieldWriter):
 
     # This is called to populate the given dictionary with the default output
     # definitions.
+    #
+    # Output level definitions taken from Malibu Fmc_500_Mb.cpp, function
+    # Fmc500_Pll::OnInit().
+    #
     @classmethod
     def create_outputs(cls, result):
         outputs = dict(

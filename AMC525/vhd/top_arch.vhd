@@ -800,6 +800,8 @@ begin
     fmc500_outputs.pll_clkin_sel0 <= control_data(3);
     fmc500_outputs.pll_clkin_sel1 <= control_data(4);
     fmc500_outputs.pll_sync <= control_data(5);
-    dac_test_mode <= control_data(6);
+    fmc500_outputs.adc_pdwn <= control_data(6);
+    fmc500_outputs.dac_rstn <= not control_data(7);
+    dac_test_mode <= control_data(8);
 
 end;

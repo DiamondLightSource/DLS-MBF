@@ -105,7 +105,9 @@ RW  2[2]        FMC500 VCXO power enable
 RW  2[3]        FMC500 PLL clkin sel0
 RW  2[4]        FMC500 PLL clkin sel1
 RW  2[5]        FMC500 PLL sync
-RW  2[6]        Enable DAC test data generation
+RW  2[6]        ADC power down (leave at 0 for normal operation)
+RW  2[7]        DAC reset (leave at 0 for normal operation)
+RW  2[8]        Enable DAC test data generation
 RW  3       ADC DCO IDELAY control
 W   3[4:0]      IDELAY value
 W   3[8]        Enable write to IDELAY, so write number of form 0x1xx

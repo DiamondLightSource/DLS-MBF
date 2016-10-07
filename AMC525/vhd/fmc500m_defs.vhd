@@ -16,6 +16,9 @@ package fmc500m_defs is
         pll_clkin_sel0 : std_logic;
         pll_clkin_sel1 : std_logic;
         pll_sync : std_logic;
+        -- ADC and DAC control pins
+        adc_pdwn : std_logic;
+        dac_rstn : std_logic;
     end record;
 
     type fmc500_inputs_t is record

@@ -226,6 +226,8 @@ begin
     pll_clkin_sel0 <= misc_outputs_i.pll_clkin_sel0;
     pll_clkin_sel1 <= misc_outputs_i.pll_clkin_sel1;
     pll_sync <= misc_outputs_i.pll_sync;
+    adc_pdwn <= misc_outputs_i.adc_pdwn;
+    dac_rstn <= misc_outputs_i.dac_rstn;
 
     misc_inputs_o.vcxo_pwr_good <= vcxo_pwr_good;
     misc_inputs_o.adc_pwr_good <= adc_pwr_good;
@@ -236,9 +238,4 @@ begin
     misc_inputs_o.pll_sdclkout3 <= pll_sdclkout3;
     misc_inputs_o.dac_irqn <= dac_irqn;
     misc_inputs_o.temp_alert_n <= temp_alert_n;
-
-
-    -- Fixed reset state
-    adc_pdwn <= '0';        -- Don't need to set ADC powerdown
-    dac_rstn <= '1';        -- Don't want DAC in reset
 end;

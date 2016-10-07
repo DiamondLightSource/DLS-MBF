@@ -17,7 +17,7 @@ test_pattern = [ 0x0123, 0x4567, 0x89AB, 0xCDEF ]
 # Set DAC output into test mode
 REGS[0, 6] = (test_pattern[1] << 16) | test_pattern[0]
 REGS[0, 5] = (test_pattern[3] << 16) | test_pattern[2]
-REGS[0, 2] |= 1 << 6
+REGS[0, 2] |= 1 << 8
 
 # Write expected test pattern into DAC
 DAC[0x68] = test_pattern[0] & 0xFF
