@@ -34,15 +34,31 @@ class SysclkSetup(SettingsBase):
 
 
 
+# The following clock connections are configured and used:
+#
+#   DCLKout4    => DAC CLK
+#   DCLKout8    => (internal clock feedback for PLL)
+#   DCLKout10   => Front panel connector
+#   SDCLKout13  => ADC CLK
+#
+# The following clock connections are wired but are left unused:
+#
+#   SDCLKout1   => ADC SYNC (not used)
+#   DCLKout2    => FPGA (not used)
+#   SDCLKout3   => FPGA (not used)
+#   DCLKout6    => DAC REFCLK (not used?)
+#
 class Settings(SettingsBase):
     SettingsBase.create_outputs(locals())
 
-    # Configure DCLKout2
-    out2_3.CLK_PD = 0
-    out2_3.DCLK_DIV = 10        # 250 MHz on front panel (can't do 500 MHz!)
-    out2_3.DCLK_MUX = 0         # Divider output, no delay
-    out2_3.SDCLK_PD = 0         # and enable SDCLK
-    out2_3.SDCLK_MUX = 1        # Output DCLK to SDCLK
+    # DAC clock
+    out4_5.CLK_PD = 0
+    out4_5.DCLK_DIV = 5
+    out4_5.DCLK_MUX = 0
+
+    out6_7.CLK_PD = 0
+    out6_7.DCLK_DIV = 10
+    out6_7.DCLK_MUX = 0
 
     # Internal feedback for PLLs on DCLKout8
     out8_9.CLK_PD = 0
@@ -187,10 +203,12 @@ class Settings(SettingsBase):
 # To bypass all the above and pass CLKin1 straight through to clock path:
 #     CLKin1_OUT_MUX = 0          # Fin internal path
 #     VCO_MUX = 2                 # Use CLKin1 as output
+#     out4_5.DCLK_MUX = 2
+#     out4_5.DCLK_DIV = 1
 #     out10_11.DCLK_MUX = 2
+#     out10_11.DCLK_DIV = 1
 #     out12_13.DCLK_MUX = 2
-#     out10_11.DCLK_DIV = 1         # 
-#     out12_13.DCLK_DIV = 1         # 
+#     out12_13.DCLK_DIV = 1
 
 
 s = Settings(PLL)
