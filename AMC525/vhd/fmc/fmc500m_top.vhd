@@ -11,7 +11,6 @@ use work.fmc500m_defs.all;
 entity fmc500m_top is
     port (
         adc_clk_i : in std_logic;       -- Derived ADC clock
-        dsp_clk_ok_i : in std_logic;
         reg_clk_i : in std_logic;       -- Register clock
 
         -- FMC

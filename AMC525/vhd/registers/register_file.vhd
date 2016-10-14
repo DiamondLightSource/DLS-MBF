@@ -10,7 +10,7 @@ entity register_file is
     port (
         clk_i : in std_logic;
 
-        -- Write interface
+        -- Register interface
         write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
         write_ack_o : out std_logic_vector;

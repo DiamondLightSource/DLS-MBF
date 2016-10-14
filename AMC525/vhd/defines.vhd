@@ -7,6 +7,12 @@ use work.support.all;
 
 package defines is
 
+    -- Some generic types, maybe belongs in support
+    type signed_array is array(natural range <>) of signed;
+    type unsigned_array is array(natural range <>) of unsigned;
+    type vector_array is array(natural range <>) of std_logic_vector;
+
+
     -- The register control interface consists of a set of "modules" each of
     -- can implement a number of registers.
     constant MOD_ADDR_BITS : natural := 2;
@@ -47,19 +53,16 @@ package defines is
     subtype CHANNELS is natural range 0 to CHANNEL_COUNT-1;
 
 
-    -- Unconstrained channel arrays.
-    type std_logic_vector_channels is array(CHANNELS) of std_logic_vector;
-    type signed_channels is array(CHANNELS) of signed;
-
 
     -- ADC input
-    subtype adc_inp_t is signed(ADC_INP_WIDTH-1 downto 0);
---     subtype adc_inp_channels is signed_channels(ADC_INP_WIDTH-1 downto 0);
-    type adc_inp_channels is array(CHANNELS) of adc_inp_t;
+    subtype ADC_INP_RANGE is natural range ADC_INP_WIDTH-1 downto 0;
+    subtype adc_inp_t is signed(ADC_INP_RANGE);
+    subtype adc_inp_channels is signed_array(CHANNELS)(ADC_INP_RANGE);
 
     -- DAC output
-    subtype dac_out_t is signed(DAC_OUT_WIDTH-1 downto 0);
-    type dac_out_channels is array(CHANNELS) of dac_out_t;
+    subtype DAC_OUT_RANGE is natural range DAC_OUT_WIDTH-1 downto 0;
+    subtype dac_out_t is signed(DAC_OUT_RANGE);
+    subtype dac_out_channels is signed_array(CHANNELS)(DAC_OUT_RANGE);
 
 
     -- Data from DSP to DDR0 DRAM interface

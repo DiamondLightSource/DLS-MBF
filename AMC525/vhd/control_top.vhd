@@ -11,7 +11,6 @@ entity control_top is
     port (
         -- Clocking
         dsp_clk_i : in std_logic;
-        dsp_clk_ok_i : in std_logic;
 
         -- Control register interface
         write_strobe_i : in reg_strobe_t;
@@ -67,16 +66,15 @@ begin
     );
 
     -- General use control bits: single clock pulse in response to write.
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            if write_strobe_i(CONTROL_BITS_REG) = '1' then
-                control_bits <= write_data_i;
-            else
-                control_bits <= (others => '0');
-            end if;
-        end if;
-    end process;
-    write_ack_o(CONTROL_BITS_REG) <= '1';
+    strobed_bits_inst : entity work.strobed_bits port map (
+        clk_i => dsp_clk_i,
+
+        write_strobe_i => write_strobe_i(CONTROL_BITS_REG),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(CONTROL_BITS_REG),
+
+        strobed_bits_o => control_bits
+    );
     read_data_o(CONTROL_BITS_REG) <= (others => '0');
     read_ack_o(CONTROL_BITS_REG) <= '1';
 

@@ -26,6 +26,8 @@ architecture top of top is
     signal reg_clk_ok : std_logic;
     signal adc_pll_ok : std_logic;
 
+    signal adc_phase : std_logic;
+
     -- Interconnect wiring
 
     -- Wiring from AXI-Lite master to register slave
@@ -295,6 +297,7 @@ begin
         ref_clk_ok_o => ref_clk_ok,
 
         adc_clk_o => adc_clk,
+        adc_phase_o => adc_phase,
         dsp_clk_o => dsp_clk,
         dsp_clk_ok_o => dsp_clk_ok,
         reg_clk_o => reg_clk,
@@ -567,7 +570,6 @@ begin
     -- FMC1 FMC500M ADC/DAC and clock source
     fmc500m_top_inst : entity work.fmc500m_top port map (
         adc_clk_i => adc_clk,
-        dsp_clk_ok_i => dsp_clk_ok,
         reg_clk_i => reg_clk,
 
         FMC_LA_P => FMC1_LA_P,
@@ -609,6 +611,7 @@ begin
         dsp_clk_i => dsp_clk,
         dsp_clk_ok_i => dsp_clk_ok,
 
+        -- On reg_clk_i
         write_strobe_i => REGS_write_strobe,
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
@@ -618,6 +621,7 @@ begin
         read_data_o => REGS_read_data,
         read_ack_o => REGS_read_ack,
 
+        -- On reg_clk_i
         system_write_strobe_o => system_write_strobe,
         system_write_data_o => system_write_data,
         system_write_ack_i => system_write_ack,
@@ -625,6 +629,7 @@ begin
         system_read_data_i => system_read_data,
         system_read_ack_i => system_read_ack,
 
+        -- On dsp_clk_i
         ctrl_write_strobe_o => ctrl_write_strobe,
         ctrl_write_data_o => ctrl_write_data,
         ctrl_write_ack_i => ctrl_write_ack,
@@ -632,6 +637,7 @@ begin
         ctrl_read_data_i => ctrl_read_data,
         ctrl_read_ack_i => ctrl_read_ack,
 
+        -- On dsp_clk_i
         dsp0_write_strobe_o => dsp0_write_strobe,
         dsp0_write_data_o => dsp0_write_data,
         dsp0_write_ack_i => dsp0_write_ack,
@@ -639,6 +645,7 @@ begin
         dsp0_read_data_i => dsp0_read_data,
         dsp0_read_ack_i => dsp0_read_ack,
 
+        -- On dsp_clk_i
         dsp1_write_strobe_o => dsp1_write_strobe,
         dsp1_write_data_o => dsp1_write_data,
         dsp1_write_ack_i => dsp1_write_ack,
@@ -681,7 +688,6 @@ begin
 
     control_top_inst : entity work.control_top port map (
         dsp_clk_i => dsp_clk,
-        dsp_clk_ok_i => dsp_clk_ok,
 
         write_strobe_i => ctrl_write_strobe,
         write_data_i => ctrl_write_data,
@@ -711,7 +717,7 @@ begin
     dsp0_top_inst : entity work.dsp_top port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        dsp_clk_ok_i => dsp_clk_ok,
+        adc_phase_i => adc_phase,
 
         adc_data_i => dsp0_adc_data,
         dac_data_o => dsp0_dac_data,
@@ -735,7 +741,7 @@ begin
     dsp1_top_inst : entity work.dsp_top port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        dsp_clk_ok_i => dsp_clk_ok,
+        adc_phase_i => adc_phase,
 
         adc_data_i => dsp1_adc_data,
         dac_data_o => dsp1_dac_data,
