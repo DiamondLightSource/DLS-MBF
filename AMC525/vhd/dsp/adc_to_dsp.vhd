@@ -21,6 +21,7 @@ entity adc_to_dsp is
 end;
 
 architecture adc_to_dsp of adc_to_dsp is
+    signal adc_phase_in : std_logic;
     signal adc_phase : CHANNELS;
     signal adc_data_in : signed(adc_data_i'RANGE);
     signal dsp_data : signed_array(CHANNELS)(adc_data_i'RANGE);
@@ -44,8 +45,17 @@ begin
     --  dsp_data_o _____X_______________X__D0:D1________X__D2:D3________X___
     --
 
+    -- Simple delay line to help with distribution.
+    dlyreg_inst : entity work.dlyreg generic map (
+        DLY => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => adc_phase_i,
+        data_o(0) => adc_phase_in
+    );
+
     -- Transfer across synchronous clock boundary with phase advance.
-    adc_phase <= to_integer(adc_phase_i);
+    adc_phase <= to_integer(adc_phase_in);
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             adc_data_in <= adc_data_i;

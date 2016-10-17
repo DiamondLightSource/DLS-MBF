@@ -37,10 +37,16 @@ ADC[0x550] = 0x00
 ADC[0x568] = 0x01               # parallel interleaved mode (two converters)
 
 
-# # Set up data capture from ADC
-# ./reg 0 5 1
-# # Configure best idelay
-# ./reg 3 0 0x112
-REGS[2, 0] = 1
-REGS[3, 0] = 1
+# Set up data capture from ADC
 REGS[0, 3] = 0x10c
+
+
+# Reset the ADC FIR
+REGS[2, 0] = 1
+for n in range(7):
+    REGS[2, 1] = 0
+REGS[2, 1] = 0x7FFFFFFF
+REGS[3, 0] = 1
+for n in range(7):
+    REGS[3, 1] = 0
+REGS[3, 1] = 0x7FFFFFFF

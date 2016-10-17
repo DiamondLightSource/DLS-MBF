@@ -24,7 +24,6 @@ entity clocking is
 
         -- ADC/DSP/REG clocks.
         adc_clk_o : out std_logic;      -- 500 MHz data clock
-        adc_phase_o : out std_logic;    -- Computed DSP clock phase
         dsp_clk_o : out std_logic;      -- 250 MHz clock = ADC/2
         dsp_clk_ok_o : out std_logic;
         reg_clk_o : out std_logic;      -- 125 MHz clock
@@ -76,10 +75,6 @@ architecture clocking of clocking is
     signal adc_pll_feedback_bufg : std_logic;
     signal adc_pll_locked : std_logic;
     signal adc_pll_ok : std_logic;
-
-    -- ADC phase
-    signal adc_phase_reset : boolean;
-    signal adc_phase : std_logic;
 
     signal read_data : reg_data_t;
 
@@ -264,30 +259,6 @@ begin
             end if;
         end if;
     end process;
-
-    -- Compute the ADC phase as a copy of the DSP clock.  We can't actually copy
-    -- the DSP clock as doing so causes all sorts of timing trouble!
-    process (adc_clk, dsp_clk_ok) begin
-        if dsp_clk_ok = '0' then
-            adc_phase_reset <= true;
-        elsif rising_edge(adc_clk) then
-            adc_phase_reset <= false;
-            if adc_phase_reset then
-                adc_phase <= '0';
-            else
-                adc_phase <= not adc_phase;
-            end if;
-        end if;
-    end process;
-    -- Simple delay line to help with distribution.
-    dlyreg_inst : entity work.dlyreg generic map (
-        DLY => 2
-    ) port map (
-        clk_i => adc_clk,
-        data_i(0) => adc_phase,
-        data_o(0) => adc_phase_o
-    );
-
 
     -- Debug signals
     adc_pll_ok_o <= adc_pll_locked;

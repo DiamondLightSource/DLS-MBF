@@ -138,7 +138,10 @@ R   2       Returns current DDR0 capture address
 Bank 2,3 registers
 ~~~~~~~~~~~~~~~~~~
 
-W   0[0]    Select DDR0 output: 0 => dummy data, 1 => incoming ADC data
+W   0[0]    Start write to banked registers
+W   1       ADC FIR registers: write 8 values to complete
+RW  2       Pulsed bits
+    2[0]        Set if ADC FIR overflow detected
 
 
 So to capture a full memory bank of ADC data, perform:

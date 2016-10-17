@@ -31,6 +31,7 @@ architecture adc_fir of adc_fir is
     constant TAP_COUNT : natural := 8;
 
     signal taps    : reg_data_array_t(0 to TAP_COUNT-1);
+    signal taps_pl0 : reg_data_array_t(0 to TAP_COUNT-1);
     signal taps_pl : reg_data_array_t(0 to TAP_COUNT-1);
 
     signal fir_overflow : std_logic;
@@ -59,7 +60,8 @@ begin
     -- Delay the taps to help with timing
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            taps_pl <= taps;
+            taps_pl0 <= taps;
+            taps_pl <= taps_pl0;
         end if;
     end process;
 

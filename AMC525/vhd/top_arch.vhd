@@ -297,7 +297,6 @@ begin
         ref_clk_ok_o => ref_clk_ok,
 
         adc_clk_o => adc_clk,
-        adc_phase_o => adc_phase,
         dsp_clk_o => dsp_clk,
         dsp_clk_ok_o => dsp_clk_ok,
         reg_clk_o => reg_clk,
@@ -309,6 +308,13 @@ begin
         read_data_o => idelay_read_data,
 
         adc_pll_ok_o => adc_pll_ok
+    );
+
+    -- adc_phase is a copy of DSP clock available as an ADC synchronous signal
+    adc_phase_inst : entity work.adc_phase port map (
+        adc_clk_i => adc_clk,
+        dsp_clk_ok_i => dsp_clk_ok,
+        adc_phase_o => adc_phase
     );
 
 

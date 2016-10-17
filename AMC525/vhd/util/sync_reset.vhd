@@ -10,8 +10,8 @@ use work.support.all;
 entity sync_reset is
     port (
         clk_i : in std_logic;
-        clk_ok_i : in std_logic;
-        sync_clk_ok_o : out std_logic
+        clk_ok_i : in std_logic;        -- Asynchronous reset
+        sync_clk_ok_o : out std_logic   -- Synchronised reset
     );
 end entity;
 

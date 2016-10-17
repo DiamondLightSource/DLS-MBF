@@ -54,6 +54,8 @@ begin
             end if;
         end if;
     end process;
+    write_ack_o <= '1';
+    read_ack_o <= '1';
 
     registers_o <= registers;
 end;
