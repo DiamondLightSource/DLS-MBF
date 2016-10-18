@@ -96,7 +96,6 @@ begin
     -- System control registers on external register clock
     system_register_mux_inst : entity work.register_mux port map (
         clk_i => reg_clk_i,
-        clk_ok_i => reg_clk_ok_i,
 
         read_strobe_i => read_strobe_i(SYSTEM_MOD),
         read_address_i => read_address_i,
@@ -189,7 +188,6 @@ begin
     -- Top level control registers
     ctrl_register_mux_inst : entity work.register_mux port map (
         clk_i => dsp_clk_i,
-        clk_ok_i => dsp_clk_ok_i,
 
         read_strobe_i => ctrl_read_strobe,
         read_address_i => read_address_i,
@@ -212,7 +210,6 @@ begin
 
     dsp0_register_mux_inst : entity work.register_mux port map (
         clk_i => dsp_clk_i,
-        clk_ok_i => dsp_clk_ok_i,
 
         read_strobe_i => dsp0_read_strobe,
         read_address_i => read_address_i,
@@ -235,7 +232,6 @@ begin
 
     dsp1_register_mux_inst : entity work.register_mux port map (
         clk_i => dsp_clk_i,
-        clk_ok_i => dsp_clk_ok_i,
 
         read_strobe_i => dsp1_read_strobe,
         read_address_i => read_address_i,

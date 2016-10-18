@@ -24,7 +24,6 @@ use work.support.all;
 entity register_mux_strobe is
     port (
         clk_i : in std_logic;
-        clk_ok_i : in std_logic;
 
         -- Register interface to demultiplex
         strobe_i : in std_logic;
@@ -56,10 +55,8 @@ begin
     address <= to_integer(address_i);
     ack_in <= ack_i(address);
 
-    process (clk_i, clk_ok_i) begin
-        if clk_ok_i = '0' then
-            busy <= false;
-        elsif rising_edge(clk_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             ack_o <= ack_in and to_std_logic(busy);
             strobe_o <= compute_strobe(address, strobe_i);
             if strobe_i = '1' then

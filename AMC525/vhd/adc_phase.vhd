@@ -48,5 +48,13 @@ begin
         end if;
     end process;
 
-    adc_phase_o <= adc_phase;
+    -- Simple delay line to help with distribution.
+    dlyreg_inst : entity work.dlyreg generic map (
+        DLY => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => adc_phase,
+        data_o(0) => adc_phase_o
+    );
+
 end;

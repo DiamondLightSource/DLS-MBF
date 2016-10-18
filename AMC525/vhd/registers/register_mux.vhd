@@ -12,7 +12,6 @@ use work.defines.all;
 entity register_mux is
     port (
         clk_i : in std_logic;
-        clk_ok_i : in std_logic;
 
         -- Register read.
         read_strobe_i : in std_logic;
@@ -45,7 +44,6 @@ architecture register_mux of register_mux is
 begin
     write_strobe_inst : entity work.register_mux_strobe port map (
         clk_i => clk_i,
-        clk_ok_i => clk_ok_i,
         strobe_i => write_strobe_i,
         address_i => write_address_i,
         ack_o => write_ack_o,
@@ -55,7 +53,6 @@ begin
 
     read_strobe_inst : entity work.register_mux_strobe port map (
         clk_i => clk_i,
-        clk_ok_i => clk_ok_i,
         strobe_i => read_strobe_i,
         address_i => read_address_i,
         ack_o => read_ack,
