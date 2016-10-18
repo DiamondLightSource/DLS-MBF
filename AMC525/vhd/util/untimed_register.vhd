@@ -17,7 +17,12 @@ end;
 
 architecture untimed_register of untimed_register is
     signal false_path_register_from : std_logic_vector(data_i'RANGE);
-    signal false_path_register_to : std_logic_vector(data_o'RANGE);
+    signal false_path_register_to   : std_logic_vector(data_o'RANGE);
+
+    -- Ensure our registers don't get eaten by premature optimisation.
+    attribute KEEP : string;
+    attribute KEEP of false_path_register_from : signal is "true";
+    attribute KEEP of false_path_register_to   : signal is "true";
 
 begin
     process (clk_in_i) begin

@@ -59,8 +59,6 @@ architecture fast_fir of fast_fir is
     subtype TAP_RANGE is natural range 0 to TAP_COUNT-1;
     subtype TAP_RANGE_1 is natural range 0 to TAP_COUNT;
 
-    signal taps_in : signed_array(TAP_RANGE)(TAP_WIDTH-1 downto 0);
-    signal taps_pl : signed_array(TAP_RANGE)(TAP_WIDTH-1 downto 0);
     signal taps : signed_array(TAP_RANGE)(TAP_WIDTH-1 downto 0);
     signal data_in : signed_array(TAP_RANGE)(BIT_WIDTH_IN-1 downto 0);
     signal product : signed_array(TAP_RANGE)(PRODUCT_WIDTH-1 downto 0);
@@ -75,7 +73,6 @@ begin
     -- Ensure we're not make an unrealistic request
     assert EXTRA_BITS <= HEADROOM + 1;      -- Ensure L <= H+2
 
-    sum(0) <= (others => '0');
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             -- Pipeline on input
@@ -84,20 +81,17 @@ begin
             -- The filter structured so that the DSP48E1 will work optimally:
             -- for this it's important to pipeline with the correct number of
             -- registers.
-            for i in 0 to TAP_COUNT-1 loop
-                -- Bring the taps close to the DSP and on the right clock.
-                taps_in(i) <= signed(taps_i(i)(
+            for i in TAP_RANGE loop
+                -- All of the following registers are inside the DSP48E1.
+                taps(i) <= signed(taps_i(i)(
                     REG_DATA_WIDTH-1 downto REG_DATA_WIDTH-TAP_WIDTH));
-
-                -- All of the following registers are inside the DSP48E1,
-                -- including taps_pl!
-                taps_pl(i) <= taps_in(i);
-                taps(i) <= taps_pl(i);
                 data_in(i) <= data_in_delay;
                 product(i) <= taps(i) * data_in(i);
                 sum(i + 1) <= sum(i) + product(i);
             end loop;
 
+            -- Start sum pipeline with zero, extract final sum as target result
+            sum(0) <= (others => '0');
             sum_out <= sum(TAP_COUNT);
         end if;
     end process;
