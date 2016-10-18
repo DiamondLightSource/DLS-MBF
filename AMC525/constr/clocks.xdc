@@ -16,4 +16,10 @@ set_clock_groups -asynchronous \
     -group [get_clocks -include_generated_clocks txoutclk_x0y1] \
     -group [get_clocks -include_generated_clocks ADC_CLK]
 
+# Trick for false paths.  All registers matching the pattern below are generated
+# by the untimed_register entity for explicitly setting a false path.
+set_false_path \
+    -from [get_pins -hierarchical -regexp .*false_path_register_from.*] \
+    -to [get_pins -hierarchical -regexp .*false_path_register_to.*]
+
 # vim: set filetype=tcl:

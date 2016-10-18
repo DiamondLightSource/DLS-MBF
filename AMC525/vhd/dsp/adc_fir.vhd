@@ -57,13 +57,14 @@ begin
         registers_o => taps
     );
 
-    -- Delay the taps to help with timing
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            taps_pl0 <= taps;
-            taps_pl <= taps_pl0;
-        end if;
-    end process;
+    false_path_gen : for t in 0 to TAP_COUNT-1 generate
+        untimed_inst : entity work.untimed_register port map (
+            clk_in_i => dsp_clk_i,
+            clk_out_i => adc_clk_i,
+            data_i => taps(t),
+            data_o => taps_pl(t)
+        );
+    end generate;
 
     fast_fir_inst : entity work.fast_fir generic map (
         TAP_WIDTH => 18,
