@@ -11,11 +11,20 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/defines.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/sync_reset.vhd \
+    $vhd_dir/util/untimed_register.vhd \
+    $vhd_dir/registers/strobed_bits.vhd \
+    $vhd_dir/registers/strobed_bits.vhd \
+    $vhd_dir/registers/register_array.vhd \
     $vhd_dir/adc_phase.vhd \
+    $vhd_dir/extract_signed.vhd \
+    $vhd_dir/fast_fir.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
+    $vhd_dir/dsp/adc_fir.vhd \
     $vhd_dir/dsp/dsp_to_adc.vhd \
+    $vhd_dir/dsp/dsp_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
+    $bench_dir/sim_support.vhd \
     $bench_dir/testbench.vhd
 
 
@@ -26,13 +35,12 @@ vsim -t 1ps \
 view wave
 
 add wave -group "Top" sim:*
+add wave -group "DSP" sim:/testbench/dsp_top_inst/*
+add wave -group "ADC FIR" sim:/testbench/dsp_top_inst/adc_fir_inst/*
+add wave -group "Fast FIR" \
+    sim:/testbench/dsp_top_inst/adc_fir_inst/fast_fir_inst/*
 add wave sim:*
-add wave -group "ADC -> DSP" sim:/testbench/adc_to_dsp_inst/*
-add wave -group "DSP -> ADC" sim:/testbench/dsp_to_adc_inst/*
-# add wave -group "Phase" sim:/testbench/adc_phase_inst/*
-# add wave sim:/testbench/axi_burst_master_inst/*
 
-
-run 1us
+run 200ns
 
 # vim: set filetype=tcl:

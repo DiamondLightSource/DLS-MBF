@@ -17,7 +17,7 @@ entity strobed_bits is
         write_ack_o : out std_logic;
 
         -- Output strobed bits
-        strobed_bits_o : out reg_data_t
+        strobed_bits_o : out reg_data_t := (others => '0')
     );
 end;
 

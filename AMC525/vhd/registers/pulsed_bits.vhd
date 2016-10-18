@@ -31,7 +31,7 @@ entity pulsed_bits is
 end;
 
 architecture pulsed_bits of pulsed_bits is
-    signal pulsed_bits : reg_data_t;
+    signal pulsed_bits : reg_data_t := (others => '0');
 
 begin
     process (clk_i) begin
