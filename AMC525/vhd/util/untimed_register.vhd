@@ -10,6 +10,7 @@ entity untimed_register is
         clk_in_i : in std_logic;
         clk_out_i : in std_logic;
 
+        write_i : in std_logic;
         data_i : in std_logic_vector;
         data_o : out std_logic_vector
     );
@@ -27,7 +28,9 @@ architecture untimed_register of untimed_register is
 begin
     process (clk_in_i) begin
         if rising_edge(clk_in_i) then
-            false_path_register_from <= data_i;
+            if write_i = '1' then
+                false_path_register_from <= data_i;
+            end if;
         end if;
     end process;
 
