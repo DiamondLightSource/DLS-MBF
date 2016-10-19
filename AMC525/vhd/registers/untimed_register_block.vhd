@@ -18,7 +18,7 @@ entity untimed_register_block is
         -- Register interface (write only)
         write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_logic := '0';
         -- Write reset
         write_reset_i : in std_logic;
 
@@ -32,7 +32,6 @@ architecture untimed_register_block of untimed_register_block is
     signal write_ptr : unsigned(COUNT_BITS-1 downto 0);
 
     signal write_strobe : std_logic_vector(0 to COUNT-1);
-    signal write_ack : std_logic := '0';
 
 begin
     generate_registers : for r in 0 to COUNT-1 generate
@@ -50,16 +49,14 @@ begin
             if write_strobe_i = '1' then
                 write_ptr <= write_ptr + 1;
                 write_strobe(to_integer(write_ptr)) <= '1';
-                write_ack <= '1';
+                write_ack_o <= '1';
             else
                 if write_reset_i = '1' then
                     write_ptr <= (others => '0');
                 end if;
                 write_strobe <= (others => '0');
-                write_ack <= '0';
+                write_ack_o <= '0';
             end if;
-
-            write_ack_o <= write_ack;
         end if;
     end process;
 end;

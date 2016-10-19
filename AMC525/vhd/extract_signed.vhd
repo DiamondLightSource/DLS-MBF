@@ -14,8 +14,7 @@ use work.support.all;
 entity extract_signed is
     generic (
         OFFSET : natural;
-        EXTRA : natural := 0;
-        PL_OVF : boolean := true
+        EXTRA : natural := 0
     );
     port (
         clk_i : in std_logic;
@@ -47,15 +46,8 @@ begin
             truncate_result(truncated, overflow, rounded);
 
             -- Saturate the result if necessary
-            if PL_OVF then
-                data_o <= saturate(truncated, overflow, sign);
-                overflow_o <= overflow;
-            end if;
+            data_o <= saturate(truncated, overflow, sign);
+            overflow_o <= overflow;
         end if;
     end process;
-
-    no_pipeline : if not PL_OVF generate
-        data_o <= saturate(truncated, overflow, sign);
-        overflow_o <= overflow;
-    end generate;
 end;
