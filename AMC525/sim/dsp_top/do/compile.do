@@ -14,9 +14,10 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/untimed_register.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
-    $vhd_dir/registers/register_array.vhd \
+    $vhd_dir/registers/untimed_register_block.vhd \
     $vhd_dir/adc_phase.vhd \
     $vhd_dir/extract_signed.vhd \
+    $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/fast_fir.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_fir.vhd \
@@ -35,6 +36,7 @@ vsim -t 1ps \
 view wave
 
 add wave -group "Top" sim:*
+add wave -group "ADC Phase" sim:/testbench/adc_phase_inst/*
 add wave -group "DSP" sim:/testbench/dsp_top_inst/*
 add wave -group "ADC FIR" sim:/testbench/dsp_top_inst/adc_fir_inst/*
 add wave -group "Fast FIR" \
