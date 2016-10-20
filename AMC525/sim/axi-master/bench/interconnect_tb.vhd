@@ -9,6 +9,7 @@ entity interconnect_tb is
 end interconnect_tb;
 
 library work;
+use work.support.all;
 use work.defines.all;
 
 architecture STRUCTURE of interconnect_tb is
@@ -65,8 +66,8 @@ architecture STRUCTURE of interconnect_tb is
     signal dsp_clk : STD_LOGIC := '0';
     signal dsp_reset_n : STD_LOGIC := '0';
 
-    signal adc_data_a : unsigned(13 downto 0) := to_unsigned(0, 14);
-    signal adc_data_b : unsigned(13 downto 0) := to_unsigned(0, 14);
+    signal adc_data_a : unsigned(13 downto 0) := (others => '0');
+    signal adc_data_b : unsigned(13 downto 0) := (others => '0');
 
     -- Data from DSP to burst master
     signal DSP_DDR0_capture_enable : std_logic;
@@ -77,10 +78,6 @@ architecture STRUCTURE of interconnect_tb is
     signal DSP_DDR0_data_error : std_logic;
     signal DSP_DDR0_addr_error : std_logic;
     signal DSP_DDR0_brsp_error : std_logic;
-
-    signal REGS_write_strobe : std_logic;
-    signal REGS_write_address : reg_addr_t;
-    signal REGS_write_data : reg_data_t;
 
     -- Signals for delaying {w,aw}{valid,ready}
     signal DSP_awready : std_logic;
@@ -100,19 +97,6 @@ architecture STRUCTURE of interconnect_tb is
         clk_wait(dsp_clk, 1);
     end procedure;
 
-    procedure write_reg(
-        signal address_o : out reg_addr_t;
-        signal data_o : out reg_data_t;
-        signal strobe_o : out std_logic;
-        reg : natural; value : reg_data_t) is
-    begin
-        address_o <= to_unsigned(reg, 5);
-        data_o <= value;
-        tick_wait;
-        strobe_o <= '1';
-        tick_wait;
-        strobe_o <= '0';
-    end procedure;
 
 begin
 
@@ -209,83 +193,47 @@ begin
         brsp_error_o => DSP_DDR0_brsp_error
     );
 
-    -- Pattern generator for burst generator
-    adc_dram_capture_inst : entity work.adc_dram_capture port map (
-        adc_clk_i => adc_clk,
-        dsp_clk_i => dsp_clk,
-
-        write_strobe_i => REGS_write_strobe,
-        write_address_i => REGS_write_address,
-        write_data_i => REGS_write_data,
-        write_ack_o => open,
-
-        read_strobe_i => '0',
-        read_address_i => (others => '0'),
-        read_data_o => open,
-        read_ack_o => open,
-
-        adc_data_a_i => std_logic_vector(adc_data_a),
-        adc_data_b_i => std_logic_vector(adc_data_b),
-
-        capture_enable_o => DSP_DDR0_capture_enable,
-        data_ready_i => DSP_DDR0_data_ready,
-        data_o => DSP_DDR0_data,
-        data_valid_o => open,
-        capture_address_i => DSP_DDR0_capture_address,
-
-        data_error_i => DSP_DDR0_data_error,
-        addr_error_i => DSP_DDR0_addr_error,
-        brsp_error_i => DSP_DDR0_brsp_error
-    );
-
 
     DSP_awready <= DSP_DDR0_awready;
     DSP_DDR0_awvalid <= DSP_awvalid;
     DSP_wready <= DSP_DDR0_wready;
     DSP_DDR0_wvalid <= DSP_wvalid;
+    DSP_DDR0_data_valid <= '1';
 
-    process
-        procedure write_reg(reg : natural; value : reg_data_t) is
+    process (adc_clk)
+        function sign_extend(data : unsigned; width : natural)
+            return std_logic_vector is
         begin
-            write_reg(
-                REGS_write_address, REGS_write_data, REGS_write_strobe,
-                reg, value);
+            return sign_extend(std_logic_vector(data), width);
         end;
 
     begin
-        REGS_write_strobe <= '0';
-        dsp_reset_n <= '0';
-        tick_wait(10);
-        dsp_reset_n <= '1';
-        tick_wait(2);
-
-        tick_wait(25);
-        write_reg(4, std_logic_vector(to_unsigned(64, 32)));
-        tick_wait(90);
-        write_reg(4, std_logic_vector(to_unsigned(15, 32)));
-        tick_wait(90);
-
-        dsp_reset_n <= '0';
-        tick_wait(10);
-        dsp_reset_n <= '1';
-        tick_wait(2);
-
-        write_reg(4, std_logic_vector(to_unsigned(64, 32)));
-        tick_wait(90);
-        write_reg(4, std_logic_vector(to_unsigned(15, 32)));
-        tick_wait(90);
-
-        wait;
+        if rising_edge(adc_clk) then
+            if dsp_clk = '0' then
+                DSP_DDR0_data(15 downto  0) <= sign_extend(adc_data_a, 16);
+                DSP_DDR0_data(31 downto 16) <= sign_extend(adc_data_b, 16);
+            else
+                DSP_DDR0_data(47 downto 32) <= sign_extend(adc_data_a, 16);
+                DSP_DDR0_data(63 downto 48) <= sign_extend(adc_data_b, 16);
+            end if;
+        end if;
     end process;
 
     process begin
-        DSP_DDR0_data_valid <= '1';
-        while true loop
-            wait;   -- Remove this line for data_valid test
-            tick_wait(3);
-            DSP_DDR0_data_valid <= not DSP_DDR0_data_valid;
-        end loop;
-    end process;
+        -- Start with system reset
+        dsp_reset_n <= '0';
+        DSP_DDR0_capture_enable <= '0';
+        tick_wait(10);
+        dsp_reset_n <= '1';
+        tick_wait(2);
 
+        -- First burst request
+        tick_wait(25);
+        DSP_DDR0_capture_enable <= '1';
+        tick_wait(90);
+        DSP_DDR0_capture_enable <= '0';
+
+        wait;
+    end process;
 
 end STRUCTURE;

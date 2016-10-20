@@ -6,7 +6,7 @@ vlib work
 vlib msim
 vlib msim/xil_defaultlib
 
-vcom -64 -93 -work xil_defaultlib \
+vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     $vhd_dir/iodefs/ibuf_array.vhd \
@@ -15,12 +15,15 @@ vcom -64 -93 -work xil_defaultlib \
     $vhd_dir/iodefs/obuf_array.vhd \
     $vhd_dir/iodefs/obufds_array.vhd \
     $vhd_dir/iodefs/iobuf_array.vhd \
-    $vhd_dir/fmc500m_io.vhd \
+    $vhd_dir/iodefs/iddr_array.vhd \
+    $vhd_dir/iodefs/oddr_array.vhd \
+    $vhd_dir/fmc/fmc500m_defs.vhd \
+    $vhd_dir/fmc/fmc500m_io.vhd \
     $vhd_dir/spi_master.vhd \
-    $vhd_dir/fmc500m_spi.vhd \
-    $vhd_dir/register_mux.vhd \
-    $vhd_dir/single_register.vhd \
-    $vhd_dir/fmc500m_top.vhd \
+    $vhd_dir/fmc/fmc500m_spi.vhd \
+    $vhd_dir/registers/register_mux_strobe.vhd \
+    $vhd_dir/registers/register_mux.vhd \
+    $vhd_dir/fmc/fmc500m_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/testbench.vhd

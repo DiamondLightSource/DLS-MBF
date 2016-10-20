@@ -6,7 +6,7 @@ vlib work
 vlib msim
 vlib msim/xil_defaultlib
 
-vcom -64 -93 -work xil_defaultlib \
+vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     $vhd_dir/registers/register_mux_strobe.vhd \

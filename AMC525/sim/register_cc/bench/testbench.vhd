@@ -43,8 +43,10 @@ architecture testbench of testbench is
     signal out_read_data : reg_data_t := (others => '0');
     signal out_read_ack : std_logic := '0';
     signal reg_write_strobe : std_logic := '0';
+    signal reg_write_data : reg_data_t := (others => '0');
     signal reg_write_ack : std_logic;
     signal out_write_strobe : std_logic;
+    signal out_write_data : reg_data_t;
     signal out_write_ack : std_logic := '0';
 
     signal force_read_ack : std_logic := '0';
@@ -73,7 +75,7 @@ begin
     register_cc_inst : entity work.register_cc port map (
         reg_clk_i => reg_clk,
         out_clk_i => out_clk,
-        out_rst_n_i => out_rst_n,
+        out_clk_ok_i => out_rst_n,
         reg_read_strobe_i => reg_read_strobe,
         reg_read_data_o => reg_read_data,
         reg_read_ack_o => reg_read_ack,
@@ -81,8 +83,10 @@ begin
         out_read_data_i => out_read_data,
         out_read_ack_i => out_read_ack,
         reg_write_strobe_i => reg_write_strobe,
+        reg_write_data_i => reg_write_data,
         reg_write_ack_o => reg_write_ack,
         out_write_strobe_o => out_write_strobe,
+        out_write_data_o => out_write_data,
         out_write_ack_i => out_write_ack
     );
 

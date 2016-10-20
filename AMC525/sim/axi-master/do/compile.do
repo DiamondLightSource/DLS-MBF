@@ -4,16 +4,15 @@ set bench_dir $env(BENCH_DIR)
 
 
 # Our own local entities including device under test
-vcom -64 -93 -work xil_defaultlib \
+vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/edge_detect.vhd \
     $vhd_dir/axi_burst_master.vhd \
-    $vhd_dir/adc_dram_capture.vhd
 
 # The test bench
-vcom -64 -93 -work xil_defaultlib \
+vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/interconnect_tb.vhd
 
 # Libraries taken from generated interconnect_wrapper_elaborate.do
@@ -32,10 +31,9 @@ vsim -t 1ps \
 view wave
 
 add wave -group "Top" sim:*
-add wave -group "ADC Mem" sim:/interconnect_tb/adc_dram_capture_inst/*
 add wave -group "Master" sim:/interconnect_tb/axi_burst_master_inst/*
 add wave -group "BFM" sim:/interconnect_tb/interconnect_i/cdn_axi_bfm_0/*
 
-run 1.8 us
+run 800 ns
 
 # vim: set filetype=tcl:

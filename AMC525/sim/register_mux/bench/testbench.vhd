@@ -40,8 +40,10 @@ architecture testbench of testbench is
     signal read_ack_in : reg_strobe_t;
     signal write_strobe_in : std_logic;
     signal write_address : reg_addr_t;
+    signal write_data_in : reg_data_t;
     signal write_ack_out : std_logic;
     signal write_strobe_out : reg_strobe_t;
+    signal write_data_out : reg_data_t;
     signal write_ack_in : reg_strobe_t;
 
 begin
@@ -50,7 +52,6 @@ begin
 
     register_mux_inst : entity work.register_mux port map (
         clk_i => reg_clk,
-        clk_ok_i => '1',
 
         read_strobe_i => read_strobe_in,
         read_address_i => read_address,
@@ -63,9 +64,11 @@ begin
 
         write_strobe_i => write_strobe_in,
         write_address_i => write_address,
+        write_data_i => write_data_in,
         write_ack_o => write_ack_out,
 
         write_strobe_o => write_strobe_out,
+        write_data_o => write_data_out,
         write_ack_i => write_ack_in
     );
 
@@ -76,12 +79,13 @@ begin
         for i in REG_ADDR_RANGE loop
             read_data_in(i) <= std_logic_vector(to_unsigned(i, 16)) & X"0000";
         end loop;
+        write_data_in <= (others => '0');
         while true loop
             tick_wait;
             for i in REG_ADDR_RANGE loop
-                read_data_in(i) <=
-                    std_logic_vector(unsigned(read_data_in(i)) + 1);
+                read_data_in(i) <= reg_data_t(unsigned(read_data_in(i)) + 1);
             end loop;
+            write_data_in <= reg_data_t(unsigned(write_data_in) + 1);
         end loop;
     end process;
 

@@ -8,6 +8,7 @@ end testbench;
 
 use work.support.all;
 use work.defines.all;
+use work.fmc500m_defs.all;
 
 architecture testbench of testbench is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
@@ -19,18 +20,19 @@ architecture testbench of testbench is
     end procedure;
 
 
-    signal dsp_clk : STD_LOGIC := '0';
+    signal adc_clk : STD_LOGIC := '0';
+    signal reg_clk : STD_LOGIC := '0';
 
 
 
     procedure tick_wait(count : natural) is
     begin
-        clk_wait(dsp_clk, count);
+        clk_wait(reg_clk, count);
     end procedure;
 
     procedure tick_wait is
     begin
-        clk_wait(dsp_clk, 1);
+        clk_wait(reg_clk, 1);
     end procedure;
 
 
@@ -40,12 +42,20 @@ architecture testbench of testbench is
     signal FMC_HB_P : std_logic_vector(0 to 21);
     signal FMC_HB_N : std_logic_vector(0 to 21);
     signal write_strobe : std_logic;
-    signal write_address : reg_addr_t;
     signal write_data : reg_data_t;
+    signal write_ack : std_logic;
     signal read_strobe : std_logic;
-    signal read_address : reg_addr_t;
     signal read_data : reg_data_t;
     signal read_ack : std_logic;
+    signal adc_dco : std_logic;
+    signal adc_data_a : adc_inp_t;
+    signal adc_data_b : adc_inp_t;
+    signal dac_data_a : dac_out_t;
+    signal dac_data_b : dac_out_t;
+    signal dac_frame : std_logic;
+    signal ext_trig : std_logic;
+    signal misc_outputs : fmc500_outputs_t;
+    signal misc_inputs : fmc500_inputs_t;
 
     -- Make the SPI signals visible
     signal pll_spi_csn : std_logic;
@@ -62,23 +72,36 @@ architecture testbench of testbench is
 
 begin
 
-    dsp_clk <= not dsp_clk after 2 ns;
+    adc_clk <= not adc_clk after 2 ns;
+    reg_clk <= not reg_clk after 2 ns;
 
     fmc500m_top_inst : entity work.fmc500m_top port map (
-        clk_i => dsp_clk,
+        adc_clk_i => adc_clk,
+        reg_clk_i => reg_clk,
 
         FMC_LA_P => FMC_LA_P,
         FMC_LA_N => FMC_LA_N,
         FMC_HB_P => FMC_HB_P,
         FMC_HB_N => FMC_HB_N,
 
-        write_strobe_i => write_strobe,
-        write_address_i => write_address,
-        write_data_i => write_data,
-        read_strobe_i => read_strobe,
-        read_address_i => read_address,
-        read_data_o => read_data,
-        read_ack_o => read_ack
+        spi_write_strobe_i => write_strobe,
+        spi_write_data_i => write_data,
+        spi_write_ack_o => write_ack,
+        spi_read_strobe_i => read_strobe,
+        spi_read_data_o => read_data,
+        spi_read_ack_o => read_ack,
+
+        adc_dco_o => adc_dco,
+        adc_data_a_o => adc_data_a,
+        adc_data_b_o => adc_data_b,
+
+        dac_data_a_i => dac_data_a,
+        dac_data_b_i => dac_data_b,
+        dac_frame_i => dac_frame,
+
+        ext_trig_o => ext_trig,
+        misc_outputs_i => misc_outputs,
+        misc_inputs_o => misc_inputs
     );
 
     -- Loop back the SPI PLL and DAC data lines.
@@ -98,7 +121,6 @@ begin
     process
         procedure reg_write(address : in natural; value : in reg_data_t) is
         begin
-            write_address <= to_unsigned(address, REG_ADDR_BITS);
             write_data <= value;
             tick_wait;
             write_strobe <= '1';
@@ -110,7 +132,6 @@ begin
 
         procedure reg_read(address : in natural) is
         begin
-            read_address <= to_unsigned(address, REG_ADDR_BITS);
             tick_wait;
             read_strobe <= '1';
             while read_ack = '0' loop
