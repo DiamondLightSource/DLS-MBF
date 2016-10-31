@@ -43,7 +43,8 @@ architecture dsp_top of dsp_top is
     constant STROBE_REG : natural := 0;
     constant ADC_TAPS_REG : natural := 1;
     constant PULSED_REG : natural := 2;
-    subtype UNUSED_REG is natural range 3 to REG_ADDR_COUNT-1;
+    constant ADC_MMS_REG : natural := 3;    -- and 4
+    subtype UNUSED_REG is natural range 5 to REG_ADDR_COUNT-1;
 
     signal strobed_bits : reg_data_t;
     signal write_reset : std_logic;
@@ -54,6 +55,11 @@ architecture dsp_top of dsp_top is
     signal adc_fir_overflow : std_logic;
 
     signal dsp_data_in : dac_out_channels;
+    signal adc_mms_delta : unsigned_array(CHANNELS)(15 downto 0);
+
+    -- Quick and dirty bunch counter
+    signal bunch_reset : std_logic;
+    signal bunch_counter : unsigned(7 downto 0) := (others => '0');
 
 begin
     -- Strobed bits for single clock control
@@ -133,6 +139,34 @@ begin
         adc_data_i => adc_data_fir,
         dsp_data_o => dsp_data_in
     );
+
+
+    -- Compute min/max/sum of ADC data
+    adc_mms_inst : entity work.min_max_sum port map (
+        dsp_clk_i => dsp_clk_i,
+        bunch_reset_i => bunch_reset,
+
+        data_i => dsp_data_in,
+        delta_o => adc_mms_delta,
+
+        count_read_strobe_i => read_strobe_i(ADC_MMS_REG),
+        count_read_data_o => read_data_o(ADC_MMS_REG),
+        count_read_ack_o => read_ack_o(ADC_MMS_REG),
+        mms_read_strobe_i => read_strobe_i(ADC_MMS_REG+1),
+        mms_read_data_o => read_data_o(ADC_MMS_REG+1),
+        mms_read_ack_o => read_ack_o(ADC_MMS_REG+1)
+    );
+    write_ack_o(ADC_MMS_REG) <= '1';
+    write_ack_o(ADC_MMS_REG+1) <= '1';
+
+    -- Quick and dirty bunch counter
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            bunch_counter <= bunch_counter + 1;
+            bunch_reset <= to_std_logic(bunch_counter = 0);
+        end if;
+    end process;
+
 
     -- Generate the DDR0 data stream
     convert_inst : for c in CHANNELS generate

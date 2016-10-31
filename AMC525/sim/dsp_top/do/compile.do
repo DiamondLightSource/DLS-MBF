@@ -10,9 +10,10 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     $vhd_dir/util/dlyreg.vhd \
+    $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/sync_reset.vhd \
     $vhd_dir/util/untimed_register.vhd \
-    $vhd_dir/registers/strobed_bits.vhd \
+    $vhd_dir/registers/pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/untimed_register_block.vhd \
     $vhd_dir/adc_phase.vhd \
@@ -22,6 +23,12 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_fir.vhd \
     $vhd_dir/dsp/dsp_to_adc.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_memory.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_store.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_update.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_readout.vhd \
+    $vhd_dir/min_max_sum/min_max_sum.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \

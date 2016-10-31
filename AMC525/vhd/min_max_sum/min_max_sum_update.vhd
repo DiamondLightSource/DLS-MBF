@@ -54,7 +54,7 @@ begin
             product <= unsigned(data * data);
             mms_o.sum2 <= resize(product, 48) + mms.sum2;
 
-            -- All outpus are generated together
+            -- All outputs are generated together
             mms_o.min <= mms.min;
             mms_o.max <= mms.max;
             mms_o.sum <= mms.sum;
