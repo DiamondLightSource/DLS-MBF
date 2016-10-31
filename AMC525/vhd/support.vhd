@@ -121,19 +121,6 @@ package support is
         data : std_logic_vector;
         width : natural; index : natural) return std_logic_vector;
 
-    -- Writes to field of width data'length starting at offset start in target.
-    procedure write_field(
-        signal target : out std_logic_vector;
-        data : std_logic_vector;
-        start : natural);
-
-    -- Treats target as an array of fields of data'length bits and writes to the
-    -- field selected by index.
-    procedure write_field_ix(
-        signal target : out std_logic_vector;
-        data : std_logic_vector;
-        index : natural);
-
 
     -- Functions for signed max and min int values.  For unsigned we don't need
     -- these as we can just write (others => '1') and (others => '0').
@@ -366,22 +353,6 @@ package body support is
         width : natural; index : natural) return std_logic_vector is
     begin
         return read_field(data, width, index * width);
-    end;
-
-    procedure write_field(
-        signal target : out std_logic_vector;
-        data : std_logic_vector;
-        start : natural) is
-    begin
-        target(start + data'length - 1 downto start) <= data;
-    end;
-
-    procedure write_field_ix(
-        signal target : out std_logic_vector;
-        data : std_logic_vector;
-        index : natural) is
-    begin
-        write_field(target, data, index * data'length);
     end;
 
 
