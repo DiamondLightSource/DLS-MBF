@@ -1,0 +1,91 @@
+-- Readout of min/max/sum data
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+use work.support.all;
+use work.defines.all;
+use work.min_max_sum_defs.all;
+
+entity min_max_sum_readout is
+    port (
+        dsp_clk_i : in std_logic;
+
+        -- Interface to stored data.  First switch_done_i is pulsed to indicate
+        -- that the readout address has been reset to zero.  Then the data can
+        -- be read from data_i.  Finally readout_strobe_o can be used to advance
+        -- the readout address.
+        switch_done_i : in std_logic;
+        data_i : in mms_row_channels_t;
+        readout_strobe_o : out std_logic;
+        readout_ack_i : in std_logic;
+
+        -- Register readout interface
+        read_strobe_i : in std_logic;
+        read_data_o : out reg_data_t;
+        read_ack_o : out std_logic
+    );
+end;
+
+architecture min_max_sum_readout of min_max_sum_readout is
+    -- The readout state advances through the channels and the two words -- we
+    -- have to deliver min/max and sum separately.
+    signal channel : CHANNELS;
+    signal phase : natural range 0 to 1;
+    signal mms : mms_row_t;
+    signal last_word : boolean;
+    signal last_phase : boolean;
+
+    -- While we're waiting for memory to advance we're busy
+    signal busy : boolean := false;
+    signal read_request : boolean := false;
+
+begin
+    -- quick and dirty
+    mms <= data_i(channel);
+    last_phase <= phase = 1;
+    last_word <= channel = CHANNEL_COUNT-1 and last_phase;
+
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            -- Advance phase and channel as appropriate
+            if switch_done_i = '1' then
+                channel <= 0;
+                phase <= 0;
+            elsif read_strobe_i = '1' then
+                phase <= (phase + 1) mod 2;
+                if last_phase then
+                    channel <= (channel + 1) mod CHANNEL_COUNT;
+                end if;
+            end if;
+
+            -- Generate request for new word when we've consumed the old word
+            if last_word and read_strobe_i = '1' then
+                readout_strobe_o <= '1';
+                busy <= true;
+            else
+                readout_strobe_o <= '0';
+                if readout_ack_i = '1' then
+                    busy <= false;
+                end if;
+            end if;
+
+            -- Ensure we don't generate an ack while we're busy.
+            read_ack_o <= to_std_logic(
+                not busy and (read_strobe_i = '1' or read_request));
+            if busy and read_strobe_i = '1' then
+                read_request <= true;
+            elsif not busy then
+                read_request <= false;
+            end if;
+
+            -- Register the appropriate output word
+            case phase is
+                when 0 => read_data_o <=
+                    std_logic_vector(mms.max) & std_logic_vector(mms.min);
+                when 1 => read_data_o <= std_logic_vector(mms.sum);
+            end case;
+        end if;
+    end process;
+end;
