@@ -13,6 +13,7 @@ package min_max_sum_defs is
         min : signed(15 downto 0);
         max : signed(15 downto 0);
         sum : signed(31 downto 0);
+        sum2 : unsigned(47 downto 0);
     end record;
 
     type mms_row_channels_t is array(CHANNELS) of mms_row_t;

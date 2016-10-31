@@ -29,10 +29,13 @@ entity min_max_sum_readout is
 end;
 
 architecture min_max_sum_readout of min_max_sum_readout is
+    -- Number of words read per sample (per channel)
+    constant WORD_COUNT : natural := 4;
+
     -- The readout state advances through the channels and the two words -- we
     -- have to deliver min/max and sum separately.
     signal channel : CHANNELS;
-    signal phase : natural range 0 to 1;
+    signal phase : natural range 0 to WORD_COUNT-1;
     signal mms : mms_row_t;
     signal last_word : boolean;
     signal last_phase : boolean;
@@ -44,7 +47,7 @@ architecture min_max_sum_readout of min_max_sum_readout is
 begin
     -- quick and dirty
     mms <= data_i(channel);
-    last_phase <= phase = 1;
+    last_phase <= phase = WORD_COUNT-1;
     last_word <= channel = CHANNEL_COUNT-1 and last_phase;
 
     process (dsp_clk_i) begin
@@ -54,7 +57,7 @@ begin
                 channel <= 0;
                 phase <= 0;
             elsif read_strobe_i = '1' then
-                phase <= (phase + 1) mod 2;
+                phase <= (phase + 1) mod WORD_COUNT;
                 if last_phase then
                     channel <= (channel + 1) mod CHANNEL_COUNT;
                 end if;
@@ -84,7 +87,12 @@ begin
             case phase is
                 when 0 => read_data_o <=
                     std_logic_vector(mms.max) & std_logic_vector(mms.min);
-                when 1 => read_data_o <= std_logic_vector(mms.sum);
+                when 1 => read_data_o <=
+                    std_logic_vector(mms.sum);
+                when 2 => read_data_o <=
+                    std_logic_vector(mms.sum2(31 downto 0));
+                when 3 => read_data_o <=
+                    X"0000" & std_logic_vector(mms.sum2(47 downto 32));
             end case;
         end if;
     end process;

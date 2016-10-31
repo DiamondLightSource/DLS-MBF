@@ -66,8 +66,10 @@ begin
     );
 
     readout_reset_data <= (
-        0 => (min => X"7FFF", max => X"8000", sum => (others => '0')),
-        1 => (min => X"7FFF", max => X"8000", sum => (others => '0'))
+        0 => (min => X"7FFF", max => X"8000",
+              sum => (others => '0'), sum2 => (others => '0')),
+        1 => (min => X"7FFF", max => X"8000",
+              sum => (others => '0'), sum2 => (others => '0'))
     );
 
     -- Update min/max/sum

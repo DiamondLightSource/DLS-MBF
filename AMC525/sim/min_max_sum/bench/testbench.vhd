@@ -50,7 +50,7 @@ architecture testbench of testbench is
     signal dsp_data : signed_array(CHANNELS)(15 downto 0);
     signal delta : unsigned_array(CHANNELS)(15 downto 0);
 
-    constant BUNCH_COUNT : natural := 12;   -- A very small ring!
+    constant BUNCH_COUNT : natural := 6;   -- A very small ring!
 
 begin
 
@@ -130,7 +130,8 @@ begin
         -- Readout bank
         procedure readout_bank is
         begin
-            for i in 0 to 4*BUNCH_COUNT-1 loop
+            -- 8 words for each bunch pair
+            for i in 0 to 8*BUNCH_COUNT-1 loop
                 mms_read_strobe <= '1';
                 tick_wait;
                 mms_read_strobe <= '0';

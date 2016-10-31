@@ -33,7 +33,7 @@ end;
 
 architecture min_max_sum_memory of min_max_sum_memory is
     -- Declare block ram
-    constant ROW_BITS : natural := 64;
+    constant ROW_BITS : natural := 112;
     constant CHANNEL_ROW_BITS : natural := CHANNEL_COUNT * ROW_BITS;
     subtype bram_row_t is std_logic_vector(CHANNEL_ROW_BITS-1 downto 0);
     type bram_mem_t is array(0 to 2**ADDR_BITS-1) of bram_row_t;
@@ -47,18 +47,20 @@ architecture min_max_sum_memory of min_max_sum_memory is
     function row_to_bits(data : mms_row_t) return std_logic_vector is
         variable result : std_logic_vector(ROW_BITS-1 downto 0);
     begin
-        result(15 downto  0) := std_logic_vector(data.min);
-        result(31 downto 16) := std_logic_vector(data.max);
-        result(63 downto 32) := std_logic_vector(data.sum);
+        result(15 downto 0)   := std_logic_vector(data.min);
+        result(31 downto 16)  := std_logic_vector(data.max);
+        result(63 downto 32)  := std_logic_vector(data.sum);
+        result(111 downto 64) := std_logic_vector(data.sum2);
         return result;
     end;
 
     function bits_to_row(data : std_logic_vector) return mms_row_t is
         variable result : mms_row_t;
     begin
-        result.min := signed(data(15 downto  0));
-        result.max := signed(data(31 downto 16));
-        result.sum := signed(data(63 downto 32));
+        result.min  := signed(data(15 downto  0));
+        result.max  := signed(data(31 downto 16));
+        result.sum  := signed(data(63 downto 32));
+        result.sum2 := unsigned(data(111 downto 64));
         return result;
     end;
 
