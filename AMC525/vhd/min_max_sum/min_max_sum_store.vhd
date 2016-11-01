@@ -6,24 +6,21 @@ use ieee.numeric_std.all;
 
 use work.support.all;
 use work.defines.all;
-use work.defines.all;
 
 use work.min_max_sum_defs.all;
 
 entity min_max_sum_store is
     generic (
-        ADDR_BITS : natural;
         UPDATE_DELAY : natural
     );
     port (
         clk_i : in std_logic;
 
-        -- Bank switching and address control
-        bunch_reset_i : in std_logic;
-        switch_request_i : in std_logic;
-        switch_done_o : out std_logic;
+        -- Selects bank used for updates and for readout
+        bank_select_i : in std_logic;
 
         -- Continuous bunch by bunch update interface
+        update_addr_i : in unsigned;
         update_data_o : out mms_row_channels_t;
         update_data_i : in mms_row_channels_t;
 
@@ -31,6 +28,7 @@ entity min_max_sum_store is
         -- the read pointer and reset the previously read value.  The current
         -- readout is valid until after this strobe is seen.
         readout_strobe_i : in std_logic;
+        readout_addr_i : in unsigned;
         readout_data_o : out mms_row_channels_t;
         readout_ack_o : out std_logic;
         readout_reset_data_i : in mms_row_channels_t
@@ -42,19 +40,16 @@ architecture min_max_sum_store of min_max_sum_store is
     type mms_row_array_t is array(natural range 0 to 1) of mms_row_channels_t;
 
     -- Interface to two banks of memory
-    signal read_addr : unsigned_array(0 to 1)(ADDR_BITS-1 downto 0);
+    signal read_addr : unsigned_array(0 to 1)(update_addr_i'RANGE);
     signal read_data : mms_row_array_t;
     signal write_strobe : std_logic_vector(0 to 1);
-    signal write_addr : unsigned_array(0 to 1)(ADDR_BITS-1 downto 0);
+    signal write_addr : unsigned_array(0 to 1)(update_addr_i'RANGE);
     signal write_data : mms_row_array_t;
 
-    -- Bunch by bunch update and readout addresses
-    signal update_read_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
-    signal update_write_addr : unsigned(ADDR_BITS-1 downto 0);
-    signal readout_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
+    signal update_write_addr : unsigned(update_addr_i'RANGE);
 
     -- Bank selection
-    signal read_addr_bank : natural range 0 to 1 := 0;
+    signal read_addr_bank : natural range 0 to 1;
     signal read_data_bank_std : std_logic;
     signal read_data_bank : natural range 0 to 1;
     signal write_bank : natural range 0 to 1;
@@ -63,16 +58,10 @@ architecture min_max_sum_store of min_max_sum_store is
     -- Skew from update read to write address
     constant WRITE_DELAY : natural := 4 + UPDATE_DELAY;
 
-    -- Bank switching control
-    signal switch_request : boolean := false;
-    signal switch_done : std_logic := '0';
-
 begin
     -- Memory interface
     mem_gen : for i in 0 to 1 generate
-        memory_inst : entity work.min_max_sum_memory generic map (
-            ADDR_BITS => ADDR_BITS
-        ) port map (
+        memory_inst : entity work.min_max_sum_memory port map (
             clk_i => clk_i,
             read_addr_i => read_addr(i),
             read_data_o => read_data(i),
@@ -83,10 +72,11 @@ begin
     end generate;
 
     -- Multiplexing memory interface: update bank and readout bank
+    read_addr_bank <= to_integer(bank_select_i);
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Update read
-            read_addr(read_addr_bank) <= update_read_addr;
+            read_addr(read_addr_bank) <= update_addr_i;
             update_data_o <= read_data(read_data_bank);
             -- Update write
             write_strobe(write_bank) <= '1';
@@ -94,11 +84,11 @@ begin
             write_data(write_bank) <= update_data_i;
 
             -- Readout read
-            read_addr(1 - read_addr_bank) <= readout_addr;
+            read_addr(1 - read_addr_bank) <= readout_addr_i;
             readout_data_o <= read_data(1 - read_data_bank);
             -- Readout reset
             write_strobe(1 - write_bank) <= readout_strobe_i;
-            write_addr(1 - write_bank) <= readout_addr;
+            write_addr(1 - write_bank) <= readout_addr_i;
             write_data(1 - write_bank) <= readout_reset_data_i;
         end if;
     end process;
@@ -125,7 +115,7 @@ begin
     --  wa[B]   ----------------------------------------X A   X-------
     --  wd[B]   ----------------------------------------X UMA X-------
     --
-    -- ra = update_read_addr, rab = read_addr_bank, ra[B] = read_addr(B),
+    -- ra = update_addr_i, rab = read_addr_bank, ra[B] = read_addr(B),
     -- rd[B] = read_data(B), rdb = read_data_bank, ud_o = update_data_o,
     -- ud_i = update_data_i, wa = update_write_addr, bw = write_bank,
     -- wa[B] = write_addr(B), wd[N] = write_data(B).
@@ -149,10 +139,10 @@ begin
 
     dly_write_addr_inst : entity work.dlyline generic map (
         DLY => WRITE_DELAY,
-        DW => ADDR_BITS
+        DW => update_addr_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(update_read_addr),
+        data_i => std_logic_vector(update_addr_i),
         unsigned(data_o) => update_write_addr
     );
 
@@ -170,7 +160,7 @@ begin
     --                                             _____
     --  ra_o    __________________________________/     \_______
     --
-    -- rs_i = readout_strobe_i, ra = readout_addr, B = currently selected
+    -- rs_i = readout_strobe_i, ra = readout_addr_i, B = currently selected
     -- readout bank, ra[B] = read_addr(B), rd[B] = read_data(B),
     -- rd_o = readout_data_o, ra_o = readout_ack_o
     dly_readout_ack_inst : entity work.dlyline generic map (
@@ -179,54 +169,5 @@ begin
         clk_i => clk_i,
         data_i(0) => readout_strobe_i,
         data_o(0) => readout_ack_o
-    );
-
-
-    -- Addresses computation and advance.  The update address always advances,
-    -- except when it loops back on the bunch reset.  The readout address
-    -- advances on each read strobe, and is reset when a bank switch request
-    -- is received.
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            if bunch_reset_i = '1' then
-                update_read_addr <= (others => '0');
-            else
-                update_read_addr <= update_read_addr + 1;
-            end if;
-
-            if switch_request_i = '1' then
-                readout_addr <= (others => '0');
-            elsif readout_strobe_i = '1' then
-                readout_addr <= readout_addr + 1;
-            end if;
-        end if;
-    end process;
-
-
-    -- Bank switching.  On receipt of a bank switch request we wait for a bunch
-    -- reset event.  This ensures that the first update will always be to cell
-    -- zero.
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            if switch_request_i then
-                switch_request <= true;
-                switch_done <= '0';
-            elsif switch_request and bunch_reset_i = '1' then
-                read_addr_bank <= 1 - read_addr_bank;
-                switch_request <= false;
-                switch_done <= '1';
-            else
-                switch_done <= '0';
-            end if;
-        end if;
-    end process;
-    -- Need to delay the switch done a little so that nobody attempts to read
-    -- data before the switch has actually completed.
-    switch_done_dly : entity work.dlyline generic map (
-        DLY => 5
-    ) port map (
-        clk_i => clk_i,
-        data_i(0) => switch_done,
-        data_o(0) => switch_done_o
     );
 end;

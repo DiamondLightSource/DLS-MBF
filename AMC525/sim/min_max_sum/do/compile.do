@@ -16,6 +16,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/adc_phase.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
     $vhd_dir/min_max_sum/min_max_sum_memory.vhd \
     $vhd_dir/min_max_sum/min_max_sum_store.vhd \
     $vhd_dir/min_max_sum/min_max_sum_update.vhd \
@@ -35,6 +36,7 @@ vsim -t 1ps \
 view wave
 
 add wave -group "MMS" sim:/testbench/min_max_sum_inst/*
+add wave -group "Bank" sim:/testbench/min_max_sum_inst/min_max_sum_bank_inst/*
 add wave -group "MMS Store" \
     sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/*
 add wave -group "mem(0)" \

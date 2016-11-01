@@ -33,6 +33,11 @@ entity min_max_sum is
 end;
 
 architecture min_max_sum of min_max_sum is
+    signal frame_count : unsigned(31 downto 0);
+    signal bank_select : std_logic;
+    signal update_addr : unsigned(ADDR_BITS-1 downto 0);
+    signal readout_addr : unsigned(ADDR_BITS-1 downto 0);
+
     signal update_data_read : mms_row_channels_t;
     signal update_data_write : mms_row_channels_t;
 
@@ -42,24 +47,40 @@ architecture min_max_sum of min_max_sum is
     signal switch_done : std_logic;
     signal readout_strobe : std_logic;
     signal readout_ack : std_logic;
-    signal frame_count : unsigned(31 downto 0);
 
 begin
 
+    -- Address control and bank switching
+    min_max_sum_bank_inst : entity work.min_max_sum_bank port map (
+        clk_i => dsp_clk_i,
+        bunch_reset_i => bunch_reset_i,
+
+        switch_request_i => count_read_strobe_i,
+        frame_count_o => frame_count,
+        switch_done_o => count_read_ack_o,
+
+        bank_select_o => bank_select,
+        update_addr_o => update_addr,
+
+        readout_strobe_i => readout_strobe,
+        readout_addr_o => readout_addr
+    );
+    count_read_data_o <= std_logic_vector(frame_count);
+
+    -- Core memory interface and multiplexing
     min_max_sum_store_inst : entity work.min_max_sum_store generic map (
-        ADDR_BITS => ADDR_BITS,
         UPDATE_DELAY => 2
     ) port map (
         clk_i => dsp_clk_i,
 
-        bunch_reset_i => bunch_reset_i,
-        switch_request_i => count_read_strobe_i,
-        switch_done_o => switch_done,
+        bank_select_i => bank_select,
 
+        update_addr_i => update_addr,
         update_data_o => update_data_read,
         update_data_i => update_data_write,
 
         readout_strobe_i => readout_strobe,
+        readout_addr_i => readout_addr,
         readout_data_o => readout_data_read,
         readout_ack_o => readout_ack,
         readout_reset_data_i => readout_reset_data
@@ -82,19 +103,6 @@ begin
             delta_o => delta_o(c)
         );
     end generate;
-
-    -- Read capture count and switch bank.
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            if switch_done = '1' then
-                count_read_data_o <= std_logic_vector(frame_count);
-                frame_count <= (others => '0');
-            elsif bunch_reset_i = '1' then
-                frame_count <= frame_count + 1;
-            end if;
-            count_read_ack_o <= switch_done;
-        end if;
-    end process;
 
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (

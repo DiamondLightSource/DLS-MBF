@@ -14,24 +14,23 @@ use work.defines.all;
 use work.min_max_sum_defs.all;
 
 entity min_max_sum_memory is
-    generic (
-        ADDR_BITS : natural
-    );
     port (
         clk_i : in std_logic;
 
         -- Read interface
-        read_addr_i : in unsigned(ADDR_BITS-1 downto 0);
+        read_addr_i : in unsigned;
         read_data_o : out mms_row_channels_t;
 
         -- Write interface
         write_strobe_i : in std_logic;
-        write_addr_i : in unsigned(ADDR_BITS-1 downto 0);
+        write_addr_i : in unsigned;
         write_data_i : in mms_row_channels_t
     );
 end;
 
 architecture min_max_sum_memory of min_max_sum_memory is
+    constant ADDR_BITS : natural := read_addr_i'LENGTH;
+
     -- Declare block ram
     constant ROW_BITS : natural := 112;
     constant CHANNEL_ROW_BITS : natural := CHANNEL_COUNT * ROW_BITS;
