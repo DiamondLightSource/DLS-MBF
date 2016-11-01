@@ -55,8 +55,10 @@ architecture min_max_sum_store of min_max_sum_store is
 
     -- Bank selection
     signal read_addr_bank : natural range 0 to 1 := 0;
+    signal read_data_bank_std : std_logic;
     signal read_data_bank : natural range 0 to 1;
     signal write_bank : natural range 0 to 1;
+    signal write_bank_std : std_logic;
 
     -- Skew from update read to write address
     constant WRITE_DELAY : natural := 3 + UPDATE_DELAY;
@@ -132,15 +134,19 @@ begin
     ) port map (
         clk_i => clk_i,
         data_i(0) => to_std_logic(read_addr_bank),
-        to_integer(data_o(0)) => read_data_bank
+        data_o(0) => read_data_bank_std
     );
+    read_data_bank <= to_integer(read_data_bank_std);
+
     dly_write_bank_inst : entity work.dlyline generic map (
         DLY => WRITE_DELAY
     ) port map (
         clk_i => clk_i,
         data_i(0) => to_std_logic(read_addr_bank),
-        to_integer(data_o(0)) => write_bank
+        data_o(0) => write_bank_std
     );
+    write_bank <= to_integer(write_bank_std);
+
     dly_write_addr_inst : entity work.dlyline generic map (
         DLY => WRITE_DELAY,
         DW => ADDR_BITS

@@ -99,7 +99,7 @@ begin
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (
         dsp_clk_i => dsp_clk_i,
-        switch_done_i => switch_done,
+        reset_readout_i => count_read_strobe_i,
         data_i => readout_data_read,
         readout_strobe_o => readout_strobe,
         readout_ack_i => readout_ack,

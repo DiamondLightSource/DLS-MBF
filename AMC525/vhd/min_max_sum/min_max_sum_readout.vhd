@@ -12,11 +12,11 @@ entity min_max_sum_readout is
     port (
         dsp_clk_i : in std_logic;
 
-        -- Interface to stored data.  First switch_done_i is pulsed to indicate
-        -- that the readout address has been reset to zero.  Then the data can
-        -- be read from data_i.  Finally readout_strobe_o can be used to advance
-        -- the readout address.
-        switch_done_i : in std_logic;
+        -- Interface to stored data.  First reset_readout_i is pulsed to
+        -- indicate that the readout address has been reset to zero.  Then the
+        -- data can be read from data_i.  Finally readout_strobe_o can be used
+        -- to advance the readout address.
+        reset_readout_i : in std_logic;
         data_i : in mms_row_channels_t;
         readout_strobe_o : out std_logic;
         readout_ack_i : in std_logic;
@@ -53,7 +53,7 @@ begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             -- Advance phase and channel as appropriate
-            if switch_done_i = '1' then
+            if reset_readout_i = '1' then
                 channel <= 0;
                 phase <= 0;
             elsif read_strobe_i = '1' then
