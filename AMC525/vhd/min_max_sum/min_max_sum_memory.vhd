@@ -42,6 +42,7 @@ architecture min_max_sum_memory of min_max_sum_memory is
     attribute ram_style of memory : signal is "BLOCK";
 
     signal read_row : bram_row_t;
+    signal read_row_reg : bram_row_t;
     signal write_row : bram_row_t;
 
     function row_to_bits(data : mms_row_t) return std_logic_vector is
@@ -68,6 +69,8 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             read_row <= memory(to_integer(read_addr_i));
+            -- Use the internal pipeline register
+            read_row_reg <= read_row;
             if write_strobe_i = '1' then
                 memory(to_integer(write_addr_i)) <= write_row;
             end if;
@@ -75,7 +78,7 @@ begin
     end process;
 
     convert_gen : for c in CHANNELS generate
-        read_data_o(c) <= bits_to_row(read_field_ix(read_row, ROW_BITS, c));
+        read_data_o(c) <= bits_to_row(read_field_ix(read_row_reg, ROW_BITS, c));
         write_row((c+1)*ROW_BITS-1 downto c*ROW_BITS)
             <= row_to_bits(write_data_i(c));
     end generate;

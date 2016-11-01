@@ -61,7 +61,7 @@ architecture min_max_sum_store of min_max_sum_store is
     signal write_bank_std : std_logic;
 
     -- Skew from update read to write address
-    constant WRITE_DELAY : natural := 3 + UPDATE_DELAY;
+    constant WRITE_DELAY : natural := 4 + UPDATE_DELAY;
 
     -- Bank switching control
     signal switch_request : boolean := false;
@@ -111,26 +111,26 @@ begin
     --
     -- The following timing diagram illustrates this:
     --
-    --  clk_i       /     /     /     / ... /     /    /     /
-    --  ra      ----X A   X-------------------------------------
-    --  rab     ----X B   X-------------------------------------
-    --  ra[B]   ----------X MA  X-------------------------------
-    --  rd[B]   ----------------X MA  X-------------------------
-    --  rdb     ----------------X B   X-------------------------
-    --  ud_o    ----------------------X MA  X-------------------
-    --                                |---->| UPDATE_DELAY
-    --  ud_i    ----------------------------X UMA X-------------
-    --  wa      ----------------------------X A   X-------------
-    --  wb      ----------------------------X B   X-------------
-    --  wa[B]   ----------------------------------X A   X-------
-    --  wd[B]   ----------------------------------X UMA X-------
+    --  clk_i       /     /     /     / ... /     /    /     /      /
+    --  ra      ----X A   X-------------------------------------------
+    --  rab     ----X B   X-------------------------------------------
+    --  ra[B]   ----------X MA  X-------------------------------------
+    --  rd[B]   ----------------------X MA  X-------------------------
+    --  rdb     ----------------------X B   X-------------------------
+    --  ud_o    ----------------------------X MA  X-------------------
+    --                                      |---->| UPDATE_DELAY
+    --  ud_i    ----------------------------------X UMA X-------------
+    --  wa      ----------------------------------X A   X-------------
+    --  wb      ----------------------------------X B   X-------------
+    --  wa[B]   ----------------------------------------X A   X-------
+    --  wd[B]   ----------------------------------------X UMA X-------
     --
     -- ra = update_read_addr, rab = read_addr_bank, ra[B] = read_addr(B),
     -- rd[B] = read_data(B), rdb = read_data_bank, ud_o = update_data_o,
     -- ud_i = update_data_i, wa = update_write_addr, bw = write_bank,
     -- wa[B] = write_addr(B), wd[N] = write_data(B).
     dly_read_inst : entity work.dlyline generic map (
-        DLY => 2
+        DLY => 3
     ) port map (
         clk_i => clk_i,
         data_i(0) => to_std_logic(read_addr_bank),
@@ -165,16 +165,16 @@ begin
     --
     --  ra        A       | A+1
     --  ra[B]     A             | A+1
-    --  rd[B]     M[A]                | M[A+1]
-    --  rd_o      M[A]                      | M[A+1]
-    --                                       _____
-    --  ra_o    ____________________________/     \_____________
+    --  rd[B]     M[A]                      | M[A+1]
+    --  rd_o      M[A]                            | M[A+1]
+    --                                             _____
+    --  ra_o    __________________________________/     \_______
     --
     -- rs_i = readout_strobe_i, ra = readout_addr, B = currently selected
     -- readout bank, ra[B] = read_addr(B), rd[B] = read_data(B),
     -- rd_o = readout_data_o, ra_o = readout_ack_o
     dly_readout_ack_inst : entity work.dlyline generic map (
-        DLY => 4
+        DLY => 5
     ) port map (
         clk_i => clk_i,
         data_i(0) => readout_strobe_i,
@@ -220,9 +220,10 @@ begin
             end if;
         end if;
     end process;
-    -- Need to delay the switch done a little.
+    -- Need to delay the switch done a little so that nobody attempts to read
+    -- data before the switch has actually completed.
     switch_done_dly : entity work.dlyline generic map (
-        DLY => 4
+        DLY => 5
     ) port map (
         clk_i => clk_i,
         data_i(0) => switch_done,
