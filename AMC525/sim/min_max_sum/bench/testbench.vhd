@@ -49,6 +49,7 @@ architecture testbench of testbench is
     signal mms_read_ack : std_logic;
     signal dsp_data : signed_array(CHANNELS)(15 downto 0);
     signal delta : unsigned_array(CHANNELS)(15 downto 0);
+    signal overflow : std_logic;
 
     constant BUNCH_COUNT : natural := 6;   -- A very small ring!
 
@@ -78,6 +79,7 @@ begin
         bunch_reset_i => bunch_reset,
         data_i => dsp_data,
         delta_o => delta,
+        overflow_o => overflow,
         count_read_strobe_i => count_read_strobe,
         count_read_data_o => count_read_data,
         count_read_ack_o => count_read_ack,

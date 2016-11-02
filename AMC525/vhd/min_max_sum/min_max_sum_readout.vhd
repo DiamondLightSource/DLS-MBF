@@ -18,7 +18,7 @@ entity min_max_sum_readout is
         -- to advance the readout address.
         reset_readout_i : in std_logic;
         data_i : in mms_row_channels_t;
-        readout_strobe_o : out std_logic;
+        readout_strobe_o : out std_logic := '0';
         readout_ack_i : in std_logic;
 
         -- Register readout interface

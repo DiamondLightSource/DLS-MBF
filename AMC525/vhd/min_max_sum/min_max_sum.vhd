@@ -18,6 +18,7 @@ entity min_max_sum is
 
         data_i : in signed_array;
         delta_o : out unsigned_array;
+        overflow_o : out std_logic;
 
         -- Two register readout interface
         --
@@ -43,6 +44,8 @@ architecture min_max_sum of min_max_sum is
 
     signal readout_data_read : mms_row_channels_t;
     signal readout_reset_data : mms_row_channels_t;
+
+    signal overflow : std_logic_vector(CHANNELS);
 
     signal switch_done : std_logic;
     signal readout_strobe : std_logic;
@@ -100,9 +103,11 @@ begin
             data_i => data_i(c),
             mms_i => update_data_read(c),
             mms_o => update_data_write(c),
+            overflow_o => overflow(c),
             delta_o => delta_o(c)
         );
     end generate;
+    overflow_o <= vector_or(overflow);
 
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (

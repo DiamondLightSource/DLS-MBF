@@ -32,7 +32,7 @@ end;
 architecture min_max_sum_bank of min_max_sum_bank is
     signal switch_request : boolean;
     signal switch_event : boolean;
-    signal switch_done : std_logic;
+    signal switch_done : std_logic := '0';
 
     signal frame_count : unsigned(frame_count_o'RANGE);
 

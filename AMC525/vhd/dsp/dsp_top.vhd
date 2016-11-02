@@ -56,6 +56,7 @@ architecture dsp_top of dsp_top is
 
     signal dsp_data_in : dac_out_channels;
     signal adc_mms_delta : unsigned_array(CHANNELS)(15 downto 0);
+    signal adc_mms_overflow : std_logic;
 
     -- Quick and dirty bunch counter
     signal bunch_reset : std_logic;
@@ -91,6 +92,7 @@ begin
 
     pulsed_bits <= (
         0 => adc_fir_overflow,
+        1 => adc_mms_overflow,
         others => '0'
     );
 
@@ -148,6 +150,7 @@ begin
 
         data_i => dsp_data_in,
         delta_o => adc_mms_delta,
+        overflow_o => adc_mms_overflow,
 
         count_read_strobe_i => read_strobe_i(ADC_MMS_REG),
         count_read_data_o => read_data_o(ADC_MMS_REG),
