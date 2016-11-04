@@ -101,7 +101,7 @@ begin
     --
     -- The following timing diagram illustrates this:
     --
-    --  clk_i       /     /     /     / ... /     /    /     /      /
+    --  clk_i       /     /     /     / ... /     /     /     /     /
     --  ra      ----X A   X-------------------------------------------
     --  rab     ----X B   X-------------------------------------------
     --  ra[B]   ----------X MA  X-------------------------------------
@@ -149,7 +149,7 @@ begin
     -- Also delay the readout_ack_o long enough for the next data word to be
     -- valid.
     --
-    --  clk_i       /     /     /     /     /     /    /     /
+    --  clk_i       /     /     /     /     /     /     /     /
     --               _____
     --  rs_i    ____/     \_____________________________________
     --

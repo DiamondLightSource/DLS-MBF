@@ -45,9 +45,9 @@ architecture min_max_sum of min_max_sum is
     signal readout_data_read : mms_row_channels_t;
     signal readout_reset_data : mms_row_channels_t;
 
-    signal overflow : std_logic_vector(CHANNELS);
+    signal sum_overflow : std_logic_vector(CHANNELS);
+    signal sum2_overflow : std_logic_vector(CHANNELS);
 
-    signal switch_done : std_logic;
     signal readout_strobe : std_logic;
     signal readout_ack : std_logic;
 
@@ -90,10 +90,9 @@ begin
     );
 
     readout_reset_data <= (
-        0 => (min => X"7FFF", max => X"8000",
-              sum => (others => '0'), sum2 => (others => '0')),
-        1 => (min => X"7FFF", max => X"8000",
-              sum => (others => '0'), sum2 => (others => '0'))
+        others => (
+            min => X"7FFF", max => X"8000",
+            sum => (others => '0'), sum2 => (others => '0'))
     );
 
     -- Update min/max/sum
@@ -103,11 +102,12 @@ begin
             data_i => data_i(c),
             mms_i => update_data_read(c),
             mms_o => update_data_write(c),
-            overflow_o => overflow(c),
+            sum_overflow_o => sum_overflow(c),
+            sum2_overflow_o => sum2_overflow(c),
             delta_o => delta_o(c)
         );
     end generate;
-    overflow_o <= vector_or(overflow);
+    overflow_o <= vector_or(sum_overflow & sum2_overflow);
 
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (
