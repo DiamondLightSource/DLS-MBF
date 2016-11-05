@@ -4,20 +4,21 @@
 --
 --                              | ----- 2 ----> |
 --  clk_i               /       /       /       /       /       /       /
---  data_i          ----X d     X------------------------------------------
---  data            ------------X d     X----------------------------------
---  mms_i.min/max   ------------X mm    X----------------------------------
---  mms_i.sum       ------------X s     X----------------------------------
---  mms_i.sum2      ------------X s2    X----------------------------------
---  mms.min/max     --------------------X mm(d) X--------------------------
---  mms.sum         --------------------X s+d   X--------------------------
---  mms.sum2        --------------------X s2    X--------------------------
---  product         --------------------X d*d   X--------------------------
---  mms_o.min/max   ----------------------------X mm(d) X------------------
---  mms_o.sum       ----------------------------X s+d   X------------------
---  mms_o.sum2      ----------------------------X s2+dd X------------------
---  sum_overflow_o  ----------------------------X s ovf X------------------
---  sum2_overflow_o ------------------------------------X s2 of X----------
+--  data_i          ----< d     >------------------------------------------
+--  data            ------------< d     >----------------------------------
+--  mms_i.min/max   ------------< mm    >----------------------------------
+--  mms_i.sum       ------------< s     >----------------------------------
+--  mms_i.sum2      ------------< s2    >----------------------------------
+--  mms.min/max     --------------------< mm(d) >--------------------------
+--  mms.sum         --------------------< s+d   >--------------------------
+--  mms.sum2        --------------------< s2    >--------------------------
+--  product         --------------------< d*d   >--------------------------
+--  mms_o.min/max   ----------------------------< mm(d) >------------------
+--  mms_o.sum       ----------------------------< s+d   >------------------
+--  mms_o.sum2      ----------------------------< s2+dd >------------------
+--  sum_overflow    ----------------------------< s ovf >------------------
+--  sum_overflow_o  ------------------------------------< s ovf >----------
+--  sum2_overflow_o ------------------------------------< s2 of >----------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -55,6 +56,7 @@ architecture min_max_sum_update of min_max_sum_update is
     signal delta_sum_top : std_logic_vector(3 downto 0);
     signal old_sum2_top : std_logic;
     signal delta_sum2_top : std_logic_vector(1 downto 0);
+    signal sum_overflow : std_logic;
 
 begin
     -- Start with a data pipeline protected from being eaten by the DSP unit.
@@ -102,14 +104,15 @@ begin
 
 
             -- Overflow detection.  This is not synchronised to the outgoing
-            -- result as this is not needed.  Note that sum_overflow_o is one
-            -- tick earlier than sum2_overflow_o.
+            -- result as this is not needed, but we do want the two overflows
+            -- to be synchronised.
 
             -- Detect signed overflow if large positive number goes negative or
             -- large negative number goes positive.
             old_sum_top <= std_logic_vector(mms_i.sum(31 downto 30));
-            sum_overflow_o <= to_std_logic(
+            sum_overflow <= to_std_logic(
                 delta_sum_top = "0110" or delta_sum_top = "1001");
+            sum_overflow_o <= sum_overflow;
 
             -- Unsigned overflow if top bit goes from 1 to 0.
             old_sum2_top <= mms.sum2(47);

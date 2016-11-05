@@ -34,7 +34,12 @@ entity min_max_sum is
 end;
 
 architecture min_max_sum of min_max_sum is
-    signal frame_count : unsigned(31 downto 0);
+    -- Delay from bank selection and update address in to _store to
+    -- update_data_read valid.
+    constant READ_DELAY : natural := 4;
+    -- Delay from update_data_read to update_data_write.
+    constant UPDATE_DELAY : natural := 2;
+
     signal bank_select : std_logic;
     signal update_addr : unsigned(ADDR_BITS-1 downto 0);
     signal readout_addr : unsigned(ADDR_BITS-1 downto 0);
@@ -45,8 +50,10 @@ architecture min_max_sum of min_max_sum is
     signal readout_data_read : mms_row_channels_t;
     signal readout_reset_data : mms_row_channels_t;
 
-    signal sum_overflow : std_logic_vector(CHANNELS);
-    signal sum2_overflow : std_logic_vector(CHANNELS);
+    signal sum_overflow_chan : std_logic_vector(CHANNELS);
+    signal sum2_overflow_chan : std_logic_vector(CHANNELS);
+    signal sum_overflow : std_logic;
+    signal sum2_overflow : std_logic;
 
     signal readout_strobe : std_logic;
     signal readout_ack : std_logic;
@@ -54,25 +61,30 @@ architecture min_max_sum of min_max_sum is
 begin
 
     -- Address control and bank switching
-    min_max_sum_bank_inst : entity work.min_max_sum_bank port map (
+    min_max_sum_bank_inst : entity work.min_max_sum_bank generic map (
+        READ_DELAY => READ_DELAY,
+        UPDATE_DELAY => UPDATE_DELAY
+    ) port map (
         clk_i => dsp_clk_i,
         bunch_reset_i => bunch_reset_i,
 
-        switch_request_i => count_read_strobe_i,
-        frame_count_o => frame_count,
-        switch_done_o => count_read_ack_o,
+        count_read_strobe_i => count_read_strobe_i,
+        count_read_data_o => count_read_data_o,
+        count_read_ack_o => count_read_ack_o,
 
         bank_select_o => bank_select,
         update_addr_o => update_addr,
 
         readout_strobe_i => readout_strobe,
-        readout_addr_o => readout_addr
+        readout_addr_o => readout_addr,
+
+        sum_overflow_i => sum_overflow,
+        sum2_overflow_i => sum2_overflow
     );
-    count_read_data_o <= std_logic_vector(frame_count);
 
     -- Core memory interface and multiplexing
     min_max_sum_store_inst : entity work.min_max_sum_store generic map (
-        UPDATE_DELAY => 2
+        UPDATE_DELAY => UPDATE_DELAY
     ) port map (
         clk_i => dsp_clk_i,
 
@@ -102,12 +114,14 @@ begin
             data_i => data_i(c),
             mms_i => update_data_read(c),
             mms_o => update_data_write(c),
-            sum_overflow_o => sum_overflow(c),
-            sum2_overflow_o => sum2_overflow(c),
+            sum_overflow_o => sum_overflow_chan(c),
+            sum2_overflow_o => sum2_overflow_chan(c),
             delta_o => delta_o(c)
         );
     end generate;
-    overflow_o <= vector_or(sum_overflow & sum2_overflow);
+    sum_overflow  <= vector_or(sum_overflow_chan);
+    sum2_overflow <= vector_or(sum2_overflow_chan);
+    overflow_o <= sum_overflow or sum2_overflow;
 
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (
