@@ -1,0 +1,54 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+use work.nco_defs.all;
+
+entity nco_cos_sin_table is
+    port (
+        clk_i : in std_logic;
+
+        addr_a_i : in cos_sin_addr_t;
+        cos_sin_a_o : out cos_sin_19_t;
+        addr_b_i : in cos_sin_addr_t;
+        cos_sin_b_o : out cos_sin_19_t
+    );
+end;
+
+architecture nco_cos_sin_table of nco_cos_sin_table is
+    subtype cos_sin_data_t is std_logic_vector(35 downto 0);
+    type lookup_t is array(0 to 1023) of cos_sin_data_t;
+    signal table : lookup_t := (
+        @TABLE_BODY@
+    );
+
+    attribute ram_style : string;
+    attribute ram_style of table : signal is "block";
+
+    signal data_a_pl : cos_sin_data_t;
+    signal data_a : cos_sin_data_t;
+    signal data_b_pl : cos_sin_data_t;
+    signal data_b : cos_sin_data_t;
+
+    function bits_to_cos_sin(data : std_logic_vector) return cos_sin_19_t is
+        variable result : cos_sin_19_t;
+    begin
+        result.cos := signed('0' & data(17 downto 0));
+        result.sin := signed('0' & data(35 downto 18));
+        return result;
+    end;
+
+begin
+    -- Double-buffered table lookup to help with BRAM registers.
+    process (clk_i) begin
+        if rising_edge(clk_i) then
+            data_a_pl <= table(to_integer(addr_a_i));
+            data_a <= data_a_pl;
+            data_b_pl <= table(to_integer(addr_b_i));
+            data_b <= data_b_pl;
+        end if;
+    end process;
+
+    cos_sin_a_o <= bits_to_cos_sin(data_a);
+    cos_sin_b_o <= bits_to_cos_sin(data_b);
+end;
