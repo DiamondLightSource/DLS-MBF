@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 use work.defines.all;
 use work.support.all;
+use work.min_max_sum_defs.all;
 
 entity testbench is
 end testbench;
@@ -36,17 +37,14 @@ architecture testbench of testbench is
     signal bunch_reset : std_logic;
 
     signal adc_data_raw : signed(15 downto 0) := (others => '0');
-    signal adc_data : signed(15 downto 0);
+    signal adc_data : signed(15 downto 0) := (others => '0');
 
     signal limit : unsigned(15 downto 0);
     signal limit_event : std_logic;
     signal reset_event : std_logic;
-    signal count_read_strobe : std_logic;
-    signal count_read_data : reg_data_t;
-    signal count_read_ack : std_logic;
-    signal mms_read_strobe : std_logic;
-    signal mms_read_data : reg_data_t;
-    signal mms_read_ack : std_logic;
+    signal read_strobe : std_logic_vector(0 to 1);
+    signal read_data : reg_data_array_t(0 to 1);
+    signal read_ack : std_logic_vector(0 to 1);
     signal dsp_data : signed_array(CHANNELS)(15 downto 0);
     signal delta : unsigned_array(CHANNELS)(15 downto 0);
     signal overflow : std_logic;
@@ -80,12 +78,9 @@ begin
         data_i => dsp_data,
         delta_o => delta,
         overflow_o => overflow,
-        count_read_strobe_i => count_read_strobe,
-        count_read_data_o => count_read_data,
-        count_read_ack_o => count_read_ack,
-        mms_read_strobe_i => mms_read_strobe,
-        mms_read_data_o => mms_read_data,
-        mms_read_ack_o => mms_read_ack
+        read_strobe_i => read_strobe,
+        read_data_o => read_data,
+        read_ack_o => read_ack
     );
 
     min_max_limit_inst : entity work.min_max_limit port map (
@@ -108,7 +103,8 @@ begin
             end if;
 
             if bunch_reset = '1' and adc_phase = '1' then
-                adc_data <= (others => 'X');
+--                 adc_data <= (others => 'X');
+                adc_data <= (others => '0');
             else
                 adc_data <= adc_data_raw;
             end if;
@@ -129,29 +125,30 @@ begin
 
     -- Register control
     process
+        procedure read_register(reg : natural) is
+        begin
+            read_strobe(reg) <= '1';
+            tick_wait;
+            read_strobe(reg) <= '0';
+            wait until rising_edge(dsp_clk) and read_ack(reg) = '1';
+        end;
+
         -- Readout bank
         procedure readout_bank is
         begin
             -- 8 words for each bunch pair
             for i in 0 to 8*BUNCH_COUNT-1 loop
-                mms_read_strobe <= '1';
-                tick_wait;
-                mms_read_strobe <= '0';
-                wait until rising_edge(dsp_clk) and mms_read_ack = '1';
+                read_register(1);
             end loop;
         end;
 
         -- Switch bank
         procedure switch_bank is
         begin
-            count_read_strobe <= '1';
-            tick_wait;
-            count_read_strobe <= '0';
-            wait until rising_edge(dsp_clk) and count_read_ack = '1';
+            read_register(0);
         end;
     begin
-        count_read_strobe <= '0';
-        mms_read_strobe <= '0';
+        read_strobe <= "00";
         reset_event <= '0';
 
         -- To get things working we need to start by resetting both banks

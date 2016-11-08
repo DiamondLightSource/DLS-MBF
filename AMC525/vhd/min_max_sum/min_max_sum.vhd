@@ -20,20 +20,20 @@ entity min_max_sum is
         delta_o : out unsigned_array;
         overflow_o : out std_logic;
 
-        -- Two register readout interface
-        --
-        -- Read the accumulated event count and swap buffers
-        count_read_strobe_i : in std_logic;
-        count_read_data_o : out reg_data_t;
-        count_read_ack_o : out std_logic;
-        -- Read repeatedly to return and reset memory bank
-        mms_read_strobe_i : in std_logic;
-        mms_read_data_o : out reg_data_t;
-        mms_read_ack_o : out std_logic
+        -- Two register readout interface:
+        -- First returns the accumulated event count and swaps buffers
+        -- Read second repeatedly to return and reset memory bank
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector
     );
 end;
 
 architecture min_max_sum of min_max_sum is
+    -- Register indices.
+    constant COUNT_REG : natural := read_strobe_i'LOW;
+    constant READOUT_REG : natural := COUNT_REG + 1;
+
     -- Delay from bank selection and update address in to _store to
     -- update_data_read valid.
     constant READ_DELAY : natural := 4;
@@ -59,6 +59,9 @@ architecture min_max_sum of min_max_sum is
     signal readout_ack : std_logic;
 
 begin
+    assert read_strobe_i'LENGTH = 2;
+    assert read_strobe_i'LOW = read_data_o'LOW;
+    assert read_strobe_i'HIGH = read_data_o'HIGH;
 
     -- Address control and bank switching
     min_max_sum_bank_inst : entity work.min_max_sum_bank generic map (
@@ -68,9 +71,9 @@ begin
         clk_i => dsp_clk_i,
         bunch_reset_i => bunch_reset_i,
 
-        count_read_strobe_i => count_read_strobe_i,
-        count_read_data_o => count_read_data_o,
-        count_read_ack_o => count_read_ack_o,
+        count_read_strobe_i => read_strobe_i(COUNT_REG),
+        count_read_data_o => read_data_o(COUNT_REG),
+        count_read_ack_o => read_ack_o(COUNT_REG),
 
         bank_select_o => bank_select,
         update_addr_o => update_addr,
@@ -126,12 +129,12 @@ begin
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (
         dsp_clk_i => dsp_clk_i,
-        reset_readout_i => count_read_strobe_i,
+        reset_readout_i => read_strobe_i(COUNT_REG),
         data_i => readout_data_read,
         readout_strobe_o => readout_strobe,
         readout_ack_i => readout_ack,
-        read_strobe_i => mms_read_strobe_i,
-        read_data_o => mms_read_data_o,
-        read_ack_o => mms_read_ack_o
+        read_strobe_i => read_strobe_i(READOUT_REG),
+        read_data_o => read_data_o(READOUT_REG),
+        read_ack_o => read_ack_o(READOUT_REG)
     );
 end;
