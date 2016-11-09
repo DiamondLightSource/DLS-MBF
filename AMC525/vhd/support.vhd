@@ -4,6 +4,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 package support is
+    -- Some generic unconstrained types
+    type signed_array is array(natural range <>) of signed;
+    type unsigned_array is array(natural range <>) of unsigned;
+    type vector_array is array(natural range <>) of std_logic_vector;
+
+
     -- Returns the number of bits required to represent the value x.  Note that,
     -- for example, bits(x) is 4 for x in the range 4 to 7.
     function bits(x : natural) return natural;

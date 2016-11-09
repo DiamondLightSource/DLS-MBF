@@ -7,12 +7,6 @@ use work.support.all;
 
 package defines is
 
-    -- Some generic types, maybe belongs in support
-    type signed_array is array(natural range <>) of signed;
-    type unsigned_array is array(natural range <>) of unsigned;
-    type vector_array is array(natural range <>) of std_logic_vector;
-
-
     -- The register control interface consists of a set of "modules" each of
     -- can implement a number of registers.
     constant MOD_ADDR_BITS : natural := 2;
