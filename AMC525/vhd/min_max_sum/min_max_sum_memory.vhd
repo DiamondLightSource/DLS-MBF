@@ -36,12 +36,12 @@ architecture min_max_sum_memory of min_max_sum_memory is
     constant CHANNEL_ROW_BITS : natural := CHANNEL_COUNT * ROW_BITS;
     subtype bram_row_t is std_logic_vector(CHANNEL_ROW_BITS-1 downto 0);
     type bram_mem_t is array(0 to 2**ADDR_BITS-1) of bram_row_t;
-    signal memory : bram_mem_t;
+    signal memory : bram_mem_t := (others => (others => '0'));
     attribute ram_style : string;
     attribute ram_style of memory : signal is "BLOCK";
 
-    signal read_row : bram_row_t;
-    signal read_row_reg : bram_row_t;
+    signal read_row : bram_row_t := (others => '0');
+    signal read_row_reg : bram_row_t := (others => '0');
     signal write_row : bram_row_t;
 
     function row_to_bits(data : mms_row_t) return std_logic_vector is

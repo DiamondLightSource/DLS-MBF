@@ -18,4 +18,8 @@ package min_max_sum_defs is
 
     type mms_row_channels_t is array(CHANNELS) of mms_row_t;
 
+    constant mms_reset_value : mms_row_t := (
+        min => X"7FFF", max => X"8000",
+        sum => (others => '0'), sum2 => (others => '0'));
+
 end package;

@@ -24,7 +24,7 @@ entity min_max_sum_readout is
         -- Register readout interface
         read_strobe_i : in std_logic;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic
+        read_ack_o : out std_logic := '0'
     );
 end;
 

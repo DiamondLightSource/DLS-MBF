@@ -19,9 +19,9 @@ entity min_max_sum_bank is
         bunch_reset_i : in std_logic;       -- Revolution clock
 
         -- Register readout bank count and switch
-        count_read_strobe_i : in std_logic; -- Request to switch bank
-        count_read_data_o : out reg_data_t; -- Frames since last switch
-        count_read_ack_o : out std_logic;   -- Strobed on completion of switch
+        count_read_strobe_i : in std_logic;         -- Request to switch bank
+        count_read_data_o : out reg_data_t;         -- Frames since last switch
+        count_read_ack_o : out std_logic := '0';    -- On completion of switch
 
         -- Update control and current bank
         bank_select_o : out std_logic;
@@ -50,7 +50,7 @@ architecture min_max_sum_bank of min_max_sum_bank is
     signal frame_count_overflow : std_logic;
 
     signal bank_select : std_logic := '0';
-    signal update_addr : unsigned(update_addr_o'RANGE);
+    signal update_addr  : unsigned(update_addr_o'RANGE)  := (others => '0');
     signal readout_addr : unsigned(readout_addr_o'RANGE) := (others => '0');
 
 begin

@@ -46,10 +46,11 @@ architecture min_max_sum_update of min_max_sum_update is
     -- We hang onto the computed min and max values so that the delta can be
     -- computed accurately now, and not one turn later -- we could even miss an
     -- event if a buffer swap occurred at the wrong time!
-    signal data_pl : signed(data_i'RANGE);
-    signal data : signed(data_i'RANGE);
-    signal mms : mms_row_t;
-    signal product : signed(31 downto 0);
+    signal data_pl : signed(data_i'RANGE) := (others => '0');
+    signal data : signed(data_i'RANGE) := (others => '0');
+    signal mms : mms_row_t := mms_reset_value;
+    signal product : signed(31 downto 0) := (others => '0');
+    signal delta : unsigned(delta_o'RANGE) := (others => '0');
 
     -- Overflow detection
     signal old_sum_top : std_logic_vector(1 downto 0);
@@ -100,7 +101,7 @@ begin
             mms_o.max <= mms.max;
             mms_o.sum <= mms.sum;
 
-            delta_o <= unsigned(mms.max - mms.min);
+            delta <= unsigned(mms.max - mms.min);
 
 
             -- Overflow detection.  This is not synchronised to the outgoing
@@ -124,4 +125,6 @@ begin
     -- overflow detection.
     delta_sum_top <= old_sum_top & std_logic_vector(mms.sum(31 downto 30));
     delta_sum2_top <= old_sum2_top & mms_o.sum2(47);
+
+    delta_o <= delta;
 end;

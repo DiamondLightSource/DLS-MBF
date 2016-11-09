@@ -23,8 +23,11 @@ end;
 architecture adc_to_dsp of adc_to_dsp is
     signal adc_phase_in : std_logic;
     signal adc_phase : CHANNELS;
-    signal adc_data_in : signed(adc_data_i'RANGE);
-    signal dsp_data : signed_array(CHANNELS)(adc_data_i'RANGE);
+    signal adc_data_in : signed(adc_data_i'RANGE) := (others => '0');
+    signal dsp_data : signed_array(CHANNELS)(adc_data_i'RANGE)
+        := (others => (others => '0'));
+    signal dsp_data_out : signed_array(CHANNELS)(adc_data_i'RANGE)
+        := (others => (others => '0'));
 
 begin
     -- Timing for ADC to DSP conversion
@@ -66,7 +69,8 @@ begin
     -- Ensure result is purely in DSP clock.
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            dsp_data_o <= dsp_data;
+            dsp_data_out <= dsp_data;
         end if;
     end process;
+    dsp_data_o <= dsp_data_out;
 end;

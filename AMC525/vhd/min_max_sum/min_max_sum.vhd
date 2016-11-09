@@ -104,11 +104,7 @@ begin
         readout_reset_data_i => readout_reset_data
     );
 
-    readout_reset_data <= (
-        others => (
-            min => X"7FFF", max => X"8000",
-            sum => (others => '0'), sum2 => (others => '0'))
-    );
+    readout_reset_data <= (others => mms_reset_value);
 
     -- Update min/max/sum
     update_gen : for c in CHANNELS generate
