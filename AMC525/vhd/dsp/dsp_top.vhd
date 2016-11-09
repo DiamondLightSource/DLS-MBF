@@ -43,7 +43,7 @@ architecture dsp_top of dsp_top is
     constant STROBE_REG : natural := 0;
     constant ADC_TAPS_REG : natural := 1;
     constant PULSED_REG : natural := 2;
-    constant ADC_MMS_REG : natural := 3;    -- and 4
+    subtype ADC_MMS_REG is natural range 3 to 4;
     subtype UNUSED_REG is natural range 5 to REG_ADDR_COUNT-1;
 
     signal strobed_bits : reg_data_t;
@@ -152,15 +152,11 @@ begin
         delta_o => adc_mms_delta,
         overflow_o => adc_mms_overflow,
 
-        count_read_strobe_i => read_strobe_i(ADC_MMS_REG),
-        count_read_data_o => read_data_o(ADC_MMS_REG),
-        count_read_ack_o => read_ack_o(ADC_MMS_REG),
-        mms_read_strobe_i => read_strobe_i(ADC_MMS_REG+1),
-        mms_read_data_o => read_data_o(ADC_MMS_REG+1),
-        mms_read_ack_o => read_ack_o(ADC_MMS_REG+1)
+        read_strobe_i => read_strobe_i(ADC_MMS_REG),
+        read_data_o => read_data_o(ADC_MMS_REG),
+        read_ack_o => read_ack_o(ADC_MMS_REG)
     );
-    write_ack_o(ADC_MMS_REG) <= '1';
-    write_ack_o(ADC_MMS_REG+1) <= '1';
+    write_ack_o(ADC_MMS_REG) <= (others => '1');
 
     -- Quick and dirty bunch counter
     process (dsp_clk_i) begin

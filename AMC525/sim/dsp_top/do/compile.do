@@ -28,6 +28,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/min_max_sum/min_max_sum_store.vhd \
     $vhd_dir/min_max_sum/min_max_sum_update.vhd \
     $vhd_dir/min_max_sum/min_max_sum_readout.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
     $vhd_dir/min_max_sum/min_max_sum.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 
@@ -44,11 +45,10 @@ view wave
 
 add wave -group "Top" sim:*
 add wave -group "ADC Phase" sim:/testbench/adc_phase_inst/*
-add wave -group "DSP" sim:/testbench/dsp_top_inst/*
 add wave -group "ADC FIR" sim:/testbench/dsp_top_inst/adc_fir_inst/*
 add wave -group "Fast FIR" \
     sim:/testbench/dsp_top_inst/adc_fir_inst/fast_fir_inst/*
-add wave sim:*
+add wave -group "DSP" sim:/testbench/dsp_top_inst/*
 
 run 200ns
 
