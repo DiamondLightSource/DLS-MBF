@@ -43,8 +43,8 @@ end;
 
 architecture fast_fir of fast_fir is
     -- Extract data in and out dimensions from arguments
-    constant BIT_WIDTH_IN  : natural := data_i'LEFT - data_i'RIGHT + 1;
-    constant BIT_WIDTH_OUT : natural := data_o'LEFT - data_o'RIGHT + 1;
+    constant BIT_WIDTH_IN  : natural := data_i'LENGTH;
+    constant BIT_WIDTH_OUT : natural := data_o'LENGTH;
 
     constant PRODUCT_WIDTH : natural := BIT_WIDTH_IN + TAP_WIDTH;   -- 2.N+M
     -- The required headroom follows from the number of taps

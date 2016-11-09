@@ -46,7 +46,7 @@ architecture min_max_sum_bank of min_max_sum_bank is
     signal sum2_overflow : std_logic;
     signal overflow_readout : std_logic;
 
-    signal frame_count : unsigned(29 downto 0);
+    signal frame_count : unsigned(29 downto 0) := (others => '0');
     signal frame_count_overflow : std_logic;
 
     signal bank_select : std_logic := '0';

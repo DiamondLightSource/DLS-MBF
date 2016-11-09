@@ -40,41 +40,67 @@ entity dsp_top is
 end;
 
 architecture dsp_top of dsp_top is
-    constant STROBE_REG : natural := 0;
-    constant ADC_TAPS_REG : natural := 1;
-    constant PULSED_REG : natural := 2;
-    subtype ADC_MMS_REG is natural range 3 to 4;
-    subtype UNUSED_REG is natural range 5 to REG_ADDR_COUNT-1;
+    -- Overall register map:
+    --
+    --  0       W   Strobed bits
+    --  0       R   General status bits
+    --  1       RW  Latched pulsed events
+    --  2-3     RW  ADC registers
+    constant STROBE_REG_W : natural := 0;
+    constant STATUS_REG_R : natural := 0;
+    constant PULSED_REG : natural := 1;
+    subtype ADC_REGS is natural range 2 to 3;
+    subtype UNUSED_REGS is natural range 4 to write_strobe_i'HIGH;
+
+    -- Number of taps in ADC compensation filter
+    constant ADC_FIR_TAP_COUNT : natural := 8;
 
     signal strobed_bits : reg_data_t;
-    signal write_reset : std_logic;
+    signal status_bits : reg_data_t := (others => '0');
+
+    -- Strobed control signals
+    signal write_start : std_logic;
+    signal delta_reset : std_logic;
+
+    -- Captured pulsed events
     signal pulsed_bits : reg_data_t;
-
-    signal adc_data_delay : adc_inp_t;
-    signal adc_data_fir : signed(15 downto 0);
+    signal adc_input_overflow : std_logic;
     signal adc_fir_overflow : std_logic;
-
-    signal dsp_data_in : dac_out_channels;
-    signal adc_mms_delta : unsigned_array(CHANNELS)(15 downto 0);
     signal adc_mms_overflow : std_logic;
+    signal adc_delta_event : std_logic;
+
+    -- Data from ADC to FIR
+    signal adc_to_fir_data : signed_array(CHANNELS)(15 downto 0);
 
     -- Quick and dirty bunch counter
     signal bunch_reset : std_logic;
     signal bunch_counter : unsigned(7 downto 0) := (others => '0');
 
 begin
+    -- -------------------------------------------------------------------------
+    -- General register handling
+
     -- Strobed bits for single clock control
     strobed_bits_inst : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(STROBE_REG),
+        write_strobe_i => write_strobe_i(STROBE_REG_W),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(STROBE_REG),
+        write_ack_o => write_ack_o(STROBE_REG_W),
         strobed_bits_o => strobed_bits
     );
-    read_data_o(STROBE_REG) <= (others => '0');
-    read_ack_o(STROBE_REG) <= '1';
 
-    write_reset <= strobed_bits(0);
+    write_start <= strobed_bits(0);
+    delta_reset <= strobed_bits(1);
+
+
+    -- Miscellaneous status bits etc
+    read_data_o(STATUS_REG_R) <= status_bits;
+    read_ack_o(STATUS_REG_R) <= '1';
+
+    status_bits <= (
+        others => '0'
+    );
+
 
     -- Capture of single clock events
     pulsed_bits_inst : entity work.pulsed_bits port map (
@@ -91,72 +117,57 @@ begin
     );
 
     pulsed_bits <= (
-        0 => adc_fir_overflow,
-        1 => adc_mms_overflow,
+        0 => adc_input_overflow,    -- ADC out of limit
+        1 => adc_fir_overflow,      -- Compensation filter overflow
+        2 => adc_mms_overflow,      -- MMS accumulator overflow
+        3 => adc_delta_event,       -- Bunch by bunch motion over threshold
         others => '0'
     );
 
+
     -- Unused registers
-    write_ack_o(UNUSED_REG) <= (others => '1');
-    read_data_o(UNUSED_REG) <= (others => (others => '0'));
-    read_ack_o(UNUSED_REG) <= (others => '1');
+    write_ack_o(UNUSED_REGS) <= (others => '1');
+    read_data_o(UNUSED_REGS) <= (others => (others => '0'));
+    read_ack_o(UNUSED_REGS) <= (others => '1');
 
 
-    -- Pipeline input data to help with timing
-    dlyreg_inst : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => ADC_INP_WIDTH
+    -- -------------------------------------------------------------------------
+    -- Signal processing chain
+
+    -- ADC input processing
+
+    adc_top_inst : entity work.adc_top generic map (
+        TAP_COUNT => ADC_FIR_TAP_COUNT
     ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_logic_vector(adc_data_i),
-        signed(data_o) => adc_data_delay
-    );
-
-    -- ADC compensation fir
-    adc_fir_inst : entity work.adc_fir port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-
-        write_strobe_i => write_strobe_i(ADC_TAPS_REG),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(ADC_TAPS_REG),
-        write_reset_i => write_reset,
-
-        data_i => adc_data_delay,
-        data_o => adc_data_fir,
-        overflow_o => adc_fir_overflow
-    );
-    read_data_o(ADC_TAPS_REG) <= (others => '0');
-    read_ack_o(ADC_TAPS_REG) <= '1';
-
-
-    -- Convert from ADC rate data to DSP rate by doubling up the stream into
-    -- concurrent channels.
-    adc_to_dsp_inst : entity work.adc_to_dsp port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
-
-        adc_data_i => adc_data_fir,
-        dsp_data_o => dsp_data_in
-    );
-
-
-    -- Compute min/max/sum of ADC data
-    adc_mms_inst : entity work.min_max_sum port map (
-        dsp_clk_i => dsp_clk_i,
         bunch_reset_i => bunch_reset,
 
-        data_i => dsp_data_in,
-        delta_o => adc_mms_delta,
-        overflow_o => adc_mms_overflow,
+        data_i => adc_data_i,
+        data_o => adc_to_fir_data,
 
-        read_strobe_i => read_strobe_i(ADC_MMS_REG),
-        read_data_o => read_data_o(ADC_MMS_REG),
-        read_ack_o => read_ack_o(ADC_MMS_REG)
+        write_strobe_i => write_strobe_i(ADC_REGS),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(ADC_REGS),
+        read_strobe_i => read_strobe_i(ADC_REGS),
+        read_data_o => read_data_o(ADC_REGS),
+        read_ack_o => read_ack_o(ADC_REGS),
+
+        write_start_i => write_start,
+        delta_reset_i => delta_reset,
+
+        input_overflow_o => adc_input_overflow,
+        fir_overflow_o => adc_fir_overflow,
+        mms_overflow_o => adc_mms_overflow,
+        delta_event_o => adc_delta_event
     );
-    write_ack_o(ADC_MMS_REG) <= (others => '1');
+
+
+
+    -- -------------------------------------------------------------------------
+    -- Work in progress hacks below
+
 
     -- Quick and dirty bunch counter
     process (dsp_clk_i) begin
@@ -169,7 +180,7 @@ begin
 
     -- Generate the DDR0 data stream
     convert_inst : for c in CHANNELS generate
-        ddr0_data_o(c) <= std_logic_vector(dsp_data_in(c));
+        ddr0_data_o(c) <= std_logic_vector(adc_to_fir_data(c));
     end generate;
 
     -- Generate DSP data stream
@@ -177,7 +188,7 @@ begin
         adc_clk_i => adc_clk_i,
         adc_phase_i => adc_phase_i,
 
-        dsp_data_i => dsp_data_in,
+        dsp_data_i => adc_to_fir_data,
         adc_data_o => dac_data_o
     );
 

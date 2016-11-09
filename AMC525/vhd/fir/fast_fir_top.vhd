@@ -7,50 +7,50 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
-entity adc_fir is
+entity fast_fir_top is
+    generic (
+        TAP_COUNT : natural
+    );
     port (
         adc_clk_i : in std_logic;
+
+        -- DSP clocking needed to transport overflow to DSP clock
         dsp_clk_i : in std_logic;
         adc_phase_i : in std_logic;
 
         -- Taps write interface
+        write_start_i : in std_logic;
         write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
         write_ack_o : out std_logic;
-        -- Write reset
-        write_reset_i : in std_logic;
 
-        -- ADC data stream
-        data_i : in adc_inp_t;
-        data_o : out signed(15 downto 0);
-        overflow_o : out std_logic
+        -- data stream
+        data_i : in signed;                 -- on ADC clock
+        data_o : out signed;                -- on ADC clock
+        overflow_o : out std_logic          -- on DSP clock
     );
 end;
 
-architecture adc_fir of adc_fir is
-    constant TAP_COUNT : natural := 8;
-    signal taps    : reg_data_array_t(0 to TAP_COUNT-1);
+architecture fast_fir_top of fast_fir_top is
+    signal taps : reg_data_array_t(0 to TAP_COUNT-1);
     signal fir_overflow : std_logic;
 
 begin
     -- Single register writes to array of taps
-    taps_inst : entity work.untimed_register_block generic map (
-        COUNT => TAP_COUNT
-    ) port map (
+    taps_inst : entity work.untimed_register_block port map (
         clk_in_i => dsp_clk_i,
         clk_out_i => adc_clk_i,
 
         write_strobe_i => write_strobe_i,
         write_data_i => write_data_i,
         write_ack_o => write_ack_o,
-
-        write_reset_i => write_reset_i,
+        write_start_i => write_start_i,
 
         registers_o => taps
     );
 
+    -- The compensation filter itself
     fast_fir_inst : entity work.fast_fir generic map (
-        TAP_WIDTH => 18,
         TAP_COUNT => TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
@@ -60,6 +60,7 @@ begin
         overflow_o => fir_overflow
     );
 
+    -- Bring any overflow pulse to the DSP clock domain
     pulse_adc_to_dsp_inst : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
@@ -68,5 +69,4 @@ begin
         pulse_i => fir_overflow,
         pulse_o => overflow_o
     );
-
 end;

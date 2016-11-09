@@ -49,6 +49,7 @@ add wave -group "update(1)" \
     sim:/testbench/min_max_sum_inst/update_gen(1)/min_max_sum_update_inst/*
 add wave -group "Readout" \
     sim:/testbench/min_max_sum_inst/readout_inst/*
+add wave -group "Limit" sim:/testbench/min_max_limit_inst/*
 
 add wave -group "Top" sim:*
 # add wave sim:*

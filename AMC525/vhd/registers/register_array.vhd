@@ -18,9 +18,11 @@ entity register_array is
         write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
         write_ack_o : out std_logic;
+
         read_strobe_i : in std_logic;
         read_data_o : out reg_data_t;
         read_ack_o : out std_logic;
+
         -- Read and write resets
         write_reset_i : in std_logic;
         read_reset_i : in std_logic;
