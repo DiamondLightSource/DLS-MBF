@@ -59,14 +59,18 @@ architecture fast_fir of fast_fir is
     subtype TAP_RANGE is natural range 0 to TAP_COUNT-1;
     subtype TAP_RANGE_1 is natural range 0 to TAP_COUNT;
 
-    signal taps : signed_array(TAP_RANGE)(TAP_WIDTH-1 downto 0);
-    signal data_in : signed_array(TAP_RANGE)(BIT_WIDTH_IN-1 downto 0);
-    signal product : signed_array(TAP_RANGE)(PRODUCT_WIDTH-1 downto 0);
-    signal sum : signed_array(TAP_RANGE_1)(SUM_WIDTH-1 downto 0);
-    signal sum_out : signed(SUM_WIDTH-1 downto 0);
+    signal taps : signed_array(TAP_RANGE)(TAP_WIDTH-1 downto 0)
+        := (others => (others => '0'));
+    signal data_in : signed_array(TAP_RANGE)(BIT_WIDTH_IN-1 downto 0)
+        := (others => (others => '0'));
+    signal product : signed_array(TAP_RANGE)(PRODUCT_WIDTH-1 downto 0)
+        := (others => (others => '0'));
+    signal sum : signed_array(TAP_RANGE_1)(SUM_WIDTH-1 downto 0)
+        := (others => (others => '0'));
+    signal sum_out : signed(SUM_WIDTH-1 downto 0) := (others => '0');
 
     -- A pipeline to help with timing and fanout
-    signal data_in_delay : signed(BIT_WIDTH_IN-1 downto 0);
+    signal data_in_delay : signed(BIT_WIDTH_IN-1 downto 0) := (others => '0');
 
 
 begin

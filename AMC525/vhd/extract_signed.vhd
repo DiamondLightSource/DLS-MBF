@@ -31,8 +31,9 @@ architecture extract_signed of extract_signed is
     constant ROUNDED_WIDTH : natural := BIT_WIDTH_IN - OFFSET + EXTRA;
 
     signal sign : std_logic;
-    signal rounded : signed(ROUNDED_WIDTH-1 downto 0);
-    signal truncated : signed(data_o'RANGE);
+    signal rounded : signed(ROUNDED_WIDTH-1 downto 0) := (others => '0');
+    signal truncated : signed(data_o'RANGE) := (others => '0');
+    signal data_out : signed(data_o'RANGE) := (others => '0');
     signal overflow : std_logic;
 
 begin
@@ -46,8 +47,9 @@ begin
             truncate_result(truncated, overflow, rounded);
 
             -- Saturate the result if necessary
-            data_o <= saturate(truncated, overflow, sign);
+            data_out <= saturate(truncated, overflow, sign);
             overflow_o <= overflow;
         end if;
     end process;
+    data_o <= data_out;
 end;

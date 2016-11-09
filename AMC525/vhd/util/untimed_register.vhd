@@ -17,8 +17,10 @@ entity untimed_register is
 end;
 
 architecture untimed_register of untimed_register is
-    signal false_path_register_from : std_logic_vector(data_i'RANGE);
-    signal false_path_register_to   : std_logic_vector(data_o'RANGE);
+    signal false_path_register_from : std_logic_vector(data_i'RANGE)
+        := (others => '0');
+    signal false_path_register_to   : std_logic_vector(data_o'RANGE)
+        := (others => '0');
 
     -- Ensure our registers don't get eaten by premature optimisation.
     attribute KEEP : string;
