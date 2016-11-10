@@ -70,7 +70,9 @@ architecture dsp_top of dsp_top is
     signal adc_delta_event : std_logic;
 
     -- Data from ADC to FIR
+    signal adc_data_in : signed(13 downto 0);
     signal adc_to_fir_data : signed_array(CHANNELS)(15 downto 0);
+    signal dac_data_out : signed(15 downto 0);
 
     -- Quick and dirty bunch counter
     signal bunch_reset : std_logic;
@@ -135,6 +137,14 @@ begin
     -- Signal processing chain
 
     -- ADC input processing
+    adc_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => adc_data_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(adc_data_i),
+        signed(data_o) => adc_data_in
+    );
 
     adc_top_inst : entity work.adc_top generic map (
         TAP_COUNT => ADC_FIR_TAP_COUNT
@@ -144,7 +154,7 @@ begin
         adc_phase_i => adc_phase_i,
         bunch_reset_i => bunch_reset,
 
-        data_i => adc_data_i,
+        data_i => adc_data_in,
         data_o => adc_to_fir_data,
 
         write_strobe_i => write_strobe_i(ADC_REGS),
@@ -189,7 +199,16 @@ begin
         adc_phase_i => adc_phase_i,
 
         dsp_data_i => adc_to_fir_data,
-        adc_data_o => dac_data_o
+        adc_data_o => dac_data_out
+    );
+
+    dac_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => dac_data_o'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(dac_data_out),
+        signed(data_o) => dac_data_o
     );
 
 end;
