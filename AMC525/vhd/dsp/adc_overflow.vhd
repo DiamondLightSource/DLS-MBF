@@ -30,7 +30,7 @@ architecture adc_overflow of adc_overflow is
 begin
     -- Avoid annoying timing problems
     limit_in <= std_logic_vector(limit_i);
-    untimed_inst : entity work.untimed_register port map (
+    untimed_inst : entity work.untimed_reg port map (
         clk_in_i => dsp_clk_i,
         clk_out_i => adc_clk_i,
         write_i => '1',

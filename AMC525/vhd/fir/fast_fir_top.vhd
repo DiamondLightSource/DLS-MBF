@@ -32,22 +32,33 @@ entity fast_fir_top is
 end;
 
 architecture fast_fir_top of fast_fir_top is
+    signal taps_in : reg_data_array_t(0 to TAP_COUNT-1);
     signal taps : reg_data_array_t(0 to TAP_COUNT-1);
     signal fir_overflow : std_logic;
 
 begin
     -- Single register writes to array of taps
-    taps_inst : entity work.untimed_register_block port map (
-        clk_in_i => dsp_clk_i,
-        clk_out_i => adc_clk_i,
+    taps_inst : entity work.register_block port map (
+        clk_i => dsp_clk_i,
 
         write_strobe_i => write_strobe_i,
         write_data_i => write_data_i,
         write_ack_o => write_ack_o,
         write_start_i => write_start_i,
 
-        registers_o => taps
+        registers_o => taps_in
     );
+
+    -- Decouple the taps, written on DSP clock, from the FIR on ADC clock
+    untimed_taps_gen : for i in 0 to TAP_COUNT-1 generate
+        untimed_inst : entity work.untimed_reg port map (
+            clk_in_i => dsp_clk_i,
+            clk_out_i => adc_clk_i,
+            write_i => '1',
+            data_i => taps_in(i),
+            data_o => taps(i)
+        );
+    end generate;
 
     -- The compensation filter itself
     fast_fir_inst : entity work.fast_fir generic map (

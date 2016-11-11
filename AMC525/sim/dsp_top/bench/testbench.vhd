@@ -111,14 +111,14 @@ begin
         -- Initialise ADC FIR with passthrough.
         clk_wait(dsp_clk, 10);
         write_reg(0, X"00000001");
-        write_reg(1, X"00000000");
-        write_reg(1, X"00000000");
-        write_reg(1, X"00000000");
-        write_reg(1, X"00000000");
-        write_reg(1, X"00000000");
-        write_reg(1, X"00000000");
-        write_reg(1, X"00000000");
-        write_reg(1, X"7FFFFFFF");
+        write_reg(3, X"00000000");
+        write_reg(3, X"00000000");
+        write_reg(3, X"00000000");
+        write_reg(3, X"00000000");
+        write_reg(3, X"00000000");
+        write_reg(3, X"00000000");
+        write_reg(3, X"00000000");
+        write_reg(3, X"7FFFFFFF");
 
         wait;
 

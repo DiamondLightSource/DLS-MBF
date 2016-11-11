@@ -12,12 +12,12 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/sync_reset.vhd \
-    $vhd_dir/util/untimed_register.vhd \
+    $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/util/edge_detect.vhd \
     $vhd_dir/registers/pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
-    $vhd_dir/registers/register_file_wo.vhd \
-    $vhd_dir/registers/untimed_register_block.vhd \
+    $vhd_dir/registers/register_file.vhd \
+    $vhd_dir/registers/register_block.vhd \
     $vhd_dir/adc_phase.vhd \
     $vhd_dir/extract_signed.vhd \
     $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
@@ -48,10 +48,12 @@ vsim -t 1ps \
 
 view wave
 
-add wave -group "Top" sim:*
 add wave -group "ADC Phase" sim:/testbench/adc_phase_inst/*
 add wave -group "ADC Top" sim:/testbench/dsp_top_inst/adc_top_inst/*
+add wave -group "FIR Top" \
+    sim:/testbench/dsp_top_inst/adc_top_inst/fast_fir_inst/*
 add wave -group "DSP" sim:/testbench/dsp_top_inst/*
+add wave -group "Top" sim:*
 
 run 200ns
 

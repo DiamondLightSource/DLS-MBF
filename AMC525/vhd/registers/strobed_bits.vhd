@@ -34,5 +34,4 @@ begin
     end process;
 
     write_ack_o <= '1';
-
 end;

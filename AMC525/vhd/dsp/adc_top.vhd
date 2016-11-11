@@ -71,7 +71,7 @@ architecture adc_top of adc_top is
 
 begin
     -- Limit register.
-    register_file_inst : entity work.register_file_wo port map (
+    register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(LIMIT_REG_W),
         write_data_i => write_data_i,

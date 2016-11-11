@@ -61,6 +61,8 @@ begin
 
     process begin
         gain <= "0000";
+        wait;
+
         tick_wait(10);
         gain <= "0001";
         tick_wait(10);

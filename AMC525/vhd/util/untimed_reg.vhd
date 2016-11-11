@@ -1,14 +1,15 @@
 -- Implements untimed register.  A false path will be established between the
--- two registers defined in this entity.
+-- two registers defined in this entity, so that there is no particular timing
+-- constraint from data_i to data_o.
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity untimed_register is
+entity untimed_reg is
     port (
-        clk_in_i : in std_logic;
-        clk_out_i : in std_logic;
+        clk_in_i : in std_logic;        -- Clock for data_i and write_i
+        clk_out_i : in std_logic;       -- Clock for data_o
 
         write_i : in std_logic;
         data_i : in std_logic_vector;
@@ -16,13 +17,16 @@ entity untimed_register is
     );
 end;
 
-architecture untimed_register of untimed_register is
+architecture untimed_reg of untimed_reg is
+    -- Note that the signal names here and the fact that they name actual
+    -- registers are used by the constraints file, where an explicit timing
+    -- "false path" is created between these two names.
     signal false_path_register_from : std_logic_vector(data_i'RANGE)
         := (others => '0');
     signal false_path_register_to   : std_logic_vector(data_o'RANGE)
         := (others => '0');
 
-    -- Ensure our registers don't get eaten by premature optimisation.
+    -- Ensure our registers don't get eaten by optimisation.
     attribute KEEP : string;
     attribute KEEP of false_path_register_from : signal is "true";
     attribute KEEP of false_path_register_to   : signal is "true";
