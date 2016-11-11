@@ -32,17 +32,15 @@ entity adc_phase is
 end;
 
 architecture adc_phase of adc_phase is
-    signal adc_phase_reset : boolean := false;
+    signal adc_phase_reset : std_logic := '0';
     signal adc_phase : std_logic := '0';
 
 begin
     -- Phase reset detection.
-    process (adc_clk_i, dsp_clk_ok_i) begin
-        if dsp_clk_ok_i = '0' then
-            adc_phase_reset <= true;
-        elsif rising_edge(adc_clk_i) then
-            adc_phase_reset <= false;
-            if adc_phase_reset then
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            adc_phase_reset <= not dsp_clk_ok_i;
+            if adc_phase_reset = '1' then
                 adc_phase <= '0';
             else
                 adc_phase <= not adc_phase;

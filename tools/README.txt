@@ -138,10 +138,25 @@ R   2       Returns current DDR0 capture address
 Bank 2,3 registers
 ~~~~~~~~~~~~~~~~~~
 
-W   0[0]    Start write to banked registers
-W   1       ADC FIR registers: write 8 values to complete
-RW  2       Pulsed bits
-    2[0]        Set if ADC FIR overflow detected
+W   0       Write single clock pulsed events
+    0[0]        Start write to banked registers
+    0[1]        Reset bunch by bunch delta event
+R   1       Read static status bits
+RW  1       Capture single clock pulsed events
+    1[0]        Set if ADC input threshold exceeded
+    1[1]        Set if ADC FIR overflow detected
+    1[2]        Set if min/max/sum accmulator overflow detected
+    1[3]        Set if bunch by bunch motion overflow detected
+W   2       Set ADC control parameters
+W   2[13:0]     Set ADC input threshold limit
+    2[31:16]    Set bunch by bunch motion limit
+R   2       Read to switch min/max/sum and read capture count
+    2[28:0]     Number of turns in last capture
+    2[29]       Set if turn accumulator overflowed
+    2[30]       Set if sum register overflowed
+    2[31]       Set if sum of squares register overflowed
+W   3[31:7] Write FIR taps
+R   3       Read min/max/sum
 
 
 So to capture a full memory bank of ADC data, perform:

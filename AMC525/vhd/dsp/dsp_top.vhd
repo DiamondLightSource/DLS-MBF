@@ -71,6 +71,7 @@ architecture dsp_top of dsp_top is
 
     -- Data from ADC to FIR
     signal adc_data_in : signed(13 downto 0);
+    signal adc_data_out : signed_array(CHANNELS)(15 downto 0);
     signal adc_to_fir_data : signed_array(CHANNELS)(15 downto 0);
     signal dac_data_out : signed(15 downto 0);
 
@@ -155,7 +156,7 @@ begin
         bunch_reset_i => bunch_reset,
 
         data_i => adc_data_in,
-        data_o => adc_to_fir_data,
+        data_o => adc_data_out,
 
         write_strobe_i => write_strobe_i(ADC_REGS),
         write_data_i => write_data_i,
@@ -174,24 +175,35 @@ begin
     );
 
 
+    fir_delay_gen : for c in CHANNELS generate
+        fir_delay : entity work.dlyreg generic map (
+            DLY => 2,
+            DW => adc_data_out(c)'LENGTH
+        ) port map (
+            clk_i => adc_clk_i,
+            data_i => std_logic_vector(adc_data_out(c)),
+            signed(data_o) => adc_to_fir_data(c)
+        );
+    end generate;
+
 
     -- -------------------------------------------------------------------------
     -- Work in progress hacks below
 
 
-    -- Quick and dirty bunch counter
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
+            -- Quick and dirty bunch counter
             bunch_counter <= bunch_counter + 1;
             bunch_reset <= to_std_logic(bunch_counter = 0);
+
+            -- Generate the DDR0 data stream
+            for c in CHANNELS loop
+                ddr0_data_o(c) <= std_logic_vector(adc_to_fir_data(c));
+            end loop;
         end if;
     end process;
 
-
-    -- Generate the DDR0 data stream
-    convert_inst : for c in CHANNELS generate
-        ddr0_data_o(c) <= std_logic_vector(adc_to_fir_data(c));
-    end generate;
 
     -- Generate DSP data stream
     dsp_to_adc_inst : entity work.dsp_to_adc port map (

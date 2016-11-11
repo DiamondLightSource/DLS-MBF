@@ -62,6 +62,7 @@ architecture min_max_sum_update of min_max_sum_update is
 begin
     -- Start with a data pipeline protected from being eaten by the DSP unit.
     dlyreg_inst : entity work.dlyreg generic map (
+        DLY => 2,
         DW => data_i'LENGTH
     ) port map (
         clk_i => clk_i,

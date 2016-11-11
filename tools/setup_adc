@@ -42,11 +42,8 @@ REGS[0, 3] = 0x10c
 
 
 # Reset the ADC FIR
-REGS[2, 0] = 1
-for n in range(7):
-    REGS[2, 1] = 0
-REGS[2, 1] = 0x7FFFFFFF
-REGS[3, 0] = 1
-for n in range(7):
-    REGS[3, 1] = 0
-REGS[3, 1] = 0x7FFFFFFF
+for dsp in [2, 3]:
+    REGS[dsp, 0] = 1
+    for n in range(7):
+        REGS[dsp, 3] = 0
+    REGS[dsp, 3] = 0x7FFFFFFF

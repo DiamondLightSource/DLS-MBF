@@ -86,7 +86,7 @@ begin
         write_ack_o(0) => write_ack_o(CONTROL_REG),
         register_data_o(0) => control_data_o
     );
-    read_data_o(CONTROL_REG) <= (others => '0');
+    read_data_o(CONTROL_REG) <= control_data_o;
     read_ack_o(CONTROL_REG) <= '1';
 
     -- Clock domain crossing for IDELAY control.
@@ -126,7 +126,7 @@ begin
         write_ack_o => write_ack_o(DAC_TEST_REG),
         register_data_o => dac_test_pattern_o
     );
-    read_data_o(DAC_TEST_REG) <= (others => (others => '0'));
+    read_data_o(DAC_TEST_REG) <= dac_test_pattern_o;
     read_ack_o(DAC_TEST_REG) <= (others => '1');
 
     -- Unused registers
