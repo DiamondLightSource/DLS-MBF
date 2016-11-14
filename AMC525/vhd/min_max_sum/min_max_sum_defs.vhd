@@ -16,7 +16,7 @@ package min_max_sum_defs is
         sum2 : unsigned(47 downto 0);
     end record;
 
-    type mms_row_channels_t is array(CHANNELS) of mms_row_t;
+    type mms_row_lanes_t is array(LANES) of mms_row_t;
 
     constant mms_reset_value : mms_row_t := (
         min => X"7FFF", max => X"8000",

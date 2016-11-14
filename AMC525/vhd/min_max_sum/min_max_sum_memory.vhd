@@ -19,12 +19,12 @@ entity min_max_sum_memory is
 
         -- Read interface
         read_addr_i : in unsigned;
-        read_data_o : out mms_row_channels_t;
+        read_data_o : out mms_row_lanes_t;
 
         -- Write interface
         write_strobe_i : in std_logic;
         write_addr_i : in unsigned;
-        write_data_i : in mms_row_channels_t
+        write_data_i : in mms_row_lanes_t
     );
 end;
 
@@ -33,8 +33,8 @@ architecture min_max_sum_memory of min_max_sum_memory is
 
     -- Declare block ram
     constant ROW_BITS : natural := 112;
-    constant CHANNEL_ROW_BITS : natural := CHANNEL_COUNT * ROW_BITS;
-    subtype bram_row_t is std_logic_vector(CHANNEL_ROW_BITS-1 downto 0);
+    constant LANE_ROW_BITS : natural := LANE_COUNT * ROW_BITS;
+    subtype bram_row_t is std_logic_vector(LANE_ROW_BITS-1 downto 0);
     type bram_mem_t is array(0 to 2**ADDR_BITS-1) of bram_row_t;
     signal memory : bram_mem_t := (others => (others => '0'));
     attribute ram_style : string;
@@ -76,9 +76,9 @@ begin
         end if;
     end process;
 
-    convert_gen : for c in CHANNELS generate
-        read_data_o(c) <= bits_to_row(read_field_ix(read_row_reg, ROW_BITS, c));
-        write_row((c+1)*ROW_BITS-1 downto c*ROW_BITS)
-            <= row_to_bits(write_data_i(c));
+    convert_gen : for l in LANES generate
+        read_data_o(l) <= bits_to_row(read_field_ix(read_row_reg, ROW_BITS, l));
+        write_row((l+1)*ROW_BITS-1 downto l*ROW_BITS)
+            <= row_to_bits(write_data_i(l));
     end generate;
 end;

@@ -45,8 +45,8 @@ architecture testbench of testbench is
     signal read_strobe : std_logic_vector(0 to 1);
     signal read_data : reg_data_array_t(0 to 1);
     signal read_ack : std_logic_vector(0 to 1);
-    signal dsp_data : signed_array(CHANNELS)(15 downto 0);
-    signal delta : unsigned_array(CHANNELS)(15 downto 0);
+    signal dsp_data : signed_array(LANES)(15 downto 0);
+    signal delta : unsigned_array(LANES)(15 downto 0);
     signal overflow : std_logic;
 
     constant BUNCH_COUNT : natural := 6;   -- A very small ring!
@@ -60,7 +60,7 @@ begin
         adc_phase_o => adc_phase
     );
 
-    -- Split the data into the two working channels ("DSP data")
+    -- Split the data into the two working lanes ("DSP data")
     adc_to_dsp_inst : entity work.adc_to_dsp port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,

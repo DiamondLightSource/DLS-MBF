@@ -15,12 +15,12 @@ entity nco_phase is
         phase_advance_i : in angle_t;
         reset_i : in std_logic;
 
-        phase_o : out angle_channels_t
+        phase_o : out angle_lanes_t
     );
 end;
 
 architecture nco_phase of nco_phase is
-    -- Phase advance for the two channels
+    -- Phase advance for the two lanes
     signal ph_a_1 : angle_t := (others => '0');
     signal ph_a_2 : angle_t := (others => '0');
 

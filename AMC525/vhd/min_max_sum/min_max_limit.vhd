@@ -20,15 +20,15 @@ entity min_max_limit is
 end;
 
 architecture min_max_limit of min_max_limit is
-    signal limit_detect : std_logic_vector(CHANNELS) := (others => '0');
+    signal limit_detect : std_logic_vector(LANES) := (others => '0');
     signal limit_detect_any : std_logic;
     signal limit_event : std_logic := '0';
 
 begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            for c in CHANNELS loop
-                limit_detect(c) <= to_std_logic(delta_i(c) > limit_i);
+            for l in LANES loop
+                limit_detect(l) <= to_std_logic(delta_i(l) > limit_i);
             end loop;
 
             if reset_event_i = '1' then

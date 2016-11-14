@@ -44,14 +44,14 @@ architecture min_max_sum of min_max_sum is
     signal update_addr : unsigned(ADDR_BITS-1 downto 0);
     signal readout_addr : unsigned(ADDR_BITS-1 downto 0);
 
-    signal update_data_read : mms_row_channels_t;
-    signal update_data_write : mms_row_channels_t;
+    signal update_data_read : mms_row_lanes_t;
+    signal update_data_write : mms_row_lanes_t;
 
-    signal readout_data_read : mms_row_channels_t;
-    signal readout_reset_data : mms_row_channels_t;
+    signal readout_data_read : mms_row_lanes_t;
+    signal readout_reset_data : mms_row_lanes_t;
 
-    signal sum_overflow_chan : std_logic_vector(CHANNELS);
-    signal sum2_overflow_chan : std_logic_vector(CHANNELS);
+    signal sum_overflow_chan : std_logic_vector(LANES);
+    signal sum2_overflow_chan : std_logic_vector(LANES);
     signal sum_overflow : std_logic;
     signal sum2_overflow : std_logic;
 
@@ -107,15 +107,15 @@ begin
     readout_reset_data <= (others => mms_reset_value);
 
     -- Update min/max/sum
-    update_gen : for c in CHANNELS generate
+    update_gen : for l in LANES generate
         min_max_sum_update_inst : entity work.min_max_sum_update port map (
             clk_i => dsp_clk_i,
-            data_i => data_i(c),
-            mms_i => update_data_read(c),
-            mms_o => update_data_write(c),
-            sum_overflow_o => sum_overflow_chan(c),
-            sum2_overflow_o => sum2_overflow_chan(c),
-            delta_o => delta_o(c)
+            data_i => data_i(l),
+            mms_i => update_data_read(l),
+            mms_o => update_data_write(l),
+            sum_overflow_o => sum_overflow_chan(l),
+            sum2_overflow_o => sum2_overflow_chan(l),
+            delta_o => delta_o(l)
         );
     end generate;
     sum_overflow  <= vector_or(sum_overflow_chan);

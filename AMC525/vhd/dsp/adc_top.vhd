@@ -66,8 +66,8 @@ architecture adc_top of adc_top is
     signal delta_limit : unsigned(15 downto 0);
 
     signal filtered_data : signed(DATA_OUT_RANGE);
-    signal dsp_data : signed_array(CHANNELS)(DATA_OUT_RANGE);
-    signal mms_delta : unsigned_array(CHANNELS)(DATA_OUT_RANGE);
+    signal dsp_data : signed_array(LANES)(DATA_OUT_RANGE);
+    signal mms_delta : unsigned_array(LANES)(DATA_OUT_RANGE);
 
 begin
     -- Limit register.

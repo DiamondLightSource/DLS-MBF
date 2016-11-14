@@ -21,23 +21,23 @@ entity min_max_sum_store is
 
         -- Continuous bunch by bunch update interface
         update_addr_i : in unsigned;
-        update_data_o : out mms_row_channels_t := (others => mms_reset_value);
-        update_data_i : in mms_row_channels_t;
+        update_data_o : out mms_row_lanes_t := (others => mms_reset_value);
+        update_data_i : in mms_row_lanes_t;
 
         -- Readout and reset interface.  Pulsing readout_strobe_i will advance
         -- the read pointer and reset the previously read value.  The current
         -- readout is valid until after this strobe is seen.
         readout_strobe_i : in std_logic;
         readout_addr_i : in unsigned;
-        readout_data_o : out mms_row_channels_t;
+        readout_data_o : out mms_row_lanes_t;
         readout_ack_o : out std_logic;
-        readout_reset_data_i : in mms_row_channels_t
+        readout_reset_data_i : in mms_row_lanes_t
     );
 end;
 
 architecture min_max_sum_store of min_max_sum_store is
-    -- This is [0..1][channels][rows]row, ie a four dimenstional array of bits
-    type mms_row_array_t is array(natural range 0 to 1) of mms_row_channels_t;
+    -- This is [0..1][lanes][rows]row, ie a four dimenstional array of bits
+    type mms_row_array_t is array(natural range 0 to 1) of mms_row_lanes_t;
 
     -- Interface to two banks of memory
     signal read_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)

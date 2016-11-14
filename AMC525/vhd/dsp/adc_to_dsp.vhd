@@ -22,11 +22,11 @@ end;
 
 architecture adc_to_dsp of adc_to_dsp is
     signal adc_phase_in : std_logic;
-    signal adc_phase : CHANNELS;
+    signal adc_phase : LANES;
     signal adc_data_in : signed(adc_data_i'RANGE) := (others => '0');
-    signal dsp_data : signed_array(CHANNELS)(adc_data_i'RANGE)
+    signal dsp_data : signed_array(LANES)(adc_data_i'RANGE)
         := (others => (others => '0'));
-    signal dsp_data_out : signed_array(CHANNELS)(adc_data_i'RANGE)
+    signal dsp_data_out : signed_array(LANES)(adc_data_i'RANGE)
         := (others => (others => '0'));
 
 begin

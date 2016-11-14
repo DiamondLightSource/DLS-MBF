@@ -14,14 +14,14 @@ entity dsp_to_adc is
         adc_clk_i : in std_logic;
         adc_phase_i : in std_logic;
 
-        dsp_data_i : in dac_out_channels;
+        dsp_data_i : in dac_out_lanes;
         adc_data_o : out dac_out_t
     );
 end;
 
 architecture dsp_to_adc of dsp_to_adc is
     signal adc_phase_in : std_logic;
-    signal adc_phase : CHANNELS;
+    signal adc_phase : LANES;
 
 begin
     -- Timing for DSP to ADC conversion

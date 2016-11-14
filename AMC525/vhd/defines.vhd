@@ -42,26 +42,26 @@ package defines is
     constant DAC_OUT_WIDTH : natural := 16;     -- DAC output data width
 
     -- All our DSP processing is done at half ADC clock rate, so we have two
-    -- data processing channels.
-    constant CHANNEL_COUNT : natural := 2;
-    subtype CHANNELS is natural range 0 to CHANNEL_COUNT-1;
+    -- data processing lanes.
+    constant LANE_COUNT : natural := 2;
+    subtype LANES is natural range 0 to LANE_COUNT-1;
 
 
 
     -- ADC input
     subtype ADC_INP_RANGE is natural range ADC_INP_WIDTH-1 downto 0;
     subtype adc_inp_t is signed(ADC_INP_RANGE);
-    subtype adc_inp_channels is signed_array(CHANNELS)(ADC_INP_RANGE);
+    subtype adc_inp_lanes is signed_array(LANES)(ADC_INP_RANGE);
 
     -- DAC output
     subtype DAC_OUT_RANGE is natural range DAC_OUT_WIDTH-1 downto 0;
     subtype dac_out_t is signed(DAC_OUT_RANGE);
-    subtype dac_out_channels is signed_array(CHANNELS)(DAC_OUT_RANGE);
+    subtype dac_out_lanes is signed_array(LANES)(DAC_OUT_RANGE);
 
 
     -- Data from DSP to DDR0 DRAM interface
     subtype ddr0_data_t is std_logic_vector(15 downto 0);
-    type ddr0_data_channels is array(CHANNELS) of ddr0_data_t;
+    type ddr0_data_lanes is array(LANES) of ddr0_data_t;
 
     -- Data from DSP to DDR1 DRAM interface
     subtype ddr1_data_t is std_logic_vector(31 downto 0);

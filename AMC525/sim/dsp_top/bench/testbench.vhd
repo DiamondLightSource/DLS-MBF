@@ -28,7 +28,7 @@ architecture testbench of testbench is
     signal read_data : reg_data_array_t(REG_ADDR_RANGE);
     signal read_ack : reg_strobe_t;
 
-    signal ddr0_data : ddr0_data_channels;
+    signal ddr0_data : ddr0_data_lanes;
 
     signal ddr1_data : ddr1_data_t;
     signal ddr1_data_strobe : std_logic;

@@ -26,8 +26,8 @@ entity dsp_top is
         read_data_o : out reg_data_array_t;
         read_ack_o : out reg_strobe_t;
 
-        -- Data out to DDR0 (two channels of 16-bit numbers)
-        ddr0_data_o : out ddr0_data_channels;
+        -- Data out to DDR0 (two lanes of 16-bit numbers)
+        ddr0_data_o : out ddr0_data_lanes;
 
         -- Data out to DDR1
         ddr1_data_o : out ddr1_data_t;
@@ -71,8 +71,8 @@ architecture dsp_top of dsp_top is
 
     -- Data from ADC to FIR
     signal adc_data_in : signed(13 downto 0);
-    signal adc_data_out : signed_array(CHANNELS)(15 downto 0);
-    signal adc_to_fir_data : signed_array(CHANNELS)(15 downto 0);
+    signal adc_data_out : signed_array(LANES)(15 downto 0);
+    signal adc_to_fir_data : signed_array(LANES)(15 downto 0);
     signal dac_data_out : signed(15 downto 0);
 
     -- Quick and dirty bunch counter
@@ -175,14 +175,14 @@ begin
     );
 
 
-    fir_delay_gen : for c in CHANNELS generate
+    fir_delay_gen : for l in LANES generate
         fir_delay : entity work.dlyreg generic map (
             DLY => 2,
-            DW => adc_data_out(c)'LENGTH
+            DW => adc_data_out(l)'LENGTH
         ) port map (
             clk_i => adc_clk_i,
-            data_i => std_logic_vector(adc_data_out(c)),
-            signed(data_o) => adc_to_fir_data(c)
+            data_i => std_logic_vector(adc_data_out(l)),
+            signed(data_o) => adc_to_fir_data(l)
         );
     end generate;
 
@@ -198,8 +198,8 @@ begin
             bunch_reset <= to_std_logic(bunch_counter = 0);
 
             -- Generate the DDR0 data stream
-            for c in CHANNELS loop
-                ddr0_data_o(c) <= std_logic_vector(adc_to_fir_data(c));
+            for l in LANES loop
+                ddr0_data_o(l) <= std_logic_vector(adc_to_fir_data(l));
             end loop;
         end if;
     end process;

@@ -17,7 +17,7 @@ entity min_max_sum_readout is
         -- data can be read from data_i.  Finally readout_strobe_o can be used
         -- to advance the readout address.
         reset_readout_i : in std_logic;
-        data_i : in mms_row_channels_t;
+        data_i : in mms_row_lanes_t;
         readout_strobe_o : out std_logic := '0';
         readout_ack_i : in std_logic;
 
@@ -29,12 +29,12 @@ entity min_max_sum_readout is
 end;
 
 architecture min_max_sum_readout of min_max_sum_readout is
-    -- Number of words read per sample (per channel)
+    -- Number of words read per sample (per lane)
     constant WORD_COUNT : natural := 4;
 
-    -- The readout state advances through the channels and the two words -- we
+    -- The readout state advances through the lanes and the two words -- we
     -- have to deliver min/max and sum separately.
-    signal channel : CHANNELS;
+    signal lane : LANES;
     signal phase : natural range 0 to WORD_COUNT-1;
     signal mms : mms_row_t;
     signal last_word : boolean;
@@ -46,20 +46,20 @@ architecture min_max_sum_readout of min_max_sum_readout is
 
 begin
     -- quick and dirty
-    mms <= data_i(channel);
+    mms <= data_i(lane);
     last_phase <= phase = WORD_COUNT-1;
-    last_word <= channel = CHANNEL_COUNT-1 and last_phase;
+    last_word <= lane = LANE_COUNT-1 and last_phase;
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            -- Advance phase and channel as appropriate
+            -- Advance phase and lane as appropriate
             if reset_readout_i = '1' then
-                channel <= 0;
+                lane <= 0;
                 phase <= 0;
             elsif read_strobe_i = '1' then
                 phase <= (phase + 1) mod WORD_COUNT;
                 if last_phase then
-                    channel <= (channel + 1) mod CHANNEL_COUNT;
+                    lane <= (lane + 1) mod LANE_COUNT;
                 end if;
             end if;
 

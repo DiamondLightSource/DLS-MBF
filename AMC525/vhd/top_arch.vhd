@@ -182,13 +182,13 @@ architecture top of top is
     signal fmc500m_spi_read_ack : std_logic;
 
     -- Connections to DSP units
-    signal dsp0_ddr0_data : ddr0_data_channels;
+    signal dsp0_ddr0_data : ddr0_data_lanes;
     signal dsp0_ddr1_data : ddr1_data_t;
     signal dsp0_ddr1_data_strobe : std_logic;
     signal dsp0_control : dsp_control_t;
     signal dsp0_status : dsp_status_t;
 
-    signal dsp1_ddr0_data : ddr0_data_channels;
+    signal dsp1_ddr0_data : ddr0_data_lanes;
     signal dsp1_ddr1_data : ddr1_data_t;
     signal dsp1_ddr1_data_strobe : std_logic;
     signal dsp1_control : dsp_control_t;

@@ -12,24 +12,24 @@ entity nco_scaling is
     port (
         clk_i : in std_logic;
         gain_i : in unsigned(3 downto 0);
-        unscaled_i : in cos_sin_18_channels_t;
-        scaled_o : out cos_sin_16_channels_t
+        unscaled_i : in cos_sin_18_lanes_t;
+        scaled_o : out cos_sin_16_lanes_t
     );
 end;
 
 architecture nco_scaling of nco_scaling is
-    signal scaled : cos_sin_18_channels_t;
+    signal scaled : cos_sin_18_lanes_t;
 
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then
-            for c in CHANNELS loop
-                scaled(c).cos <=
-                    shift_right(unscaled_i(c).cos, to_integer(gain_i));
-                scaled(c).sin <=
-                    shift_right(unscaled_i(c).sin, to_integer(gain_i));
-                scaled_o(c).cos <= round(scaled(c).cos, 16);
-                scaled_o(c).sin <= round(scaled(c).sin, 16);
+            for l in LANES loop
+                scaled(l).cos <=
+                    shift_right(unscaled_i(l).cos, to_integer(gain_i));
+                scaled(l).sin <=
+                    shift_right(unscaled_i(l).sin, to_integer(gain_i));
+                scaled_o(l).cos <= round(scaled(l).cos, 16);
+                scaled_o(l).sin <= round(scaled(l).sin, 16);
             end loop;
         end if;
     end process;

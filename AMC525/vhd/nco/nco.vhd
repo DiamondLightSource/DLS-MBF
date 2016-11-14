@@ -18,7 +18,7 @@ entity nco is
         phase_advance_i : in angle_t;
         reset_i : in std_logic;
 
-        cos_sin_o : out cos_sin_18_channels_t  -- 18 bit unscaled cos/sin
+        cos_sin_o : out cos_sin_18_lanes_t  -- 18 bit unscaled cos/sin
     );
 end;
 
@@ -28,15 +28,15 @@ architecture nco of nco is
     -- Delay from cos_sin_raw to cos_sin_refined
     constant REFINE_DELAY : natural := 3;
 
-    signal phase : angle_channels_t;
+    signal phase : angle_lanes_t;
 
     -- Lookup table
-    signal lookup : lookup_channels_t;
-    signal cos_sin_raw : cos_sin_19_channels_t;
+    signal lookup : lookup_lanes_t;
+    signal cos_sin_raw : cos_sin_19_lanes_t;
 
     -- Refinement
-    signal residue : residue_channels_t;
-    signal cos_sin_refined : cos_sin_18_channels_t;
+    signal residue : residue_lanes_t;
+    signal cos_sin_refined : cos_sin_18_lanes_t;
 
 begin
     -- Phase advance computation for NCO
@@ -56,7 +56,7 @@ begin
         cos_sin_b_o => cos_sin_raw(1)
     );
 
-    nco_gen : for c in CHANNELS generate
+    nco_gen : for l in LANES generate
         -- Split angle into octant, lookup and residue, and recombine the
         -- result according to the incoming octant.
         nco_cos_sin_inst : entity work.nco_cos_sin_octant generic map (
@@ -64,13 +64,13 @@ begin
             REFINE_DELAY => REFINE_DELAY
         ) port map (
             clk_i => clk_i,
-            angle_i => phase(c),
+            angle_i => phase(l),
 
-            lookup_o => lookup(c),
-            residue_o => residue(c),
-            cos_sin_i => cos_sin_refined(c),
+            lookup_o => lookup(l),
+            residue_o => residue(l),
+            cos_sin_i => cos_sin_refined(l),
 
-            cos_sin_o => cos_sin_o(c)
+            cos_sin_o => cos_sin_o(l)
         );
 
         -- Refine the lookup by linear interpolation
