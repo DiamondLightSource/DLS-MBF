@@ -10,12 +10,14 @@ TCLDIR = $(SRCDIR)/tcl
 BDDIR = $(SRCDIR)/bd
 
 VPATH = $(SRCDIR)
+VPATH += $(SRCDIR)/vhd/nco      # Needed for nco_cos_sin_table.vhd
 
 
 RUN_VIVADO = source $(VIVADO) && vivado
 
 
 BUILT_FILES += built/top_entity.vhd
+BUILT_FILES += built/nco_cos_sin_table.vhd
 
 SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/vhd/*/*.vhd)
@@ -67,8 +69,9 @@ built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
 	cd built  &&  $(TOP)/scripts/make_entity.py $^ top
 
-top_entity: built/top_entity.vhd
-.PHONY: top_entity
+built/%.vhd: %.py %.vhd.in
+	python $^ >$@
+
 
 
 load_fpga:
