@@ -14,8 +14,8 @@ entity dsp_to_adc is
         adc_clk_i : in std_logic;
         adc_phase_i : in std_logic;
 
-        dsp_data_i : in dac_out_lanes;
-        adc_data_o : out dac_out_t
+        dsp_data_i : in signed_array;
+        adc_data_o : out signed
     );
 end;
 

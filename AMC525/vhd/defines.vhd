@@ -20,7 +20,6 @@ package defines is
     -- Modules are selected by appropriate strobes
     constant MOD_ADDR_COUNT : natural := 2**MOD_ADDR_BITS;
     subtype MOD_ADDR_RANGE is natural range 0 to MOD_ADDR_COUNT-1;
-    subtype mod_strobe_t is std_logic_vector(MOD_ADDR_RANGE);
 
     -- Within a single module we have an addressable range
     constant REG_ADDR_COUNT : natural := 2**REG_ADDR_BITS;
@@ -45,19 +44,7 @@ package defines is
     -- data processing lanes.
     constant LANE_COUNT : natural := 2;
     subtype LANES is natural range 0 to LANE_COUNT-1;
-
-
-
-    -- ADC input
-    subtype ADC_INP_RANGE is natural range ADC_INP_WIDTH-1 downto 0;
-    subtype adc_inp_t is signed(ADC_INP_RANGE);
-    subtype adc_inp_lanes is signed_array(LANES)(ADC_INP_RANGE);
-
-    -- DAC output
-    subtype DAC_OUT_RANGE is natural range DAC_OUT_WIDTH-1 downto 0;
-    subtype dac_out_t is signed(DAC_OUT_RANGE);
-    subtype dac_out_lanes is signed_array(LANES)(DAC_OUT_RANGE);
-
+    subtype lane_t is unsigned(bits(LANE_COUNT-1)-1 downto 0);
 
     -- Data from DSP to DDR0 DRAM interface
     subtype ddr0_data_t is std_logic_vector(15 downto 0);

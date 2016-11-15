@@ -104,14 +104,14 @@ architecture top of top is
     signal DSP_DDR1_bvalid : std_logic;
 
     -- Internal register path from AXI conversion
-    signal REGS_write_strobe : mod_strobe_t;
+    signal REGS_write_strobe : std_logic_vector(MOD_ADDR_RANGE);
     signal REGS_write_address : reg_addr_t;
     signal REGS_write_data : reg_data_t;
-    signal REGS_write_ack : mod_strobe_t;
-    signal REGS_read_strobe : mod_strobe_t;
+    signal REGS_write_ack : std_logic_vector(MOD_ADDR_RANGE);
+    signal REGS_read_strobe : std_logic_vector(MOD_ADDR_RANGE);
     signal REGS_read_address : reg_addr_t;
     signal REGS_read_data : reg_data_array_t(MOD_ADDR_RANGE);
-    signal REGS_read_ack : mod_strobe_t;
+    signal REGS_read_ack : std_logic_vector(MOD_ADDR_RANGE);
 
     -- Digital I/O on FMC0
     signal dio_inputs : std_logic_vector(4 downto 0);
@@ -120,12 +120,12 @@ architecture top of top is
 
     -- Connections to FMC500M on FMC0
     signal adc_dco : std_logic;
-    signal dsp0_adc_data : adc_inp_t;
-    signal dsp1_adc_data : adc_inp_t;
-    signal dsp0_dac_data : dac_out_t;
-    signal dsp1_dac_data : dac_out_t;
-    signal dac_data_a : dac_out_t;
-    signal dac_data_b : dac_out_t;
+    signal dsp0_adc_data : signed(ADC_INP_WIDTH-1 downto 0);
+    signal dsp1_adc_data : signed(ADC_INP_WIDTH-1 downto 0);
+    signal dsp0_dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
+    signal dsp1_dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
+    signal dac_data_a : signed(DAC_OUT_WIDTH-1 downto 0);
+    signal dac_data_b : signed(DAC_OUT_WIDTH-1 downto 0);
     signal dac_frame : std_logic;
     signal fast_ext_trigger : std_logic;
     signal fmc500_outputs : fmc500_outputs_t;

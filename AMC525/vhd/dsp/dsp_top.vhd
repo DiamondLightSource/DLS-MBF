@@ -15,16 +15,16 @@ entity dsp_top is
         adc_phase_i : in std_logic;
 
         -- External data in and out
-        adc_data_i : in adc_inp_t;
-        dac_data_o : out dac_out_t;
+        adc_data_i : in signed;
+        dac_data_o : out signed;
 
         -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in reg_strobe_t;
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out reg_strobe_t;
-        read_strobe_i : in reg_strobe_t;
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
         read_data_o : out reg_data_array_t;
-        read_ack_o : out reg_strobe_t;
+        read_ack_o : out std_logic_vector;
 
         -- Data out to DDR0 (two lanes of 16-bit numbers)
         ddr0_data_o : out ddr0_data_lanes;
@@ -137,7 +137,6 @@ begin
     -- -------------------------------------------------------------------------
     -- Signal processing chain
 
-    -- ADC input processing
     adc_delay : entity work.dlyreg generic map (
         DLY => 2,
         DW => adc_data_i'LENGTH
@@ -147,6 +146,8 @@ begin
         signed(data_o) => adc_data_in
     );
 
+
+    -- ADC input processing
     adc_top_inst : entity work.adc_top generic map (
         TAP_COUNT => ADC_FIR_TAP_COUNT
     ) port map (

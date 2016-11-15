@@ -17,14 +17,14 @@ entity register_top is
         dsp_clk_ok_i : in std_logic;
 
         -- Register interface from AXI
-        write_strobe_i : in mod_strobe_t;
+        write_strobe_i : in std_logic_vector;
         write_address_i : in reg_addr_t;
         write_data_i : in reg_data_t;
-        write_ack_o : out mod_strobe_t;
-        read_strobe_i : in mod_strobe_t;
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
         read_address_i : in reg_addr_t;
-        read_data_o : out reg_data_array_t(MOD_ADDR_RANGE);
-        read_ack_o : out mod_strobe_t;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- System registers.
         system_write_strobe_o : out reg_strobe_t;

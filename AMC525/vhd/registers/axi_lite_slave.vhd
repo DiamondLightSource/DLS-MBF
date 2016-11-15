@@ -96,16 +96,16 @@ entity axi_lite_slave is
         bvalid_o : out std_logic;
 
         -- Internal read interface
-        read_strobe_o : out mod_strobe_t;   -- Read select per module
+        read_strobe_o : out std_logic_vector;   -- Read select per module
         read_address_o : out reg_addr_t;    -- Shared read address
         read_data_i : in reg_data_array_t(MOD_ADDR_RANGE);  -- Read data array
-        read_ack_i : in mod_strobe_t;       -- Module read ready acknowledge
+        read_ack_i : in std_logic_vector;   -- Module read ready acknowledge
 
         -- Internal write interface
-        write_strobe_o : out mod_strobe_t;  -- Write select per module
+        write_strobe_o : out std_logic_vector;  -- Write select per module
         write_address_o : out reg_addr_t;   -- Shared write address and
         write_data_o : out reg_data_t;      --  data
-        write_ack_i : in mod_strobe_t       -- Module write acknowledge
+        write_ack_i : in std_logic_vector   -- Module write acknowledge
     );
 end;
 
@@ -115,9 +115,10 @@ architecture axi_lite_slave of axi_lite_slave is
 
 
     -- Decodes an address into a single bit strobe
-    function compute_strobe(index : natural) return mod_strobe_t
+    function compute_strobe(index : natural) return std_logic_vector
     is
-        variable result : mod_strobe_t := (others => '0');
+        variable result : std_logic_vector(MOD_ADDR_RANGE)
+            := (others => '0');
     begin
         result(index) := '1';
         return result;
@@ -143,7 +144,7 @@ architecture axi_lite_slave of axi_lite_slave is
     signal read_state : read_state_t;
     signal read_module_address : MOD_ADDR_RANGE;
 
-    signal read_strobe : mod_strobe_t;
+    signal read_strobe : std_logic_vector(MOD_ADDR_RANGE);
     signal read_ack : std_logic;
     signal read_data : reg_data_t;
 
@@ -157,7 +158,7 @@ architecture axi_lite_slave of axi_lite_slave is
     signal write_module_address : MOD_ADDR_RANGE;
     signal valid_write : std_logic;
 
-    signal write_strobe : mod_strobe_t;
+    signal write_strobe : std_logic_vector(MOD_ADDR_RANGE);
     signal write_ack : std_logic;
 
 begin

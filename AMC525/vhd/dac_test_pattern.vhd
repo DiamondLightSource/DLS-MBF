@@ -16,10 +16,10 @@ entity dac_test_pattern is
         test_mode_i : in std_logic;
         test_pattern_i : in reg_data_array_t(0 to 1);
 
-        dac_data_a_i : in dac_out_t;
-        dac_data_b_i : in dac_out_t;
-        dac_data_a_o : out dac_out_t;
-        dac_data_b_o : out dac_out_t;
+        dac_data_a_i : in signed;
+        dac_data_b_i : in signed;
+        dac_data_a_o : out signed;
+        dac_data_b_o : out signed;
         dac_frame_o : out std_logic
     );
 end;
@@ -30,8 +30,8 @@ architecture dac_test_pattern of dac_test_pattern is
     signal frame : std_logic := '0';
     signal frame_index : natural;
 
-    signal dac_data_a : dac_out_t;
-    signal dac_data_b : dac_out_t;
+    signal dac_data_a : signed(DAC_OUT_WIDTH-1 downto 0);
+    signal dac_data_b : signed(DAC_OUT_WIDTH-1 downto 0);
     signal data_out : std_logic_vector(32 downto 0);
 
 begin
