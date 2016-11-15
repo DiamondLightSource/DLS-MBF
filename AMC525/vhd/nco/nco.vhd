@@ -79,9 +79,9 @@ begin
             REFINE_DELAY => REFINE_DELAY
         ) port map (
             clk_i => clk_i,
-            residue_i => residue(c),
-            cos_sin_i => cos_sin_raw(c),
-            cos_sin_o => cos_sin_refined(c)
+            residue_i => residue(l),
+            cos_sin_i => cos_sin_raw(l),
+            cos_sin_o => cos_sin_refined(l)
         );
     end generate;
 end;
