@@ -18,8 +18,8 @@ architecture testbench of testbench is
     signal dsp_clk_ok : std_logic := '0';
     signal adc_phase : std_logic;
 
-    signal adc_data : adc_inp_t := (others => '0');
-    signal dac_data : dac_out_t;
+    signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
+    signal dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
 
     signal write_strobe : reg_strobe_t := (others => '0');
     signal write_data : reg_data_t := (others => '0');

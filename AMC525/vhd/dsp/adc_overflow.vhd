@@ -22,23 +22,9 @@ end;
 
 architecture adc_overflow of adc_overflow is
     signal abs_data : unsigned(data_i'RANGE);
-    signal limit_in : std_logic_vector(limit_i'RANGE);
-    signal limit_out : std_logic_vector(limit_i'RANGE);
-    signal limit : unsigned(limit_i'RANGE);
     signal overflow : std_logic;
 
 begin
-    -- Avoid annoying timing problems
-    limit_in <= std_logic_vector(limit_i);
-    untimed_inst : entity work.untimed_reg port map (
-        clk_in_i => dsp_clk_i,
-        clk_out_i => adc_clk_i,
-        write_i => '1',
-        data_i => limit_in,
-        data_o => limit_out
-    );
-    limit <= unsigned(limit_out);
-
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             if data_i >= 0 then
@@ -47,7 +33,7 @@ begin
                 abs_data <= unsigned(-data_i);
             end if;
 
-            overflow <= to_std_logic(abs_data > limit);
+            overflow <= to_std_logic(abs_data > limit_i);
         end if;
     end process;
 

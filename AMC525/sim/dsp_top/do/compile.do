@@ -20,6 +20,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/register_block.vhd \
     $vhd_dir/adc_phase.vhd \
     $vhd_dir/extract_signed.vhd \
+    $vhd_dir/short_delay.vhd \
     $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/fir/fast_fir.vhd \
     $vhd_dir/fir/fast_fir_top.vhd \
@@ -52,6 +53,8 @@ add wave -group "ADC Phase" sim:/testbench/adc_phase_inst/*
 add wave -group "ADC Top" sim:/testbench/dsp_top_inst/adc_top_inst/*
 add wave -group "FIR Top" \
     sim:/testbench/dsp_top_inst/adc_top_inst/fast_fir_inst/*
+add wave -group "Delay" \
+    sim:/testbench/dsp_top_inst/adc_top_inst/adc_delay_inst/*
 add wave -group "DSP" sim:/testbench/dsp_top_inst/*
 add wave -group "Top" sim:*
 

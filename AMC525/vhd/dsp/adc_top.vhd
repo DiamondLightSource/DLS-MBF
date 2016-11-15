@@ -52,6 +52,7 @@ architecture adc_top of adc_top is
     --  0   R   31:0    Read MMS count and switch banks
     --  1   R   31:0    Read and reset MMS bunch entries
     --  0   W   13:0    Configure data input limit
+    --  0   W   15      Configure ADC fine delay
     --  0   W   31:16   Configure MMS event limit
     --  1   W   31:7    Write FIR taps
     --
@@ -61,25 +62,50 @@ architecture adc_top of adc_top is
 
     subtype DATA_OUT_RANGE is natural range data_o(0)'RANGE;
 
+    signal limit_register_in : reg_data_t;
     signal limit_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
+    signal data_delay : unsigned(0 downto 0);
 
     signal filtered_data : signed(DATA_OUT_RANGE);
+    signal delayed_data : signed(data_i'RANGE);
     signal dsp_data : signed_array(LANES)(DATA_OUT_RANGE);
     signal mms_delta : unsigned_array(LANES)(DATA_OUT_RANGE);
 
 begin
-    -- Limit register.
+    -- Limit register.  We ensure the output is untimed to avoid snags with
+    -- control of ADC clock settings.
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(LIMIT_REG_W),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(LIMIT_REG_W),
-        register_data_o(0) => limit_register
+        register_data_o(0) => limit_register_in
+    );
+    untimed_inst : entity work.untimed_reg generic map (
+        WIDTH => REG_DATA_WIDTH
+    ) port map (
+        clk_in_i => dsp_clk_i,
+        clk_out_i => adc_clk_i,
+        write_i => '1',
+        data_i => limit_register_in,
+        data_o => limit_register
     );
     input_limit <= unsigned(limit_register(13 downto 0));
+    data_delay  <= unsigned(limit_register(15 downto 15));
     delta_limit <= unsigned(limit_register(31 downto 16));
+
+
+    -- One bit data skew to allow for clock shift
+    adc_delay_inst : entity work.short_delay generic map (
+        WIDTH => data_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        delay_i => data_delay,
+        data_i => std_logic_vector(data_i),
+        signed(data_o) => delayed_data
+    );
 
 
     -- Input overflow check
@@ -88,10 +114,11 @@ begin
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
 
-        data_i => data_i,
+        data_i => delayed_data,
         limit_i => input_limit,
         overflow_o => input_overflow_o
     );
+
 
     -- Compensation filter
     fast_fir_inst : entity work.fast_fir_top generic map (
@@ -111,6 +138,7 @@ begin
         overflow_o => fir_overflow_o
     );
 
+
     -- Bring the filtered data over to the DSP clock
     adc_to_dsp_inst : entity work.adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
@@ -120,6 +148,7 @@ begin
         adc_data_i => filtered_data,
         dsp_data_o => dsp_data
     );
+
 
     -- Min/Max/Sum
     min_max_sum_inst : entity work.min_max_sum port map (

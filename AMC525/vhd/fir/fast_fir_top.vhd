@@ -51,7 +51,9 @@ begin
 
     -- Decouple the taps, written on DSP clock, from the FIR on ADC clock
     untimed_taps_gen : for i in 0 to TAP_COUNT-1 generate
-        untimed_inst : entity work.untimed_reg port map (
+        untimed_inst : entity work.untimed_reg generic map (
+            WIDTH => REG_DATA_WIDTH
+        ) port map (
             clk_in_i => dsp_clk_i,
             clk_out_i => adc_clk_i,
             write_i => '1',

@@ -7,13 +7,16 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity untimed_reg is
+    generic (
+        WIDTH : natural
+    );
     port (
         clk_in_i : in std_logic;        -- Clock for data_i and write_i
         clk_out_i : in std_logic;       -- Clock for data_o
 
         write_i : in std_logic;
-        data_i : in std_logic_vector;
-        data_o : out std_logic_vector
+        data_i : in std_logic_vector(WIDTH-1 downto 0);
+        data_o : out std_logic_vector(WIDTH-1 downto 0)
     );
 end;
 
@@ -21,9 +24,9 @@ architecture untimed_reg of untimed_reg is
     -- Note that the signal names here and the fact that they name actual
     -- registers are used by the constraints file, where an explicit timing
     -- "false path" is created between these two names.
-    signal false_path_register_from : std_logic_vector(data_i'RANGE)
+    signal false_path_register_from : std_logic_vector(WIDTH-1 downto 0)
         := (others => '0');
-    signal false_path_register_to   : std_logic_vector(data_o'RANGE)
+    signal false_path_register_to   : std_logic_vector(WIDTH-1 downto 0)
         := (others => '0');
 
     -- Ensure our registers don't get eaten by optimisation.
