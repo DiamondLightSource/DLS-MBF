@@ -41,16 +41,6 @@ architecture register_mux_strobe of register_mux_strobe is
     signal ack_in : std_logic;
     signal busy : boolean := false;
 
-    -- Decodes an address into a single bit strobe
-    function compute_strobe(index : natural; value : std_logic)
-        return reg_strobe_t
-    is
-        variable result : reg_strobe_t := (others => '0');
-    begin
-        result(index) := value;
-        return result;
-    end;
-
 begin
     address <= to_integer(address_i);
     ack_in <= ack_i(address);
@@ -58,10 +48,11 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             ack_o <= ack_in and to_std_logic(busy);
-            strobe_o <= compute_strobe(address, strobe_i);
             if strobe_i = '1' then
+                strobe_o <= compute_strobe(address, REG_ADDR_COUNT);
                 busy <= true;
             else
+                strobe_o <= (others => '0');
                 busy <= busy and ack_in = '0';
             end if;
         end if;

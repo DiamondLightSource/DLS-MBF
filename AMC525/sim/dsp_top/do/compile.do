@@ -14,14 +14,13 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/sync_reset.vhd \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/util/edge_detect.vhd \
+    $vhd_dir/util/short_delay.vhd \
     $vhd_dir/registers/pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/register_block.vhd \
     $vhd_dir/adc_phase.vhd \
     $vhd_dir/extract_signed.vhd \
-    $vhd_dir/short_delay.vhd \
-    $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/fir/fast_fir.vhd \
     $vhd_dir/fir/fast_fir_top.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
@@ -32,6 +31,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
     $vhd_dir/min_max_sum/min_max_sum.vhd \
     $vhd_dir/min_max_sum/min_max_limit.vhd \
+    $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_overflow.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/dsp/dsp_to_adc.vhd \

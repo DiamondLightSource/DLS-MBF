@@ -133,6 +133,11 @@ package support is
     function max_int(size : natural) return signed;
     function min_int(size : natural) return signed;
 
+
+    -- Returns array of length bits with the indexed bit set
+    function compute_strobe(index : natural; length : natural)
+        return std_logic_vector;
+
 end package;
 
 
@@ -374,6 +379,16 @@ package body support is
     begin
         result(size-1) := '1';
         return signed(result);
+    end;
+
+
+    function compute_strobe(index : natural; length : natural)
+        return std_logic_vector
+    is
+        variable result : std_logic_vector(0 to length-1) := (others => '0');
+    begin
+        result(index) := '1';
+        return result;
     end;
 
 end package body;

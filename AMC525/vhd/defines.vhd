@@ -44,7 +44,6 @@ package defines is
     -- data processing lanes.
     constant LANE_COUNT : natural := 2;
     subtype LANES is natural range 0 to LANE_COUNT-1;
-    subtype lane_t is unsigned(bits(LANE_COUNT-1)-1 downto 0);
 
     -- Data from DSP to DDR0 DRAM interface
     subtype ddr0_data_t is std_logic_vector(15 downto 0);

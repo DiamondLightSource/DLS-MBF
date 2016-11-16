@@ -74,8 +74,7 @@ architecture adc_top of adc_top is
     signal mms_delta : unsigned_array(LANES)(DATA_OUT_RANGE);
 
 begin
-    -- Limit register.  We ensure the output is untimed to avoid snags with
-    -- control of ADC clock settings.
+    -- Limit register.
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(LIMIT_REG_W),
@@ -83,6 +82,7 @@ begin
         write_ack_o(0) => write_ack_o(LIMIT_REG_W),
         register_data_o(0) => limit_register_in
     );
+    -- Make these control settings untimed to help with FPGA timing
     untimed_inst : entity work.untimed_reg generic map (
         WIDTH => REG_DATA_WIDTH
     ) port map (
@@ -92,6 +92,7 @@ begin
         data_i => limit_register_in,
         data_o => limit_register
     );
+
     input_limit <= unsigned(limit_register(13 downto 0));
     data_delay  <= unsigned(limit_register(15 downto 15));
     delta_limit <= unsigned(limit_register(31 downto 16));

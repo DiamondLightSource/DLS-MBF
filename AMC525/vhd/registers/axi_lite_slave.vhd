@@ -114,16 +114,6 @@ architecture axi_lite_slave of axi_lite_slave is
     constant BYTE_BITS : natural := 2;
 
 
-    -- Decodes an address into a single bit strobe
-    function compute_strobe(index : natural) return std_logic_vector
-    is
-        variable result : std_logic_vector(MOD_ADDR_RANGE)
-            := (others => '0');
-    begin
-        result(index) := '1';
-        return result;
-    end;
-
     -- Extracts module address from AXI address
     function module_address(addr : std_logic_vector) return MOD_ADDR_RANGE
     is begin
@@ -165,7 +155,7 @@ begin
 
     -- ------------------------------------------------------------------------
     -- Read interface.
-    read_strobe <= compute_strobe(read_module_address);
+    read_strobe <= compute_strobe(read_module_address, MOD_ADDR_COUNT);
     read_ack <= read_ack_i(read_module_address);
     read_data <= read_data_i(read_module_address);
 
@@ -208,7 +198,7 @@ begin
 
     -- ------------------------------------------------------------------------
     -- Write interface.
-    write_strobe <= compute_strobe(write_module_address);
+    write_strobe <= compute_strobe(write_module_address, MOD_ADDR_COUNT);
     write_ack <= write_ack_i(write_module_address);
 
     process (rstn_i, clk_i) begin
