@@ -32,53 +32,29 @@ architecture min_max_sum_memory of min_max_sum_memory is
     constant ADDR_BITS : natural := read_addr_i'LENGTH;
 
     -- Declare block ram
-    constant ROW_BITS : natural := 112;
-    constant LANE_ROW_BITS : natural := LANE_COUNT * ROW_BITS;
+    constant LANE_ROW_BITS : natural := LANE_COUNT * MMS_ROW_BITS;
     subtype bram_row_t is std_logic_vector(LANE_ROW_BITS-1 downto 0);
-    type bram_mem_t is array(0 to 2**ADDR_BITS-1) of bram_row_t;
-    signal memory : bram_mem_t := (others => (others => '0'));
-    attribute ram_style : string;
-    attribute ram_style of memory : signal is "BLOCK";
 
     signal read_row : bram_row_t := (others => '0');
-    signal read_row_reg : bram_row_t := (others => '0');
     signal write_row : bram_row_t;
 
-    function row_to_bits(data : mms_row_t) return std_logic_vector is
-        variable result : std_logic_vector(ROW_BITS-1 downto 0);
-    begin
-        result(15 downto 0)   := std_logic_vector(data.min);
-        result(31 downto 16)  := std_logic_vector(data.max);
-        result(63 downto 32)  := std_logic_vector(data.sum);
-        result(111 downto 64) := std_logic_vector(data.sum2);
-        return result;
-    end;
-
-    function bits_to_row(data : std_logic_vector) return mms_row_t is
-        variable result : mms_row_t;
-    begin
-        result.min  := signed(data(15 downto  0));
-        result.max  := signed(data(31 downto 16));
-        result.sum  := signed(data(63 downto 32));
-        result.sum2 := unsigned(data(111 downto 64));
-        return result;
-    end;
-
 begin
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            read_row <= memory(to_integer(read_addr_i));
-            -- Use the internal pipeline register
-            read_row_reg <= read_row;
-            if write_strobe_i = '1' then
-                memory(to_integer(write_addr_i)) <= write_row;
-            end if;
-        end if;
-    end process;
+    memory_inst : entity work.block_memory generic map (
+        ADDR_BITS => ADDR_BITS,
+        DATA_BITS => LANE_ROW_BITS
+    ) port map (
+        clk_i => clk_i,
+        read_addr_i => read_addr_i,
+        read_data_o => read_row,
+        write_strobe_i => write_strobe_i,
+        write_addr_i => write_addr_i,
+        write_data_i => write_row
+    );
 
     convert_gen : for l in LANES generate
-        read_data_o(l) <= bits_to_row(read_field_ix(read_row_reg, ROW_BITS, l));
-        write_row((l+1)*ROW_BITS-1 downto l*ROW_BITS)
-            <= row_to_bits(write_data_i(l));
+        read_data_o(l) <=
+            bits_to_mms_row(read_field_ix(read_row, MMS_ROW_BITS, l));
+        write_row((l+1)*MMS_ROW_BITS-1 downto l*MMS_ROW_BITS) <=
+            mms_row_to_bits(write_data_i(l));
     end generate;
 end;

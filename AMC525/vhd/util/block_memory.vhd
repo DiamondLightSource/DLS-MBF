@@ -1,11 +1,30 @@
 -- Memory mapped into Block RAM.  We double buffer the read data to ensure that
 -- the BRAM is fully registered.
+--
+-- The delay from read_addr_i to read_data_o is 2 clock ticks:
+--
+-- clk_i            /       /       /       /       /
+-- read_addr_i    --X  A    X----------------------------
+-- read_data      ----------X M[A]  X--------------------
+-- read_data_o    ------------------X M[A]  X------------
+--
+-- The relationship with data written into the same location is shown by the
+-- figure below:
+--
+-- clk_i            /       /       /       /       /
+-- write_strobe_i __/^^^^^^^\____________________________
+-- write_addr_i   --X  A    X----------------------------
+-- write_data_i   --X  D    X----------------------------
+-- memory[A]      ----------X  D
+-- read_addr_i    ----------X  A    X--------------------
+-- read_data      ------------------X  D    X------------
+-- read_data_o    --------------------------X  D    X----
+--
+-- This shows that the written data at any address must be read one tick later.
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
-use work.support.all;
 
 entity block_memory is
     generic (
@@ -34,13 +53,13 @@ architecture block_memory of block_memory is
     attribute ram_style : string;
     attribute ram_style of memory : signal is "BLOCK";
 
-    signal read_addr : unsigned(ADDR_BITS-1 downto 0);
+    signal read_data : std_logic_vector(DATA_BITS-1 downto 0);
 
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then
-            read_addr <= read_addr_i;
-            read_data_o <= memory(to_integer(read_addr));
+            read_data <= memory(to_integer(read_addr_i));
+            read_data_o <= read_data;
             if write_strobe_i = '1' then
                 memory(to_integer(write_addr_i)) <= write_data_i;
             end if;
