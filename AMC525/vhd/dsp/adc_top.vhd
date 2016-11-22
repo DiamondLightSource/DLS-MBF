@@ -20,7 +20,7 @@ entity adc_top is
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
         adc_phase_i : in std_logic;
-        bunch_reset_i : in std_logic;       -- start of machine revolution
+        turn_clock_i : in std_logic;       -- start of machine revolution
 
         -- Data flow
         data_i : in signed;                 -- at ADC data rate
@@ -36,7 +36,7 @@ entity adc_top is
 
         -- Pulse events
         write_start_i : in std_logic;       -- For register block writes
-        delta_reset_i : in std_logic;       -- reenable event
+        delta_reset_i : in std_logic;       -- Reenable delta limit event
 
         -- Event outputs
         input_overflow_o : out std_logic;
@@ -69,6 +69,7 @@ architecture adc_top of adc_top is
     signal data_delay : unsigned(0 downto 0);
 
     signal filtered_data : signed(DATA_OUT_RANGE);
+    signal data_in : signed(data_i'RANGE);
     signal delayed_data : signed(data_i'RANGE);
     signal dsp_data : signed_array(LANES)(DATA_OUT_RANGE);
     signal mms_delta : unsigned_array(LANES)(DATA_OUT_RANGE);
@@ -98,13 +99,24 @@ begin
     delta_limit <= unsigned(limit_register(31 downto 16));
 
 
+    -- Register pipeline on input to help with timing
+    adc_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => data_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_i),
+        signed(data_o) => data_in
+    );
+
+
     -- One bit data skew to allow for clock shift
     adc_delay_inst : entity work.short_delay generic map (
         WIDTH => data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
         delay_i => data_delay,
-        data_i => std_logic_vector(data_i),
+        data_i => std_logic_vector(data_in),
         signed(data_o) => delayed_data
     );
 
@@ -134,7 +146,7 @@ begin
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(TAPS_REG_W),
 
-        data_i => data_i,
+        data_i => delayed_data,
         data_o => filtered_data,
         overflow_o => fir_overflow_o
     );
@@ -154,7 +166,7 @@ begin
     -- Min/Max/Sum
     min_max_sum_inst : entity work.min_max_sum port map (
         dsp_clk_i => dsp_clk_i,
-        bunch_reset_i => bunch_reset_i,
+        turn_clock_i => turn_clock_i,
 
         data_i => dsp_data,
         delta_o => mms_delta,

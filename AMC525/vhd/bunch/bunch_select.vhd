@@ -28,16 +28,16 @@ entity bunch_select is
 
         -- Bunch configuration readout
         bank_i : in unsigned(1 downto 0);       -- Current bunch bank
-        bunch_index_o : out bunch_count_t;            -- Current bunch number
+        bunch_index_o : out bunch_count_t;      -- Current bunch number
         bunch_config_o : out bunch_config_lanes_t;
-        turn_clk_o : out std_logic              -- Revolution clock
+        turn_clock_o : out std_logic            -- Revolution clock
     );
 end;
 
 architecture bunch_select of bunch_select is
     -- Our registers are used as follows:
     --
-    --  0   RW  8:0     Number of bunches in ring, determines turn_clk_o freq
+    --  0   RW  8:0     Number of bunches in ring, determines turn_clock_o freq
     --  0   RW  20:12   Bunch to select for bunch zero
     --  0   RW  25:24   Bank currently being written
     --  1   R           (unused)
@@ -81,7 +81,7 @@ begin
         bunch_zero_i => bunch_zero,
         max_bunch_i => max_bunch,
         bunch_index_o => bunch_index,
-        turn_clk_o => turn_clk_o
+        turn_clock_o => turn_clock_o
     );
     bunch_index_o <= bunch_index;
 

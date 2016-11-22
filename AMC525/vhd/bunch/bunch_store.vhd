@@ -64,9 +64,11 @@ begin
 
     -- We pack and unpack the written data simply so that the external bit
     -- layout can be decoupled from the stored packed representation.
-    write_data_in.fir_select     <= unsigned(write_data_i(17 downto 16));
-    write_data_in.out_mux_select <= unsigned(write_data_i(22 downto 20));
-    write_data_in.gain           <= signed  (write_data_i(12 downto 0));
+    write_data_in.fir_select   <= unsigned(write_data_i(1 downto 0));
+    write_data_in.fir_enable   <= write_data_i(4);
+    write_data_in.nco_0_enable <= write_data_i(5);
+    write_data_in.nco_1_enable <= write_data_i(6);
+    write_data_in.gain         <= signed  (write_data_i(31 downto 19));
 
     -- Assemble addresses from selected bank and target bunch
     read_addr <= bank_i & bunch_index_i;
@@ -98,5 +100,4 @@ begin
         end if;
     end process;
     write_ack_o <= '1';
-
 end;

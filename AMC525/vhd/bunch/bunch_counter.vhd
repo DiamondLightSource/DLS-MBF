@@ -22,7 +22,7 @@ entity bunch_counter is
         max_bunch_i : in bunch_count_t;     -- Maximum bunch number
 
         bunch_index_o : out bunch_count_t;  -- Current bunch number
-        turn_clk_o : out std_logic          -- Revolution clock
+        turn_clock_o : out std_logic        -- Revolution clock
     );
 end;
 
@@ -44,14 +44,14 @@ begin
                 bunch_index <= bunch_zero_i;
             elsif last_bunch then
                 bunch_index <= (others => '0');
-                turn_clk_o <= bunch_synched;
+                turn_clock_o <= bunch_synched;
             else
                 bunch_index <= bunch_index + 1;
-                turn_clk_o <= '0';
+                turn_clock_o <= '0';
             end if;
 
             -- Immediately after bunch synchronisation suppress one turn_clk.
-            -- This ensures that we don't get turn_clk_o events too close
+            -- This ensures that we don't get turn_clock_o events too close
             -- together, which might disturb the operation of the sequencer.
             if sync_trigger_i = '1' then
                 bunch_synched <= '0';

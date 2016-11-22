@@ -4,6 +4,8 @@ use ieee.numeric_std.all;
 
 use work.support.all;
 use work.defines.all;
+use work.dsp_defs.all;
+
 use work.sim_support.all;
 
 entity testbench is
@@ -33,8 +35,8 @@ architecture testbench of testbench is
     signal ddr1_data : ddr1_data_t;
     signal ddr1_data_strobe : std_logic;
 
-    signal dsp_control : dsp_control_t := (others => '0');
-    signal dsp_status : dsp_status_t;
+    signal control_to_dsp : control_to_dsp_t;
+    signal dsp_to_control : dsp_to_control_t;
 
 begin
 
@@ -90,9 +92,22 @@ begin
         ddr1_data_o => ddr1_data,
         ddr1_data_strobe_o => ddr1_data_strobe,
 
-        dsp_control_i => dsp_control,
-        dsp_status_o => dsp_status
+        control_to_dsp_i => control_to_dsp,
+        dsp_to_control_o => dsp_to_control
     );
+
+    -- Simple pass-through of control interface
+    process (dsp_clk) begin
+        if rising_edge(dsp_clk) then
+            control_to_dsp.adc_data   <= dsp_to_control.adc_data;
+            for l in LANES loop
+                control_to_dsp.nco_0_data(l) <=
+                    dsp_to_control.nco_0_data(l).cos;
+                control_to_dsp.nco_1_data(l) <=
+                    dsp_to_control.nco_1_data(l).cos;
+            end loop;
+        end if;
+    end process;
 
 
     -- Register control testbench
@@ -119,6 +134,42 @@ begin
         write_reg(3, X"00000000");
         write_reg(3, X"00000000");
         write_reg(3, X"7FFFFFFF");
+
+        -- Configure bunch control
+        write_reg(4, X"00000004");      -- 10 bunches (2*5) in our ring!
+        write_reg(0, X"00000001");      -- Start write
+        write_reg(5, X"7FFF0070");      -- Enable all outpus with maximum gain
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+        write_reg(5, X"7FFF0070");
+
+        -- Global DAC output config
+        write_reg(9, X"02000000");      -- Enable FIR, zero delay
+
+        -- Initialise DAC FIR
+        write_reg(0, X"00000001");
+        write_reg(10, X"00000000");
+        write_reg(10, X"00000000");
+        write_reg(10, X"00000000");
+        write_reg(10, X"00000000");
+        write_reg(10, X"00000000");
+        write_reg(10, X"00000000");
+        write_reg(10, X"00000000");
+        write_reg(10, X"7FFFFFFF");
+
+        -- Set both oscillator frequencies
+        write_reg(12, X"01000000");
+        write_reg(13, X"10000000");
+
+        clk_wait(dsp_clk, 10);
+
+        write_reg(9, X"06000011");     -- 17 tick delay, enable NCO0
 
         wait;
 

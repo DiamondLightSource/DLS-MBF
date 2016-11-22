@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 use work.defines.all;
 use work.fmc500m_defs.all;
+use work.dsp_defs.all;
 
 architecture top of top is
     -- IO instances
@@ -185,14 +186,14 @@ architecture top of top is
     signal dsp0_ddr0_data : ddr0_data_lanes;
     signal dsp0_ddr1_data : ddr1_data_t;
     signal dsp0_ddr1_data_strobe : std_logic;
-    signal dsp0_control : dsp_control_t;
-    signal dsp0_status : dsp_status_t;
+    signal control_to_dsp0 : control_to_dsp_t;
+    signal dsp0_to_control : dsp_to_control_t;
 
     signal dsp1_ddr0_data : ddr0_data_lanes;
     signal dsp1_ddr1_data : ddr1_data_t;
     signal dsp1_ddr1_data_strobe : std_logic;
-    signal dsp1_control : dsp_control_t;
-    signal dsp1_status : dsp_status_t;
+    signal control_to_dsp1 : control_to_dsp_t;
+    signal dsp1_to_control : dsp_to_control_t;
 
 begin
 
@@ -702,10 +703,10 @@ begin
         read_data_o => ctrl_read_data,
         read_ack_o => ctrl_read_ack,
 
-        dsp0_control_o => dsp0_control,
-        dsp0_status_i => dsp0_status,
-        dsp1_control_o => dsp1_control,
-        dsp1_status_i => dsp1_status,
+        control_to_dsp0_o => control_to_dsp0,
+        dsp0_to_control_i => dsp0_to_control,
+        control_to_dsp1_o => control_to_dsp1,
+        dsp1_to_control_i => dsp1_to_control,
 
         ddr0_capture_enable_o => DSP_DDR0_capture_enable,
         ddr0_data_ready_i => DSP_DDR0_data_ready,
@@ -740,8 +741,8 @@ begin
         ddr1_data_o => dsp0_ddr1_data,
         ddr1_data_strobe_o => dsp0_ddr1_data_strobe,
 
-        dsp_control_i => dsp0_control,
-        dsp_status_o => dsp0_status
+        dsp_control_i => control_to_dsp0,
+        dsp_status_o => dsp0_to_control
     );
 
     dsp1_top_inst : entity work.dsp_top port map (
@@ -764,8 +765,8 @@ begin
         ddr1_data_o => dsp1_ddr1_data,
         ddr1_data_strobe_o => dsp1_ddr1_data_strobe,
 
-        dsp_control_i => dsp1_control,
-        dsp_status_o => dsp1_status
+        dsp_control_i => control_to_dsp1,
+        dsp_status_o => dsp1_to_control
     );
 
 

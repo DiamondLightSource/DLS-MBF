@@ -16,7 +16,7 @@ entity min_max_sum_bank is
     );
     port (
         clk_i : in std_logic;
-        bunch_reset_i : in std_logic;       -- Revolution clock
+        turn_clock_i : in std_logic;       -- Revolution clock
 
         -- Register readout bank count and switch
         count_read_strobe_i : in std_logic;         -- Request to switch bank
@@ -55,18 +55,18 @@ architecture min_max_sum_bank of min_max_sum_bank is
 
 begin
     -- The switch event is posponed to next bunch reset event
-    switch_event <= switch_request and bunch_reset_i = '1';
+    switch_event <= switch_request and turn_clock_i = '1';
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Advance the update address
-            if bunch_reset_i = '1' then
+            if turn_clock_i = '1' then
                 update_addr <= (others => '0');
             else
                 update_addr <= update_addr + 1;
             end if;
 
             -- Count each frame, readout and reset on request
-            if bunch_reset_i = '1' then
+            if turn_clock_i = '1' then
                 if switch_request then
                     count_read_data_o(28 downto 0) <=
                         std_logic_vector(frame_count(28 downto 0));
@@ -122,7 +122,7 @@ begin
     --  clk_i         /     / ... /     / ... /     /     /     /     /
     --            __________
     --  sw_r           _____\_____________________________________________
-    --  br_i      ____/_____\_____________________________________________
+    --  tc_i      ____/_____\_____________________________________________
     --  sw_e      ____/     \_____________________________________________
     --  bs          B       X B'
     --  ua        ----X LA  X---------------------------------------------
@@ -137,7 +137,7 @@ begin
     --                                                           _____
     --  ack       ______________________________________________/     \___
     --
-    -- sw_r = switch_request, br_i = bunch_reset_i, sw_e = switch_event
+    -- sw_r = switch_request, tc_i = turn_clock_i, sw_e = switch_event
     -- bs = bank_select, ua = update_addr, LA = last update address before
     -- bank switch, udo = update data from store, DA = data from LA,
     -- udi = update data to store, DA' = updated data,

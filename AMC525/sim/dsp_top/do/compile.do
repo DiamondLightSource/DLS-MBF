@@ -15,6 +15,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/util/edge_detect.vhd \
     $vhd_dir/util/short_delay.vhd \
+    $vhd_dir/util/block_memory.vhd \
+    $vhd_dir/util/long_delay.vhd \
     $vhd_dir/registers/pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
@@ -31,11 +33,28 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
     $vhd_dir/min_max_sum/min_max_sum.vhd \
     $vhd_dir/min_max_sum/min_max_limit.vhd \
+    $vhd_dir/bunch/bunch_defs.vhd \
+    $vhd_dir/bunch/bunch_counter.vhd \
+    $vhd_dir/bunch/bunch_store.vhd \
+    $vhd_dir/bunch/bunch_select.vhd \
+    $vhd_dir/nco/nco_defs.vhd \
+    nco_cos_sin_table.vhd \
+    $vhd_dir/nco/nco_phase.vhd \
+    $vhd_dir/nco/nco_cos_sin_octant.vhd \
+    $vhd_dir/nco/nco_cos_sin_refine.vhd \
+    $vhd_dir/nco/nco.vhd \
+    $vhd_dir/dsp/dsp_to_adc.vhd \
+    $vhd_dir/dac/gain_control.vhd \
+    $vhd_dir/dac/dac_output_mux.vhd \
+    $vhd_dir/dac/dac_top.vhd \
+    $vhd_dir/dsp/dsp_defs.vhd \
+    $vhd_dir/dsp/dsp_registers.vhd \
     $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_overflow.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
-    $vhd_dir/dsp/dsp_to_adc.vhd \
     $vhd_dir/dsp/adc_top.vhd \
+    $vhd_dir/dsp/bunch_fir_top.vhd \
+    $vhd_dir/dsp/memory_top.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -50,14 +69,15 @@ vsim -t 1ps \
 view wave
 
 add wave -group "ADC Phase" sim:/testbench/adc_phase_inst/*
+add wave -group "Bunch" sim:/testbench/dsp_top_inst/bunch_select_inst/*
+add wave -group "Bunch Mem" \
+    sim:/testbench/dsp_top_inst/bunch_select_inst/bunch_mem/*
 add wave -group "ADC Top" sim:/testbench/dsp_top_inst/adc_top_inst/*
-add wave -group "FIR Top" \
-    sim:/testbench/dsp_top_inst/adc_top_inst/fast_fir_inst/*
-add wave -group "Delay" \
-    sim:/testbench/dsp_top_inst/adc_top_inst/adc_delay_inst/*
-add wave -group "DSP" sim:/testbench/dsp_top_inst/*
+add wave -group "DAC Top" sim:/testbench/dsp_top_inst/dac_top_inst/*
+add wave -group "DSP Top" sim:/testbench/dsp_top_inst/*
 add wave -group "Top" sim:*
 
-run 200ns
+
+run 1 us
 
 # vim: set filetype=tcl:

@@ -52,14 +52,5 @@ package defines is
     -- Data from DSP to DDR1 DRAM interface
     subtype ddr1_data_t is std_logic_vector(31 downto 0);
 
-    -- Control interface from control top to dsp_top
-    type dsp_control_t is record
-        dummy : std_logic;      -- Placeholder for interface
-    end record;
-    type dsp_status_t is record
-        dummy : std_logic;      -- Placeholder for interface
-    end record;
-
-
 
 end package;

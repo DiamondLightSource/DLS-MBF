@@ -14,7 +14,7 @@ entity min_max_sum is
     );
     port (
         dsp_clk_i : in std_logic;
-        bunch_reset_i : in std_logic;
+        turn_clock_i : in std_logic;
 
         data_i : in signed_array;
         delta_o : out unsigned_array;
@@ -69,7 +69,7 @@ begin
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
         clk_i => dsp_clk_i,
-        bunch_reset_i => bunch_reset_i,
+        turn_clock_i => turn_clock_i,
 
         count_read_strobe_i => read_strobe_i(COUNT_REG),
         count_read_data_o => read_data_o(COUNT_REG),

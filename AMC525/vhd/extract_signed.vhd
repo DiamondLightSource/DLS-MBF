@@ -26,8 +26,8 @@ entity extract_signed is
 end;
 
 architecture extract_signed of extract_signed is
-    constant BIT_WIDTH_IN  : natural := data_i'LEFT - data_i'RIGHT + 1;
-    constant BIT_WIDTH_OUT : natural := data_o'LEFT - data_o'RIGHT + 1;
+    constant BIT_WIDTH_IN  : natural := data_i'LENGTH;
+    constant BIT_WIDTH_OUT : natural := data_o'LENGTH;
     constant ROUNDED_WIDTH : natural := BIT_WIDTH_IN - OFFSET + EXTRA;
 
     signal sign : std_logic;
@@ -40,10 +40,10 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Round the incoming value
-            rounded <= round(data_i, ROUNDED_WIDTH);
+            rounded <= round(data_i, ROUNDED_WIDTH - EXTRA, EXTRA);
 
             -- Extract the output and check for overflow.
-            sign <= rounded(rounded'LEFT);
+            sign <= sign_bit(rounded);
             truncate_result(truncated, overflow, rounded);
 
             -- Saturate the result if necessary

@@ -34,7 +34,7 @@ architecture testbench of testbench is
 
     signal adc_clk : std_logic;
     signal adc_phase : std_logic;
-    signal bunch_reset : std_logic;
+    signal turn_clock : std_logic;
 
     signal adc_data_raw : signed(15 downto 0) := (others => '0');
     signal adc_data : signed(15 downto 0) := (others => '0');
@@ -74,7 +74,7 @@ begin
         ADDR_BITS => 4
     ) port map (
         dsp_clk_i => dsp_clk,
-        bunch_reset_i => bunch_reset,
+        turn_clock_i => turn_clock,
         data_i => dsp_data,
         delta_o => delta,
         overflow_o => overflow,
@@ -102,7 +102,7 @@ begin
                 adc_data_raw <= to_signed(-3, 16);
             end if;
 
-            if bunch_reset = '1' and adc_phase = '1' then
+            if turn_clock = '1' and adc_phase = '1' then
 --                 adc_data <= (others => 'X');
                 adc_data <= (others => '0');
             else
@@ -113,12 +113,12 @@ begin
 
     -- Bunch counter.
     process begin
-        bunch_reset <= '0';
+        turn_clock <= '0';
         tick_wait(2);
         loop
-            bunch_reset <= '1';
+            turn_clock <= '1';
             tick_wait;
-            bunch_reset <= '0';
+            turn_clock <= '0';
             tick_wait(BUNCH_COUNT-1);
         end loop;
     end process;

@@ -13,7 +13,7 @@ vsim: nco_cos_sin_table.vhd
 	ln -sf $(COMMON_DIR)/modelsim.ini .
 	$(RUN_VSIM)
 
-nco_cos_sin_table.vhd: nco_cos_sin_table.py nco_cos_sin_table.vhd.in
+%.vhd: %.py %.vhd.in
 	python $^ >$@
 
 endif

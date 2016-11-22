@@ -19,11 +19,16 @@ package bunch_defs is
 
     -- Bunch configuration
     type bunch_config_t is record
+        -- Selects FIR filter
         fir_select : unsigned(1 downto 0);
-        out_mux_select : unsigned(2 downto 0);
+        -- Output enables
+        fir_enable : std_logic;
+        nco_0_enable : std_logic;
+        nco_1_enable : std_logic;
+        -- Final output gain
         gain : signed(12 downto 0);
     end record;
-    constant BUNCH_CONFIG_BITS : natural := 18;
+    constant BUNCH_CONFIG_BITS : natural := 2 + 3 + 13;
 
     type bunch_config_lanes_t is array(LANES) of bunch_config_t;
 
@@ -43,8 +48,10 @@ package body bunch_defs is
         variable result : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
     begin
         result(1 downto 0)  := std_logic_vector(data.fir_select);
-        result(4 downto 2)  := std_logic_vector(data.out_mux_select);
-        result(17 downto 5) := std_logic_vector(data.gain);
+        result(14 downto 2) := std_logic_vector(data.gain);
+        result(15) := data.fir_enable;
+        result(16) := data.nco_0_enable;
+        result(17) := data.nco_1_enable;
         return result;
     end;
 
@@ -53,9 +60,11 @@ package body bunch_defs is
     is
         variable result : bunch_config_t;
     begin
-        result.fir_select     := unsigned(data(1 downto 0));
-        result.out_mux_select := unsigned(data(4 downto 2));
-        result.gain           := signed  (data(17 downto 5));
+        result.fir_select := unsigned(data(1 downto 0));
+        result.gain       := signed(data(14 downto 2));
+        result.fir_enable   := data(15);
+        result.nco_0_enable := data(16);
+        result.nco_1_enable := data(17);
         return result;
     end;
 
