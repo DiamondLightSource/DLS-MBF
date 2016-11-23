@@ -45,6 +45,7 @@ synth_design -top top -flatten_hierarchy $hierarchy
 write_checkpoint -force checkpoints/post_synth
 report_timing_summary -file reports/post_synth_timing_summary.rpt
 
+read_xdc $src_dir/constr/post_synth.xdc
 
 # run placement and logic optimzation, report utilization and timing estimates,
 #
