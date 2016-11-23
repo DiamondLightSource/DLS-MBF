@@ -741,8 +741,8 @@ begin
         ddr1_data_o => dsp0_ddr1_data,
         ddr1_data_strobe_o => dsp0_ddr1_data_strobe,
 
-        dsp_control_i => control_to_dsp0,
-        dsp_status_o => dsp0_to_control
+        control_to_dsp_i => control_to_dsp0,
+        dsp_to_control_o => dsp0_to_control
     );
 
     dsp1_top_inst : entity work.dsp_top port map (
@@ -765,8 +765,8 @@ begin
         ddr1_data_o => dsp1_ddr1_data,
         ddr1_data_strobe_o => dsp1_ddr1_data_strobe,
 
-        dsp_control_i => control_to_dsp1,
-        dsp_status_o => dsp1_to_control
+        control_to_dsp_i => control_to_dsp1,
+        dsp_to_control_o => dsp1_to_control
     );
 
 

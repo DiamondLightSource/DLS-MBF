@@ -46,24 +46,25 @@ begin
             -- NCO output multiplexing
             for l in LANES loop
                 control_to_dsp0_o.nco_0_data(l) <=
-                    dsp0_to_control_i(l).nco_0_data.cos;
+                    dsp0_to_control_i.nco_0_data(l).cos;
                 if nco_0_mux_i = '1' then
                     control_to_dsp1_o.nco_0_data(l) <=
-                        dsp0_to_control_i(l).nco_0_data.sin;
+                        dsp0_to_control_i.nco_0_data(l).sin;
                 else
                     control_to_dsp1_o.nco_0_data(l) <=
-                        dsp1_to_control_i(l).nco_0_data.cos;
+                        dsp1_to_control_i.nco_0_data(l).cos;
                 end if;
 
                 control_to_dsp0_o.nco_1_data(l) <=
-                    dsp0_to_control_i(l).nco_1_data.cos;
+                    dsp0_to_control_i.nco_1_data(l).cos;
                 if nco_1_mux_i = '1' then
                     control_to_dsp1_o.nco_1_data(l) <=
-                        dsp0_to_control_i(l).nco_1_data.sin;
+                        dsp0_to_control_i.nco_1_data(l).sin;
                 else
                     control_to_dsp1_o.nco_1_data(l) <=
-                        dsp1_to_control_i(l).nco_1_data.cos;
+                        dsp1_to_control_i.nco_1_data(l).cos;
                 end if;
+            end loop;
         end if;
     end process;
 end;
