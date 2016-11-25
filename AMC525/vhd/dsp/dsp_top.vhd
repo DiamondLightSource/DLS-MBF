@@ -4,8 +4,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.defines.all;
 use work.support.all;
+use work.defines.all;
 
 use work.dsp_defs.all;
 use work.bunch_defs.all;
@@ -256,6 +256,7 @@ begin
 
         data_i => control_to_dsp_i.adc_data,
         data_o => fir_data,
+        bunch_config_i => bunch_config,
 
         write_strobe_i => write_strobe_i(B_FIR_REGS),
         write_data_i => write_data_i,

@@ -6,6 +6,7 @@ use ieee.numeric_std.all;
 package support is
     -- Some generic unconstrained types
     type signed_array is array(natural range <>) of signed;
+    type signed_array_array is array(natural range <>) of signed_array;
     type unsigned_array is array(natural range <>) of unsigned;
     type vector_array is array(natural range <>) of std_logic_vector;
 

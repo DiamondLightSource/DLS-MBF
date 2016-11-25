@@ -56,16 +56,16 @@ architecture fast_fir of fast_fir is
     constant EXTRACT_OFFSET : natural :=
         SUM_WIDTH - BIT_WIDTH_OUT - HEADROOM - EXTRA_BITS - 1;
 
-    subtype TAP_RANGE is natural range 0 to TAP_COUNT-1;
-    subtype TAP_RANGE_1 is natural range 0 to TAP_COUNT;
+    subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
+    subtype TAPS_RANGE_1 is natural range 0 to TAP_COUNT;
 
-    signal taps : signed_array(TAP_RANGE)(TAP_WIDTH-1 downto 0)
+    signal taps : signed_array(TAPS_RANGE)(TAP_WIDTH-1 downto 0)
         := (others => (others => '0'));
-    signal data_in : signed_array(TAP_RANGE)(BIT_WIDTH_IN-1 downto 0)
+    signal data_in : signed_array(TAPS_RANGE)(BIT_WIDTH_IN-1 downto 0)
         := (others => (others => '0'));
-    signal product : signed_array(TAP_RANGE)(PRODUCT_WIDTH-1 downto 0)
+    signal product : signed_array(TAPS_RANGE)(PRODUCT_WIDTH-1 downto 0)
         := (others => (others => '0'));
-    signal sum : signed_array(TAP_RANGE_1)(SUM_WIDTH-1 downto 0)
+    signal sum : signed_array(TAPS_RANGE_1)(SUM_WIDTH-1 downto 0)
         := (others => (others => '0'));
     signal sum_out : signed(SUM_WIDTH-1 downto 0) := (others => '0');
 
@@ -90,7 +90,7 @@ begin
             -- The filter structured so that the DSP48E1 will work optimally:
             -- for this it's important to pipeline with the correct number of
             -- registers.
-            for i in TAP_RANGE loop
+            for i in TAPS_RANGE loop
                 -- All of the following registers are inside the DSP48E1.
                 taps(i) <= signed(taps_i(i)(
                     REG_DATA_WIDTH-1 downto REG_DATA_WIDTH-TAP_WIDTH));

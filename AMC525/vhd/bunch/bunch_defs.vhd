@@ -14,13 +14,10 @@ package bunch_defs is
     constant BUNCH_NUM_BITS : natural := 9;
     subtype bunch_count_t is unsigned(BUNCH_NUM_BITS-1 downto 0);
 
-    -- Number of bunch banks
-    constant BUNCH_BANK_BITS : natural := 2;
-
     -- Bunch configuration
     type bunch_config_t is record
         -- Selects FIR filter
-        fir_select : unsigned(1 downto 0);
+        fir_select : unsigned(FIR_BANK_BITS-1 downto 0);
         -- Output enables
         fir_enable : std_logic;
         nco_0_enable : std_logic;
@@ -28,7 +25,7 @@ package bunch_defs is
         -- Final output gain
         gain : signed(12 downto 0);
     end record;
-    constant BUNCH_CONFIG_BITS : natural := 2 + 3 + 13;
+    constant BUNCH_CONFIG_BITS : natural := FIR_BANK_BITS + 3 + 13;
 
     type bunch_config_lanes_t is array(LANES) of bunch_config_t;
 

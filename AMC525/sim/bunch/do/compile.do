@@ -16,6 +16,13 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/bunch/bunch_counter.vhd \
     $vhd_dir/bunch/bunch_store.vhd \
     $vhd_dir/bunch/bunch_select.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_taps.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_counter.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_delay.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_decimate.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_interpolate.vhd \
+    $vhd_dir/bunch_fir/bunch_fir.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/sim_support.vhd \
@@ -31,16 +38,20 @@ view wave
 # add wave -group "MMS" sim:/testbench/min_max_sum_inst/*
 
 add wave -group "Bunch" sim:/testbench/bunch_select_inst/*
-add wave -group "Counter" sim:/testbench/bunch_select_inst/bunch_counter/*
-add wave -group "Store" sim:/testbench/bunch_select_inst/bunch_mem/*
-add wave -group "mem(0)" \
-    sim:/testbench/bunch_select_inst/bunch_mem/gen_lanes(0)/memory_inst/*
-add wave -group "mem(1)" \
-    sim:/testbench/bunch_select_inst/bunch_mem/gen_lanes(1)/memory_inst/*
+add wave -group "FIR Taps" sim:/testbench/bunch_fir_inst/bunch_fir_taps_inst/*
+add wave -group "FIR Counter" \
+    sim:/testbench/bunch_fir_inst/bunch_fir_counter_inst/*
+add wave -group "FIR Decimate" \
+    sim:/testbench/bunch_fir_inst/lanes_gen(0)/decimate_inst/*
+add wave -group "FIR Interp" \
+    sim:/testbench/bunch_fir_inst/lanes_gen(0)/interpolate_inst/*
+add wave -group "FIR" \
+    sim:/testbench/bunch_fir_inst/lanes_gen(0)/fir_inst/*
+add wave -group "FIR Top" sim:/testbench/bunch_fir_inst/*
 add wave -group "Top" sim:*
 # add wave sim:*
 
 
-run 200 ns
+run 1000 ns
 
 # vim: set filetype=tcl:

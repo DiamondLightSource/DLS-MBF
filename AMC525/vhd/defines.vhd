@@ -27,6 +27,11 @@ package defines is
     subtype reg_addr_t is unsigned(REG_ADDR_BITS-1 downto 0);
     subtype reg_strobe_t is std_logic_vector(REG_ADDR_RANGE);
 
+    -- Number of bunch control banks
+    constant BUNCH_BANK_BITS : natural := 2;
+    -- Number of selectable FIR coefficient sets
+    constant FIR_BANK_BITS : natural := 2;
+
 
     constant DDR0_ADDR_WIDTH : natural := 31;
     constant DDR1_ADDR_WIDTH : natural := 27;
