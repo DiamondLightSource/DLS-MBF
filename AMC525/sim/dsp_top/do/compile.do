@@ -47,6 +47,12 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dac/gain_control.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
     $vhd_dir/dac/dac_top.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_taps.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_counter.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_delay.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_decimate.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_interpolate.vhd \
+    $vhd_dir/bunch_fir/bunch_fir.vhd \
     $vhd_dir/bunch_fir/bunch_fir_top.vhd \
     $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dsp/dsp_registers.vhd \
@@ -74,6 +80,11 @@ add wave -group "Bunch Mem" \
     sim:/testbench/dsp_top_inst/bunch_select_inst/bunch_mem/*
 add wave -group "ADC Top" sim:/testbench/dsp_top_inst/adc_top_inst/*
 add wave -group "DAC Top" sim:/testbench/dsp_top_inst/dac_top_inst/*
+add wave -group "FIR Top" sim:/testbench/dsp_top_inst/bunch_fir_top_inst/*
+add wave -group "Bunch FIR" \
+    sim:/testbench/dsp_top_inst/bunch_fir_top_inst/lanes_gen(0)/fir_inst/*
+add wave -group "Bunch FIR dly(1)" \
+    sim:/testbench/dsp_top_inst/bunch_fir_top_inst/lanes_gen(0)/fir_inst/delay_gen(1)/data_delay_inst/*
 add wave -group "DSP Top" sim:/testbench/dsp_top_inst/*
 add wave -group "Top" sim:*
 

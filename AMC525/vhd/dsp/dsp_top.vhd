@@ -256,6 +256,9 @@ begin
 
         data_i => control_to_dsp_i.adc_data,
         data_o => fir_data,
+
+        turn_clock_i => turn_clock,
+        bunch_index_i => bunch_index,
         bunch_config_i => bunch_config,
 
         write_strobe_i => write_strobe_i(B_FIR_REGS),

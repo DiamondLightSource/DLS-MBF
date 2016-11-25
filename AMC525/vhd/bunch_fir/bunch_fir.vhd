@@ -20,6 +20,7 @@ entity bunch_fir is
 end;
 
 architecture bunch_fir of bunch_fir is
+    -- Widths and counts derived from arguments.
     constant TAP_COUNT : natural := taps_i'LENGTH;
     constant TAP_WIDTH : natural := taps_i(0)'LENGTH;
     constant DATA_IN_WIDTH : natural := data_i'LENGTH;
@@ -37,17 +38,14 @@ architecture bunch_fir of bunch_fir is
     -- for simplicity we assume that we'll have to clip to fit into the delay.
     constant DELAY_WIDTH : natural := 36;
 
-    subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
-
     -- Signal processing chain
+    subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
     signal taps : signed_array(TAPS_RANGE)(TAP_WIDTH-1 downto 0);
     signal data_in : signed_array(TAPS_RANGE)(DATA_IN_WIDTH-1 downto 0);
     signal product : signed_array(TAPS_RANGE)(PRODUCT_WIDTH-1 downto 0);
     signal accum_in : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
     signal accum_out : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
-
-    -- Data delay lines
-    signal delay_in : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0);
+    -- Data delay line
     signal delay_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0);
 
     -- The accumulator input is assembled from three parts of widths as shown:
@@ -61,8 +59,17 @@ architecture bunch_fir of bunch_fir is
     subtype DELAY_RANGE is natural range ACCUM_WIDTH-1 downto ROUND_OFFSET+1;
     subtype PADDING_RANGE is natural range ROUND_OFFSET-1 downto 0;
 
-    -- Data valid.  This percolates through the data processing chain.
-    signal data_out_valid : std_logic;
+    -- Delay from data in valid to accum_out valid.  This is derived from the
+    -- following data path:
+    --      data_i => data_in => product => accum_out
+    constant DATA_VALID_DELAY : natural := 3;
+    -- Data valid for data out and updating delay line
+    signal accum_out_valid : std_logic;
+
+    -- Delay from delay_out to accum_out, used for delay line, derived from
+    -- this data path:
+    --      delay_out => accum_in => accum_out
+    constant PROCESS_DELAY : natural := 2;
 
 begin
     -- Ensure we fit within the DSP48E1
@@ -87,35 +94,30 @@ begin
                 accum_in(t)(DELAY_RANGE) <= delay_out(t);
                 accum_in(t)(ROUND_OFFSET) <= '1';
                 accum_in(t)(PADDING_RANGE) <= (others => '0');
-
-                -- Extract delay from accumulator
-                delay_in(t) <= accum_out(t)(DELAY_RANGE);
             end loop;
 
             data_o <= round(accum_out(TAP_COUNT-1), DATA_OUT_WIDTH);
+            data_valid_o <= accum_out_valid;
         end if;
     end process;
 
-    -- Delay from data in valid to delay_in valid.  This is also synchronous
-    -- with data out valid, because both are derived from accum_out.
     valid_delay_inst : entity work.dlyline generic map (
-        DLY => 4
+        DLY => DATA_VALID_DELAY
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => data_valid_i,
-        data_o(0) => data_out_valid
+        data_o(0) => accum_out_valid
     );
-    data_valid_o <= data_out_valid;
 
     -- Delay lines between each bunch
     delay_gen : for t in 1 to TAP_COUNT-1 generate
         data_delay_inst : entity work.bunch_fir_delay generic map (
-            PROCESS_DELAY => 3
+            PROCESS_DELAY => PROCESS_DELAY
         ) port map (
             clk_i => dsp_clk_i,
             bunch_index_i => bunch_index_i,
-            write_strobe_i => data_out_valid,
-            data_i => delay_in(t-1),
+            write_strobe_i => accum_out_valid,
+            data_i => accum_out(t-1)(DELAY_RANGE),
             data_o => delay_out(t)
         );
     end generate;
