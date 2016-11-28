@@ -56,7 +56,8 @@ begin
             read_data_o => read_data(l),
             write_strobe_i => write_strobe(l),
             write_addr_i => write_addr,
-            write_data_i => write_data
+            write_data_i => write_data,
+            write_data_o => open
         );
 
         config(l) <= bits_to_bunch_config(read_data(l));

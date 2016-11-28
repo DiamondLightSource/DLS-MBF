@@ -23,6 +23,10 @@ add_files built
 add_files $src_dir/vhd
 set_property FILE_TYPE "VHDL 2008" [get_files *.vhd]
 
+# It turns out that some files need to be set to plain VHDL
+set_property FILE_TYPE VHDL [get_files block_memory.vhd]
+
+
 # Ensure we've read the block design and generated the associated files.
 read_bd interconnect/interconnect.bd
 open_bd_design interconnect/interconnect.bd

@@ -48,7 +48,8 @@ begin
         read_data_o => read_row,
         write_strobe_i => write_strobe_i,
         write_addr_i => write_addr_i,
-        write_data_i => write_row
+        write_data_i => write_row,
+        write_data_o => open
     );
 
     convert_gen : for l in LANES generate
