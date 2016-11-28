@@ -85,7 +85,7 @@ begin
             delay_out(0) <= (others => '0');
             for t in TAPS_RANGE loop
                 -- Accumulator optimised for DSP unit
-                taps(t) <= taps_i(t);
+                taps(t) <= taps_i(TAP_COUNT-1 - t);     -- Reverse taps
                 data_in(t) <= data_i;
                 product(t) <= taps(t) * data_in(t);
                 accum_out(t) <= accum_in(t) + product(t);

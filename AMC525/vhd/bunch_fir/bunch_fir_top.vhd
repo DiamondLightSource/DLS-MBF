@@ -50,7 +50,7 @@ architecture bunch_fir_top of bunch_fir_top is
 
     -- Data types
     subtype TAP_RANGE  is natural range TAP_WIDTH-1 downto 0;
-    subtype TAPS_RANGE is natural range TAP_COUNT-1 downto 0;
+    subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
     signal taps : signed_array_array(LANES)(TAPS_RANGE)(TAP_RANGE);
     signal decimated_data : signed_array(LANES)(15 downto 0);
     signal decimated_valid : std_logic_vector(LANES);

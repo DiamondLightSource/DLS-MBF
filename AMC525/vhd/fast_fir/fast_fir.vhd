@@ -92,7 +92,7 @@ begin
             -- registers.
             for i in TAPS_RANGE loop
                 -- All of the following registers are inside the DSP48E1.
-                taps(i) <= signed(taps_i(i)(
+                taps(i) <= signed(taps_i(TAP_COUNT-1 - i)(
                     REG_DATA_WIDTH-1 downto REG_DATA_WIDTH-TAP_WIDTH));
                 data_in(i) <= data_in_delay;
                 product(i) <= taps(i) * data_in(i);
