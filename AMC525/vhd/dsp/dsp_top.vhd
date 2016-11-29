@@ -96,8 +96,8 @@ architecture dsp_top of dsp_top is
     signal nco_1_cos_sin : cos_sin_18_lanes_t;
 
     -- Data flow
-    signal fir_data : signed_array(LANES)(15 downto 0);
-    signal dac_data_store : signed_array(LANES)(15 downto 0);
+    signal fir_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
+    signal dac_data_store : signed_array(LANES)(DAC_OUT_WIDTH-1 downto 0);
 
 
     -- Hacks

@@ -38,6 +38,8 @@ entity bunch_fir_top is
 end;
 
 architecture bunch_fir_top of bunch_fir_top is
+    constant FIR_DATA_WIDTH : natural := data_o(0)'LENGTH;
+
     -- Register map
     constant CONFIG_REG : natural := 0;
     constant TAPS_REG : natural := 1;
@@ -58,7 +60,7 @@ architecture bunch_fir_top of bunch_fir_top is
     -- Data flow and decimation control
     signal first_turn : std_logic;
     signal last_turn : std_logic;
-    signal filtered_data : signed_array(LANES)(15 downto 0);
+    signal filtered_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
     signal filtered_valid : std_logic_vector(LANES);
 
 begin

@@ -32,6 +32,8 @@ package defines is
     -- Number of selectable FIR coefficient sets
     constant FIR_BANK_BITS : natural := 2;
 
+    constant FIR_DATA_WIDTH : natural := 36;
+
 
     constant DDR0_ADDR_WIDTH : natural := 31;
     constant DDR1_ADDR_WIDTH : natural := 27;
