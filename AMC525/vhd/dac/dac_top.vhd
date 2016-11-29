@@ -205,6 +205,7 @@ begin
     -- Convert lanes at DSP clock back to single stream of ADC data
     dsp_to_adc_inst : entity work.dsp_to_adc port map (
         adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
 
         dsp_data_i => data_out_lanes,

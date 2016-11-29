@@ -12,6 +12,7 @@ use work.support.all;
 entity dsp_to_adc is
     port (
         adc_clk_i : in std_logic;
+        dsp_clk_i : in std_logic;
         adc_phase_i : in std_logic;
 
         dsp_data_i : in signed_array;
@@ -22,6 +23,7 @@ end;
 architecture dsp_to_adc of dsp_to_adc is
     signal adc_phase_in : std_logic;
     signal adc_phase : LANES;
+    signal dsp_data : signed_array(LANES)(dsp_data_i(0)'RANGE);
 
 begin
     -- Timing for DSP to ADC conversion
@@ -47,11 +49,18 @@ begin
         data_o(0) => adc_phase_in
     );
 
+    -- Local register of incoming data to help with difficult clock crossing.
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            dsp_data <= dsp_data_i;
+        end if;
+    end process;
+
     -- Transfer across synchronous clock boundary with phase advance.
     adc_phase <= to_integer(not adc_phase_in);
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            adc_data_o <= dsp_data_i(adc_phase);
+            adc_data_o <= dsp_data(adc_phase);
         end if;
     end process;
 
