@@ -149,6 +149,9 @@ begin
         write_reg(5, X"7FFF0070");
         write_reg(5, X"7FFF0070");
 
+        -- Write 1 into first tap of bank 0
+        write_reg(8, X"7FFFFFFF");
+
         -- Global DAC output config
         write_reg(9, X"02000000");      -- Enable FIR, zero delay
 

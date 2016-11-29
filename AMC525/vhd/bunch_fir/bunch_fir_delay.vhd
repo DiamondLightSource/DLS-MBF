@@ -28,6 +28,8 @@ architecture bunch_fir_delay of bunch_fir_delay is
     signal write_addr : unsigned(ADDR_BITS-1 downto 0);
 
 begin
+    assert data_i'LENGTH = data_o'LENGTH;
+
     -- Delay line
     memory_inst : entity work.block_memory generic map (
         ADDR_BITS => ADDR_BITS,

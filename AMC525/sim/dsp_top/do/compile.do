@@ -85,6 +85,8 @@ add wave -group "Bunch FIR" \
     sim:/testbench/dsp_top_inst/bunch_fir_top_inst/lanes_gen(0)/fir_inst/*
 add wave -group "Bunch FIR dly(1)" \
     sim:/testbench/dsp_top_inst/bunch_fir_top_inst/lanes_gen(0)/fir_inst/delay_gen(1)/data_delay_inst/*
+add wave -group "Bunch FIR taps" \
+    sim:/testbench/dsp_top_inst/bunch_fir_top_inst/bunch_fir_taps_inst/*
 add wave -group "DSP Top" sim:/testbench/dsp_top_inst/*
 add wave -group "Top" sim:*
 

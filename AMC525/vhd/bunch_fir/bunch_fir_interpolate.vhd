@@ -22,6 +22,8 @@ architecture bunch_fir_interpolate of bunch_fir_interpolate is
     signal read_data : signed(data_i'RANGE);
 
 begin
+    assert data_i'LENGTH = data_o'LENGTH;
+
     delay_inst : entity work.bunch_fir_delay generic map (
         PROCESS_DELAY => 0
     ) port map (
