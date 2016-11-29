@@ -10,10 +10,12 @@
 --  dsp_clk    _____/       \_______/       \_______/       \_______/
 --                   ___________________________________________________
 --  dsp_clk_ok_i ___/
---             _____________
---  adc_phase_reset         \___________________________________________
---                                   _______         _______         ___
---  adc_phase   ____________________/       \_______/       \_______/
+--                           ___________________________________________
+--  adc_phase_ok_in ________/
+--                                   ___________________________________
+--  adc_phase_ok ___________________/
+--             _____________________________         _______         ___
+--  adc_phase                               \_______/       \_______/
 --                                                   _______         ___
 --  adc_phase_o ____________________________________/       \_______/
 --
@@ -32,16 +34,18 @@ entity adc_phase is
 end;
 
 architecture adc_phase of adc_phase is
-    signal adc_phase_reset : std_logic := '0';
+    signal adc_phase_ok_in : std_logic := '0';
+    signal adc_phase_ok : std_logic := '0';
     signal adc_phase : std_logic := '0';
 
 begin
     -- Phase reset detection.
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            adc_phase_reset <= not dsp_clk_ok_i;
-            if adc_phase_reset = '1' then
-                adc_phase <= '0';
+            adc_phase_ok_in <= dsp_clk_ok_i;
+            adc_phase_ok <= adc_phase_ok_in;
+            if adc_phase_ok = '0' then
+                adc_phase <= '1';
             else
                 adc_phase <= not adc_phase;
             end if;
