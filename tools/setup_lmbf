@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+
+# Simple LMBF test setup
+
+from driver import REGS
+
+import setup_pll
+import setup_adc
+import setup_dac
+
+
+# Hardware initialisation
+def setup_fmc500():
+    setup_pll.setup_pll()
+    setup_adc.setup_adc()
+    setup_dac.setup_dac()
+
+
+# Configure ADC FIR for passthrough
+def setup_fast_fir(dsp, offset, taps):
+    dsp[0] = 1          # Start write
+    # Write 1 0 ... 0
+    dsp[offset] = 0x7FFFFFFF
+    for n in range(taps-1):
+        dsp[offset] = 0
+
+def setup_bunch_control(dsp, max_bunch):
+    dsp[4] = max_bunch
+    dsp[0] = 1
+    for b in range(max_bunch+1):
+        dsp[5] = 0x7FFFFFF0
+        dsp[5] = 0x7FFFFFF0
+
+def setup_bunch_fir(dsp, taps):
+    dsp[7] = 0
+    dsp[8] = 0x7FFFFFFF
+    for t in range(taps-1):
+        dsp[8] = 0
+
+def setup_dac_output(dsp):
+    dsp[9] = 0x02000000
+
+
+DSP0 = REGS[2, :]
+DSP1 = REGS[3, :]
+
+setup_fmc500()
+
+for dsp in [DSP0, DSP1]:
+    setup_fast_fir(dsp, 3, 8)       # ADC compensation filter
+    setup_fast_fir(dsp, 10, 8)      # DAC pre-emphasis filter
+    setup_bunch_control(dsp, 467)
+    setup_bunch_fir(dsp, 16)

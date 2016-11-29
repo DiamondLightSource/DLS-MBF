@@ -211,5 +211,10 @@ class Settings(SettingsBase):
 #     out12_13.DCLK_DIV = 1
 
 
-s = Settings(PLL)
-s.write_config()
+def setup_pll():
+    s = Settings(PLL)
+    s.write_config()
+
+
+if __name__ == '__main__':
+    setup_pll()
