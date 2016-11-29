@@ -33,12 +33,13 @@ def setup_bunch_control(dsp, max_bunch):
 
 def setup_bunch_fir(dsp, taps):
     dsp[7] = 0
+    dsp[0] = 1
     dsp[8] = 0x7FFFFFFF
     for t in range(taps-1):
         dsp[8] = 0
 
 def setup_dac_output(dsp):
-    dsp[9] = 0x02000000
+    dsp[9] = 0x02F00000
 
 
 DSP0 = REGS[2, :]

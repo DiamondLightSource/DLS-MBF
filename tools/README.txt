@@ -193,7 +193,9 @@ W   5       Configure selected bank
     5[6]        Enable NCO1 output
     5[31:19]    Output gain
 
--   6           (unused)
+RW  6       Configure capture to DDR0
+    6[1:0]      Select capture source: 0 => ADC, 1 => FIR, 2 => DAC
+    6[7:4]      Scaling factor for FIR capture
 
 RW  7       Bunch by bunch FIR control parameters
     7[1:0]      FIR bank to be written
