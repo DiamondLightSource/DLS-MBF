@@ -40,6 +40,7 @@ def setup_bunch_fir(dsp, taps):
 
 def setup_dac_output(dsp):
     dsp[9] = 0x02F00000
+    dsp[11] = 8
 
 
 DSP0 = REGS[2, :]
@@ -52,3 +53,4 @@ for dsp in [DSP0, DSP1]:
     setup_fast_fir(dsp, 10, 8)      # DAC pre-emphasis filter
     setup_bunch_control(dsp, 467)
     setup_bunch_fir(dsp, 16)
+    setup_dac_output(dsp)

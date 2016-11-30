@@ -22,18 +22,19 @@ end;
 
 architecture dsp_loopback of dsp_loopback is
     signal loopback : std_logic;
+    signal output_enable : std_logic;
 
 begin
-    -- Make the loopback control untimed to avoid the usual trouble.
+    -- Make the controls untimed to avoid the usual trouble.
     untimed_inst : entity work.untimed_reg generic map (
-        WIDTH => 1
+        WIDTH => 2
     ) port map (
-        clk_in_i => adc_clk_i,
-        clk_out_i => dsp_clk_i,
-
+        clk_i => dsp_clk_i,
         write_i => '1',
         data_i(0) => loopback_i,
-        data_o(0) => loopback
+        data_i(1) => output_enable_i,
+        data_o(0) => loopback,
+        data_o(1) => output_enable
     );
 
     process (adc_clk_i) begin
@@ -44,7 +45,7 @@ begin
                 when others =>
             end case;
 
-            if output_enable_i = '1' then
+            if output_enable = '1' then
                 dac_data_o <= dac_data_i;
             else
                 dac_data_o <= (dac_data_o'RANGE => '0');

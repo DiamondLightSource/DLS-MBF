@@ -11,8 +11,7 @@ entity untimed_reg is
         WIDTH : natural
     );
     port (
-        clk_in_i : in std_logic;        -- Clock for data_i and write_i
-        clk_out_i : in std_logic;       -- Clock for data_o
+        clk_i : in std_logic;
 
         write_i : in std_logic;
         data_i : in std_logic_vector(WIDTH-1 downto 0);
@@ -21,32 +20,23 @@ entity untimed_reg is
 end;
 
 architecture untimed_reg of untimed_reg is
-    -- Note that the signal names here and the fact that they name actual
-    -- registers are used by the constraints file, where an explicit timing
-    -- "false path" is created between these two names.
-    signal false_path_register_from : std_logic_vector(WIDTH-1 downto 0)
-        := (others => '0');
-    signal false_path_register_to   : std_logic_vector(WIDTH-1 downto 0)
+    -- Note that the signal name here and the fact that it names an actual
+    -- register are used by the constraints file, where an explicit timing
+    -- "false path" is created from this register to all other flip-flops.
+    signal false_path_register : std_logic_vector(WIDTH-1 downto 0)
         := (others => '0');
 
-    -- Ensure our registers don't get eaten by optimisation.
+    -- Ensure our register doesn't get eaten by optimisation.
     attribute KEEP : string;
-    attribute KEEP of false_path_register_from : signal is "true";
-    attribute KEEP of false_path_register_to   : signal is "true";
+    attribute KEEP of false_path_register : signal is "true";
 
 begin
-    process (clk_in_i) begin
-        if rising_edge(clk_in_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             if write_i = '1' then
-                false_path_register_from <= data_i;
+                false_path_register <= data_i;
             end if;
         end if;
     end process;
-
-    process (clk_out_i) begin
-        if rising_edge(clk_out_i) then
-            false_path_register_to <= false_path_register_from;
-        end if;
-    end process;
-    data_o <= false_path_register_to;
+    data_o <= false_path_register;
 end;

@@ -87,8 +87,7 @@ begin
     untimed_inst : entity work.untimed_reg generic map (
         WIDTH => REG_DATA_WIDTH
     ) port map (
-        clk_in_i => dsp_clk_i,
-        clk_out_i => adc_clk_i,
+        clk_i => dsp_clk_i,
         write_i => '1',
         data_i => limit_register_in,
         data_o => limit_register
