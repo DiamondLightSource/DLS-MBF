@@ -68,6 +68,7 @@ architecture dsp_top of dsp_top is
     signal delta_reset : std_logic;
 
     signal loopback : std_logic;
+    signal dac_output_enable : std_logic;
 
     -- Trigger signals
     signal sync_trigger : std_logic;
@@ -101,6 +102,7 @@ architecture dsp_top of dsp_top is
     signal adc_data_in : signed(adc_data_i'RANGE);
     signal fir_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
     signal dac_data_store : signed_array(LANES)(DAC_OUT_WIDTH-1 downto 0);
+    signal dac_data_out : signed(dac_data_o'RANGE);
 
 
     -- Hacks
@@ -222,18 +224,6 @@ begin
     -- -------------------------------------------------------------------------
     -- Signal processing chain
 
-    -- Loopback enable for internal testing
-    loopback_inst : entity work.dsp_loopback port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-
-        loopback_i => loopback,
-        adc_data_i => adc_data_i,
-        dac_data_i => dac_data_o,
-        adc_data_o => adc_data_in
-    );
-
-
     -- ADC input processing
     adc_top_inst : entity work.adc_top generic map (
         TAP_COUNT => ADC_FIR_TAP_COUNT
@@ -301,7 +291,7 @@ begin
         nco_1_data_i => control_to_dsp_i.nco_1_data,
 
         data_store_o => dac_data_store,
-        data_o => dac_data_o,
+        data_o => dac_data_out,
         fir_overflow_o => dac_fir_overflow,
         mux_overflow_o => dac_mux_overflow,
         mms_overflow_o => dac_mms_overflow,
@@ -317,6 +307,21 @@ begin
         write_start_i => write_start
     );
 
+
+    -- Loopback enable for internal testing and output control
+    loopback_inst : entity work.dsp_loopback port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        loopback_i => loopback,
+        output_enable_i => dac_output_enable,
+
+        adc_data_i => adc_data_i,
+        dac_data_i => dac_data_out,
+
+        adc_data_o => adc_data_in,
+        dac_data_o => dac_data_o
+    );
 
 
     -- -------------------------------------------------------------------------
@@ -336,6 +341,8 @@ begin
 
     current_bank <= unsigned(hack_registers(0)(1 downto 0));
     loopback <= hack_registers(0)(2);
+    dac_output_enable <= hack_registers(0)(3);
+
     nco_0_phase_advance <= unsigned(hack_registers(1));
     nco_1_phase_advance <= unsigned(hack_registers(2));
 

@@ -126,13 +126,6 @@ begin
         -- Initialise ADC FIR with passthrough.
         clk_wait(dsp_clk, 10);
         write_reg(0, X"00000001");
-        write_reg(3, X"00000000");
-        write_reg(3, X"00000000");
-        write_reg(3, X"00000000");
-        write_reg(3, X"00000000");
-        write_reg(3, X"00000000");
-        write_reg(3, X"00000000");
-        write_reg(3, X"00000000");
         write_reg(3, X"7FFFFFFF");
 
         -- Configure bunch control
@@ -157,14 +150,10 @@ begin
 
         -- Initialise DAC FIR
         write_reg(0, X"00000001");
-        write_reg(10, X"00000000");
-        write_reg(10, X"00000000");
-        write_reg(10, X"00000000");
-        write_reg(10, X"00000000");
-        write_reg(10, X"00000000");
-        write_reg(10, X"00000000");
-        write_reg(10, X"00000000");
         write_reg(10, X"7FFFFFFF");
+
+        -- Enable DAC output
+        write_reg(11, X"00000008");
 
         -- Set both oscillator frequencies
         write_reg(12, X"01000000");

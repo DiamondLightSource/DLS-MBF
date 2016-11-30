@@ -10,9 +10,13 @@ entity dsp_loopback is
         dsp_clk_i : in std_logic;
 
         loopback_i : in std_logic;
+        output_enable_i : in std_logic;
+
         adc_data_i : in signed;
         dac_data_i : in signed;
-        adc_data_o : out signed
+
+        adc_data_o : out signed;
+        dac_data_o : out signed
     );
 end;
 
@@ -39,6 +43,12 @@ begin
                 when '1' => adc_data_o <= dac_data_i(15 downto 2);
                 when others =>
             end case;
+
+            if output_enable_i = '1' then
+                dac_data_o <= dac_data_i;
+            else
+                dac_data_o <= (dac_data_o'RANGE => '0');
+            end if;
         end if;
     end process;
 end;

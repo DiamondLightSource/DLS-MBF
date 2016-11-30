@@ -75,12 +75,10 @@ vsim -t 1ps \
 
 view wave
 
-add wave -group "ADC Phase" sim:/testbench/adc_phase_inst/*
 add wave -group "Bunch" sim:/testbench/dsp_top_inst/bunch_select_inst/*
 add wave -group "Bunch Mem" \
     sim:/testbench/dsp_top_inst/bunch_select_inst/bunch_mem/*
 add wave -group "ADC Top" sim:/testbench/dsp_top_inst/adc_top_inst/*
-add wave -group "DAC Top" sim:/testbench/dsp_top_inst/dac_top_inst/*
 add wave -group "FIR Top" sim:/testbench/dsp_top_inst/bunch_fir_top_inst/*
 add wave -group "Bunch FIR" \
     sim:/testbench/dsp_top_inst/bunch_fir_top_inst/lanes_gen(0)/fir_inst/*
@@ -88,6 +86,9 @@ add wave -group "Bunch FIR dly(1)" \
     sim:/testbench/dsp_top_inst/bunch_fir_top_inst/lanes_gen(0)/fir_inst/delay_gen(1)/data_delay_inst/*
 add wave -group "Bunch FIR taps" \
     sim:/testbench/dsp_top_inst/bunch_fir_top_inst/bunch_fir_taps_inst/*
+add wave -group "DAC Top" sim:/testbench/dsp_top_inst/dac_top_inst/*
+add wave -group "DAC Mux" \
+    sim:/testbench/dsp_top_inst/dac_top_inst/lanes_gen(0)/dac_output_mux_inst/*
 add wave -group "DSP Top" sim:/testbench/dsp_top_inst/*
 add wave -group "Top" sim:*
 
