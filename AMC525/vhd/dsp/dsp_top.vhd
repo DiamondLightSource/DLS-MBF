@@ -67,6 +67,8 @@ architecture dsp_top of dsp_top is
     signal write_start : std_logic;
     signal delta_reset : std_logic;
 
+    signal loopback : std_logic;
+
     -- Trigger signals
     signal sync_trigger : std_logic;
 
@@ -96,6 +98,7 @@ architecture dsp_top of dsp_top is
     signal nco_1_cos_sin : cos_sin_18_lanes_t;
 
     -- Data flow
+    signal adc_data_in : signed(adc_data_i'RANGE);
     signal fir_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
     signal dac_data_store : signed_array(LANES)(DAC_OUT_WIDTH-1 downto 0);
 
@@ -219,6 +222,18 @@ begin
     -- -------------------------------------------------------------------------
     -- Signal processing chain
 
+    -- Loopback enable for internal testing
+    loopback_inst : entity work.dsp_loopback port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        loopback_i => loopback,
+        adc_data_i => adc_data_i,
+        dac_data_i => dac_data_o,
+        adc_data_o => adc_data_in
+    );
+
+
     -- ADC input processing
     adc_top_inst : entity work.adc_top generic map (
         TAP_COUNT => ADC_FIR_TAP_COUNT
@@ -228,7 +243,7 @@ begin
         adc_phase_i => adc_phase_i,
         turn_clock_i => turn_clock,
 
-        data_i => adc_data_i,
+        data_i => adc_data_in,
         data_o => dsp_to_control_o.adc_data,
 
         write_strobe_i => write_strobe_i(ADC_REGS),
@@ -320,6 +335,7 @@ begin
 
 
     current_bank <= unsigned(hack_registers(0)(1 downto 0));
+    loopback <= hack_registers(0)(2);
     nco_0_phase_advance <= unsigned(hack_registers(1));
     nco_1_phase_advance <= unsigned(hack_registers(2));
 
