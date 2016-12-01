@@ -85,24 +85,16 @@ architecture top of top is
 
     -- Wiring from DSP slow write master to AXI DDR1 slave
     signal DSP_DDR1_awaddr : std_logic_vector(47 downto 0);
-    signal DSP_DDR1_awburst : std_logic_vector(1 downto 0);
-    signal DSP_DDR1_awcache : std_logic_vector(3 downto 0);
-    signal DSP_DDR1_awlen : std_logic_vector(7 downto 0);
-    signal DSP_DDR1_awlock : std_logic_vector(0 downto 0);
     signal DSP_DDR1_awprot : std_logic_vector(2 downto 0);
-    signal DSP_DDR1_awqos : std_logic_vector(3 downto 0);
-    signal DSP_DDR1_awregion : std_logic_vector(3 downto 0);
-    signal DSP_DDR1_awsize : std_logic_vector(2 downto 0);
     signal DSP_DDR1_awready : std_logic;
     signal DSP_DDR1_awvalid : std_logic;
-    signal DSP_DDR1_wdata : std_logic_vector(63 downto 0);
-    signal DSP_DDR1_wlast : std_logic;
-    signal DSP_DDR1_wstrb : std_logic_vector(7 downto 0);
-    signal DSP_DDR1_wready : std_logic;
-    signal DSP_DDR1_wvalid : std_logic;
-    signal DSP_DDR1_bresp : std_logic_vector(1 downto 0);
     signal DSP_DDR1_bready : std_logic;
+    signal DSP_DDR1_bresp : std_logic_vector(1 downto 0);
     signal DSP_DDR1_bvalid : std_logic;
+    signal DSP_DDR1_wdata : std_logic_vector(63 downto 0);
+    signal DSP_DDR1_wready : std_logic;
+    signal DSP_DDR1_wstrb : std_logic_vector(7 downto 0);
+    signal DSP_DDR1_wvalid : std_logic;
 
     -- Internal register path from AXI conversion
     signal REGS_write_strobe : std_logic_vector(MOD_ADDR_RANGE);
@@ -422,23 +414,15 @@ begin
         S_DSP_DDR0_bready => DSP_DDR0_bready,
         S_DSP_DDR0_bvalid => DSP_DDR0_bvalid,
 
-        -- AXI slave interface to DDR block 1
+        -- AXI-Lite slave interface to DDR block 1
         S_DSP_DDR1_awaddr => DSP_DDR1_awaddr,
-        S_DSP_DDR1_awburst => DSP_DDR1_awburst,
-        S_DSP_DDR1_awcache => DSP_DDR1_awcache,
-        S_DSP_DDR1_awlen => DSP_DDR1_awlen,
-        S_DSP_DDR1_awlock => DSP_DDR1_awlock,
         S_DSP_DDR1_awprot => DSP_DDR1_awprot,
-        S_DSP_DDR1_awqos => DSP_DDR1_awqos,
         S_DSP_DDR1_awready => DSP_DDR1_awready,
-        S_DSP_DDR1_awregion => DSP_DDR1_awregion,
-        S_DSP_DDR1_awsize => DSP_DDR1_awsize,
         S_DSP_DDR1_awvalid => DSP_DDR1_awvalid,
         S_DSP_DDR1_bready => DSP_DDR1_bready,
         S_DSP_DDR1_bresp => DSP_DDR1_bresp,
         S_DSP_DDR1_bvalid => DSP_DDR1_bvalid,
         S_DSP_DDR1_wdata => DSP_DDR1_wdata,
-        S_DSP_DDR1_wlast => DSP_DDR1_wlast,
         S_DSP_DDR1_wready => DSP_DDR1_wready,
         S_DSP_DDR1_wstrb => DSP_DDR1_wstrb,
         S_DSP_DDR1_wvalid => DSP_DDR1_wvalid,
@@ -536,21 +520,13 @@ begin
 
     -- Dummy wiring for unused DDR1 DRAM connections
     DSP_DDR1_awaddr <= (others => '0');
-    DSP_DDR1_awburst <= (others => '0');
-    DSP_DDR1_awcache <= (others => '0');
-    DSP_DDR1_awlen <= (others => '0');
-    DSP_DDR1_awlock <= (others => '0');
     DSP_DDR1_awprot <= (others => '0');
-    DSP_DDR1_awqos <= (others => '0');
 --     DSP_DDR1_awready <= open;
-    DSP_DDR1_awregion <= (others => '0');
-    DSP_DDR1_awsize <= (others => '0');
     DSP_DDR1_awvalid <= '0';
     DSP_DDR1_bready <= '0';
 --     DSP_DDR1_bresp <= open;
 --     DSP_DDR1_bvalid <= open;
     DSP_DDR1_wdata <= (others => '0');
-    DSP_DDR1_wlast <= '0';
 --     DSP_DDR1_wready <= open;
     DSP_DDR1_wstrb <= (others => '0');
     DSP_DDR1_wvalid <= '0';

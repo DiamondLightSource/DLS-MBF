@@ -586,11 +586,20 @@ CONFIG.STRATEGY {0} \
 CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
  ] $dsp_ddr1_cc
 
+  # Create instance: dsp_ddr1_pc, and set properties
+  set dsp_ddr1_pc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_protocol_converter:2.1 dsp_ddr1_pc ]
+  set_property -dict [ list \
+CONFIG.MI_PROTOCOL {AXI4} \
+CONFIG.SI_PROTOCOL {AXI4LITE} \
+CONFIG.TRANSLATION_MODE {2} \
+ ] $dsp_ddr1_pc
+
   # Create interface connections
   connect_bd_intf_net -intf_net S_DMA_1 [get_bd_intf_pins S_DMA] [get_bd_intf_pins dma_xbar/S00_AXI]
   connect_bd_intf_net -intf_net S_DSP_DDR0_1 [get_bd_intf_pins S_DSP_DDR0] [get_bd_intf_pins ddr0_us/S_AXI]
-  connect_bd_intf_net -intf_net S_DSP_DDR1_1 [get_bd_intf_pins S_DSP_DDR1] [get_bd_intf_pins dsp_ddr1_cc/S_AXI]
+  connect_bd_intf_net -intf_net S_DSP_DDR1_1 [get_bd_intf_pins S_DSP_DDR1] [get_bd_intf_pins dsp_ddr1_pc/S_AXI]
   connect_bd_intf_net -intf_net auto_ds_M_AXI [get_bd_intf_pins dma_ddr1_cc/S_AXI] [get_bd_intf_pins dma_ddr1_ds/M_AXI]
+  connect_bd_intf_net -intf_net axi_protocol_converter_0_M_AXI [get_bd_intf_pins dsp_ddr1_cc/S_AXI] [get_bd_intf_pins dsp_ddr1_pc/M_AXI]
   connect_bd_intf_net -intf_net ddr0_buf_M_AXI [get_bd_intf_pins M_DDR0] [get_bd_intf_pins ddr0_buf/M_AXI]
   connect_bd_intf_net -intf_net ddr0_crossbar_M00_AXI [get_bd_intf_pins ddr0_buf/S_AXI] [get_bd_intf_pins ddr0_crossbar/M00_AXI]
   connect_bd_intf_net -intf_net ddr0_us_M_AXI [get_bd_intf_pins ddr0_crossbar/S00_AXI] [get_bd_intf_pins ddr0_us/M_AXI]
@@ -611,8 +620,8 @@ CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
   connect_bd_net -net DDR1_ARESETN_1 [get_bd_pins DDR1_ARESETN] [get_bd_pins ddr1_buf/aresetn] [get_bd_pins ddr1_crossbar/aresetn] [get_bd_pins dma_ddr1_cc/m_axi_aresetn] [get_bd_pins dsp_ddr1_cc/m_axi_aresetn]
   connect_bd_net -net DMA_ACLK_1 [get_bd_pins DMA_ACLK] [get_bd_pins dma_buf/aclk] [get_bd_pins dma_ddr0_cc/s_axi_aclk] [get_bd_pins dma_ddr1_cc/s_axi_aclk] [get_bd_pins dma_ddr1_ds/s_axi_aclk] [get_bd_pins dma_xbar/aclk]
   connect_bd_net -net DMA_ARESETN_1 [get_bd_pins DMA_ARESETN] [get_bd_pins dma_buf/aresetn] [get_bd_pins dma_ddr0_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_ds/s_axi_aresetn] [get_bd_pins dma_xbar/aresetn]
-  connect_bd_net -net DSP_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins ddr0_us/s_axi_aresetn] [get_bd_pins dsp_ddr1_cc/s_axi_aresetn]
-  connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins ddr0_us/s_axi_aclk] [get_bd_pins dsp_ddr1_cc/s_axi_aclk]
+  connect_bd_net -net DSP_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins ddr0_us/s_axi_aresetn] [get_bd_pins dsp_ddr1_cc/s_axi_aresetn] [get_bd_pins dsp_ddr1_pc/aresetn]
+  connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins ddr0_us/s_axi_aclk] [get_bd_pins dsp_ddr1_cc/s_axi_aclk] [get_bd_pins dsp_ddr1_pc/aclk]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1086,10 +1095,10 @@ CONFIG.HAS_REGION {0} \
 CONFIG.HAS_RRESP {0} \
 CONFIG.HAS_WSTRB {0} \
 CONFIG.ID_WIDTH {0} \
-CONFIG.MAX_BURST_LENGTH {256} \
+CONFIG.MAX_BURST_LENGTH {1} \
 CONFIG.NUM_READ_OUTSTANDING {7} \
 CONFIG.NUM_WRITE_OUTSTANDING {7} \
-CONFIG.PROTOCOL {AXI4} \
+CONFIG.PROTOCOL {AXI4LITE} \
 CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
 CONFIG.RUSER_WIDTH {0} \
 CONFIG.SUPPORTS_NARROW_BURST {0} \
