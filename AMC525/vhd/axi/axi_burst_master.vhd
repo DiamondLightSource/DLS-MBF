@@ -3,6 +3,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+
 use work.defines.all;
 use work.support.all;
 
@@ -10,7 +11,6 @@ entity axi_burst_master is
     generic (
         DATA_WIDTH : natural := 64;
         RAM_ADDR_WIDTH : natural := 31;
---         BURST_LENGTH : natural := 256;
         BURST_LENGTH : natural := 32
     );
     port (

@@ -13,7 +13,7 @@ entity sync_reset is
         clk_ok_i : in std_logic;        -- Asynchronous reset
         sync_clk_ok_o : out std_logic   -- Synchronised reset
     );
-end entity;
+end;
 
 architecture sync_reset of sync_reset is
     signal clk_ok_meta : std_logic;

@@ -12,7 +12,7 @@ entity sync_bit is
         bit_i : in std_logic;
         bit_o : out std_logic := '0'
     );
-end entity;
+end;
 
 architecture rtl of sync_bit is
     signal bit_meta : std_logic := '0';
