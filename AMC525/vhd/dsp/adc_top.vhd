@@ -60,7 +60,7 @@ architecture adc_top of adc_top is
     constant LIMIT_REG_W : natural := 0;
     constant TAPS_REG_W : natural := 1;
 
-    subtype DATA_OUT_RANGE is natural range data_o(0)'RANGE;
+    subtype DATA_OUT_RANGE is natural range data_o'ELEMENT'RANGE;
 
     signal limit_register_in : reg_data_t;
     signal limit_register : reg_data_t;
