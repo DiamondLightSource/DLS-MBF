@@ -9,7 +9,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/defines.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/edge_detect.vhd \
-    $vhd_dir/axi_burst_master.vhd \
+    $vhd_dir/axi/axi_burst_master.vhd \
 
 # The test bench
 vcom -64 -2008 -work xil_defaultlib \

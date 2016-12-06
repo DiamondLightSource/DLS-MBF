@@ -22,49 +22,49 @@ architecture STRUCTURE of interconnect_tb is
     end procedure;
 
 
-    signal DSP_DDR0_araddr     : STD_LOGIC_VECTOR ( 47 downto 0 );
-    signal DSP_DDR0_arburst    : STD_LOGIC_VECTOR ( 1 downto 0 );
-    signal DSP_DDR0_arcache    : STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_arid :  STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_arlen : STD_LOGIC_VECTOR ( 7 downto 0 );
-    signal DSP_DDR0_arlock : STD_LOGIC_VECTOR ( 0 to 0 );
-    signal DSP_DDR0_arprot : STD_LOGIC_VECTOR ( 2 downto 0 );
-    signal DSP_DDR0_arqos :  STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_arready :  STD_LOGIC;
-    signal DSP_DDR0_arregion : STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_arsize :  STD_LOGIC_VECTOR ( 2 downto 0 );
-    signal DSP_DDR0_arvalid :  STD_LOGIC;
-    signal DSP_DDR0_awaddr :  STD_LOGIC_VECTOR ( 47 downto 0 );
-    signal DSP_DDR0_awburst :  STD_LOGIC_VECTOR ( 1 downto 0 );
-    signal DSP_DDR0_awcache :  STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_awid :  STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_awlen :  STD_LOGIC_VECTOR ( 7 downto 0 );
-    signal DSP_DDR0_awlock :  STD_LOGIC_VECTOR ( 0 to 0 );
-    signal DSP_DDR0_awprot :  STD_LOGIC_VECTOR ( 2 downto 0 );
-    signal DSP_DDR0_awqos :  STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_awready :  STD_LOGIC;
-    signal DSP_DDR0_awregion :  STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_awsize :  STD_LOGIC_VECTOR ( 2 downto 0 );
-    signal DSP_DDR0_awvalid :  STD_LOGIC;
-    signal DSP_DDR0_bid :  STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_bready :  STD_LOGIC;
-    signal DSP_DDR0_bresp :  STD_LOGIC_VECTOR ( 1 downto 0 );
-    signal DSP_DDR0_bvalid :  STD_LOGIC;
-    signal DSP_DDR0_rdata : STD_LOGIC_VECTOR ( 63 downto 0 );
-    signal DSP_DDR0_rid : STD_LOGIC_VECTOR ( 3 downto 0 );
-    signal DSP_DDR0_rlast : STD_LOGIC;
-    signal DSP_DDR0_rready : STD_LOGIC;
-    signal DSP_DDR0_rresp : STD_LOGIC_VECTOR ( 1 downto 0 );
-    signal DSP_DDR0_rvalid : STD_LOGIC;
-    signal DSP_DDR0_wdata : STD_LOGIC_VECTOR ( 63 downto 0 );
-    signal DSP_DDR0_wlast : STD_LOGIC;
-    signal DSP_DDR0_wready : STD_LOGIC;
-    signal DSP_DDR0_wstrb : STD_LOGIC_VECTOR ( 7 downto 0 );
-    signal DSP_DDR0_wvalid : STD_LOGIC;
+    signal DSP_DDR0_araddr : std_logic_vector(47 downto 0);
+    signal DSP_DDR0_arburst : std_logic_vector(1 downto 0);
+    signal DSP_DDR0_arcache : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_arid : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_arlen : std_logic_vector(7 downto 0);
+    signal DSP_DDR0_arlock : std_logic_vector(0 to 0);
+    signal DSP_DDR0_arprot : std_logic_vector(2 downto 0);
+    signal DSP_DDR0_arqos : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_arready : std_logic;
+    signal DSP_DDR0_arregion : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_arsize : std_logic_vector(2 downto 0);
+    signal DSP_DDR0_arvalid : std_logic;
+    signal DSP_DDR0_awaddr : std_logic_vector(47 downto 0);
+    signal DSP_DDR0_awburst : std_logic_vector(1 downto 0);
+    signal DSP_DDR0_awcache : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_awid : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_awlen : std_logic_vector(7 downto 0);
+    signal DSP_DDR0_awlock : std_logic_vector(0 to 0);
+    signal DSP_DDR0_awprot : std_logic_vector(2 downto 0);
+    signal DSP_DDR0_awqos : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_awready : std_logic;
+    signal DSP_DDR0_awregion : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_awsize : std_logic_vector(2 downto 0);
+    signal DSP_DDR0_awvalid : std_logic;
+    signal DSP_DDR0_bid : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_bready : std_logic;
+    signal DSP_DDR0_bresp : std_logic_vector(1 downto 0);
+    signal DSP_DDR0_bvalid : std_logic;
+    signal DSP_DDR0_rdata : std_logic_vector(63 downto 0);
+    signal DSP_DDR0_rid : std_logic_vector(3 downto 0);
+    signal DSP_DDR0_rlast : std_logic;
+    signal DSP_DDR0_rready : std_logic;
+    signal DSP_DDR0_rresp : std_logic_vector(1 downto 0);
+    signal DSP_DDR0_rvalid : std_logic;
+    signal DSP_DDR0_wdata : std_logic_vector(63 downto 0);
+    signal DSP_DDR0_wlast : std_logic;
+    signal DSP_DDR0_wready : std_logic;
+    signal DSP_DDR0_wstrb : std_logic_vector(7 downto 0);
+    signal DSP_DDR0_wvalid : std_logic;
 
-    signal adc_clk : STD_LOGIC := '0';
-    signal dsp_clk : STD_LOGIC := '0';
-    signal dsp_reset_n : STD_LOGIC := '0';
+    signal adc_clk : std_logic := '0';
+    signal dsp_clk : std_logic := '0';
+    signal dsp_reset_n : std_logic := '0';
 
     signal adc_data_a : unsigned(13 downto 0) := (others => '0');
     signal adc_data_b : unsigned(13 downto 0) := (others => '0');
@@ -109,44 +109,44 @@ begin
     DSP_DDR0_rready <= '1';
 
     interconnect_i: entity work.interconnect port map (
-        S_AXI_araddr(47 downto 0) => DSP_DDR0_araddr(47 downto 0),
-        S_AXI_arburst(1 downto 0) => DSP_DDR0_arburst(1 downto 0),
-        S_AXI_arcache(3 downto 0) => DSP_DDR0_arcache(3 downto 0),
-        S_AXI_arid(3 downto 0) => DSP_DDR0_arid(3 downto 0),
-        S_AXI_arlen(7 downto 0) => DSP_DDR0_arlen(7 downto 0),
-        S_AXI_arlock(0) => DSP_DDR0_arlock(0),
-        S_AXI_arprot(2 downto 0) => DSP_DDR0_arprot(2 downto 0),
-        S_AXI_arqos(3 downto 0) => DSP_DDR0_arqos(3 downto 0),
+        S_AXI_araddr => DSP_DDR0_araddr,
+        S_AXI_arburst => DSP_DDR0_arburst,
+        S_AXI_arcache => DSP_DDR0_arcache,
+        S_AXI_arid => DSP_DDR0_arid,
+        S_AXI_arlen => DSP_DDR0_arlen,
+        S_AXI_arlock => DSP_DDR0_arlock,
+        S_AXI_arprot => DSP_DDR0_arprot,
+        S_AXI_arqos => DSP_DDR0_arqos,
         S_AXI_arready => DSP_DDR0_arready,
-        S_AXI_arregion(3 downto 0) => DSP_DDR0_arregion(3 downto 0),
-        S_AXI_arsize(2 downto 0) => DSP_DDR0_arsize(2 downto 0),
+        S_AXI_arregion => DSP_DDR0_arregion,
+        S_AXI_arsize => DSP_DDR0_arsize,
         S_AXI_arvalid => DSP_DDR0_arvalid,
-        S_AXI_awaddr(47 downto 0) => DSP_DDR0_awaddr(47 downto 0),
-        S_AXI_awburst(1 downto 0) => DSP_DDR0_awburst(1 downto 0),
-        S_AXI_awcache(3 downto 0) => DSP_DDR0_awcache(3 downto 0),
-        S_AXI_awid(3 downto 0) => DSP_DDR0_awid(3 downto 0),
-        S_AXI_awlen(7 downto 0) => DSP_DDR0_awlen(7 downto 0),
-        S_AXI_awlock(0) => DSP_DDR0_awlock(0),
-        S_AXI_awprot(2 downto 0) => DSP_DDR0_awprot(2 downto 0),
-        S_AXI_awqos(3 downto 0) => DSP_DDR0_awqos(3 downto 0),
+        S_AXI_awaddr => DSP_DDR0_awaddr,
+        S_AXI_awburst => DSP_DDR0_awburst,
+        S_AXI_awcache => DSP_DDR0_awcache,
+        S_AXI_awid => DSP_DDR0_awid,
+        S_AXI_awlen => DSP_DDR0_awlen,
+        S_AXI_awlock => DSP_DDR0_awlock,
+        S_AXI_awprot => DSP_DDR0_awprot,
+        S_AXI_awqos => DSP_DDR0_awqos,
         S_AXI_awready => DSP_DDR0_awready,
-        S_AXI_awregion(3 downto 0) => DSP_DDR0_awregion(3 downto 0),
-        S_AXI_awsize(2 downto 0) => DSP_DDR0_awsize(2 downto 0),
+        S_AXI_awregion => DSP_DDR0_awregion,
+        S_AXI_awsize => DSP_DDR0_awsize,
         S_AXI_awvalid => DSP_DDR0_awvalid,
-        S_AXI_bid(3 downto 0) => DSP_DDR0_bid(3 downto 0),
+        S_AXI_bid => DSP_DDR0_bid,
         S_AXI_bready => DSP_DDR0_bready,
-        S_AXI_bresp(1 downto 0) => DSP_DDR0_bresp(1 downto 0),
+        S_AXI_bresp => DSP_DDR0_bresp,
         S_AXI_bvalid => DSP_DDR0_bvalid,
-        S_AXI_rdata(63 downto 0) => DSP_DDR0_rdata(63 downto 0),
-        S_AXI_rid(3 downto 0) => DSP_DDR0_rid(3 downto 0),
+        S_AXI_rdata => DSP_DDR0_rdata,
+        S_AXI_rid => DSP_DDR0_rid,
         S_AXI_rlast => DSP_DDR0_rlast,
         S_AXI_rready => DSP_DDR0_rready,
-        S_AXI_rresp(1 downto 0) => DSP_DDR0_rresp(1 downto 0),
+        S_AXI_rresp => DSP_DDR0_rresp,
         S_AXI_rvalid => DSP_DDR0_rvalid,
-        S_AXI_wdata(63 downto 0) => DSP_DDR0_wdata(63 downto 0),
+        S_AXI_wdata => DSP_DDR0_wdata,
         S_AXI_wlast => DSP_DDR0_wlast,
         S_AXI_wready => DSP_DDR0_wready,
-        S_AXI_wstrb(7 downto 0) => DSP_DDR0_wstrb(7 downto 0),
+        S_AXI_wstrb => DSP_DDR0_wstrb,
         S_AXI_wvalid => DSP_DDR0_wvalid,
         s_axi_aclk => dsp_clk,
         s_axi_aresetn => dsp_reset_n
