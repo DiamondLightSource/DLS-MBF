@@ -139,11 +139,6 @@ package support is
     function compute_strobe(index : natural; length : natural)
         return std_logic_vector;
 
-
-    -- Compute min and max of numbers
-    function min(a, b : natural) return natural;
-    function max(a, b : natural) return natural;
-
 end;
 
 
@@ -396,25 +391,5 @@ package body support is
         result(index) := '1';
         return result;
     end;
-
-    -- Compute min and max of numbers
-    function min(a, b : natural) return natural is
-    begin
-        if a <= b then
-            return a;
-        else
-            return b;
-        end if;
-    end;
-
-    function max(a, b : natural) return natural is
-    begin
-        if a >= b then
-            return a;
-        else
-            return b;
-        end if;
-    end;
-
 
 end;

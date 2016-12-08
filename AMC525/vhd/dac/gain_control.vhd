@@ -30,7 +30,7 @@ architecture gain_control of gain_control is
     -- shifts of the input data
     constant WIDTH_IN_MIN : natural :=
         WIDTH_OUT + (SEL_COUNT - 1) * INTERVAL + EXTRA_SHIFT;
-    constant WIDTH_IN_MAX : natural := max(WIDTH_IN_MIN, WIDTH_IN);
+    constant WIDTH_IN_MAX : natural := maximum(WIDTH_IN_MIN, WIDTH_IN);
 
     -- Input shifting using a generated barrel shifter.
     signal gain : natural range 0 to SEL_COUNT-1;
