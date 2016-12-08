@@ -144,7 +144,7 @@ package support is
     function min(a, b : natural) return natural;
     function max(a, b : natural) return natural;
 
-end package;
+end;
 
 
 package body support is
@@ -417,4 +417,4 @@ package body support is
     end;
 
 
-end package body;
+end;

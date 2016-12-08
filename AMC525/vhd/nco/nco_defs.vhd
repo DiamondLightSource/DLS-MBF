@@ -39,4 +39,4 @@ package nco_defs is
     -- 10 bit lookup
     subtype cos_sin_addr_t is unsigned(9 downto 0);
 
-end package;
+end;

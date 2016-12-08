@@ -37,4 +37,4 @@ package fmc500m_defs is
         -- On board temperature sensor
         temp_alert_n : std_logic;
     end record;
-end package;
+end;

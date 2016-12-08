@@ -35,7 +35,7 @@ package bunch_defs is
     function bits_to_bunch_config(data : std_logic_vector)
         return bunch_config_t;
 
-end package;
+end;
 
 package body bunch_defs is
 
@@ -65,4 +65,4 @@ package body bunch_defs is
         return result;
     end;
 
-end package body;
+end;

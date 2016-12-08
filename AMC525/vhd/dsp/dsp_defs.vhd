@@ -21,4 +21,4 @@ package dsp_defs is
         nco_0_data : signed_array(LANES)(17 downto 0);
         nco_1_data : signed_array(LANES)(17 downto 0);
     end record;
-end package;
+end;

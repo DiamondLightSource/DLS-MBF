@@ -60,4 +60,4 @@ package defines is
     subtype ddr1_data_t is std_logic_vector(31 downto 0);
 
 
-end package;
+end;

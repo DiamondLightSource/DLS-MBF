@@ -26,7 +26,7 @@ package min_max_sum_defs is
     -- Conversion between packed and unpacked representation
     function mms_row_to_bits(data : mms_row_t) return std_logic_vector;
     function bits_to_mms_row(data : std_logic_vector) return mms_row_t;
-end package;
+end;
 
 package body min_max_sum_defs is
     function mms_row_to_bits(data : mms_row_t) return std_logic_vector is
@@ -48,4 +48,4 @@ package body min_max_sum_defs is
         result.sum2 := unsigned(data(111 downto 64));
         return result;
     end;
-end package body;
+end;
