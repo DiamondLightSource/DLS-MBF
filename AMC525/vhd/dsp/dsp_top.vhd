@@ -30,16 +30,15 @@ entity dsp_top is
         read_data_o : out reg_data_array_t;
         read_ack_o : out std_logic_vector;
 
-        -- Data out to DDR0 (two lanes of 16-bit numbers)
-        ddr0_data_o : out ddr0_data_lanes;
-
-        -- Data out to DDR1
-        ddr1_data_o : out ddr1_data_t;
-        ddr1_data_strobe_o : out std_logic;
-
         -- External control: data multiplexing and shared control
         control_to_dsp_i : in control_to_dsp_t;
-        dsp_to_control_o : out dsp_to_control_t
+        dsp_to_control_o : out dsp_to_control_t;
+
+        -- Data out to DRAM1
+        dram1_strobe_o : out std_logic;
+        dram1_ready_i : in std_logic;
+        dram1_address_o : out unsigned;
+        dram1_data_o : out std_logic_vector
     );
 end;
 
@@ -101,7 +100,6 @@ architecture dsp_top of dsp_top is
     -- Data flow
     signal adc_data_in : signed(adc_data_i'RANGE);
     signal fir_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
-    signal dac_data_store : signed_array(LANES)(DAC_OUT_WIDTH-1 downto 0);
     signal dac_data_out : signed(dac_data_o'RANGE);
 
 
@@ -200,25 +198,13 @@ begin
     dsp_to_control_o.nco_1_data <= nco_1_cos_sin;
 
 
-    -- Output to memory
-    memory_top_inst : entity work.memory_top port map (
-        dsp_clk_i => dsp_clk_i,
+    write_ack_o(MEM_REGS) <= (others => '1');
+    read_data_o(MEM_REGS) <= (others => (others => '0'));
+    read_ack_o(MEM_REGS) <= (others => '1');
 
-        adc_data_i => dsp_to_control_o.adc_data,
-        fir_data_i => fir_data,
-        dac_data_i => dac_data_store,
-
-        ddr0_data_o => ddr0_data_o,
-        ddr1_data_o => ddr1_data_o,
-        ddr1_data_strobe_o => ddr1_data_strobe_o,
-
-        write_strobe_i => write_strobe_i(MEM_REGS),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(MEM_REGS),
-        read_strobe_i => read_strobe_i(MEM_REGS),
-        read_data_o => read_data_o(MEM_REGS),
-        read_ack_o => read_ack_o(MEM_REGS)
-    );
+    dram1_strobe_o <= '0';
+    dram1_address_o <= (dram1_address_o'RANGE => '0');
+    dram1_data_o <= (dram1_data_o'RANGE => '0');
 
 
     -- -------------------------------------------------------------------------
@@ -275,6 +261,7 @@ begin
 
         write_start_i => write_start
     );
+    dsp_to_control_o.fir_data <= fir_data;
 
     -- DAC output processing
     dac_top_inst : entity work.dac_top generic map (
@@ -290,7 +277,7 @@ begin
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
 
-        data_store_o => dac_data_store,
+        data_store_o => dsp_to_control_o.dac_data,
         data_o => dac_data_out,
         fir_overflow_o => dac_fir_overflow,
         mux_overflow_o => dac_mux_overflow,

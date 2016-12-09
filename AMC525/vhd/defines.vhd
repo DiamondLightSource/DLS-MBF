@@ -3,6 +3,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+
 use work.support.all;
 
 package defines is
@@ -52,12 +53,7 @@ package defines is
     constant LANE_COUNT : natural := 2;
     subtype LANES is natural range 0 to LANE_COUNT-1;
 
-    -- Data from DSP to DDR0 DRAM interface
-    subtype ddr0_data_t is std_logic_vector(15 downto 0);
-    type ddr0_data_lanes is array(LANES) of ddr0_data_t;
-
-    -- Data from DSP to DDR1 DRAM interface
-    subtype ddr1_data_t is std_logic_vector(31 downto 0);
-
+    constant CHANNEL_COUNT : natural := 2;
+    subtype CHANNELS is natural range 0 to CHANNEL_COUNT-1;
 
 end;

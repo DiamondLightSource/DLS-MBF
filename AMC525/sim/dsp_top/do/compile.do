@@ -23,6 +23,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/register_block.vhd \
     $vhd_dir/adc_phase.vhd \
     $vhd_dir/extract_signed.vhd \
+    $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/fast_fir/fast_fir.vhd \
     $vhd_dir/fast_fir/fast_fir_top.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
@@ -61,7 +62,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/adc_overflow.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_top.vhd \
-    $vhd_dir/dsp/memory_top.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \

@@ -30,10 +30,10 @@ architecture testbench of testbench is
     signal read_data : reg_data_array_t(REG_ADDR_RANGE);
     signal read_ack : reg_strobe_t;
 
-    signal ddr0_data : ddr0_data_lanes;
-
-    signal ddr1_data : ddr1_data_t;
-    signal ddr1_data_strobe : std_logic;
+    signal dram1_strobe : std_logic;
+    signal dram1_ready : std_logic;
+    signal dram1_address : unsigned(22 downto 0);
+    signal dram1_data : std_logic_vector(63 downto 0);
 
     signal control_to_dsp : control_to_dsp_t;
     signal dsp_to_control : dsp_to_control_t;
@@ -87,10 +87,10 @@ begin
         read_data_o => read_data,
         read_ack_o => read_ack,
 
-        ddr0_data_o => ddr0_data,
-
-        ddr1_data_o => ddr1_data,
-        ddr1_data_strobe_o => ddr1_data_strobe,
+        dram1_strobe_o => dram1_strobe,
+        dram1_ready_i => dram1_ready,
+        dram1_address_o => dram1_address,
+        dram1_data_o => dram1_data,
 
         control_to_dsp_i => control_to_dsp,
         dsp_to_control_o => dsp_to_control
@@ -109,6 +109,8 @@ begin
         end if;
     end process;
 
+
+    dram1_ready <= '1';
 
     -- Register control testbench
     process
