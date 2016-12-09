@@ -15,12 +15,12 @@ entity system_registers is
         ref_clk_ok_i : in std_logic;
 
         -- System register interface on REG clock
-        write_strobe_i : in reg_strobe_t;
+        write_strobe_i : in std_logic_vector(0 to 6);
         write_data_i : in reg_data_t;
-        write_ack_o : out reg_strobe_t;
-        read_strobe_i : in reg_strobe_t;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out reg_strobe_t;
+        write_ack_o : out std_logic_vector(0 to 6);
+        read_strobe_i : in std_logic_vector(0 to 6);
+        read_data_o : out reg_data_array_t(0 to 6);
+        read_ack_o : out std_logic_vector(0 to 6);
 
         -- General system status bits
         version_read_data_i : in reg_data_t;
@@ -55,7 +55,6 @@ architecture system_registers of system_registers is
     constant IDELAY_REG : natural := 3;
     constant FMC_SPI_REG : natural := 4;
     subtype DAC_TEST_REG is natural range 5 to 6;
-    subtype UNUSED_REG is natural range 7 to REG_ADDR_COUNT-1;
 
     signal status_read_data : reg_data_t;
 
@@ -128,10 +127,5 @@ begin
     );
     read_data_o(DAC_TEST_REG) <= dac_test_pattern_o;
     read_ack_o(DAC_TEST_REG) <= (others => '1');
-
-    -- Unused registers
-    write_ack_o(UNUSED_REG) <= (others => '1');
-    read_data_o(UNUSED_REG) <= (others => (others => '0'));
-    read_ack_o(UNUSED_REG) <= (others => '1');
 
 end;

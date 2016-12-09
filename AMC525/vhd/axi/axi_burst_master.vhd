@@ -11,7 +11,8 @@ entity axi_burst_master is
     generic (
         DATA_WIDTH : natural := 64;
         RAM_ADDR_WIDTH : natural := 31;
-        BURST_LENGTH : natural := 32
+        BURST_LENGTH : natural := 32;
+        ADDR_PADDING : std_logic_vector := ""
     );
     port (
         clk_i : in std_logic;
@@ -109,8 +110,7 @@ begin
     -- The target DRAM is at address location 8000_0000_0000 up to address
     -- offset 8000_0000, and the generated address is assembled from the
     -- incrementing burst address in the appropriate field.
-    awaddr_o(47) <= '1';
-    awaddr_o(46 downto RAM_ADDR_WIDTH) <= (others => '0');
+    awaddr_o(47 downto RAM_ADDR_WIDTH) <= ADDR_PADDING;
     awaddr_o(RAM_ADDR_WIDTH-1 downto BURST_ADDR_BASE) <=
         std_logic_vector(burst_address);
     awaddr_o(BURST_ADDR_BASE-1 downto 0) <= (others => '0');

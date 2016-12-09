@@ -73,16 +73,6 @@ architecture top of top is
     signal DSP_DRAM0_bready : std_logic;
     signal DSP_DRAM0_bvalid : std_logic;
 
-    -- Data from DSP to burst master
-    signal DSP_DRAM0_capture_enable : std_logic;
-    signal DSP_DRAM0_data_ready : std_logic;
-    signal DSP_DRAM0_capture_address : std_logic_vector(30 downto 0);
-    signal DSP_DRAM0_data : std_logic_vector(63 downto 0);
-    signal DSP_DRAM0_data_valid : std_logic;
-    signal DSP_DRAM0_data_error : std_logic;
-    signal DSP_DRAM0_addr_error : std_logic;
-    signal DSP_DRAM0_brsp_error : std_logic;
-
     -- Wiring from DSP slow write master to AXI DRAM1 slave
     signal DSP_DRAM1_awaddr : std_logic_vector(47 downto 0);
     signal DSP_DRAM1_awprot : std_logic_vector(2 downto 0);
@@ -96,15 +86,35 @@ architecture top of top is
     signal DSP_DRAM1_wstrb : std_logic_vector(7 downto 0);
     signal DSP_DRAM1_wvalid : std_logic;
 
+    -- Memory controller wiring
+
+    -- Data from DSP to burst master
+    signal DRAM0_capture_enable : std_logic;
+    signal DRAM0_data_ready : std_logic;
+    signal DRAM0_capture_address : std_logic_vector(30 downto 0);
+    signal DRAM0_data : std_logic_vector(63 downto 0);
+    signal DRAM0_data_valid : std_logic;
+    signal DRAM0_data_error : std_logic;
+    signal DRAM0_addr_error : std_logic;
+    signal DRAM0_brsp_error : std_logic;
+
+    -- Data from DSP to DRAM1 master
+    signal DRAM1_address : unsigned(23 downto 0);
+    signal DRAM1_data : std_logic_vector(63 downto 0);
+    signal DRAM1_data_valid : std_logic;
+    signal DRAM1_data_ready : std_logic;
+
     -- Internal register path from AXI conversion
-    signal REGS_write_strobe : std_logic_vector(MOD_ADDR_RANGE);
-    signal REGS_write_address : reg_addr_t;
-    signal REGS_write_data : reg_data_t;
-    signal REGS_write_ack : std_logic_vector(MOD_ADDR_RANGE);
-    signal REGS_read_strobe : std_logic_vector(MOD_ADDR_RANGE);
-    signal REGS_read_address : reg_addr_t;
-    signal REGS_read_data : reg_data_array_t(MOD_ADDR_RANGE);
-    signal REGS_read_ack : std_logic_vector(MOD_ADDR_RANGE);
+    signal REGS_write_strobe : std_logic;
+    signal REGS_write_address : unsigned(13 downto 0);
+    signal REGS_write_data : std_logic_vector(31 downto 0);
+    signal REGS_write_ack : std_logic;
+    signal REGS_read_strobe : std_logic;
+    signal REGS_read_address : unsigned(13 downto 0);
+    signal REGS_read_data : std_logic_vector(31 downto 0);
+    signal REGS_read_ack : std_logic;
+
+    -- FMC wiring
 
     -- Digital I/O on FMC0
     signal dio_inputs : std_logic_vector(4 downto 0);
@@ -113,45 +123,30 @@ architecture top of top is
 
     -- Connections to FMC500M on FMC0
     signal adc_dco : std_logic;
-    signal dsp0_adc_data : signed(ADC_INP_WIDTH-1 downto 0);
-    signal dsp1_adc_data : signed(ADC_INP_WIDTH-1 downto 0);
-    signal dsp0_dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
-    signal dsp1_dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
-    signal dac_data_a : signed(DAC_OUT_WIDTH-1 downto 0);
-    signal dac_data_b : signed(DAC_OUT_WIDTH-1 downto 0);
+    signal dsp_adc_data signed_array(CHANNELS)(13 downto 0);
+    signal dsp_dac_data signed_array(CHANNELS)(15 downto 0);
+    signal dac_data signed_array(CHANNELS)(15 downto 0);
     signal dac_frame : std_logic;
     signal fast_ext_trigger : std_logic;
     signal fmc500_outputs : fmc500_outputs_t;
     signal fmc500_inputs : fmc500_inputs_t;
 
     -- Top register wiring
-    signal system_write_strobe : reg_strobe_t;
+    signal system_write_strobe : std_logic_vector(0 to 6);
     signal system_write_data : reg_data_t;
-    signal system_write_ack : reg_strobe_t;
-    signal system_read_strobe : reg_strobe_t;
-    signal system_read_data : reg_data_array_t(REG_ADDR_RANGE);
-    signal system_read_ack : reg_strobe_t;
+    signal system_write_ack : std_logic_vector(0 to 6);
+    signal system_read_strobe : std_logic_vector(0 to 6);
+    signal system_read_data : reg_data_array_t(0 to 6);
+    signal system_read_ack : std_logic_vector(0 to 6);
 
-    signal ctrl_write_strobe : reg_strobe_t;
-    signal ctrl_write_data : reg_data_t;
-    signal ctrl_write_ack : reg_strobe_t;
-    signal ctrl_read_strobe : reg_strobe_t;
-    signal ctrl_read_data : reg_data_array_t(REG_ADDR_RANGE);
-    signal ctrl_read_ack : reg_strobe_t;
-
-    signal dsp0_write_strobe : reg_strobe_t;
-    signal dsp0_write_data : reg_data_t;
-    signal dsp0_write_ack : reg_strobe_t;
-    signal dsp0_read_strobe : reg_strobe_t;
-    signal dsp0_read_data : reg_data_array_t(REG_ADDR_RANGE);
-    signal dsp0_read_ack : reg_strobe_t;
-
-    signal dsp1_write_strobe : reg_strobe_t;
-    signal dsp1_write_data : reg_data_t;
-    signal dsp1_write_ack : reg_strobe_t;
-    signal dsp1_read_strobe : reg_strobe_t;
-    signal dsp1_read_data : reg_data_array_t(REG_ADDR_RANGE);
-    signal dsp1_read_ack : reg_strobe_t;
+    signal dsp_write_strobe : std_logic;
+    signal dsp_write_address : unsigned(12 downto 0);
+    signal dsp_write_data : reg_data_t;
+    signal dsp_write_ack : std_logic;
+    signal dsp_read_strobe : std_logic;
+    signal dsp_read_address : unsigned(12 downto 0);
+    signal dsp_read_data : reg_data_t;
+    signal dsp_read_ack : std_logic;
 
     -- System register wiring
     -- Control registers
@@ -175,15 +170,13 @@ architecture top of top is
     signal fmc500m_spi_read_ack : std_logic;
 
     -- Connections to DSP units
-    signal dsp0_ddr0_data : ddr0_data_lanes;
-    signal dsp0_ddr1_data : ddr1_data_t;
-    signal dsp0_ddr1_data_strobe : std_logic;
+    signal dsp0_dram1_data : std_logic_vector(63 downto 0);
+    signal dsp0_dram1_data_strobe : std_logic;
     signal control_to_dsp0 : control_to_dsp_t;
     signal dsp0_to_control : dsp_to_control_t;
 
-    signal dsp1_ddr0_data : ddr0_data_lanes;
-    signal dsp1_ddr1_data : ddr1_data_t;
-    signal dsp1_ddr1_data_strobe : std_logic;
+    signal dsp1_dram1_data : std_logic_vector(63 downto 0);
+    signal dsp1_dram1_data_strobe : std_logic;
     signal control_to_dsp1 : control_to_dsp_t;
     signal dsp1_to_control : dsp_to_control_t;
 
@@ -249,8 +242,8 @@ begin
 
     -- Interrupt events
     INTR <= (
-        0 => DSP_DRAM0_capture_enable,
-        1 => not DSP_DRAM0_capture_enable,
+        0 => DRAM0_capture_enable,
+        1 => not DRAM0_capture_enable,
         others => '0'
     );
 
@@ -479,7 +472,8 @@ begin
 
     -- AXI burst master for streaming data to DRAM0 DRAM
     axi_burst_master_inst : entity work.axi_burst_master generic map (
-        BURST_LENGTH => 32
+        BURST_LENGTH => 32,
+        ADDR_PADDING => X"8000" & '0';
     ) port map (
         clk_i => dsp_clk,
         rstn_i => dsp_reset_n,
@@ -506,31 +500,43 @@ begin
         bready_o => DSP_DRAM0_bready,
 
         -- Data streaming interface
-        capture_enable_i => DSP_DRAM0_capture_enable,
-        data_ready_o => DSP_DRAM0_data_ready,
-        capture_address_o => DSP_DRAM0_capture_address,
+        capture_enable_i => DRAM0_capture_enable,
+        data_ready_o => DRAM0_data_ready,
+        capture_address_o => DRAM0_capture_address,
 
-        data_i => DSP_DRAM0_data,
-        data_valid_i => DSP_DRAM0_data_valid,
+        data_i => DRAM0_data,
+        data_valid_i => DRAM0_data_valid,
 
-        data_error_o => DSP_DRAM0_data_error,
-        addr_error_o => DSP_DRAM0_addr_error,
-        brsp_error_o => DSP_DRAM0_brsp_error
+        data_error_o => DRAM0_data_error,
+        addr_error_o => DRAM0_addr_error,
+        brsp_error_o => DRAM0_brsp_error
     );
 
-    -- Dummy wiring for unused DRAM1 DRAM connections
-    DSP_DRAM1_awaddr <= (others => '0');
-    DSP_DRAM1_awprot <= (others => '0');
---     DSP_DRAM1_awready <= open;
-    DSP_DRAM1_awvalid <= '0';
-    DSP_DRAM1_bready <= '0';
---     DSP_DRAM1_bresp <= open;
---     DSP_DRAM1_bvalid <= open;
-    DSP_DRAM1_wdata <= (others => '0');
---     DSP_DRAM1_wready <= open;
-    DSP_DRAM1_wstrb <= (others => '0');
-    DSP_DRAM1_wvalid <= '0';
+    -- AXI master for writing to slow DRAM1
+    axi_lite_master_inst : entity work.axi_lite_master generic map (
+        -- Base address: 0x8000_8000_0000 to 0x8000_87FF_FFFF
+        ADDR_PADDING => X"8000_8" & '0'
+    ) port map (
+        clk_i => dsp_clk,
+        rstn_i => dsp_rstn,
 
+        awaddr_o => DSP_DRAM1_awaddr,
+        awprot_o => DSP_DRAM1_awprot,
+        awready_i => DSP_DRAM1_awready,
+        awvalid_o => DSP_DRAM1_awvalid,
+        bready_o => DSP_DRAM1_bready,
+        bresp_i => DSP_DRAM1_bresp,
+        bvalid_i => DSP_DRAM1_bvalid,
+        wdata_o => DSP_DRAM1_wdata,
+        wready_i => DSP_DRAM1_wready,
+        wstrb_o => DSP_DRAM1_wstrb,
+        wvalid_o => DSP_DRAM1_wvalid,
+
+        address_i => DRAM1_address,
+        data_i => DRAM1_data,
+        data_valid_i => DRAM1_data_valid,
+        data_ready_o => DRAM1_data_ready
+    );
 
 
     -- -------------------------------------------------------------------------
@@ -568,11 +574,11 @@ begin
         spi_read_ack_o => fmc500m_spi_read_ack,
 
         adc_dco_o => adc_dco,
-        adc_data_a_o => dsp0_adc_data,
-        adc_data_b_o => dsp1_adc_data,
+        adc_data_a_o => dsp_adc_data(0),
+        adc_data_b_o => dsp_adc_data(1),
 
-        dac_data_a_i => dac_data_a,
-        dac_data_b_i => dac_data_b,
+        dac_data_a_i => dac_data(0),
+        dac_data_b_i => dac_data(1),
         dac_frame_i => dac_frame,
 
         ext_trig_o => fast_ext_trigger,
@@ -594,7 +600,7 @@ begin
         dsp_clk_i => dsp_clk,
         dsp_clk_ok_i => dsp_clk_ok,
 
-        -- On reg_clk_i
+        -- On reg_clk_i from AXI slave
         write_strobe_i => REGS_write_strobe,
         write_address_i => REGS_write_address,
         write_data_i => REGS_write_data,
@@ -604,7 +610,7 @@ begin
         read_data_o => REGS_read_data,
         read_ack_o => REGS_read_ack,
 
-        -- On reg_clk_i
+        -- On reg_clk_i to core system registers
         system_write_strobe_o => system_write_strobe,
         system_write_data_o => system_write_data,
         system_write_ack_i => system_write_ack,
@@ -612,30 +618,17 @@ begin
         system_read_data_i => system_read_data,
         system_read_ack_i => system_read_ack,
 
-        -- On dsp_clk_i
-        ctrl_write_strobe_o => ctrl_write_strobe,
-        ctrl_write_data_o => ctrl_write_data,
-        ctrl_write_ack_i => ctrl_write_ack,
-        ctrl_read_strobe_o => ctrl_read_strobe,
-        ctrl_read_data_i => ctrl_read_data,
-        ctrl_read_ack_i => ctrl_read_ack,
-
-        -- On dsp_clk_i
-        dsp0_write_strobe_o => dsp0_write_strobe,
-        dsp0_write_data_o => dsp0_write_data,
-        dsp0_write_ack_i => dsp0_write_ack,
-        dsp0_read_strobe_o => dsp0_read_strobe,
-        dsp0_read_data_i => dsp0_read_data,
-        dsp0_read_ack_i => dsp0_read_ack,
-
-        -- On dsp_clk_i
-        dsp1_write_strobe_o => dsp1_write_strobe,
-        dsp1_write_data_o => dsp1_write_data,
-        dsp1_write_ack_i => dsp1_write_ack,
-        dsp1_read_strobe_o => dsp1_read_strobe,
-        dsp1_read_data_i => dsp1_read_data,
-        dsp1_read_ack_i => dsp1_read_ack
+        -- On dsp_clk_i to all DSP registers
+        dsp_write_strobe_o => dsp_write_strobe,
+        dsp_write_address_o => dsp_write_address,
+        dsp_write_data_o => dsp_write_data,
+        dsp_write_ack_i => dsp_write_ack,
+        dsp_read_strobe_o => dsp_read_strobe,
+        dsp_read_address_o => dsp_read_address,
+        dsp_read_data_i => dsp_read_data,
+        dsp_read_ack_i => dsp_read_ack
     );
+
 
     -- System registers for hardware management
     system_registers_inst : entity work.system_registers port map (
@@ -669,110 +662,64 @@ begin
         dac_test_pattern_o => dac_test_pattern
     );
 
-    control_top_inst : entity work.control_top port map (
-        dsp_clk_i => dsp_clk,
-
-        write_strobe_i => ctrl_write_strobe,
-        write_data_i => ctrl_write_data,
-        write_ack_o => ctrl_write_ack,
-        read_strobe_i => ctrl_read_strobe,
-        read_data_o => ctrl_read_data,
-        read_ack_o => ctrl_read_ack,
-
-        control_to_dsp0_o => control_to_dsp0,
-        dsp0_to_control_i => dsp0_to_control,
-        control_to_dsp1_o => control_to_dsp1,
-        dsp1_to_control_i => dsp1_to_control,
-
-        ddr0_capture_enable_o => DSP_DRAM0_capture_enable,
-        ddr0_data_ready_i => DSP_DRAM0_data_ready,
-        ddr0_capture_address_i => DSP_DRAM0_capture_address,
-        ddr0_data_valid_o => DSP_DRAM0_data_valid,
-        ddr0_data_error_i => DSP_DRAM0_data_error,
-        ddr0_addr_error_i => DSP_DRAM0_addr_error,
-        ddr0_brsp_error_i => DSP_DRAM0_brsp_error
-    );
-
 
     -- -------------------------------------------------------------------------
-    -- DSP instances.
+    -- DSP
 
-    dsp0_top_inst : entity work.dsp_top port map (
+    -- Core signal processing
+    dsp_main_inst : entity work.dsp_main port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
         adc_phase_i => adc_phase,
 
-        adc_data_i => dsp0_adc_data,
-        dac_data_o => dsp0_dac_data,
+        adc_data_i => dsp_adc_data,
+        dac_data_o => dsp_dac_data,
 
-        write_strobe_i => dsp0_write_strobe,
-        write_data_i => dsp0_write_data,
-        write_ack_o => dsp0_write_ack,
-        read_strobe_i => dsp0_read_strobe,
-        read_data_o => dsp0_read_data,
-        read_ack_o => dsp0_read_ack,
+        write_strobe_i => dsp_write_strobe,
+        write_address_i => dsp_write_address,
+        write_data_i => dsp_write_data,
+        write_ack_o => dsp_write_ack,
+        read_strobe_i => dsp_read_strobe,
+        read_address_i => dsp_read_address,
+        read_data_o => dsp_read_data,
+        read_ack_o => dsp_read_ack,
 
-        ddr0_data_o => dsp0_ddr0_data,
+        DRAM0_capture_enable_o => DRAM0_capture_enable,
+        DRAM0_data_ready_i => DRAM0_data_ready,
+        DRAM0_capture_address_i => DRAM0_capture_address,
+        DRAM0_data_o => DRAM0_data,
+        DRAM0_data_valid_o => DRAM0_data_valid,
+        DRAM0_data_error_i => DRAM0_data_error,
+        DRAM0_addr_error_i => DRAM0_addr_error,
+        DRAM0_brsp_error_i => DRAM0_brsp_error,
 
-        ddr1_data_o => dsp0_ddr1_data,
-        ddr1_data_strobe_o => dsp0_ddr1_data_strobe,
-
-        control_to_dsp_i => control_to_dsp0,
-        dsp_to_control_o => dsp0_to_control
+        DRAM1_address_o => DRAM1_address,
+        DRAM1_data_o => DRAM1_data,
+        DRAM1_data_valid_o => DRAM1_data_valid,
+        DRAM1_data_ready_i => DRAM1_data_ready
     );
-
-    dsp1_top_inst : entity work.dsp_top port map (
-        adc_clk_i => adc_clk,
-        dsp_clk_i => dsp_clk,
-        adc_phase_i => adc_phase,
-
-        adc_data_i => dsp1_adc_data,
-        dac_data_o => dsp1_dac_data,
-
-        write_strobe_i => dsp1_write_strobe,
-        write_data_i => dsp1_write_data,
-        write_ack_o => dsp1_write_ack,
-        read_strobe_i => dsp1_read_strobe,
-        read_data_o => dsp1_read_data,
-        read_ack_o => dsp1_read_ack,
-
-        ddr0_data_o => dsp1_ddr0_data,
-
-        ddr1_data_o => dsp1_ddr1_data,
-        ddr1_data_strobe_o => dsp1_ddr1_data_strobe,
-
-        control_to_dsp_i => control_to_dsp1,
-        dsp_to_control_o => dsp1_to_control
-    );
-
 
     -- Generate DAC test data if necessary
     dac_test_pattern_inst : entity work.dac_test_pattern port map (
         adc_clk_i => adc_clk,
         test_mode_i => dac_test_mode,
         test_pattern_i => dac_test_pattern,
-        dac_data_a_i => dsp0_dac_data,
-        dac_data_b_i => dsp1_dac_data,
-        dac_data_a_o => dac_data_a,
-        dac_data_b_o => dac_data_b,
+        dac_data_i => dsp_dac_data,
+        dac_data_o => dac_data,
         dac_frame_o => dac_frame
     );
-
-    -- Reorder DRAM0 data: we want alternating dsp0/dsp1 values.
-    DSP_DRAM0_data(15 downto  0) <= dsp0_ddr0_data(0);
-    DSP_DRAM0_data(31 downto 16) <= dsp1_ddr0_data(0);
-    DSP_DRAM0_data(47 downto 32) <= dsp0_ddr0_data(1);
-    DSP_DRAM0_data(63 downto 48) <= dsp1_ddr0_data(1);
 
 
     -- -------------------------------------------------------------------------
     -- Control register mapping.
 
-    version_data(31 downto 0) <= (others => '0');
+    version_data(31 downto 0) <= (
+        others => '0'
+    );
 
     status_data <= (
         0 => dsp_clk_ok,
-        1 => DSP_DRAM0_capture_enable,
+        1 => DRAM0_capture_enable,
         2 => fmc500_inputs.vcxo_pwr_good,
         3 => fmc500_inputs.adc_pwr_good,
         4 => fmc500_inputs.dac_pwr_good,

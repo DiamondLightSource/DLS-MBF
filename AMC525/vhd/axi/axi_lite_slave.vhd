@@ -12,9 +12,9 @@
 -- associated read or write, and the reg address field is passed through to the
 -- sub-module.
 --
--- The internal write interface is quite simple: the appropriate read_strobe as
--- selected by "module select" is pulsed for one clock cycle after the
--- write_address and write_data outputs are valid:
+-- The internal write interface is quite simple: write_strobe_o is pulsed for
+-- one clock cycle after the write_address and write_data outputs are valid.
+-- The write data and address will be held valid until write_ack_i is high:
 --
 --  State           | IDLE  | START |WRITING| DONE  |
 --                           ________________________
@@ -57,37 +57,33 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use work.defines.all;
+
 use work.support.all;
 
 entity axi_lite_slave is
-    generic (
-        ADDR_BITS : natural := 16;
-        DATA_BITS : natural := 32
-    );
     port (
         clk_i : in std_logic;
         rstn_i : in std_logic;
 
         -- AXI-Lite read interface
-        araddr_i : in std_logic_vector(ADDR_BITS-1 downto 0);
+        araddr_i : in std_logic_vector;
         arprot_i : in std_logic_vector(2 downto 0);                 -- Ignored
         arready_o : out std_logic;
         arvalid_i : in std_logic;
         --
-        rdata_o : out std_logic_vector(DATA_BITS-1 downto 0);
+        rdata_o : out std_logic_vector;
         rresp_o : out std_logic_vector(1 downto 0);
         rready_i : in std_logic;
         rvalid_o : out std_logic;
 
         -- AXI-Lite write interface
-        awaddr_i : in std_logic_vector(ADDR_BITS-1 downto 0);
+        awaddr_i : in std_logic_vector;
         awprot_i : in std_logic_vector(2 downto 0);                 -- Ignored
         awready_o : out std_logic;
         awvalid_i : in std_logic;
         --
-        wdata_i : in std_logic_vector(DATA_BITS-1 downto 0);
-        wstrb_i : in std_logic_vector(DATA_BITS/8-1 downto 0);
+        wdata_i : in std_logic_vector;
+        wstrb_i : in std_logic_vector;
         wready_o : out std_logic;
         wvalid_i : in std_logic;
         --
@@ -96,91 +92,67 @@ entity axi_lite_slave is
         bvalid_o : out std_logic;
 
         -- Internal read interface
-        read_strobe_o : out std_logic_vector;   -- Read select per module
-        read_address_o : out reg_addr_t;    -- Shared read address
-        read_data_i : in reg_data_array_t(MOD_ADDR_RANGE);  -- Read data array
-        read_ack_i : in std_logic_vector;   -- Module read ready acknowledge
+        read_strobe_o : out std_logic;          -- Read request strobe
+        read_address_o : out unsigned;
+        read_data_i : in std_logic_vector;
+        read_ack_i : in std_logic;              -- Read data valid acknowledge
 
         -- Internal write interface
-        write_strobe_o : out std_logic_vector;  -- Write select per module
-        write_address_o : out reg_addr_t;   -- Shared write address and
-        write_data_o : out reg_data_t;      --  data
-        write_ack_i : in std_logic_vector   -- Module write acknowledge
+        write_strobe_o : out std_logic;         -- Write request strobe
+        write_address_o : out unsigned;
+        write_data_o : out std_logic_vector;
+        write_ack_i : in std_logic              -- Write complete acknowledge
     );
 end;
 
 architecture axi_lite_slave of axi_lite_slave is
+    constant BYTE_BITS : natural := bits(wstrb_i'LENGTH-1);
+    constant ADDR_WIDTH : natural := read_address_o'LENGTH;
 
-    constant BYTE_BITS : natural := 2;
-
-
-    -- Extracts module address from AXI address
-    function module_address(addr : std_logic_vector) return MOD_ADDR_RANGE
-    is begin
-        return to_integer(unsigned(
-            read_field(addr, MOD_ADDR_BITS, REG_ADDR_BITS + BYTE_BITS)));
-    end;
-
-    -- Extracts register address from AXI address
-    function register_address(addr : std_logic_vector) return reg_addr_t
-    is begin
-        return unsigned(read_field(addr, REG_ADDR_BITS, BYTE_BITS));
-    end;
-
-
-    -- ------------------------------------------------------------------------
     -- Reading state
     type read_state_t is (READ_IDLE, READ_START, READ_READING, READ_DONE);
     signal read_state : read_state_t;
-    signal read_module_address : MOD_ADDR_RANGE;
 
-    signal read_strobe : std_logic_vector(MOD_ADDR_RANGE);
-    signal read_ack : std_logic;
-    signal read_data : reg_data_t;
-
-
-    -- ------------------------------------------------------------------------
     -- Writing state
-
     -- The data and address for writes can come separately.
     type write_state_t is (WRITE_IDLE, WRITE_START, WRITE_WRITING, WRITE_DONE);
     signal write_state : write_state_t;
-    signal write_module_address : MOD_ADDR_RANGE;
     signal valid_write : std_logic;
 
-    signal write_strobe : std_logic_vector(MOD_ADDR_RANGE);
-    signal write_ack : std_logic;
+
+    -- Extracts register address from AXI address
+    function register_address(addr : std_logic_vector) return unsigned
+    is begin
+        return unsigned(read_field(ADDR_WIDTH, BYTE_BITS));
+    end;
 
 begin
+    assert read_address_o'LENGTH = write_address_o'LENGTH;
 
     -- ------------------------------------------------------------------------
     -- Read interface.
-    read_strobe <= compute_strobe(read_module_address, MOD_ADDR_COUNT);
-    read_ack <= read_ack_i(read_module_address);
-    read_data <= read_data_i(read_module_address);
 
     process (rstn_i, clk_i) begin
         if rstn_i = '0' then
             read_state <= READ_IDLE;
-            read_strobe_o <= (others => '0');
+            read_strobe_o <= '0';
         elsif rising_edge(clk_i) then
             case read_state is
                 when READ_IDLE =>
                     -- On valid read request latch read address
                     if arvalid_i = '1' then
-                        read_module_address <= module_address(araddr_i);
                         read_address_o <= register_address(araddr_i);
                         read_state <= READ_START;
                     end if;
                 when READ_START =>
                     -- Now pass read request through to selected module
-                    read_strobe_o <= read_strobe;
+                    read_strobe_o <= '1';
                     read_state <= READ_READING;
                 when READ_READING =>
                     -- Wait for read acknowledge from module
-                    read_strobe_o <= (others => '0');
-                    if read_ack = '1' then
-                        rdata_o <= read_data;
+                    read_strobe_o <= '0';
+                    if read_ack_i = '1' then
+                        rdata_o <= read_data_i;
                         read_state <= READ_DONE;
                     end if;
                 when READ_DONE =>
@@ -198,8 +170,6 @@ begin
 
     -- ------------------------------------------------------------------------
     -- Write interface.
-    write_strobe <= compute_strobe(write_module_address, MOD_ADDR_COUNT);
-    write_ack <= write_ack_i(write_module_address);
 
     process (rstn_i, clk_i) begin
         if rstn_i = '0' then
@@ -210,7 +180,6 @@ begin
                     -- Wait for valid read and write data
                     if awvalid_i = '1' and wvalid_i = '1' then
                         write_address_o <= register_address(awaddr_i);
-                        write_module_address <= module_address(awaddr_i);
                         write_data_o <= wdata_i;
                         valid_write <= vector_and(wstrb_i);
                         write_state <= WRITE_START;
@@ -219,7 +188,7 @@ begin
                 when WRITE_START =>
                     if valid_write = '1' then
                         -- Generate write strobe for valid cycle
-                        write_strobe_o <= write_strobe;
+                        write_strobe_o <= '1';
                         write_state <= WRITE_WRITING;
                     else
                         -- For invalid write go straight to completion
@@ -227,8 +196,8 @@ begin
                     end if;
 
                 when WRITE_WRITING =>
-                    write_strobe_o <= (others => '0');
-                    if write_ack = '1' then
+                    write_strobe_o <= '0';
+                    if write_ack_i = '1' then
                         write_state <= WRITE_DONE;
                     end if;
 
