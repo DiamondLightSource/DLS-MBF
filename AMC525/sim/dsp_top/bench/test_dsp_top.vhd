@@ -13,11 +13,8 @@ end testbench;
 
 
 architecture testbench of testbench is
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
-
-    signal dsp_reset_n : std_logic := '0';
-    signal dsp_clk_ok : std_logic := '0';
+    signal adc_clk : std_logic;
+    signal dsp_clk : std_logic;
     signal adc_phase : std_logic;
 
     signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
@@ -39,34 +36,18 @@ architecture testbench of testbench is
     signal dsp_to_control : dsp_to_control_t;
 
 begin
-
-    -- Clocking: ADC clock at 500 MHz, synchronous DSP clock at 250 MHz.
-    -- Also generate synchronous reset and correct adc_phase signal.
-    adc_clk <= not adc_clk after 1 ns;
-    dsp_clk <= not dsp_clk after 2 ns;
-    dsp_reset_n <= '1' after 5.5 ns;
-
-    sync_reset_inst : entity work.sync_reset port map (
-        clk_i => dsp_clk,
-        clk_ok_i => dsp_reset_n,
-        sync_clk_ok_o => dsp_clk_ok
-    );
-
-    adc_phase_inst : entity work.adc_phase port map (
-        adc_clk_i => adc_clk,
-        dsp_clk_ok_i => dsp_clk_ok,
+    clock_inst : entity work.clock_support port map (
+        adc_clk_o => adc_clk,
+        dsp_clk_o => dsp_clk,
         adc_phase_o => adc_phase
     );
 
-
     -- Simple ADC data simulation: we just generate a ramp.
-    process (adc_clk, dsp_reset_n) begin
-        if dsp_reset_n = '1' then
-            if rising_edge(adc_clk) then
-                if dsp_clk_ok then
-                    adc_data <= adc_data + 1;
-                end if;
-            end if;
+    process (adc_clk) begin
+        if rising_edge(adc_clk) then
+            for c in CHANNELS loop
+                adc_data <= adc_data + 1;
+            end loop;
         end if;
     end process;
 

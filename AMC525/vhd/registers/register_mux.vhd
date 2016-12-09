@@ -13,26 +13,26 @@ entity register_mux is
     port (
         clk_i : in std_logic;
 
+        -- Register write.
+        write_strobe_i : in std_logic;
+        write_address_i : in unsigned;
+        write_data_i : in reg_data_t;
+        write_ack_o : out std_logic;
+
+        write_strobe_o : out std_logic_vector;
+        write_data_o : out reg_data_t;
+        write_ack_i : in std_logic_vector;
+
         -- Register read.
         read_strobe_i : in std_logic;
-        read_address_i : in reg_addr_t;
+        read_address_i : in unsigned;
         read_data_o : out reg_data_t;
         read_ack_o : out std_logic;
 
         -- Multiplexed registers
         read_data_i : in reg_data_array_t;      -- Individual read registers
-        read_strobe_o : out reg_strobe_t;       -- Individual read selects
-        read_ack_i : in reg_strobe_t;           -- Individual read acknowlege
-
-        -- Register write.
-        write_strobe_i : in std_logic;
-        write_address_i : in reg_addr_t;
-        write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
-
-        write_strobe_o : out reg_strobe_t;
-        write_data_o : out reg_data_t;
-        write_ack_i : in reg_strobe_t
+        read_strobe_o : out std_logic_vector;   -- Individual read selects
+        read_ack_i : in std_logic_vector        -- Individual read acknowlege
     );
 end;
 
@@ -42,6 +42,10 @@ architecture register_mux of register_mux is
     signal read_ack : std_logic;
 
 begin
+    -- The strobe instances already check that read and write ranges are
+    -- ascending and zero based, so we just need to check read_data_i.
+    assert read_data_i'LOW = 0 and read_data_i'LENGTH = read_ack_i'LENGTH;
+
     write_strobe_inst : entity work.register_mux_strobe port map (
         clk_i => clk_i,
         strobe_i => write_strobe_i,
@@ -66,7 +70,12 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            read_data <= read_data_i(read_address);
+            -- All addreses beyond the decoded range return 0
+            if read_address <= read_data_i'HIGH then
+                read_data <= read_data_i(read_address);
+            else
+                read_data <= (others => '0');
+            end if;
             if read_ack = '1' then
                 read_data_o <= read_data;
             end if;
@@ -75,13 +84,15 @@ begin
     end process;
 
 
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            -- Register the write data.  This improves fanout and timing.
-            if write_strobe_i = '1' then
-                write_data_o <= write_data_i;
-            end if;
-        end if;
-    end process;
+    write_data_o <= write_data_i;
+
+--     process (clk_i) begin
+--         if rising_edge(clk_i) then
+--             -- Register the write data.  This improves fanout and timing.
+--             if write_strobe_i = '1' then
+--                 write_data_o <= write_data_i;
+--             end if;
+--         end if;
+--     end process;
 
 end;

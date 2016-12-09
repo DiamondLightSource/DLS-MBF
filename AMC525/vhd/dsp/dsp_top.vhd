@@ -100,6 +100,7 @@ architecture dsp_top of dsp_top is
     -- Data flow
     signal adc_data_in : signed(adc_data_i'RANGE);
     signal fir_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
+--     signal dac_data_store : signed_array(LANES)(DAC_OUT_WIDTH-1 downto 0);
     signal dac_data_out : signed(dac_data_o'RANGE);
 
 
@@ -198,6 +199,25 @@ begin
     dsp_to_control_o.nco_1_data <= nco_1_cos_sin;
 
 
+--     -- Output to memory
+--     memory_top_inst : entity work.memory_top port map (
+--         dsp_clk_i => dsp_clk_i,
+-- 
+--         adc_data_i => dsp_to_control_o.adc_data,
+--         fir_data_i => fir_data,
+--         dac_data_i => dac_data_store,
+-- 
+--         ddr0_data_o => ddr0_data_o,
+--         ddr1_data_o => ddr1_data_o,
+--         ddr1_data_strobe_o => ddr1_data_strobe_o,
+-- 
+--         write_strobe_i => write_strobe_i(MEM_REGS),
+--         write_data_i => write_data_i,
+--         write_ack_o => write_ack_o(MEM_REGS),
+--         read_strobe_i => read_strobe_i(MEM_REGS),
+--         read_data_o => read_data_o(MEM_REGS),
+--         read_ack_o => read_ack_o(MEM_REGS)
+--     );
     write_ack_o(MEM_REGS) <= (others => '1');
     read_data_o(MEM_REGS) <= (others => (others => '0'));
     read_ack_o(MEM_REGS) <= (others => '1');

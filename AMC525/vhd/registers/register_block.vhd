@@ -14,7 +14,7 @@ entity register_block is
         -- Register interface (write only)
         write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic := '0';
+        write_ack_o : out std_logic;
         -- Write start
         write_start_i : in std_logic;
 

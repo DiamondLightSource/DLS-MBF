@@ -34,6 +34,7 @@ package defines is
     constant FIR_BANK_BITS : natural := 2;
 
     constant FIR_DATA_WIDTH : natural := 36;
+    subtype FIR_DATA_RANGE is natural range FIR_DATA_WIDTH-1 downto 0;
 
 
     constant DDR0_ADDR_WIDTH : natural := 31;

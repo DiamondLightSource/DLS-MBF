@@ -9,18 +9,18 @@ use work.support.all;
 
 use work.dsp_defs.all;
 
-entity control_top is
+entity dsp_control_top is
     port (
         -- Clocking
         dsp_clk_i : in std_logic;
 
         -- Control register interface
-        write_strobe_i : in reg_strobe_t;
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out reg_strobe_t;
-        read_strobe_i : in reg_strobe_t;
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
         read_data_o : out reg_data_array_t;
-        read_ack_o : out reg_strobe_t;
+        read_ack_o : out std_logic_vector;
 
         -- DSP controls
         control_to_dsp0_o : out control_to_dsp_t;
@@ -28,22 +28,24 @@ entity control_top is
         control_to_dsp1_o : out control_to_dsp_t;
         dsp1_to_control_i : in dsp_to_control_t;
 
-        -- DDR0 DRAM capture control
-        ddr0_capture_enable_o : out std_logic;
-        ddr0_data_ready_i : in std_logic;
-        ddr0_capture_address_i : in ddr0_addr_t;
-        ddr0_data_valid_o : out std_logic;
-        ddr0_data_error_i : in std_logic;
-        ddr0_addr_error_i : in std_logic;
-        ddr0_brsp_error_i : in std_logic
+        -- DRAM0 DRAM capture control
+        dram0_capture_enable_o : out std_logic;
+        dram0_data_ready_i : in std_logic;
+        dram0_capture_address_i : in std_logic_vector;
+        dram0_data_valid_o : out std_logic;
+        dram0_data_o : out std_logic_vector;
+        dram0_data_error_i : in std_logic;
+        dram0_addr_error_i : in std_logic;
+        dram0_brsp_error_i : in std_logic
     );
 end;
 
-architecture control_top of control_top is
+architecture dsp_control_top of dsp_control_top is
+    constant REG_COUNT : natural := write_strobe_i'LENGTH;
     constant PULSED_REG : natural := 0;
     constant CONTROL_REG : natural := 1;
-    constant MEM_GEN_REG : natural := 2;
-    subtype UNUSED_REG is natural range 3 to REG_ADDR_COUNT-1;
+    subtype MEM_REG is natural range 2 to 3;
+    subtype UNUSED_REG is natural range 4 to REG_COUNT-1;
 
     signal pulsed_bits : reg_data_t;
     signal control : reg_data_t;
@@ -82,34 +84,15 @@ begin
     read_ack_o(CONTROL_REG) <= '1';
 
 
-    -- Memory generator.
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            if write_strobe_i(MEM_GEN_REG) = '1' then
-                ddr0_capture_enable_o <= '1';
-                write_counter <= unsigned(write_data_i(DDR0_ADDR_RANGE));
-            elsif write_counter > 0 then
-                write_counter <= write_counter - 1;
-            else
-                ddr0_capture_enable_o <= '0';
-            end if;
-        end if;
-    end process;
-    write_ack_o(MEM_GEN_REG) <= '1';
-    ddr0_data_valid_o <= '1';
-
     pulsed_bits <= (
-        0 => ddr0_data_error_i,
-        1 => ddr0_addr_error_i,
-        2 => ddr0_brsp_error_i,
+        0 => dram0_data_error_i,
+        1 => dram0_addr_error_i,
+        2 => dram0_brsp_error_i,
         others => '0'
     );
 
-    read_data_o(MEM_GEN_REG) <= "0" & ddr0_capture_address_i;
-    read_ack_o(MEM_GEN_REG) <= '1';
 
-
-    -- Data multiplexing control
+    -- Channel data multiplexing control
     adc_mux <= control(0);
     nco_0_mux <= control(1);
     nco_1_mux <= control(2);
@@ -124,6 +107,31 @@ begin
         dsp0_to_control_i => dsp0_to_control_i,
         control_to_dsp1_o => control_to_dsp1_o,
         dsp1_to_control_i => dsp1_to_control_i
+    );
+
+
+    -- DRAM0 capture control
+    fast_memory_top_inst : entity work.fast_memory_top port map (
+        dsp_clk_i => dsp_clk_i,
+
+        write_strobe_i => write_strobe_i(MEM_REG),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(MEM_REG),
+        read_strobe_i => read_strobe_i(MEM_REG),
+        read_data_o => read_data_o(MEM_REG),
+        read_ack_o => read_ack_o(MEM_REG),
+
+        dsp0_to_control_i => dsp0_to_control_i,
+        dsp1_to_control_i => dsp1_to_control_i,
+
+        capture_enable_o => dram0_capture_enable_o,
+        data_ready_i => dram0_data_ready_i,
+        capture_address_i => dram0_capture_address_i,
+        data_valid_o => dram0_data_valid_o,
+        data_o => dram0_data_o,
+        data_error_i => dram0_data_error_i,
+        addr_error_i => dram0_addr_error_i,
+        brsp_error_i => dram0_brsp_error_i
     );
 
 
