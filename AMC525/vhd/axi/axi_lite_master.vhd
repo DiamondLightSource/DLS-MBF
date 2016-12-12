@@ -41,7 +41,7 @@ end;
 architecture axi_lite_master of axi_lite_master is
     constant DATA_WIDTH : natural := data_i'LENGTH;
     constant ADDR_WIDTH : natural := address_i'LENGTH;
-    constant BASE_BITS : natural := bits(DATA_WIDTH-1);
+    constant BASE_BITS : natural := bits(DATA_WIDTH-1) - 3; -- Byte address
 
 begin
     -- Sanity check on widths
@@ -54,15 +54,16 @@ begin
     -- Assemble write address from the real write address, the given padding at
     -- the top, and zero padding for the byte offset at the bottom.
     awaddr_o(BASE_BITS-1 downto 0) <= (others => '0');
-    awaddr_o(ADDR_WIDTH+BASE_BITS-1 downto BASE_BITS) <= address_i;
+    awaddr_o(ADDR_WIDTH+BASE_BITS-1 downto BASE_BITS) <=
+        std_logic_vector(address_i);
     awaddr_o(awaddr_o'LEFT downto ADDR_WIDTH+BASE_BITS) <= ADDR_PADDING;
 
     awprot_o <= "010";                  -- Unprivileged non-secure data access
     wstrb_o <= (others => '1');         -- Always write all bytes
 
-    process (clk_i, rstn_i) begin
-        if rstn_i = '0' then
-        elsif rising_edge(clk_i) then
-        end if;
-    end process;
+--     process (clk_i, rstn_i) begin
+--         if rstn_i = '0' then
+--         elsif rising_edge(clk_i) then
+--         end if;
+--     end process;
 end;

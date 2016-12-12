@@ -17,14 +17,14 @@ entity register_top is
         dsp_clk_ok_i : in std_logic;
 
         -- Register interface from AXI
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic;
         write_address_i : in unsigned;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
+        write_ack_o : out std_logic;
+        read_strobe_i : in std_logic;
         read_address_i : in unsigned;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        read_data_o : out reg_data_t;
+        read_ack_o : out std_logic;
 
         -- System registers on REG clk.
         system_write_strobe_o : out std_logic_vector;
@@ -41,7 +41,7 @@ entity register_top is
         dsp_write_ack_i : in std_logic;
         dsp_read_strobe_o : out std_logic;
         dsp_read_address_o : out unsigned;
-        dsp_read_data_i : in reg_data_array_t;
+        dsp_read_data_i : in reg_data_t;
         dsp_read_ack_i : in std_logic
     );
 end;
@@ -50,14 +50,15 @@ architecture register_top of register_top is
     constant SYSTEM_MOD : natural := 0;
     constant DSP_MOD : natural := 1;
 
+    subtype TOP_ADDR_RANGE is natural range write_address_i'LEFT-1 downto 0;
     signal top_write_strobe : std_logic_vector(0 to 1);
-    signal top_write_address : unsigned(write_address_i'LEFT-2 downto 0);
+    signal top_write_address : unsigned(TOP_ADDR_RANGE);
     signal top_write_data : reg_data_t;
     signal top_write_ack : std_logic_vector(0 to 1);
 
     signal top_read_strobe : std_logic_vector(0 to 1);
-    signal top_read_address : unsigned(read_address_i'LEFT-2 downto 0);
-    signal top_read_data : reg_data_t;
+    signal top_read_address : unsigned(TOP_ADDR_RANGE);
+    signal top_read_data : reg_data_array_t(0 to 1);
     signal top_read_ack : std_logic_vector(0 to 1);
 
 begin
@@ -84,8 +85,8 @@ begin
         read_data_i => top_read_data,
         read_ack_i => top_read_ack
     );
-    top_read_address  <= read_address_i(read_address_i'LEFT-1 downto 0);
-    top_write_address <= write_address_i(write_address_i'LEFT-1 downto 0);
+    top_read_address  <= read_address_i(TOP_ADDR_RANGE);
+    top_write_address <= write_address_i(TOP_ADDR_RANGE);
 
 
     -- System control registers on external register clock

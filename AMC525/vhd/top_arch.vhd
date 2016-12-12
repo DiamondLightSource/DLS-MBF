@@ -2,7 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.support.all;
 use work.defines.all;
+
 use work.fmc500m_defs.all;
 use work.dsp_defs.all;
 
@@ -123,9 +125,9 @@ architecture top of top is
 
     -- Connections to FMC500M on FMC0
     signal adc_dco : std_logic;
-    signal dsp_adc_data signed_array(CHANNELS)(13 downto 0);
-    signal dsp_dac_data signed_array(CHANNELS)(15 downto 0);
-    signal dac_data signed_array(CHANNELS)(15 downto 0);
+    signal dsp_adc_data : signed_array(CHANNELS)(13 downto 0);
+    signal dsp_dac_data : signed_array(CHANNELS)(15 downto 0);
+    signal dac_data : signed_array(CHANNELS)(15 downto 0);
     signal dac_frame : std_logic;
     signal fast_ext_trigger : std_logic;
     signal fmc500_outputs : fmc500_outputs_t;
@@ -473,7 +475,7 @@ begin
     -- AXI burst master for streaming data to DRAM0 DRAM
     axi_burst_master_inst : entity work.axi_burst_master generic map (
         BURST_LENGTH => 32,
-        ADDR_PADDING => X"8000" & '0';
+        ADDR_PADDING => X"8000" & '0'
     ) port map (
         clk_i => dsp_clk,
         rstn_i => dsp_reset_n,
@@ -518,7 +520,7 @@ begin
         ADDR_PADDING => X"8000_8" & '0'
     ) port map (
         clk_i => dsp_clk,
-        rstn_i => dsp_rstn,
+        rstn_i => dsp_reset_n,
 
         awaddr_o => DSP_DRAM1_awaddr,
         awprot_o => DSP_DRAM1_awprot,

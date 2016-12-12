@@ -123,7 +123,7 @@ architecture axi_lite_slave of axi_lite_slave is
     -- Extracts register address from AXI address
     function register_address(addr : std_logic_vector) return unsigned
     is begin
-        return unsigned(read_field(ADDR_WIDTH, BYTE_BITS));
+        return unsigned(read_field(addr, ADDR_WIDTH, BYTE_BITS));
     end;
 
 begin
