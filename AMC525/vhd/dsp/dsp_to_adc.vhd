@@ -23,7 +23,7 @@ end;
 architecture dsp_to_adc of dsp_to_adc is
     signal adc_phase_in : std_logic;
     signal adc_phase : LANES;
-    signal dsp_data : signed_array(LANES)(dsp_data_i'ELEMENT'RANGE);
+    signal dsp_data : signed_array(LANES)(dsp_data_i(0)'RANGE);
 
 begin
     -- Timing for DSP to ADC conversion

@@ -22,7 +22,7 @@ end;
 architecture bunch_fir of bunch_fir is
     -- Widths and counts derived from arguments.
     constant TAP_COUNT : natural := taps_i'LENGTH;
-    constant TAP_WIDTH : natural := taps_i'ELEMENT'LENGTH;
+    constant TAP_WIDTH : natural := taps_i(0)'LENGTH;
     constant DATA_IN_WIDTH : natural := data_i'LENGTH;
     constant DATA_OUT_WIDTH : natural := data_o'LENGTH;
 

@@ -28,8 +28,8 @@ entity bunch_fir_taps is
 end;
 
 architecture bunch_fir_taps of bunch_fir_taps is
-    constant TAP_COUNT : natural := taps_o'ELEMENT'LENGTH;
-    constant TAP_WIDTH : natural := taps_o'ELEMENT'ELEMENT'LENGTH;
+    constant TAP_COUNT : natural := taps_o(0)'LENGTH;
+    constant TAP_WIDTH : natural := taps_o(0)(0)'LENGTH;
 
     subtype BANKS_RANGE is natural range 0 to 2**FIR_BANK_BITS-1;
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;

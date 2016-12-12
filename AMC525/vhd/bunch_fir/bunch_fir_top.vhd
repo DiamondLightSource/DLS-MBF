@@ -38,7 +38,7 @@ entity bunch_fir_top is
 end;
 
 architecture bunch_fir_top of bunch_fir_top is
-    constant FIR_DATA_WIDTH : natural := data_o'ELEMENT'LENGTH;
+    constant FIR_DATA_WIDTH : natural := data_o(0)'LENGTH;
 
     -- Register map
     constant CONFIG_REG : natural := 0;
