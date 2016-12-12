@@ -32,13 +32,13 @@ entity min_max_sum_update is
     port (
         clk_i : in std_logic;
 
-        data_i : in signed;
+        data_i : in signed(15 downto 0);
         mms_i : in mms_row_t;
         mms_o : out mms_row_t;
 
         sum_overflow_o : out std_logic;
         sum2_overflow_o : out std_logic;
-        delta_o : out unsigned
+        delta_o : out unsigned(15 downto 0)
     );
 end;
 
@@ -46,11 +46,11 @@ architecture min_max_sum_update of min_max_sum_update is
     -- We hang onto the computed min and max values so that the delta can be
     -- computed accurately now, and not one turn later -- we could even miss an
     -- event if a buffer swap occurred at the wrong time!
-    signal data_pl : signed(data_i'RANGE) := (others => '0');
-    signal data : signed(data_i'RANGE) := (others => '0');
+    signal data_pl : signed(15 downto 0) := (others => '0');
+    signal data : signed(15 downto 0) := (others => '0');
     signal mms : mms_row_t := mms_reset_value;
     signal product : signed(31 downto 0) := (others => '0');
-    signal delta : unsigned(delta_o'RANGE) := (others => '0');
+    signal delta : unsigned(15 downto 0) := (others => '0');
 
     -- Overflow detection
     signal old_sum_top : std_logic_vector(1 downto 0);

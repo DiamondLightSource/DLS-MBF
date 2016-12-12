@@ -16,8 +16,8 @@ entity min_max_sum is
         dsp_clk_i : in std_logic;
         turn_clock_i : in std_logic;
 
-        data_i : in signed_array;
-        delta_o : out unsigned_array;
+        data_i : in signed_array(LANES)(15 downto 0);
+        delta_o : out unsigned_array(LANES)(15 downto 0);
         overflow_o : out std_logic;
 
         -- Two register readout interface:
