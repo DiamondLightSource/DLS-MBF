@@ -44,6 +44,7 @@ architecture testbench of testbench is
     signal dram1_data : std_logic_vector(63 downto 0);
     signal dram1_data_valid : std_logic;
     signal dram1_data_ready : std_logic;
+    signal dram1_brsp_error : std_logic;
 
 begin
     clock_inst : entity work.clock_support port map (
@@ -92,7 +93,8 @@ begin
         dram1_address_o => dram1_address,
         dram1_data_o => dram1_data,
         dram1_data_valid_o => dram1_data_valid,
-        dram1_data_ready_i => dram1_data_ready
+        dram1_data_ready_i => dram1_data_ready,
+        dram1_brsp_error_i => dram1_brsp_error
     );
 
 

@@ -13,7 +13,7 @@ end;
 architecture clock_support of clock_support is
     signal adc_clk : std_logic := '1';
     signal dsp_clk : std_logic := '0';
-    signal dsp_reset_n : std_logic;
+    signal dsp_reset_n : std_logic := '0';
     signal dsp_clk_ok : std_logic;
 
 begin
