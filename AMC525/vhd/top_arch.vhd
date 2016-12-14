@@ -105,6 +105,7 @@ architecture top of top is
     signal DRAM1_data : std_logic_vector(63 downto 0);
     signal DRAM1_data_valid : std_logic;
     signal DRAM1_data_ready : std_logic;
+    signal DRAM1_brsp_error : std_logic;
 
     -- Internal register path from AXI conversion
     signal REGS_write_strobe : std_logic;
@@ -475,6 +476,7 @@ begin
     -- AXI burst master for streaming data to DRAM0 DRAM
     axi_burst_master_inst : entity work.axi_burst_master generic map (
         BURST_LENGTH => 32,
+        -- Base address: 0x8000_0000_0000 to 0x8000_7FFF_FFFF
         ADDR_PADDING => X"8000" & '0'
     ) port map (
         clk_i => dsp_clk,
@@ -537,7 +539,8 @@ begin
         address_i => DRAM1_address,
         data_i => DRAM1_data,
         data_valid_i => DRAM1_data_valid,
-        data_ready_o => DRAM1_data_ready
+        data_ready_o => DRAM1_data_ready,
+        brsp_error_o => DRAM1_brsp_error
     );
 
 
@@ -698,7 +701,8 @@ begin
         DRAM1_address_o => DRAM1_address,
         DRAM1_data_o => DRAM1_data,
         DRAM1_data_valid_o => DRAM1_data_valid,
-        DRAM1_data_ready_i => DRAM1_data_ready
+        DRAM1_data_ready_i => DRAM1_data_ready,
+        DRAM1_brsp_error_i => DRAM1_brsp_error
     );
 
     -- Generate DAC test data if necessary

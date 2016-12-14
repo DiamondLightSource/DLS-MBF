@@ -28,7 +28,7 @@ entity dsp_control_top is
         control_to_dsp1_o : out control_to_dsp_t;
         dsp1_to_control_i : in dsp_to_control_t;
 
-        -- DRAM0 DRAM capture control
+        -- DRAM0 capture control
         dram0_capture_enable_o : out std_logic;
         dram0_data_ready_i : in std_logic;
         dram0_capture_address_i : in std_logic_vector;
@@ -36,7 +36,10 @@ entity dsp_control_top is
         dram0_data_o : out std_logic_vector;
         dram0_data_error_i : in std_logic;
         dram0_addr_error_i : in std_logic;
-        dram0_brsp_error_i : in std_logic
+        dram0_brsp_error_i : in std_logic;
+
+        -- DRAM1 write error report.  Should never happen
+        dram1_brsp_error_i : in std_logic
     );
 end;
 
@@ -88,6 +91,7 @@ begin
         0 => dram0_data_error_i,
         1 => dram0_addr_error_i,
         2 => dram0_brsp_error_i,
+        3 => dram1_brsp_error_i,
         others => '0'
     );
 

@@ -45,7 +45,8 @@ entity dsp_main is
         dram1_address_o : out unsigned;
         dram1_data_o : out std_logic_vector;
         dram1_data_valid_o : out std_logic;
-        dram1_data_ready_i : in std_logic
+        dram1_data_ready_i : in std_logic;
+        dram1_brsp_error_i : in std_logic
     );
 end;
 
@@ -97,9 +98,10 @@ architecture dsp_main of dsp_main is
     signal control_to_dsp : control_to_dsp_array_t;
 
     -- DRAM1 interface
+    subtype DSP_DRAM_ADDRESS is natural range dram1_address_o'LEFT-1 downto 0;
     signal dram1_strobe : std_logic_vector(CHANNELS);
-    signal dram1_ready : std_logic_vector(CHANNELS);
-    signal dram1_address : unsigned_array(CHANNELS)(dram1_address_o'RANGE);
+    signal dram1_error : std_logic_vector(CHANNELS);
+    signal dram1_address : unsigned_array(CHANNELS)(DSP_DRAM_ADDRESS);
     signal dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
 
 begin
@@ -175,7 +177,9 @@ begin
         dram0_data_o => dram0_data_o,
         dram0_data_error_i => dram0_data_error_i,
         dram0_addr_error_i => dram0_addr_error_i,
-        dram0_brsp_error_i => dram0_brsp_error_i
+        dram0_brsp_error_i => dram0_brsp_error_i,
+
+        dram1_brsp_error_i => dram1_brsp_error_i
     );
 
 
@@ -222,7 +226,7 @@ begin
             dsp_to_control_o => dsp_to_control(c),
 
             dram1_strobe_o => dram1_strobe(c),
-            dram1_ready_i => dram1_ready(c),
+            dram1_error_i => dram1_error(c),
             dram1_address_o => dram1_address(c),
             dram1_data_o => dram1_data(c)
         );
@@ -234,9 +238,9 @@ begin
         dsp_clk_i => dsp_clk_i,
 
         dsp_strobe_i => dram1_strobe,
-        dsp_ready_o => dram1_ready,
         dsp_address_i => dram1_address,
         dsp_data_i => dram1_data,
+        dsp_error_o => dram1_error,
 
         dram1_address_o => dram1_address_o,
         dram1_data_o => dram1_data_o,

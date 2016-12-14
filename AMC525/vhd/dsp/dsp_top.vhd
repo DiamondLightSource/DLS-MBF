@@ -36,7 +36,7 @@ entity dsp_top is
 
         -- Data out to DRAM1
         dram1_strobe_o : out std_logic;
-        dram1_ready_i : in std_logic;
+        dram1_error_i : in std_logic;
         dram1_address_o : out unsigned;
         dram1_data_o : out std_logic_vector
     );
@@ -146,6 +146,7 @@ begin
         5 => dac_mux_overflow,      -- Overflow in output multiplexer
         6 => dac_mms_overflow,      -- DAC MMS accumulator overflow
         7 => dac_preemph_overflow,  -- Preemphasis filter overflow
+        8 => dram1_error_i,         -- Overrun writing to DRAM1
         others => '0'
     );
 
