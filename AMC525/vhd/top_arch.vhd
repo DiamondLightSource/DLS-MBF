@@ -31,6 +31,7 @@ architecture top of top is
 
     signal adc_phase : std_logic;
 
+    -- -------------------------------------------------------------------------
     -- Interconnect wiring
 
     -- Wiring from AXI-Lite master to register slave
@@ -55,7 +56,7 @@ architecture top of top is
     signal DSP_REGS_bvalid : std_logic;
 
     -- Wiring from DSP burst master to AXI DRAM0 slave
-    signal DSP_DRAM0_awaddr : std_logic_vector(47 downto 0);
+    signal DSP_DRAM0_awaddr : std_logic_vector(47 downto 0);    -- AW
     signal DSP_DRAM0_awburst : std_logic_vector(1 downto 0);
     signal DSP_DRAM0_awcache : std_logic_vector(3 downto 0);
     signal DSP_DRAM0_awlen : std_logic_vector(7 downto 0);
@@ -66,31 +67,42 @@ architecture top of top is
     signal DSP_DRAM0_awsize : std_logic_vector(2 downto 0);
     signal DSP_DRAM0_awready : std_logic;
     signal DSP_DRAM0_awvalid : std_logic;
-    signal DSP_DRAM0_wdata : std_logic_vector(63 downto 0);
+    signal DSP_DRAM0_wdata : std_logic_vector(63 downto 0);     -- W
     signal DSP_DRAM0_wlast : std_logic;
     signal DSP_DRAM0_wstrb : std_logic_vector(7 downto 0);
     signal DSP_DRAM0_wready : std_logic;
     signal DSP_DRAM0_wvalid : std_logic;
-    signal DSP_DRAM0_bresp : std_logic_vector(1 downto 0);
+    signal DSP_DRAM0_bresp : std_logic_vector(1 downto 0);      -- B
     signal DSP_DRAM0_bready : std_logic;
     signal DSP_DRAM0_bvalid : std_logic;
 
-    -- Wiring from DSP slow write master to AXI DRAM1 slave
-    signal DSP_DRAM1_awaddr : std_logic_vector(47 downto 0);
+    -- Wiring from DSP slow write master to AXI-Lite DRAM1 slave
+    signal DSP_DRAM1_awaddr : std_logic_vector(47 downto 0);    -- AW
     signal DSP_DRAM1_awprot : std_logic_vector(2 downto 0);
     signal DSP_DRAM1_awready : std_logic;
     signal DSP_DRAM1_awvalid : std_logic;
-    signal DSP_DRAM1_bready : std_logic;
-    signal DSP_DRAM1_bresp : std_logic_vector(1 downto 0);
-    signal DSP_DRAM1_bvalid : std_logic;
-    signal DSP_DRAM1_wdata : std_logic_vector(63 downto 0);
-    signal DSP_DRAM1_wready : std_logic;
+    signal DSP_DRAM1_wdata : std_logic_vector(63 downto 0);     -- W
     signal DSP_DRAM1_wstrb : std_logic_vector(7 downto 0);
+    signal DSP_DRAM1_wready : std_logic;
     signal DSP_DRAM1_wvalid : std_logic;
+    signal DSP_DRAM1_bresp : std_logic_vector(1 downto 0);      -- B
+    signal DSP_DRAM1_bready : std_logic;
+    signal DSP_DRAM1_bvalid : std_logic;
 
+    -- -------------------------------------------------------------------------
     -- Memory controller wiring
 
-    -- Data from DSP to burst master
+    -- Internal register path from AXI conversion
+    signal REGS_write_strobe : std_logic;
+    signal REGS_write_address : unsigned(13 downto 0);
+    signal REGS_write_data : std_logic_vector(31 downto 0);
+    signal REGS_write_ack : std_logic;
+    signal REGS_read_strobe : std_logic;
+    signal REGS_read_address : unsigned(13 downto 0);
+    signal REGS_read_data : std_logic_vector(31 downto 0);
+    signal REGS_read_ack : std_logic;
+
+    -- Data from DSP to DRAM0 burst master
     signal DRAM0_capture_enable : std_logic;
     signal DRAM0_data_ready : std_logic;
     signal DRAM0_capture_address : std_logic_vector(30 downto 0);
@@ -107,16 +119,7 @@ architecture top of top is
     signal DRAM1_data_ready : std_logic;
     signal DRAM1_brsp_error : std_logic;
 
-    -- Internal register path from AXI conversion
-    signal REGS_write_strobe : std_logic;
-    signal REGS_write_address : unsigned(13 downto 0);
-    signal REGS_write_data : std_logic_vector(31 downto 0);
-    signal REGS_write_ack : std_logic;
-    signal REGS_read_strobe : std_logic;
-    signal REGS_read_address : unsigned(13 downto 0);
-    signal REGS_read_data : std_logic_vector(31 downto 0);
-    signal REGS_read_ack : std_logic;
-
+    -- -------------------------------------------------------------------------
     -- FMC wiring
 
     -- Digital I/O on FMC0
@@ -134,7 +137,18 @@ architecture top of top is
     signal fmc500_outputs : fmc500_outputs_t;
     signal fmc500_inputs : fmc500_inputs_t;
 
+    -- FMC500 SPI interface
+    signal fmc500m_spi_write_strobe : std_logic;
+    signal fmc500m_spi_write_data : reg_data_t;
+    signal fmc500m_spi_write_ack : std_logic;
+    signal fmc500m_spi_read_strobe : std_logic;
+    signal fmc500m_spi_read_data : reg_data_t;
+    signal fmc500m_spi_read_ack : std_logic;
+
+    -- -------------------------------------------------------------------------
     -- Top register wiring
+
+    -- System register wiring
     signal system_write_strobe : std_logic_vector(0 to 6);
     signal system_write_data : reg_data_t;
     signal system_write_ack : std_logic_vector(0 to 6);
@@ -142,6 +156,7 @@ architecture top of top is
     signal system_read_data : reg_data_array_t(0 to 6);
     signal system_read_ack : std_logic_vector(0 to 6);
 
+    -- DSP control register wiring
     signal dsp_write_strobe : std_logic;
     signal dsp_write_address : unsigned(12 downto 0);
     signal dsp_write_data : reg_data_t;
@@ -151,37 +166,19 @@ architecture top of top is
     signal dsp_read_data : reg_data_t;
     signal dsp_read_ack : std_logic;
 
-    -- System register wiring
     -- Control registers
     signal version_data : reg_data_t;
     signal status_data : reg_data_t;
     signal control_data : reg_data_t;
+
     -- IDELAY control
     signal idelay_write_strobe : std_logic;
     signal idelay_write_data : reg_data_t;
     signal idelay_read_data : reg_data_t;
+
     -- DAC test
     signal dac_test_pattern : reg_data_array_t(0 to 1);
     signal dac_test_mode : std_logic;
-
-    -- FMC500 SPI interface
-    signal fmc500m_spi_write_strobe : std_logic;
-    signal fmc500m_spi_write_data : reg_data_t;
-    signal fmc500m_spi_write_ack : std_logic;
-    signal fmc500m_spi_read_strobe : std_logic;
-    signal fmc500m_spi_read_data : reg_data_t;
-    signal fmc500m_spi_read_ack : std_logic;
-
-    -- Connections to DSP units
-    signal dsp0_dram1_data : std_logic_vector(63 downto 0);
-    signal dsp0_dram1_data_strobe : std_logic;
-    signal control_to_dsp0 : control_to_dsp_t;
-    signal dsp0_to_control : dsp_to_control_t;
-
-    signal dsp1_dram1_data : std_logic_vector(63 downto 0);
-    signal dsp1_dram1_data_strobe : std_logic;
-    signal control_to_dsp1 : control_to_dsp_t;
-    signal dsp1_to_control : dsp_to_control_t;
 
 begin
 

@@ -22,11 +22,11 @@ entity debug is
 
         -- Readout and control interface.
         write_strobe_i : in std_logic;
-        write_address_i : in reg_addr_t;
+        write_address_i : in unsigned;
         write_data_i : in reg_data_t;
 
         read_strobe_i : in std_logic;
-        read_address_i : in reg_addr_t;
+        read_address_i : in unsigned;
         read_data_o : out reg_data_t;
         read_ack_o : out std_logic
     );

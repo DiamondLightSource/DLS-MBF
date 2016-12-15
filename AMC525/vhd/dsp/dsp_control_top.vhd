@@ -57,9 +57,6 @@ architecture dsp_control_top of dsp_control_top is
     signal nco_0_mux : std_logic;
     signal nco_1_mux : std_logic;
 
-    -- Counter for simulated memory generator
-    signal write_counter : unsigned(DDR0_ADDR_RANGE);
-
 begin
     -- Capture of pulsed bits.
     pulsed_bits_inst : entity work.pulsed_bits port map (

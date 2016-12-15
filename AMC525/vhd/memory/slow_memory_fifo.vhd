@@ -31,6 +31,7 @@ architecture slow_memory_fifo of slow_memory_fifo is
     signal fifo : vector_array(0 to 2**FIFO_BITS-1)(write_data_i'RANGE);
 
     signal write_ready : boolean;
+    signal read_ready : boolean;
     signal do_read : boolean;
 
     type buffer_state_t is (IDLE, BUSY);
@@ -38,10 +39,11 @@ architecture slow_memory_fifo of slow_memory_fifo is
 
 begin
     write_ready <= in_ptr + 1 /= out_ptr;
+    read_ready  <= in_ptr /= out_ptr;
+
     -- We replenish the output buffer when we can: when the data has been taken
     -- and we have data to write.
-    do_read <=
-        in_ptr /= out_ptr and (buffer_state = IDLE or read_ready_i = '1');
+    do_read <= read_ready and (buffer_state = IDLE or read_ready_i = '1');
 
     process (clk_i) begin
         if rising_edge(clk_i) then

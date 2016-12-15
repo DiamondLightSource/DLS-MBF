@@ -1,16 +1,13 @@
 -- Implements register interface to LMBF system
 
 -- This is an AXI-Lite slave which only accepts full 32-bit writes.  The
--- incoming 16-bit address is split into four parts:
+-- incoming address is split into three parts, where ADDR_WIDTH is determined
+-- by the size of read_address_o (and write_address_o):
 --
---  +----------+---------------+---------------+------+
---  | Ignored  | Module select | Reg address   | Byte |
---  +----------+---------------+---------------+------+
---              MOD_ADDR_BITS   REG_ADDR_BITS   BYTE_BITS
---
--- The module select field is used to determine which sub-module receives the
--- associated read or write, and the reg address field is passed through to the
--- sub-module.
+--  +----------+-------------------------------+------+
+--  | Ignored  | Outgoing address              | Byte |
+--  +----------+-------------------------------+------+
+--              ADDR_WIDTH                      BYTE_BITS
 --
 -- The internal write interface is quite simple: write_strobe_o is pulsed for
 -- one clock cycle after the write_address and write_data outputs are valid.
@@ -23,7 +20,8 @@
 --                                    _______
 --  write_strobe_o  _________________/       \_______
 --
--- This means that modules can implement a simple one-cycle write interface.
+-- This means that modules can implement a simple one-cycle write interface by
+-- holding write_ack_i high.
 --
 -- Inevitably, the read interface is a little more involved, and completion can
 -- be stretched by the module using the module specific read_ack signal.  For
