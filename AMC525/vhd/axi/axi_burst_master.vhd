@@ -103,7 +103,7 @@ architecture axi_burst_master of axi_burst_master is
 
 begin
     -- Sanity check on parameters
-    assert DATA_WIDTH = 2**DATA_ADDR_BITS;
+    assert DATA_WIDTH = 8 * 2**DATA_ADDR_BITS;
     assert BURST_LENGTH = 2**BURST_BITS;
 
 
