@@ -10,6 +10,7 @@ vsim -t 1ps \
 
 view wave
 
+add wave -group "ADC Phase" sim:/testbench/clock_inst/adc_phase_inst/*
 add wave -group "Clocks" sim:/testbench/clock_inst/*
 
 add wave -group "Bunch" sim:/testbench/dsp_top_inst/bunch_select_inst/*

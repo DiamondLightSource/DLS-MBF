@@ -48,10 +48,10 @@ architecture testbench of testbench is
     signal read_data : reg_data_t;
     signal read_ack : std_logic;
     signal adc_dco : std_logic;
-    signal adc_data_a : adc_inp_t;
-    signal adc_data_b : adc_inp_t;
-    signal dac_data_a : dac_out_t;
-    signal dac_data_b : dac_out_t;
+    signal adc_data_a : signed(13 downto 0);
+    signal adc_data_b : signed(13 downto 0);
+    signal dac_data_a : signed(15 downto 0);
+    signal dac_data_b : signed(15 downto 0);
     signal dac_frame : std_logic;
     signal ext_trig : std_logic;
     signal misc_outputs : fmc500_outputs_t;

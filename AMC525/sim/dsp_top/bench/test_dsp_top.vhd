@@ -20,12 +20,12 @@ architecture testbench of testbench is
     signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
     signal dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
 
-    signal write_strobe : reg_strobe_t := (others => '0');
+    signal write_strobe : std_logic_vector(0 to 15) := (others => '0');
     signal write_data : reg_data_t := (others => '0');
-    signal write_ack : reg_strobe_t;
-    signal read_strobe : reg_strobe_t := (others => '0');
-    signal read_data : reg_data_array_t(REG_ADDR_RANGE);
-    signal read_ack : reg_strobe_t;
+    signal write_ack : std_logic_vector(0 to 15);
+    signal read_strobe : std_logic_vector(0 to 15) := (others => '0');
+    signal read_data : reg_data_array_t(0 to 15);
+    signal read_ack : std_logic_vector(0 to 15);
 
     signal dram1_strobe : std_logic;
     signal dram1_error : std_logic;

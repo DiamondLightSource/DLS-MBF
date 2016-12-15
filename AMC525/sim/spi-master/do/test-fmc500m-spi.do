@@ -9,10 +9,10 @@ vlib msim/xil_defaultlib
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
-    $vhd_dir/spi_master.vhd \
+    $vhd_dir/fmc/spi_master.vhd \
     $vhd_dir/fmc/fmc500m_spi.vhd
 
-vcom -64 -93 -work xil_defaultlib \
+vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/test_fmc500m_spi.vhd
 
 

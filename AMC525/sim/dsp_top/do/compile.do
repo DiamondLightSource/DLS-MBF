@@ -21,7 +21,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/register_block.vhd \
-    $vhd_dir/adc_phase.vhd \
+    $vhd_dir/system/adc_phase.vhd \
     $vhd_dir/extract_signed.vhd \
     $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/fast_fir/fast_fir.vhd \
@@ -55,6 +55,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/bunch_fir/bunch_fir_interpolate.vhd \
     $vhd_dir/bunch_fir/bunch_fir.vhd \
     $vhd_dir/bunch_fir/bunch_fir_top.vhd \
+    $vhd_dir/memory/slow_memory_control.vhd \
     $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dsp/dsp_registers.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \

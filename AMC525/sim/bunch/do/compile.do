@@ -11,6 +11,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/defines.vhd \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/util/block_memory.vhd \
+    $vhd_dir/util/dlyline.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/bunch/bunch_defs.vhd \
     $vhd_dir/bunch/bunch_counter.vhd \

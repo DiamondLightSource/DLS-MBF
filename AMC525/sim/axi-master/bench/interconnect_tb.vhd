@@ -154,7 +154,8 @@ begin
 
     -- AXI burst master for streaming data to DDR0 DRAM
     axi_burst_master_inst : entity work.axi_burst_master generic map (
-        BURST_LENGTH => 32
+        BURST_LENGTH => 32,
+        ADDR_PADDING => X"8000" & '0'
     ) port map (
         clk_i => dsp_clk,
         rstn_i => dsp_reset_n,

@@ -32,19 +32,19 @@ architecture testbench of testbench is
 
 
     signal read_strobe_in : std_logic;
-    signal read_address : reg_addr_t;
+    signal read_address : unsigned(4 downto 0);
     signal read_data_out : reg_data_t;
     signal read_ack_out : std_logic;
-    signal read_data_in : reg_data_array_t(REG_ADDR_RANGE);
-    signal read_strobe_out : reg_strobe_t;
-    signal read_ack_in : reg_strobe_t;
+    signal read_data_in : reg_data_array_t(0 to 15);
+    signal read_strobe_out : std_logic_vector(0 to 15);
+    signal read_ack_in : std_logic_vector(0 to 15);
     signal write_strobe_in : std_logic;
-    signal write_address : reg_addr_t;
+    signal write_address : unsigned(4 downto 0);
     signal write_data_in : reg_data_t;
     signal write_ack_out : std_logic;
-    signal write_strobe_out : reg_strobe_t;
+    signal write_strobe_out : std_logic_vector(0 to 15);
     signal write_data_out : reg_data_t;
-    signal write_ack_in : reg_strobe_t;
+    signal write_ack_in : std_logic_vector(0 to 15);
 
 begin
     -- Basic register clock
@@ -76,13 +76,13 @@ begin
     -- Make the read data count its age so we can check we're reading the right
     -- value.
     process begin
-        for i in REG_ADDR_RANGE loop
+        for i in 0 to 15 loop
             read_data_in(i) <= std_logic_vector(to_unsigned(i, 16)) & X"0000";
         end loop;
         write_data_in <= (others => '0');
         while true loop
             tick_wait;
-            for i in REG_ADDR_RANGE loop
+            for i in 0 to 15 loop
                 read_data_in(i) <= reg_data_t(unsigned(read_data_in(i)) + 1);
             end loop;
             write_data_in <= reg_data_t(unsigned(write_data_in) + 1);

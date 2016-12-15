@@ -14,7 +14,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/sync_reset.vhd \
     $vhd_dir/util/edge_detect.vhd \
     $vhd_dir/util/block_memory.vhd \
-    $vhd_dir/adc_phase.vhd \
+    $vhd_dir/system/adc_phase.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
     $vhd_dir/min_max_sum/min_max_sum_bank.vhd \

@@ -19,7 +19,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/iodefs/oddr_array.vhd \
     $vhd_dir/fmc/fmc500m_defs.vhd \
     $vhd_dir/fmc/fmc500m_io.vhd \
-    $vhd_dir/spi_master.vhd \
+    $vhd_dir/fmc/spi_master.vhd \
     $vhd_dir/fmc/fmc500m_spi.vhd \
     $vhd_dir/registers/register_mux_strobe.vhd \
     $vhd_dir/registers/register_mux.vhd \
