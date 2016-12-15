@@ -29,40 +29,37 @@ end;
 
 architecture slow_memory_control of slow_memory_control is
     subtype ADDRESS_RANGE is natural range dram1_address_o'RANGE;
-    signal hack_register : reg_data_t;
     signal target_count : unsigned(ADDRESS_RANGE);
+    signal interval_shift_in : natural range 0 to 15;
     signal interval_shift : natural range 0 to 15;
     constant INTERVAL_BITS : natural := 16;
 
-    signal counter : unsigned(ADDRESS_RANGE);
-    signal interval_counter : unsigned(INTERVAL_BITS-1 downto 0);
-    signal data_counter : unsigned(63 downto 0);
-    signal address : unsigned(ADDRESS_RANGE);
+    signal counter : unsigned(ADDRESS_RANGE) := (others => '0');
+    signal interval_counter : unsigned(INTERVAL_BITS-1 downto 0)
+        := (others => '0');
+    signal data_counter : unsigned(63 downto 0) := (others => '0');
+    signal address : unsigned(ADDRESS_RANGE) := (others => '0');
 
 begin
-    hack_regs_inst : entity work.register_file port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i,
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o,
-        register_data_o(0) => hack_register
-    );
-
-    read_data_o(0) <= hack_register;
+    write_ack_o(0) <= '1';
+    read_data_o(0) <= (
+        ADDRESS_RANGE => std_logic_vector(address), others => '0');
     read_ack_o(0) <= '1';
 
-    target_count <= unsigned(hack_register(ADDRESS_RANGE));
-    interval_shift <= to_integer(unsigned(hack_register(31 downto 28)));
+    target_count <= unsigned(write_data_i(ADDRESS_RANGE));
+    interval_shift_in <= to_integer(unsigned(write_data_i(31 downto 28)));
 
 
     -- Dummy generator
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            if write_ack_o(0) = '1' then
+            if write_strobe_i(0) = '1' then
                 -- Start writing
                 counter <= target_count;
                 interval_counter <= shift_left(
-                    to_unsigned(1, INTERVAL_BITS), interval_shift);
+                    to_unsigned(1, INTERVAL_BITS), interval_shift_in);
+                interval_shift <= interval_shift_in;
+
                 data_counter <= (others => '0');
                 address <= (others => '0');
                 dram1_strobe_o <= '0';
@@ -73,6 +70,9 @@ begin
                 counter <= counter - 1;
                 data_counter <= data_counter + 1;
                 address <= address + 1;
+                interval_counter <= shift_left(
+                    to_unsigned(1, INTERVAL_BITS), interval_shift);
+
                 dram1_data_o <= std_logic_vector(data_counter);
                 dram1_address_o <= address;
                 dram1_strobe_o <= '1';
