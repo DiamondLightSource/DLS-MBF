@@ -47,7 +47,7 @@ architecture dsp_top of dsp_top is
     subtype DSP_REGS is natural range 0 to 1;
     subtype ADC_REGS is natural range 2 to 3;
     subtype BUNCH_REGS is natural range 4 to 5;
-    subtype MEM_REGS is natural range 6 to 6;
+    subtype SLOW_MEM_REGS is natural range 6 to 6;
     subtype B_FIR_REGS is natural range 7 to 8;
     subtype DAC_REGS is natural range 9 to 10;
     subtype HACK_REGS is natural range 11 to 13;
@@ -200,13 +200,21 @@ begin
     dsp_to_control_o.nco_1_data <= nco_1_cos_sin;
 
 
-    write_ack_o(MEM_REGS) <= (others => '1');
-    read_data_o(MEM_REGS) <= (others => (others => '0'));
-    read_ack_o(MEM_REGS) <= (others => '1');
+    slow_memory_control_inst : entity work.slow_memory_control port map (
+        dsp_clk_i => dsp_clk_i,
 
-    dram1_strobe_o <= '0';
-    dram1_address_o <= (dram1_address_o'RANGE => '0');
-    dram1_data_o <= (dram1_data_o'RANGE => '0');
+        write_strobe_i => write_strobe_i(SLOW_MEM_REGS),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(SLOW_MEM_REGS),
+        read_strobe_i => read_strobe_i(SLOW_MEM_REGS),
+        read_data_o => read_data_o(SLOW_MEM_REGS),
+        read_ack_o => read_ack_o(SLOW_MEM_REGS),
+
+        dram1_strobe_o => dram1_strobe_o,
+        dram1_error_i => dram1_error_i,
+        dram1_address_o => dram1_address_o,
+        dram1_data_o => dram1_data_o
+    );
 
 
     -- -------------------------------------------------------------------------

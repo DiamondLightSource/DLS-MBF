@@ -686,20 +686,20 @@ begin
         read_data_o => dsp_read_data,
         read_ack_o => dsp_read_ack,
 
-        DRAM0_capture_enable_o => DRAM0_capture_enable,
-        DRAM0_data_ready_i => DRAM0_data_ready,
-        DRAM0_capture_address_i => DRAM0_capture_address,
-        DRAM0_data_o => DRAM0_data,
-        DRAM0_data_valid_o => DRAM0_data_valid,
-        DRAM0_data_error_i => DRAM0_data_error,
-        DRAM0_addr_error_i => DRAM0_addr_error,
-        DRAM0_brsp_error_i => DRAM0_brsp_error,
+        dram0_capture_enable_o => DRAM0_capture_enable,
+        dram0_data_ready_i => DRAM0_data_ready,
+        dram0_capture_address_i => DRAM0_capture_address,
+        dram0_data_o => DRAM0_data,
+        dram0_data_valid_o => DRAM0_data_valid,
+        dram0_data_error_i => DRAM0_data_error,
+        dram0_addr_error_i => DRAM0_addr_error,
+        dram0_brsp_error_i => DRAM0_brsp_error,
 
-        DRAM1_address_o => DRAM1_address,
-        DRAM1_data_o => DRAM1_data,
-        DRAM1_data_valid_o => DRAM1_data_valid,
-        DRAM1_data_ready_i => DRAM1_data_ready,
-        DRAM1_brsp_error_i => DRAM1_brsp_error
+        dram1_address_o => DRAM1_address,
+        dram1_data_o => DRAM1_data,
+        dram1_data_valid_o => DRAM1_data_valid,
+        dram1_data_ready_i => DRAM1_data_ready,
+        dram1_brsp_error_i => DRAM1_brsp_error
     );
 
     -- Generate DAC test data if necessary
