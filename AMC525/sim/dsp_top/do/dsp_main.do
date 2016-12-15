@@ -23,9 +23,15 @@ vsim -t 1ps \
 
 view wave
 
+set dsp_main sim:/testbench/dsp_main_inst
+set dsp0_top $dsp_main/dsp_gen(0)/dsp_top_inst
+
+add wave -group "DSP Main" $dsp_main/*
+add wave -group "DSP(0)" $dsp0_top/*
+add wave -group "DSP(0) DRAM1" $dsp0_top/slow_memory_control_inst/*
 add wave -group "Top" sim:*
 
-run 100 ns
+run 200 ns
 
 # run 1 us
 

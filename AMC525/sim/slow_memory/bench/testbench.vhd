@@ -64,7 +64,8 @@ architecture testbench of testbench is
     -- This procedure handles the receive handshake after a delay
     procedure receiver(
         signal delay : in natural;
-        signal ready : out std_logic; signal valid : in std_logic) is
+        signal ready : out std_logic; signal valid : in std_logic)
+    is
         variable is_valid : boolean;
     begin
         ready <= '0';

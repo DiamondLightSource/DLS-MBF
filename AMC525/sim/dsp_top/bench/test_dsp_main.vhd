@@ -46,6 +46,8 @@ architecture testbench of testbench is
     signal dram1_data_ready : std_logic;
     signal dram1_brsp_error : std_logic;
 
+    signal dram1_ready_delay : natural := 10;
+
 begin
     clock_inst : entity work.clock_support port map (
         adc_clk_o => adc_clk,
@@ -98,18 +100,50 @@ begin
     );
 
 
---     -- Register control testbench
---     process
---         procedure write_reg(reg : natural; value : reg_data_t) is
---         begin
---             write_reg(dsp_clk, write_data, write_strobe, write_ack, reg, value);
---         end;
--- 
---         procedure read_reg(reg : natural) is
---         begin
---             read_reg(dsp_clk, read_data, read_strobe, read_ack, reg);
---         end;
---     begin
+    dram1_brsp_error <= '0';
+
+    -- DRAM1 ready handshaking
+    process
+        variable is_valid : boolean;
+    begin
+        dram1_data_ready <= '0';
+        loop
+            clk_wait(dsp_clk, dram1_ready_delay);
+            dram1_data_ready <= '1';
+            loop
+                is_valid := dram1_data_valid = '1';
+                clk_wait(dsp_clk);
+                exit when is_valid;
+            end loop;
+            dram1_data_ready <= '0';
+        end loop;
+    end process;
+
+
+    -- Register control testbench
+    process
+        procedure write_reg(reg : natural; value : reg_data_t) is
+        begin
+            write_reg_a(
+                dsp_clk, write_strobe, write_address, write_data, write_ack,
+                reg, value);
+        end;
+
+        procedure read_reg(reg : natural) is
+        begin
+            read_reg_a(
+                dsp_clk, read_strobe, read_address, read_data, read_ack, reg);
+        end;
+    begin
+        write_strobe <= '0';
+        read_strobe <= '0';
+        clk_wait(dsp_clk, 10);
+
+        write_reg(16#0012#, X"12345678");
+        write_reg(16#1006#, X"20000008");
+        wait;
+    end process;
+
 -- 
 --         -- Initialise ADC FIR with passthrough.
 --         clk_wait(dsp_clk, 10);
