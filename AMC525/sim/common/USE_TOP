@@ -2,7 +2,7 @@
 
 LM_LICENSE_FILE_LIST = \
     2100@diamcslicserv01.dc.diamond.ac.uk \
-    1717@diamrd2208.dc.diamond.ac.uk
+    1717@diamcslicserv01.dc.diamond.ac.uk
 
 SPACE := $(subst ,, )
 export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE_LIST))
