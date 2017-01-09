@@ -42,6 +42,7 @@ architecture register_mux_strobe of register_mux_strobe is
     signal address : natural;
     signal ack_in : std_logic;
     signal busy : boolean := false;
+    signal strobe : std_logic_vector(strobe_o'RANGE) := (others => '0');
 
 begin
     assert strobe_o'LOW = 0 and ack_i'LOW = 0;
@@ -56,13 +57,15 @@ begin
             ack_o <= ack_in and to_std_logic(busy);
             if strobe_i = '1' then
                 if address <= ack_i'HIGH then
-                    strobe_o <= compute_strobe(address, strobe_o'LENGTH);
+                    strobe <= compute_strobe(address, strobe_o'LENGTH);
                 end if;
                 busy <= true;
             else
-                strobe_o <= (strobe_o'RANGE => '0');
+                strobe <= (others => '0');
                 busy <= busy and ack_in = '0';
             end if;
         end if;
     end process;
+
+    strobe_o <= strobe;
 end;

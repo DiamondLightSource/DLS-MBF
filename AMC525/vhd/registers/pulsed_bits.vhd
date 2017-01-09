@@ -22,7 +22,7 @@ entity pulsed_bits is
         write_data_i : in reg_data_t;
         write_ack_o : out std_logic;
         read_strobe_i : in std_logic;
-        read_data_o : out reg_data_t;
+        read_data_o : out reg_data_t := (others => '0');
         read_ack_o : out std_logic;
 
         -- Input pulsed bits

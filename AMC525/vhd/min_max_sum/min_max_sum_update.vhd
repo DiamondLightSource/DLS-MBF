@@ -34,7 +34,7 @@ entity min_max_sum_update is
 
         data_i : in signed(15 downto 0);
         mms_i : in mms_row_t;
-        mms_o : out mms_row_t;
+        mms_o : out mms_row_t := mms_reset_value;
 
         sum_overflow_o : out std_logic;
         sum2_overflow_o : out std_logic;

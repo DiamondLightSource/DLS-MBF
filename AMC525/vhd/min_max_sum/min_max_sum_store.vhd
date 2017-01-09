@@ -46,7 +46,8 @@ architecture min_max_sum_store of min_max_sum_store is
     signal write_strobe : std_logic_vector(0 to 1) := "00";
     signal write_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)
         := (others => (others => '0'));
-    signal write_data : mms_row_array_t;
+    signal write_data : mms_row_array_t
+        := (others => (others => mms_reset_value));
 
     signal update_write_addr : unsigned(update_addr_i'RANGE);
 

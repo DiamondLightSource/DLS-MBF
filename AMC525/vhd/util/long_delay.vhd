@@ -22,7 +22,7 @@ architecture long_delay of long_delay is
     subtype address_t is unsigned(ADDR_BITS-1 downto 0);
 
     signal write_addr : address_t := (others => '0');
-    signal read_addr : address_t;
+    signal read_addr : address_t := (others => '0');
 
 begin
     memory_inst : entity work.block_memory generic map (

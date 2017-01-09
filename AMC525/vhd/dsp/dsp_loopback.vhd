@@ -24,6 +24,9 @@ architecture dsp_loopback of dsp_loopback is
     signal loopback : std_logic;
     signal output_enable : std_logic;
 
+    signal adc_data : signed(adc_data_o'RANGE) := (others => '0');
+    signal dac_data : signed(dac_data_o'RANGE) := (others => '0');
+
 begin
     -- Make the controls untimed to avoid the usual trouble.
     untimed_inst : entity work.untimed_reg generic map (
@@ -40,16 +43,19 @@ begin
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             case loopback is
-                when '0' => adc_data_o <= adc_data_i;
-                when '1' => adc_data_o <= dac_data_i(15 downto 2);
+                when '0' => adc_data <= adc_data_i;
+                when '1' => adc_data <= dac_data_i(15 downto 2);
                 when others =>
             end case;
 
             if output_enable = '1' then
-                dac_data_o <= dac_data_i;
+                dac_data <= dac_data_i;
             else
-                dac_data_o <= (dac_data_o'RANGE => '0');
+                dac_data <= (others => '0');
             end if;
         end if;
     end process;
+
+    adc_data_o <= adc_data;
+    dac_data_o <= dac_data;
 end;

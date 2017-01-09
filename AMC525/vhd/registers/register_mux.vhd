@@ -83,16 +83,6 @@ begin
         end if;
     end process;
 
-
     write_data_o <= write_data_i;
-
---     process (clk_i) begin
---         if rising_edge(clk_i) then
---             -- Register the write data.  This improves fanout and timing.
---             if write_strobe_i = '1' then
---                 write_data_o <= write_data_i;
---             end if;
---         end if;
---     end process;
 
 end;

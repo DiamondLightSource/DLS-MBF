@@ -46,7 +46,7 @@ architecture testbench of testbench is
     signal dram1_data_ready : std_logic;
     signal dram1_brsp_error : std_logic;
 
-    signal dram1_ready_delay : natural := 10;
+    signal dram1_ready_delay : natural := 5;
 
 begin
     clock_inst : entity work.clock_support port map (
@@ -100,6 +100,12 @@ begin
     );
 
 
+    dram0_data_ready <= '1';
+    dram0_capture_address <= (others => '0');
+    dram0_data_error <= '0';
+    dram0_addr_error <= '0';
+    dram0_brsp_error <= '0';
+
     dram1_brsp_error <= '0';
 
     -- DRAM1 ready handshaking
@@ -117,6 +123,7 @@ begin
             end loop;
             dram1_data_ready <= '0';
         end loop;
+        wait;
     end process;
 
 
@@ -134,13 +141,61 @@ begin
             read_reg_a(
                 dsp_clk, read_strobe, read_address, read_data, read_ack, reg);
         end;
+
+        -- Writes to both DSP units simultaneously
+        procedure write_dsp(reg : natural; value : reg_data_t) is
+        begin
+            write_reg(16#1000# + reg, value);
+            write_reg(16#1800# + reg, value);
+        end;
     begin
         write_strobe <= '0';
         read_strobe <= '0';
-        clk_wait(dsp_clk, 10);
+        write_address <= (others => '0');
+        read_address <= (others => '0');
+        clk_wait(dsp_clk, 5);
 
-        write_reg(16#0012#, X"12345678");
-        write_reg(16#1006#, X"20000008");
+        read_reg(16#0000#);             -- Dummy read
+
+        write_reg(16#0012#, X"12345678");   -- Write to invalid register
+
+        write_reg(16#1006#, X"20000008");   -- Start DSP0 DRAM1
+        write_reg(16#1806#, X"20000008");   -- Start DSP1 DRAM1
+
+        -- Initialise ADC FIR with passthrough.
+        write_dsp(0, X"00000001");
+        write_dsp(3, X"7FFFFFFF");
+
+        -- Configure bunch control
+        write_dsp(4, X"00000004");      -- 10 bunches (2*5) in our ring!
+        write_dsp(0, X"00000001");      -- Start write
+        write_dsp(5, X"7FFF0070");      -- Enable all outpus with maximum gain
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+        write_dsp(5, X"7FFF0070");
+
+        -- Write 1 into first tap of bank 0
+        write_dsp(8, X"7FFFFFFF");
+
+        -- Global DAC output config
+        write_dsp(9, X"02000000");      -- Enable FIR, zero delay
+
+        -- Initialise DAC FIR
+        write_dsp(0, X"00000001");
+        write_dsp(10, X"7FFFFFFF");
+
+        -- Enable DAC output
+        write_dsp(11, X"00000008");
+
+        -- Set both oscillator frequencies
+        write_dsp(12, X"01000000");
+        write_dsp(13, X"10000000");
         wait;
     end process;
 

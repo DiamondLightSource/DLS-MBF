@@ -15,7 +15,7 @@ entity short_delay is
 
         delay_i : in unsigned;
         data_i : in std_logic_vector(WIDTH-1 downto 0);
-        data_o : out std_logic_vector(WIDTH-1 downto 0)
+        data_o : out std_logic_vector(WIDTH-1 downto 0) := (others => '0')
     );
 end;
 

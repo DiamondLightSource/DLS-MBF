@@ -12,12 +12,12 @@ entity pulse_adc_to_dsp is
         adc_phase_i : in std_logic;
 
         pulse_i : in std_logic;
-        pulse_o : out std_logic
+        pulse_o : out std_logic := '0'
     );
 end;
 
 architecture pulse_adc_to_dsp of pulse_adc_to_dsp is
-    signal pulse : std_logic;
+    signal pulse : std_logic := '0';
 
 begin
     process (adc_clk_i) begin

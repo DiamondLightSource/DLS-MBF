@@ -29,8 +29,8 @@ end;
 architecture bunch_store of bunch_store is
     -- Assemble address from bank_i and bunch_index_i
     constant ADDR_BITS : natural := bank_i'LENGTH + bunch_index_i'LENGTH;
-    signal read_addr : unsigned(ADDR_BITS-1 downto 0);
-    signal write_addr : unsigned(ADDR_BITS-1 downto 0);
+    signal read_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
+    signal write_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
 
     subtype data_t is std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
     type data_lanes_t is array(LANES) of data_t;

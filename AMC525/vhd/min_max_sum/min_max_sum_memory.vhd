@@ -35,7 +35,7 @@ architecture min_max_sum_memory of min_max_sum_memory is
     constant LANE_ROW_BITS : natural := LANE_COUNT * MMS_ROW_BITS;
     subtype bram_row_t is std_logic_vector(LANE_ROW_BITS-1 downto 0);
 
-    signal read_row : bram_row_t := (others => '0');
+    signal read_row : bram_row_t;
     signal write_row : bram_row_t;
 
 begin

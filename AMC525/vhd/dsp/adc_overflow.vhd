@@ -21,8 +21,8 @@ entity adc_overflow is
 end;
 
 architecture adc_overflow of adc_overflow is
-    signal abs_data : unsigned(data_i'RANGE);
-    signal overflow : std_logic;
+    signal abs_data : unsigned(data_i'RANGE) := (others => '0');
+    signal overflow : std_logic := '0';
 
 begin
     process (adc_clk_i) begin

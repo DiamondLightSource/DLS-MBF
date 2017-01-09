@@ -46,7 +46,8 @@ entity block_memory is
 
         -- Read interface
         read_addr_i : in unsigned(ADDR_BITS-1 downto 0);
-        read_data_o : out std_logic_vector(DATA_BITS-1 downto 0);
+        read_data_o : out std_logic_vector(DATA_BITS-1 downto 0)
+            := (others => '0');
 
         -- Write interface
         write_strobe_i : in std_logic;
@@ -66,7 +67,8 @@ architecture block_memory of block_memory is
     attribute ram_style : string;
     attribute ram_style of memory : variable is "BLOCK";
 
-    signal read_data : std_logic_vector(DATA_BITS-1 downto 0);
+    signal read_data : std_logic_vector(DATA_BITS-1 downto 0)
+        := (others => '0');
 
 begin
     process (clk_i) begin
