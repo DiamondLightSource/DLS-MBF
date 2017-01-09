@@ -45,7 +45,7 @@ report_ip_status
 
 # run synthesis, report utilization and timing estimates, write checkpoint
 #
-synth_design -top top -flatten_hierarchy $hierarchy
+synth_design -top top -flatten_hierarchy $hierarchy -assert
 write_checkpoint -force checkpoints/post_synth
 report_timing_summary -file reports/post_synth_timing_summary.rpt
 
