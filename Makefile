@@ -2,17 +2,7 @@
 
 TOP := $(CURDIR)
 
-BUILD_DIR = $(TOP)/build
-VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.1/settings64.sh
-KERNEL_DIR = /lib/modules/$(shell uname -r)/build
-
-FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
-DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
-TOOLS_BUILD_DIR = $(BUILD_DIR)/tools
-
-export LM_LICENSE_FILE = 2100@diamcslicserv01.dc.diamond.ac.uk
-
--include CONFIG
+include Makefile.common
 
 
 

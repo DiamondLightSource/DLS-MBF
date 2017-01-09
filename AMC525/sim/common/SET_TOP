@@ -7,17 +7,20 @@ TOP := $(shell cd ../../..; pwd)
 COMMON_DIR := $(shell cd ../common; pwd)
 SIMNAME := $(shell basename '$(CURDIR)')
 
-BUILD_DIR := /scratch/tmp/LMBF/sim/$(SIMNAME)
+include $(TOP)/Makefile.common
 
-default $(filter-out clean,$(MAKECMDGOALS)): $(BUILD_DIR)
+SIM_BUILD_DIR := $(SIM_BUILD_DIR)/$(SIMNAME)
+
+
+default $(filter-out clean,$(MAKECMDGOALS)): $(SIM_BUILD_DIR)
 	VPATH=$(CURDIR) $(MAKE) -f $(CURDIR)/Makefile -C $< \
             SIMDIR=$(CURDIR) TOP=$(TOP) COMMON_DIR=$(COMMON_DIR) $@
 
-$(BUILD_DIR):
+$(SIM_BUILD_DIR):
 	mkdir -p $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(SIM_BUILD_DIR)
 
 .PHONY: default clean
 

@@ -1,0 +1,28 @@
+# This is the configuration part of the makefile designed to be shared among
+# other makefiles as required.
+
+BUILD_DIR = $(TOP)/build
+VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.1/settings64.sh
+VSIM = /dls_sw/FPGA/Questa/10.4/questasim/bin/vsim
+
+KERNEL_DIR = /lib/modules/$(shell uname -r)/build
+
+FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
+DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
+TOOLS_BUILD_DIR = $(BUILD_DIR)/tools
+SIM_BUILD_DIR = $(BUILD_DIR)/sim
+
+
+LM_LICENSE_FILE_LIST = \
+    2100@diamcslicserv01.dc.diamond.ac.uk \
+    1717@diamcslicserv01.dc.diamond.ac.uk
+
+SPACE := $(subst ,, )
+export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE_LIST))
+
+-include $(TOP)/CONFIG
+
+
+# Common definitions
+
+RUN_VIVADO = source $(VIVADO) && vivado

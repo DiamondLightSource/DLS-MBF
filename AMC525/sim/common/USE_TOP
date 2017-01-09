@@ -1,15 +1,6 @@
 # Common makefile definitions for simulation.
 
-LM_LICENSE_FILE_LIST = \
-    2100@diamcslicserv01.dc.diamond.ac.uk \
-    1717@diamcslicserv01.dc.diamond.ac.uk
-
-SPACE := $(subst ,, )
-export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE_LIST))
-
-VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2015.1/settings64.sh
-VSIM = /dls_sw/FPGA/Questa/10.4/questasim/bin/vsim
-RUN_VIVADO = source $(VIVADO) && vivado
+include $(TOP)/Makefile.common
 
 VHDDIR = $(TOP)/AMC525/vhd
 
