@@ -130,6 +130,11 @@ begin
     main_write_address <= write_address_i(MAIN_ADDR_RANGE);
     main_read_address <= read_address_i(MAIN_ADDR_RANGE);
 
+    -- Unused register space
+    main_write_ack(UNUSED_REG) <= '1';
+    main_read_data(UNUSED_REG) <= (others => '0');
+    main_read_ack(UNUSED_REG) <= '1';
+
 
     -- Register mapping for dsp control top
     ctrl_register_mux_inst : entity work.register_mux port map (

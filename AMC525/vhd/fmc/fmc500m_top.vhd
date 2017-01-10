@@ -91,7 +91,6 @@ architecture fmc500m_top of fmc500m_top is
     signal adc_pwr_good : std_logic;
     signal dac_pwr_good : std_logic;
     signal vcxo_pwr_good : std_logic;
-    signal ext_trig : std_logic;
     signal temp_alert_n : std_logic;
 
 
@@ -148,7 +147,7 @@ begin
         adc_pwr_good_o => adc_pwr_good,
         dac_pwr_good_o => dac_pwr_good,
         vcxo_pwr_good_o => vcxo_pwr_good,
-        ext_trig_o => ext_trig,
+        ext_trig_o => ext_trig_o,
         temp_alert_o => temp_alert_n
     );
 

@@ -57,6 +57,7 @@ architecture dac_output_mux of dac_output_mux is
     -- Scaled result
     constant FULL_PROD_WIDTH : natural := ACCUM_WIDTH + GAIN_WIDTH;
     signal full_dac_out : signed(FULL_PROD_WIDTH-1 downto 0);
+    signal full_dac_out_pl : signed(FULL_PROD_WIDTH-1 downto 0);
 
     -- To compute the output offset, regard the gain as a signed number in the
     -- range -1..1, ie there are GAIN_WIDTH-1 extra fraction bits after
@@ -96,6 +97,7 @@ begin
 
             -- Apply selected gain
             full_dac_out <= bunch_gain * accum;
+            full_dac_out_pl <= full_dac_out;
         end if;
     end process;
 
@@ -104,7 +106,7 @@ begin
         OFFSET => OUTPUT_OFFSET
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => full_dac_out,
+        data_i => full_dac_out_pl,
         data_o => data_o,
         overflow_o => mux_overflow_o
     );
