@@ -683,11 +683,11 @@ proc create_hier_cell_memory { parentCell nameHier } {
 
   # Create pins
   create_bd_pin -dir I -type clk CLKREF
-  create_bd_pin -dir I -type rst CLKREF_RSTN
   create_bd_pin -dir O -type clk DRAM0_ACLK
   create_bd_pin -dir O DRAM0_ARESETN
   create_bd_pin -dir O -type clk DRAM1_ACLK
   create_bd_pin -dir O DRAM1_ARESETN
+  create_bd_pin -dir I -type rst SYS_RSTN
 
   # Create instance: mig_7series_0, and set properties
   set mig_7series_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mig_7series:4.0 mig_7series_0 ]
@@ -748,7 +748,7 @@ CONFIG.LOGO_FILE {data/sym_notgate.png} \
   connect_bd_net -net mig_7series_0_c0_ui_clk_sync_rst [get_bd_pins mig_7series_0/c0_ui_clk_sync_rst] [get_bd_pins util_vector_logic_0/Op1]
   connect_bd_net -net mig_7series_0_c1_ui_clk [get_bd_pins DRAM1_ACLK] [get_bd_pins mig_7series_0/c1_ui_clk]
   connect_bd_net -net mig_7series_0_c1_ui_clk_sync_rst [get_bd_pins mig_7series_0/c1_ui_clk_sync_rst] [get_bd_pins util_vector_logic_1/Op1]
-  connect_bd_net -net nCOLDRST_1 [get_bd_pins CLKREF_RSTN] [get_bd_pins mig_7series_0/sys_rst]
+  connect_bd_net -net nCOLDRST_1 [get_bd_pins SYS_RSTN] [get_bd_pins mig_7series_0/sys_rst]
   connect_bd_net -net util_reduced_logic_0_Res [get_bd_pins DRAM0_ARESETN] [get_bd_pins mig_7series_0/c0_aresetn] [get_bd_pins util_reduced_logic_0/Res]
   connect_bd_net -net util_reduced_logic_1_Res [get_bd_pins DRAM1_ARESETN] [get_bd_pins mig_7series_0/c1_aresetn] [get_bd_pins util_reduced_logic_1/Res]
   connect_bd_net -net util_vector_logic_0_Res [get_bd_pins util_reduced_logic_0/Op1] [get_bd_pins util_vector_logic_0/Res]
@@ -804,12 +804,12 @@ proc create_hier_cell_memory_dma { parentCell nameHier } {
 
   # Create pins
   create_bd_pin -dir I -type clk CLK200MHZ
-  create_bd_pin -dir I -type rst CLK200MHZ_RSTN
   create_bd_pin -dir I -type clk DMA_ACLK
   create_bd_pin -dir I -type rst DMA_ARESETN
   create_bd_pin -dir O -type intr DMA_INT_REQ
   create_bd_pin -dir I -type clk DSP_CLK
   create_bd_pin -dir I -type rst DSP_RESETN
+  create_bd_pin -dir I -type rst SYS_RSTN
 
   # Create instance: axi_cdma_0, and set properties
   set axi_cdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_cdma:4.1 axi_cdma_0 ]
@@ -850,7 +850,7 @@ CONFIG.C_M_AXI_MAX_BURST_LEN {128} \
   connect_bd_net -net memory_DRAM1_ARESETN1 [get_bd_pins memory/DRAM1_ARESETN] [get_bd_pins memory_interconnect/DRAM1_ARESETN]
   connect_bd_net -net memory_c0_ui_clk [get_bd_pins memory/DRAM0_ACLK] [get_bd_pins memory_interconnect/DRAM0_ACLK]
   connect_bd_net -net memory_c1_ui_clk [get_bd_pins memory/DRAM1_ACLK] [get_bd_pins memory_interconnect/DRAM1_ACLK]
-  connect_bd_net -net reset_rtl_0_1 [get_bd_pins CLK200MHZ_RSTN] [get_bd_pins memory/CLKREF_RSTN]
+  connect_bd_net -net reset_rtl_0_1 [get_bd_pins SYS_RSTN] [get_bd_pins memory/SYS_RSTN]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1133,7 +1133,6 @@ CONFIG.WUSER_WIDTH {0} \
 CONFIG.ASSOCIATED_RESET {CLK200MHZ_RSTN} \
 CONFIG.FREQ_HZ {200000000} \
  ] $CLK200MHZ
-  set CLK200MHZ_RSTN [ create_bd_port -dir I -type rst CLK200MHZ_RSTN ]
   set DSP_CLK [ create_bd_port -dir I -type clk DSP_CLK ]
   set_property -dict [ list \
 CONFIG.ASSOCIATED_BUSIF {S_DSP_DRAM0:S_DSP_DRAM1} \
@@ -1226,7 +1225,6 @@ CONFIG.axi_aclk_loopback.VALUE_SRC {DEFAULT} \
   connect_bd_intf_net -intf_net mig_7series_0_C1_DDR3 [get_bd_intf_ports C1_DDR3] [get_bd_intf_pins memory_dma/C1_DDR3]
 
   # Create port connections
-  connect_bd_net -net CLK200MHZ_RSTN_1 [get_bd_ports CLK200MHZ_RSTN] [get_bd_pins memory_dma/CLK200MHZ_RSTN]
   connect_bd_net -net DSPCLK_1 [get_bd_ports DSP_CLK] [get_bd_pins memory_dma/DSP_CLK]
   connect_bd_net -net DSPRSTN_1 [get_bd_ports DSP_RESETN] [get_bd_pins memory_dma/DSP_RESETN]
   connect_bd_net -net INTR_1 [get_bd_ports INTR] [get_bd_pins interrupts/In1]
@@ -1237,7 +1235,7 @@ CONFIG.axi_aclk_loopback.VALUE_SRC {DEFAULT} \
   connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins axi_lite/PCIE_ARESETN] [get_bd_pins axi_pcie3_bridge/axi_aresetn] [get_bd_pins interrupts/s_axi_aresetn] [get_bd_pins memory_dma/DMA_ARESETN]
   connect_bd_net -net clk_in1_1 [get_bd_ports CLK200MHZ] [get_bd_pins memory_dma/CLK200MHZ]
   connect_bd_net -net memory_dma_DMA_INT_REQ [get_bd_pins interrupts/In0] [get_bd_pins memory_dma/DMA_INT_REQ]
-  connect_bd_net -net nCOLDRST_1 [get_bd_ports nCOLDRST] [get_bd_pins axi_pcie3_bridge/sys_rst_n]
+  connect_bd_net -net nCOLDRST_1 [get_bd_ports nCOLDRST] [get_bd_pins axi_pcie3_bridge/sys_rst_n] [get_bd_pins memory_dma/SYS_RSTN]
   connect_bd_net -net refclk_1 [get_bd_ports FCLKA] [get_bd_pins axi_pcie3_bridge/refclk]
 
   # Create address segments

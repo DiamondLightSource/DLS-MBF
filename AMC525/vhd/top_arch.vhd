@@ -318,6 +318,9 @@ begin
         REG_CLK => reg_clk,
         REG_RESETn => reg_clk_ok,
 
+        -- Reference timing clock for DDR3 controller
+        CLK200MHZ => ref_clk,
+
         -- MTCA Backplane PCI Express interface
         pcie_mgt_rxn => AMC_RX_N,
         pcie_mgt_rxp => AMC_RX_P,
@@ -360,10 +363,6 @@ begin
         C1_DDR3_odt => C1_DDR3_ODT,
         CLK533MHZ0_clk_p => CLK533MHZ0_P,
         CLK533MHZ0_clk_n => CLK533MHZ0_N,
-
-        -- Reference timing clock for DDR3 controller
-        CLK200MHZ => ref_clk,
-        CLK200MHZ_RSTN => ref_clk_ok,
 
         -- AXI-Lite register master interface
         M_DSP_REGS_araddr => DSP_REGS_araddr,
