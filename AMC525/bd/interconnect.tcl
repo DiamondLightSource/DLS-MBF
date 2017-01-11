@@ -20,7 +20,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2016.1
+set scripts_vivado_version 2016.4
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -55,8 +55,17 @@ set design_name interconnect
 
 set run_remote_bd_flow 1
 if { $run_remote_bd_flow == 1 } {
-  set str_bd_folder .
-  set str_bd_filepath ${str_bd_folder}/${design_name}.bd
+  # Set the reference directory for source file relative paths (by default 
+  # the value is script directory path)
+  set origin_dir .
+
+  # Use origin directory path location variable, if specified in the tcl shell
+  if { [info exists ::origin_dir_loc] } {
+     set origin_dir $::origin_dir_loc
+  }
+
+  set str_bd_folder [file normalize ${origin_dir}]
+  set str_bd_filepath ${str_bd_folder}/${design_name}/${design_name}.bd
 
   # Check if remote design exists on disk
   if { [file exists $str_bd_filepath ] == 1 } {
@@ -90,6 +99,7 @@ if { $run_remote_bd_flow == 1 } {
   }
 
   # Now can create the remote BD
+  # NOTE - usage of <-dir> will create <$str_bd_folder/$design_name/$design_name.bd>
   create_bd_design -dir $str_bd_folder $design_name
 } else {
 
@@ -123,7 +133,7 @@ proc write_mig_file_interconnect_mig_7series_0_0 { str_mig_prj_filepath } {
    puts $mig_prj_file {    <LowPower_En>ON</LowPower_En>}
    puts $mig_prj_file {    <XADC_En>Enabled</XADC_En>}
    puts $mig_prj_file {    <TargetFPGA>xc7vx690t-ffg1761/-2</TargetFPGA>}
-   puts $mig_prj_file {    <Version>3.0</Version>}
+   puts $mig_prj_file {    <Version>4.0</Version>}
    puts $mig_prj_file {    <SystemClock>Differential</SystemClock>}
    puts $mig_prj_file {    <ReferenceClock>No Buffer</ReferenceClock>}
    puts $mig_prj_file {    <SysResetPolarity>ACTIVE LOW</SysResetPolarity>}
@@ -149,6 +159,7 @@ proc write_mig_file_interconnect_mig_7series_0_0 { str_mig_prj_filepath } {
    puts $mig_prj_file {        <DataMask>1</DataMask>}
    puts $mig_prj_file {        <ECC>Disabled</ECC>}
    puts $mig_prj_file {        <Ordering>Normal</Ordering>}
+   puts $mig_prj_file {        <BankMachineCnt>4</BankMachineCnt>}
    puts $mig_prj_file {        <CustomPart>FALSE</CustomPart>}
    puts $mig_prj_file {        <NewPartName></NewPartName>}
    puts $mig_prj_file {        <RowAddress>15</RowAddress>}
@@ -331,6 +342,7 @@ proc write_mig_file_interconnect_mig_7series_0_0 { str_mig_prj_filepath } {
    puts $mig_prj_file {        <DataMask>1</DataMask>}
    puts $mig_prj_file {        <ECC>Disabled</ECC>}
    puts $mig_prj_file {        <Ordering>Normal</Ordering>}
+   puts $mig_prj_file {        <BankMachineCnt>4</BankMachineCnt>}
    puts $mig_prj_file {        <CustomPart>TRUE</CustomPart>}
    puts $mig_prj_file {        <NewPartName>MT41K256M16XX-125-UNUSEDA14A13</NewPartName>}
    puts $mig_prj_file {        <RowAddress>13</RowAddress>}
@@ -470,20 +482,20 @@ proc create_hier_cell_memory_interconnect { parentCell nameHier } {
   current_bd_instance $hier_obj
 
   # Create interface pins
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA_W
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DRAM0
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DRAM1
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA_W
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DMA
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM0
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM1
 
   # Create pins
+  create_bd_pin -dir I -type clk DMA_ACLK
+  create_bd_pin -dir I -type rst DMA_ARESETN
   create_bd_pin -dir I -type clk DRAM0_ACLK
   create_bd_pin -dir I -type rst DRAM0_ARESETN
   create_bd_pin -dir I -type clk DRAM1_ACLK
   create_bd_pin -dir I -type rst DRAM1_ARESETN
-  create_bd_pin -dir I -type clk DMA_ACLK
-  create_bd_pin -dir I -type rst DMA_ARESETN
   create_bd_pin -dir I -type rst DSP_ARESETN
   create_bd_pin -dir I -type clk DSP_CLK
 
@@ -614,12 +626,12 @@ CONFIG.TRANSLATION_MODE {2} \
   connect_bd_intf_net -intf_net dsp_ddr1_cc_M_AXI [get_bd_intf_pins ddr1_crossbar/S00_AXI] [get_bd_intf_pins dsp_ddr1_cc/M_AXI]
 
   # Create port connections
+  connect_bd_net -net DMA_ACLK_1 [get_bd_pins DMA_ACLK] [get_bd_pins dma_buf/aclk] [get_bd_pins dma_ddr0_cc/s_axi_aclk] [get_bd_pins dma_ddr1_cc/s_axi_aclk] [get_bd_pins dma_ddr1_ds/s_axi_aclk] [get_bd_pins dma_xbar/aclk]
+  connect_bd_net -net DMA_ARESETN_1 [get_bd_pins DMA_ARESETN] [get_bd_pins dma_buf/aresetn] [get_bd_pins dma_ddr0_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_ds/s_axi_aresetn] [get_bd_pins dma_xbar/aresetn]
   connect_bd_net -net DRAM0_ACLK_1 [get_bd_pins DRAM0_ACLK] [get_bd_pins ddr0_buf/aclk] [get_bd_pins ddr0_crossbar/aclk] [get_bd_pins ddr0_us/m_axi_aclk] [get_bd_pins dma_ddr0_cc/m_axi_aclk]
   connect_bd_net -net DRAM0_ARESETN_1 [get_bd_pins DRAM0_ARESETN] [get_bd_pins ddr0_buf/aresetn] [get_bd_pins ddr0_crossbar/aresetn] [get_bd_pins ddr0_us/m_axi_aresetn] [get_bd_pins dma_ddr0_cc/m_axi_aresetn]
   connect_bd_net -net DRAM1_ACLK_1 [get_bd_pins DRAM1_ACLK] [get_bd_pins ddr1_buf/aclk] [get_bd_pins ddr1_crossbar/aclk] [get_bd_pins dma_ddr1_cc/m_axi_aclk] [get_bd_pins dsp_ddr1_cc/m_axi_aclk]
   connect_bd_net -net DRAM1_ARESETN_1 [get_bd_pins DRAM1_ARESETN] [get_bd_pins ddr1_buf/aresetn] [get_bd_pins ddr1_crossbar/aresetn] [get_bd_pins dma_ddr1_cc/m_axi_aresetn] [get_bd_pins dsp_ddr1_cc/m_axi_aresetn]
-  connect_bd_net -net DMA_ACLK_1 [get_bd_pins DMA_ACLK] [get_bd_pins dma_buf/aclk] [get_bd_pins dma_ddr0_cc/s_axi_aclk] [get_bd_pins dma_ddr1_cc/s_axi_aclk] [get_bd_pins dma_ddr1_ds/s_axi_aclk] [get_bd_pins dma_xbar/aclk]
-  connect_bd_net -net DMA_ARESETN_1 [get_bd_pins DMA_ARESETN] [get_bd_pins dma_buf/aresetn] [get_bd_pins dma_ddr0_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_cc/s_axi_aresetn] [get_bd_pins dma_ddr1_ds/s_axi_aresetn] [get_bd_pins dma_xbar/aresetn]
   connect_bd_net -net DSP_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins ddr0_us/s_axi_aresetn] [get_bd_pins dsp_ddr1_cc/s_axi_aresetn] [get_bd_pins dsp_ddr1_pc/aresetn]
   connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins ddr0_us/s_axi_aclk] [get_bd_pins dsp_ddr1_cc/s_axi_aclk] [get_bd_pins dsp_ddr1_pc/aclk]
 
@@ -678,19 +690,20 @@ proc create_hier_cell_memory { parentCell nameHier } {
   create_bd_pin -dir O DRAM1_ARESETN
 
   # Create instance: mig_7series_0, and set properties
-  set mig_7series_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mig_7series:3.0 mig_7series_0 ]
+  set mig_7series_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mig_7series:4.0 mig_7series_0 ]
 
   # Generate the PRJ File for MIG
   set str_mig_folder [get_property IP_DIR [ get_ips [ get_property CONFIG.Component_Name $mig_7series_0 ] ] ]
-  set str_mig_file_name mig_a.prj
+  set str_mig_file_name mig_b.prj
   set str_mig_file_path ${str_mig_folder}/${str_mig_file_name}
 
   write_mig_file_interconnect_mig_7series_0_0 $str_mig_file_path
 
   set_property -dict [ list \
 CONFIG.BOARD_MIG_PARAM {Custom} \
+CONFIG.MIG_DONT_TOUCH_PARAM {Custom} \
 CONFIG.RESET_BOARD_INTERFACE {Custom} \
-CONFIG.XML_INPUT_FILE {mig_a.prj} \
+CONFIG.XML_INPUT_FILE {mig_b.prj} \
  ] $mig_7series_0
 
   # Create instance: util_reduced_logic_0, and set properties
@@ -1070,11 +1083,15 @@ CONFIG.HAS_WSTRB {0} \
 CONFIG.ID_WIDTH {0} \
 CONFIG.MAX_BURST_LENGTH {256} \
 CONFIG.NUM_READ_OUTSTANDING {7} \
+CONFIG.NUM_READ_THREADS {1} \
 CONFIG.NUM_WRITE_OUTSTANDING {7} \
+CONFIG.NUM_WRITE_THREADS {1} \
 CONFIG.PROTOCOL {AXI4} \
 CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
+CONFIG.RUSER_BITS_PER_BYTE {0} \
 CONFIG.RUSER_WIDTH {0} \
 CONFIG.SUPPORTS_NARROW_BURST {0} \
+CONFIG.WUSER_BITS_PER_BYTE {0} \
 CONFIG.WUSER_WIDTH {0} \
  ] $S_DSP_DRAM0
   set S_DSP_DRAM1 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM1 ]
@@ -1097,11 +1114,15 @@ CONFIG.HAS_WSTRB {0} \
 CONFIG.ID_WIDTH {0} \
 CONFIG.MAX_BURST_LENGTH {1} \
 CONFIG.NUM_READ_OUTSTANDING {7} \
+CONFIG.NUM_READ_THREADS {1} \
 CONFIG.NUM_WRITE_OUTSTANDING {7} \
+CONFIG.NUM_WRITE_THREADS {1} \
 CONFIG.PROTOCOL {AXI4LITE} \
 CONFIG.READ_WRITE_MODE {WRITE_ONLY} \
+CONFIG.RUSER_BITS_PER_BYTE {0} \
 CONFIG.RUSER_WIDTH {0} \
 CONFIG.SUPPORTS_NARROW_BURST {0} \
+CONFIG.WUSER_BITS_PER_BYTE {0} \
 CONFIG.WUSER_WIDTH {0} \
  ] $S_DSP_DRAM1
   set pcie_mgt [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pcie_mgt ]
@@ -1146,8 +1167,9 @@ CONFIG.POLARITY {ACTIVE_LOW} \
   create_hier_cell_axi_lite [current_bd_instance .] axi_lite
 
   # Create instance: axi_pcie3_bridge, and set properties
-  set axi_pcie3_bridge [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_pcie3:2.1 axi_pcie3_bridge ]
+  set axi_pcie3_bridge [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_pcie3:3.0 axi_pcie3_bridge ]
   set_property -dict [ list \
+CONFIG.axi_aclk_loopback {true} \
 CONFIG.axi_addr_width {48} \
 CONFIG.axi_data_width {256_bit} \
 CONFIG.axisten_freq {250} \
@@ -1176,6 +1198,11 @@ CONFIG.pf0_msix_cap_pba_bir {BAR_1:0} \
 CONFIG.pf0_msix_cap_table_bir {BAR_1:0} \
 CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
 CONFIG.pl_link_cap_max_link_width {X8} \
+ ] $axi_pcie3_bridge
+
+  # Need to retain value_src of defaults
+  set_property -dict [ list \
+CONFIG.axi_aclk_loopback.VALUE_SRC {DEFAULT} \
  ] $axi_pcie3_bridge
 
   # Create instance: interrupts
@@ -1216,7 +1243,7 @@ CONFIG.pl_link_cap_max_link_width {X8} \
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x200000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg
   create_bd_addr_seg -range 0x00001000 -offset 0x400000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x400000001000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/s_axi/Reg] SEG_axi_intc_Reg
+  create_bd_addr_seg -range 0x00001000 -offset 0x400000001000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/S_AXI/Reg] SEG_axi_intc_Reg
   create_bd_addr_seg -range 0x800000000000 -offset 0x00000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs axi_pcie3_bridge/S_AXI/BAR0] SEG_axi_pcie3_bridge_BAR0
   create_bd_addr_seg -range 0x80000000 -offset 0x800000000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
   create_bd_addr_seg -range 0x08000000 -offset 0x800080000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr
