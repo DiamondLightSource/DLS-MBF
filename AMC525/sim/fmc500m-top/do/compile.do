@@ -29,9 +29,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/testbench.vhd
 
 
-vsim -t 1ps \
-    -pli "/dls_sw/FPGA/Xilinx/Vivado/2015.1/lib/lnx64.o/libxil_vsim.so" \
-    -lib xil_defaultlib testbench
+vsim -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
