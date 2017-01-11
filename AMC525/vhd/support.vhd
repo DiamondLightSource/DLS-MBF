@@ -253,7 +253,7 @@ package body support is
 
     function saturate(data : unsigned; overflow : std_logic) return unsigned
     is
-        constant max_val : unsigned(data'range) := (others => '1');
+        constant max_val : data'SUBTYPE := (others => '1');
     begin
         if overflow = '1' then
             return max_val;

@@ -46,7 +46,7 @@ architecture slow_memory_fifo of slow_memory_fifo is
     -- INPUT: we register the incoming data and the write ready state.
     signal write_data_valid : boolean := false;
     signal write_ready : boolean := true;
-    signal write_data : std_logic_vector(write_data_i'RANGE);
+    signal write_data : write_data_i'SUBTYPE;
     signal do_write : boolean;
     signal write_enable : boolean;
 

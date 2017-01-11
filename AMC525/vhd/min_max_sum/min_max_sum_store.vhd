@@ -49,7 +49,7 @@ architecture min_max_sum_store of min_max_sum_store is
     signal write_data : mms_row_array_t
         := (others => (others => mms_reset_value));
 
-    signal update_write_addr : unsigned(update_addr_i'RANGE);
+    signal update_write_addr : update_addr_i'SUBTYPE;
 
     -- Bank selection
     signal read_addr_bank : natural range 0 to 1;

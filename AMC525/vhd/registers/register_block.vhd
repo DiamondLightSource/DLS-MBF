@@ -27,7 +27,7 @@ architecture register_block of register_block is
     constant COUNT : natural := registers_o'LENGTH;
     constant COUNT_BITS : natural := bits(COUNT-1);
 
-    signal register_file : reg_data_array_t(registers_o'RANGE) :=
+    signal register_file : registers_o'SUBTYPE :=
         (others => (others => '0'));
     signal write_ptr : unsigned(COUNT_BITS-1 downto 0);
 

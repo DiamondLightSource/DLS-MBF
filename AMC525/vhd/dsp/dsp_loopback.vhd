@@ -24,8 +24,8 @@ architecture dsp_loopback of dsp_loopback is
     signal loopback : std_logic;
     signal output_enable : std_logic;
 
-    signal adc_data : signed(adc_data_o'RANGE) := (others => '0');
-    signal dac_data : signed(dac_data_o'RANGE) := (others => '0');
+    signal adc_data : adc_data_o'SUBTYPE := (others => '0');
+    signal dac_data : dac_data_o'SUBTYPE := (others => '0');
 
 begin
     -- Make the controls untimed to avoid the usual trouble.

@@ -69,8 +69,8 @@ architecture adc_top of adc_top is
     signal data_delay : unsigned(0 downto 0);
 
     signal filtered_data : signed(DATA_OUT_RANGE);
-    signal data_in : signed(data_i'RANGE);
-    signal delayed_data : signed(data_i'RANGE);
+    signal data_in : data_i'SUBTYPE;
+    signal delayed_data : data_i'SUBTYPE;
     signal dsp_data : signed_array(LANES)(DATA_OUT_RANGE);
     signal mms_delta : unsigned_array(LANES)(DATA_OUT_RANGE);
 

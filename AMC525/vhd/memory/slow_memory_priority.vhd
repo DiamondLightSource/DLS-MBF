@@ -35,8 +35,7 @@ architecture slow_memory_priority of slow_memory_priority is
         return 0;       -- Doesn't matter, won't be used
     end;
 
-    signal input_ready : std_logic_vector(input_ready_o'RANGE)
-        := (others => '0');
+    signal input_ready : input_ready_o'SUBTYPE := (others => '0');
     signal selection : natural;
 
     type out_state_t is (IDLE, BUSY);

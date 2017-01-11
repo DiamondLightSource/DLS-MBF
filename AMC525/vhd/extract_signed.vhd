@@ -32,8 +32,8 @@ architecture extract_signed of extract_signed is
 
     signal sign : std_logic;
     signal rounded : signed(ROUNDED_WIDTH-1 downto 0) := (others => '0');
-    signal truncated : signed(data_o'RANGE) := (others => '0');
-    signal data_out : signed(data_o'RANGE) := (others => '0');
+    signal truncated : data_o'SUBTYPE := (others => '0');
+    signal data_out : data_o'SUBTYPE := (others => '0');
     signal overflow : std_logic;
 
 begin

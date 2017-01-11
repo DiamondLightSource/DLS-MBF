@@ -37,7 +37,7 @@ architecture bunch_store of bunch_store is
     signal read_data : data_lanes_t;
     signal write_data : data_t;
 
-    signal write_bunch : unsigned(bunch_index_i'RANGE);
+    signal write_bunch : bunch_index_i'SUBTYPE;
     signal write_lane : LANES;
     signal write_strobe : std_logic_vector(LANES);
 

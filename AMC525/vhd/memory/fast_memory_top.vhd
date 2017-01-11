@@ -49,7 +49,7 @@ architecture fast_memory_top of fast_memory_top is
     signal start : std_logic;
     signal stop : std_logic;
     signal reset_errors : std_logic;
-    signal capture_address : std_logic_vector(capture_address_i'RANGE);
+    signal capture_address : capture_address_i'SUBTYPE;
 
     signal data_valid : std_logic;
     signal extra_data : std_logic_vector(63 downto 0);

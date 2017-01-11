@@ -22,7 +22,7 @@ entity fast_memory_control is
 end;
 
 architecture fast_memory_control of fast_memory_control is
-    signal counter : unsigned(count_i'RANGE);
+    signal counter : count_i'SUBTYPE;
     type state_t is (IDLE, RUNNING, RUNOUT);
     signal state : state_t := IDLE;
 

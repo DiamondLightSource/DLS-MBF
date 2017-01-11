@@ -50,8 +50,8 @@ architecture min_max_sum_bank of min_max_sum_bank is
     signal frame_count_overflow : std_logic;
 
     signal bank_select : std_logic := '0';
-    signal update_addr  : unsigned(update_addr_o'RANGE)  := (others => '0');
-    signal readout_addr : unsigned(readout_addr_o'RANGE) := (others => '0');
+    signal update_addr  : update_addr_o'SUBTYPE  := (others => '0');
+    signal readout_addr : readout_addr_o'SUBTYPE := (others => '0');
 
 begin
     -- The switch event is posponed to next bunch reset event

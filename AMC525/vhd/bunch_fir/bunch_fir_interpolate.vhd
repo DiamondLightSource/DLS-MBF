@@ -19,7 +19,7 @@ entity bunch_fir_interpolate is
 end;
 
 architecture bunch_fir_interpolate of bunch_fir_interpolate is
-    signal read_data : signed(data_i'RANGE);
+    signal read_data : data_i'SUBTYPE;
 
 begin
     assert data_i'LENGTH = data_o'LENGTH;
