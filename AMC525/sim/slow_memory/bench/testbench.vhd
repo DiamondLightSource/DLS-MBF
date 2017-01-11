@@ -146,14 +146,15 @@ begin
         -- Start with four back to back writes on both channels.  This will fill
         -- both FIFOs
         dsp_address <= (others => (others => '0'));
-        dsp_data <= (X"0123456789ABCDEF", X"FEDCBA9876543210");
+        dsp_data <= (X"0123456789AB0000", X"FEDCBA9876540000");
         dsp_strobe <= (others => '1');
-        for n in 0 to 4 loop
+        for n in 0 to 6 loop
             tick_wait;
             for c in CHANNELS loop
                 step(c);
             end loop;
         end loop;
+        tick_wait;
         dsp_strobe <= (others => '0');
 
         tick_wait(20);
@@ -165,7 +166,7 @@ begin
     end process;
 
 
-    -- Receiver endpoing
+    -- Receiver
     receiver(awdelay, awready, awvalid);
     receiver(wdelay, wready, wvalid);
 
@@ -173,7 +174,7 @@ begin
         awdelay <= 0;
         wdelay <= 0;
         tick_wait(20);
-        awdelay <= 5;
+        awdelay <= 3;
         wait;
     end process;
 

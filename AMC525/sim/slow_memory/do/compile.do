@@ -31,6 +31,6 @@ add wave -group "Priority" sim:/testbench/slow_inst/priority_inst/*
 add wave -group "Top" sim:*
 
 
-run 250 ns
+run 300 ns
 
 # vim: set filetype=tcl:
