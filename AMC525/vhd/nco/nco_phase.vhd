@@ -15,7 +15,7 @@ entity nco_phase is
         phase_advance_i : in angle_t;
         reset_i : in std_logic;
 
-        phase_o : out angle_lanes_t
+        phase_o : out angle_lanes_t := (others => (others => '0'))
     );
 end;
 

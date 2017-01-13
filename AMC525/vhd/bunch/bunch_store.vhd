@@ -43,6 +43,8 @@ architecture bunch_store of bunch_store is
 
     signal write_data_in : bunch_config_t;
     signal config : bunch_config_lanes_t;
+    signal config_out : bunch_config_lanes_t
+        := (others => default_bunch_config_t);
 
 begin
     -- Bunch memory for each line
@@ -97,8 +99,10 @@ begin
             end if;
 
             -- Register the bunch configuration
-            config_o <= config;
+            config_out <= config;
         end if;
     end process;
+
     write_ack_o <= '1';
+    config_o <= config_out;
 end;

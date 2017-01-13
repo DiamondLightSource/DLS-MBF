@@ -18,8 +18,8 @@ entity nco_cos_sin_octant is
         angle_i : in angle_t;
 
         -- Table lookup
-        lookup_o : out lookup_t;
-        residue_o : out residue_t;
+        lookup_o : out lookup_t := (others => '0');
+        residue_o : out residue_t := (others => '0');
         cos_sin_i : in cos_sin_18_t;
 
         -- Result
@@ -36,8 +36,8 @@ architecture nco_cos_sin_octant of nco_cos_sin_octant is
 
     signal d_cos : signed(17 downto 0);
     signal d_sin : signed(17 downto 0);
-    signal cos : signed(17 downto 0);
-    signal sin : signed(17 downto 0);
+    signal cos : signed(17 downto 0) := (others => '0');
+    signal sin : signed(17 downto 0) := (others => '0');
 
 begin
     -- Split the input angle into its three components

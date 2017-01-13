@@ -29,10 +29,13 @@ end;
 architecture bunch_counter of bunch_counter is
     -- Bunch counter
     signal bunch_index : bunch_count_t := (others => '0');
+    signal bunch_index_out : bunch_count_t := (others => '0');
     signal last_bunch : boolean := false;
 
+    signal turn_clock : boolean := false;
+
     -- Used to suppress first turn_clk after synch
-    signal bunch_synched : std_logic := '0';
+    signal bunch_synched : boolean := false;
 
 begin
     last_bunch <= bunch_index = max_bunch_i;
@@ -44,22 +47,25 @@ begin
                 bunch_index <= bunch_zero_i;
             elsif last_bunch then
                 bunch_index <= (others => '0');
-                turn_clock_o <= bunch_synched;
+                turn_clock <= bunch_synched;
             else
                 bunch_index <= bunch_index + 1;
-                turn_clock_o <= '0';
+                turn_clock <= false;
             end if;
 
             -- Immediately after bunch synchronisation suppress one turn_clk.
-            -- This ensures that we don't get turn_clock_o events too close
+            -- This ensures that we don't get turn_clock events too close
             -- together, which might disturb the operation of the sequencer.
             if sync_trigger_i = '1' then
-                bunch_synched <= '0';
+                bunch_synched <= false;
             elsif last_bunch then
-                bunch_synched <= '1';
+                bunch_synched <= true;
             end if;
 
-            bunch_index_o <= bunch_index;
+            bunch_index_out <= bunch_index;
         end if;
     end process;
+
+    bunch_index_o <= bunch_index_out;
+    turn_clock_o <= to_std_logic(turn_clock);
 end;

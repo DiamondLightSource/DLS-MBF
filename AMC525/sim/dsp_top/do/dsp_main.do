@@ -17,7 +17,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/clock_support.vhd \
     $bench_dir/test_dsp_main.vhd
 
-vsim -t 1ps -lib xil_defaultlib testbench
+# Add -vopt to prevent optimisation
+vsim -vopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
@@ -27,19 +28,6 @@ set dsp1_top $dsp_main/dsp_gen(1)/dsp_top_inst
 
 add wave -group "DSP Main" $dsp_main/*
 add wave -group "DSP(1)" $dsp1_top/*
-add wave -group "DSP(1) DAC" $dsp1_top/dac_top_inst/*
-add wave -group "DSP(1) FIR Top" $dsp1_top/bunch_fir_top_inst/*
-add wave -group "DSP(1) FIR" \
-    $dsp1_top/bunch_fir_top_inst/lanes_gen(0)/fir_inst/*
-add wave -group "Top" sim:*
-
-add wave -group "MMS" $dsp1_top/dac_top_inst/min_max_sum_inst/*
-add wave -group "MMS Store" \
-    $dsp1_top/dac_top_inst/min_max_sum_inst/min_max_sum_store_inst/*
-add wave -group "MMS Memory" \
-    $dsp1_top/dac_top_inst/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/*
-add wave -group "MMS Update" \
-    $dsp1_top/dac_top_inst/min_max_sum_inst/update_gen(0)/min_max_sum_update_inst/*
 
 run 100 ns
 

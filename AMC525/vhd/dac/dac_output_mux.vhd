@@ -44,20 +44,21 @@ architecture dac_output_mux of dac_output_mux is
     signal nco_1_enable : std_logic;
 
     -- Selected data, widened for accumulator
-    signal fir_data   : signed(ACCUM_WIDTH-1 downto 0);
-    signal nco_0_data : signed(ACCUM_WIDTH-1 downto 0);
-    signal nco_1_data : signed(ACCUM_WIDTH-1 downto 0);
+    signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
+    signal nco_0_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
+    signal nco_1_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     -- Sum of the three values above
-    signal accum : signed(ACCUM_WIDTH-1 downto 0);
+    signal accum : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
 
     -- Pipeline the gain so that the gain and selection change together
-    signal bunch_gain_in : signed(GAIN_WIDTH-1 downto 0);
-    signal bunch_gain : signed(GAIN_WIDTH-1 downto 0);
+    signal bunch_gain_in : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
+    signal bunch_gain : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
 
     -- Scaled result
     constant FULL_PROD_WIDTH : natural := ACCUM_WIDTH + GAIN_WIDTH;
-    signal full_dac_out : signed(FULL_PROD_WIDTH-1 downto 0);
-    signal full_dac_out_pl : signed(FULL_PROD_WIDTH-1 downto 0);
+    signal full_dac_out : signed(FULL_PROD_WIDTH-1 downto 0) := (others => '0');
+    signal full_dac_out_pl : signed(FULL_PROD_WIDTH-1 downto 0)
+        := (others => '0');
 
     -- To compute the output offset, regard the gain as a signed number in the
     -- range -1..1, ie there are GAIN_WIDTH-1 extra fraction bits after

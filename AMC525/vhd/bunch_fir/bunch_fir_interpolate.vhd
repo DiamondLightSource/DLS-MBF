@@ -19,7 +19,8 @@ entity bunch_fir_interpolate is
 end;
 
 architecture bunch_fir_interpolate of bunch_fir_interpolate is
-    signal read_data : data_i'SUBTYPE;
+    signal read_data : data_i'SUBTYPE := (others => '0');
+    signal data_out : data_o'SUBTYPE := (others => '0');
 
 begin
     assert data_i'LENGTH = data_o'LENGTH;
@@ -37,10 +38,12 @@ begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             if data_valid_i then
-                data_o <= data_i;
+                data_out <= data_i;
             else
-                data_o <= read_data;
+                data_out <= read_data;
             end if;
         end if;
     end process;
+
+    data_o <= data_out;
 end;

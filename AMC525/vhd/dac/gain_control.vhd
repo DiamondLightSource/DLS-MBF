@@ -35,7 +35,7 @@ architecture gain_control of gain_control is
     -- Input shifting using a generated barrel shifter.
     signal gain : natural range 0 to SEL_COUNT-1;
     signal data_in : signed(WIDTH_IN_MAX downto 0);
-    signal data_sel : signed(WIDTH_IN_MAX downto 0);
+    signal data_sel : signed(WIDTH_IN_MAX downto 0) := (others => '0');
 
 begin
     -- Zero pad data in for uniform rounding.

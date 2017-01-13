@@ -27,6 +27,11 @@ package bunch_defs is
     end record;
     constant BUNCH_CONFIG_BITS : natural := FIR_BANK_BITS + 3 + 13;
 
+    constant default_bunch_config_t : bunch_config_t := (
+        fir_select => (others => '0'),
+        gain => (others => '0'),
+        others => '0');
+
     type bunch_config_lanes_t is array(LANES) of bunch_config_t;
 
     -- Packed conversion between bunch configuration and std_logic_vector

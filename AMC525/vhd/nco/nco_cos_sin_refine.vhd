@@ -72,18 +72,27 @@ architecture nco_cos_sin_refine of nco_cos_sin_refine is
     -- 2^6 * PI = 2^5 2 PI : 9/-5
     constant PI_SCALED : signed(8 downto 0) := to_signed(201, 9);
 
-    signal residue : signed(8 downto 0);            -- 9/-21 (8)
-    signal delta_product : signed(17 downto 0);     -- 18/-26 (16)
-    signal delta : signed(9 downto 0);              -- 10/-18 (8)
+    -- Sizes of values: bits/scaling (significant):
+    --  residue : 9/-21(8)
+    --  delta_product : 18/-26(16)
+    --  delta : 10/-18(8)
+    --  {cos,sin}_in : 19/-18(18)
+    --  {cos,sin}_product : 29/-36(24)
+    --  {cos,sin}_acc_in : 37/-36
+    signal residue : signed(8 downto 0);
+    signal delta_product : signed(17 downto 0) := (others => '0');
+    signal delta : signed(9 downto 0) := (others => '0');
 
-    signal cos_in : signed(18 downto 0);            -- 19/-18 (18)
+    signal cos_in : signed(18 downto 0);
     signal sin_in : signed(18 downto 0);
-    signal cos_product : signed(28 downto 0);       -- 29/-36 (24)
-    signal sin_product : signed(28 downto 0);
-    signal cos_acc_in : signed(36 downto 0);        -- 37/-36
-    signal sin_acc_in : signed(36 downto 0);
-    signal cos_acc_out : signed(36 downto 0);       -- 37/-36
-    signal sin_acc_out : signed(36 downto 0);
+    signal cos_product : signed(28 downto 0) := (others => '0');
+    signal sin_product : signed(28 downto 0) := (others => '0');
+    signal cos_acc_in  : signed(36 downto 0) := (others => '0');
+    signal sin_acc_in  : signed(36 downto 0) := (others => '0');
+    signal cos_acc_out : signed(36 downto 0) := (others => '0');
+    signal sin_acc_out : signed(36 downto 0) := (others => '0');
+
+    signal cos_sin_out : cos_sin_18_t := (others => (others => '0'));
 
 begin
     assert LOOKUP_DELAY = 2;    -- Used for residue_i -> cos_sin_i delay
@@ -110,8 +119,10 @@ begin
             sin_acc_out <= sin_acc_in + cos_product;
 
             -- Round the result
-            cos_sin_o.cos <= round(cos_acc_out, 18);
-            cos_sin_o.sin <= round(sin_acc_out, 18);
+            cos_sin_out.cos <= round(cos_acc_out, 18);
+            cos_sin_out.sin <= round(sin_acc_out, 18);
         end if;
     end process;
+
+    cos_sin_o <= cos_sin_out;
 end;
