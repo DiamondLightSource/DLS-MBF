@@ -67,6 +67,8 @@ architecture fast_memory_top of fast_memory_top is
     signal data_valid : std_logic;
     signal extra_data : std_logic_vector(63 downto 0);
 
+    signal data_out : data_o'SUBTYPE;
+
     -- We don't expect the error bits to ever be seen
     signal data_error : std_logic := '0';
     signal addr_error : std_logic := '0';
@@ -156,6 +158,16 @@ begin
         extra_i => extra_data,
 
         data_valid_o => data_valid_o,
+        data_o => data_out
+    );
+
+    -- Pipeline data out to relax timing
+    dlyreg_inst : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => data_o'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => data_out,
         data_o => data_o
     );
 

@@ -592,6 +592,9 @@ CONFIG.NUM_SI {1} \
 CONFIG.STRATEGY {0} \
  ] $dma_xbar
 
+  # Create instance: dsp_ddr1_buf, and set properties
+  set dsp_ddr1_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 dsp_ddr1_buf ]
+
   # Create instance: dsp_ddr1_cc, and set properties
   set dsp_ddr1_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 dsp_ddr1_cc ]
   set_property -dict [ list \
@@ -609,9 +612,10 @@ CONFIG.TRANSLATION_MODE {2} \
   # Create interface connections
   connect_bd_intf_net -intf_net S_DMA_1 [get_bd_intf_pins S_DMA] [get_bd_intf_pins dma_xbar/S00_AXI]
   connect_bd_intf_net -intf_net S_DSP_DRAM0_1 [get_bd_intf_pins S_DSP_DRAM0] [get_bd_intf_pins ddr0_us/S_AXI]
-  connect_bd_intf_net -intf_net S_DSP_DRAM1_1 [get_bd_intf_pins S_DSP_DRAM1] [get_bd_intf_pins dsp_ddr1_pc/S_AXI]
+  connect_bd_intf_net -intf_net S_DSP_DRAM1_1 [get_bd_intf_pins S_DSP_DRAM1] [get_bd_intf_pins dsp_ddr1_buf/S_AXI]
   connect_bd_intf_net -intf_net auto_ds_M_AXI [get_bd_intf_pins dma_ddr1_cc/S_AXI] [get_bd_intf_pins dma_ddr1_ds/M_AXI]
   connect_bd_intf_net -intf_net axi_protocol_converter_0_M_AXI [get_bd_intf_pins dsp_ddr1_cc/S_AXI] [get_bd_intf_pins dsp_ddr1_pc/M_AXI]
+  connect_bd_intf_net -intf_net axi_register_slice_0_M_AXI [get_bd_intf_pins dsp_ddr1_buf/M_AXI] [get_bd_intf_pins dsp_ddr1_pc/S_AXI]
   connect_bd_intf_net -intf_net ddr0_buf_M_AXI [get_bd_intf_pins M_DRAM0] [get_bd_intf_pins ddr0_buf/M_AXI]
   connect_bd_intf_net -intf_net ddr0_crossbar_M00_AXI [get_bd_intf_pins ddr0_buf/S_AXI] [get_bd_intf_pins ddr0_crossbar/M00_AXI]
   connect_bd_intf_net -intf_net ddr0_us_M_AXI [get_bd_intf_pins ddr0_crossbar/S00_AXI] [get_bd_intf_pins ddr0_us/M_AXI]
@@ -632,8 +636,8 @@ CONFIG.TRANSLATION_MODE {2} \
   connect_bd_net -net DRAM0_ARESETN_1 [get_bd_pins DRAM0_ARESETN] [get_bd_pins ddr0_buf/aresetn] [get_bd_pins ddr0_crossbar/aresetn] [get_bd_pins ddr0_us/m_axi_aresetn] [get_bd_pins dma_ddr0_cc/m_axi_aresetn]
   connect_bd_net -net DRAM1_ACLK_1 [get_bd_pins DRAM1_ACLK] [get_bd_pins ddr1_buf/aclk] [get_bd_pins ddr1_crossbar/aclk] [get_bd_pins dma_ddr1_cc/m_axi_aclk] [get_bd_pins dsp_ddr1_cc/m_axi_aclk]
   connect_bd_net -net DRAM1_ARESETN_1 [get_bd_pins DRAM1_ARESETN] [get_bd_pins ddr1_buf/aresetn] [get_bd_pins ddr1_crossbar/aresetn] [get_bd_pins dma_ddr1_cc/m_axi_aresetn] [get_bd_pins dsp_ddr1_cc/m_axi_aresetn]
-  connect_bd_net -net DSP_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins ddr0_us/s_axi_aresetn] [get_bd_pins dsp_ddr1_cc/s_axi_aresetn] [get_bd_pins dsp_ddr1_pc/aresetn]
-  connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins ddr0_us/s_axi_aclk] [get_bd_pins dsp_ddr1_cc/s_axi_aclk] [get_bd_pins dsp_ddr1_pc/aclk]
+  connect_bd_net -net DSP_ARESETN_1 [get_bd_pins DSP_ARESETN] [get_bd_pins ddr0_us/s_axi_aresetn] [get_bd_pins dsp_ddr1_buf/aresetn] [get_bd_pins dsp_ddr1_cc/s_axi_aresetn] [get_bd_pins dsp_ddr1_pc/aresetn]
+  connect_bd_net -net DSP_CLK_1 [get_bd_pins DSP_CLK] [get_bd_pins ddr0_us/s_axi_aclk] [get_bd_pins dsp_ddr1_buf/aclk] [get_bd_pins dsp_ddr1_cc/s_axi_aclk] [get_bd_pins dsp_ddr1_pc/aclk]
 
   # Restore current instance
   current_bd_instance $oldCurInst
