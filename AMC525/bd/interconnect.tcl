@@ -1168,7 +1168,6 @@ CONFIG.POLARITY {ACTIVE_LOW} \
   # Create instance: axi_pcie3_bridge, and set properties
   set axi_pcie3_bridge [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_pcie3:3.0 axi_pcie3_bridge ]
   set_property -dict [ list \
-CONFIG.axi_aclk_loopback {true} \
 CONFIG.axi_addr_width {48} \
 CONFIG.axi_data_width {256_bit} \
 CONFIG.axisten_freq {250} \
@@ -1199,11 +1198,6 @@ CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
 CONFIG.pl_link_cap_max_link_width {X8} \
  ] $axi_pcie3_bridge
 
-  # Need to retain value_src of defaults
-  set_property -dict [ list \
-CONFIG.axi_aclk_loopback.VALUE_SRC {DEFAULT} \
- ] $axi_pcie3_bridge
-
   # Create instance: interrupts
   create_hier_cell_interrupts [current_bd_instance .] interrupts
 
@@ -1231,7 +1225,7 @@ CONFIG.axi_aclk_loopback.VALUE_SRC {DEFAULT} \
   connect_bd_net -net REG_CLK_1 [get_bd_ports REG_CLK] [get_bd_pins axi_lite/REG_CLK]
   connect_bd_net -net REG_RESETN_1 [get_bd_ports REG_RESETN] [get_bd_pins axi_lite/REG_RESETN]
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_pcie3_bridge/intx_msi_request] [get_bd_pins interrupts/irq]
-  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins axi_lite/PCIE_ACLK] [get_bd_pins axi_pcie3_bridge/axi_aclk] [get_bd_pins axi_pcie3_bridge/axi_ctl_aclk] [get_bd_pins interrupts/s_axi_aclk] [get_bd_pins memory_dma/DMA_ACLK]
+  connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins axi_lite/PCIE_ACLK] [get_bd_pins axi_pcie3_bridge/axi_aclk] [get_bd_pins interrupts/s_axi_aclk] [get_bd_pins memory_dma/DMA_ACLK]
   connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins axi_lite/PCIE_ARESETN] [get_bd_pins axi_pcie3_bridge/axi_aresetn] [get_bd_pins interrupts/s_axi_aresetn] [get_bd_pins memory_dma/DMA_ARESETN]
   connect_bd_net -net clk_in1_1 [get_bd_ports CLK200MHZ] [get_bd_pins memory_dma/CLK200MHZ]
   connect_bd_net -net memory_dma_DMA_INT_REQ [get_bd_pins interrupts/In0] [get_bd_pins memory_dma/DMA_INT_REQ]
