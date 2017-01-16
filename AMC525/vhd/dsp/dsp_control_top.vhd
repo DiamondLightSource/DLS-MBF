@@ -47,8 +47,8 @@ architecture dsp_control_top of dsp_control_top is
     constant REG_COUNT : natural := write_strobe_i'LENGTH;
     constant PULSED_REG : natural := 0;
     constant CONTROL_REG : natural := 1;
-    subtype MEM_REG is natural range 2 to 3;
-    subtype UNUSED_REG is natural range 4 to REG_COUNT-1;
+    subtype MEM_REG is natural range 2 to 5;
+    subtype UNUSED_REG is natural range 6 to REG_COUNT-1;
 
     signal pulsed_bits : reg_data_t;
     signal control : reg_data_t;
