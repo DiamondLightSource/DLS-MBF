@@ -23,10 +23,8 @@ entity dsp_control_top is
         read_ack_o : out std_logic_vector;
 
         -- DSP controls
-        control_to_dsp0_o : out control_to_dsp_t;
-        dsp0_to_control_i : in dsp_to_control_t;
-        control_to_dsp1_o : out control_to_dsp_t;
-        dsp1_to_control_i : in dsp_to_control_t;
+        control_to_dsp_o : out control_to_dsp_array_t;
+        dsp_to_control_i : in dsp_to_control_array_t;
 
         -- DRAM0 capture control
         dram0_capture_enable_o : out std_logic;
@@ -38,7 +36,11 @@ entity dsp_control_top is
         dram0_addr_error_i : in std_logic;
         dram0_brsp_error_i : in std_logic;
 
-        -- DRAM1 write error report.  Should never happen
+        -- DRAM1 data and control (on DSP clock)
+        dram1_address_o : out unsigned;
+        dram1_data_o : out std_logic_vector;
+        dram1_data_valid_o : out std_logic;
+        dram1_data_ready_i : in std_logic;
         dram1_brsp_error_i : in std_logic
     );
 end;
@@ -56,6 +58,12 @@ architecture dsp_control_top of dsp_control_top is
     signal adc_mux : std_logic;
     signal nco_0_mux : std_logic;
     signal nco_1_mux : std_logic;
+
+    -- DRAM1 interface
+    signal dram1_strobe : std_logic_vector(CHANNELS);
+    signal dram1_error : std_logic_vector(CHANNELS);
+    signal dram1_address : unsigned_array(CHANNELS)(DRAM1_ADDR_RANGE);
+    signal dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
 
 begin
     -- Capture of pulsed bits.
@@ -104,10 +112,8 @@ begin
         nco_0_mux_i => nco_0_mux,
         nco_1_mux_i => nco_1_mux,
 
-        control_to_dsp0_o => control_to_dsp0_o,
-        dsp0_to_control_i => dsp0_to_control_i,
-        control_to_dsp1_o => control_to_dsp1_o,
-        dsp1_to_control_i => dsp1_to_control_i
+        control_to_dsp_o => control_to_dsp_o,
+        dsp_to_control_i => dsp_to_control_i
     );
 
 
@@ -122,8 +128,7 @@ begin
         read_data_o => read_data_o(MEM_REG),
         read_ack_o => read_ack_o(MEM_REG),
 
-        dsp0_to_control_i => dsp0_to_control_i,
-        dsp1_to_control_i => dsp1_to_control_i,
+        dsp_to_control_i => dsp_to_control_i,
 
         capture_enable_o => dram0_capture_enable_o,
         data_ready_i => dram0_data_ready_i,
@@ -133,6 +138,28 @@ begin
         data_error_i => dram0_data_error_i,
         addr_error_i => dram0_addr_error_i,
         brsp_error_i => dram0_brsp_error_i
+    );
+
+
+    -- DRAM1 memory multiplexer
+    chan_gen : for c in CHANNELS generate
+        dram1_strobe(c) <= dsp_to_control_i(c).dram1_strobe;
+        dram1_address(c) <= dsp_to_control_i(c).dram1_address;
+        dram1_data(c) <= dsp_to_control_i(c).dram1_data;
+        control_to_dsp_o(c).dram1_error <= dram1_error(c);
+    end generate;
+    slow_memory_top_inst : entity work.slow_memory_top port map (
+        dsp_clk_i => dsp_clk_i,
+
+        dsp_strobe_i => dram1_strobe,
+        dsp_address_i => dram1_address,
+        dsp_data_i => dram1_data,
+        dsp_error_o => dram1_error,
+
+        dram1_address_o => dram1_address_o,
+        dram1_data_o => dram1_data_o,
+        dram1_data_valid_o => dram1_data_valid_o,
+        dram1_data_ready_i => dram1_data_ready_i
     );
 
 

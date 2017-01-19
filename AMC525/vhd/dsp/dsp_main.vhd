@@ -92,17 +92,8 @@ architecture dsp_main of dsp_main is
     signal dsp_read_ack : vector_array(CHANNELS)(DSP_REG_RANGE);
 
     -- DSP control interface
-    type dsp_to_control_array_t is array(CHANNELS) of dsp_to_control_t;
-    type control_to_dsp_array_t is array(CHANNELS) of control_to_dsp_t;
     signal dsp_to_control : dsp_to_control_array_t;
     signal control_to_dsp : control_to_dsp_array_t;
-
-    -- DRAM1 interface
-    subtype DSP_DRAM_ADDRESS is natural range dram1_address_o'LEFT-1 downto 0;
-    signal dram1_strobe : std_logic_vector(CHANNELS);
-    signal dram1_error : std_logic_vector(CHANNELS);
-    signal dram1_address : unsigned_array(CHANNELS)(DSP_DRAM_ADDRESS);
-    signal dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
 
 begin
     -- Demultiplex top two bits to our main components
@@ -170,10 +161,8 @@ begin
         read_data_o => ctrl_read_data,
         read_ack_o => ctrl_read_ack,
 
-        control_to_dsp0_o => control_to_dsp(0),
-        dsp0_to_control_i => dsp_to_control(0),
-        control_to_dsp1_o => control_to_dsp(1),
-        dsp1_to_control_i => dsp_to_control(1),
+        control_to_dsp_o => control_to_dsp,
+        dsp_to_control_i => dsp_to_control,
 
         dram0_capture_enable_o => dram0_capture_enable_o,
         dram0_data_ready_i => dram0_data_ready_i,
@@ -184,6 +173,10 @@ begin
         dram0_addr_error_i => dram0_addr_error_i,
         dram0_brsp_error_i => dram0_brsp_error_i,
 
+        dram1_address_o => dram1_address_o,
+        dram1_data_o => dram1_data_o,
+        dram1_data_valid_o => dram1_data_valid_o,
+        dram1_data_ready_i => dram1_data_ready_i,
         dram1_brsp_error_i => dram1_brsp_error_i
     );
 
@@ -228,28 +221,7 @@ begin
             read_ack_o => dsp_read_ack(c),
 
             control_to_dsp_i => control_to_dsp(c),
-            dsp_to_control_o => dsp_to_control(c),
-
-            dram1_strobe_o => dram1_strobe(c),
-            dram1_error_i => dram1_error(c),
-            dram1_address_o => dram1_address(c),
-            dram1_data_o => dram1_data(c)
+            dsp_to_control_o => dsp_to_control(c)
         );
     end generate;
-
-
-    -- DRAM1 memory multiplexer
-    slow_memory_top_inst : entity work.slow_memory_top port map (
-        dsp_clk_i => dsp_clk_i,
-
-        dsp_strobe_i => dram1_strobe,
-        dsp_address_i => dram1_address,
-        dsp_data_i => dram1_data,
-        dsp_error_o => dram1_error,
-
-        dram1_address_o => dram1_address_o,
-        dram1_data_o => dram1_data_o,
-        dram1_data_valid_o => dram1_data_valid_o,
-        dram1_data_ready_i => dram1_data_ready_i
-    );
 end;

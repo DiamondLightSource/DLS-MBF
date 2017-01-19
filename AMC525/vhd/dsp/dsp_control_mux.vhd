@@ -22,57 +22,51 @@ entity dsp_control_mux is
         nco_1_mux_i : in std_logic;
 
         -- Data channels
-        control_to_dsp0_o : out control_to_dsp_t;
-        dsp0_to_control_i : in dsp_to_control_t;
-        control_to_dsp1_o : out control_to_dsp_t;
-        dsp1_to_control_i : in dsp_to_control_t
+        control_to_dsp_o : out control_to_dsp_array_t;
+        dsp_to_control_i : in dsp_to_control_array_t
     );
 end;
 
 architecture dsp_control_mux of dsp_control_mux is
-    -- Outputs so we can assign default values for simulation
-    constant control_to_dsp_reset : control_to_dsp_t
-        := (others => (others => (others => '0')));
-    signal control_to_dsp0 : control_to_dsp_t := control_to_dsp_reset;
-    signal control_to_dsp1 : control_to_dsp_t := control_to_dsp_reset;
+    -- Aliases for more compact code
+    signal c2d0 : control_to_dsp_t := control_to_dsp_reset;
+    signal c2d1 : control_to_dsp_t := control_to_dsp_reset;
+    signal d2c0 : dsp_to_control_t;
+    signal d2c1 : dsp_to_control_t;
+
 begin
+    d2c0 <= dsp_to_control_i(0);
+    d2c1 <= dsp_to_control_i(1);
+    control_to_dsp_o(0) <= c2d0;
+    control_to_dsp_o(1) <= c2d1;
 
     -- Data multiplexing control
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             -- ADC input multiplexing
             if adc_mux_i = '1' then
-                control_to_dsp0.adc_data <= dsp1_to_control_i.adc_data;
+                c2d0.adc_data <= d2c1.adc_data;
             else
-                control_to_dsp0.adc_data <= dsp0_to_control_i.adc_data;
+                c2d0.adc_data <= d2c0.adc_data;
             end if;
-            control_to_dsp1.adc_data <= dsp1_to_control_i.adc_data;
+            c2d1.adc_data <= d2c1.adc_data;
 
             -- NCO output multiplexing
             for l in LANES loop
-                control_to_dsp0.nco_0_data(l) <=
-                    dsp0_to_control_i.nco_0_data(l).cos;
+                c2d0.nco_0_data(l) <= d2c0.nco_0_data(l).cos;
                 if nco_0_mux_i = '1' then
-                    control_to_dsp1.nco_0_data(l) <=
-                        dsp0_to_control_i.nco_0_data(l).sin;
+                    c2d1.nco_0_data(l) <= d2c0.nco_0_data(l).sin;
                 else
-                    control_to_dsp1.nco_0_data(l) <=
-                        dsp1_to_control_i.nco_0_data(l).cos;
+                    c2d1.nco_0_data(l) <= d2c1.nco_0_data(l).cos;
                 end if;
 
-                control_to_dsp0.nco_1_data(l) <=
-                    dsp0_to_control_i.nco_1_data(l).cos;
+                c2d0.nco_1_data(l) <= d2c0.nco_1_data(l).cos;
                 if nco_1_mux_i = '1' then
-                    control_to_dsp1.nco_1_data(l) <=
-                        dsp0_to_control_i.nco_1_data(l).sin;
+                    c2d1.nco_1_data(l) <= d2c0.nco_1_data(l).sin;
                 else
-                    control_to_dsp1.nco_1_data(l) <=
-                        dsp1_to_control_i.nco_1_data(l).cos;
+                    c2d1.nco_1_data(l) <= d2c1.nco_1_data(l).cos;
                 end if;
             end loop;
         end if;
     end process;
-
-    control_to_dsp0_o <= control_to_dsp0;
-    control_to_dsp1_o <= control_to_dsp1;
 end;

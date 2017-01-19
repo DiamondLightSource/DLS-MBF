@@ -19,8 +19,7 @@ entity fast_memory_mux is
 
         -- Data processing
         data_valid_i : in std_logic;
-        dsp0_to_control_i : in dsp_to_control_t;
-        dsp1_to_control_i : in dsp_to_control_t;
+        dsp_to_control_i : in dsp_to_control_array_t;
         extra_i : in std_logic_vector;
 
         -- Data out with write enable
@@ -42,12 +41,12 @@ architecture fast_memory_mux of fast_memory_mux is
 
 begin
     -- Extract incoming data for processing
-    adc(0)    <= dsp0_to_control_i.adc_data;
-    fir_in(0) <= dsp0_to_control_i.fir_data;
-    dac(0)    <= dsp0_to_control_i.dac_data;
-    adc(1)    <= dsp1_to_control_i.adc_data;
-    fir_in(1) <= dsp1_to_control_i.fir_data;
-    dac(1)    <= dsp1_to_control_i.dac_data;
+    adc(0)    <= dsp_to_control_i(0).adc_data;
+    fir_in(0) <= dsp_to_control_i(0).fir_data;
+    dac(0)    <= dsp_to_control_i(0).dac_data;
+    adc(1)    <= dsp_to_control_i(1).adc_data;
+    fir_in(1) <= dsp_to_control_i(1).fir_data;
+    dac(1)    <= dsp_to_control_i(1).dac_data;
     -- The extra data path is actually mapped directly to the output stream, so
     -- this is just an inversion of the output ordering.
     extra(0)(0) <= signed(extra_i(15 downto  0));

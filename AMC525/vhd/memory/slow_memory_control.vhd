@@ -1,4 +1,5 @@
 -- Top level controller for output to DRAM1
+-- Currently this is a dummy controller which generates a test sequence.
 
 library ieee;
 use ieee.std_logic_1164.all;

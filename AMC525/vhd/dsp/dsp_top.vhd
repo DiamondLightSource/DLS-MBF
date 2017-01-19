@@ -32,13 +32,7 @@ entity dsp_top is
 
         -- External control: data multiplexing and shared control
         control_to_dsp_i : in control_to_dsp_t;
-        dsp_to_control_o : out dsp_to_control_t;
-
-        -- Data out to DRAM1
-        dram1_strobe_o : out std_logic;
-        dram1_error_i : in std_logic;
-        dram1_address_o : out unsigned;
-        dram1_data_o : out std_logic_vector
+        dsp_to_control_o : out dsp_to_control_t
     );
 end;
 
@@ -145,7 +139,7 @@ begin
         5 => dac_mux_overflow,      -- Overflow in output multiplexer
         6 => dac_mms_overflow,      -- DAC MMS accumulator overflow
         7 => dac_preemph_overflow,  -- Preemphasis filter overflow
-        8 => dram1_error_i,         -- Overrun writing to DRAM1
+        8 => control_to_dsp_i.dram1_error,  -- Overrun writing to DRAM1
         others => '0'
     );
 
@@ -209,10 +203,10 @@ begin
         read_data_o => read_data_o(SLOW_MEM_REGS),
         read_ack_o => read_ack_o(SLOW_MEM_REGS),
 
-        dram1_strobe_o => dram1_strobe_o,
-        dram1_error_i => dram1_error_i,
-        dram1_address_o => dram1_address_o,
-        dram1_data_o => dram1_data_o
+        dram1_strobe_o => dsp_to_control_o.dram1_strobe,
+        dram1_error_i => control_to_dsp_i.dram1_error,
+        dram1_address_o => dsp_to_control_o.dram1_address,
+        dram1_data_o => dsp_to_control_o.dram1_data
     );
 
 

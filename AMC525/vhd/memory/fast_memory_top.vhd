@@ -22,8 +22,7 @@ entity fast_memory_top is
         read_ack_o : out std_logic_vector(0 to 3);
 
         -- Input data stream
-        dsp0_to_control_i : in dsp_to_control_t;
-        dsp1_to_control_i : in dsp_to_control_t;
+        dsp_to_control_i : in dsp_to_control_array_t;
 
         -- DRAM0 capture control: connected directly to AXI burst master
         capture_enable_o : out std_logic;
@@ -153,8 +152,7 @@ begin
         fir_gain_i => fir_gain,
 
         data_valid_i => data_valid,
-        dsp0_to_control_i => dsp0_to_control_i,
-        dsp1_to_control_i => dsp1_to_control_i,
+        dsp_to_control_i => dsp_to_control_i,
         extra_i => extra_data,
 
         data_valid_o => data_valid_o,
