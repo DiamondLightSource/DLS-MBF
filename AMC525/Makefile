@@ -5,6 +5,9 @@ $(error Do not call this file directly)
 endif
 
 
+AMC525_IP = 192.168.40.200
+AMC525_IP = 192.168.40.199
+
 SRCDIR = $(TOP)/AMC525
 TCLDIR = $(SRCDIR)/tcl
 BDDIR = $(SRCDIR)/bd
@@ -24,6 +27,7 @@ SOURCES += $(wildcard $(SRCDIR)/vhd/*/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/constr/*)
 
 INTERCONNECT_BD = interconnect/interconnect.bd
+INTERCONNECT_VHD = interconnect/hdl/interconnect_wrapper.vhd
 
 
 # Default targets
@@ -32,9 +36,42 @@ fpga: amc525_lmbf.bit
 .PHONY: default fpga
 
 
+# ------------------------------------------------------------------------------
+# Core build process:
+#   interconnect.tcl -> interconnect.bd -> interconnect.vhd
+#   + *.vhd -> amc525_lmbf.bit
+
+# Load block design from TCL sources
 $(INTERCONNECT_BD): $(BDDIR)/interconnect.tcl
 	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/create_bd.tcl \
             -tclargs interconnect -tclargs $<
+
+# This builds the out of project BD files
+$(INTERCONNECT_VHD): $(INTERCONNECT_BD)
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_bd.tcl
+
+# Generate top entity
+built/top_entity.vhd: constr/signals constr/pins constr/used
+	mkdir -p built
+	cd built  &&  $(TOP)/scripts/make_entity.py $^ top
+
+# Other generated vhd files
+built/%.vhd: %.py %.vhd.in
+	python $^ >$@
+
+# Build final target
+amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_VHD) $(SOURCES)
+	mkdir -p reports checkpoints
+	rm -rf amc525_lmbf
+	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_top.tcl \
+            -tclargs '$(SRCDIR)'
+
+
+# ------------------------------------------------------------------------------
+# Helper targets
+
+create_bd: $(INTERCONNECT_BD)
+.PHONY: create_bd
 
 edit_bd: $(INTERCONNECT_BD)
 	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/edit_bd.tcl \
@@ -48,35 +85,22 @@ save_bd:
 	touch $(INTERCONNECT_BD)
 .PHONY: save_bd
 
-
 # Run vivado on project
-#
 runvivado:
 	$(RUN_VIVADO) amc525_lmbf/amc525_lmbf.xpr
 .PHONY: runvivado
 
-
-# Target build
-#
-amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
-	mkdir -p reports checkpoints
-	rm -rf amc525_lmbf
-	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_top.tcl \
-            -tclargs '$(SRCDIR)'
+# Helper target for rebuilding built files
+fpga_built: $(BUILT_FILES)
+.PHONY: fpga_built
 
 
-built/top_entity.vhd: constr/signals constr/pins constr/used
-	mkdir -p built
-	cd built  &&  $(TOP)/scripts/make_entity.py $^ top
-
-built/%.vhd: %.py %.vhd.in
-	python $^ >$@
-
-
+# ------------------------------------------------------------------------------
+# Upload image to target
 
 load_fpga:
 	scp amc525_lmbf.bit ts-di-lmbf-02:/tmp
-	ssh ts-di-lmbf-02 scp /tmp/amc525_lmbf.bit root@192.168.40.200:/tmp
-	ssh ts-di-lmbf-02 ssh root@192.168.40.200 \
+	ssh ts-di-lmbf-02 scp /tmp/amc525_lmbf.bit root@$(AMC525_IP):/tmp
+	ssh ts-di-lmbf-02 ssh root@$(AMC525_IP) \
             amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
 .PHONY: load_fpga

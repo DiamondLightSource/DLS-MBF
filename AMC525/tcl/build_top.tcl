@@ -17,6 +17,11 @@ set_param project.enableVHDL2008 1
 set_property target_language VHDL [current_project]
 set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
 
+# Ensure undriven pins are treated as errors
+set_msg_config -id "Synth 8-3295" -new_severity ERROR
+set_msg_config -id "Synth 8-3848" -new_severity ERROR
+
+
 # Add our files and set them to VHDL 2008.  This needs to be done before reading
 # any externally generated files, particularly the interconnect.
 add_files built
@@ -29,9 +34,6 @@ set_property FILE_TYPE VHDL [get_files block_memory.vhd]
 
 # Ensure we've read the block design and generated the associated files.
 read_bd interconnect/interconnect.bd
-open_bd_design interconnect/interconnect.bd
-validate_bd_design
-generate_target all [get_files interconnect/interconnect.bd]
 add_files interconnect/hdl/interconnect_wrapper.vhd
 
 # Load the constraints
