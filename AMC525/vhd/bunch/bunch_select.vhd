@@ -27,7 +27,7 @@ entity bunch_select is
         write_start_i : in std_logic;           -- Reset write address
 
         -- Bunch configuration readout
-        bank_i : in unsigned(1 downto 0);       -- Current bunch bank
+        bank_select_i : in unsigned(1 downto 0);       -- Current bunch bank
         bunch_index_o : out bunch_count_t;      -- Current bunch number
         bunch_config_o : out bunch_config_lanes_t;
         turn_clock_o : out std_logic            -- Revolution clock
@@ -95,7 +95,7 @@ begin
         write_start_i => write_start_i,
         write_bank_i => write_bank,
 
-        bank_i => write_bank,
+        bank_select_i => bank_select_i,
         bunch_index_i => bunch_index,
         config_o => bunch_config_o
     );

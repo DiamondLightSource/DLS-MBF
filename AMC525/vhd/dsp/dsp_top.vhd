@@ -168,7 +168,7 @@ begin
 
         write_start_i => write_start,
 
-        bank_i => current_bank,
+        bank_select_i => current_bank,
         bunch_index_o => bunch_index,
         bunch_config_o => bunch_config,
         turn_clock_o => turn_clock

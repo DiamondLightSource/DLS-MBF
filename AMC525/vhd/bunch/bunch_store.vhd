@@ -20,15 +20,15 @@ entity bunch_store is
         write_bank_i : in unsigned;     -- Selects which bank to write
 
         -- Bunch readout
-        bank_i : in unsigned;
+        bank_select_i : in unsigned;
         bunch_index_i : in unsigned;
         config_o : out bunch_config_lanes_t
     );
 end;
 
 architecture bunch_store of bunch_store is
-    -- Assemble address from bank_i and bunch_index_i
-    constant ADDR_BITS : natural := bank_i'LENGTH + bunch_index_i'LENGTH;
+    -- Assemble address from bank_select_i and bunch_index_i
+    constant ADDR_BITS : natural := bank_select_i'LENGTH + bunch_index_i'LENGTH;
     signal read_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
     signal write_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
 
@@ -74,7 +74,7 @@ begin
     write_data_in.gain         <= signed  (write_data_i(31 downto 19));
 
     -- Assemble addresses from selected bank and target bunch
-    read_addr <= bank_i & bunch_index_i;
+    read_addr <= bank_select_i & bunch_index_i;
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
