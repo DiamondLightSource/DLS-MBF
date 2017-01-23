@@ -21,7 +21,6 @@ entity bunch_fir_top is
         data_o : out signed_array;
 
         turn_clock_i : in std_logic;
-        bunch_index_i : in bunch_count_t;
         bunch_config_i : in bunch_config_lanes_t;
 
         -- General register interface
@@ -58,6 +57,7 @@ architecture bunch_fir_top of bunch_fir_top is
     signal decimated_valid : std_logic_vector(LANES);
 
     -- Data flow and decimation control
+    signal bunch_index : bunch_count_t;
     signal first_turn : std_logic;
     signal last_turn : std_logic;
     signal filtered_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
@@ -102,6 +102,7 @@ begin
         dsp_clk_i => dsp_clk_i,
         decimation_limit_i => decimation_limit,
         turn_clock_i => turn_clock_i,
+        bunch_index_o => bunch_index,
         first_turn_o => first_turn,
         last_turn_o => last_turn
     );
@@ -111,7 +112,7 @@ begin
         decimate_inst : entity work.bunch_fir_decimate port map (
             dsp_clk_i => dsp_clk_i,
 
-            bunch_index_i => bunch_index_i,
+            bunch_index_i => bunch_index,
             decimation_shift_i => decimation_shift,
 
             first_turn_i => first_turn,
@@ -124,7 +125,7 @@ begin
         -- The filter
         fir_inst : entity work.bunch_fir port map (
             dsp_clk_i => dsp_clk_i,
-            bunch_index_i => bunch_index_i,
+            bunch_index_i => bunch_index,
             taps_i => taps(l),
 
             data_valid_i => decimated_valid(l),
@@ -136,7 +137,7 @@ begin
         -- Interpolate the reduced data back to full speed
         interpolate_inst : entity work.bunch_fir_interpolate port map (
             dsp_clk_i => dsp_clk_i,
-            bunch_index_i => bunch_index_i,
+            bunch_index_i => bunch_index,
             data_valid_i => filtered_valid(l),
             data_i => filtered_data(l),
             data_o => data_o(l)

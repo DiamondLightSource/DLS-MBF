@@ -79,7 +79,6 @@ architecture dsp_top of dsp_top is
 
     -- Bunch control
     signal current_bank : unsigned(1 downto 0);
-    signal bunch_index : bunch_count_t;
     signal bunch_config : bunch_config_lanes_t;
     signal turn_clock : std_logic;
 
@@ -169,7 +168,6 @@ begin
         write_start_i => write_start,
 
         bank_select_i => current_bank,
-        bunch_index_o => bunch_index,
         bunch_config_o => bunch_config,
         turn_clock_o => turn_clock
     );
@@ -252,7 +250,6 @@ begin
         data_o => fir_data,
 
         turn_clock_i => turn_clock,
-        bunch_index_i => bunch_index,
         bunch_config_i => bunch_config,
 
         write_strobe_i => write_strobe_i(B_FIR_REGS),

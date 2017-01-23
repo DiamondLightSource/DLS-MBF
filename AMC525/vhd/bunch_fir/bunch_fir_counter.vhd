@@ -15,15 +15,18 @@ entity bunch_fir_counter is
     port (
         dsp_clk_i : in std_logic;
 
-        decimation_limit_i : in unsigned;
-
         turn_clock_i : in std_logic;
+        bunch_index_o : out bunch_count_t;
+
+        decimation_limit_i : in unsigned;
         first_turn_o : out std_logic;
         last_turn_o : out std_logic
     );
 end;
 
 architecture bunch_fir_counter of bunch_fir_counter is
+    signal bunch_index : bunch_count_t := (others => '0');
+
     constant DECIMATION_BITS : natural := decimation_limit_i'LENGTH;
     signal decimation_counter : natural range 0 to 2**DECIMATION_BITS-1;
     signal last_turn : boolean;
@@ -34,6 +37,7 @@ begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             if turn_clock_i = '1' then
+                bunch_index <= (others => '0');
                 if last_turn then
                     decimation_counter <= 0;
                 else
@@ -41,7 +45,11 @@ begin
                 end if;
                 last_turn_o <= to_std_logic(last_turn);
                 first_turn_o <= last_turn_o;
+            else
+                bunch_index <= bunch_index + 1;
             end if;
         end if;
     end process;
+
+    bunch_index_o <= bunch_index;
 end;

@@ -28,7 +28,6 @@ entity bunch_select is
 
         -- Bunch configuration readout
         bank_select_i : in unsigned(1 downto 0);       -- Current bunch bank
-        bunch_index_o : out bunch_count_t;      -- Current bunch number
         bunch_config_o : out bunch_config_lanes_t;
         turn_clock_o : out std_logic            -- Revolution clock
     );
@@ -83,7 +82,6 @@ begin
         bunch_index_o => bunch_index,
         turn_clock_o => turn_clock_o
     );
-    bunch_index_o <= bunch_index;
 
     -- Bunch bank memory
     bunch_mem : entity work.bunch_store port map (
