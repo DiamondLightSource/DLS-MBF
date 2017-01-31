@@ -46,6 +46,12 @@ architecture testbench of testbench is
     signal dram1_data_ready : std_logic;
     signal dram1_brsp_error : std_logic;
 
+    signal revolution_clock : std_logic := '0';
+    signal event_trigger : std_logic := '0';
+    signal postmortem_trigger : std_logic := '0';
+    signal blanking_trigger : std_logic := '0';
+    signal dsp_events : std_logic_vector(CHANNELS);
+
     signal dram1_ready_delay : natural := 5;
 
 begin
@@ -62,6 +68,15 @@ begin
                 adc_data(c) <= adc_data(c) + 1;
             end loop;
         end if;
+    end process;
+
+    -- Revolution clock
+    process begin
+        loop
+            clk_wait(adc_clk, 5);
+            revolution_clock <= not revolution_clock;
+        end loop;
+        wait;
     end process;
 
 
@@ -96,7 +111,13 @@ begin
         dram1_data_o => dram1_data,
         dram1_data_valid_o => dram1_data_valid,
         dram1_data_ready_i => dram1_data_ready,
-        dram1_brsp_error_i => dram1_brsp_error
+        dram1_brsp_error_i => dram1_brsp_error,
+
+        revolution_clock_i => revolution_clock,
+        event_trigger_i => event_trigger,
+        postmortem_trigger_i => postmortem_trigger,
+        blanking_trigger_i => blanking_trigger,
+        dsp_events_o => dsp_events
     );
 
 
@@ -157,45 +178,56 @@ begin
 
         read_reg(16#0000#);             -- Dummy read
 
-        write_reg(16#0012#, X"12345678");   -- Write to invalid register
+        -- Set up number of bunches
+        write_reg(16#0007#, X"00000004");   -- 10 bunches (2*5) in our ring!
+        -- Trigger synchronisation
+        write_reg(16#0006#, X"00000001");
 
+        -- Start DRAM1 memory transfer
         write_reg(16#1006#, X"20000008");   -- Start DSP0 DRAM1
         write_reg(16#1806#, X"20000008");   -- Start DSP1 DRAM1
 
-        -- Initialise ADC FIR with passthrough.
-        write_dsp(0, X"00000001");
-        write_dsp(3, X"7FFFFFFF");
+        -- Initiate DRAM0 memory transfer
+        write_reg(3, X"00000010");
+        write_reg(4, X"00000003");
 
-        -- Configure bunch control
-        write_dsp(4, X"00000004");      -- 10 bunches (2*5) in our ring!
-        write_dsp(0, X"00000001");      -- Start write
-        write_dsp(5, X"7FFF0070");      -- Enable all outpus with maximum gain
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-        write_dsp(5, X"7FFF0070");
-
-        -- Write 1 into first tap of bank 0
-        write_dsp(8, X"7FFFFFFF");
-
-        -- Global DAC output config
-        write_dsp(9, X"02000000");      -- Enable FIR, zero delay
-
-        -- Initialise DAC FIR
-        write_dsp(0, X"00000001");
-        write_dsp(10, X"7FFFFFFF");
-
-        -- Enable DAC output
-        write_dsp(11, X"00000008");
-
-        -- Set both oscillator frequencies
-        write_dsp(12, X"01000000");
-        write_dsp(13, X"10000000");
+        read_reg(5);
+        read_reg(4);
+-- 
+--         -- Initialise ADC FIR with passthrough.
+--         write_dsp(0, X"00000001");
+--         write_dsp(3, X"7FFFFFFF");
+-- 
+--         -- Configure bunch control
+--         write_dsp(4, X"00000004");      -- 10 bunches (2*5) in our ring!
+--         write_dsp(0, X"00000001");      -- Start write
+--         write_dsp(5, X"7FFF0070");      -- Enable all outpus with maximum gain
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+--         write_dsp(5, X"7FFF0070");
+-- 
+--         -- Write 1 into first tap of bank 0
+--         write_dsp(8, X"7FFFFFFF");
+-- 
+--         -- Global DAC output config
+--         write_dsp(9, X"02000000");      -- Enable FIR, zero delay
+-- 
+--         -- Initialise DAC FIR
+--         write_dsp(0, X"00000001");
+--         write_dsp(10, X"7FFFFFFF");
+-- 
+--         -- Enable DAC output
+--         write_dsp(11, X"00000008");
+-- 
+--         -- Set both oscillator frequencies
+--         write_dsp(12, X"01000000");
+--         write_dsp(13, X"10000000");
         wait;
     end process;
 

@@ -12,8 +12,7 @@ entity bunch_select is
     port (
         dsp_clk_i : in std_logic;
 
-        -- Bunch synchronisation trigger and phase offset
-        sync_trigger_i : in std_logic;          -- Bunch synch trigger
+        turn_clock_i : in std_logic;           -- Revolution clock
 
         -- Bunch configuration SBC interface for writing configuration
         -- We use two registers
@@ -28,8 +27,7 @@ entity bunch_select is
 
         -- Bunch configuration readout
         bank_select_i : in unsigned(1 downto 0);       -- Current bunch bank
-        bunch_config_o : out bunch_config_lanes_t;
-        turn_clock_o : out std_logic            -- Revolution clock
+        bunch_config_o : out bunch_config_lanes_t
     );
 end;
 
@@ -46,11 +44,9 @@ architecture bunch_select of bunch_select is
     constant UNUSED_REG_R : natural := 1;
     signal config_register : reg_data_t;
 
-    signal max_bunch : bunch_count_t;
-    signal bunch_zero : bunch_count_t;
     signal write_bank : unsigned(BUNCH_BANK_BITS-1 downto 0);
 
-    signal bunch_index : bunch_count_t;
+    signal bunch_index : bunch_count_t := (others => '0');
 
 begin
     -- Register management
@@ -68,19 +64,14 @@ begin
     read_data_o(UNUSED_REG_R) <= (others => '0');
     read_ack_o(UNUSED_REG_R) <= '1';
 
-    max_bunch  <= unsigned(read_field(config_register, BUNCH_NUM_BITS, 0));
-    bunch_zero <= unsigned(read_field(config_register, BUNCH_NUM_BITS, 12));
     write_bank <= unsigned(read_field(config_register, BUNCH_BANK_BITS, 24));
 
 
-    -- Bunch counter generation and bunch synchronisation
+    -- Bunch counter
     bunch_counter : entity work.bunch_counter port map (
         dsp_clk_i => dsp_clk_i,
-        sync_trigger_i => sync_trigger_i,
-        bunch_zero_i => bunch_zero,
-        max_bunch_i => max_bunch,
-        bunch_index_o => bunch_index,
-        turn_clock_o => turn_clock_o
+        turn_clock_i => turn_clock_i,
+        bunch_index_o => bunch_index
     );
 
     -- Bunch bank memory

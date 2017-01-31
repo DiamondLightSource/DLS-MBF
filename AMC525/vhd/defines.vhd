@@ -33,4 +33,10 @@ package defines is
     constant CHANNEL_COUNT : natural := 2;
     subtype CHANNELS is natural range 0 to CHANNEL_COUNT-1;
 
+    -- This determines the maximum number of bunches in a machine turn, equal to
+    -- LANE_COUNT * 2**BUNCH_NUM_BITS.  At DLS with our 936 bunches and 2 lanes
+    -- in the FPGA design a value of 9 is sufficient.
+    constant BUNCH_NUM_BITS : natural := 9;
+    subtype bunch_count_t is unsigned(BUNCH_NUM_BITS-1 downto 0);
+
 end;

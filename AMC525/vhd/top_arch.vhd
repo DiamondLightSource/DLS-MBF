@@ -149,12 +149,12 @@ architecture top of top is
     -- Top register wiring
 
     -- System register wiring
-    signal system_write_strobe : std_logic_vector(0 to 6);
+    signal system_write_strobe : std_logic_vector(0 to 7);
     signal system_write_data : reg_data_t;
-    signal system_write_ack : std_logic_vector(0 to 6);
-    signal system_read_strobe : std_logic_vector(0 to 6);
-    signal system_read_data : reg_data_array_t(0 to 6);
-    signal system_read_ack : std_logic_vector(0 to 6);
+    signal system_write_ack : std_logic_vector(0 to 7);
+    signal system_read_strobe : std_logic_vector(0 to 7);
+    signal system_read_data : reg_data_array_t(0 to 7);
+    signal system_read_ack : std_logic_vector(0 to 7);
 
     -- DSP control register wiring
     signal dsp_write_strobe : std_logic;
@@ -171,10 +171,22 @@ architecture top of top is
     signal status_data : reg_data_t;
     signal control_data : reg_data_t;
 
-    -- IDELAY control
-    signal idelay_write_strobe : std_logic;
-    signal idelay_write_data : reg_data_t;
-    signal idelay_read_data : reg_data_t;
+    -- ADC clock IDELAY control
+    signal adc_idelay_write_strobe : std_logic;
+    signal adc_idelay_write_data : reg_data_t;
+    signal adc_idelay_read_data : reg_data_t;
+
+    -- Revolution clock IDELAY control
+    signal rev_idelay_write_strobe : std_logic;
+    signal rev_idelay_write_data : reg_data_t;
+    signal rev_idelay_read_data : reg_data_t;
+
+    -- External triggers
+    signal revolution_clock : std_logic;
+    signal event_trigger : std_logic;
+    signal postmortem_trigger : std_logic;
+    signal blanking_trigger : std_logic;
+    signal dsp_events : std_logic_vector(CHANNELS);
 
     -- DAC test
     signal dac_test_pattern : reg_data_array_t(0 to 1);
@@ -231,15 +243,6 @@ begin
         1 => fmc500_inputs.pll_status_ld2
     );
 
-    -- FMC0 outputs
-    dio_outputs <= (
-        0 => fmc500_inputs.pll_dclkout2,
-        1 => fmc500_inputs.pll_sdclkout3,
-        2 => fmc500_inputs.pll_status_ld1,
-        3 => fmc500_inputs.pll_status_ld2,
-        4 => '0'
-    );
-
     -- Interrupt events
     INTR <= (
         0 => DRAM0_capture_enable,
@@ -289,9 +292,9 @@ begin
         reg_clk_ok_o => reg_clk_ok,
         dsp_reset_n_o => dsp_reset_n,
 
-        write_strobe_i => idelay_write_strobe,
-        write_data_i => idelay_write_data,
-        read_data_o => idelay_read_data,
+        write_strobe_i => adc_idelay_write_strobe,
+        write_data_i => adc_idelay_write_data,
+        read_data_o => adc_idelay_read_data,
 
         adc_pll_ok_o => adc_pll_ok
     );
@@ -301,6 +304,17 @@ begin
         adc_clk_i => adc_clk,
         dsp_clk_ok_i => dsp_clk_ok,
         adc_phase_o => adc_phase
+    );
+
+    -- Controllable delay for revolution clock
+    rev_clk_idelay_inst : entity work.idelay_control port map (
+        ref_clk_i => ref_clk,
+        ref_clk_ok_i => ref_clk_ok,
+        signal_i => fast_ext_trigger,
+        signal_o => revolution_clock,
+        write_strobe_i => rev_idelay_write_strobe,
+        write_data_i => rev_idelay_write_data,
+        read_data_o => rev_idelay_read_data
     );
 
 
@@ -548,9 +562,9 @@ begin
         FMC_LA_P => FMC0_LA_P,
         FMC_LA_N => FMC0_LA_N,
 
-        -- Configure I/O #5 as terminated input, the other four are outputs.
-        out_enable_i  => "01111",
-        term_enable_i => "10000",
+        -- Configure ports 1-3 as terminated inputs, ports 4,5 will be outputs.
+        out_enable_i  => "11000",
+        term_enable_i => "00111",
 
         output_i => dio_outputs,
         leds_i => dio_leds,
@@ -649,9 +663,13 @@ begin
         status_read_data_i => status_data,
         control_data_o => control_data,
 
-        idelay_write_strobe_o => idelay_write_strobe,
-        idelay_write_data_o => idelay_write_data,
-        idelay_read_data_i => idelay_read_data,
+        adc_idelay_write_strobe_o => adc_idelay_write_strobe,
+        adc_idelay_write_data_o => adc_idelay_write_data,
+        adc_idelay_read_data_i => adc_idelay_read_data,
+
+        rev_idelay_write_strobe_o => rev_idelay_write_strobe,
+        rev_idelay_write_data_o => rev_idelay_write_data,
+        rev_idelay_read_data_i => rev_idelay_read_data,
 
         fmc500m_spi_write_strobe_o => fmc500m_spi_write_strobe,
         fmc500m_spi_write_data_o => fmc500m_spi_write_data,
@@ -698,7 +716,13 @@ begin
         dram1_data_o => DRAM1_data,
         dram1_data_valid_o => DRAM1_data_valid,
         dram1_data_ready_i => DRAM1_data_ready,
-        dram1_brsp_error_i => DRAM1_brsp_error
+        dram1_brsp_error_i => DRAM1_brsp_error,
+
+        revolution_clock_i => revolution_clock,
+        event_trigger_i => event_trigger,
+        postmortem_trigger_i => postmortem_trigger,
+        blanking_trigger_i => blanking_trigger,
+        dsp_events_o => dsp_events
     );
 
     -- Generate DAC test data if necessary
@@ -738,5 +762,17 @@ begin
     fmc500_outputs.adc_pdwn <= control_data(6);
     fmc500_outputs.dac_rstn <= not control_data(7);
     dac_test_mode <= control_data(8);
+
+    -- External events
+    event_trigger      <= dio_inputs(0);
+    postmortem_trigger <= dio_inputs(1);
+    blanking_trigger   <= dio_inputs(2);
+
+    -- FMC0 outputs
+    dio_outputs <= (
+        4 => dsp_events(0),
+        5 => dsp_events(1),
+        others => '0'
+    );
 
 end;

@@ -11,6 +11,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/defines.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/dlyline.vhd \
+    $vhd_dir/util/sync_bit.vhd \
     $vhd_dir/util/sync_reset.vhd \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/util/edge_detect.vhd \

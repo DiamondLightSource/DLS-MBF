@@ -12,7 +12,9 @@ use work.dsp_defs.all;
 entity dsp_control_top is
     port (
         -- Clocking
+        adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
+        adc_phase_i : in std_logic;
 
         -- Control register interface
         write_strobe_i : in std_logic_vector;
@@ -41,7 +43,13 @@ entity dsp_control_top is
         dram1_data_o : out std_logic_vector;
         dram1_data_valid_o : out std_logic;
         dram1_data_ready_i : in std_logic;
-        dram1_brsp_error_i : in std_logic
+        dram1_brsp_error_i : in std_logic;
+
+        -- External triggers
+        revolution_clock_i : in std_logic;
+        event_trigger_i : in std_logic;
+        postmortem_trigger_i : in std_logic;
+        blanking_trigger_i : in std_logic
     );
 end;
 
@@ -50,7 +58,8 @@ architecture dsp_control_top of dsp_control_top is
     constant PULSED_REG : natural := 0;
     constant CONTROL_REG : natural := 1;
     subtype MEM_REG is natural range 2 to 5;
-    subtype UNUSED_REG is natural range 6 to REG_COUNT-1;
+    subtype TRIGGER_REG is natural range 6 to 9;
+    subtype UNUSED_REG is natural range 10 to REG_COUNT-1;
 
     signal pulsed_bits : reg_data_t;
     signal control : reg_data_t;
@@ -58,12 +67,22 @@ architecture dsp_control_top of dsp_control_top is
     signal adc_mux : std_logic;
     signal nco_0_mux : std_logic;
     signal nco_1_mux : std_logic;
+    signal mux_adc_out : signed_array_array(CHANNELS)(LANES)(ADC_DATA_RANGE);
+    signal mux_nco_0_out : signed_array_array(CHANNELS)(LANES)(NCO_DATA_RANGE);
+    signal mux_nco_1_out : signed_array_array(CHANNELS)(LANES)(NCO_DATA_RANGE);
 
     -- DRAM1 interface
     signal dram1_strobe : std_logic_vector(CHANNELS);
     signal dram1_error : std_logic_vector(CHANNELS);
     signal dram1_address : unsigned_array(CHANNELS)(DRAM1_ADDR_RANGE);
     signal dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
+
+    -- Triggering and events interface
+    signal adc_trigger : std_logic_vector(CHANNELS);
+    signal seq_trigger : std_logic_vector(CHANNELS);
+    signal turn_clock : std_logic_vector(CHANNELS);
+    signal seq_start : std_logic_vector(CHANNELS);
+    signal dram0_trigger : std_logic;
 
 begin
     -- Capture of pulsed bits.
@@ -112,9 +131,17 @@ begin
         nco_0_mux_i => nco_0_mux,
         nco_1_mux_i => nco_1_mux,
 
-        control_to_dsp_o => control_to_dsp_o,
-        dsp_to_control_i => dsp_to_control_i
+        dsp_to_control_i => dsp_to_control_i,
+
+        adc_o => mux_adc_out,
+        nco_0_o => mux_nco_0_out,
+        nco_1_o => mux_nco_1_out
     );
+    mux_gen : for c in CHANNELS generate
+        control_to_dsp_o(c).adc_data <= mux_adc_out(c);
+        control_to_dsp_o(c).nco_0_data <= mux_nco_0_out(c);
+        control_to_dsp_o(c).nco_1_data <= mux_nco_1_out(c);
+    end generate;
 
 
     -- DRAM0 capture control
@@ -129,6 +156,7 @@ begin
         read_ack_o => read_ack_o(MEM_REG),
 
         dsp_to_control_i => dsp_to_control_i,
+        memory_trigger_i => dram0_trigger,
 
         capture_enable_o => dram0_capture_enable_o,
         data_ready_i => dram0_data_ready_i,
@@ -163,9 +191,43 @@ begin
     );
 
 
+    -- Triggers and event generation
+    triggers_inst : entity work.triggers_top port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase_i,
+
+        write_strobe_i => write_strobe_i(TRIGGER_REG),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(TRIGGER_REG),
+        read_strobe_i => read_strobe_i(TRIGGER_REG),
+        read_data_o => read_data_o(TRIGGER_REG),
+        read_ack_o => read_ack_o(TRIGGER_REG),
+
+        revolution_clock_i => revolution_clock_i,
+        event_trigger_i => event_trigger_i,
+        postmortem_trigger_i => postmortem_trigger_i,
+        blanking_trigger_i => blanking_trigger_i,
+
+        adc_trigger_i => adc_trigger,
+        seq_trigger_i => seq_trigger,
+
+        turn_clock_o => turn_clock,
+        seq_start_o => seq_start,
+        dram0_trigger_o => dram0_trigger
+    );
+    -- Map events to individual DSP units
+    triggers_gen : for c in CHANNELS generate
+        adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
+        seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
+        control_to_dsp_o(c).turn_clock <= turn_clock(c);
+        control_to_dsp_o(c).seq_start <= seq_start(c);
+    end generate;
+
+
     -- Unused registers
     write_ack_o(UNUSED_REG) <= (others => '1');
     read_data_o(UNUSED_REG) <= (others => (others => '0'));
-    read_ack_o(UNUSED_REG) <= (others => '1');
+    read_ack_o (UNUSED_REG) <= (others => '1');
 
 end;

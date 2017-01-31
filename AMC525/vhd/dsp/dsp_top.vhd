@@ -32,7 +32,10 @@ entity dsp_top is
 
         -- External control: data multiplexing and shared control
         control_to_dsp_i : in control_to_dsp_t;
-        dsp_to_control_o : out dsp_to_control_t
+        dsp_to_control_o : out dsp_to_control_t;
+
+        -- Front panel event generated from sequencer
+        dsp_event_o : out std_logic
     );
 end;
 
@@ -62,9 +65,6 @@ architecture dsp_top of dsp_top is
 
     signal loopback : std_logic;
     signal dac_output_enable : std_logic;
-
-    -- Trigger signals
-    signal sync_trigger : std_logic;
 
     -- Captured pulsed events
     signal pulsed_bits : reg_data_t;
@@ -152,11 +152,13 @@ begin
     -- -------------------------------------------------------------------------
     -- Miscellaneous control
 
+    turn_clock <= control_to_dsp_i.turn_clock;
+
     -- Bunch specific control
     bunch_select_inst : entity work.bunch_select port map (
         dsp_clk_i => dsp_clk_i,
 
-        sync_trigger_i => sync_trigger,
+        turn_clock_i => turn_clock,
 
         write_strobe_i => write_strobe_i(BUNCH_REGS),
         write_data_i => write_data_i,
@@ -168,8 +170,7 @@ begin
         write_start_i => write_start,
 
         bank_select_i => current_bank,
-        bunch_config_o => bunch_config,
-        turn_clock_o => turn_clock
+        bunch_config_o => bunch_config
     );
 
 
@@ -334,9 +335,9 @@ begin
     nco_1_phase_advance <= unsigned(hack_registers(2));
 
     -- These will need to be hardware triggers
-    sync_trigger <= strobed_bits(31);
     nco_0_reset <= strobed_bits(30);
     nco_1_reset <= strobed_bits(29);
 
+    dsp_event_o <= '0';
 
 end;

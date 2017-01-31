@@ -15,12 +15,12 @@ entity system_registers is
         ref_clk_ok_i : in std_logic;
 
         -- System register interface on REG clock
-        write_strobe_i : in std_logic_vector(0 to 6);
+        write_strobe_i : in std_logic_vector(0 to 7);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 6);
-        read_strobe_i : in std_logic_vector(0 to 6);
-        read_data_o : out reg_data_array_t(0 to 6);
-        read_ack_o : out std_logic_vector(0 to 6);
+        write_ack_o : out std_logic_vector(0 to 7);
+        read_strobe_i : in std_logic_vector(0 to 7);
+        read_data_o : out reg_data_array_t(0 to 7);
+        read_ack_o : out std_logic_vector(0 to 7);
 
         -- General system status bits
         version_read_data_i : in reg_data_t;
@@ -29,11 +29,15 @@ entity system_registers is
         -- Generic miscellaneous control bits
         control_data_o : out reg_data_t;
 
-        -- IDELAY control register on REF clock.  No ack on this interface, no
-        -- read strobe required.
-        idelay_write_strobe_o : out std_logic;
-        idelay_write_data_o : out reg_data_t;
-        idelay_read_data_i : in reg_data_t;
+        -- ADC IDELAY control register on REF clock.  No ack on this interface,
+        -- no read strobe required.
+        adc_idelay_write_strobe_o : out std_logic;
+        adc_idelay_write_data_o : out reg_data_t;
+        adc_idelay_read_data_i : in reg_data_t;
+        -- Revolution clock IDELAY control, same as above
+        rev_idelay_write_strobe_o : out std_logic;
+        rev_idelay_write_data_o : out reg_data_t;
+        rev_idelay_read_data_i : in reg_data_t;
 
         -- FMC500 SPI control
         fmc500m_spi_write_strobe_o : out std_logic;
@@ -52,9 +56,10 @@ architecture system_registers of system_registers is
     constant VERSION_REG : natural := 0;
     constant STATUS_REG : natural := 1;
     constant CONTROL_REG : natural := 2;
-    constant IDELAY_REG : natural := 3;
+    constant ADC_IDELAY_REG : natural := 3;
     constant FMC_SPI_REG : natural := 4;
     subtype DAC_TEST_REG is natural range 5 to 6;
+    constant REV_IDELAY_REG : natural := 7;
 
     signal status_read_data : reg_data_t;
 
@@ -88,24 +93,45 @@ begin
     read_data_o(CONTROL_REG) <= control_data_o;
     read_ack_o(CONTROL_REG) <= '1';
 
-    -- Clock domain crossing for IDELAY control.
-    idelay_register_cc_inst : entity work.register_cc port map (
+    -- Clock domain crossing for ADC IDELAY control.
+    adc_idelay_register_cc_inst : entity work.register_cc port map (
         reg_clk_i => reg_clk_i,
         out_clk_i => ref_clk_i,
         out_clk_ok_i => ref_clk_ok_i,
 
-        reg_write_strobe_i => write_strobe_i(IDELAY_REG),
+        reg_write_strobe_i => write_strobe_i(ADC_IDELAY_REG),
         reg_write_data_i => write_data_i,
-        reg_write_ack_o => write_ack_o(IDELAY_REG),
-        out_write_strobe_o => idelay_write_strobe_o,
-        out_write_data_o => idelay_write_data_o,
+        reg_write_ack_o => write_ack_o(ADC_IDELAY_REG),
+        out_write_strobe_o => adc_idelay_write_strobe_o,
+        out_write_data_o => adc_idelay_write_data_o,
         out_write_ack_i => '1',
 
-        reg_read_strobe_i => read_strobe_i(IDELAY_REG),
-        reg_read_data_o => read_data_o(IDELAY_REG),
-        reg_read_ack_o => read_ack_o(IDELAY_REG),
+        reg_read_strobe_i => read_strobe_i(ADC_IDELAY_REG),
+        reg_read_data_o => read_data_o(ADC_IDELAY_REG),
+        reg_read_ack_o => read_ack_o(ADC_IDELAY_REG),
         out_read_strobe_o => open,
-        out_read_data_i => idelay_read_data_i,
+        out_read_data_i => adc_idelay_read_data_i,
+        out_read_ack_i => '1'
+    );
+
+    -- Clock domain crossing for revolution clock IDELAY control.
+    rev_idelay_register_cc_inst : entity work.register_cc port map (
+        reg_clk_i => reg_clk_i,
+        out_clk_i => ref_clk_i,
+        out_clk_ok_i => ref_clk_ok_i,
+
+        reg_write_strobe_i => write_strobe_i(REV_IDELAY_REG),
+        reg_write_data_i => write_data_i,
+        reg_write_ack_o => write_ack_o(REV_IDELAY_REG),
+        out_write_strobe_o => rev_idelay_write_strobe_o,
+        out_write_data_o => rev_idelay_write_data_o,
+        out_write_ack_i => '1',
+
+        reg_read_strobe_i => read_strobe_i(REV_IDELAY_REG),
+        reg_read_data_o => read_data_o(REV_IDELAY_REG),
+        reg_read_ack_o => read_ack_o(REV_IDELAY_REG),
+        out_read_strobe_o => open,
+        out_read_data_i => rev_idelay_read_data_i,
         out_read_ack_i => '1'
     );
 

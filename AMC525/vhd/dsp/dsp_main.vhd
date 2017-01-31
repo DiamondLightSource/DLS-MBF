@@ -46,7 +46,14 @@ entity dsp_main is
         dram1_data_o : out std_logic_vector;
         dram1_data_valid_o : out std_logic;
         dram1_data_ready_i : in std_logic;
-        dram1_brsp_error_i : in std_logic
+        dram1_brsp_error_i : in std_logic;
+
+        -- External hardware events
+        revolution_clock_i : in std_logic;
+        event_trigger_i : in std_logic;
+        postmortem_trigger_i : in std_logic;
+        blanking_trigger_i : in std_logic;
+        dsp_events_o : out std_logic_vector
     );
 end;
 
@@ -152,7 +159,9 @@ begin
 
     -- Top level control
     dsp_control_top_inst : entity work.dsp_control_top port map (
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase_i,
 
         write_strobe_i => ctrl_write_strobe,
         write_data_i => ctrl_write_data,
@@ -177,7 +186,12 @@ begin
         dram1_data_o => dram1_data_o,
         dram1_data_valid_o => dram1_data_valid_o,
         dram1_data_ready_i => dram1_data_ready_i,
-        dram1_brsp_error_i => dram1_brsp_error_i
+        dram1_brsp_error_i => dram1_brsp_error_i,
+
+        revolution_clock_i => revolution_clock_i,
+        event_trigger_i => event_trigger_i,
+        postmortem_trigger_i => postmortem_trigger_i,
+        blanking_trigger_i => blanking_trigger_i
     );
 
 
@@ -221,7 +235,9 @@ begin
             read_ack_o => dsp_read_ack(c),
 
             control_to_dsp_i => control_to_dsp(c),
-            dsp_to_control_o => dsp_to_control(c)
+            dsp_to_control_o => dsp_to_control(c),
+
+            dsp_event_o => dsp_events_o(c)
         );
     end generate;
 end;

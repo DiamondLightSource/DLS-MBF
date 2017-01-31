@@ -23,6 +23,8 @@ entity fast_memory_top is
 
         -- Input data stream
         dsp_to_control_i : in dsp_to_control_array_t;
+        -- Capture control
+        memory_trigger_i : in std_logic;
 
         -- DRAM0 capture control: connected directly to AXI burst master
         capture_enable_o : out std_logic;
@@ -54,6 +56,7 @@ architecture fast_memory_top of fast_memory_top is
     constant COUNT_BITS : natural := 28;
     signal mux_select : std_logic_vector(3 downto 0);
     signal fir_gain : unsigned(3 downto 0);
+    signal enable_select : std_logic_vector(CHANNELS);
     signal count : unsigned(COUNT_BITS-1 downto 0);
 
     -- Command
@@ -112,6 +115,7 @@ begin
     -- Configuration fields extracted from config registers
     mux_select <= config_registers(CONFIG_REG)(3 downto 0);
     fir_gain <= unsigned(config_registers(CONFIG_REG)(7 downto 4));
+    enable_select <= config_registers(CONFIG_REG)(9 downto 8);
     count <= unsigned(config_registers(COUNT_REG)(COUNT_BITS-1 downto 0));
 
     -- Control events
@@ -137,12 +141,18 @@ begin
     control_inst : entity work.fast_memory_control port map (
         dsp_clk_i => dsp_clk_i,
         start_i => start,
-        stop_i => stop,
+        stop_i => stop or memory_trigger_i,
         count_i => count,
         capture_enable_o => capture_enable_o,
         capture_address_i => capture_address_i,
         capture_address_o => capture_address
     );
+
+    -- Enable data according to input channel selection.
+    data_valid <=
+        (dsp_to_control_i(0).dram0_enable and enable_select(0)) or
+        (dsp_to_control_i(1).dram0_enable and enable_select(1)) or
+        (not enable_select(0) and not enable_select(1));
 
     -- Select data to be written
     mux_inst : entity work.fast_memory_mux port map (
@@ -184,8 +194,7 @@ begin
         end if;
     end process;
 
-    -- Currently this is mostly just a placeholder.
-    data_valid <= '1';
+    -- Currently this is just a placeholder.
     extra_data <= (others => '0');
 
 end;
