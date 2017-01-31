@@ -58,4 +58,7 @@ begin
         revolution_clock_i => revolution_clock_i,
         turn_clock_o => turn_clock_o
     );
+
+    seq_start_o <= (others => '0');
+    dram0_trigger_o <= '0';
 end;

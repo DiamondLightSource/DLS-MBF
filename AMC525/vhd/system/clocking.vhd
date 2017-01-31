@@ -85,7 +85,6 @@ begin
     -- Programmable delay for adc_dco input
     idelay_inst : entity work.idelay_control port map (
         ref_clk_i => ref_clk,
-        ref_clk_ok_i => ref_clk_ok,
         signal_i => adc_dco_i,
         signal_o => adc_dco_delay,
 
@@ -98,6 +97,12 @@ begin
     read_data_o(30 downto 0) <= read_data(30 downto 0);
     read_data_o(31) <= not dsp_clk_ok;
 
+    -- We do seem to need this IDELAYCTRL instance so that our IDELAYE2 works.
+    idelayctrl_inst : IDELAYCTRL port map (
+        REFCLK => ref_clk,
+        RST => not ref_clk_ok,
+        RDY => open
+    );
 
     -- -------------------------------------------------------------------------
     -- Timing reference clock and register clock.

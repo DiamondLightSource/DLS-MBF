@@ -30,7 +30,9 @@ begin
             if data_i >= 0 then
                 abs_data <= unsigned(data_i);
             else
-                abs_data <= unsigned(-data_i);
+                -- Poor man's negation is probably good enough for us, and is
+                -- a lot quicker at 500 MHz than the real thing.
+                abs_data <= unsigned(not data_i);
             end if;
 
             overflow <= to_std_logic(abs_data > limit_i);

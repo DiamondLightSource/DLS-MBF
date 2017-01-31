@@ -340,4 +340,8 @@ begin
 
     dsp_event_o <= '0';
 
+    dsp_to_control_o.dram0_enable <= '1';
+    dsp_to_control_o.adc_trigger <= adc_delta_event;
+    dsp_to_control_o.seq_trigger <= '0';
+
 end;

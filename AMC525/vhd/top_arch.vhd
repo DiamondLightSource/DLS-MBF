@@ -309,7 +309,6 @@ begin
     -- Controllable delay for revolution clock
     rev_clk_idelay_inst : entity work.idelay_control port map (
         ref_clk_i => ref_clk,
-        ref_clk_ok_i => ref_clk_ok,
         signal_i => fast_ext_trigger,
         signal_o => revolution_clock,
         write_strobe_i => rev_idelay_write_strobe,
@@ -770,8 +769,8 @@ begin
 
     -- FMC0 outputs
     dio_outputs <= (
-        4 => dsp_events(0),
-        5 => dsp_events(1),
+        3 => dsp_events(0),
+        4 => dsp_events(1),
         others => '0'
     );
 

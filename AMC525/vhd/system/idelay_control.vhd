@@ -18,7 +18,6 @@ entity idelay_control is
     port (
         -- Clocking: must be 200 MHz clock
         ref_clk_i : in std_logic;
-        ref_clk_ok_i : in std_logic;
 
         -- Signal being delayed.  Must be a physical input.
         signal_i : in std_logic;
@@ -37,8 +36,6 @@ architecture idelay_control of idelay_control is
     signal inc_decn : std_logic;
     signal inc_decn_strobe : std_logic;
     signal delay_out : std_logic_vector(4 downto 0);
-
-    signal ref_clk_reset : std_logic;
 
 begin
     -- Clock control
@@ -79,14 +76,6 @@ begin
         CINVCTRL => '0',
         REGRST => '0',
         LDPIPEEN => '0'
-    );
-
-    -- We do seem to need this IDELAYCTRL instance so that our IDELAYE2 works.
-    ref_clk_reset <= not ref_clk_ok_i;
-    idelayctrl_inst : IDELAYCTRL port map (
-        REFCLK => ref_clk_i,
-        RST => ref_clk_reset,
-        RDY => open
     );
 
 end;
