@@ -11,7 +11,7 @@ proc check_timing {timingreport} {
     }
 }
 
-create_project -force amc525_lmbf amc525_lmbf -part xc7vx690tffg1761-2
+create_project amc525_lmbf amc525_lmbf -part xc7vx690tffg1761-2
 
 set_param project.enableVHDL2008 1
 set_property target_language VHDL [current_project]
@@ -34,50 +34,14 @@ set_property FILE_TYPE VHDL [get_files block_memory.vhd]
 
 # Ensure we've read the block design and generated the associated files.
 read_bd interconnect/interconnect.bd
-add_files interconnect/hdl/interconnect_wrapper.vhd
+make_wrapper -files [get_files interconnect/interconnect.bd] -top
+add_files -norecurse interconnect/hdl/interconnect_wrapper.vhd
 
 # Load the constraints
 read_xdc built/top_pins.xdc
 read_xdc $src_dir/constr/clocks.xdc
 
 
-# Report IP Status before starting P&R
-report_ip_status
-
-
-# run synthesis, report utilization and timing estimates, write checkpoint
-#
-synth_design -top top -flatten_hierarchy $hierarchy -assert
-write_checkpoint -force checkpoints/post_synth
-report_timing_summary -file reports/post_synth_timing_summary.rpt
-
-
-# run placement and logic optimzation, report utilization and timing estimates,
-#
-opt_design
-# place_design
-place_design -directive ExtraTimingOpt
-phys_opt_design
-write_checkpoint -force checkpoints/post_place
-report_timing_summary -file reports/post_place_timing_summary.rpt
-write_debug_probes -force amc525_lmbf.ltx
-
-
-# run router, report actual utilization and timing, write checkpoint
-# design, run drc, write verilog and xdc out
-#
-route_design
-
-write_checkpoint -force checkpoints/amc525_top_routed.dcp
-report_utilization -file reports/amc525_top_routed.rpt
-
-set timingreport [ \
-    report_timing_summary -no_header -no_detailed_paths -return_string \
-        -file reports/amc525_top_timing.rpt ]
-
-# generate a bitstream, even if timing failed
-#
-write_bitstream -force amc525_lmbf.bit
-
-# Finally check that we met timing.
-check_timing $timingreport
+set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+launch_runs impl_1 -to_step write_bitstream -jobs 6
+wait_on_run synth_1

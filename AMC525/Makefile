@@ -27,7 +27,6 @@ SOURCES += $(wildcard $(SRCDIR)/vhd/*/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/constr/*)
 
 INTERCONNECT_BD = interconnect/interconnect.bd
-INTERCONNECT_VHD = interconnect/hdl/interconnect_wrapper.vhd
 
 
 # Default targets
@@ -46,10 +45,6 @@ $(INTERCONNECT_BD): $(BDDIR)/interconnect.tcl
 	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/create_bd.tcl \
             -tclargs interconnect -tclargs $<
 
-# This builds the out of project BD files
-$(INTERCONNECT_VHD): $(INTERCONNECT_BD)
-	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_bd.tcl
-
 # Generate top entity
 built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
@@ -60,7 +55,8 @@ built/%.vhd: %.py %.vhd.in
 	python $^ >$@
 
 # Build final target
-amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_VHD) $(SOURCES)
+amc525_lmbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)
+	ln -sf ./amc525_lmbf/amc525_lmbf.runs/impl_1/top.bit $@
 	mkdir -p reports checkpoints
 	rm -rf amc525_lmbf
 	$(RUN_VIVADO) -mode batch -source $(TCLDIR)/build_top.tcl \

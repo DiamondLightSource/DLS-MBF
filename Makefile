@@ -13,7 +13,8 @@ default: fpga
 # FPGA build
 
 # The following targets are passed through to the FPGA build
-FPGA_TARGETS = fpga fpga_project runvivado edit_bd save_bd load_fpga
+FPGA_TARGETS = \
+    fpga fpga_project runvivado edit_bd save_bd create_bd load_fpga fpga_built
 .PHONY: $(FPGA_TARGETS)
 
 
