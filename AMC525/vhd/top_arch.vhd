@@ -732,9 +732,6 @@ begin
         others => '0'
     );
 
-    fmc500_outputs.adc_pwr_en <= control_data(0);
-    fmc500_outputs.dac_pwr_en <= control_data(1);
-    fmc500_outputs.vcxo_pwr_en <= control_data(2);
     fmc500_outputs.pll_clkin_sel0 <= control_data(3);
     fmc500_outputs.pll_clkin_sel1 <= control_data(4);
     fmc500_outputs.pll_sync <= control_data(5);

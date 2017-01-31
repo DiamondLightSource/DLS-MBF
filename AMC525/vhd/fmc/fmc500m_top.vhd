@@ -85,9 +85,6 @@ architecture fmc500m_top of fmc500m_top is
     signal dac_irqn : std_logic;
 
     -- Misc
-    signal adc_pwr_en : std_logic;
-    signal dac_pwr_en : std_logic;
-    signal vcxo_pwr_en : std_logic;
     signal adc_pwr_good : std_logic;
     signal dac_pwr_good : std_logic;
     signal vcxo_pwr_good : std_logic;
@@ -141,9 +138,6 @@ begin
         dac_irqn_o => dac_irqn,
 
         -- Miscellaneous
-        adc_pwr_en_i => adc_pwr_en,
-        dac_pwr_en_i => dac_pwr_en,
-        vcxo_pwr_en_i => vcxo_pwr_en,
         adc_pwr_good_o => adc_pwr_good,
         dac_pwr_good_o => dac_pwr_good,
         vcxo_pwr_good_o => vcxo_pwr_good,
@@ -218,9 +212,6 @@ begin
 
 
     -- Connection to I/O records
-    adc_pwr_en <= misc_outputs_i.adc_pwr_en;
-    dac_pwr_en <= misc_outputs_i.dac_pwr_en;
-    vcxo_pwr_en <= misc_outputs_i.vcxo_pwr_en;
     pll_clkin_sel0 <= misc_outputs_i.pll_clkin_sel0;
     pll_clkin_sel1 <= misc_outputs_i.pll_clkin_sel1;
     pll_sync <= misc_outputs_i.pll_sync;

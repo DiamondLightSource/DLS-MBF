@@ -8,10 +8,6 @@ use work.support.all;
 package fmc500m_defs is
 
     type fmc500_outputs_t is record
-        -- Component power enable outputs to FMC
-        adc_pwr_en : std_logic;
-        dac_pwr_en : std_logic;
-        vcxo_pwr_en : std_logic;
         -- PLL input clock select and sync signals
         pll_clkin_sel0 : std_logic;
         pll_clkin_sel1 : std_logic;
