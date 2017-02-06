@@ -80,6 +80,7 @@ architecture dsp_control_top of dsp_control_top is
     -- Triggering and events interface
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
+    signal blanking : std_logic_vector(CHANNELS);
     signal turn_clock : std_logic_vector(CHANNELS);
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
@@ -212,6 +213,7 @@ begin
         adc_trigger_i => adc_trigger,
         seq_trigger_i => seq_trigger,
 
+        blanking_o => blanking,
         turn_clock_o => turn_clock,
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger
@@ -220,6 +222,7 @@ begin
     triggers_gen : for c in CHANNELS generate
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
+        control_to_dsp_o(c).blanking <= blanking(c);
         control_to_dsp_o(c).turn_clock <= turn_clock(c);
         control_to_dsp_o(c).seq_start <= seq_start(c);
     end generate;

@@ -9,6 +9,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/memory/fast_memory_control.vhd \
     $vhd_dir/memory/fast_memory_mux.vhd \
     $vhd_dir/memory/fast_memory_top.vhd \
+    $vhd_dir/triggers/triggers_condition.vhd \
     $vhd_dir/triggers/triggers_turn_clock.vhd \
     $vhd_dir/triggers/triggers_top.vhd \
     $vhd_dir/dsp/dsp_control_mux.vhd \
@@ -20,7 +21,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/test_dsp_main.vhd
 
 # Add -vopt to prevent optimisation
-vsim -vopt -t 1ps -lib xil_defaultlib testbench
+vsim -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
@@ -35,6 +36,7 @@ add wave -group "Triggers Top" $ctrl_top/triggers_inst/*
 add wave -group "Turn Clock" $ctrl_top/triggers_inst/turn_clock_inst/*
 add wave -group "DSP(1)" $dsp1_top/*
 add wave -group "Fast Mem" $dsp_main/dsp_control_top_inst/fast_memory_top_inst/*
+add wave -group "DSP(1) Fir" $dsp1_top/bunch_fir_top_inst/*
 add wave -group "Top" *
 
 run 1 us

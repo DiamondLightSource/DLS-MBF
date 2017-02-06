@@ -73,7 +73,7 @@ begin
     -- Revolution clock
     process begin
         loop
-            clk_wait(adc_clk, 5);
+            clk_wait(adc_clk, 6);
             revolution_clock <= not revolution_clock;
         end loop;
         wait;
@@ -179,9 +179,12 @@ begin
         read_reg(16#0000#);             -- Dummy read
 
         -- Set up number of bunches
-        write_reg(16#0007#, X"00000004");   -- 10 bunches (2*5) in our ring!
-        -- Trigger synchronisation
-        write_reg(16#0006#, X"00000001");
+        write_reg(16#0008#, X"00000005");   -- 12 bunches (2*6) in our ring!
+        -- Trigger synchronisation and sample
+        write_reg(16#0006#, X"00000003");
+
+        -- Configure decimation factor
+        write_dsp(7, X"0000000C");
 
         -- Start DRAM1 memory transfer
         write_reg(16#1006#, X"20000008");   -- Start DSP0 DRAM1

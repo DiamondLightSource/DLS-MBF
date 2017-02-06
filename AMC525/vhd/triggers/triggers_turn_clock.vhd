@@ -14,37 +14,29 @@ entity triggers_turn_clock is
         dsp_clk_i : in std_logic;
         adc_phase_i : in std_logic;
 
-        -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in std_logic_vector(0 to 3);
-        write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 3);
-        read_strobe_i : in std_logic_vector(0 to 3);
-        read_data_o : out reg_data_array_t(0 to 3);
-        read_ack_o : out std_logic_vector(0 to 3);
+        -- Control interface
+        start_sync_i : in std_logic;    -- Resynchronise request
+        start_sample_i : in std_logic;
+        max_bunch_i : in bunch_count_t; -- Ring size
+        clock_offsets_i : in unsigned_array(CHANNELS)(bunch_count_t'RANGE);
 
-        -- Input
+        -- Status readback
+        sync_done_o : out std_logic;
+        sync_phase_o : out std_logic;
+        sync_error_o : out std_logic;
+        sample_done_o : out std_logic;
+        sample_phase_o : out std_logic;
+        sample_count_o : out bunch_count_t;
+
+        -- Input clock
         revolution_clock_i : in std_logic;
-        -- Generated outputs
+        -- Generated turn clocks, one per channel
         turn_clock_o : out std_logic_vector(CHANNELS)
     );
 end;
 
 architecture triggers_turn_clock of triggers_turn_clock is
-    -- Register interface
-    constant CONTROL_REG : natural := 0;
-    subtype CONFIG_REGS is natural range 1 to 3;
-    signal readback_register : reg_data_t;
-    signal strobed_bits : reg_data_t;
-    signal register_data : reg_data_array_t(CONFIG_REGS);
-
-    -- Control parameters
-    signal max_bunch : bunch_count_t;
-    signal clock_offset : unsigned_array(CHANNELS)(bunch_count_t'RANGE);
-    signal start_sync : std_logic;
-    signal start_sample : std_logic;
-
     -- Incoming revolution clock
-    signal revolution_clock : std_logic;
     signal rev_clock_adc : std_logic;
     signal rev_clock_adc_dsp : std_logic;
     signal rev_clock_dsp : std_logic;
@@ -57,70 +49,19 @@ architecture triggers_turn_clock of triggers_turn_clock is
     signal sync_request : boolean := false;
     signal sync_holdoff : boolean := false;
     signal sync_phase : std_logic;
+    signal sync_ok : boolean := true;
+    signal sync_error : boolean := false;
     signal sample_request : boolean := false;
-    signal sample_counter : bunch_count_t;
-    signal sample_phase : std_logic;
 
 begin
     -- -------------------------------------------------------------------------
-    -- Register control interface
-
-    strobed_bits_inst : entity work.strobed_bits port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(CONTROL_REG),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CONTROL_REG),
-        strobed_bits_o => strobed_bits
-    );
-
-    read_data_o(CONTROL_REG) <= readback_register;
-    read_ack_o(CONTROL_REG) <= '1';
-
-    register_file_inst : entity work.register_file port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(CONFIG_REGS),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CONFIG_REGS),
-        register_data_o => register_data
-    );
-    read_data_o(CONFIG_REGS) <= register_data;
-    read_ack_o(CONFIG_REGS) <= (others => '1');
-
-
-    start_sync <= strobed_bits(0);
-    start_sample <= strobed_bits(1);
-
-    readback_register <= (
-        bunch_count_t'RANGE => std_logic_vector(sample_counter),
-        16 => to_std_logic(sync_request),
-        17 => to_std_logic(sample_request),
-        18 => sync_phase,
-        19 => sample_phase,
-        others => '0'
-    );
-
-    max_bunch <= bunch_count_t(register_data(1)(bunch_count_t'RANGE));
-    gen_chan : for c in CHANNELS generate
-        clock_offset(c) <=
-            bunch_count_t(register_data(c+2)(bunch_count_t'RANGE));
-    end generate;
-
-
-    -- -------------------------------------------------------------------------
     -- Revolution clock at ADC clock rate
 
-    -- Stabilise the incoming turn clock relative to the ADC clock
-    sync_bit_inst : entity work.sync_bit port map (
+    -- Convert revolution clock into synchronous rising edge event
+    condition_inst : entity work.triggers_condition port map (
         clk_i => adc_clk_i,
-        bit_i => revolution_clock_i,
-        bit_o => revolution_clock
-    );
-
-    -- Detect rising edge of revolution clock
-    edge_detect_inst : entity work.edge_detect port map (
-        clk_i => adc_clk_i,
-        data_i => revolution_clock,
-        edge_o => rev_clock_adc
+        trigger_i => revolution_clock_i,
+        trigger_o => rev_clock_adc
     );
 
     process (adc_clk_i) begin
@@ -151,6 +92,10 @@ begin
     -- -------------------------------------------------------------------------
     -- Normal processing at DSP clock rate
 
+    -- Two signals from revolution clock:
+    --  rev_clock_dsp       Revolution clock synchronised to DSP clock
+    --  clock_phase_dsp     Phase of revolution clock relative to ADC clock
+
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             -- Synchronise or else advance base bunch counter
@@ -158,32 +103,50 @@ begin
                 bunch_counter <= (others => '0');
                 sync_phase <= clock_phase_dsp;
                 sync_holdoff <= true;
-            elsif bunch_counter = max_bunch then
+            elsif bunch_counter = max_bunch_i then
                 bunch_counter <= (others => '0');
                 sync_holdoff <= false;
             else
                 bunch_counter <= bunch_counter + 1;
             end if;
 
-            -- Sample bunch counter
-            if rev_clock_dsp = '1' and sample_request then
-                sample_counter <= bunch_counter;
-                sample_phase <= clock_phase_dsp;
-            end if;
-
             -- Synchronisation request.
-            if start_sync = '1' then
+            if start_sync_i = '1' then
                 sync_request <= true;
             elsif rev_clock_dsp = '1' then
                 sync_request <= false;
             end if;
+            sync_done_o <= to_std_logic(not sync_request and not sync_holdoff);
+
+
+            -- Check synchronisation
+            if rev_clock_dsp = '1' then
+                sync_ok <=
+                    sync_phase = clock_phase_dsp and
+                    bunch_counter = max_bunch_i;
+            else
+                sync_ok <= true;
+            end if;
+            if sync_request or sync_holdoff then
+                sync_error <= false;
+            else
+                sync_error <= sync_error or not sync_ok;
+            end if;
+
+
+            -- Sample bunch counter
+            if rev_clock_dsp = '1' and sample_request then
+                sample_count_o <= bunch_counter;
+                sample_phase_o <= clock_phase_dsp;
+            end if;
 
             -- Sample request.
-            if start_sample = '1' then
+            if start_sample_i = '1' then
                 sample_request <= true;
             elsif rev_clock_dsp = '1' then
                 sample_request <= false;
             end if;
+
 
             -- Output of channel specific turn clocks
             for c in CHANNELS loop
@@ -191,9 +154,13 @@ begin
                     turn_clock_o(c) <= '0';
                 else
                     turn_clock_o(c) <=
-                        to_std_logic(bunch_counter = clock_offset(c));
+                        to_std_logic(bunch_counter = clock_offsets_i(c));
                 end if;
             end loop;
         end if;
     end process;
+
+    sync_error_o <= to_std_logic(sync_error);
+    sync_phase_o <= sync_phase;
+    sample_done_o <= to_std_logic(not sample_request);
 end;

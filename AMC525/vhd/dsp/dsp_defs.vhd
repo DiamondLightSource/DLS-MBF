@@ -48,6 +48,7 @@ package dsp_defs is
         dram1_error : std_logic;
 
         -- Events from triggering system
+        blanking : std_logic;
         turn_clock : std_logic;
         seq_start : std_logic;
     end record;
@@ -58,6 +59,7 @@ package dsp_defs is
         nco_0_data => (others => (others => '0')),
         nco_1_data => (others => (others => '0')),
         dram1_error => '0',
+        blanking => '0',
         turn_clock => '0',
         seq_start => '0'
     );
