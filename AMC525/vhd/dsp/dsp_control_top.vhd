@@ -58,8 +58,8 @@ architecture dsp_control_top of dsp_control_top is
     constant PULSED_REG : natural := 0;
     constant CONTROL_REG : natural := 1;
     subtype MEM_REG is natural range 2 to 5;
-    subtype TRIGGER_REG is natural range 6 to 14;
-    subtype UNUSED_REG is natural range 15 to REG_COUNT-1;
+    subtype TRIGGER_REGS is natural range 6 to 15;
+    subtype UNUSED_REG is natural range 16 to REG_COUNT-1;
 
     signal pulsed_bits : reg_data_t;
     signal control : reg_data_t;
@@ -198,12 +198,12 @@ begin
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
 
-        write_strobe_i => write_strobe_i(TRIGGER_REG),
+        write_strobe_i => write_strobe_i(TRIGGER_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(TRIGGER_REG),
-        read_strobe_i => read_strobe_i(TRIGGER_REG),
-        read_data_o => read_data_o(TRIGGER_REG),
-        read_ack_o => read_ack_o(TRIGGER_REG),
+        write_ack_o => write_ack_o(TRIGGER_REGS),
+        read_strobe_i => read_strobe_i(TRIGGER_REGS),
+        read_data_o => read_data_o(TRIGGER_REGS),
+        read_ack_o => read_ack_o(TRIGGER_REGS),
 
         revolution_clock_i => revolution_clock_i,
         event_trigger_i => event_trigger_i,

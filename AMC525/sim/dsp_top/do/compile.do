@@ -19,6 +19,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/util/long_delay.vhd \
     $vhd_dir/registers/pulsed_bits.vhd \
+    $vhd_dir/registers/all_pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/register_block.vhd \

@@ -12,6 +12,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/trigger/trigger_defs.vhd \
     $vhd_dir/trigger/trigger_registers.vhd \
     $vhd_dir/trigger/trigger_condition.vhd \
+    $vhd_dir/trigger/trigger_setup.vhd \
     $vhd_dir/trigger/trigger_turn_clock.vhd \
     $vhd_dir/trigger/trigger_blanking.vhd \
     $vhd_dir/trigger/trigger_handler.vhd \
@@ -25,8 +26,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/clock_support.vhd \
     $bench_dir/test_dsp_main.vhd
 
-# Add -vopt to prevent optimisation
-vsim -t 1ps -lib xil_defaultlib testbench
+# Add -novopt to prevent optimisation
+vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
@@ -37,7 +38,11 @@ set dsp1_top $dsp_main/dsp_gen(1)/dsp_top_inst
 
 add wave -group "DSP Main" $dsp_main/*
 add wave -group "Ctrl Top" $ctrl_top/*
-add wave -group "Triggers Top" $ctrl_top/trigger_inst/*
+add wave -group "Trigger Top" $ctrl_top/trigger_inst/*
+add wave -group "Trigger Registers" \
+    $ctrl_top/trigger_inst/trigger_registers_inst/*
+add wave -group "Trigger Pulsed" \
+    $ctrl_top/trigger_inst/trigger_registers_inst/pulsed_bits_inst/*
 add wave -group "Turn Clock" $ctrl_top/trigger_inst/turn_clock_inst/*
 add wave -group "Trigger DRAM" $ctrl_top/trigger_inst/dram0_trigger_inst/*
 add wave -group "Trigger handler DRAM" \

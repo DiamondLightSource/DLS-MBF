@@ -28,7 +28,7 @@ architecture trigger_handler of trigger_handler is
     type trig_state_t is (TRIGGER_IDLE, TRIGGER_ARMED, TRIGGER_TRIGGERED);
     signal trig_state : trig_state_t := TRIGGER_IDLE;
 
-    signal counter : delay_i'SUBTYPE;
+    signal counter : delay_i'SUBTYPE := (others => '0');
 
 begin
     process (dsp_clk_i) begin

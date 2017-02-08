@@ -79,6 +79,10 @@ begin
         wait;
     end process;
 
+    event_trigger <= not event_trigger after 233 ns;
+    blanking_trigger <= not blanking_trigger after 200 ns;
+    postmortem_trigger <= not postmortem_trigger after 255 ns;
+
 
     -- The dsp_main instance.
     dsp_main_inst : entity work.dsp_main port map (
@@ -176,12 +180,22 @@ begin
         read_address <= (others => '0');
         clk_wait(dsp_clk, 5);
 
-        read_reg(16#0000#);             -- Dummy read
+        read_reg(16#0006#);             -- Dummy read
 
         -- Set up number of bunches
-        write_reg(16#0008#, X"00000005");   -- 12 bunches (2*6) in our ring!
+        write_reg(16#0009#, X"00000005");   -- 12 bunches (2*6) in our ring!
         -- Trigger synchronisation and sample
         write_reg(16#0006#, X"00000003");
+        -- Configure blanking intervals
+        write_reg(16#000A#, X"00010004");
+        -- Enable DRAM0 triggers
+        write_reg(16#000F#, X"0000007F");
+        -- Arm DRAM0 trigger
+        write_reg(16#0006#, X"00000140");
+        -- Read the trigger events
+        read_reg(16#0006#);
+        -- Rearm DRAM0 without soft trigger
+        write_reg(16#0006#, X"00000040");
 
         -- Configure decimation factor
         write_dsp(7, X"0000000C");

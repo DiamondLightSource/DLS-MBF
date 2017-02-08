@@ -15,19 +15,18 @@ entity trigger_sources is
         turn_clock_i : in std_logic;
 
         triggers_i : in std_logic_vector;   -- Active in
-        blanking_window_i : in std_logic;    -- Set if blanking active
+        blanking_window_i : in std_logic;   -- Set if blanking active
 
         arm_i : in std_logic;
         disarm_i : in std_logic;
         delay_i : in unsigned;
-
-        trigger_o : out std_logic;
-        armed_o : out std_logic;
-
-        -- Source specific masks
-        enables_i : in std_logic_vector;     -- Enables
+        enables_i : in std_logic_vector;    -- Enables
         blanking_i : in std_logic_vector;   -- Blanking
-        source_o : out std_logic_vector     -- Seen
+
+        armed_o : out std_logic;
+        source_o : out std_logic_vector;    -- Seen
+
+        trigger_o : out std_logic
     );
 end;
 
