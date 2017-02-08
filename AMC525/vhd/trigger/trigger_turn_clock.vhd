@@ -7,7 +7,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
-entity triggers_turn_clock is
+entity trigger_turn_clock is
     port (
         -- Clocking
         adc_clk_i : in std_logic;
@@ -21,10 +21,10 @@ entity triggers_turn_clock is
         clock_offsets_i : in unsigned_array(CHANNELS)(bunch_count_t'RANGE);
 
         -- Status readback
-        sync_done_o : out std_logic;
+        sync_busy_o : out std_logic;
         sync_phase_o : out std_logic;
         sync_error_o : out std_logic;
-        sample_done_o : out std_logic;
+        sample_busy_o : out std_logic;
         sample_phase_o : out std_logic;
         sample_count_o : out bunch_count_t;
 
@@ -35,9 +35,8 @@ entity triggers_turn_clock is
     );
 end;
 
-architecture triggers_turn_clock of triggers_turn_clock is
+architecture trigger_turn_clock of trigger_turn_clock is
     -- Incoming revolution clock
-    signal rev_clock_adc : std_logic;
     signal rev_clock_adc_dsp : std_logic;
     signal rev_clock_dsp : std_logic;
     signal clock_phase_adc : std_logic;
@@ -57,22 +56,15 @@ begin
     -- -------------------------------------------------------------------------
     -- Revolution clock at ADC clock rate
 
-    -- Convert revolution clock into synchronous rising edge event
-    condition_inst : entity work.triggers_condition port map (
-        clk_i => adc_clk_i,
-        trigger_i => revolution_clock_i,
-        trigger_o => rev_clock_adc
-    );
-
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             -- Pick up the turn clock phase
-            if rev_clock_adc = '1' then
+            if revolution_clock_i = '1' then
                 clock_phase_adc <= adc_phase_i;
             end if;
 
             -- Convert event into event on dsp clock
-            if rev_clock_adc = '1' then
+            if revolution_clock_i = '1' then
                 rev_clock_adc_dsp <= '1';
             elsif adc_phase_i = '0' then
                 rev_clock_adc_dsp <= '0';
@@ -116,7 +108,7 @@ begin
             elsif rev_clock_dsp = '1' then
                 sync_request <= false;
             end if;
-            sync_done_o <= to_std_logic(not sync_request and not sync_holdoff);
+            sync_busy_o <= to_std_logic(sync_request or sync_holdoff);
 
 
             -- Check synchronisation
@@ -162,5 +154,5 @@ begin
 
     sync_error_o <= to_std_logic(sync_error);
     sync_phase_o <= sync_phase;
-    sample_done_o <= to_std_logic(not sample_request);
+    sample_busy_o <= to_std_logic(sample_request);
 end;

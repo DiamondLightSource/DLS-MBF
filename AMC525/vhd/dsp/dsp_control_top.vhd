@@ -58,8 +58,8 @@ architecture dsp_control_top of dsp_control_top is
     constant PULSED_REG : natural := 0;
     constant CONTROL_REG : natural := 1;
     subtype MEM_REG is natural range 2 to 5;
-    subtype TRIGGER_REG is natural range 6 to 9;
-    subtype UNUSED_REG is natural range 10 to REG_COUNT-1;
+    subtype TRIGGER_REG is natural range 6 to 14;
+    subtype UNUSED_REG is natural range 15 to REG_COUNT-1;
 
     signal pulsed_bits : reg_data_t;
     signal control : reg_data_t;
@@ -80,7 +80,7 @@ architecture dsp_control_top of dsp_control_top is
     -- Triggering and events interface
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
-    signal blanking : std_logic_vector(CHANNELS);
+    signal blanking_window : std_logic_vector(CHANNELS);
     signal turn_clock : std_logic_vector(CHANNELS);
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
@@ -193,7 +193,7 @@ begin
 
 
     -- Triggers and event generation
-    triggers_inst : entity work.triggers_top port map (
+    trigger_inst : entity work.trigger_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
@@ -213,7 +213,7 @@ begin
         adc_trigger_i => adc_trigger,
         seq_trigger_i => seq_trigger,
 
-        blanking_o => blanking,
+        blanking_window_o => blanking_window,
         turn_clock_o => turn_clock,
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger
@@ -222,7 +222,7 @@ begin
     triggers_gen : for c in CHANNELS generate
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
-        control_to_dsp_o(c).blanking <= blanking(c);
+        control_to_dsp_o(c).blanking <= blanking_window(c);
         control_to_dsp_o(c).turn_clock <= turn_clock(c);
         control_to_dsp_o(c).seq_start <= seq_start(c);
     end generate;

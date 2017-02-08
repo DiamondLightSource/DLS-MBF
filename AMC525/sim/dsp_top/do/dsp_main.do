@@ -9,9 +9,14 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/memory/fast_memory_control.vhd \
     $vhd_dir/memory/fast_memory_mux.vhd \
     $vhd_dir/memory/fast_memory_top.vhd \
-    $vhd_dir/triggers/triggers_condition.vhd \
-    $vhd_dir/triggers/triggers_turn_clock.vhd \
-    $vhd_dir/triggers/triggers_top.vhd \
+    $vhd_dir/trigger/trigger_defs.vhd \
+    $vhd_dir/trigger/trigger_registers.vhd \
+    $vhd_dir/trigger/trigger_condition.vhd \
+    $vhd_dir/trigger/trigger_turn_clock.vhd \
+    $vhd_dir/trigger/trigger_blanking.vhd \
+    $vhd_dir/trigger/trigger_handler.vhd \
+    $vhd_dir/trigger/trigger_sources.vhd \
+    $vhd_dir/trigger/trigger_top.vhd \
     $vhd_dir/dsp/dsp_control_mux.vhd \
     $vhd_dir/dsp/dsp_control_top.vhd \
     $vhd_dir/dsp/dsp_main.vhd \
@@ -32,8 +37,11 @@ set dsp1_top $dsp_main/dsp_gen(1)/dsp_top_inst
 
 add wave -group "DSP Main" $dsp_main/*
 add wave -group "Ctrl Top" $ctrl_top/*
-add wave -group "Triggers Top" $ctrl_top/triggers_inst/*
-add wave -group "Turn Clock" $ctrl_top/triggers_inst/turn_clock_inst/*
+add wave -group "Triggers Top" $ctrl_top/trigger_inst/*
+add wave -group "Turn Clock" $ctrl_top/trigger_inst/turn_clock_inst/*
+add wave -group "Trigger DRAM" $ctrl_top/trigger_inst/dram0_trigger_inst/*
+add wave -group "Trigger handler DRAM" \
+    $ctrl_top/trigger_inst/dram0_trigger_inst/trigger_handler/*
 add wave -group "DSP(1)" $dsp1_top/*
 add wave -group "Fast Mem" $dsp_main/dsp_control_top_inst/fast_memory_top_inst/*
 add wave -group "DSP(1) Fir" $dsp1_top/bunch_fir_top_inst/*

@@ -21,8 +21,8 @@ end;
 
 architecture min_max_limit of min_max_limit is
     signal limit_detect : std_logic_vector(LANES) := (others => '0');
-    signal limit_detect_any : std_logic;
     signal limit_event : std_logic := '0';
+    signal limit_event_edge : std_logic;
 
 begin
     process (dsp_clk_i) begin
@@ -33,18 +33,18 @@ begin
 
             if reset_event_i = '1' then
                 limit_event <= '0';
-            elsif limit_detect_any = '1' then
+            elsif vector_or(limit_detect) = '1' then
                 limit_event <= '1';
             end if;
+
+            limit_event_o <= limit_event_edge;
         end if;
     end process;
-
-    limit_detect_any <= vector_or(limit_detect);
 
     -- Convert detection of event into a single pulse
     edge_detect_inst : entity work.edge_detect port map (
         clk_i => dsp_clk_i,
         data_i => limit_event,
-        edge_o => limit_event_o
+        edge_o => limit_event_edge
     );
 end;

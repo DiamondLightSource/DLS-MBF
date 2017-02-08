@@ -10,7 +10,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
-entity triggers_condition is
+entity trigger_condition is
     port (
         clk_i : in std_logic;
         trigger_i : in std_logic;
@@ -18,7 +18,7 @@ entity triggers_condition is
     );
 end;
 
-architecture triggers_condition of triggers_condition is
+architecture trigger_condition of trigger_condition is
     signal trigger : std_logic;
     signal trigger_edge : std_logic;
 
