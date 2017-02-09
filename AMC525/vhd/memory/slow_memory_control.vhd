@@ -13,12 +13,12 @@ entity slow_memory_control is
         dsp_clk_i : in std_logic;
 
         -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in std_logic_vector(0 to 0);
+        write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 0);
-        read_strobe_i : in std_logic_vector(0 to 0);
-        read_data_o : out reg_data_array_t(0 to 0);
-        read_ack_o : out std_logic_vector(0 to 0);
+        write_ack_o : out std_logic;
+        read_strobe_i : in std_logic;
+        read_data_o : out reg_data_t;
+        read_ack_o : out std_logic;
 
         -- Data out to DRAM1
         dram1_strobe_o : out std_logic;
@@ -42,10 +42,10 @@ architecture slow_memory_control of slow_memory_control is
     signal address : unsigned(ADDRESS_RANGE) := (others => '0');
 
 begin
-    write_ack_o(0) <= '1';
-    read_data_o(0) <= (
+    write_ack_o <= '1';
+    read_data_o <= (
         ADDRESS_RANGE => std_logic_vector(address), others => '0');
-    read_ack_o(0) <= '1';
+    read_ack_o <= '1';
 
     target_count <= unsigned(write_data_i(ADDRESS_RANGE));
     interval_shift_in <= to_integer(unsigned(write_data_i(31 downto 28)));
@@ -54,7 +54,7 @@ begin
     -- Dummy generator
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            if write_strobe_i(0) = '1' then
+            if write_strobe_i = '1' then
                 -- Start writing
                 counter <= target_count;
                 interval_counter <= shift_left(

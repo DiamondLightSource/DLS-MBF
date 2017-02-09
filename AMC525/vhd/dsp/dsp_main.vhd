@@ -8,6 +8,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
 use work.dsp_defs.all;
 
 entity dsp_main is
@@ -68,8 +69,6 @@ architecture dsp_main of dsp_main is
 
     -- Register ranges
     subtype MAIN_REG_RANGE is natural range 0 to 3;
-    subtype CTRL_REG_RANGE is natural range 0 to 15;
-    subtype DSP_REG_RANGE  is natural range 0 to 15;
 
     -- Incoming registers decoded into our four main blocks
     signal main_write_strobe : std_logic_vector(MAIN_REG_RANGE);
@@ -82,21 +81,21 @@ architecture dsp_main of dsp_main is
     signal main_read_ack : std_logic_vector(MAIN_REG_RANGE);
 
     -- Control block registers
-    signal ctrl_write_strobe : std_logic_vector(CTRL_REG_RANGE);
+    signal ctrl_write_strobe : std_logic_vector(CTRL_REGS_RANGE);
     signal ctrl_write_data : reg_data_t;
-    signal ctrl_write_ack : std_logic_vector(CTRL_REG_RANGE);
-    signal ctrl_read_strobe : std_logic_vector(CTRL_REG_RANGE);
-    signal ctrl_read_data : reg_data_array_t(CTRL_REG_RANGE);
-    signal ctrl_read_ack : std_logic_vector(CTRL_REG_RANGE);
+    signal ctrl_write_ack : std_logic_vector(CTRL_REGS_RANGE);
+    signal ctrl_read_strobe : std_logic_vector(CTRL_REGS_RANGE);
+    signal ctrl_read_data : reg_data_array_t(CTRL_REGS_RANGE);
+    signal ctrl_read_ack : std_logic_vector(CTRL_REGS_RANGE);
 
     -- DSP block registers
     type reg_data_array_array_t is array(natural range <>) of reg_data_array_t;
-    signal dsp_write_strobe : vector_array(CHANNELS)(DSP_REG_RANGE);
+    signal dsp_write_strobe : vector_array(CHANNELS)(DSP_REGS_RANGE);
     signal dsp_write_data : reg_data_array_t(CHANNELS);
-    signal dsp_write_ack : vector_array(CHANNELS)(DSP_REG_RANGE);
-    signal dsp_read_strobe : vector_array(CHANNELS)(DSP_REG_RANGE);
-    signal dsp_read_data : reg_data_array_array_t(CHANNELS)(DSP_REG_RANGE);
-    signal dsp_read_ack : vector_array(CHANNELS)(DSP_REG_RANGE);
+    signal dsp_write_ack : vector_array(CHANNELS)(DSP_REGS_RANGE);
+    signal dsp_read_strobe : vector_array(CHANNELS)(DSP_REGS_RANGE);
+    signal dsp_read_data : reg_data_array_array_t(CHANNELS)(DSP_REGS_RANGE);
+    signal dsp_read_ack : vector_array(CHANNELS)(DSP_REGS_RANGE);
 
     -- DSP control interface
     signal dsp_to_control : dsp_to_control_array_t;

@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 
+use work.register_defs.all;
 use work.dsp_defs.all;
 
 entity dsp_control_top is
@@ -54,13 +55,6 @@ entity dsp_control_top is
 end;
 
 architecture dsp_control_top of dsp_control_top is
-    constant REG_COUNT : natural := write_strobe_i'LENGTH;
-    constant PULSED_REG : natural := 0;
-    constant CONTROL_REG : natural := 1;
-    subtype MEM_REG is natural range 2 to 5;
-    subtype TRIGGER_REGS is natural range 6 to 15;
-    subtype UNUSED_REG is natural range 16 to REG_COUNT-1;
-
     signal pulsed_bits : reg_data_t;
     signal control : reg_data_t;
 
@@ -90,12 +84,12 @@ begin
     pulsed_bits_inst : entity work.pulsed_bits port map (
         clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(PULSED_REG),
+        write_strobe_i => write_strobe_i(CTRL_PULSED_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(PULSED_REG),
-        read_strobe_i => read_strobe_i(PULSED_REG),
-        read_data_o => read_data_o(PULSED_REG),
-        read_ack_o => read_ack_o(PULSED_REG),
+        write_ack_o => write_ack_o(CTRL_PULSED_REG),
+        read_strobe_i => read_strobe_i(CTRL_PULSED_REG),
+        read_data_o => read_data_o(CTRL_PULSED_REG),
+        read_ack_o => read_ack_o(CTRL_PULSED_REG),
 
         pulsed_bits_i => pulsed_bits
     );
@@ -103,13 +97,13 @@ begin
     -- General control register
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(CONTROL_REG),
+        write_strobe_i(0) => write_strobe_i(CTRL_CONTROL_REG),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(CONTROL_REG),
+        write_ack_o(0) => write_ack_o(CTRL_CONTROL_REG),
         register_data_o(0) => control
     );
-    read_data_o(CONTROL_REG) <= control;
-    read_ack_o(CONTROL_REG) <= '1';
+    read_data_o(CTRL_CONTROL_REG) <= control;
+    read_ack_o(CTRL_CONTROL_REG) <= '1';
 
 
     pulsed_bits <= (
@@ -149,12 +143,12 @@ begin
     fast_memory_top_inst : entity work.fast_memory_top port map (
         dsp_clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(MEM_REG),
+        write_strobe_i => write_strobe_i(CTRL_MEM_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(MEM_REG),
-        read_strobe_i => read_strobe_i(MEM_REG),
-        read_data_o => read_data_o(MEM_REG),
-        read_ack_o => read_ack_o(MEM_REG),
+        write_ack_o => write_ack_o(CTRL_MEM_REGS),
+        read_strobe_i => read_strobe_i(CTRL_MEM_REGS),
+        read_data_o => read_data_o(CTRL_MEM_REGS),
+        read_ack_o => read_ack_o(CTRL_MEM_REGS),
 
         dsp_to_control_i => dsp_to_control_i,
         memory_trigger_i => dram0_trigger,
@@ -198,12 +192,12 @@ begin
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
 
-        write_strobe_i => write_strobe_i(TRIGGER_REGS),
+        write_strobe_i => write_strobe_i(CTRL_TRIGGER_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(TRIGGER_REGS),
-        read_strobe_i => read_strobe_i(TRIGGER_REGS),
-        read_data_o => read_data_o(TRIGGER_REGS),
-        read_ack_o => read_ack_o(TRIGGER_REGS),
+        write_ack_o => write_ack_o(CTRL_TRIGGER_REGS),
+        read_strobe_i => read_strobe_i(CTRL_TRIGGER_REGS),
+        read_data_o => read_data_o(CTRL_TRIGGER_REGS),
+        read_ack_o => read_ack_o(CTRL_TRIGGER_REGS),
 
         revolution_clock_i => revolution_clock_i,
         event_trigger_i => event_trigger_i,
@@ -226,11 +220,4 @@ begin
         control_to_dsp_o(c).turn_clock <= turn_clock(c);
         control_to_dsp_o(c).seq_start <= seq_start(c);
     end generate;
-
-
-    -- Unused registers
-    write_ack_o(UNUSED_REG) <= (others => '1');
-    read_data_o(UNUSED_REG) <= (others => (others => '0'));
-    read_ack_o (UNUSED_REG) <= (others => '1');
-
 end;

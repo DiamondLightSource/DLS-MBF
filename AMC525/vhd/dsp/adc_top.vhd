@@ -11,6 +11,8 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
+
 entity adc_top is
     generic (
         TAP_COUNT : natural
@@ -27,12 +29,12 @@ entity adc_top is
         data_o : out signed_array;          -- paired at DSP data rate
 
         -- General register interface
-        write_strobe_i : in std_logic_vector(0 to 1);
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 1);
-        read_strobe_i : in std_logic_vector(0 to 1);
-        read_data_o : out reg_data_array_t(0 to 1);
-        read_ack_o : out std_logic_vector(0 to 1);
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- Pulse events
         write_start_i : in std_logic;       -- For register block writes
@@ -47,19 +49,6 @@ entity adc_top is
 end;
 
 architecture adc_top of adc_top is
-    -- Our registers are overlaid as follows:
-    --
-    --  0   R   31:0    Read MMS count and switch banks
-    --  1   R   31:0    Read and reset MMS bunch entries
-    --  0   W   13:0    Configure data input limit
-    --  0   W   15      Configure ADC fine delay
-    --  0   W   31:16   Configure MMS event limit
-    --  1   W   31:7    Write FIR taps
-    --
-    subtype MMS_REGS_R is natural range 0 to 1;
-    constant LIMIT_REG_W : natural := 0;
-    constant TAPS_REG_W : natural := 1;
-
     subtype DATA_OUT_RANGE is natural range data_o(0)'RANGE;
 
     signal limit_register_in : reg_data_t;
@@ -78,9 +67,9 @@ begin
     -- Limit register.
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(LIMIT_REG_W),
+        write_strobe_i(0) => write_strobe_i(DSP_ADC_LIMIT_REG_W),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(LIMIT_REG_W),
+        write_ack_o(0) => write_ack_o(DSP_ADC_LIMIT_REG_W),
         register_data_o(0) => limit_register_in
     );
     -- Make these control settings untimed to help with FPGA timing
@@ -141,9 +130,9 @@ begin
         adc_phase_i => adc_phase_i,
 
         write_start_i => write_start_i,
-        write_strobe_i => write_strobe_i(TAPS_REG_W),
+        write_strobe_i => write_strobe_i(DSP_ADC_TAPS_REG_W),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(TAPS_REG_W),
+        write_ack_o => write_ack_o(DSP_ADC_TAPS_REG_W),
 
         data_i => delayed_data,
         data_o => filtered_data,
@@ -171,9 +160,9 @@ begin
         delta_o => mms_delta,
         overflow_o => mms_overflow_o,
 
-        read_strobe_i => read_strobe_i(MMS_REGS_R),
-        read_data_o => read_data_o(MMS_REGS_R),
-        read_ack_o => read_ack_o(MMS_REGS_R)
+        read_strobe_i => read_strobe_i(DSP_ADC_MMS_REGS_R),
+        read_data_o => read_data_o(DSP_ADC_MMS_REGS_R),
+        read_ack_o => read_ack_o(DSP_ADC_MMS_REGS_R)
     );
 
     -- Bunch movement detection

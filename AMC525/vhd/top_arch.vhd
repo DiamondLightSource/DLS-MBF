@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
 use work.fmc500m_defs.all;
 use work.dsp_defs.all;
 
@@ -149,12 +150,12 @@ architecture top of top is
     -- Top register wiring
 
     -- System register wiring
-    signal system_write_strobe : std_logic_vector(0 to 7);
+    signal system_write_strobe : std_logic_vector(SYS_REGS_RANGE);
     signal system_write_data : reg_data_t;
-    signal system_write_ack : std_logic_vector(0 to 7);
-    signal system_read_strobe : std_logic_vector(0 to 7);
-    signal system_read_data : reg_data_array_t(0 to 7);
-    signal system_read_ack : std_logic_vector(0 to 7);
+    signal system_write_ack : std_logic_vector(SYS_REGS_RANGE);
+    signal system_read_strobe : std_logic_vector(SYS_REGS_RANGE);
+    signal system_read_data : reg_data_array_t(SYS_REGS_RANGE);
+    signal system_read_ack : std_logic_vector(SYS_REGS_RANGE);
 
     -- DSP control register wiring
     signal dsp_write_strobe : std_logic;

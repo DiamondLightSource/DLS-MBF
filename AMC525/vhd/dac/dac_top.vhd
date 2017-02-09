@@ -9,6 +9,8 @@ use ieee.numeric_std.all;
 
 use work.support.all;
 use work.defines.all;
+
+use work.register_defs.all;
 use work.bunch_defs.all;
 
 entity dac_top is
@@ -37,12 +39,12 @@ entity dac_top is
         preemph_overflow_o : out std_logic; -- Preemphasis FIR overflow detect
 
         -- General register interface
-        write_strobe_i : in std_logic_vector(0 to 1);
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 1);
-        read_strobe_i : in std_logic_vector(0 to 1);
-        read_data_o : out reg_data_array_t(0 to 1);
-        read_ack_o : out std_logic_vector(0 to 1);
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- Pulse events
         write_start_i : in std_logic        -- For register block writes
@@ -50,23 +52,6 @@ entity dac_top is
 end;
 
 architecture dac_top of dac_top is
-    -- Our registers are overlaid as follows:
-    --
-    --  0   R   31:0    Read MMS count and switch banks
-    --  1   R   31:0    Read and reset MMS bunch entries
-    --  0   W   9:0     Configure DAC output delay
-    --  0   W   15:12   NCO 0 gain
-    --  0   W   19:16   NCO 1 gain
-    --  0   W   24:20   FIR gain
-    --  0   W   25      FIR enable
-    --  0   W   26      NCO 0 enable
-    --  0   W   27      NCO 1 enable
-    --  1   W   31:7    Write FIR taps
-    --
-    subtype MMS_REGS_R is natural range 0 to 1;
-    constant CONFIG_REG_W : natural := 0;
-    constant TAPS_REG_W : natural := 1;
-
     -- Configuration register
     signal config_register_dsp : reg_data_t;
     signal config_register_adc : reg_data_t;
@@ -101,9 +86,9 @@ begin
     -- Register mapping
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(CONFIG_REG_W),
+        write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG_W),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(CONFIG_REG_W),
+        write_ack_o(0) => write_ack_o(DSP_DAC_CONFIG_REG_W),
         register_data_o(0) => config_register_dsp
     );
     -- Bring this over to the ADC clock without a timing constraint
@@ -195,9 +180,9 @@ begin
         delta_o => mms_delta,
         overflow_o => mms_overflow_o,
 
-        read_strobe_i => read_strobe_i(MMS_REGS_R),
-        read_data_o => read_data_o(MMS_REGS_R),
-        read_ack_o => read_ack_o(MMS_REGS_R)
+        read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS_R),
+        read_data_o => read_data_o(DSP_DAC_MMS_REGS_R),
+        read_ack_o => read_ack_o(DSP_DAC_MMS_REGS_R)
     );
 
 
@@ -220,9 +205,9 @@ begin
         adc_phase_i => adc_phase_i,
 
         write_start_i => write_start_i,
-        write_strobe_i => write_strobe_i(TAPS_REG_W),
+        write_strobe_i => write_strobe_i(DSP_DAC_TAPS_REG_W),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(TAPS_REG_W),
+        write_ack_o => write_ack_o(DSP_DAC_TAPS_REG_W),
 
         data_i => data_out,
         data_o => filtered_data,

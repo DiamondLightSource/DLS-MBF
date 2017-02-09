@@ -17,12 +17,12 @@ entity trigger_top is
         adc_phase_i : in std_logic;
 
         -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in std_logic_vector(0 to 9);
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 9);
-        read_strobe_i : in std_logic_vector(0 to 9);
-        read_data_o : out reg_data_array_t(0 to 9);
-        read_ack_o : out std_logic_vector(0 to 9);
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- External trigger sources
         revolution_clock_i : in std_logic;

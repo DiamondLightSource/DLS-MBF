@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
 use work.dsp_defs.all;
 
 entity fast_memory_top is
@@ -14,12 +15,12 @@ entity fast_memory_top is
         dsp_clk_i : in std_logic;
 
         -- Control register interface
-        write_strobe_i : in std_logic_vector(0 to 3);
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 3);
-        read_strobe_i : in std_logic_vector(0 to 3);
-        read_data_o : out reg_data_array_t(0 to 3);
-        read_ack_o : out std_logic_vector(0 to 3);
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- Input data stream
         dsp_to_control_i : in dsp_to_control_array_t;
@@ -39,16 +40,7 @@ entity fast_memory_top is
 end;
 
 architecture fast_memory_top of fast_memory_top is
-    -- Control and readout registers
-    subtype CONFIG_REGS is natural range 0 to 1;
-    constant CONFIG_REG : natural := 0;
-    constant COUNT_REG : natural := 1;
-    -- Overlay pulse command and address readback registers
-    constant COMMAND_REG_W : natural := 2;
-    constant ADDRESS_REG_R : natural := 2;
-    constant STATUS_REG : natural := 3;
-
-    signal config_registers : reg_data_array_t(CONFIG_REGS);
+    signal config_registers : reg_data_array_t(CTRL_MEM_CONFIG_REGS);
     signal command_bits : reg_data_t;
     signal status_register : reg_data_t;
 
@@ -83,40 +75,41 @@ begin
     -- Configuration registers with readback
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(CONFIG_REGS),
+        write_strobe_i => write_strobe_i(CTRL_MEM_CONFIG_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CONFIG_REGS),
+        write_ack_o => write_ack_o(CTRL_MEM_CONFIG_REGS),
         register_data_o => config_registers
     );
-    read_data_o(CONFIG_REGS) <= config_registers;
-    read_ack_o(CONFIG_REGS) <= (others => '1');
+    read_data_o(CTRL_MEM_CONFIG_REGS) <= config_registers;
+    read_ack_o(CTRL_MEM_CONFIG_REGS) <= (others => '1');
 
     -- Pulsed command events
     strobed_bits_inst : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(COMMAND_REG_W),
+        write_strobe_i => write_strobe_i(CTRL_MEM_COMMAND_REG_W),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(COMMAND_REG_W),
+        write_ack_o => write_ack_o(CTRL_MEM_COMMAND_REG_W),
         strobed_bits_o => command_bits
     );
     -- Address register readback
-    read_data_o(ADDRESS_REG_R) <= "0" & capture_address;
-    read_ack_o(ADDRESS_REG_R) <= '1';
+    read_data_o(CTRL_MEM_ADDRESS_REG_R) <= "0" & capture_address;
+    read_ack_o(CTRL_MEM_ADDRESS_REG_R) <= '1';
 
     -- Status register
-    write_ack_o(STATUS_REG) <= '1';
-    read_data_o(STATUS_REG) <= status_register;
-    read_ack_o(STATUS_REG) <= '1';
+    write_ack_o(CTRL_MEM_STATUS_REG) <= '1';
+    read_data_o(CTRL_MEM_STATUS_REG) <= status_register;
+    read_ack_o(CTRL_MEM_STATUS_REG) <= '1';
 
 
     -- -------------------------------------------------------------------------
     -- Register mapping
 
     -- Configuration fields extracted from config registers
-    mux_select <= config_registers(CONFIG_REG)(3 downto 0);
-    fir_gain <= unsigned(config_registers(CONFIG_REG)(7 downto 4));
-    enable_select <= config_registers(CONFIG_REG)(9 downto 8);
-    count <= unsigned(config_registers(COUNT_REG)(COUNT_BITS-1 downto 0));
+    mux_select <= config_registers(CTRL_MEM_CONFIG_REG)(3 downto 0);
+    fir_gain <= unsigned(config_registers(CTRL_MEM_CONFIG_REG)(7 downto 4));
+    enable_select <= config_registers(CTRL_MEM_CONFIG_REG)(9 downto 8);
+    count <= unsigned(
+        config_registers(CTRL_MEM_COUNT_REG)(COUNT_BITS-1 downto 0));
 
     -- Control events
     start <= command_bits(0);

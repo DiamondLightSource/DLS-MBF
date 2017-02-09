@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
 use work.bunch_defs.all;
 
 entity bunch_fir_top is
@@ -24,12 +25,12 @@ entity bunch_fir_top is
         bunch_config_i : in bunch_config_lanes_t;
 
         -- General register interface
-        write_strobe_i : in std_logic_vector(0 to 1);
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 1);
-        read_strobe_i : in std_logic_vector(0 to 1);
-        read_data_o : out reg_data_array_t(0 to 1);
-        read_ack_o : out std_logic_vector(0 to 1);
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- Pulse events
         write_start_i : in std_logic        -- For register block writes
@@ -38,10 +39,6 @@ end;
 
 architecture bunch_fir_top of bunch_fir_top is
     constant FIR_DATA_WIDTH : natural := data_o(0)'LENGTH;
-
-    -- Register map
-    constant CONFIG_REG : natural := 0;
-    constant TAPS_REG : natural := 1;
 
     -- Control values
     signal config_register : reg_data_t;
@@ -66,13 +63,13 @@ architecture bunch_fir_top of bunch_fir_top is
 begin
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(CONFIG_REG),
+        write_strobe_i(0) => write_strobe_i(DSP_FIR_CONFIG_REG),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(CONFIG_REG),
+        write_ack_o(0) => write_ack_o(DSP_FIR_CONFIG_REG),
         register_data_o(0) => config_register
     );
-    read_data_o(CONFIG_REG) <= config_register;
-    read_ack_o(CONFIG_REG) <= '1';
+    read_data_o(DSP_FIR_CONFIG_REG) <= config_register;
+    read_ack_o(DSP_FIR_CONFIG_REG) <= '1';
 
     write_fir <= unsigned(config_register(1 downto 0));
     decimation_limit <= unsigned(config_register(8 downto 2));
@@ -86,15 +83,15 @@ begin
         write_start_i => write_start_i,
         write_fir_i => write_fir,
 
-        write_strobe_i => write_strobe_i(TAPS_REG),
+        write_strobe_i => write_strobe_i(DSP_FIR_TAPS_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(TAPS_REG),
+        write_ack_o => write_ack_o(DSP_FIR_TAPS_REG),
 
         bunch_config_i => bunch_config_i,
         taps_o => taps
     );
-    read_data_o(TAPS_REG) <= (others => '0');
-    read_ack_o(TAPS_REG) <= '1';
+    read_data_o(DSP_FIR_TAPS_REG) <= (others => '0');
+    read_ack_o(DSP_FIR_TAPS_REG) <= '1';
 
 
     -- Decimation counter

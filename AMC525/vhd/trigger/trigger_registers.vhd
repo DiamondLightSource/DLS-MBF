@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
 use work.trigger_defs.all;
 
 entity trigger_registers is
@@ -14,12 +15,12 @@ entity trigger_registers is
         clk_i : in std_logic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector(0 to 9);
+        write_strobe_i : in std_logic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(0 to 9);
-        read_strobe_i : in std_logic_vector(0 to 9);
-        read_data_o : out reg_data_array_t(0 to 9);
-        read_ack_o : out std_logic_vector(0 to 9);
+        write_ack_o : out std_logic_vector;
+        read_strobe_i : in std_logic_vector;
+        read_data_o : out reg_data_array_t;
+        read_ack_o : out std_logic_vector;
 
         -- Revolution clock synchronisation
         turn_setup_o : out turn_clock_setup_t;
@@ -44,44 +45,30 @@ entity trigger_registers is
 end;
 
 architecture trigger_registers of trigger_registers is
-    constant CONTROL_REG_W : natural := 0;
-    constant PULSED_REG_R : natural := 0;
-    subtype READBACK_REGS is natural range 1 to 2;
-    constant READBACK_REG_STATUS : natural := 1;
-    constant READBACK_REG_SOURCES : natural := 2;
-    subtype CONFIG_REGS is natural range 3 to 9;
-    constant CONFIG_REG_TURN_SETUP : natural := 3;
-    constant CONFIG_REG_BLANKING : natural := 4;
-    constant CONFIG_REG_DELAY_SEQ_0 : natural := 5;
-    constant CONFIG_REG_DELAY_SEQ_1 : natural := 6;
-    constant CONFIG_REG_DELAY_DRAM : natural := 7;
-    constant CONFIG_REG_TRIG_SEQ : natural := 8;
-    constant CONFIG_REG_TRIG_DRAM : natural := 9;
-
     -- Register interface
     signal strobed_bits : reg_data_t;
     signal pulsed_bits : reg_data_t;
-    signal readback_registers : reg_data_array_t(READBACK_REGS);
-    signal config_registers : reg_data_array_t(CONFIG_REGS);
+    signal readback_registers : reg_data_array_t(CTRL_TRG_READBACK_REGS);
+    signal config_registers : reg_data_array_t(CTRL_TRG_CONFIG_REGS);
 
     alias readback_status : reg_data_t is
-        readback_registers(READBACK_REG_STATUS);
+        readback_registers(CTRL_TRG_READBACK_REG_STATUS);
     alias readback_sources : reg_data_t is
-        readback_registers(READBACK_REG_SOURCES);
+        readback_registers(CTRL_TRG_READBACK_REG_SOURCES);
     alias config_turn_setup : reg_data_t is
-        config_registers(CONFIG_REG_TURN_SETUP);
+        config_registers(CTRL_TRG_CONFIG_REG_TURN_SETUP);
     alias config_blanking : reg_data_t is
-        config_registers(CONFIG_REG_BLANKING);
+        config_registers(CTRL_TRG_CONFIG_REG_BLANKING);
     alias config_delay_seq_0 : reg_data_t is
-        config_registers(CONFIG_REG_DELAY_SEQ_0);
+        config_registers(CTRL_TRG_CONFIG_REG_DELAY_SEQ_0);
     alias config_delay_seq_1 : reg_data_t is
-        config_registers(CONFIG_REG_DELAY_SEQ_1);
+        config_registers(CTRL_TRG_CONFIG_REG_DELAY_SEQ_1);
     alias config_delay_dram : reg_data_t is
-        config_registers(CONFIG_REG_DELAY_DRAM);
+        config_registers(CTRL_TRG_CONFIG_REG_DELAY_DRAM);
     alias config_trig_seq : reg_data_t is
-        config_registers(CONFIG_REG_TRIG_SEQ);
+        config_registers(CTRL_TRG_CONFIG_REG_TRIG_SEQ);
     alias config_trig_dram : reg_data_t is
-        config_registers(CONFIG_REG_TRIG_DRAM);
+        config_registers(CTRL_TRG_CONFIG_REG_TRIG_DRAM);
 
 begin
     -- -------------------------------------------------------------------------
@@ -89,9 +76,9 @@ begin
 
     strobed_bits_inst : entity work.strobed_bits port map (
         clk_i => clk_i,
-        write_strobe_i => write_strobe_i(CONTROL_REG_W),
+        write_strobe_i => write_strobe_i(CTRL_TRG_CONTROL_REG_W),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CONTROL_REG_W),
+        write_ack_o => write_ack_o(CTRL_TRG_CONTROL_REG_W),
 
         strobed_bits_o => strobed_bits
     );
@@ -99,26 +86,26 @@ begin
     pulsed_bits_inst : entity work.all_pulsed_bits port map (
         clk_i => clk_i,
 
-        read_strobe_i => read_strobe_i(PULSED_REG_R),
-        read_data_o => read_data_o(PULSED_REG_R),
-        read_ack_o => read_ack_o(PULSED_REG_R),
+        read_strobe_i => read_strobe_i(CTRL_TRG_PULSED_REG_R),
+        read_data_o => read_data_o(CTRL_TRG_PULSED_REG_R),
+        read_ack_o => read_ack_o(CTRL_TRG_PULSED_REG_R),
 
         pulsed_bits_i => pulsed_bits
     );
 
-    read_data_o(READBACK_REGS) <= readback_registers;
-    read_ack_o(READBACK_REGS) <= (others => '1');
-    write_ack_o(READBACK_REGS) <= (others => '1');
+    read_data_o(CTRL_TRG_READBACK_REGS) <= readback_registers;
+    read_ack_o(CTRL_TRG_READBACK_REGS) <= (others => '1');
+    write_ack_o(CTRL_TRG_READBACK_REGS) <= (others => '1');
 
     register_file_inst : entity work.register_file port map (
         clk_i => clk_i,
-        write_strobe_i => write_strobe_i(CONFIG_REGS),
+        write_strobe_i => write_strobe_i(CTRL_TRG_CONFIG_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CONFIG_REGS),
+        write_ack_o => write_ack_o(CTRL_TRG_CONFIG_REGS),
         register_data_o => config_registers
     );
-    read_data_o(CONFIG_REGS) <= config_registers;
-    read_ack_o(CONFIG_REGS) <= (others => '1');
+    read_data_o(CTRL_TRG_CONFIG_REGS) <= config_registers;
+    read_ack_o(CTRL_TRG_CONFIG_REGS) <= (others => '1');
 
 
     -- -------------------------------------------------------------------------
