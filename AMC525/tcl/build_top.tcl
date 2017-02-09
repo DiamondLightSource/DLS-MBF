@@ -44,4 +44,4 @@ read_xdc $src_dir/constr/clocks.xdc
 
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 launch_runs impl_1 -to_step write_bitstream -jobs 6
-wait_on_run synth_1
+wait_on_run impl_1
