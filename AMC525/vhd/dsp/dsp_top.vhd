@@ -11,6 +11,7 @@ use work.register_defs.all;
 use work.dsp_defs.all;
 use work.bunch_defs.all;
 use work.nco_defs.all;
+use work.sequencer_defs.all;
 
 entity dsp_top is
     port (
@@ -71,7 +72,11 @@ architecture dsp_top of dsp_top is
     -- Bunch control
     signal current_bank : unsigned(1 downto 0);
     signal bunch_config : bunch_config_lanes_t;
-    signal turn_clock : std_logic;
+    signal detector_window : hom_win_t;
+
+    -- Sequencer and detector
+    signal sequencer_start : std_logic;
+    signal sequencer_write : std_logic;
 
     -- Oscillator control
     signal nco_0_phase_advance : angle_t;
@@ -80,6 +85,7 @@ architecture dsp_top of dsp_top is
     signal nco_1_phase_advance : angle_t;
     signal nco_1_reset : std_logic;
     signal nco_1_cos_sin : cos_sin_18_lanes_t;
+    signal nco_1_gain : unsigned(3 downto 0);
 
     -- Data flow
     signal adc_data_in : adc_data_i'SUBTYPE;
@@ -137,13 +143,11 @@ begin
     -- -------------------------------------------------------------------------
     -- Miscellaneous control
 
-    turn_clock <= control_to_dsp_i.turn_clock;
-
     -- Bunch specific control
     bunch_select_inst : entity work.bunch_select port map (
         dsp_clk_i => dsp_clk_i,
 
-        turn_clock_i => turn_clock,
+        turn_clock_i => control_to_dsp_i.turn_clock,
 
         write_strobe_i => write_strobe_i(DSP_BUNCH_REGS),
         write_data_i => write_data_i,
@@ -202,7 +206,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-        turn_clock_i => turn_clock,
+        turn_clock_i => control_to_dsp_i.turn_clock,
 
         data_i => adc_data_in,
         data_o => dsp_to_control_o.adc_data,
@@ -233,7 +237,7 @@ begin
         data_i => control_to_dsp_i.adc_data,
         data_o => fir_data,
 
-        turn_clock_i => turn_clock,
+        turn_clock_i => control_to_dsp_i.turn_clock,
         bunch_config_i => bunch_config,
 
         write_strobe_i => write_strobe_i(DSP_B_FIR_REGS),
@@ -254,12 +258,13 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-        turn_clock_i => turn_clock,
+        turn_clock_i => control_to_dsp_i.turn_clock,
 
         bunch_config_i => bunch_config,
         fir_data_i => fir_data,
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
+        nco_1_gain_i => nco_1_gain,
 
         data_store_o => dsp_to_control_o.dac_data,
         data_o => dac_data_out,
@@ -296,6 +301,36 @@ begin
 
 
     -- -------------------------------------------------------------------------
+    -- Sequencer and detector
+
+    sequencer_top_inst : entity work.sequencer_top port map (
+        dsp_clk_i => dsp_clk_i,
+
+        turn_clk_i => control_to_dsp_i.turn_clock,
+        blanking_i => control_to_dsp_i.blanking,
+
+        write_strobe_i => write_strobe_i(DSP_SEQ_REGS),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_SEQ_REGS),
+        read_strobe_i => read_strobe_i(DSP_SEQ_REGS),
+        read_data_o => read_data_o(DSP_SEQ_REGS),
+        read_ack_o => read_ack_o(DSP_SEQ_REGS),
+
+        trigger_i => control_to_dsp_i.seq_start,
+
+        state_trigger_o => dsp_to_control_o.seq_trigger,
+
+        seq_start_o => sequencer_start,
+        seq_write_o => sequencer_write,
+
+        hom_freq_o => nco_1_phase_advance,
+        hom_gain_o => nco_1_gain,
+        hom_window_o => detector_window,
+        bunch_bank_o => current_bank
+    );
+
+
+    -- -------------------------------------------------------------------------
     -- Work in progress hacks below
 
     -- registers for temporary hacks
@@ -310,12 +345,10 @@ begin
     read_ack_o(DSP_HACK_REGS) <= (others => '1');
 
 
-    current_bank <= unsigned(hack_registers(11)(1 downto 0));
-    loopback <= hack_registers(11)(2);
-    dac_output_enable <= hack_registers(11)(3);
+    loopback <= hack_registers(DSP_HACK_REG0)(2);
+    dac_output_enable <= hack_registers(DSP_HACK_REG0)(3);
 
-    nco_0_phase_advance <= unsigned(hack_registers(12));
-    nco_1_phase_advance <= unsigned(hack_registers(13));
+    nco_0_phase_advance <= unsigned(hack_registers(DSP_HACK_REG1));
 
     -- These will need to be hardware triggers
     nco_0_reset <= strobed_bits(30);
@@ -325,6 +358,5 @@ begin
 
     dsp_to_control_o.dram0_enable <= '1';
     dsp_to_control_o.adc_trigger <= adc_delta_event;
-    dsp_to_control_o.seq_trigger <= '0';
 
 end;

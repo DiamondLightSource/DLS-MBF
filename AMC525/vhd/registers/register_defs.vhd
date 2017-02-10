@@ -7,34 +7,85 @@ use ieee.numeric_std.all;
 use work.support.all;
 
 package register_defs is
---     -- Register data is in blocks of 32-bits
---     constant REG_DATA_WIDTH : natural := 32;
---     subtype reg_data_t is std_logic_vector(REG_DATA_WIDTH-1 downto 0);
---     type reg_data_array_t is array(natural range <>) of reg_data_t;
+    -- The control register address space consists of 16384 32-bit words
+    -- organised into four active banks with the following addressing:
+    --
+    --  Address         Alias   Controlled bank
+    --  =============== ======= ============================================
+    --  0x0000..0x0FFF  SYS     System registers: top level hardware control
+    --  0x2000..0x27FF  CTRL    DSP master control
+    --  0x2800..0x2FFF          (unused)
+    --  0x3000..0x37FF  DSP0    DSP 0 control
+    --  0x3800..0x3FFF  DSP1    DSP 1 control
+    --
+    -- The active registers in each bank are identified and named below.
 
     -- System registers
     -- These occupy addresses 0x0000..0x0FFF
     -- Used for top level hardware management
     subtype SYS_REGS_RANGE is natural range 0 to 7;
         constant SYS_VERSION_REG : natural := 0;
+        -- R   1       Status register
+        -- R   1[0]        Set if DSP clock is currently good
+        -- R   1[1]        Set during capture to DDR0
+        -- R   1[2]        FMC500 VCXO power ok
+        -- R   1[3]        FMC500 ADC power ok
+        -- R   1[4]        FMC500 DAC power ok
+        -- R   1[5]        FMC500 PLL status LD1: VCXO locked
+        -- R   1[6]        FMC500 PLL status LD2: VCO locked
+        -- R   1[7]        FMC500 DAC interrupt request
+        -- R   1[8]        FMC500 temperature alert
         constant SYS_STATUS_REG : natural := 1;
+        -- RW  2       Control register
+        -- RW  2[3]        FMC500 PLL clkin sel0
+        -- RW  2[4]        FMC500 PLL clkin sel1
+        -- RW  2[5]        FMC500 PLL sync
+        -- RW  2[6]        ADC power down (leave at 0 for normal operation)
+        -- RW  2[7]        DAC reset (leave at 0 for normal operation)
+        -- RW  2[8]        Enable DAC test data generation
         constant SYS_CONTROL_REG : natural := 2;
+        -- RW  3       ADC DCO IDELAY control
+        -- W   3[4:0]      IDELAY value
+        -- W   3[8]        Enable write to IDELAY, so write number of form 0x1xx
+        -- W   3[12]       Enable increment or decrement of IDELAY
+        -- W   3[13]       Increment if 1, decrement if 0
+        -- W   3[31]       Force reset of ADC PLL
+        -- R   3[4:0]      Current IDELAY setting
+        -- R   3[31]       Set if ADC PLL not locked
         constant SYS_ADC_IDELAY_REG : natural := 3;
+        -- RW  4       FMC500 SPI control
         constant SYS_FMC_SPI_REG : natural := 4;
+        -- RW  5,6     DAC test data pattern
         subtype SYS_DAC_TEST_REGS is natural range 5 to 6;
+        -- RW  7       Revolution clock IDELAY control
+        -- W   7[4:0]      IDELAY value
+        -- W   7[8]        Enable write to IDELAY, so write number of form 0x1xx
+        -- W   7[12]       Enable increment or decrement of IDELAY
+        -- W   7[13]       Increment if 1, decrement if 0
+        -- R   7[4:0]      Current IDELAY setting
         constant SYS_REV_IDELAY_REG : natural := 7;
 
     -- Control registers
     -- These occupy addresses 0x2000..02x7FF
     -- Used for shared DSP control
     subtype CTRL_REGS_RANGE is natural range 0 to 15;
+        -- RW  0   Captures single clock pulsed events.  Write a bit pattern
+        --         to reset those bits and latch the current state.
+        -- RW  0[0]        Set if DRAM0 data error detected
+        -- RW  0[1]        Set if DRAM0 address error detected
+        -- RW  0[2]        Set if DRAM0 write error detected
+        -- RW  0[3]        Set if DRAM1 write error detected
         constant CTRL_PULSED_REG : natural := 0;
+        -- RW  1   Miscellaneous control
+        -- RW  1[0]    ADC mux: if set channel 0 has copy of channel 1 ADC
+        -- RW  1[1]    NCO0 mux: if set channel 0 has sin data from channel 1
+        -- RW  1[2]    NCO1 mux: if set channel 0 has sin data from channel 1
         constant CTRL_CONTROL_REG : natural := 1;
         subtype CTRL_MEM_REGS is natural range 2 to 5;
             -- Control and readout registers
             subtype CTRL_MEM_CONFIG_REGS is natural range 2 to 3;
-            constant CTRL_MEM_CONFIG_REG : natural := 2;
-            constant CTRL_MEM_COUNT_REG : natural := 3;
+                constant CTRL_MEM_CONFIG_REG : natural := 2;
+                constant CTRL_MEM_COUNT_REG : natural := 3;
             -- Overlay pulse command and address readback registers
             constant CTRL_MEM_COMMAND_REG_W : natural := 4;
             constant CTRL_MEM_ADDRESS_REG_R : natural := 4;
@@ -57,7 +108,7 @@ package register_defs is
     -- DSP registers
     -- These occupy addresses 0x3000..0x37FF and 0x3800..3FFF
     -- Used for channel specific DSP control
-    subtype DSP_REGS_RANGE is natural range 0 to 13;
+    subtype DSP_REGS_RANGE is natural range 0 to 15;
         subtype DSP_GENERAL_REGS is natural range 0 to 1;
             --  0       W   Strobed bits
             --  0       R   General status bits
@@ -86,7 +137,6 @@ package register_defs is
             constant DSP_FIR_TAPS_REG : natural := 8;
         subtype DSP_DAC_REGS is natural range 9 to 10;
             --  9   R   31:0    Read MMS count and switch banks
-            -- 10   R   31:9    Read and reset MMS bunch entries
             --  9   W   9:0     Configure DAC output delay
             --  9   W  105:12   NCO 0 gain
             --  9   W  109:16   NCO 1 gain
@@ -94,11 +144,29 @@ package register_defs is
             --  9   W   25      FIR enable
             --  9   W   26      NCO 0 enable
             --  9   W   27      NCO10 enable
+            -- 10   R   31:9    Read and reset MMS bunch entries
             -- 10   W   31:7    Write FIR taps
             subtype DSP_DAC_MMS_REGS_R is natural range 9 to 10;
             constant DSP_DAC_CONFIG_REG_W : natural := 9;
             constant DSP_DAC_TAPS_REG_W : natural := 10;
-        subtype DSP_HACK_REGS is natural range 11 to 13;
-
-
+        subtype DSP_SEQ_REGS is natural range 11 to 13;
+            -- 11   W   0       Abort sequencer if running
+            -- 11   W   1       Initiate block memory write sequence
+            constant DSP_SEQ_COMMAND_W : natural := 11;
+            -- 11   R   2:0     Current sequencer program counter
+            -- 11   R   4       Set if sequencer busy
+            -- 11   R   17:8    Current super sequencer state
+            constant DSP_SEQ_STATUS_R : natural := 11;
+            -- 12   RW  2:0     Target sequencer program counter
+            -- 12   RW  6:4     Sequencer state to generate event
+            -- 12   RW  17:8    Target super sequencer state
+            -- 12   RW  29:28   Block memory to write
+            --                  0 => sequencer program memory
+            --                  1 => detector window memory
+            --                  2 => super sequencer memory
+            constant DSP_SEQ_CONFIG : natural := 12;
+            constant DSP_SEQ_WRITE : natural := 13;
+        subtype DSP_HACK_REGS is natural range 14 to 15;
+            constant DSP_HACK_REG0 : natural := 14;
+            constant DSP_HACK_REG1 : natural := 15;
 end;

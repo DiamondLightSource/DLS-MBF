@@ -59,6 +59,16 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/bunch_fir/bunch_fir.vhd \
     $vhd_dir/bunch_fir/bunch_fir_top.vhd \
     $vhd_dir/memory/slow_memory_control.vhd \
+    $vhd_dir/sequencer/sequencer_defs.vhd \
+    $vhd_dir/sequencer/sequencer_registers.vhd \
+    $vhd_dir/sequencer/sequencer_super.vhd \
+    $vhd_dir/sequencer/sequencer_pc.vhd \
+    $vhd_dir/sequencer/sequencer_load_state.vhd \
+    $vhd_dir/sequencer/sequencer_dwell.vhd \
+    $vhd_dir/sequencer/sequencer_counter.vhd \
+    $vhd_dir/sequencer/sequencer_window.vhd \
+    $vhd_dir/sequencer/sequencer_delays.vhd \
+    $vhd_dir/sequencer/sequencer_top.vhd \
     $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dsp/dsp_registers.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \

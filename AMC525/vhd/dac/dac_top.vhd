@@ -29,6 +29,7 @@ entity dac_top is
         fir_data_i : in signed_array;
         nco_0_data_i : in signed_array;
         nco_1_data_i : in signed_array;
+        nco_1_gain_i : in unsigned;
 
         -- Outputs and overflow detection
         data_store_o : out signed_array;    -- Data from intermediate processing
@@ -59,7 +60,6 @@ architecture dac_top of dac_top is
     signal dac_delay : unsigned(BUNCH_NUM_BITS downto 0);
     signal fir_gain : unsigned(4 downto 0);
     signal nco_0_gain : unsigned(3 downto 0);
-    signal nco_1_gain : unsigned(3 downto 0);
     signal fir_enable : std_logic;
     signal nco_0_enable : std_logic;
     signal nco_1_enable : std_logic;
@@ -105,7 +105,6 @@ begin
     dac_delay  <= unsigned(config_register_adc(9 downto 0));
     fir_gain   <= unsigned(config_register_dsp(24 downto 20));
     nco_0_gain <= unsigned(config_register_dsp(15 downto 12));
-    nco_1_gain <= unsigned(config_register_dsp(19 downto 16));
     fir_enable   <= config_register_dsp(25);
     nco_0_enable <= config_register_dsp(26);
     nco_1_enable <= config_register_dsp(27);
@@ -137,7 +136,7 @@ begin
             EXTRA_SHIFT => 2
         ) port map (
             clk_i => dsp_clk_i,
-            gain_sel_i => nco_1_gain,
+            gain_sel_i => nco_1_gain_i,
             data_i => nco_1_data_i(l),
             data_o => nco_1_data(l),
             overflow_o => open

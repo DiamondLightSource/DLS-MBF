@@ -56,7 +56,7 @@ end;
 
 architecture dsp_control_top of dsp_control_top is
     signal pulsed_bits : reg_data_t;
-    signal control : reg_data_t;
+    signal control_register : reg_data_t;
 
     signal adc_mux : std_logic;
     signal nco_0_mux : std_logic;
@@ -100,9 +100,9 @@ begin
         write_strobe_i(0) => write_strobe_i(CTRL_CONTROL_REG),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(CTRL_CONTROL_REG),
-        register_data_o(0) => control
+        register_data_o(0) => control_register
     );
-    read_data_o(CTRL_CONTROL_REG) <= control;
+    read_data_o(CTRL_CONTROL_REG) <= control_register;
     read_ack_o(CTRL_CONTROL_REG) <= '1';
 
 
@@ -116,9 +116,9 @@ begin
 
 
     -- Channel data multiplexing control
-    adc_mux <= control(0);
-    nco_0_mux <= control(1);
-    nco_1_mux <= control(2);
+    adc_mux <= control_register(0);
+    nco_0_mux <= control_register(1);
+    nco_1_mux <= control_register(2);
     dsp_control_mux_inst : entity work.dsp_control_mux port map (
         dsp_clk_i => dsp_clk_i,
 

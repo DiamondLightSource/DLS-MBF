@@ -46,8 +46,10 @@ begin
     inc_decn <= write_data_i(13);
     inc_decn_strobe <= write_data_i(12) and write_strobe_i;
     -- Read current value
-    read_data_o(4 downto 0) <= delay_out;
-    read_data_o(31 downto 5) <= (others => '0');
+    read_data_o <= (
+        4 downto 0 => delay_out,
+        others => '0'
+    );
 
 
     -- Input delay control

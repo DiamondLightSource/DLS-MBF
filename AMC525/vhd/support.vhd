@@ -12,7 +12,7 @@ package support is
 
 
     -- Returns the number of bits required to represent the value x.  Note that,
-    -- for example, bits(x) is 4 for x in the range 4 to 7.
+    -- for example, bits(x) is 3 for x in the range 4 to 7.
     function bits(x : natural) return natural;
 
 
