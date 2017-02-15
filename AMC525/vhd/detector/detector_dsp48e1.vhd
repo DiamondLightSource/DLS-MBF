@@ -76,8 +76,8 @@ begin
             if start_i = '1' then
                 -- In this condition we need to extend the MULTSIGN from the low
                 -- unit, but need to ignore the accumulator carry.
-                opmode_high <= "000" & "10" & "00";     -- Use MACC extend
-                carryinsel_high <= "000";               -- CARRYIN = '0'
+                opmode_high <= "000" & "10" & "00";     -- Use MACC extend, no P
+                carryinsel_high <= "000";               -- CARRYIN = '1'
             else
                 -- In this mode we need to add both the multiplier sign
                 -- extension and the accumulator carry.
@@ -100,13 +100,13 @@ begin
     ) port map (
         A => std_logic_vector(resize(data_i, 30)),
         ACIN => (others => '0'),
-        ALUMODE => (others => '0'),
+        ALUMODE => "0000",
         B => std_logic_vector(mul_i),
         BCIN => (others => '0'),
-        C => (others => '1'),
+        C => (others => '0'),
         CARRYCASCIN => '0',
         CARRYIN => '0',
-        CARRYINSEL => (others => '0'),
+        CARRYINSEL => "000",
         CEA1 => '0',
         CEA2 => '1',
         CEAD => '0',
@@ -122,7 +122,7 @@ begin
         CEP => '1',
         CLK => clk_i,
         D => (others => '0'),
-        INMODE => (others => '0'),
+        INMODE => "00000",
         MULTSIGNIN => '0',
         OPMODE => opmode_low,
         PCIN => (others => '0'),
@@ -161,19 +161,19 @@ begin
     ) port map (
         A => (others => '0'),
         ACIN => (others => '0'),
-        ALUMODE => (others => '0'),
+        ALUMODE => "0000",
         B => (others => '0'),
         BCIN => (others => '0'),
-        C => (others => '1'),
+        C => (others => '0'),
         CARRYCASCIN => carrycasc,
         CARRYIN => '1',
         CARRYINSEL => carryinsel_high,
         CEA1 => '0',
-        CEA2 => '1',
+        CEA2 => '0',
         CEAD => '0',
         CEALUMODE => '0',
         CEB1 => '0',
-        CEB2 => '1',
+        CEB2 => '0',
         CEC => '0',
         CECARRYIN => '0',
         CECTRL => '1',
@@ -183,7 +183,7 @@ begin
         CEP => '1',
         CLK => clk_i,
         D => (others => '0'),
-        INMODE => (others => '0'),
+        INMODE => "00000",
         MULTSIGNIN => multsign,
         OPMODE => opmode_high,
         PCIN => (others => '0'),
