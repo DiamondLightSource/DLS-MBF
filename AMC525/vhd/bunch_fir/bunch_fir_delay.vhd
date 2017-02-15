@@ -42,8 +42,7 @@ begin
 
         write_strobe_i => write_strobe_i,
         write_addr_i => write_addr,
-        write_data_i => std_logic_vector(data_i),
-        write_data_o => open
+        write_data_i => std_logic_vector(data_i)
     );
 
     -- Delay the write address relative to the read address

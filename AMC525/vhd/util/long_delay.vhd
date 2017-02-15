@@ -34,8 +34,7 @@ begin
         read_data_o => data_o,
         write_strobe_i => '1',
         write_addr_i => write_addr,
-        write_data_i => data_i,
-        write_data_o => open
+        write_data_i => data_i
     );
 
     process (clk_i) begin

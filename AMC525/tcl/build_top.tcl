@@ -28,9 +28,6 @@ add_files built
 add_files $src_dir/vhd
 set_property FILE_TYPE "VHDL 2008" [get_files *.vhd]
 
-# It turns out that some files need to be set to plain VHDL
-set_property FILE_TYPE VHDL [get_files block_memory.vhd]
-
 
 # Ensure we've read the block design and generated the associated files.
 read_bd interconnect/interconnect.bd
@@ -40,6 +37,8 @@ add_files -norecurse interconnect/hdl/interconnect_wrapper.vhd
 # Load the constraints
 read_xdc built/top_pins.xdc
 read_xdc $src_dir/constr/clocks.xdc
+read_xdc $src_dir/constr/post_synth.xdc
+set_property used_in_synthesis false [get_files post_synth.xdc]
 
 
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
