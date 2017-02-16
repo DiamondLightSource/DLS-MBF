@@ -91,18 +91,70 @@ package register_defs is
             constant CTRL_MEM_ADDRESS_REG_R : natural := 4;
             constant CTRL_MEM_STATUS_REG : natural := 5;
         subtype CTRL_TRIGGER_REGS is natural range 6 to 15;
+            -- W   6       Pulsed trigger control events
+            --     6[0]        Start turn clock synchronisation
+            --     6[1]        Request turn clock sample
+            --     6[2]        Arm sequencer 0 trigger
+            --     6[3]        Disarm sequencer 0 trigger
+            --     6[4]        Arm sequencer 1 trigger
+            --     6[5]        Disarm sequencer 1 trigger
+            --     6[6]        Arm DRAM0 trigger
+            --     6[7]        Disarm DRAM0 trigger
+            --     6[8]        Generate soft trigger event
             constant CTRL_TRG_CONTROL_REG_W : natural := 6;
+            -- R   6       Capture trigger events
+            --     6[0]        Soft trigger
+            --     6[1]        External event trigger
+            --     6[2]        Postmortem trigger
+            --     6[3]        ADC 0 motion trigger
+            --     6[4]        ADC 1 motion trigger
+            --     6[5]        State 0 trigger
+            --     6[6]        State 1 trigger
             constant CTRL_TRG_PULSED_REG_R : natural := 6;
             subtype CTRL_TRG_READBACK_REGS is natural range 7 to 8;
+                -- R   7       Trigger status readbacks
+                --     7[0]        Start clock synchronisation busy
+                --     7[1]        ADC clock phase after turn synchronisation
+                --     7[2]        Synchronisation error detected
+                --     7[3]        Waiting for turn clock sample
+                --     7[4]        ADC clock phase after sample
+                --     7[5]        Sequencer 0 trigger armed
+                --     7[6]        Sequencer 1 trigger armed
+                --     7[7]        DRAM0 trigger armed
+                --     7[25:16]    Turn clock counter captured by sample
                 constant CTRL_TRG_READBACK_REG_STATUS : natural := 7;
+                -- R   8       Trigger event sources.
+                --     8[6:0]      Sequencer 0 trigger source mask
+                --     8[14:8]     Sequencer 1 trigger source mask
+                --     8[22:16]    DRAM0 trigger source mask
                 constant CTRL_TRG_READBACK_REG_SOURCES : natural := 8;
             subtype CTRL_TRG_CONFIG_REGS is natural range 9 to 15;
+                -- RW  9       Turn clock configuration setup
+                --     9[9:0]      Maximum bunch count
+                --     9[19:10]    DSP 0 turn clock offset
+                --     9[29:20]    DSP 1 turn clock offset
                 constant CTRL_TRG_CONFIG_REG_TURN_SETUP : natural := 9;
+                -- RW  10      Blanking windows
+                --     10[15:0]    DSP 0 blanking window (in turns)
+                --     10[31:16]   DSP 1 blanking window (in turns)
                 constant CTRL_TRG_CONFIG_REG_BLANKING : natural := 10;
+                -- RW  11[23:0]    Sequencer 0 trigger delay
                 constant CTRL_TRG_CONFIG_REG_DELAY_SEQ_0 : natural := 11;
+                -- RW  12[23:0]    Sequencer 1 trigger delay
                 constant CTRL_TRG_CONFIG_REG_DELAY_SEQ_1 : natural := 12;
+                -- RW  13[23:0]    DRAM0 trigger delay
                 constant CTRL_TRG_CONFIG_REG_DELAY_DRAM : natural := 13;
+                -- RW  14      Sequencer trigger configuration
+                --     14[6:0]     Sequencer 0 trigger enable mask
+                --     14[14:8]    Sequencer 0 blanking enable mask
+                --     14[22:16]   Sequencer 1 trigger enable mask
+                --     14[30:24]   Sequencer 1 blanking enable mask
                 constant CTRL_TRG_CONFIG_REG_TRIG_SEQ : natural := 14;
+                -- RW  15      DRAM0 trigger configuration
+                --     15[6:0]     DRAM trigger enable mask
+                --     15[14:8]    DRAM blanking enable mask
+                --     15[16]      DRAM turn clock selection
+                --     15[18:17]   DRAM blanking pulse selection mask
                 constant CTRL_TRG_CONFIG_REG_TRIG_DRAM : natural := 15;
 
     -- DSP registers
