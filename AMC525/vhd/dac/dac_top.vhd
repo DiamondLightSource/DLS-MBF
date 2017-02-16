@@ -22,7 +22,7 @@ entity dac_top is
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
         adc_phase_i : in std_logic;
-        turn_clock_i : in std_logic;       -- start of machine revolution
+        turn_clock_adc_i : in std_logic;       -- start of machine revolution
 
         -- Data inputs
         bunch_config_i : in bunch_config_lanes_t;
@@ -57,7 +57,7 @@ architecture dac_top of dac_top is
     signal config_register_dsp : reg_data_t;
     signal config_register_adc : reg_data_t;
     -- Configuration settings from register
-    signal dac_delay : unsigned(BUNCH_NUM_BITS downto 0);
+    signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(4 downto 0);
     signal nco_0_gain : unsigned(3 downto 0);
     signal fir_enable : std_logic;
@@ -183,7 +183,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_adc_i => turn_clock_adc_i,
 
         data_i => data_out,
         delta_o => open,

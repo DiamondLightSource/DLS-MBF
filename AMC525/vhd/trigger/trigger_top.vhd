@@ -36,7 +36,8 @@ entity trigger_top is
 
         -- Trigger outputs
         blanking_window_o : out std_logic_vector(CHANNELS);
-        turn_clock_o : out std_logic_vector(CHANNELS);
+        turn_clock_adc_o : out std_logic_vector(CHANNELS);
+        turn_clock_dsp_o : out std_logic_vector(CHANNELS);
         seq_start_o : out std_logic_vector(CHANNELS);
         dram0_trigger_o : out std_logic
     );
@@ -141,7 +142,8 @@ begin
         sample_count_o => turn_readback.sample_count,
 
         revolution_clock_i => revolution_clock,
-        turn_clock_o => turn_clock_o
+        turn_clock_adc_o => turn_clock_adc_o,
+        turn_clock_dsp_o => turn_clock_dsp_o
     );
 
 
@@ -151,7 +153,7 @@ begin
 
         blanking_i => blanking_trigger,
         blanking_interval_i => blanking_interval,
-        turn_clock_i => turn_clock_o,
+        turn_clock_i => turn_clock_dsp_o,
         blanking_window_o => blanking_window_o
     );
 
@@ -160,7 +162,7 @@ begin
     gen : for c in CHANNELS generate
         seq_trigger_inst : entity work.trigger_sources port map (
             dsp_clk_i => dsp_clk_i,
-            turn_clock_i => turn_clock_o(c),
+            turn_clock_i => turn_clock_dsp_o(c),
 
             triggers_i => triggers,
             blanking_window_i => blanking_window_o(c),
@@ -180,7 +182,7 @@ begin
 
 
     -- For the DRAM0 trigger we need a choice of turn clock and blanking
-    dram0_turn_clock <= turn_clock_o(to_integer(dram0_turn_select));
+    dram0_turn_clock <= turn_clock_dsp_o(to_integer(dram0_turn_select));
     dram0_blanking_window <=
         vector_or(blanking_window_o and dram0_blanking_select);
 

@@ -28,6 +28,7 @@ end;
 architecture register_read_adc of register_read_adc is
     subtype register_range is natural range dsp_read_strobe_i'RANGE;
     signal read_ack : std_logic_vector(register_range) := (others => '0');
+    signal read_data : dsp_read_data_o'SUBTYPE;
 
 begin
     process (adc_clk_i) begin
@@ -35,7 +36,7 @@ begin
             for r in register_range loop
                 adc_read_strobe_o(r) <= dsp_read_strobe_i(r) and adc_phase_i;
                 if adc_read_ack_i(r) = '1' then
-                    dsp_read_data_o(r) <= adc_read_data_i(r);
+                    read_data(r) <= adc_read_data_i(r);
                     read_ack(r) <= '1';
                 elsif adc_phase_i = '0' then
                     read_ack(r) <= '0';
@@ -44,5 +45,11 @@ begin
         end if;
     end process;
 
-    dsp_read_ack_o <= read_ack;
+    -- Ensure that our outputs are properly registered on the DSP clock domain
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            dsp_read_data_o <= read_data;
+            dsp_read_ack_o <= read_ack;
+        end if;
+    end process;
 end;

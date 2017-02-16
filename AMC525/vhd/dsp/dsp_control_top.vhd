@@ -75,7 +75,8 @@ architecture dsp_control_top of dsp_control_top is
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
     signal blanking_window : std_logic_vector(CHANNELS);
-    signal turn_clock : std_logic_vector(CHANNELS);
+    signal turn_clock_adc : std_logic_vector(CHANNELS);
+    signal turn_clock_dsp : std_logic_vector(CHANNELS);
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
 
@@ -208,7 +209,8 @@ begin
         seq_trigger_i => seq_trigger,
 
         blanking_window_o => blanking_window,
-        turn_clock_o => turn_clock,
+        turn_clock_adc_o => turn_clock_adc,
+        turn_clock_dsp_o => turn_clock_dsp,
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger
     );
@@ -217,7 +219,8 @@ begin
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
         control_to_dsp_o(c).blanking <= blanking_window(c);
-        control_to_dsp_o(c).turn_clock <= turn_clock(c);
+        control_to_dsp_o(c).turn_clock_adc <= turn_clock_adc(c);
+        control_to_dsp_o(c).turn_clock_dsp <= turn_clock_dsp(c);
         control_to_dsp_o(c).seq_start <= seq_start(c);
     end generate;
 end;

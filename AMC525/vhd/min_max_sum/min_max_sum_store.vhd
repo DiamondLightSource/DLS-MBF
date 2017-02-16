@@ -129,7 +129,7 @@ begin
     );
     read_data_bank <= to_integer(read_data_bank_std);
 
-    dly_write_bank_inst : entity work.dlyline generic map (
+    dly_write_bank_inst : entity work.dlyreg generic map (
         DLY => WRITE_DELAY
     ) port map (
         clk_i => clk_i,

@@ -16,7 +16,7 @@ entity min_max_sum is
         dsp_clk_i : in std_logic;
         adc_clk_i : in std_logic;
         adc_phase_i : in std_logic;
-        turn_clock_i : in std_logic;
+        turn_clock_adc_i : in std_logic;
 
         data_i : in signed(15 downto 0);
         delta_o : out unsigned(15 downto 0);
@@ -42,7 +42,6 @@ architecture min_max_sum of min_max_sum is
     -- Delay from update_data_read to update_data_write.
     constant UPDATE_DELAY : natural := 2;
 
-    signal turn_clock : std_logic;
     signal read_strobe : std_logic_vector(0 to 1);
     signal read_data : reg_data_array_t(0 to 1);
     signal read_ack : std_logic_vector(0 to 1);
@@ -79,19 +78,6 @@ begin
         adc_read_ack_i => read_ack
     );
 
-    -- Quick hack to bring the turn clock into the correct clocking domain.
-    dly_turn_clock : entity work.dlyreg generic map (
-        DLY => 2
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i(0) => turn_clock_i and adc_phase_i,
-        data_o(0) => turn_clock
-    );
---     process (adc_clk_i) begin
---         if rising_edge(adc_clk_i) then
---             turn_clock <= turn_clock_i and adc_phase_i;
---         end if;
---     end process;
 
     -- Address control and bank switching
     min_max_sum_bank_inst : entity work.min_max_sum_bank generic map (
@@ -99,7 +85,7 @@ begin
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        turn_clock_i => turn_clock,
+        turn_clock_i => turn_clock_adc_i,
 
         count_read_strobe_i => read_strobe(COUNT_REG),
         count_read_data_o => read_data(COUNT_REG),

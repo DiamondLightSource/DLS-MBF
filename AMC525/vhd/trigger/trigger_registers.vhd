@@ -136,7 +136,7 @@ begin
         5 => seq_readback_i(0).armed,
         6 => seq_readback_i(1).armed,
         7 => dram0_readback_i.armed,
-        24 downto 16 => std_logic_vector(turn_readback_i.sample_count),
+        25 downto 16 => std_logic_vector(turn_readback_i.sample_count),
         others => '0'
     );
 
@@ -147,11 +147,11 @@ begin
         others => '0'
     );
 
-    turn_setup_o.max_bunch <= bunch_count_t(config_turn_setup(8 downto 0));
+    turn_setup_o.max_bunch <= bunch_count_t(config_turn_setup(9 downto 0));
     turn_setup_o.clock_offsets(0) <=
-        bunch_count_t(config_turn_setup(18 downto 10));
+        bunch_count_t(config_turn_setup(19 downto 10));
     turn_setup_o.clock_offsets(1) <=
-        bunch_count_t(config_turn_setup(28 downto 20));
+        bunch_count_t(config_turn_setup(29 downto 20));
     blanking_interval_o(0) <= unsigned(config_blanking(15 downto 0));
     blanking_interval_o(1) <= unsigned(config_blanking(31 downto 16));
 

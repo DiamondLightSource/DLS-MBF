@@ -22,7 +22,7 @@ entity adc_top is
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
         adc_phase_i : in std_logic;
-        turn_clock_i : in std_logic;       -- start of machine revolution
+        turn_clock_adc_i : in std_logic;    -- start of machine revolution
 
         -- Data flow
         data_i : in signed;                 -- at ADC data rate
@@ -145,7 +145,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_adc_i => turn_clock_adc_i,
 
         data_i => filtered_data,
         delta_o => mms_delta,

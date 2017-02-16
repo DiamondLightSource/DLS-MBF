@@ -147,7 +147,7 @@ begin
     bunch_select_inst : entity work.bunch_select port map (
         dsp_clk_i => dsp_clk_i,
 
-        turn_clock_i => control_to_dsp_i.turn_clock,
+        turn_clock_i => control_to_dsp_i.turn_clock_dsp,
 
         write_strobe_i => write_strobe_i(DSP_BUNCH_REGS),
         write_data_i => write_data_i,
@@ -206,7 +206,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-        turn_clock_i => control_to_dsp_i.turn_clock,
+        turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
         data_i => adc_data_in,
         data_o => dsp_to_control_o.adc_data,
@@ -237,7 +237,7 @@ begin
         data_i => control_to_dsp_i.adc_data,
         data_o => fir_data,
 
-        turn_clock_i => control_to_dsp_i.turn_clock,
+        turn_clock_i => control_to_dsp_i.turn_clock_dsp,
         bunch_config_i => bunch_config,
 
         write_strobe_i => write_strobe_i(DSP_B_FIR_REGS),
@@ -258,7 +258,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-        turn_clock_i => control_to_dsp_i.turn_clock,
+        turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
         bunch_config_i => bunch_config,
         fir_data_i => fir_data,
@@ -306,7 +306,7 @@ begin
     sequencer_top_inst : entity work.sequencer_top port map (
         dsp_clk_i => dsp_clk_i,
 
-        turn_clk_i => control_to_dsp_i.turn_clock,
+        turn_clk_i => control_to_dsp_i.turn_clock_dsp,
         blanking_i => control_to_dsp_i.blanking,
 
         write_strobe_i => write_strobe_i(DSP_SEQ_REGS),
