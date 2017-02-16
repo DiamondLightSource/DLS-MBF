@@ -41,6 +41,10 @@ read_xdc $src_dir/constr/post_synth.xdc
 set_property used_in_synthesis false [get_files post_synth.xdc]
 
 
+# Configure Vivado build options
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+set_property STEPS.PHYS_OPT_DESIGN.IS_ENABLED true [get_runs impl_1]
+
+
 launch_runs impl_1 -to_step write_bitstream -jobs 6
 wait_on_run impl_1
