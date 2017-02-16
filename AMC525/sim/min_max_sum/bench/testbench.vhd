@@ -45,8 +45,7 @@ architecture testbench of testbench is
     signal read_strobe : std_logic_vector(0 to 1);
     signal read_data : reg_data_array_t(0 to 1);
     signal read_ack : std_logic_vector(0 to 1);
-    signal dsp_data : signed_array(LANES)(15 downto 0);
-    signal delta : unsigned_array(LANES)(15 downto 0);
+    signal delta : unsigned(15 downto 0);
     signal overflow : std_logic;
 
     constant BUNCH_COUNT : natural := 6;   -- A very small ring!
@@ -60,22 +59,15 @@ begin
         adc_phase_o => adc_phase
     );
 
-    -- Split the data into the two working lanes ("DSP data")
-    adc_to_dsp_inst : entity work.adc_to_dsp port map (
-        adc_clk_i => adc_clk,
-        dsp_clk_i => dsp_clk,
-        adc_phase_i => adc_phase,
-        adc_data_i => adc_data,
-        dsp_data_o => dsp_data
-    );
-
     -- Device under test
     min_max_sum_inst : entity work.min_max_sum generic map (
         ADDR_BITS => 4
     ) port map (
+        adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
+        adc_phase_i => adc_phase,
         turn_clock_i => turn_clock,
-        data_i => dsp_data,
+        data_i => adc_data,
         delta_o => delta,
         overflow_o => overflow,
         read_strobe_i => read_strobe,

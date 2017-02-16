@@ -79,9 +79,6 @@ architecture dac_top of dac_top is
     signal filtered_data : signed(DATA_RANGE);
     signal delayed_data_out : signed(DATA_RANGE);
 
-    -- This signal is ignored, but needed for sizing of port
-    signal mms_delta : unsigned_array(LANES)(DATA_RANGE);
-
 begin
     -- Register mapping
     register_file_inst : entity work.register_file port map (
@@ -170,21 +167,6 @@ begin
     -- -------------------------------------------------------------------------
     -- Finalisation of output
 
-    -- Min/Max/Sum
-    min_max_sum_inst : entity work.min_max_sum port map (
-        dsp_clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
-
-        data_i => data_out_lanes,
-        delta_o => mms_delta,
-        overflow_o => mms_overflow_o,
-
-        read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS_R),
-        read_data_o => read_data_o(DSP_DAC_MMS_REGS_R),
-        read_ack_o => read_ack_o(DSP_DAC_MMS_REGS_R)
-    );
-
-
     -- Convert lanes at DSP clock back to single stream of ADC data
     dsp_to_adc_inst : entity work.dsp_to_adc port map (
         adc_clk_i => adc_clk_i,
@@ -194,6 +176,24 @@ begin
         dsp_data_i => data_out_lanes,
         adc_data_o => data_out
     );
+
+
+    -- Min/Max/Sum
+    min_max_sum_inst : entity work.min_max_sum port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase_i,
+        turn_clock_i => turn_clock_i,
+
+        data_i => data_out,
+        delta_o => open,
+        overflow_o => mms_overflow_o,
+
+        read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS_R),
+        read_data_o => read_data_o(DSP_DAC_MMS_REGS_R),
+        read_ack_o => read_ack_o(DSP_DAC_MMS_REGS_R)
+    );
+
 
     -- Compensation filter
     fast_fir_inst : entity work.fast_fir_top generic map (

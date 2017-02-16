@@ -19,12 +19,12 @@ entity min_max_sum_memory is
 
         -- Read interface
         read_addr_i : in unsigned;
-        read_data_o : out mms_row_lanes_t;
+        read_data_o : out mms_row_t;
 
         -- Write interface
         write_strobe_i : in std_logic;
         write_addr_i : in unsigned;
-        write_data_i : in mms_row_lanes_t
+        write_data_i : in mms_row_t
     );
 end;
 
@@ -32,7 +32,7 @@ architecture min_max_sum_memory of min_max_sum_memory is
     constant ADDR_BITS : natural := read_addr_i'LENGTH;
 
     -- Declare block ram
-    constant LANE_ROW_BITS : natural := LANE_COUNT * MMS_ROW_BITS;
+    constant LANE_ROW_BITS : natural := MMS_ROW_BITS;
     subtype bram_row_t is std_logic_vector(LANE_ROW_BITS-1 downto 0);
 
     signal read_row : bram_row_t;
@@ -51,10 +51,6 @@ begin
         write_data_i => write_row
     );
 
-    convert_gen : for l in LANES generate
-        read_data_o(l) <=
-            bits_to_mms_row(read_field_ix(read_row, MMS_ROW_BITS, l));
-        write_row((l+1)*MMS_ROW_BITS-1 downto l*MMS_ROW_BITS) <=
-            mms_row_to_bits(write_data_i(l));
-    end generate;
+    read_data_o <= bits_to_mms_row(read_row);
+    write_row <= mms_row_to_bits(write_data_i);
 end;

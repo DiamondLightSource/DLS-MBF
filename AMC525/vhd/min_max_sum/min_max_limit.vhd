@@ -11,7 +11,7 @@ entity min_max_limit is
     port (
         dsp_clk_i : in std_logic;
 
-        delta_i : in unsigned_array;
+        delta_i : in unsigned;
         limit_i : in unsigned;
         reset_event_i : in std_logic;
 
@@ -20,20 +20,18 @@ entity min_max_limit is
 end;
 
 architecture min_max_limit of min_max_limit is
-    signal limit_detect : std_logic_vector(LANES) := (others => '0');
+    signal limit_detect : std_logic := '0';
     signal limit_event : std_logic := '0';
     signal limit_event_edge : std_logic;
 
 begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            for l in LANES loop
-                limit_detect(l) <= to_std_logic(delta_i(l) > limit_i);
-            end loop;
+            limit_detect <= to_std_logic(delta_i > limit_i);
 
             if reset_event_i = '1' then
                 limit_event <= '0';
-            elsif vector_or(limit_detect) = '1' then
+            elsif limit_detect = '1' then
                 limit_event <= '1';
             end if;
 

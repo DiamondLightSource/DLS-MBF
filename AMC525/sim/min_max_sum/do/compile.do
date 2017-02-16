@@ -16,6 +16,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/system/adc_phase.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
+    $vhd_dir/registers/register_read_adc.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
     $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
     $vhd_dir/min_max_sum/min_max_sum_memory.vhd \
@@ -30,7 +31,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/testbench.vhd \
 
 
-vsim -t 1ps -lib xil_defaultlib testbench
+vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
@@ -42,10 +43,8 @@ add wave -group "mem(0)" \
     sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/*
 add wave -group "mem(1)" \
     sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(1)/memory_inst/*
-add wave -group "update(0)" \
-    sim:/testbench/min_max_sum_inst/update_gen(0)/min_max_sum_update_inst/*
-add wave -group "update(1)" \
-    sim:/testbench/min_max_sum_inst/update_gen(1)/min_max_sum_update_inst/*
+add wave -group "update" \
+    sim:/testbench/min_max_sum_inst/min_max_sum_update_inst/*
 add wave -group "Readout" \
     sim:/testbench/min_max_sum_inst/readout_inst/*
 add wave -group "Limit" sim:/testbench/min_max_limit_inst/*

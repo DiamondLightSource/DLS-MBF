@@ -17,11 +17,12 @@ package min_max_sum_defs is
     end record;
     constant MMS_ROW_BITS : natural := 16 + 16 + 32 + 48;
 
-    type mms_row_lanes_t is array(LANES) of mms_row_t;
-
     constant mms_reset_value : mms_row_t := (
-        min => X"7FFF", max => X"8000",
-        sum => (others => '0'), sum2 => (others => '0'));
+        min => X"7FFF",
+        max => X"8000",
+        sum => (others => '0'),
+        sum2 => (others => '0')
+    );
 
     -- Conversion between packed and unpacked representation
     function mms_row_to_bits(data : mms_row_t) return std_logic_vector;

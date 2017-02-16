@@ -14,10 +14,12 @@ entity min_max_sum is
     );
     port (
         dsp_clk_i : in std_logic;
+        adc_clk_i : in std_logic;
+        adc_phase_i : in std_logic;
         turn_clock_i : in std_logic;
 
-        data_i : in signed_array(LANES)(15 downto 0);
-        delta_o : out unsigned_array(LANES)(15 downto 0);
+        data_i : in signed(15 downto 0);
+        delta_o : out unsigned(15 downto 0);
         overflow_o : out std_logic;
 
         -- Two register readout interface:
@@ -40,18 +42,20 @@ architecture min_max_sum of min_max_sum is
     -- Delay from update_data_read to update_data_write.
     constant UPDATE_DELAY : natural := 2;
 
+    signal turn_clock : std_logic;
+    signal read_strobe : std_logic_vector(0 to 1);
+    signal read_data : reg_data_array_t(0 to 1);
+    signal read_ack : std_logic_vector(0 to 1);
+
     signal bank_select : std_logic;
     signal update_addr : unsigned(ADDR_BITS-1 downto 0);
     signal readout_addr : unsigned(ADDR_BITS-1 downto 0);
 
-    signal update_data_read : mms_row_lanes_t;
-    signal update_data_write : mms_row_lanes_t;
+    signal update_data_read : mms_row_t;
+    signal update_data_write : mms_row_t;
 
-    signal readout_data_read : mms_row_lanes_t;
-    signal readout_reset_data : mms_row_lanes_t;
+    signal readout_data_read : mms_row_t;
 
-    signal sum_overflow_chan : std_logic_vector(LANES);
-    signal sum2_overflow_chan : std_logic_vector(LANES);
     signal sum_overflow : std_logic;
     signal sum2_overflow : std_logic;
 
@@ -59,21 +63,47 @@ architecture min_max_sum of min_max_sum is
     signal readout_ack : std_logic;
 
 begin
-    assert read_strobe_i'LENGTH = 2;
-    assert read_strobe_i'LOW = read_data_o'LOW;
-    assert read_strobe_i'HIGH = read_data_o'HIGH;
+
+    -- Map register read across from DSP to ADC clock domain
+    register_read_adc : entity work.register_read_adc port map (
+        dsp_clk_i => dsp_clk_i,
+        adc_clk_i => adc_clk_i,
+        adc_phase_i => adc_phase_i,
+
+        dsp_read_strobe_i => read_strobe_i,
+        dsp_read_data_o => read_data_o,
+        dsp_read_ack_o => read_ack_o,
+
+        adc_read_strobe_o => read_strobe,
+        adc_read_data_i => read_data,
+        adc_read_ack_i => read_ack
+    );
+
+    -- Quick hack to bring the turn clock into the correct clocking domain.
+    dly_turn_clock : entity work.dlyreg generic map (
+        DLY => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => turn_clock_i and adc_phase_i,
+        data_o(0) => turn_clock
+    );
+--     process (adc_clk_i) begin
+--         if rising_edge(adc_clk_i) then
+--             turn_clock <= turn_clock_i and adc_phase_i;
+--         end if;
+--     end process;
 
     -- Address control and bank switching
     min_max_sum_bank_inst : entity work.min_max_sum_bank generic map (
         READ_DELAY => READ_DELAY,
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
-        clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
+        clk_i => adc_clk_i,
+        turn_clock_i => turn_clock,
 
-        count_read_strobe_i => read_strobe_i(COUNT_REG),
-        count_read_data_o => read_data_o(COUNT_REG),
-        count_read_ack_o => read_ack_o(COUNT_REG),
+        count_read_strobe_i => read_strobe(COUNT_REG),
+        count_read_data_o => read_data(COUNT_REG),
+        count_read_ack_o => read_ack(COUNT_REG),
 
         bank_select_o => bank_select,
         update_addr_o => update_addr,
@@ -89,7 +119,7 @@ begin
     min_max_sum_store_inst : entity work.min_max_sum_store generic map (
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
-        clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
 
         bank_select_i => bank_select,
 
@@ -100,37 +130,31 @@ begin
         readout_strobe_i => readout_strobe,
         readout_addr_i => readout_addr,
         readout_data_o => readout_data_read,
-        readout_ack_o => readout_ack,
-        readout_reset_data_i => readout_reset_data
+        readout_ack_o => readout_ack
     );
 
-    readout_reset_data <= (others => mms_reset_value);
 
     -- Update min/max/sum
-    update_gen : for l in LANES generate
-        min_max_sum_update_inst : entity work.min_max_sum_update port map (
-            clk_i => dsp_clk_i,
-            data_i => data_i(l),
-            mms_i => update_data_read(l),
-            mms_o => update_data_write(l),
-            sum_overflow_o => sum_overflow_chan(l),
-            sum2_overflow_o => sum2_overflow_chan(l),
-            delta_o => delta_o(l)
-        );
-    end generate;
-    sum_overflow  <= vector_or(sum_overflow_chan);
-    sum2_overflow <= vector_or(sum2_overflow_chan);
+    min_max_sum_update_inst : entity work.min_max_sum_update port map (
+        clk_i => adc_clk_i,
+        data_i => data_i,
+        mms_i => update_data_read,
+        mms_o => update_data_write,
+        sum_overflow_o => sum_overflow,
+        sum2_overflow_o => sum2_overflow,
+        delta_o => delta_o
+    );
     overflow_o <= sum_overflow or sum2_overflow;
 
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (
-        dsp_clk_i => dsp_clk_i,
-        reset_readout_i => read_strobe_i(COUNT_REG),
+        clk_i => adc_clk_i,
+        reset_readout_i => read_strobe(COUNT_REG),
         data_i => readout_data_read,
         readout_strobe_o => readout_strobe,
         readout_ack_i => readout_ack,
-        read_strobe_i => read_strobe_i(READOUT_REG),
-        read_data_o => read_data_o(READOUT_REG),
-        read_ack_o => read_ack_o(READOUT_REG)
+        read_strobe_i => read_strobe(READOUT_REG),
+        read_data_o => read_data(READOUT_REG),
+        read_ack_o => read_ack(READOUT_REG)
     );
 end;

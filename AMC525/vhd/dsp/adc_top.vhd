@@ -61,7 +61,7 @@ architecture adc_top of adc_top is
     signal data_in : data_i'SUBTYPE;
     signal delayed_data : data_i'SUBTYPE;
     signal dsp_data : signed_array(LANES)(DATA_OUT_RANGE);
-    signal mms_delta : unsigned_array(LANES)(DATA_OUT_RANGE);
+    signal mms_delta : unsigned(DATA_OUT_RANGE);
 
 begin
     -- Limit register.
@@ -140,23 +140,14 @@ begin
     );
 
 
-    -- Bring the filtered data over to the DSP clock
-    adc_to_dsp_inst : entity work.adc_to_dsp port map (
+    -- Min/Max/Sum
+    min_max_sum_inst : entity work.min_max_sum port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
-
-        adc_data_i => filtered_data,
-        dsp_data_o => dsp_data
-    );
-
-
-    -- Min/Max/Sum
-    min_max_sum_inst : entity work.min_max_sum port map (
-        dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_i,
 
-        data_i => dsp_data,
+        data_i => filtered_data,
         delta_o => mms_delta,
         overflow_o => mms_overflow_o,
 
@@ -175,6 +166,18 @@ begin
 
         limit_event_o => delta_event_o
     );
+
+
+    -- Bring the filtered data over to the DSP clock
+    adc_to_dsp_inst : entity work.adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase_i,
+
+        adc_data_i => filtered_data,
+        dsp_data_o => dsp_data
+    );
+
 
     -- Output for further processing
     data_o <= dsp_data;

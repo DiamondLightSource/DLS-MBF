@@ -21,23 +21,22 @@ entity min_max_sum_store is
 
         -- Continuous bunch by bunch update interface
         update_addr_i : in unsigned;
-        update_data_o : out mms_row_lanes_t := (others => mms_reset_value);
-        update_data_i : in mms_row_lanes_t;
+        update_data_o : out mms_row_t := mms_reset_value;
+        update_data_i : in mms_row_t;
 
         -- Readout and reset interface.  Pulsing readout_strobe_i will advance
         -- the read pointer and reset the previously read value.  The current
         -- readout is valid until after this strobe is seen.
         readout_strobe_i : in std_logic;
         readout_addr_i : in unsigned;
-        readout_data_o : out mms_row_lanes_t;
-        readout_ack_o : out std_logic;
-        readout_reset_data_i : in mms_row_lanes_t
+        readout_data_o : out mms_row_t;
+        readout_ack_o : out std_logic
     );
 end;
 
 architecture min_max_sum_store of min_max_sum_store is
-    -- This is [0..1][lanes][rows]row, ie a four dimenstional array of bits
-    type mms_row_array_t is array(natural range 0 to 1) of mms_row_lanes_t;
+    -- This is [0..1][rows]row, ie a three dimenstional array of bits
+    type mms_row_array_t is array(natural range 0 to 1) of mms_row_t;
 
     -- Interface to two banks of memory
     signal read_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)
@@ -46,8 +45,7 @@ architecture min_max_sum_store of min_max_sum_store is
     signal write_strobe : std_logic_vector(0 to 1) := "00";
     signal write_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)
         := (others => (others => '0'));
-    signal write_data : mms_row_array_t
-        := (others => (others => mms_reset_value));
+    signal write_data : mms_row_array_t := (others => mms_reset_value);
 
     signal update_write_addr : update_addr_i'SUBTYPE;
 
@@ -92,7 +90,7 @@ begin
             -- Readout reset
             write_strobe(1 - write_bank) <= readout_strobe_i;
             write_addr(1 - write_bank) <= readout_addr_i;
-            write_data(1 - write_bank) <= readout_reset_data_i;
+            write_data(1 - write_bank) <= mms_reset_value;
         end if;
     end process;
 
