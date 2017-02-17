@@ -35,11 +35,11 @@ begin
         ADDR_BITS => ADDR_BITS,
         DATA_BITS => data_i'LENGTH
     ) port map (
-        clk_i => clk_i,
-
+        read_clk_i => clk_i,
         read_addr_i => bunch_index_i,
         signed(read_data_o) => data_o,
 
+        write_clk_i => clk_i,
         write_strobe_i => write_strobe_i,
         write_addr_i => write_addr,
         write_data_i => std_logic_vector(data_i)

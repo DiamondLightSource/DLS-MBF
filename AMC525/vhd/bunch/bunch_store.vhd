@@ -10,7 +10,8 @@ use work.bunch_defs.all;
 
 entity bunch_store is
     port (
-        clk_i : in std_logic;
+        adc_clk_i : in std_logic;
+        dsp_clk_i : in std_logic;
 
         -- Write interface
         write_strobe_i : in std_logic;
@@ -49,9 +50,10 @@ begin
         ADDR_BITS => ADDR_BITS,
         DATA_BITS => BUNCH_CONFIG_BITS
     ) port map (
-        clk_i => clk_i,
+        read_clk_i => adc_clk_i,
         read_addr_i => read_addr,
         read_data_o => read_data,
+        write_clk_i => dsp_clk_i,
         write_strobe_i => write_strobe,
         write_addr_i => write_addr,
         write_data_i => write_data
@@ -69,8 +71,8 @@ begin
     -- Assemble addresses from selected bank and target bunch
     read_addr <= bank_select_i & bunch_index_i;
 
-    process (clk_i) begin
-        if rising_edge(clk_i) then
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
             if write_start_i = '1' then
                 -- Reset write back to start
                 write_bunch <= (others => '0');

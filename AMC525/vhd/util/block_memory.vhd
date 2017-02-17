@@ -32,14 +32,14 @@ entity block_memory is
         DATA_BITS : natural
     );
     port (
-        clk_i : in std_logic;
-
         -- Read interface
+        read_clk_i : in std_logic;
         read_addr_i : in unsigned(ADDR_BITS-1 downto 0);
         read_data_o : out std_logic_vector(DATA_BITS-1 downto 0)
             := (others => '0');
 
         -- Write interface
+        write_clk_i : in std_logic;
         write_strobe_i : in std_logic;
         write_addr_i : in unsigned(ADDR_BITS-1 downto 0);
         write_data_i : in std_logic_vector(DATA_BITS-1 downto 0)
@@ -58,11 +58,16 @@ architecture block_memory of block_memory is
         := (others => '0');
 
 begin
-    process (clk_i) begin
-        if rising_edge(clk_i) then
+    process (write_clk_i) begin
+        if rising_edge(write_clk_i) then
             if write_strobe_i = '1' then
                 memory(to_integer(write_addr_i)) <= write_data_i;
             end if;
+        end if;
+    end process;
+
+    process (read_clk_i) begin
+        if rising_edge(read_clk_i) then
             read_data <= memory(to_integer(read_addr_i));
             read_data_o <= read_data;
         end if;

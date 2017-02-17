@@ -43,9 +43,10 @@ begin
         ADDR_BITS => ADDR_BITS,
         DATA_BITS => LANE_ROW_BITS
     ) port map (
-        clk_i => clk_i,
+        read_clk_i => clk_i,
         read_addr_i => read_addr_i,
         read_data_o => read_row,
+        write_clk_i => clk_i,
         write_strobe_i => write_strobe_i,
         write_addr_i => write_addr_i,
         write_data_i => write_row

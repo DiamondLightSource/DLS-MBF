@@ -29,9 +29,10 @@ begin
         ADDR_BITS => ADDR_BITS,
         DATA_BITS => WIDTH
     ) port map (
-        clk_i => clk_i,
+        read_clk_i => clk_i,
         read_addr_i => read_addr,
         read_data_o => data_o,
+        write_clk_i => clk_i,
         write_strobe_i => '1',
         write_addr_i => write_addr,
         write_data_i => data_i

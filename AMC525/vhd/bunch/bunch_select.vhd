@@ -33,10 +33,6 @@ entity bunch_select is
 end;
 
 architecture bunch_select of bunch_select is
-    signal write_strobe : write_strobe_i'SUBTYPE;
-    signal write_data : write_data_i'SUBTYPE;
-    signal write_ack : write_ack_o'SUBTYPE;
-
     signal config_register : reg_data_t;
 
     signal write_start : std_logic;
@@ -49,34 +45,19 @@ architecture bunch_select of bunch_select is
     signal bunch_config_lanes : bunch_config_lanes_t;
 
 begin
-    -- Bring writes over to ADC domain
-    register_write_adc : entity work.register_write_adc port map (
-        dsp_clk_i => dsp_clk_i,
-        adc_clk_i => adc_clk_i,
-        adc_phase_i => adc_phase_i,
-
-        dsp_write_strobe_i => write_strobe_i,
-        dsp_write_data_i => write_data_i,
-        dsp_write_ack_o => write_ack_o,
-
-        adc_write_strobe_o => write_strobe,
-        adc_write_data_o => write_data,
-        adc_write_ack_i => write_ack
-    );
-
     -- Register management
     register_file_inst : entity work.register_file port map (
         clk_i => adc_clk_i,
-        write_strobe_i(0) => write_strobe(DSP_BUNCH_CONFIG_REG),
-        write_data_i => write_data,
-        write_ack_o(0) => write_ack(DSP_BUNCH_CONFIG_REG),
+        write_strobe_i(0) => write_strobe_i(DSP_BUNCH_CONFIG_REG),
+        write_data_i => write_data_i,
+        write_ack_o(0) => write_ack_o(DSP_BUNCH_CONFIG_REG),
         register_data_o(0) => config_register
     );
 
     read_data_o <= (read_data_o'RANGE => (others => '0'));
     read_ack_o <= (read_ack_o'RANGE => '1');
 
-    write_start <= write_strobe(DSP_BUNCH_CONFIG_REG);
+    write_start <= write_strobe_i(DSP_BUNCH_CONFIG_REG);
     write_bank <= unsigned(config_register(1 downto 0));
 
 
@@ -89,11 +70,12 @@ begin
 
     -- Bunch bank memory
     bunch_mem : entity work.bunch_store port map (
-        clk_i => adc_clk_i,
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe(DSP_BUNCH_BANK_REG_W),
-        write_data_i => write_data,
-        write_ack_o => write_ack(DSP_BUNCH_BANK_REG_W),
+        write_strobe_i => write_strobe_i(DSP_BUNCH_BANK_REG_W),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_BUNCH_BANK_REG_W),
         write_start_i => write_start,
         write_bank_i => write_bank,
 
