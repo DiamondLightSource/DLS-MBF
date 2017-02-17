@@ -10,7 +10,7 @@ use work.bunch_defs.all;
 
 entity bunch_fir_decimate is
     port (
-        dsp_clk_i : in std_logic;
+        clk_i : in std_logic;
 
         bunch_index_i : in bunch_count_t;
         decimation_shift_i : in unsigned;
@@ -44,7 +44,7 @@ begin
     accum_inst : entity work.bunch_fir_delay generic map (
         PROCESS_DELAY => PROCESS_DELAY
     ) port map (
-        clk_i => dsp_clk_i,
+        clk_i => clk_i,
         bunch_index_i => bunch_index_i,
         write_strobe_i => '1',
         data_i => write_data,
@@ -52,8 +52,8 @@ begin
     );
 
     data_in <= resize(data_i, ACCUM_BITS);
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             -- On first turn we reset the accumulator, otherwise accumulate
             if first_turn_i = '1' then
                 write_data <= data_in;

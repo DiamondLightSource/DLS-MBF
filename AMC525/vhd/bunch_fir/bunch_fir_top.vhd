@@ -17,6 +17,8 @@ entity bunch_fir_top is
     );
     port (
         dsp_clk_i : in std_logic;
+        adc_clk_i : in std_logic;
+        adc_phase_i : in std_logic;
 
         data_i : in signed_array;
         data_o : out signed_array;
@@ -107,7 +109,7 @@ begin
     lanes_gen : for l in LANES generate
         -- Bunch by bunch data reduction
         decimate_inst : entity work.bunch_fir_decimate port map (
-            dsp_clk_i => dsp_clk_i,
+            clk_i => dsp_clk_i,
 
             bunch_index_i => bunch_index,
             decimation_shift_i => decimation_shift,

@@ -9,7 +9,7 @@ use work.support.all;
 
 entity bunch_counter is
     port (
-        dsp_clk_i : in std_logic;
+        clk_i : in std_logic;
         turn_clock_i : in std_logic;
         bunch_index_o : out bunch_count_t   -- Current bunch number
     );
@@ -19,8 +19,8 @@ architecture bunch_counter of bunch_counter is
     signal bunch_index : bunch_count_t := (others => '0');
 
 begin
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             if turn_clock_i = '1' then
                 bunch_index <= (others => '0');
             else

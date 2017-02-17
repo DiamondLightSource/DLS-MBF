@@ -46,6 +46,8 @@ architecture min_max_sum of min_max_sum is
     signal read_data : reg_data_array_t(0 to 1);
     signal read_ack : std_logic_vector(0 to 1);
 
+    signal data : signed(15 downto 0);
+
     signal bank_select : std_logic;
     signal update_addr : unsigned(ADDR_BITS-1 downto 0);
     signal readout_addr : unsigned(ADDR_BITS-1 downto 0);
@@ -76,6 +78,17 @@ begin
         adc_read_strobe_o => read_strobe,
         adc_read_data_i => read_data,
         adc_read_ack_i => read_ack
+    );
+
+
+    -- Delay the incoming data to allow a bit more freedom of placement
+    data_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => 16
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_i),
+        signed(data_o) => data
     );
 
 
@@ -123,7 +136,7 @@ begin
     -- Update min/max/sum
     min_max_sum_update_inst : entity work.min_max_sum_update port map (
         clk_i => adc_clk_i,
-        data_i => data_i,
+        data_i => data,
         mms_i => update_data_read,
         mms_o => update_data_write,
         sum_overflow_o => sum_overflow,

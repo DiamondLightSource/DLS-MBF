@@ -71,7 +71,8 @@ architecture dsp_top of dsp_top is
 
     -- Bunch control
     signal current_bank : unsigned(1 downto 0);
-    signal bunch_config : bunch_config_lanes_t;
+    signal bunch_config_lanes : bunch_config_lanes_t;
+    signal bunch_config : bunch_config_t;
     signal detector_window : hom_win_t;
 
     -- Sequencer and detector
@@ -145,9 +146,10 @@ begin
 
     -- Bunch specific control
     bunch_select_inst : entity work.bunch_select port map (
+        adc_clk_i => dsp_clk_i,
         dsp_clk_i => dsp_clk_i,
-
-        turn_clock_i => control_to_dsp_i.turn_clock_dsp,
+        adc_phase_i => adc_phase_i,
+        turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
         write_strobe_i => write_strobe_i(DSP_BUNCH_REGS),
         write_data_i => write_data_i,
@@ -157,6 +159,7 @@ begin
         read_ack_o => read_ack_o(DSP_BUNCH_REGS),
 
         bank_select_i => current_bank,
+        bunch_config_lanes_o => bunch_config_lanes,
         bunch_config_o => bunch_config
     );
 
@@ -233,12 +236,14 @@ begin
         TAP_COUNT => BUNCH_FIR_TAP_COUNT
     ) port map (
         dsp_clk_i => dsp_clk_i,
+        adc_clk_i => adc_clk_i,
+        adc_phase_i => adc_phase_i,
 
         data_i => control_to_dsp_i.adc_data,
         data_o => fir_data,
 
         turn_clock_i => control_to_dsp_i.turn_clock_dsp,
-        bunch_config_i => bunch_config,
+        bunch_config_i => bunch_config_lanes,
 
         write_strobe_i => write_strobe_i(DSP_B_FIR_REGS),
         write_data_i => write_data_i,
@@ -260,7 +265,7 @@ begin
         adc_phase_i => adc_phase_i,
         turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
-        bunch_config_i => bunch_config,
+        bunch_config_i => bunch_config_lanes,
         fir_data_i => fir_data,
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
