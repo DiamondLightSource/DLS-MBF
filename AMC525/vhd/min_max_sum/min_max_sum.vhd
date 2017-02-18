@@ -42,11 +42,13 @@ architecture min_max_sum of min_max_sum is
     -- Delay from update_data_read to update_data_write.
     constant UPDATE_DELAY : natural := 2;
 
+    signal adc_phase : std_logic;
+    signal turn_clock_adc : std_logic;
+    signal data : signed(15 downto 0);
+
     signal read_strobe : std_logic_vector(0 to 1);
     signal read_data : reg_data_array_t(0 to 1);
     signal read_ack : std_logic_vector(0 to 1);
-
-    signal data : signed(15 downto 0);
 
     signal bank_select : std_logic;
     signal update_addr : unsigned(ADDR_BITS-1 downto 0);
@@ -59,17 +61,57 @@ architecture min_max_sum of min_max_sum is
 
     signal sum_overflow : std_logic;
     signal sum2_overflow : std_logic;
+    signal delta : unsigned(15 downto 0);
+    signal overflow : std_logic;
 
     signal readout_strobe : std_logic;
     signal readout_ack : std_logic;
 
 begin
+    -- -------------------------------------------------------------------------
+    -- Pipelines for all inputs and outputs
+
+    adc_delay : entity work.dlyreg generic map (
+        DLY => 8,
+        DW => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => adc_phase_i,   data_i(1) => turn_clock_adc_i,
+        data_o(0) => adc_phase,     data_o(1) => turn_clock_adc
+    );
+
+    data_delay : entity work.dlyreg generic map (
+        DLY => 8,
+        DW => 16
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_i),
+        signed(data_o) => data
+    );
+
+    delta_delay : entity work.dlyreg generic map (
+        DLY => 8,
+        DW => 16
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(delta),
+        unsigned(data_o) => delta_o
+    );
+
+    overflow_delay : entity work.dlyreg generic map (
+        DLY => 8
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => overflow,
+        data_o(0) => overflow_o
+    );
+
 
     -- Map register read across from DSP to ADC clock domain
     register_read_adc : entity work.register_read_adc port map (
         dsp_clk_i => dsp_clk_i,
         adc_clk_i => adc_clk_i,
-        adc_phase_i => adc_phase_i,
+        adc_phase_i => adc_phase,
 
         dsp_read_strobe_i => read_strobe_i,
         dsp_read_data_o => read_data_o,
@@ -81,16 +123,7 @@ begin
     );
 
 
-    -- Delay the incoming data to allow a bit more freedom of placement
-    data_delay : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => 16
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_i),
-        signed(data_o) => data
-    );
-
+    -- -------------------------------------------------------------------------
 
     -- Address control and bank switching
     min_max_sum_bank_inst : entity work.min_max_sum_bank generic map (
@@ -98,7 +131,7 @@ begin
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        turn_clock_i => turn_clock_adc_i,
+        turn_clock_i => turn_clock_adc,
 
         count_read_strobe_i => read_strobe(COUNT_REG),
         count_read_data_o => read_data(COUNT_REG),
@@ -141,9 +174,19 @@ begin
         mms_o => update_data_write,
         sum_overflow_o => sum_overflow,
         sum2_overflow_o => sum2_overflow,
-        delta_o => delta_o
+        delta_o => delta
     );
-    overflow_o <= sum_overflow or sum2_overflow;
+
+    -- Convert ADC pulse to DSP pulse
+    pulse_adc_to_dsp_inst : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase,
+
+        pulse_i => sum_overflow or sum2_overflow,
+        pulse_o => overflow
+    );
+
 
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (
