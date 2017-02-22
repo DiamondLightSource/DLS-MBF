@@ -158,7 +158,9 @@ begin
 
     -- Bunch movement detection
     min_max_limit_inst : entity work.min_max_limit port map (
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase_i,
 
         delta_i => mms_delta,
         limit_i => delta_limit,

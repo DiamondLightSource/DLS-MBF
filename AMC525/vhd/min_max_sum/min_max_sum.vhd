@@ -101,7 +101,7 @@ begin
     overflow_delay : entity work.dlyreg generic map (
         DLY => 2
     ) port map (
-        clk_i => adc_clk_i,
+        clk_i => dsp_clk_i,
         data_i(0) => overflow,
         data_o(0) => overflow_o
     );
