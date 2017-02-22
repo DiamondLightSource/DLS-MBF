@@ -41,7 +41,6 @@ architecture min_max_sum_store of min_max_sum_store is
     -- Interface to two banks of memory
     signal read_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)
         := (others => (others => '0'));
-    signal read_data_pl : mms_row_array_t;
     signal read_data : mms_row_array_t;
     signal write_strobe : std_logic_vector(0 to 1) := "00";
     signal write_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)
@@ -66,7 +65,7 @@ begin
         memory_inst : entity work.min_max_sum_memory port map (
             clk_i => clk_i,
             read_addr_i => read_addr(i),
-            read_data_o => read_data_pl(i),
+            read_data_o => read_data(i),
             write_strobe_i => write_strobe(i),
             write_addr_i => write_addr(i),
             write_data_i => write_data(i)
@@ -77,8 +76,6 @@ begin
     read_addr_bank <= to_integer(bank_select_i);
     process (clk_i) begin
         if rising_edge(clk_i) then
---             read_data <= read_data_pl;
-
             -- Update read
             read_addr(read_addr_bank) <= update_addr_i;
             update_data_o <= read_data(read_data_bank);
@@ -96,7 +93,6 @@ begin
             write_data(1 - write_bank) <= mms_reset_value;
         end if;
     end process;
-            read_data <= read_data_pl;
 
 
     -- There are two sets of delays which need to be aligned.  First, the data

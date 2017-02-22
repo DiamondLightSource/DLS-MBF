@@ -72,7 +72,7 @@ begin
     -- Pipelines for all inputs and outputs
 
     adc_delay : entity work.dlyreg generic map (
-        DLY => 8,
+        DLY => 2,
         DW => 2
     ) port map (
         clk_i => adc_clk_i,
@@ -81,7 +81,7 @@ begin
     );
 
     data_delay : entity work.dlyreg generic map (
-        DLY => 8,
+        DLY => 2,
         DW => 16
     ) port map (
         clk_i => adc_clk_i,
@@ -90,7 +90,7 @@ begin
     );
 
     delta_delay : entity work.dlyreg generic map (
-        DLY => 8,
+        DLY => 2,
         DW => 16
     ) port map (
         clk_i => adc_clk_i,
@@ -99,7 +99,7 @@ begin
     );
 
     overflow_delay : entity work.dlyreg generic map (
-        DLY => 8
+        DLY => 2
     ) port map (
         clk_i => adc_clk_i,
         data_i(0) => overflow,

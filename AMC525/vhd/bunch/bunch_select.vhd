@@ -87,7 +87,7 @@ begin
 
     -- For now gather the bunch configuration into lanes
     dly_adc_phase : entity work.dlyreg generic map (
-        DLY => 8
+        DLY => 2
     ) port map (
         clk_i => adc_clk_i,
         data_i(0) => adc_phase_i,

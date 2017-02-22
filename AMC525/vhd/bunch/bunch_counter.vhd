@@ -21,7 +21,7 @@ architecture bunch_counter of bunch_counter is
 
 begin
     turn_clock_delay : entity work.dlyreg generic map (
-        DLY => 8
+        DLY => 2
     ) port map (
         clk_i => clk_i,
         data_i(0) => turn_clock_i,
