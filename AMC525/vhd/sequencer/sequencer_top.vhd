@@ -27,7 +27,9 @@ use work.sequencer_defs.all;
 
 entity sequencer_top is
     port (
+        adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
+        adc_phase_i : in std_logic;
 
         -- Clocking
         turn_clk_i : in std_logic;      -- Start of a machine revolution
@@ -97,6 +99,14 @@ architecture sequencer_top of sequencer_top is
     -- Dwell engine
     signal first_turn : std_logic;
     signal last_turn : std_logic;
+
+    -- Pipelined outputs
+    signal seq_start : std_logic;
+    signal seq_write : std_logic;
+    signal hom_freq : angle_t;
+    signal hom_gain : unsigned(3 downto 0);
+    signal hom_window : hom_win_t;
+    signal bunch_bank : unsigned(1 downto 0);
 
 begin
     sequencer_registers : entity work.sequencer_registers port map (
@@ -194,7 +204,7 @@ begin
         last_turn_i => last_turn,
 
         state_end_o => state_end,
-        hom_freq_o => hom_freq_o
+        hom_freq_o => hom_freq
     );
 
     -- Generates detector window.
@@ -213,9 +223,9 @@ begin
         first_turn_i => first_turn,
         last_turn_i => last_turn,
 
-        seq_start_o => seq_start_o,
-        seq_write_o => seq_write_o,
-        hom_window_o => hom_window_o
+        seq_start_o => seq_start,
+        seq_write_o => seq_write,
+        hom_window_o => hom_window
     );
 
     -- Fine tuning to output
@@ -225,8 +235,21 @@ begin
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
-        hom_gain_o => hom_gain_o,
-        bunch_bank_o => bunch_bank_o
+        hom_gain_o => hom_gain,
+        bunch_bank_o => bunch_bank
     );
+
+
+    -- Register NCO controls on ADC clock
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            seq_start_o <= seq_start and adc_phase_i;
+            seq_write_o <= seq_write and adc_phase_i;
+            hom_freq_o <= hom_freq;
+            hom_gain_o <= hom_gain;
+            hom_window_o <= hom_window;
+            bunch_bank_o <= bunch_bank;
+        end if;
+    end process;
 end;
 

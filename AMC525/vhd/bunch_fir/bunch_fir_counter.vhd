@@ -13,7 +13,7 @@ use work.bunch_defs.all;
 
 entity bunch_fir_counter is
     port (
-        dsp_clk_i : in std_logic;
+        clk_i : in std_logic;
 
         turn_clock_i : in std_logic;
         bunch_index_o : out bunch_count_t;
@@ -34,8 +34,8 @@ architecture bunch_fir_counter of bunch_fir_counter is
 begin
     last_turn <= decimation_counter = decimation_limit_i;
 
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             if turn_clock_i = '1' then
                 bunch_index <= (others => '0');
                 if last_turn then

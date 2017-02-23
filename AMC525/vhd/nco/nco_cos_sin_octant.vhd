@@ -95,8 +95,9 @@ begin
                 when "111" => cos <=  d_cos;  sin <= -d_sin;
                 when others =>
             end case;
+
+            cos_sin_o.cos <= cos;
+            cos_sin_o.sin <= sin;
         end if;
     end process;
-    cos_sin_o.cos <= cos;
-    cos_sin_o.sin <= sin;
 end;

@@ -34,6 +34,7 @@ architecture bunch_fir_decimate of bunch_fir_decimate is
 
     signal data_in : signed(ACCUM_BITS-1 downto 0);
     signal read_data : signed(ACCUM_BITS-1 downto 0);
+    signal accumulator : signed(ACCUM_BITS-1 downto 0);
     signal write_data : signed(ACCUM_BITS-1 downto 0);
     signal data_out : signed(ACCUM_BITS-1 downto 0);
     -- The data valid is derived from last_turn_i with a two tick delay
@@ -47,7 +48,7 @@ begin
         clk_i => clk_i,
         bunch_index_i => bunch_index_i,
         write_strobe_i => '1',
-        data_i => write_data,
+        data_i => accumulator,
         data_o => read_data
     );
 
@@ -56,10 +57,11 @@ begin
         if rising_edge(clk_i) then
             -- On first turn we reset the accumulator, otherwise accumulate
             if first_turn_i = '1' then
-                write_data <= data_in;
+                accumulator <= data_in;
             else
-                write_data <= data_in + read_data;
+                accumulator <= data_in + read_data;
             end if;
+            write_data <= accumulator;
             data_valid <= last_turn_i;
 
             -- Always output the shifted data

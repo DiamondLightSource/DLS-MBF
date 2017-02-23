@@ -17,13 +17,13 @@ package dsp_defs is
     type dsp_to_control_t is record
         -- Data streams.  adc_data for capture and for multiplexing to FIR
         -- input stage, fir_data and dac_data for capture.
-        adc_data : signed_array(LANES)(ADC_DATA_RANGE);
-        fir_data : signed_array(LANES)(FIR_DATA_RANGE);
-        dac_data : signed_array(LANES)(DAC_OUT_WIDTH-1 downto 0);
+        adc_data : signed(ADC_DATA_RANGE);
+        fir_data : signed(FIR_DATA_RANGE);
+        dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
 
         -- NCO signals
-        nco_0_data : cos_sin_18_lanes_t;
-        nco_1_data : cos_sin_18_lanes_t;
+        nco_0_data : cos_sin_18_t;
+        nco_1_data : cos_sin_18_t;
 
         -- DRAM0 data out enable
         dram0_enable : std_logic;
@@ -40,9 +40,9 @@ package dsp_defs is
 
     type control_to_dsp_t is record
         -- Data streams after multiplexing.
-        adc_data : signed_array(LANES)(ADC_DATA_RANGE);
-        nco_0_data : signed_array(LANES)(NCO_DATA_RANGE);
-        nco_1_data : signed_array(LANES)(NCO_DATA_RANGE);
+        adc_data   : signed(ADC_DATA_RANGE);
+        nco_0_data : signed(NCO_DATA_RANGE);
+        nco_1_data : signed(NCO_DATA_RANGE);
 
         -- DRAM1 write overflow
         dram1_error : std_logic;
@@ -56,9 +56,9 @@ package dsp_defs is
 
     -- Convenient reset value for simulation
     constant control_to_dsp_reset : control_to_dsp_t := (
-        adc_data => (others => (others => '0')),
-        nco_0_data => (others => (others => '0')),
-        nco_1_data => (others => (others => '0')),
+        adc_data   => (others => '0'),
+        nco_0_data => (others => '0'),
+        nco_1_data => (others => '0'),
         dram1_error => '0',
         blanking => '0',
         turn_clock_adc => '0',

@@ -10,7 +10,7 @@ use work.bunch_defs.all;
 
 entity dac_output_mux is
     port (
-        dsp_clk_i : in std_logic;
+        clk_i : in std_logic;
 
         -- output selection and gain
         bunch_config_i : in bunch_config_t;
@@ -82,8 +82,8 @@ begin
     nco_0_enable <= nco_0_enable_i and bunch_config_i.nco_0_enable;
     nco_1_enable <= nco_1_enable_i and bunch_config_i.nco_1_enable;
 
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             -- Widen and select the three inputs.
             fir_data   <= prepare(fir_data_i, fir_enable);
             nco_0_data <= prepare(nco_0_i,    nco_0_enable);
@@ -106,7 +106,7 @@ begin
     extract_signed : entity work.extract_signed generic map (
         OFFSET => OUTPUT_OFFSET
     ) port map (
-        clk_i => dsp_clk_i,
+        clk_i => clk_i,
         data_i => full_dac_out_pl,
         data_o => data_o,
         overflow_o => mux_overflow_o

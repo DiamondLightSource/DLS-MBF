@@ -11,7 +11,9 @@ use work.dsp_defs.all;
 
 entity fast_memory_mux is
     port (
+        adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
+        adc_phase_i : in std_logic;
 
         -- Input control
         mux_select_i : in std_logic_vector(3 downto 0);
@@ -31,13 +33,15 @@ end;
 architecture fast_memory_mux of fast_memory_mux is
     subtype CHANNELS is natural range 0 to 1;
     -- Incoming data
-    signal adc    : signed_array_array(CHANNELS)(LANES)(15 downto 0);
-    signal fir_in : signed_array_array(CHANNELS)(LANES)(FIR_DATA_RANGE);
-    signal fir    : signed_array_array(CHANNELS)(LANES)(15 downto 0);
-    signal dac    : signed_array_array(CHANNELS)(LANES)(15 downto 0);
-    signal extra  : signed_array_array(CHANNELS)(LANES)(15 downto 0);
+    signal adc    : signed_array(CHANNELS)(15 downto 0);
+    signal fir_in : signed_array(CHANNELS)(FIR_DATA_RANGE);
+    signal fir    : signed_array(CHANNELS)(15 downto 0);
+    signal dac    : signed_array(CHANNELS)(15 downto 0);
+    signal extra  : signed_array(CHANNELS)(15 downto 0);
     -- Outgoing data
-    signal data   : signed_array_array(CHANNELS)(LANES)(15 downto 0);
+    signal data   : signed_array(CHANNELS)(15 downto 0);
+    signal data_out : std_logic_vector(31 downto 0);
+    signal wide_data : std_logic_vector(63 downto 0);
 
 begin
     -- Extract incoming data for processing
@@ -49,29 +53,25 @@ begin
     dac(1)    <= dsp_to_control_i(1).dac_data;
     -- The extra data path is actually mapped directly to the output stream, so
     -- this is just an inversion of the output ordering.
-    extra(0)(0) <= signed(extra_i(15 downto  0));
-    extra(1)(0) <= signed(extra_i(31 downto 16));
-    extra(0)(1) <= signed(extra_i(47 downto 32));
-    extra(1)(1) <= signed(extra_i(63 downto 48));
+    extra(0) <= signed(extra_i(15 downto  0));
+    extra(1) <= signed(extra_i(31 downto 16));
 
     -- Gain control on FIR data
     chans_gen : for c in CHANNELS generate
-        lanes_gen : for l in LANES generate
-            fir_gain_inst : entity work.gain_control generic map (
-                INTERVAL => 2
-            ) port map (
-                clk_i => dsp_clk_i,
-                gain_sel_i => fir_gain_i,
-                data_i => fir_in(c)(l),
-                data_o => fir(c)(l),
-                overflow_o => open
-            );
-        end generate;
+        fir_gain_inst : entity work.gain_control generic map (
+            INTERVAL => 2
+        ) port map (
+            clk_i => adc_clk_i,
+            gain_sel_i => fir_gain_i,
+            data_i => fir_in(c),
+            data_o => fir(c),
+            overflow_o => open
+        );
     end generate;
 
     -- Output data selection
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
             case mux_select_i is
                 -- For the normal case we have separate data from each
                 -- channel : 00 => ADC, 01 => FIR, 10 => DAC
@@ -100,9 +100,24 @@ begin
         end if;
     end process;
 
-    -- Reorder DRAM0 data: we want alternating dsp0/dsp1 values.
-    data_o(15 downto  0) <= std_logic_vector(data(0)(0));
-    data_o(31 downto 16) <= std_logic_vector(data(1)(0));
-    data_o(47 downto 32) <= std_logic_vector(data(0)(1));
-    data_o(63 downto 48) <= std_logic_vector(data(1)(1));
+    -- Flatten the data to a single 32-bit value
+    data_out(15 downto  0) <= std_logic_vector(data(0));
+    data_out(31 downto 16) <= std_logic_vector(data(1));
+
+    -- Retime the data across to the DSP clock domain
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            case adc_phase_i is
+                when '0' => wide_data(31 downto  0) <= data_out;
+                when '1' => wide_data(63 downto 32) <= data_out;
+                when others =>
+            end case;
+        end if;
+    end process;
+
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            data_o <= wide_data;
+        end if;
+    end process;
 end;

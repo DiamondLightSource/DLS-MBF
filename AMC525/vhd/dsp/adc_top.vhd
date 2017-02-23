@@ -26,7 +26,7 @@ entity adc_top is
 
         -- Data flow
         data_i : in signed;                 -- at ADC data rate
-        data_o : out signed_array;          -- paired at DSP data rate
+        data_o : out signed;          -- paired at DSP data rate
 
         -- General register interface
         write_strobe_i : in std_logic_vector;
@@ -49,19 +49,16 @@ entity adc_top is
 end;
 
 architecture adc_top of adc_top is
-    subtype DATA_OUT_RANGE is natural range data_o(0)'RANGE;
-
     signal limit_register_in : reg_data_t;
     signal limit_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
     signal data_delay : unsigned(0 downto 0);
 
-    signal filtered_data : signed(DATA_OUT_RANGE);
+    signal filtered_data : data_o'SUBTYPE;
     signal data_in : data_i'SUBTYPE;
     signal delayed_data : data_i'SUBTYPE;
-    signal dsp_data : signed_array(LANES)(DATA_OUT_RANGE);
-    signal mms_delta : unsigned(DATA_OUT_RANGE);
+    signal mms_delta : unsigned(data_o'RANGE);
 
 begin
     -- Limit register.
@@ -170,17 +167,6 @@ begin
     );
 
 
-    -- Bring the filtered data over to the DSP clock
-    adc_to_dsp_inst : entity work.adc_to_dsp port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
-
-        adc_data_i => filtered_data,
-        dsp_data_o => dsp_data
-    );
-
-
     -- Output for further processing
-    data_o <= dsp_data;
+    data_o <= filtered_data;
 end;

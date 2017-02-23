@@ -36,9 +36,9 @@ architecture testbench of testbench is
 
     signal phase_advance : angle_t;
     signal reset : std_logic;
-    signal unscaled : cos_sin_18_lanes_t;
+    signal unscaled : cos_sin_18_t;
     signal gain : unsigned(3 downto 0);
-    signal scaled : cos_sin_16_lanes_t;
+    signal scaled : cos_sin_16_t;
 
 begin
 
@@ -79,7 +79,7 @@ begin
 --         reset <= '0';
 --         tick_wait(50);
 --         reset <= '1';
-        phase_advance <= X"00001000";
+        phase_advance <= X"00010000";
         tick_wait;
         reset <= '0';
         wait;

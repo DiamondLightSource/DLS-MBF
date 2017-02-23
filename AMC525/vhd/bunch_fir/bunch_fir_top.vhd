@@ -20,11 +20,11 @@ entity bunch_fir_top is
         adc_clk_i : in std_logic;
         adc_phase_i : in std_logic;
 
-        data_i : in signed_array;
-        data_o : out signed_array;
+        data_i : in signed;
+        data_o : out signed;
 
         turn_clock_i : in std_logic;
-        bunch_config_i : in bunch_config_lanes_t;
+        bunch_config_i : in bunch_config_t;
 
         -- General register interface
         write_strobe_i : in std_logic_vector;
@@ -40,10 +40,9 @@ entity bunch_fir_top is
 end;
 
 architecture bunch_fir_top of bunch_fir_top is
-    constant FIR_DATA_WIDTH : natural := data_o(0)'LENGTH;
-
     -- Control values
     signal config_register : reg_data_t;
+    signal config_untimed : reg_data_t;
     signal write_fir : unsigned(FIR_BANK_BITS-1 downto 0);
     signal decimation_limit : unsigned(6 downto 0);
     signal decimation_shift : unsigned(2 downto 0);
@@ -51,16 +50,16 @@ architecture bunch_fir_top of bunch_fir_top is
     -- Data types
     subtype TAP_RANGE  is natural range TAP_WIDTH-1 downto 0;
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
-    signal taps : signed_array_array(LANES)(TAPS_RANGE)(TAP_RANGE);
-    signal decimated_data : signed_array(LANES)(15 downto 0);
-    signal decimated_valid : std_logic_vector(LANES);
+    signal taps : signed_array(TAPS_RANGE)(TAP_RANGE);
+    signal decimated_data : signed(15 downto 0);
+    signal decimated_valid : std_logic;
 
     -- Data flow and decimation control
     signal bunch_index : bunch_count_t;
     signal first_turn : std_logic;
     signal last_turn : std_logic;
-    signal filtered_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
-    signal filtered_valid : std_logic_vector(LANES);
+    signal filtered_data : data_o'SUBTYPE;
+    signal filtered_valid : std_logic;
 
 begin
     register_file_inst : entity work.register_file port map (
@@ -73,9 +72,17 @@ begin
     read_data_o(DSP_FIR_CONFIG_REG) <= config_register;
     read_ack_o(DSP_FIR_CONFIG_REG) <= '1';
 
-    write_fir <= unsigned(config_register(1 downto 0));
-    decimation_limit <= unsigned(config_register(8 downto 2));
-    decimation_shift <= unsigned(config_register(11 downto 9));
+    untimed_inst : entity work.untimed_reg generic map (
+        WIDTH => 32
+    ) port map (
+        clk_i => dsp_clk_i,
+        write_i => '1',
+        data_i => config_register,
+        data_o => config_untimed
+    );
+    write_fir        <= unsigned(config_untimed(1 downto 0));
+    decimation_limit <= unsigned(config_untimed(8 downto 2));
+    decimation_shift <= unsigned(config_untimed(11 downto 9));
 
 
     -- Taps for FIR
@@ -89,7 +96,7 @@ begin
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_FIR_TAPS_REG),
 
-        bunch_config_i => bunch_config_i,
+        fir_select_i => bunch_config_i.fir_select,
         taps_o => taps
     );
     read_data_o(DSP_FIR_TAPS_REG) <= (others => '0');
@@ -98,7 +105,7 @@ begin
 
     -- Decimation counter
     bunch_fir_counter_inst : entity work.bunch_fir_counter port map (
-        dsp_clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
         decimation_limit_i => decimation_limit,
         turn_clock_i => turn_clock_i,
         bunch_index_o => bunch_index,
@@ -106,40 +113,39 @@ begin
         last_turn_o => last_turn
     );
 
-    lanes_gen : for l in LANES generate
-        -- Bunch by bunch data reduction
-        decimate_inst : entity work.bunch_fir_decimate port map (
-            clk_i => dsp_clk_i,
 
-            bunch_index_i => bunch_index,
-            decimation_shift_i => decimation_shift,
+    -- Bunch by bunch data reduction
+    decimate_inst : entity work.bunch_fir_decimate port map (
+        clk_i => adc_clk_i,
 
-            first_turn_i => first_turn,
-            last_turn_i => last_turn,
-            data_i => data_i(l),
-            data_o => decimated_data(l),
-            data_valid_o => decimated_valid(l)
-        );
+        bunch_index_i => bunch_index,
+        decimation_shift_i => decimation_shift,
 
-        -- The filter
-        fir_inst : entity work.bunch_fir port map (
-            dsp_clk_i => dsp_clk_i,
-            bunch_index_i => bunch_index,
-            taps_i => taps(l),
+        first_turn_i => first_turn,
+        last_turn_i => last_turn,
+        data_i => data_i,
+        data_o => decimated_data,
+        data_valid_o => decimated_valid
+    );
 
-            data_valid_i => decimated_valid(l),
-            data_i => decimated_data(l),
-            data_valid_o => filtered_valid(l),
-            data_o => filtered_data(l)
-        );
+    -- The filter
+    fir_inst : entity work.bunch_fir port map (
+        clk_i => adc_clk_i,
+        bunch_index_i => bunch_index,
+        taps_i => taps,
 
-        -- Interpolate the reduced data back to full speed
-        interpolate_inst : entity work.bunch_fir_interpolate port map (
-            dsp_clk_i => dsp_clk_i,
-            bunch_index_i => bunch_index,
-            data_valid_i => filtered_valid(l),
-            data_i => filtered_data(l),
-            data_o => data_o(l)
-        );
-    end generate;
+        data_valid_i => decimated_valid,
+        data_i => decimated_data,
+        data_valid_o => filtered_valid,
+        data_o => filtered_data
+    );
+
+    -- Interpolate the reduced data back to full speed
+    interpolate_inst : entity work.bunch_fir_interpolate port map (
+        clk_i => adc_clk_i,
+        bunch_index_i => bunch_index,
+        data_valid_i => filtered_valid,
+        data_i => filtered_data,
+        data_o => data_o
+    );
 end;

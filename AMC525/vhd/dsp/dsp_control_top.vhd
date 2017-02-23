@@ -61,9 +61,9 @@ architecture dsp_control_top of dsp_control_top is
     signal adc_mux : std_logic;
     signal nco_0_mux : std_logic;
     signal nco_1_mux : std_logic;
-    signal mux_adc_out : signed_array_array(CHANNELS)(LANES)(ADC_DATA_RANGE);
-    signal mux_nco_0_out : signed_array_array(CHANNELS)(LANES)(NCO_DATA_RANGE);
-    signal mux_nco_1_out : signed_array_array(CHANNELS)(LANES)(NCO_DATA_RANGE);
+    signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
+    signal mux_nco_0_out : signed_array(CHANNELS)(NCO_DATA_RANGE);
+    signal mux_nco_1_out : signed_array(CHANNELS)(NCO_DATA_RANGE);
 
     -- DRAM1 interface
     signal dram1_strobe : std_logic_vector(CHANNELS);
@@ -121,7 +121,7 @@ begin
     nco_0_mux <= control_register(1);
     nco_1_mux <= control_register(2);
     dsp_control_mux_inst : entity work.dsp_control_mux port map (
-        dsp_clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
 
         adc_mux_i => adc_mux,
         nco_0_mux_i => nco_0_mux,
@@ -142,7 +142,9 @@ begin
 
     -- DRAM0 capture control
     fast_memory_top_inst : entity work.fast_memory_top port map (
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase_i,
 
         write_strobe_i => write_strobe_i(CTRL_MEM_REGS),
         write_data_i => write_data_i,

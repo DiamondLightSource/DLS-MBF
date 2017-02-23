@@ -25,14 +25,14 @@ entity dac_top is
         turn_clock_adc_i : in std_logic;       -- start of machine revolution
 
         -- Data inputs
-        bunch_config_i : in bunch_config_lanes_t;
-        fir_data_i : in signed_array;
-        nco_0_data_i : in signed_array;
-        nco_1_data_i : in signed_array;
+        bunch_config_i : in bunch_config_t;
+        fir_data_i : in signed;
+        nco_0_data_i : in signed;
+        nco_1_data_i : in signed;
         nco_1_gain_i : in unsigned;
 
         -- Outputs and overflow detection
-        data_store_o : out signed_array;    -- Data from intermediate processing
+        data_store_o : out signed;          -- Data from intermediate processing
         data_o : out signed;                -- at ADC data rate
         fir_overflow_o : out std_logic;     -- If overflowed FIR used
         mux_overflow_o : out std_logic;     -- If overflow in output mux
@@ -54,8 +54,8 @@ end;
 
 architecture dac_top of dac_top is
     -- Configuration register
-    signal config_register_dsp : reg_data_t;
-    signal config_register_adc : reg_data_t;
+    signal config_register : reg_data_t;
+    signal config_untimed : reg_data_t;
     -- Configuration settings from register
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(4 downto 0);
@@ -65,19 +65,16 @@ architecture dac_top of dac_top is
     signal nco_1_enable : std_logic;
 
     -- Overflow detection
-    signal fir_overflow_in : std_logic_vector(LANES);
-    signal fir_overflow : std_logic_vector(LANES);
-    signal mux_overflow : std_logic_vector(LANES);
+    signal fir_overflow_in : std_logic;
 
     subtype DATA_RANGE is natural range data_o'RANGE;
 
-    signal fir_data : signed_array(LANES)(DATA_RANGE);
-    signal nco_0_data : signed_array(LANES)(DATA_RANGE);
-    signal nco_1_data : signed_array(LANES)(DATA_RANGE);
-    signal data_out_lanes : signed_array(LANES)(DATA_RANGE);
-    signal data_out : signed(DATA_RANGE);
-    signal filtered_data : signed(DATA_RANGE);
-    signal delayed_data_out : signed(DATA_RANGE);
+    signal fir_data : data_o'SUBTYPE;
+    signal nco_0_data : data_o'SUBTYPE;
+    signal nco_1_data : data_o'SUBTYPE;
+    signal data_out : data_o'SUBTYPE;
+    signal filtered_data : data_o'SUBTYPE;
+    signal delayed_data_out : data_o'SUBTYPE;
 
 begin
     -- Register mapping
@@ -86,97 +83,82 @@ begin
         write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG_W),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_DAC_CONFIG_REG_W),
-        register_data_o(0) => config_register_dsp
+        register_data_o(0) => config_register
     );
     -- Bring this over to the ADC clock without a timing constraint
     untimed_inst : entity work.untimed_reg generic map (
         WIDTH => REG_DATA_WIDTH
     ) port map (
-        clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
         write_i => '1',
-        data_i => config_register_dsp,
-        data_o => config_register_adc
+        data_i => config_register,
+        data_o => config_untimed
     );
 
     -- Not all of these will remain in registers
-    dac_delay  <= unsigned(config_register_adc(9 downto 0));
-    fir_gain   <= unsigned(config_register_dsp(24 downto 20));
-    nco_0_gain <= unsigned(config_register_dsp(15 downto 12));
-    fir_enable   <= config_register_dsp(25);
-    nco_0_enable <= config_register_dsp(26);
-    nco_1_enable <= config_register_dsp(27);
+    dac_delay  <= unsigned(config_untimed(9 downto 0));
+    fir_gain   <= unsigned(config_untimed(24 downto 20));
+    nco_0_gain <= unsigned(config_untimed(15 downto 12));
+    fir_enable   <= config_untimed(25);
+    nco_0_enable <= config_untimed(26);
+    nco_1_enable <= config_untimed(27);
 
 
     -- -------------------------------------------------------------------------
     -- Output preparation
 
-    lanes_gen : for l in LANES generate
-        fir_gain_inst : entity work.gain_control port map (
-            clk_i => dsp_clk_i,
-            gain_sel_i => fir_gain,
-            data_i => fir_data_i(l),
-            data_o => fir_data(l),
-            overflow_o => fir_overflow_in(l)
-        );
+    fir_gain_inst : entity work.gain_control port map (
+        clk_i => adc_clk_i,
+        gain_sel_i => fir_gain,
+        data_i => fir_data_i,
+        data_o => fir_data,
+        overflow_o => fir_overflow_in
+    );
 
-        nco_0_gain_inst : entity work.gain_control generic map (
-            EXTRA_SHIFT => 2
-        ) port map (
-            clk_i => dsp_clk_i,
-            gain_sel_i => nco_0_gain,
-            data_i => nco_0_data_i(l),
-            data_o => nco_0_data(l),
-            overflow_o => open
-        );
+    nco_0_gain_inst : entity work.gain_control generic map (
+        EXTRA_SHIFT => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        gain_sel_i => nco_0_gain,
+        data_i => nco_0_data_i,
+        data_o => nco_0_data,
+        overflow_o => open
+    );
 
-        nco_1_gain_inst : entity work.gain_control generic map (
-            EXTRA_SHIFT => 2
-        ) port map (
-            clk_i => dsp_clk_i,
-            gain_sel_i => nco_1_gain_i,
-            data_i => nco_1_data_i(l),
-            data_o => nco_1_data(l),
-            overflow_o => open
-        );
+    nco_1_gain_inst : entity work.gain_control generic map (
+        EXTRA_SHIFT => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        gain_sel_i => nco_1_gain_i,
+        data_i => nco_1_data_i,
+        data_o => nco_1_data,
+        overflow_o => open
+    );
 
-        -- Output multiplexer
-        dac_output_mux_inst : entity work.dac_output_mux port map (
-            dsp_clk_i => dsp_clk_i,
+    -- Output multiplexer
+    dac_output_mux_inst : entity work.dac_output_mux port map (
+        clk_i => adc_clk_i,
 
-            bunch_config_i => bunch_config_i(l),
+        bunch_config_i => bunch_config_i,
 
-            fir_enable_i => fir_enable,
-            fir_data_i => fir_data(l),
-            fir_overflow_i => fir_overflow_in(l),
-            nco_0_enable_i => nco_0_enable,
-            nco_0_i => nco_0_data(l),
-            nco_1_enable_i => nco_1_enable,
-            nco_1_i => nco_1_data(l),
+        fir_enable_i => fir_enable,
+        fir_data_i => fir_data,
+        fir_overflow_i => fir_overflow_in,
+        nco_0_enable_i => nco_0_enable,
+        nco_0_i => nco_0_data,
+        nco_1_enable_i => nco_1_enable,
+        nco_1_i => nco_1_data,
 
-            data_o => data_out_lanes(l),
-            fir_overflow_o => fir_overflow(l),
-            mux_overflow_o => mux_overflow(l)
-        );
-    end generate;
-    fir_overflow_o <= vector_or(fir_overflow);
-    mux_overflow_o <= vector_or(mux_overflow);
+        data_o => data_out,
+        fir_overflow_o => fir_overflow_o,
+        mux_overflow_o => mux_overflow_o
+    );
 
-    data_store_o <= data_out_lanes;
+    data_store_o <= data_out;
 
 
     -- -------------------------------------------------------------------------
     -- Finalisation of output
-
-    -- Convert lanes at DSP clock back to single stream of ADC data
-    dsp_to_adc_inst : entity work.dsp_to_adc port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
-
-        dsp_data_i => data_out_lanes,
-        adc_data_o => data_out
-    );
-
 
     -- Min/Max/Sum
     min_max_sum_inst : entity work.min_max_sum port map (

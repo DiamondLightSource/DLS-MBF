@@ -26,7 +26,6 @@ package bunch_defs is
         gain => (others => '0'),
         others => '0');
 
-    type bunch_config_lanes_t is array(LANES) of bunch_config_t;
 
     -- Packed conversion between bunch configuration and std_logic_vector
     function bunch_config_to_bits(data : bunch_config_t)

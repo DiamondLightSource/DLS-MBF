@@ -28,7 +28,7 @@ view wave
 
 add wave -group "Top" sim:*
 add wave -group "NCO" sim:/testbench/nco_inst/*
-add wave -group "Refine" sim:/testbench/nco_inst/nco_gen(0)/refine_inst/*
+add wave -group "Refine" sim:/testbench/nco_inst/refine_inst/*
 add wave sim:*
 
 

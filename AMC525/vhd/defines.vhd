@@ -7,6 +7,11 @@ use ieee.numeric_std.all;
 use work.support.all;
 
 package defines is
+    -- Number of taps in ADC compensation filter
+    constant ADC_FIR_TAP_COUNT : natural := 8;
+    constant BUNCH_FIR_TAP_COUNT : natural := 16;
+    constant DAC_FIR_TAP_COUNT : natural := 8;
+
 
     -- Register data is in blocks of 32-bits
     constant REG_DATA_WIDTH : natural := 32;

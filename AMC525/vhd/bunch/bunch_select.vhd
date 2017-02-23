@@ -27,7 +27,6 @@ entity bunch_select is
 
         -- Bunch configuration readout
         bank_select_i : in unsigned(1 downto 0);       -- Current bunch bank
-        bunch_config_lanes_o : out bunch_config_lanes_t;
         bunch_config_o : out bunch_config_t
     );
 end;
@@ -39,10 +38,8 @@ architecture bunch_select of bunch_select is
     signal write_bank : unsigned(BUNCH_BANK_BITS-1 downto 0);
 
     signal bunch_index : bunch_count_t := (others => '0');
-
-    -- Temporary
-    signal adc_phase : std_logic;
-    signal bunch_config_lanes : bunch_config_lanes_t;
+    signal bunch_config : bunch_config_t;
+    signal bunch_config_out : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
 
 begin
     -- Register management
@@ -81,28 +78,17 @@ begin
 
         bank_select_i => bank_select_i,
         bunch_index_i => bunch_index,
-        config_o => bunch_config_o
+        config_o => bunch_config
     );
 
-
-    -- For now gather the bunch configuration into lanes
-    dly_adc_phase : entity work.dlyreg generic map (
-        DLY => 2
+    -- Pipeline the bunch configuration
+    bunch_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW  => BUNCH_CONFIG_BITS
     ) port map (
-        clk_i => adc_clk_i,
-        data_i(0) => adc_phase_i,
-        data_o(0) => adc_phase
+       clk_i => adc_clk_i,
+       data_i => bunch_config_to_bits(bunch_config),
+       data_o => bunch_config_out
     );
-    process (adc_clk_i) begin
-        if rising_edge(adc_clk_i) then
-            bunch_config_lanes(to_integer(adc_phase)) <= bunch_config_o;
-        end if;
-    end process;
-
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            bunch_config_lanes_o <= bunch_config_lanes;
-        end if;
-    end process;
-
+    bunch_config_o <= bits_to_bunch_config(bunch_config_out);
 end;

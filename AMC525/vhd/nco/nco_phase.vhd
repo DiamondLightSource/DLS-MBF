@@ -15,14 +15,13 @@ entity nco_phase is
         phase_advance_i : in angle_t;
         reset_i : in std_logic;
 
-        phase_o : out angle_lanes_t := (others => (others => '0'))
+        phase_o : out angle_t := (others => '0')
     );
 end;
 
 architecture nco_phase of nco_phase is
     -- Phase advance for the two lanes
-    signal ph_a_1 : angle_t := (others => '0');
-    signal ph_a_2 : angle_t := (others => '0');
+    signal phase_advance : angle_t := (others => '0');
 
     -- Current master phase
     signal phase : angle_t := (others => '0');
@@ -31,16 +30,14 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Phase advance
-            ph_a_1 <= phase_advance_i;
-            ph_a_2 <= shift_left(phase_advance_i, 1);
+            phase_advance <= phase_advance_i;
             if reset_i = '1' then
                 phase <= (others => '0');
             else
-                phase <= phase + ph_a_2;
+                phase <= phase + phase_advance;
             end if;
 
-            phase_o(0) <= phase;
-            phase_o(1) <= phase + ph_a_1;
+            phase_o <= phase;
         end if;
     end process;
 end;

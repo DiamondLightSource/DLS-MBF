@@ -8,10 +8,8 @@ entity nco_cos_sin_table is
     port (
         clk_i : in std_logic;
 
-        addr_a_i : in cos_sin_addr_t;
-        cos_sin_a_o : out cos_sin_19_t;
-        addr_b_i : in cos_sin_addr_t;
-        cos_sin_b_o : out cos_sin_19_t
+        addr_i : in cos_sin_addr_t;
+        cos_sin_o : out cos_sin_19_t
     );
 end;
 
@@ -25,10 +23,8 @@ architecture nco_cos_sin_table of nco_cos_sin_table is
     attribute ram_style : string;
     attribute ram_style of table : signal is "BLOCK";
 
-    signal data_a_pl : cos_sin_data_t := (others => '0');
-    signal data_a    : cos_sin_data_t := (others => '0');
-    signal data_b_pl : cos_sin_data_t := (others => '0');
-    signal data_b    : cos_sin_data_t := (others => '0');
+    signal addr : cos_sin_addr_t;
+    signal data : cos_sin_data_t := (others => '0');
 
     function bits_to_cos_sin(data : std_logic_vector) return cos_sin_19_t is
         variable result : cos_sin_19_t;
@@ -42,13 +38,9 @@ begin
     -- Double-buffered table lookup to help with BRAM registers.
     process (clk_i) begin
         if rising_edge(clk_i) then
-            data_a_pl <= table(to_integer(addr_a_i));
-            data_a <= data_a_pl;
-            data_b_pl <= table(to_integer(addr_b_i));
-            data_b <= data_b_pl;
+            addr <= addr_i;
+            data <= table(to_integer(addr));
+            cos_sin_o <= bits_to_cos_sin(data);
         end if;
     end process;
-
-    cos_sin_a_o <= bits_to_cos_sin(data_a);
-    cos_sin_b_o <= bits_to_cos_sin(data_b);
 end;

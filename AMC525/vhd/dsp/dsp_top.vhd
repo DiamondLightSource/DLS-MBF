@@ -42,11 +42,6 @@ entity dsp_top is
 end;
 
 architecture dsp_top of dsp_top is
-    -- Number of taps in ADC compensation filter
-    constant ADC_FIR_TAP_COUNT : natural := 8;
-    constant BUNCH_FIR_TAP_COUNT : natural := 16;
-    constant DAC_FIR_TAP_COUNT : natural := 8;
-
     -- General readback status bits
     signal status_bits : reg_data_t;
 
@@ -71,7 +66,6 @@ architecture dsp_top of dsp_top is
 
     -- Bunch control
     signal current_bank : unsigned(1 downto 0);
-    signal bunch_config_lanes : bunch_config_lanes_t;
     signal bunch_config : bunch_config_t;
     signal detector_window : hom_win_t;
 
@@ -82,15 +76,15 @@ architecture dsp_top of dsp_top is
     -- Oscillator control
     signal nco_0_phase_advance : angle_t;
     signal nco_0_reset : std_logic;
-    signal nco_0_cos_sin : cos_sin_18_lanes_t;
+    signal nco_0_cos_sin : cos_sin_18_t;
     signal nco_1_phase_advance : angle_t;
     signal nco_1_reset : std_logic;
-    signal nco_1_cos_sin : cos_sin_18_lanes_t;
+    signal nco_1_cos_sin : cos_sin_18_t;
     signal nco_1_gain : unsigned(3 downto 0);
 
     -- Data flow
     signal adc_data_in : adc_data_i'SUBTYPE;
-    signal fir_data : signed_array(LANES)(FIR_DATA_WIDTH-1 downto 0);
+    signal fir_data : signed(FIR_DATA_WIDTH-1 downto 0);
     signal dac_data_out : dac_data_o'SUBTYPE;
 
 
@@ -146,7 +140,7 @@ begin
 
     -- Bunch specific control
     bunch_select_inst : entity work.bunch_select port map (
-        adc_clk_i => dsp_clk_i,
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         adc_phase_i => adc_phase_i,
         turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
@@ -159,14 +153,13 @@ begin
         read_ack_o => read_ack_o(DSP_BUNCH_REGS),
 
         bank_select_i => current_bank,
-        bunch_config_lanes_o => bunch_config_lanes,
         bunch_config_o => bunch_config
     );
 
 
     -- Oscillators
     nco_0_inst : entity work.nco port map (
-        clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
         phase_advance_i => nco_0_phase_advance,
         reset_i => nco_0_reset,
         cos_sin_o => nco_0_cos_sin
@@ -174,7 +167,7 @@ begin
     dsp_to_control_o.nco_0_data <= nco_0_cos_sin;
 
     nco_1_inst : entity work.nco port map (
-        clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
         phase_advance_i => nco_1_phase_advance,
         reset_i => nco_1_reset,
         cos_sin_o => nco_1_cos_sin
@@ -243,7 +236,7 @@ begin
         data_o => fir_data,
 
         turn_clock_i => control_to_dsp_i.turn_clock_dsp,
-        bunch_config_i => bunch_config_lanes,
+        bunch_config_i => bunch_config,
 
         write_strobe_i => write_strobe_i(DSP_B_FIR_REGS),
         write_data_i => write_data_i,
@@ -265,7 +258,7 @@ begin
         adc_phase_i => adc_phase_i,
         turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
-        bunch_config_i => bunch_config_lanes,
+        bunch_config_i => bunch_config,
         fir_data_i => fir_data,
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
@@ -309,7 +302,9 @@ begin
     -- Sequencer and detector
 
     sequencer_top_inst : entity work.sequencer_top port map (
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
+        adc_phase_i => adc_phase_i,
 
         turn_clk_i => control_to_dsp_i.turn_clock_dsp,
         blanking_i => control_to_dsp_i.blanking,
@@ -333,6 +328,8 @@ begin
         hom_window_o => detector_window,
         bunch_bank_o => current_bank
     );
+
+    -- Transfer NCO gain over to ADC clock
 
 
     -- -------------------------------------------------------------------------

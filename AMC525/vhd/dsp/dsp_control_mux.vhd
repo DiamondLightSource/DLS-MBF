@@ -14,7 +14,7 @@ use work.dsp_defs.all;
 
 entity dsp_control_mux is
     port (
-        dsp_clk_i : in std_logic;
+        clk_i : in std_logic;
 
         -- Multiplexer selections
         adc_mux_i : in std_logic;
@@ -25,9 +25,9 @@ entity dsp_control_mux is
         dsp_to_control_i : in dsp_to_control_array_t;
 
         -- Outgoing data
-        adc_o : out signed_array_array;
-        nco_0_o : out signed_array_array;
-        nco_1_o : out signed_array_array
+        adc_o   : out signed_array;
+        nco_0_o : out signed_array;
+        nco_1_o : out signed_array
     );
 end;
 
@@ -38,8 +38,8 @@ architecture dsp_control_mux of dsp_control_mux is
 
 begin
     -- Data multiplexing control
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             -- ADC input multiplexing
             if adc_mux_i = '1' then
                 adc_o(0) <= d2c1.adc_data;
@@ -49,21 +49,19 @@ begin
             adc_o(1) <= d2c1.adc_data;
 
             -- NCO output multiplexing
-            for l in LANES loop
-                nco_0_o(0)(l) <= d2c0.nco_0_data(l).cos;
-                if nco_0_mux_i = '1' then
-                    nco_0_o(1)(l) <= d2c0.nco_0_data(l).sin;
-                else
-                    nco_0_o(1)(l) <= d2c1.nco_0_data(l).cos;
-                end if;
+            nco_0_o(0) <= d2c0.nco_0_data.cos;
+            if nco_0_mux_i = '1' then
+                nco_0_o(1) <= d2c0.nco_0_data.sin;
+            else
+                nco_0_o(1) <= d2c1.nco_0_data.cos;
+            end if;
 
-                nco_1_o(0)(l) <= d2c0.nco_1_data(l).cos;
-                if nco_1_mux_i = '1' then
-                    nco_1_o(1)(l) <= d2c0.nco_1_data(l).sin;
-                else
-                    nco_1_o(1)(l) <= d2c1.nco_1_data(l).cos;
-                end if;
-            end loop;
+            nco_1_o(0) <= d2c0.nco_1_data.cos;
+            if nco_1_mux_i = '1' then
+                nco_1_o(1) <= d2c0.nco_1_data.sin;
+            else
+                nco_1_o(1) <= d2c1.nco_1_data.cos;
+            end if;
         end if;
     end process;
 end;

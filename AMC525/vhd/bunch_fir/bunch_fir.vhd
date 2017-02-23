@@ -8,7 +8,7 @@ use work.support.all;
 
 entity bunch_fir is
     port (
-        dsp_clk_i : in std_logic;
+        clk_i : in std_logic;
         bunch_index_i : in unsigned;
         taps_i : in signed_array;
 
@@ -80,8 +80,8 @@ begin
     assert DELAY_WIDTH < ACCUM_WIDTH;
 
     -- Core processing DSP chain
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             delay_out(0) <= (others => '0');
             for t in TAPS_RANGE loop
                 -- Accumulator optimised for DSP unit
@@ -104,7 +104,7 @@ begin
     valid_delay_inst : entity work.dlyline generic map (
         DLY => DATA_VALID_DELAY
     ) port map (
-        clk_i => dsp_clk_i,
+        clk_i => clk_i,
         data_i(0) => data_valid_i,
         data_o(0) => accum_out_valid
     );
@@ -114,7 +114,7 @@ begin
         data_delay_inst : entity work.bunch_fir_delay generic map (
             PROCESS_DELAY => PROCESS_DELAY
         ) port map (
-            clk_i => dsp_clk_i,
+            clk_i => clk_i,
             bunch_index_i => bunch_index_i,
             write_strobe_i => accum_out_valid,
             data_i => accum_out(t-1)(DELAY_RANGE),
