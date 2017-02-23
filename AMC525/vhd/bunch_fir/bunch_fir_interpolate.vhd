@@ -23,7 +23,7 @@ architecture bunch_fir_interpolate of bunch_fir_interpolate is
     signal data_out : data_o'SUBTYPE := (others => '0');
 
 begin
-    assert data_i'LENGTH = data_o'LENGTH;
+    assert data_i'LENGTH = data_o'LENGTH severity failure;
 
     delay_inst : entity work.bunch_fir_delay generic map (
         PROCESS_DELAY => 0

@@ -73,11 +73,11 @@ architecture bunch_fir of bunch_fir is
 
 begin
     -- Ensure we fit within the DSP48E1
-    assert TAP_WIDTH <= 25;
-    assert DATA_IN_WIDTH <= 18;
-    assert ACCUM_WIDTH <= 48;
+    assert TAP_WIDTH <= 25 severity failure;
+    assert DATA_IN_WIDTH <= 18 severity failure;
+    assert ACCUM_WIDTH <= 48 severity failure;
     -- Assume that accumulator is larger than the delay line.
-    assert DELAY_WIDTH < ACCUM_WIDTH;
+    assert DELAY_WIDTH < ACCUM_WIDTH severity failure;
 
     -- Core processing DSP chain
     process (clk_i) begin

@@ -32,7 +32,7 @@ architecture register_block of register_block is
     signal write_ptr : unsigned(COUNT_BITS-1 downto 0);
 
 begin
-    assert registers_o'LEFT = 0;
+    assert registers_o'LEFT = 0 severity failure;
 
     process (clk_i) begin
         if rising_edge(clk_i) then

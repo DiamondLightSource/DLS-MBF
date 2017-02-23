@@ -59,11 +59,12 @@ architecture axi_lite_master of axi_lite_master is
 
 begin
     -- Sanity check on widths
-    assert wdata_o'LENGTH = DATA_WIDTH;
-    assert wstrb_o'LENGTH = DATA_WIDTH/8;
-    assert awaddr_o'LENGTH = BASE_BITS + ADDR_WIDTH + ADDR_PADDING'length;
+    assert wdata_o'LENGTH = DATA_WIDTH severity failure;
+    assert wstrb_o'LENGTH = DATA_WIDTH/8 severity failure;
+    assert awaddr_o'LENGTH = BASE_BITS + ADDR_WIDTH + ADDR_PADDING'length
+        severity failure;
     -- Can only have 32 or 64 bit AXI Lite data
-    assert DATA_WIDTH = 32 or DATA_WIDTH = 64;
+    assert DATA_WIDTH = 32 or DATA_WIDTH = 64 severity failure;
 
     -- Assemble write address from the real write address.
     awaddr_o(ADDR_TOP) <= ADDR_PADDING;

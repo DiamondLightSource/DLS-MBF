@@ -24,7 +24,7 @@ architecture dlyreg of dlyreg is
     signal dly_wire : dlyreg_t;
 
 begin
-    assert DLY > 0;
+    assert DLY > 0 severity failure;
 
     dly_wire(0) <= data_i;
 

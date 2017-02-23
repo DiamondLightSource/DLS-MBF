@@ -125,7 +125,7 @@ architecture axi_lite_slave of axi_lite_slave is
     end;
 
 begin
-    assert read_address_o'LENGTH = write_address_o'LENGTH;
+    assert read_address_o'LENGTH = write_address_o'LENGTH severity failure;
 
     -- ------------------------------------------------------------------------
     -- Read interface.

@@ -20,7 +20,7 @@ architecture dlyline of dlyline is
     signal dlyline : dlyline_t := (others => (others => '0'));
 
 begin
-    assert DLY > 0;
+    assert DLY > 0 severity failure;
     process (clk_i) begin
         if rising_edge(clk_i) then
             dlyline(0) <= data_i;

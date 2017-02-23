@@ -45,9 +45,9 @@ architecture register_mux_strobe of register_mux_strobe is
     signal strobe : strobe_o'SUBTYPE := (others => '0');
 
 begin
-    assert strobe_o'LOW = 0 and ack_i'LOW = 0;
-    assert strobe_o'LENGTH = ack_i'LENGTH;
-    assert strobe_o'ASCENDING and ack_i'ASCENDING;
+    assert strobe_o'LOW = 0 and ack_i'LOW = 0 severity failure;
+    assert strobe_o'LENGTH = ack_i'LENGTH severity failure;
+    assert strobe_o'ASCENDING and ack_i'ASCENDING severity failure;
 
     address <= to_integer(address_i);
     ack_in <= ack_i(address) when address <= ack_i'HIGH else '1';

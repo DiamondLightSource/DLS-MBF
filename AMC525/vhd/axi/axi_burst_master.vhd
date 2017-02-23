@@ -103,8 +103,8 @@ architecture axi_burst_master of axi_burst_master is
 
 begin
     -- Sanity check on parameters
-    assert DATA_WIDTH = 8 * 2**DATA_ADDR_BITS;
-    assert BURST_LENGTH = 2**BURST_BITS;
+    assert DATA_WIDTH = 8 * 2**DATA_ADDR_BITS severity failure;
+    assert BURST_LENGTH = 2**BURST_BITS severity failure;
 
 
     -- The target DRAM is at address location 8000_0000_0000 up to address

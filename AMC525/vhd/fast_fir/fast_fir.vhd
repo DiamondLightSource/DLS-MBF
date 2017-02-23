@@ -75,12 +75,13 @@ architecture fast_fir of fast_fir is
 
 begin
     -- Some checks to ensure we fit within the DSP48E1
-    assert SUM_WIDTH <= 48;
-    assert TAP_WIDTH <= 25;
-    assert BIT_WIDTH_IN <= 18;
+    assert SUM_WIDTH <= 48 severity failure;
+    assert TAP_WIDTH <= 25 severity failure;
+    assert BIT_WIDTH_IN <= 18 severity failure;
     -- Ensure we're not make an unrealistic request
-    assert EXTRA_BITS <= HEADROOM + 1;      -- Ensure L <= H+2
-    assert SUM_WIDTH > BIT_WIDTH_OUT + HEADROOM + EXTRA_BITS + 1;
+    assert EXTRA_BITS <= HEADROOM + 1 severity failure;      -- Ensure L <= H+2
+    assert SUM_WIDTH > BIT_WIDTH_OUT + HEADROOM + EXTRA_BITS + 1
+        severity failure;
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then

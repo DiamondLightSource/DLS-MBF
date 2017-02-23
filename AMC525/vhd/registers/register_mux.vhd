@@ -44,7 +44,8 @@ architecture register_mux of register_mux is
 begin
     -- The strobe instances already check that read and write ranges are
     -- ascending and zero based, so we just need to check read_data_i.
-    assert read_data_i'LOW = 0 and read_data_i'LENGTH = read_ack_i'LENGTH;
+    assert read_data_i'LOW = 0 and read_data_i'LENGTH = read_ack_i'LENGTH
+        severity failure;
 
     write_strobe_inst : entity work.register_mux_strobe port map (
         clk_i => clk_i,

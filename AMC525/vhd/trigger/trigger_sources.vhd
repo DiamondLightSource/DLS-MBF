@@ -44,9 +44,9 @@ architecture trigger_sources of trigger_sources is
     signal trigger_seen : std_logic;
 
 begin
-    assert triggers_i'LENGTH = enables_i'LENGTH;
-    assert enables_i'LENGTH = blanking_i'LENGTH;
-    assert blanking_i'LENGTH = source_o'LENGTH;
+    assert triggers_i'LENGTH = enables_i'LENGTH severity failure;
+    assert enables_i'LENGTH = blanking_i'LENGTH severity failure;
+    assert blanking_i'LENGTH = source_o'LENGTH severity failure;
 
     blanking_mask <=
         blanking_i when blanking_window_i = '1' else (others => '0');
