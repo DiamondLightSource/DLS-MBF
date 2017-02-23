@@ -25,6 +25,7 @@ entity bunch_fir_counter is
 end;
 
 architecture bunch_fir_counter of bunch_fir_counter is
+    signal turn_clock : std_logic;
     signal bunch_index : bunch_count_t := (others => '0');
 
     constant DECIMATION_BITS : natural := decimation_limit_i'LENGTH;
@@ -34,9 +35,17 @@ architecture bunch_fir_counter of bunch_fir_counter is
 begin
     last_turn <= decimation_counter = decimation_limit_i;
 
+    turn_clock_delay : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => clk_i,
+        data_i(0) => turn_clock_i,
+        data_o(0) => turn_clock
+    );
+
     process (clk_i) begin
         if rising_edge(clk_i) then
-            if turn_clock_i = '1' then
+            if turn_clock = '1' then
                 bunch_index <= (others => '0');
                 if last_turn then
                     decimation_counter <= 0;

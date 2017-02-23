@@ -44,21 +44,26 @@ architecture dac_output_mux of dac_output_mux is
     signal nco_1_enable : std_logic;
 
     -- Selected data, widened for accumulator
+    signal fir_data_pl   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
+    signal nco_0_data_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
+    signal nco_1_data_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_0_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_1_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     -- Sum of the three values above
+    signal accum_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal accum : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
 
     -- Pipeline the gain so that the gain and selection change together
     signal bunch_gain_in : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
+    signal bunch_gain_pl : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
     signal bunch_gain : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
 
     -- Scaled result
     constant FULL_PROD_WIDTH : natural := ACCUM_WIDTH + GAIN_WIDTH;
-    signal full_dac_out : signed(FULL_PROD_WIDTH-1 downto 0) := (others => '0');
     signal full_dac_out_pl : signed(FULL_PROD_WIDTH-1 downto 0)
         := (others => '0');
+    signal full_dac_out : signed(FULL_PROD_WIDTH-1 downto 0) := (others => '0');
 
     -- To compute the output offset, regard the gain as a signed number in the
     -- range -1..1, ie there are GAIN_WIDTH-1 extra fraction bits after
@@ -84,21 +89,28 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            -- Widen and select the three inputs.
-            fir_data   <= prepare(fir_data_i, fir_enable);
-            nco_0_data <= prepare(nco_0_i,    nco_0_enable);
-            nco_1_data <= prepare(nco_1_i,    nco_1_enable);
             fir_overflow_o <= fir_overflow_i and fir_enable;
-            -- Also pipeline the gain so that the selection and gain match
-            bunch_gain_in <= bunch_config_i.gain;
+            -- Widen and select the three inputs.
+            fir_data_pl   <= prepare(fir_data_i, fir_enable);
+            nco_0_data_pl <= prepare(nco_0_i,    nco_0_enable);
+            nco_1_data_pl <= prepare(nco_1_i,    nco_1_enable);
+            fir_data   <= fir_data_pl;
+            nco_0_data <= nco_0_data_pl;
+            nco_1_data <= nco_1_data_pl;
 
-            -- Add all three inputs together, continue with gain pipeline
-            accum <= fir_data + nco_0_data + nco_1_data;
+            -- Also pipeline the gain so that the selection and gain match
+            -- Probably not necessary
+            bunch_gain_pl <= bunch_config_i.gain;
+            bunch_gain_in <= bunch_gain_pl;
             bunch_gain <= bunch_gain_in;
 
+            -- Add all three inputs together, continue with gain pipeline
+            accum_pl <= fir_data + nco_0_data + nco_1_data;
+            accum <= accum_pl;
+
             -- Apply selected gain
-            full_dac_out <= bunch_gain * accum;
-            full_dac_out_pl <= full_dac_out;
+            full_dac_out_pl <= bunch_gain * accum;
+            full_dac_out <= full_dac_out_pl;
         end if;
     end process;
 
@@ -107,7 +119,7 @@ begin
         OFFSET => OUTPUT_OFFSET
     ) port map (
         clk_i => clk_i,
-        data_i => full_dac_out_pl,
+        data_i => full_dac_out,
         data_o => data_o,
         overflow_o => mux_overflow_o
     );

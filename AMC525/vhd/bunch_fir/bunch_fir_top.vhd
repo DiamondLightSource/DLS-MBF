@@ -87,6 +87,7 @@ begin
 
     -- Taps for FIR
     bunch_fir_taps_inst : entity work.bunch_fir_taps port map (
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
         write_start_i => write_start_i,

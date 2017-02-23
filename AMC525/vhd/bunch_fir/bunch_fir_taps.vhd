@@ -10,6 +10,7 @@ use work.bunch_defs.all;
 
 entity bunch_fir_taps is
     port (
+        adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
 
         -- Register write interface for writing taps
@@ -35,18 +36,27 @@ architecture bunch_fir_taps of bunch_fir_taps is
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
     subtype TAP_RANGE  is natural range TAP_WIDTH-1 downto 0;
 
+    signal fir_select_pl : fir_select_i'SUBTYPE;
     signal fir_select : fir_select_i'SUBTYPE;
     signal taps : signed_array_array(BANKS_RANGE)(TAPS_RANGE)(TAP_RANGE)
         := (others => (others => (others => '0')));
     signal tap_index : unsigned(bits(TAP_COUNT-1)-1 downto 0);
 
+    signal taps_out : taps_o'SUBTYPE := (others => (others => '0'));
+
 begin
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            -- Output selected taps
+            fir_select_pl <= fir_select_i;
+            fir_select <= fir_select_pl;
+            taps_out <= taps(to_integer(fir_select));
+            taps_o <= taps_out;
+        end if;
+    end process;
+
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            -- Output selected taps
-            fir_select <= fir_select_i;
-            taps_o <= taps(to_integer(fir_select));
-
             -- Write to selected taps
             if write_start_i then
                 tap_index <= (others => '0');

@@ -29,11 +29,13 @@ architecture bunch_fir_decimate of bunch_fir_decimate is
     constant ACCUM_BITS : natural :=
         data_i'LENGTH + 2**decimation_shift_i'LENGTH - 1;
 
-    -- One tick internal processing delay, needed for memory delay line
-    constant PROCESS_DELAY : natural := 1;
+    -- Internal processing delay, needed for memory delay line
+    --  read_data_pl => read_data => accumulator
+    constant PROCESS_DELAY : natural := 2;
 
     signal data_in : signed(ACCUM_BITS-1 downto 0);
     signal read_data : signed(ACCUM_BITS-1 downto 0);
+    signal read_data_pl : signed(ACCUM_BITS-1 downto 0);
     signal accumulator : signed(ACCUM_BITS-1 downto 0);
     signal write_data : signed(ACCUM_BITS-1 downto 0);
     signal data_out : signed(ACCUM_BITS-1 downto 0);
@@ -49,13 +51,15 @@ begin
         bunch_index_i => bunch_index_i,
         write_strobe_i => '1',
         data_i => accumulator,
-        data_o => read_data
+        data_o => read_data_pl
     );
 
-    data_in <= resize(data_i, ACCUM_BITS);
     process (clk_i) begin
         if rising_edge(clk_i) then
+            data_in <= resize(data_i, ACCUM_BITS);
+
             -- On first turn we reset the accumulator, otherwise accumulate
+            read_data <= read_data_pl;
             if first_turn_i = '1' then
                 accumulator <= data_in;
             else

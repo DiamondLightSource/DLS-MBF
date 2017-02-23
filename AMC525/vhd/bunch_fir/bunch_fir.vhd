@@ -41,9 +41,11 @@ architecture bunch_fir of bunch_fir is
     -- Signal processing chain
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
     signal taps : signed_array(TAPS_RANGE)(TAP_WIDTH-1 downto 0);
+    signal data_pl : signed_array(TAPS_RANGE)(DATA_IN_WIDTH-1 downto 0);
     signal data_in : signed_array(TAPS_RANGE)(DATA_IN_WIDTH-1 downto 0);
     signal product : signed_array(TAPS_RANGE)(PRODUCT_WIDTH-1 downto 0);
     signal accum_in : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
+    signal accum : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
     signal accum_out : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
     -- Data delay line
     signal delay_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0);
@@ -68,8 +70,8 @@ architecture bunch_fir of bunch_fir is
 
     -- Delay from delay_out to accum_out, used for delay line, derived from
     -- this data path:
-    --      delay_out => accum_in => accum_out
-    constant PROCESS_DELAY : natural := 2;
+    --      delay_out => accum_in => accum => accum_out
+    constant PROCESS_DELAY : natural := 3;
 
 begin
     -- Ensure we fit within the DSP48E1
@@ -86,9 +88,11 @@ begin
             for t in TAPS_RANGE loop
                 -- Accumulator optimised for DSP unit
                 taps(t) <= taps_i(TAP_COUNT-1 - t);     -- Reverse taps
-                data_in(t) <= data_i;
+                data_pl(t) <= data_i;
+                data_in(t) <= data_pl(t);
                 product(t) <= taps(t) * data_in(t);
-                accum_out(t) <= accum_in(t) + product(t);
+                accum(t) <= accum_in(t) + product(t);
+                accum_out(t) <= accum(t);
 
                 -- Assemble input accumulator from its components
                 accum_in(t)(DELAY_RANGE) <= delay_out(t);

@@ -14,7 +14,7 @@ package nco_defs is
 
     -- Three different sizes of cos/sin.  We output a scaled 16-bit value for
     -- output to the DAC, and an unscaled 18-bit value for multiplication in
-    -- the detectory.  Finally, an internal 19-bit value is returned by table
+    -- the detector.  Finally, an internal 19-bit value is returned by table
     -- lookup (the top bit is always zero) before refinement.
     subtype cos_sin_16_t is cos_sin_t(cos(15 downto 0), sin(15 downto 0));
     subtype cos_sin_18_t is cos_sin_t(cos(17 downto 0), sin(17 downto 0));
@@ -31,5 +31,4 @@ package nco_defs is
 
     -- 10 bit lookup
     subtype cos_sin_addr_t is unsigned(9 downto 0);
-
 end;

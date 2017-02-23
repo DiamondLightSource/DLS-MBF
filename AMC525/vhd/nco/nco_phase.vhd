@@ -20,10 +20,8 @@ entity nco_phase is
 end;
 
 architecture nco_phase of nco_phase is
-    -- Phase advance for the two lanes
+    signal reset : std_logic;
     signal phase_advance : angle_t := (others => '0');
-
-    -- Current master phase
     signal phase : angle_t := (others => '0');
 
 begin
@@ -31,7 +29,8 @@ begin
         if rising_edge(clk_i) then
             -- Phase advance
             phase_advance <= phase_advance_i;
-            if reset_i = '1' then
+            reset <= reset_i;
+            if reset = '1' then
                 phase <= (others => '0');
             else
                 phase <= phase + phase_advance;
