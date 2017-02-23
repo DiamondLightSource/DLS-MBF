@@ -92,37 +92,50 @@ architecture nco_cos_sin_refine of nco_cos_sin_refine is
     signal cos_acc_out : signed(36 downto 0) := (others => '0');
     signal sin_acc_out : signed(36 downto 0) := (others => '0');
 
-    signal cos_sin_out : cos_sin_18_t := (others => (others => '0'));
-
 begin
-    assert LOOKUP_DELAY = 2;    -- Used for residue_i -> cos_sin_i delay
-    assert REFINE_DELAY = 3;
+    -- This is the delay from cos_sin_i to cos_sin_o:
+    --      cos_sin_i = cos_in, sin_in
+    --      => {cos,sin}_product,  {cos,sin}_acc_in
+    --      => {cos,sin}_acc_out
+    --      => cos_sin_o
+    assert REFINE_DELAY = 3 severity failure;
 
     -- Convert unsigned residue to signed for multiplier
     residue <= signed('0' & residue_i(18 downto 11));
-    cos_in <= cos_sin_i.cos;
-    sin_in <= cos_sin_i.sin;
-
     process (clk_i) begin
         if rising_edge(clk_i) then
             delta_product <= PI_SCALED * residue;
-            delta <= delta_product(17 downto 8);
+        end if;
+    end process;
 
-            -- At this point, due to the two tick lookup delay, delta is now
-            -- synchronous with cos_sin_i.
+    -- Now synchronise delta with cos_sin_i, delayed by table lookup.  We
+    -- already have one tick delay for the multiply above.
+    delta_delay : entity work.dlyline generic map (
+        DLY => LOOKUP_DELAY - 1,
+        DW => 10
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(delta_product(17 downto 8)),
+        signed(data_o) => delta
+    );
 
+
+    -- Final fixup with enough register delays so that it fits in a DSP unit
+    cos_in <= cos_sin_i.cos;
+    sin_in <= cos_sin_i.sin;
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             cos_product <= delta * cos_in;
             sin_product <= delta * sin_in;
             cos_acc_in <= cos_in & "00" & X"0000";
             sin_acc_in <= sin_in & "00" & X"0000";
+
             cos_acc_out <= cos_acc_in - sin_product;
             sin_acc_out <= sin_acc_in + cos_product;
 
             -- Round the result
-            cos_sin_out.cos <= round(cos_acc_out, 18);
-            cos_sin_out.sin <= round(sin_acc_out, 18);
+            cos_sin_o.cos <= round(cos_acc_out, 18);
+            cos_sin_o.sin <= round(sin_acc_out, 18);
         end if;
     end process;
-
-    cos_sin_o <= cos_sin_out;
 end;

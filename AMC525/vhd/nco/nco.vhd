@@ -24,7 +24,7 @@ end;
 
 architecture nco of nco is
     -- Delay from lookup valud to cos_sin_raw valid
-    constant LOOKUP_DELAY : natural := 3;
+    constant LOOKUP_DELAY : natural := 4;
     -- Delay from cos_sin_raw to cos_sin_refined
     constant REFINE_DELAY : natural := 3;
 
@@ -47,13 +47,6 @@ begin
         phase_o => phase
     );
 
-    -- Lookup table
-    nco_cos_sin_table_inst : entity work.nco_cos_sin_table port map (
-        clk_i => clk_i,
-        addr_i => lookup,
-        cos_sin_o => cos_sin_raw
-    );
-
     -- Split angle into octant, lookup and residue, and recombine the
     -- result according to the incoming octant.
     nco_cos_sin_inst : entity work.nco_cos_sin_octant generic map (
@@ -65,9 +58,18 @@ begin
 
         lookup_o => lookup,
         residue_o => residue,
-        cos_sin_i => cos_sin_refined,
 
+        cos_sin_i => cos_sin_refined,
         cos_sin_o => cos_sin_o
+    );
+
+    -- Lookup table
+    nco_cos_sin_table_inst : entity work.nco_cos_sin_table generic map (
+        LOOKUP_DELAY => LOOKUP_DELAY
+    ) port map (
+        clk_i => clk_i,
+        addr_i => lookup,
+        cos_sin_o => cos_sin_raw
     );
 
     -- Refine the lookup by linear interpolation

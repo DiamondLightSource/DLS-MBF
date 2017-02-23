@@ -20,9 +20,9 @@ entity nco_cos_sin_octant is
         -- Table lookup
         lookup_o : out lookup_t := (others => '0');
         residue_o : out residue_t := (others => '0');
-        cos_sin_i : in cos_sin_18_t;
 
         -- Result
+        cos_sin_i : in cos_sin_18_t;
         cos_sin_o : out cos_sin_18_t
     );
 end;
@@ -50,7 +50,7 @@ begin
     -- the generated output according to the timing below:
     --
     --  clk_i       /     /     /     /     /     /     /     /     /
-    --  addr_i    --X A   X--------------------------------------------
+    --  angle_i   --X A   X--------------------------------------------
     --  octant    --X O   X--------------------------------------------
     --  lookup_o  --------X L   X--------------------------------------
     --  residue_o --------X R   X--------------------------------------
