@@ -72,9 +72,12 @@ begin
 
     -- Revolution clock
     process begin
+        revolution_clock <= '0';
         loop
             clk_wait(adc_clk, 6);
-            revolution_clock <= not revolution_clock;
+            revolution_clock <= '1';
+            clk_wait(adc_clk, 6);
+            revolution_clock <= '0';
         end loop;
         wait;
     end process;
@@ -183,7 +186,7 @@ begin
         read_reg(16#0006#);             -- Dummy read
 
         -- Set up number of bunches
-        write_reg(16#0009#, X"00000005");   -- 12 bunches (2*6) in our ring!
+        write_reg(16#0009#, X"0000000B");   -- 12 bunches in our ring!
         -- Trigger synchronisation and sample
         write_reg(16#0006#, X"00000003");
         -- Configure blanking intervals
@@ -210,6 +213,19 @@ begin
 
         read_reg(5);
         read_reg(4);
+
+        -- Write to DSP 1 sequencer
+        write_reg(16#180B#, X"00000002");   -- Start memory write sequence
+        write_reg(16#180C#, X"00000000");   -- Select sequencer memory
+        write_reg(16#180D#, X"00000000");   -- Write one word to seq memory
+        write_reg(16#180C#, X"10000000");   -- Select window memory
+        write_reg(16#180D#, X"00000000");   -- Write one word to window memory
+        write_reg(16#180C#, X"20000000");   -- Select super memory
+        write_reg(16#180D#, X"00000000");   -- Write one word to super memory
+
+        -- Sample the turn clock
+        write_reg(16#0006#, X"00000002");
+
 -- 
 --         -- Initialise ADC FIR with passthrough.
 --         write_dsp(0, X"00000001");

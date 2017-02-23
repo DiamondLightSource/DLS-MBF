@@ -24,6 +24,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/register_block.vhd \
+    $vhd_dir/registers/register_read_adc.vhd \
     $vhd_dir/system/adc_phase.vhd \
     $vhd_dir/extract_signed.vhd \
     $vhd_dir/dsp/pulse_adc_to_dsp.vhd \

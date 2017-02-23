@@ -26,7 +26,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/clock_support.vhd \
     $bench_dir/test_dsp_main.vhd
 
-# Add -novopt to prevent optimisation
+# Add -novopt to prevent optimisation from deleting things
 vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
@@ -50,6 +50,10 @@ add wave -group "Trigger handler DRAM" \
 add wave -group "DSP(1)" $dsp1_top/*
 add wave -group "Fast Mem" $dsp_main/dsp_control_top_inst/fast_memory_top_inst/*
 add wave -group "DSP(1) Fir" $dsp1_top/bunch_fir_top_inst/*
+add wave -group "DSP(1) Seq" $dsp1_top/sequencer_top_inst/*
+add wave -group "DSP(0) Seq" $dsp0_top/sequencer_top_inst/*
+add wave -group "DSP(0) Seq Sup" $dsp0_top/sequencer_top_inst/sequencer_super/*
+
 add wave -group "Top" *
 
 run 1 us
