@@ -35,8 +35,15 @@ begin
             else
                 phase <= phase + phase_advance;
             end if;
-
-            phase_o <= phase;
         end if;
     end process;
+
+    phase_dly : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => angle_t'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(phase),
+        unsigned(data_o) => phase_o
+    );
 end;

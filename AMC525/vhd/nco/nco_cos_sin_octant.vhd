@@ -34,8 +34,10 @@ architecture nco_cos_sin_octant of nco_cos_sin_octant is
 
     signal octant_d : octant_t;
 
-    signal d_cos : signed(17 downto 0);
-    signal d_sin : signed(17 downto 0);
+    signal p_cos : signed(17 downto 0);
+    signal p_sin : signed(17 downto 0);
+    signal m_cos : signed(17 downto 0);
+    signal m_sin : signed(17 downto 0);
     signal cos : signed(17 downto 0) := (others => '0');
     signal sin : signed(17 downto 0) := (others => '0');
 
@@ -62,7 +64,7 @@ begin
     --  cos_sin_o --------------------------------------X CS' X--------
     --
     octant_delay : entity work.dlyline generic map (
-        DLY => 1 + LOOKUP_DELAY + REFINE_DELAY,
+        DLY => 2 + LOOKUP_DELAY + REFINE_DELAY,
         DW => octant_t'LENGTH
     ) port map (
         clk_i => clk_i,
@@ -70,8 +72,6 @@ begin
         unsigned(data_o) => octant_d
     );
 
-    d_cos <= cos_sin_i.cos;
-    d_sin <= cos_sin_i.sin;
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Start by selecting the correct address.  Even octants go
@@ -84,15 +84,20 @@ begin
                 residue_o <= not residue;
             end if;
 
+            -- Precompute negation before final multiplexer
+            p_cos <=  cos_sin_i.cos;
+            p_sin <=  cos_sin_i.sin;
+            m_cos <= -cos_sin_i.cos;
+            m_sin <= -cos_sin_i.sin;
             case octant_d is
-                when "000" => cos <=  d_cos;  sin <=  d_sin;
-                when "001" => cos <=  d_sin;  sin <=  d_cos;
-                when "010" => cos <= -d_sin;  sin <=  d_cos;
-                when "011" => cos <= -d_cos;  sin <=  d_sin;
-                when "100" => cos <= -d_cos;  sin <= -d_sin;
-                when "101" => cos <= -d_sin;  sin <= -d_cos;
-                when "110" => cos <=  d_sin;  sin <= -d_cos;
-                when "111" => cos <=  d_cos;  sin <= -d_sin;
+                when "000" => cos <= m_cos;  sin <= m_sin;
+                when "001" => cos <= m_sin;  sin <= m_cos;
+                when "010" => cos <= m_sin;  sin <= m_cos;
+                when "011" => cos <= m_cos;  sin <= m_sin;
+                when "100" => cos <= m_cos;  sin <= m_sin;
+                when "101" => cos <= m_sin;  sin <= m_cos;
+                when "110" => cos <= m_sin;  sin <= m_cos;
+                when "111" => cos <= m_cos;  sin <= m_sin;
                 when others =>
             end case;
 

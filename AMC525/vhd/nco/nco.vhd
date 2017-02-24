@@ -48,7 +48,7 @@ begin
     ) port map (
         clk_i => clk_i,
         data_i => std_logic_vector(phase_advance_i),
-        signed(data_o) => phase_advance
+        unsigned(data_o) => phase_advance
     );
 
     -- Phase advance computation for NCO
