@@ -181,7 +181,7 @@ begin
 
     -- Pipeline data out to relax timing
     dlyreg_inst : entity work.dlyreg generic map (
-        DLY => 2,
+        DLY => 6,
         DW => data_o'LENGTH
     ) port map (
         clk_i => dsp_clk_i,

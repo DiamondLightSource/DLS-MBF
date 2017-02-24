@@ -60,5 +60,12 @@ begin
         end if;
     end process;
 
-    bunch_index_o <= bunch_index;
+    bunch_index_dly : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => bunch_index_o'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(bunch_index),
+        unsigned(data_o) => bunch_index_o
+    );
 end;

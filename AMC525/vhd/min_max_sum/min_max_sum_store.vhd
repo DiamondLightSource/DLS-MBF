@@ -57,7 +57,7 @@ architecture min_max_sum_store of min_max_sum_store is
     signal write_bank_std : std_logic;
 
     -- Skew from update read to write address
-    constant WRITE_DELAY : natural := 4 + UPDATE_DELAY;
+    constant WRITE_DELAY : natural := 6 + UPDATE_DELAY;
 
 begin
     -- Memory interface

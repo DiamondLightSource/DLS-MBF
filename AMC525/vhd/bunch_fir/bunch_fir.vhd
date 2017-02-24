@@ -46,6 +46,7 @@ architecture bunch_fir of bunch_fir is
     signal product : signed_array(TAPS_RANGE)(PRODUCT_WIDTH-1 downto 0);
     signal accum_in : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
     signal accum : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
+    signal accum_pl : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
     signal accum_out : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
     -- Data delay line
     signal delay_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0);
@@ -70,8 +71,8 @@ architecture bunch_fir of bunch_fir is
 
     -- Delay from delay_out to accum_out, used for delay line, derived from
     -- this data path:
-    --      delay_out => accum_in => accum => accum_out
-    constant PROCESS_DELAY : natural := 3;
+    --      delay_out => accum_in => accum => accum_pl => accum_out
+    constant PROCESS_DELAY : natural := 4;
 
 begin
     -- Ensure we fit within the DSP48E1
@@ -92,7 +93,8 @@ begin
                 data_in(t) <= data_pl(t);
                 product(t) <= taps(t) * data_in(t);
                 accum(t) <= accum_in(t) + product(t);
-                accum_out(t) <= accum(t);
+                accum_pl(t) <= accum(t);
+                accum_out(t) <= accum_pl(t);
 
                 -- Assemble input accumulator from its components
                 accum_in(t)(DELAY_RANGE) <= delay_out(t);

@@ -1,6 +1,5 @@
 -- Selector for fast memory
 
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -31,7 +30,6 @@ entity fast_memory_mux is
 end;
 
 architecture fast_memory_mux of fast_memory_mux is
-    subtype CHANNELS is natural range 0 to 1;
     -- Incoming data
     signal adc    : signed_array(CHANNELS)(15 downto 0);
     signal fir_in : signed_array(CHANNELS)(FIR_DATA_RANGE);
@@ -44,15 +42,17 @@ architecture fast_memory_mux of fast_memory_mux is
     signal wide_data : std_logic_vector(63 downto 0);
 
 begin
-    -- Extract incoming data for processing
-    adc(0)    <= dsp_to_control_i(0).adc_data;
-    fir_in(0) <= dsp_to_control_i(0).fir_data;
-    dac(0)    <= dsp_to_control_i(0).dac_data;
-    adc(1)    <= dsp_to_control_i(1).adc_data;
-    fir_in(1) <= dsp_to_control_i(1).fir_data;
-    dac(1)    <= dsp_to_control_i(1).dac_data;
-    -- The extra data path is actually mapped directly to the output stream, so
-    -- this is just an inversion of the output ordering.
+    pipeline_inst : entity work.fast_memory_pipeline port map (
+        clk_i => adc_clk_i,
+
+        dsp_to_control_i => dsp_to_control_i,
+        adc_o => adc,
+        fir_o => fir_in,
+        dac_o => dac
+    );
+
+
+    -- The extra data path is actually mapped directly to the output stream.
     extra(0) <= signed(extra_i(15 downto  0));
     extra(1) <= signed(extra_i(31 downto 16));
 
@@ -70,6 +70,7 @@ begin
     end generate;
 
     -- Output data selection
+    fast_mux :
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             case mux_select_i is

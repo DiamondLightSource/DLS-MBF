@@ -28,6 +28,7 @@ architecture nco of nco is
     -- Delay from cos_sin_raw to cos_sin_refined
     constant REFINE_DELAY : natural := 3;
 
+    signal phase_advance : angle_t;
     signal phase : angle_t;
 
     -- Lookup table
@@ -37,12 +38,23 @@ architecture nco of nco is
     -- Refinement
     signal residue : residue_t;
     signal cos_sin_refined : cos_sin_18_t;
+    signal cos_sin_out : cos_sin_18_t;
 
 begin
+    -- Delay line for phase advance
+    phase_dly : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => phase_advance_i'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(phase_advance_i),
+        signed(data_o) => phase_advance
+    );
+
     -- Phase advance computation for NCO
     nco_phase_inst : entity work.nco_phase port map (
         clk_i => clk_i,
-        phase_advance_i => phase_advance_i,
+        phase_advance_i => phase_advance,
         reset_i => reset_i,
         phase_o => phase
     );
@@ -60,7 +72,7 @@ begin
         residue_o => residue,
 
         cos_sin_i => cos_sin_refined,
-        cos_sin_o => cos_sin_o
+        cos_sin_o => cos_sin_out
     );
 
     -- Lookup table
@@ -81,5 +93,23 @@ begin
         residue_i => residue,
         cos_sin_i => cos_sin_raw,
         cos_sin_o => cos_sin_refined
+    );
+
+    -- Delay line for NCO output
+    cos_dly : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => 18
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(cos_sin_out.cos),
+        signed(data_o) => cos_sin_o.cos
+    );
+    sin_dly : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => 18
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(cos_sin_out.sin),
+        signed(data_o) => cos_sin_o.sin
     );
 end;

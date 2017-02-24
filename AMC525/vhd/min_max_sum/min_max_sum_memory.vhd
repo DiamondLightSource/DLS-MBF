@@ -52,6 +52,10 @@ begin
         write_data_i => write_row
     );
 
-    read_data_o <= bits_to_mms_row(read_row);
-    write_row <= mms_row_to_bits(write_data_i);
+    process (clk_i) begin
+        if rising_edge(clk_i) then
+            read_data_o <= bits_to_mms_row(read_row);
+            write_row <= mms_row_to_bits(write_data_i);
+        end if;
+    end process;
 end;

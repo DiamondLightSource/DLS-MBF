@@ -83,7 +83,7 @@ begin
 
     -- Pipeline the bunch configuration
     bunch_delay : entity work.dlyreg generic map (
-        DLY => 2,
+        DLY => 4,
         DW  => BUNCH_CONFIG_BITS
     ) port map (
        clk_i => adc_clk_i,
