@@ -117,11 +117,22 @@ begin
 
     -- Delay lines between each bunch
     delay_gen : for t in 1 to TAP_COUNT-1 generate
+        signal bunch_index : bunch_index_i'SUBTYPE;
+    begin
+        bunch_index_dly : entity work.dlyreg generic map (
+            DLY => 4,
+            DW => bunch_index_i'LENGTH
+        ) port map (
+            clk_i => clk_i,
+            data_i => std_logic_vector(bunch_index_i),
+            unsigned(data_o) => bunch_index
+        );
+
         data_delay_inst : entity work.bunch_fir_delay generic map (
             PROCESS_DELAY => PROCESS_DELAY
         ) port map (
             clk_i => clk_i,
-            bunch_index_i => bunch_index_i,
+            bunch_index_i => bunch_index,
             write_strobe_i => accum_out_valid,
             data_i => accum_out(t-1)(DELAY_RANGE),
             data_o => delay_out(t)

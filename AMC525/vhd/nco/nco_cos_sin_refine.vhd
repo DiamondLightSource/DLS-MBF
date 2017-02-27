@@ -100,10 +100,10 @@ begin
     --      => cos_sin_o
     assert REFINE_DELAY = 3 severity failure;
 
-    -- Convert unsigned residue to signed for multiplier
-    residue <= signed('0' & residue_i(18 downto 11));
     process (clk_i) begin
         if rising_edge(clk_i) then
+            -- Convert unsigned residue to signed for multiplier
+            residue <= signed('0' & residue_i(18 downto 11));
             delta_product <= PI_SCALED * residue;
         end if;
     end process;
@@ -111,7 +111,7 @@ begin
     -- Now synchronise delta with cos_sin_i, delayed by table lookup.  We
     -- already have one tick delay for the multiply above.
     delta_delay : entity work.dlyline generic map (
-        DLY => LOOKUP_DELAY - 1,
+        DLY => LOOKUP_DELAY - 2,
         DW => 10
     ) port map (
         clk_i => clk_i,

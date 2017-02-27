@@ -58,7 +58,16 @@ begin
         write_addr_i => write_addr,
         write_data_i => write_data
     );
-    config <= bits_to_bunch_config(read_data);
+
+    -- Bring result to ADC clock
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            config <= bits_to_bunch_config(read_data);
+            -- Register the bunch configuration
+            config_out <= config;
+        end if;
+    end process;
+
 
     -- We pack and unpack the written data simply so that the external bit
     -- layout can be decoupled from the stored packed representation.
@@ -87,8 +96,6 @@ begin
 
             write_strobe <= write_strobe_i;
 
-            -- Register the bunch configuration
-            config_out <= config;
         end if;
     end process;
 
