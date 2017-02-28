@@ -30,14 +30,15 @@ architecture bunch_fir_decimate of bunch_fir_decimate is
         data_i'LENGTH + 2**decimation_shift_i'LENGTH - 1;
 
     -- Internal processing delay, needed for memory delay line
-    --  read_data_pl => read_data => accumulator
+    --  accum.data_o = read_data_pl
+    --      => read_data
+    --      => accumulator = accum.data_i
     constant PROCESS_DELAY : natural := 2;
 
     signal data_in : signed(ACCUM_BITS-1 downto 0);
     signal read_data : signed(ACCUM_BITS-1 downto 0);
     signal read_data_pl : signed(ACCUM_BITS-1 downto 0);
     signal accumulator : signed(ACCUM_BITS-1 downto 0);
-    signal accumulator_pl : signed(ACCUM_BITS-1 downto 0);
     signal write_data : signed(ACCUM_BITS-1 downto 0);
     signal data_out : signed(ACCUM_BITS-1 downto 0);
     -- The data valid is derived from last_turn_i with a two tick delay
@@ -66,12 +67,13 @@ begin
             else
                 accumulator <= data_in + read_data;
             end if;
-            accumulator_pl <= accumulator;
-            write_data <= accumulator_pl;
-            data_valid <= last_turn_i;
+            write_data <= accumulator;
 
             -- Always output the shifted data
             data_out <= shift_right(write_data, to_integer(decimation_shift_i));
+
+            -- Delay last turn to match data delay
+            data_valid <= last_turn_i;
             data_valid_o <= data_valid;
         end if;
     end process;

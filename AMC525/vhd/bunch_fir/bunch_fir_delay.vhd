@@ -23,12 +23,20 @@ architecture bunch_fir_delay of bunch_fir_delay is
     constant ADDR_BITS : natural := bunch_index_i'LENGTH;
     -- Delay the write address by the external processing duration, together
     -- with a compensation for the block memory delay
-    constant WRITE_DELAY : natural := PROCESS_DELAY + 2;
+    constant WRITE_DELAY : natural := PROCESS_DELAY + 3;
 
+    signal data_in : data_i'SUBTYPE;
     signal write_addr : unsigned(ADDR_BITS-1 downto 0);
 
 begin
     assert data_i'LENGTH = data_o'LENGTH severity failure;
+
+    -- Extra input register to help with timing
+    process (clk_i) begin
+        if rising_edge(clk_i) then
+            data_in <= data_i;
+        end if;
+    end process;
 
     -- Delay line
     memory_inst : entity work.block_memory generic map (
@@ -42,7 +50,7 @@ begin
         write_clk_i => clk_i,
         write_strobe_i => write_strobe_i,
         write_addr_i => write_addr,
-        write_data_i => std_logic_vector(data_i)
+        write_data_i => std_logic_vector(data_in)
     );
 
     -- Delay the write address relative to the read address
