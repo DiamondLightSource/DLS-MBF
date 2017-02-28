@@ -20,40 +20,38 @@ architecture testbench of testbench is
     end procedure;
 
 
-    signal dsp_clk : STD_LOGIC := '0';
+    signal clk : std_logic := '0';
 
 
     procedure tick_wait(count : natural) is
     begin
-        clk_wait(dsp_clk, count);
+        clk_wait(clk, count);
     end procedure;
 
     procedure tick_wait is
     begin
-        clk_wait(dsp_clk, 1);
+        clk_wait(clk, 1);
     end procedure;
 
 
     signal phase_advance : angle_t;
-    signal reset : std_logic;
+    signal reset : std_logic := '0';
     signal unscaled : cos_sin_18_t;
     signal gain : unsigned(3 downto 0);
     signal scaled : cos_sin_16_t;
 
 begin
-
-    dsp_clk <= not dsp_clk after 2 ns;
-
+    clk <= not clk after 1 ns;
 
     nco_inst : entity work.nco port map (
-        clk_i => dsp_clk,
+        clk_i => clk,
         phase_advance_i => phase_advance,
         reset_i => reset,
         cos_sin_o => unscaled
     );
 
     nco_scaling_inst : entity work.nco_scaling port map (
-        clk_i => dsp_clk,
+        clk_i => clk,
         gain_i => gain,
         unscaled_i => unscaled,
         scaled_o => scaled
@@ -79,9 +77,11 @@ begin
 --         reset <= '0';
 --         tick_wait(50);
 --         reset <= '1';
-        phase_advance <= X"00010000";
-        tick_wait;
-        reset <= '0';
+        phase_advance <= X"00123456";
+        loop
+            tick_wait(100);
+            phase_advance <= shift_left(phase_advance, 1);
+        end loop;
         wait;
     end process;
 

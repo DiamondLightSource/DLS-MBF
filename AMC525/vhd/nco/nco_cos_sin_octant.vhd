@@ -90,14 +90,14 @@ begin
             m_cos <= -cos_sin_i.cos;
             m_sin <= -cos_sin_i.sin;
             case octant_d is
-                when "000" => cos <= m_cos;  sin <= m_sin;
-                when "001" => cos <= m_sin;  sin <= m_cos;
-                when "010" => cos <= m_sin;  sin <= m_cos;
-                when "011" => cos <= m_cos;  sin <= m_sin;
+                when "000" => cos <= p_cos;  sin <= p_sin;
+                when "001" => cos <= p_sin;  sin <= p_cos;
+                when "010" => cos <= m_sin;  sin <= p_cos;
+                when "011" => cos <= m_cos;  sin <= p_sin;
                 when "100" => cos <= m_cos;  sin <= m_sin;
                 when "101" => cos <= m_sin;  sin <= m_cos;
-                when "110" => cos <= m_sin;  sin <= m_cos;
-                when "111" => cos <= m_cos;  sin <= m_sin;
+                when "110" => cos <= p_sin;  sin <= m_cos;
+                when "111" => cos <= p_cos;  sin <= m_sin;
                 when others =>
             end case;
 
