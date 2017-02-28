@@ -74,6 +74,7 @@ architecture dac_top of dac_top is
     signal nco_1_data : data_o'SUBTYPE;
     signal data_out : data_o'SUBTYPE;
     signal filtered_data : data_o'SUBTYPE;
+    signal filtered_data_pl : data_o'SUBTYPE;
     signal delayed_data_out : data_o'SUBTYPE;
 
 begin
@@ -195,13 +196,23 @@ begin
         overflow_o => preemph_overflow_o
     );
 
+    -- Pipeline to help with timing
+    filter_dly : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => filtered_data'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(filtered_data),
+        signed(data_o) => filtered_data_pl
+    );
+
     -- Programmable long delay
     dac_delay_inst : entity work.long_delay generic map (
         WIDTH => data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
         delay_i => dac_delay,
-        data_i => std_logic_vector(filtered_data),
+        data_i => std_logic_vector(filtered_data_pl),
         signed(data_o) => delayed_data_out
     );
 

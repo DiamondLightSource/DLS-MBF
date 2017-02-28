@@ -40,15 +40,9 @@ architecture bunch_fir of bunch_fir is
 
     -- Signal processing chain
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
-    signal taps : signed_array(TAPS_RANGE)(TAP_WIDTH-1 downto 0);
-    signal data_pl : signed_array(TAPS_RANGE)(DATA_IN_WIDTH-1 downto 0);
-    signal data_in : signed_array(TAPS_RANGE)(DATA_IN_WIDTH-1 downto 0);
-    signal product : signed_array(TAPS_RANGE)(PRODUCT_WIDTH-1 downto 0);
-    signal accum_in : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
-    signal accum : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
-    signal accum_pl : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
+    -- Path from DSP to memory
     signal accum_out : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
-    -- Data delay line
+    -- Path from memory to DSP
     signal delay_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0);
 
     -- The accumulator input is assembled from three parts of widths as shown:
@@ -83,29 +77,60 @@ begin
     assert DELAY_WIDTH < ACCUM_WIDTH severity failure;
 
     -- Core processing DSP chain
+    taps_gen : for t in TAPS_RANGE generate
+        signal taps : signed(TAP_WIDTH-1 downto 0);
+        signal data_pl : signed(DATA_IN_WIDTH-1 downto 0);
+        signal data_in : signed(DATA_IN_WIDTH-1 downto 0);
+        signal product : signed(PRODUCT_WIDTH-1 downto 0);
+        signal accum_in_pl : signed(DELAY_WIDTH-1 downto 0);
+        signal accum_in : signed(ACCUM_WIDTH-1 downto 0);
+        signal accum : signed(ACCUM_WIDTH-1 downto 0);
+    begin
+        process (clk_i) begin
+            if rising_edge(clk_i) then
+                -- Accumulator optimised for DSP unit
+                taps <= taps_i(TAP_COUNT-1 - t);     -- Reverse taps
+                data_pl <= data_i;
+                data_in <= data_pl;
+                product <= taps * data_in;
+                accum <= accum_in + product;
+
+                -- Assemble input accumulator from its components
+                accum_in(DELAY_RANGE) <= accum_in_pl;
+                accum_in(ROUND_OFFSET) <= '1';
+                accum_in(PADDING_RANGE) <= (others => '0');
+            end if;
+        end process;
+
+        out_delay : entity work.dlyreg generic map (
+            DLY => 2,
+            DW => ACCUM_WIDTH
+        ) port map (
+            clk_i => clk_i,
+            data_i => std_logic_vector(accum),
+            signed(data_o) => accum_out(t)
+        );
+
+        in_delay : entity work.dlyreg generic map (
+            DLY => 2,
+            DW => DELAY_WIDTH
+        ) port map (
+            clk_i => clk_i,
+            data_i => std_logic_vector(delay_out(t)),
+            signed(data_o) => accum_in_pl
+        );
+    end generate;
+
+
+    -- Data extraction from processing chain (and empty initial accumulator)
     process (clk_i) begin
         if rising_edge(clk_i) then
             delay_out(0) <= (others => '0');
-            for t in TAPS_RANGE loop
-                -- Accumulator optimised for DSP unit
-                taps(t) <= taps_i(TAP_COUNT-1 - t);     -- Reverse taps
-                data_pl(t) <= data_i;
-                data_in(t) <= data_pl(t);
-                product(t) <= taps(t) * data_in(t);
-                accum(t) <= accum_in(t) + product(t);
-                accum_pl(t) <= accum(t);
-                accum_out(t) <= accum_pl(t);
-
-                -- Assemble input accumulator from its components
-                accum_in(t)(DELAY_RANGE) <= delay_out(t);
-                accum_in(t)(ROUND_OFFSET) <= '1';
-                accum_in(t)(PADDING_RANGE) <= (others => '0');
-            end loop;
-
             data_o <= round(accum_out(TAP_COUNT-1), DATA_OUT_WIDTH);
             data_valid_o <= accum_out_valid;
         end if;
     end process;
+
 
     valid_delay_inst : entity work.dlyline generic map (
         DLY => DATA_VALID_DELAY

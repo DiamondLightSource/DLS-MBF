@@ -112,7 +112,7 @@ begin
     -- already have one tick delay for the multiply above.
     delta_delay : entity work.dlyline generic map (
         DLY => LOOKUP_DELAY - 2,
-        DW => 10
+        DW => delta'LENGTH
     ) port map (
         clk_i => clk_i,
         data_i => std_logic_vector(delta_product(17 downto 8)),

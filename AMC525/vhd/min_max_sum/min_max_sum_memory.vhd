@@ -37,6 +37,7 @@ architecture min_max_sum_memory of min_max_sum_memory is
 
     signal read_row : bram_row_t;
     signal write_row : bram_row_t;
+    signal write_row_pl : bram_row_t;
 
 begin
     memory_inst : entity work.block_memory generic map (
@@ -55,7 +56,8 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             read_data_o <= bits_to_mms_row(read_row);
-            write_row <= mms_row_to_bits(write_data_i);
+            write_row_pl <= mms_row_to_bits(write_data_i);
+            write_row <= write_row;
         end if;
     end process;
 end;

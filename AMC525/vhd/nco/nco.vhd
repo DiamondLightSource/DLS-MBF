@@ -97,7 +97,7 @@ begin
 
     -- Delay line for NCO output
     cos_dly : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => 8,
         DW => 18
     ) port map (
         clk_i => clk_i,
@@ -105,7 +105,7 @@ begin
         signed(data_o) => cos_sin_o.cos
     );
     sin_dly : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => 8,
         DW => 18
     ) port map (
         clk_i => clk_i,

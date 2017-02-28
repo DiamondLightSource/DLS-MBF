@@ -7,6 +7,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/memory/slow_memory_priority.vhd \
     $vhd_dir/memory/slow_memory_top.vhd \
     $vhd_dir/memory/fast_memory_control.vhd \
+    $vhd_dir/memory/fast_memory_pipeline.vhd \
     $vhd_dir/memory/fast_memory_mux.vhd \
     $vhd_dir/memory/fast_memory_top.vhd \
     $vhd_dir/trigger/trigger_defs.vhd \

@@ -60,6 +60,7 @@ architecture bunch_fir_top of bunch_fir_top is
     signal last_turn : std_logic;
     signal filtered_data : data_o'SUBTYPE;
     signal filtered_valid : std_logic;
+    signal data_out : data_o'SUBTYPE;
 
 begin
     register_file_inst : entity work.register_file port map (
@@ -147,6 +148,16 @@ begin
         bunch_index_i => bunch_index,
         data_valid_i => filtered_valid,
         data_i => filtered_data,
-        data_o => data_o
+        data_o => data_out
+    );
+
+    -- need data_o pipeline ohere
+    filtered_delay : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => data_o'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_out),
+        signed(data_o) => data_o
     );
 end;

@@ -28,7 +28,7 @@ begin
         signal fir : signed(FIR_DATA_RANGE);
     begin
         adc_dly : entity work.dlyreg generic map (
-            DLY => 2,
+            DLY => 4,
             DW => 16
         ) port map (
             clk_i => clk_i,
@@ -38,7 +38,7 @@ begin
         adc_o(c) <= adc;
 
         dac_dly : entity work.dlyreg generic map (
-            DLY => 2,
+            DLY => 4,
             DW => 16
         ) port map (
             clk_i => clk_i,
@@ -48,7 +48,7 @@ begin
         dac_o(c) <= dac;
 
         fir_dly : entity work.dlyreg generic map (
-            DLY => 2,
+            DLY => 4,
             DW => FIR_DATA_WIDTH
         ) port map (
             clk_i => clk_i,

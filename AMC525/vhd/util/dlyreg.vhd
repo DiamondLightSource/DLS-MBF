@@ -20,13 +20,10 @@ entity dlyreg is
 end;
 
 architecture dlyreg of dlyreg is
---     type dlyreg_t is array(0 to DLY) of std_logic_vector(DW-1 downto 0);
---     signal dly_wire : dlyreg_t;
-
     type dlyline_t is array(DLY-1 downto 0) of std_logic_vector(DW-1 downto 0);
     signal dlyline : dlyline_t := (others => (others => '0'));
-    attribute keep : boolean;
-    attribute keep of dlyline : signal is true;
+    attribute SHREG_EXTRACT : string;
+    attribute SHREG_EXTRACT of dlyline : signal is "no";
 
 begin
     assert DLY > 0 severity failure;
@@ -40,20 +37,4 @@ begin
         end if;
     end process;
     data_o <= dlyline(DLY-1);
-
---     dly_wire(0) <= data_i;
--- 
---     dly_gen : for i in 0 to DLY-1 generate
---         reg_gen : for j in 0 to DW-1 generate
---             fdce_inst : FDCE port map (
---                 C => clk_i,
---                 D => dly_wire(i)(j),
---                 Q => dly_wire(i + 1)(j),
---                 CE => '1',
---                 CLR => '0'
---             );
---         end generate;
---     end generate;
--- 
---     data_o <= dly_wire(DLY);
 end;
