@@ -43,14 +43,14 @@ architecture testbench of testbench is
 begin
     clk <= not clk after 1 ns;
 
-    nco_inst : entity work.nco port map (
+    nco : entity work.nco_core port map (
         clk_i => clk,
         phase_advance_i => phase_advance,
         reset_i => reset,
         cos_sin_o => unscaled
     );
 
-    nco_scaling_inst : entity work.nco_scaling port map (
+    nco_scaling : entity work.nco_scaling port map (
         clk_i => clk,
         gain_i => gain,
         unscaled_i => unscaled,
