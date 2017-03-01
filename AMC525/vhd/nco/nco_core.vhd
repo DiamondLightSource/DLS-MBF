@@ -35,6 +35,7 @@ architecture nco_core of nco_core is
     signal cos_sin_raw : cos_sin_19_t;
 
     -- Refinement
+    signal octant : octant_t;
     signal residue : residue_t;
     signal cos_sin_refined : cos_sin_18_t;
 
@@ -47,24 +48,21 @@ begin
         phase_o => phase
     );
 
-    -- Split angle into octant, lookup and residue, and recombine the
-    -- result according to the incoming octant.
-    nco_cos_sin_inst : entity work.nco_cos_sin_octant generic map (
+    -- Split angle into octant, lookup and residue.  The returned octant is
+    -- delayed as appropriate for the final correction.
+    prepare : entity work.nco_cos_sin_prepare generic map (
         LOOKUP_DELAY => LOOKUP_DELAY,
         REFINE_DELAY => REFINE_DELAY
     ) port map (
         clk_i => clk_i,
         angle_i => phase,
-
         lookup_o => lookup,
         residue_o => residue,
-
-        cos_sin_i => cos_sin_refined,
-        cos_sin_o => cos_sin_o
+        octant_o => octant
     );
 
     -- Lookup table
-    nco_cos_sin_table_inst : entity work.nco_cos_sin_table generic map (
+    lookup_table : entity work.nco_cos_sin_table generic map (
         LOOKUP_DELAY => LOOKUP_DELAY
     ) port map (
         clk_i => clk_i,
@@ -73,7 +71,7 @@ begin
     );
 
     -- Refine the lookup by linear interpolation
-    refine_inst : entity work.nco_cos_sin_refine generic map (
+    refine : entity work.nco_cos_sin_refine generic map (
         LOOKUP_DELAY => LOOKUP_DELAY,
         REFINE_DELAY => REFINE_DELAY
     ) port map (
@@ -81,5 +79,13 @@ begin
         residue_i => residue,
         cos_sin_i => cos_sin_raw,
         cos_sin_o => cos_sin_refined
+    );
+
+    -- Flip the final result into place according to the original octant
+    fixup_octant : entity work.nco_cos_sin_octant port map (
+        clk_i => clk_i,
+        octant_i => octant,
+        cos_sin_i => cos_sin_refined,
+        cos_sin_o => cos_sin_o
     );
 end;

@@ -14,23 +14,23 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/nco/nco_defs.vhd \
     nco_cos_sin_table.vhd \
     $vhd_dir/nco/nco_phase.vhd \
+    $vhd_dir/nco/nco_cos_sin_prepare.vhd \
     $vhd_dir/nco/nco_cos_sin_octant.vhd \
     $vhd_dir/nco/nco_cos_sin_refine.vhd \
-    $vhd_dir/nco/nco_scaling.vhd \
     $vhd_dir/nco/nco_core.vhd \
-    $vhd_dir/nco/nco.vhd \
+    $vhd_dir/nco/nco_scaling.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/testbench.vhd
 
 
-vsim -t 1ps -lib xil_defaultlib testbench
+vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
 add wave -group "Top" sim:*
 add wave -group "NCO" sim:/testbench/nco/*
-add wave -group "Refine" sim:/testbench/nco/refine_inst/*
+add wave -group "Refine" sim:/testbench/nco/refine/*
 add wave sim:*
 
 
