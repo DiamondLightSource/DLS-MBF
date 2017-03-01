@@ -21,6 +21,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/nco/nco_scaling.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
+    $bench_dir/sim_nco.vhd \
     $bench_dir/testbench.vhd
 
 

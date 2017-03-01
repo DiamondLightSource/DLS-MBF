@@ -10,7 +10,7 @@ entity testbench is
 end testbench;
 
 
-architecture testbench of testbench is
+architecture arch of testbench is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
         variable i : natural;
     begin
@@ -40,6 +40,9 @@ architecture testbench of testbench is
     signal gain : unsigned(3 downto 0);
     signal scaled : cos_sin_16_t;
 
+    signal reference : cos_sin_18_t;
+    signal difference : cos_sin_18_t;
+
 begin
     clk <= not clk after 1 ns;
 
@@ -57,26 +60,20 @@ begin
         scaled_o => scaled
     );
 
-    process begin
-        gain <= "0000";
-        wait;
 
-        tick_wait(10);
-        gain <= "0001";
-        tick_wait(10);
-        gain <= "0010";
-        tick_wait(10);
-        gain <= "0011";
-        tick_wait(10);
-        gain <= "0100";
-        wait;
-    end process;
+    -- Compare simulation with reference
+    sim_nco : entity work.sim_nco port map (
+        clk_i => clk,
+        phase_advance_i => phase_advance,
+        reset_i => reset,
+        cos_sin_o => reference
+    );
+    difference.cos <= unscaled.cos - reference.cos;
+    difference.sin <= unscaled.sin - reference.sin;
 
+
+    -- Sweeping through frequencies
     process begin
---         phase_advance <= X"F0000000";
---         reset <= '0';
---         tick_wait(50);
---         reset <= '1';
         phase_advance <= X"00123456";
         loop
             tick_wait(100);
@@ -86,4 +83,27 @@ begin
     end process;
 
 
-end testbench;
+    -- Gain control
+    process begin
+        for g in 0 to 15 loop
+            gain <= to_unsigned(g, 4);
+            tick_wait(50);
+        end loop;
+        wait;
+    end process;
+
+
+    -- Test reset
+    process begin
+        reset <= '0';
+        tick_wait(100);
+        reset <= '1';
+        tick_wait;
+        reset <= '0';
+        tick_wait(100);
+        reset <= '1';
+        tick_wait(20);
+        reset <= '0';
+        wait;
+    end process;
+end;
