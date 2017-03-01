@@ -23,10 +23,10 @@ entity nco_core is
 end;
 
 architecture nco_core of nco_core is
-    -- Delay from lookup valud to cos_sin_raw valid
+    -- Delay from lookup valid to cos_sin_raw valid
     constant LOOKUP_DELAY : natural := 4;
     -- Delay from cos_sin_raw to cos_sin_refined
-    constant REFINE_DELAY : natural := 3;
+    constant REFINE_DELAY : natural := 4;
 
     signal phase : angle_t;
 
@@ -41,7 +41,7 @@ architecture nco_core of nco_core is
 
 begin
     -- Phase advance computation for NCO
-    nco_phase_inst : entity work.nco_phase port map (
+    nco_phase : entity work.nco_phase port map (
         clk_i => clk_i,
         phase_advance_i => phase_advance_i,
         reset_i => reset_i,

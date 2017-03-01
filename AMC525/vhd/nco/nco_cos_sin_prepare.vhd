@@ -26,6 +26,10 @@ entity nco_cos_sin_prepare is
 end;
 
 architecture nco_cos_sin_prepare of nco_cos_sin_prepare is
+    -- Delay in this block:
+    --  angle_i => lookup_o, residue_o
+    constant PREPARE_DELAY : natural := 1;
+
     signal octant : octant_t;
     signal lookup : lookup_t;
     signal residue : residue_t;
@@ -59,7 +63,7 @@ begin
     --  cos_sin_o --------------------------------------X CS' X--------
     --
     octant_delay : entity work.dlyline generic map (
-        DLY => 2 + LOOKUP_DELAY + REFINE_DELAY,
+        DLY => PREPARE_DELAY + LOOKUP_DELAY + REFINE_DELAY,
         DW => octant_t'LENGTH
     ) port map (
         clk_i => clk_i,

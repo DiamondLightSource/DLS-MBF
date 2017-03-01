@@ -19,6 +19,7 @@ entity nco_cos_sin_octant is
 end;
 
 architecture nco_cos_sin_octant of nco_cos_sin_octant is
+    signal octant : octant_t;
     signal p_cos : signed(17 downto 0);
     signal p_sin : signed(17 downto 0);
     signal m_cos : signed(17 downto 0);
@@ -34,7 +35,9 @@ begin
             p_sin <=  cos_sin_i.sin;
             m_cos <= -cos_sin_i.cos;
             m_sin <= -cos_sin_i.sin;
-            case octant_i is
+
+            octant <= octant_i;
+            case octant is
                 when "000" => cos <= p_cos;  sin <= p_sin;
                 when "001" => cos <= p_sin;  sin <= p_cos;
                 when "010" => cos <= m_sin;  sin <= p_cos;

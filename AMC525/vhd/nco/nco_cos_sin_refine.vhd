@@ -81,7 +81,13 @@ architecture nco_cos_sin_refine of nco_cos_sin_refine is
     --  {cos,sin}_acc_in : 37/-36
     signal residue : signed(8 downto 0);
     signal delta_product : signed(17 downto 0) := (others => '0');
+    signal delta_result : signed(17 downto 0) := (others => '0');
+    attribute USE_DSP48 : string;
+    attribute USE_DSP48 of delta_product : signal is "yes";
+    signal delta_pl : signed(9 downto 0) := (others => '0');
     signal delta : signed(9 downto 0) := (others => '0');
+    signal delta_cos : signed(9 downto 0) := (others => '0');
+    signal delta_sin : signed(9 downto 0) := (others => '0');
 
     signal cos_in : signed(18 downto 0);
     signal sin_in : signed(18 downto 0);
@@ -94,41 +100,34 @@ architecture nco_cos_sin_refine of nco_cos_sin_refine is
 
 begin
     -- This is the delay from cos_sin_i to cos_sin_o:
-    --      cos_sin_i = cos_in, sin_in
+    --  cos_sin_i
+    --      => cos_in, sin_in
     --      => {cos,sin}_product,  {cos,sin}_acc_in
     --      => {cos,sin}_acc_out
     --      => cos_sin_o
-    assert REFINE_DELAY = 3 severity failure;
+    assert REFINE_DELAY = 4 severity failure;
+    assert LOOKUP_DELAY = 4 severity failure;
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            -- Convert unsigned residue to signed for multiplier
+            -- Convert unsigned residue to signed for multiplier.  We need an
+            -- extra pipeline stage after the product to align the result.
             residue <= signed('0' & residue_i(18 downto 11));
             delta_product <= PI_SCALED * residue;
-        end if;
-    end process;
+            delta_result <= delta_product;
+            delta_pl <= delta_result(17 downto 8);
+            delta <= delta_pl;
 
-    -- Now synchronise delta with cos_sin_i, delayed by table lookup.  We
-    -- already have one tick delay for the multiply above.
-    delta_delay : entity work.dlyline generic map (
-        DLY => LOOKUP_DELAY - 2,
-        DW => delta'LENGTH
-    ) port map (
-        clk_i => clk_i,
-        data_i => std_logic_vector(delta_product(17 downto 8)),
-        signed(data_o) => delta
-    );
+            -- Final fixup with enough register delays so that it fits in a DSP
+            cos_in <= cos_sin_i.cos;
+            sin_in <= cos_sin_i.sin;
+            delta_cos <= delta;
+            delta_sin <= delta;
 
-
-    -- Final fixup with enough register delays so that it fits in a DSP unit
-    cos_in <= cos_sin_i.cos;
-    sin_in <= cos_sin_i.sin;
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            cos_product <= delta * cos_in;
-            sin_product <= delta * sin_in;
-            cos_acc_in <= cos_in & "00" & X"0000";
-            sin_acc_in <= sin_in & "00" & X"0000";
+            cos_product <= delta_cos * cos_in;
+            sin_product <= delta_sin * sin_in;
+            cos_acc_in <= cos_in & 18X"00000";
+            sin_acc_in <= sin_in & 18X"00000";
 
             cos_acc_out <= cos_acc_in - sin_product;
             sin_acc_out <= sin_acc_in + cos_product;
