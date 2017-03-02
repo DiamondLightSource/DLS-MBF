@@ -33,7 +33,7 @@ architecture arch of sim_nco is
     -- This delay must match the NCO core delay.  This is the sum of
     -- LOOKUP_DELAY and REFINE_DELAY defined in nco_core plus any delay added
     -- by nco_cos_sin_prepare and nco_cos_sin_octant.
-    constant OUT_DELAY : natural := 15;
+    constant OUT_DELAY : natural := 14;
 
 begin
     -- Use the hardware phase calculation

@@ -94,34 +94,37 @@ architecture nco_cos_sin_refine of nco_cos_sin_refine is
         := (others => (others => '0'));
     signal delta_in : signed(9 downto 0) := (others => '0');
     -- 2
-    signal cos_in_pl : signed(18 downto 0) := (others => '0');
-    signal sin_in_pl : signed(18 downto 0) := (others => '0');
-    signal delta_in_pl : signed(9 downto 0) := (others => '0');
-    -- 3
     signal cos_in : signed(18 downto 0) := (others => '0');
     signal sin_in : signed(18 downto 0) := (others => '0');
     signal cos_acc_in : signed(36 downto 0) := (others => '0');
     signal sin_acc_in : signed(36 downto 0) := (others => '0');
     signal delta_mul : signed(9 downto 0) := (others => '0');
-    -- 4
+    -- 3
     signal cos_product : signed(28 downto 0) := (others => '0');
     signal sin_product : signed(28 downto 0) := (others => '0');
     signal cos_acc : signed(36 downto 0) := (others => '0');
     signal sin_acc : signed(36 downto 0) := (others => '0');
-    -- 5
+    -- 4
     signal cos_acc_out : signed(36 downto 0) := (others => '0');
     signal sin_acc_out : signed(36 downto 0) := (others => '0');
-    -- 6
+    -- 5
     signal cos_acc_out_pl : signed(36 downto 0) := (others => '0');
     signal sin_acc_out_pl : signed(36 downto 0) := (others => '0');
+
+    -- Suppress the first stage of DSP48E1 pipeline absorbption; without this,
+    -- the DSP unit will swallow two input pipeline stages!
+    attribute DONT_TOUCH : string;
+    attribute DONT_TOUCH of residue_i : signal is "yes";
+    attribute DONT_TOUCH of cos_sin_in : signal is "yes";
+    attribute DONT_TOUCH of delta_in : signal is "yes";
 
 begin
     -- We align cos_sin_i and delta: the delay from residue_i to delta must
     -- match the lookup delay (from lookup to cos_sin_i):
     --  residue_i
-    --      => residue
-    --      => delta_product
-    --      => delta_result
+    --      => residue                                      |
+    --      => delta_product                                | Registers in DSP
+    --      => delta_result                                 |
     --      => delta
     -- At this point delta and cos_sin_i are synchronous.
     assert LOOKUP_DELAY = 4 severity failure;
@@ -129,13 +132,12 @@ begin
     -- This is the delay from (cos_sin_i, delta) to cos_sin_o:
     --  cos_sin_i, delta
     --  1   => cos_sin_in, delta_in
-    --  2   => {cos,sin}_in_pl, delta_in_pl
-    --  3   => {cos,sin}_in, {cos,sin}_acc_in, delta_mul
-    --  4   => {cos,sin}_product,  {cos,sin}_acc
-    --  5   => {cos,sin}_acc_out
-    --  6   => {cos,sin}_acc_pl
-    --  7   => cos_sin_o
-    assert REFINE_DELAY = 7 severity failure;
+    --  2   => {cos,sin}_in, {cos,sin}_acc_in, delta_mul    |
+    --  3   => {cos,sin}_product,  {cos,sin}_acc            | Registers in DSP
+    --  4   => {cos,sin}_acc_out                            |
+    --  5   => {cos,sin}_acc_pl
+    --  6   => cos_sin_o
+    assert REFINE_DELAY = 6 severity failure;
 
     process (clk_i) begin
         if rising_edge(clk_i) then
@@ -147,37 +149,32 @@ begin
             delta <= delta_result(17 downto 8);
             -- At this point delta and cos_sin_i will be in step
 
-            -- 1 - Initial input registers
+            -- 1 - Pipeline registers for routing
             cos_sin_in <= cos_sin_i;
             delta_in <= delta;
 
-            -- 2 - Extra input pipeline stage (is this necessary?)
-            cos_in_pl <= cos_sin_in.cos;
-            sin_in_pl <= cos_sin_in.sin;
-            delta_in_pl <= delta_in;
+            -- 2 - DSP Input registers
+            cos_in <= cos_sin_in.cos;
+            sin_in <= cos_sin_in.sin;
+            cos_acc_in <= cos_sin_in.cos & 18X"00000";
+            sin_acc_in <= cos_sin_in.sin & 18X"00000";
+            delta_mul <= delta_in;
 
-            -- 3 - Input registers
-            cos_in <= cos_in_pl;
-            sin_in <= sin_in_pl;
-            cos_acc_in <= cos_in_pl & 18X"00000";
-            sin_acc_in <= sin_in_pl & 18X"00000";
-            delta_mul <= delta_in_pl;
-
-            -- 4 - Compute product and propagate addend
+            -- 3 - Compute product and propagate addend
             cos_product <= delta_mul * cos_in;
             sin_product <= delta_mul * sin_in;
             cos_acc <= cos_acc_in;
             sin_acc <= sin_acc_in;
 
-            -- 5 - Accumulate corrected result
+            -- 4 - Accumulate corrected result into DSP output
             cos_acc_out <= cos_acc - sin_product;
             sin_acc_out <= sin_acc + cos_product;
 
-            -- 6 - Pipeline the computed result
+            -- 5 - Pipeline the computed result
             cos_acc_out_pl <= cos_acc_out;
             sin_acc_out_pl <= sin_acc_out;
 
-            -- 7 - Round the result
+            -- 6 - Round the result
             cos_sin_o.cos <= round(cos_acc_out_pl, 18);
             cos_sin_o.sin <= round(sin_acc_out_pl, 18);
         end if;

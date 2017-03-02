@@ -79,10 +79,11 @@ begin
     -- Sweeping through frequencies
     process begin
         phase_advance <= X"00123456";
-        loop
-            tick_wait(100);
+        for i in 1 to 10 loop
+            tick_wait(60);
             phase_advance <= shift_left(phase_advance, 1);
         end loop;
+        phase_advance <= X"00147AE1";
         wait;
     end process;
 
@@ -107,6 +108,10 @@ begin
         tick_wait(100);
         reset <= '1';
         tick_wait(20);
+        reset <= '0';
+        tick_wait(400);
+        reset <= '1';
+        tick_wait;
         reset <= '0';
         wait;
     end process;
