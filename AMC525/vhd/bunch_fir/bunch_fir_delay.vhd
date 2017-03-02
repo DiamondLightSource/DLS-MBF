@@ -20,13 +20,13 @@ entity bunch_fir_delay is
 end;
 
 architecture bunch_fir_delay of bunch_fir_delay is
-    constant ADDR_BITS : natural := bunch_index_i'LENGTH;
     -- Delay the write address by the external processing duration, together
     -- with a compensation for the block memory delay
     constant WRITE_DELAY : natural := PROCESS_DELAY + 3;
 
     signal data_in : data_i'SUBTYPE;
-    signal write_addr : unsigned(ADDR_BITS-1 downto 0);
+    signal read_addr : bunch_index_i'SUBTYPE;
+    signal write_addr : bunch_index_i'SUBTYPE;
 
 begin
     assert data_i'LENGTH = data_o'LENGTH severity failure;
@@ -35,16 +35,17 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             data_in <= data_i;
+            read_addr <= bunch_index_i;
         end if;
     end process;
 
     -- Delay line
     memory_inst : entity work.block_memory generic map (
-        ADDR_BITS => ADDR_BITS,
+        ADDR_BITS => bunch_index_i'LENGTH,
         DATA_BITS => data_i'LENGTH
     ) port map (
         read_clk_i => clk_i,
-        read_addr_i => bunch_index_i,
+        read_addr_i => read_addr,
         signed(read_data_o) => data_o,
 
         write_clk_i => clk_i,
@@ -56,10 +57,10 @@ begin
     -- Delay the write address relative to the read address
     delayline_inst : entity work.dlyline generic map (
         DLY => WRITE_DELAY,
-        DW  => ADDR_BITS
+        DW  => bunch_index_i'LENGTH
     ) port map (
        clk_i => clk_i,
-       data_i => std_logic_vector(bunch_index_i),
+       data_i => std_logic_vector(read_addr),
        unsigned(data_o) => write_addr
     );
 end;
