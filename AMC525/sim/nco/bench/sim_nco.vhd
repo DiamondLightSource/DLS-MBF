@@ -30,7 +30,10 @@ architecture arch of sim_nco is
 
     signal cos_sin : cos_sin_18_t;
 
-    constant OUT_DELAY : natural := 12;
+    -- This delay must match the NCO core delay.  This is the sum of
+    -- LOOKUP_DELAY and REFINE_DELAY defined in nco_core plus any delay added
+    -- by nco_cos_sin_prepare and nco_cos_sin_octant.
+    constant OUT_DELAY : natural := 15;
 
 begin
     -- Use the hardware phase calculation
@@ -45,8 +48,8 @@ begin
     cosine <= cos(phase);
     sine <= sin(phase);
 
-    cos_sin.cos <= to_signed(integer(cosine * real(16#1FFFF#)), 18);
-    cos_sin.sin <= to_signed(integer(sine   * real(16#1FFFF#)), 18);
+    cos_sin.cos <= to_signed(integer(cosine * real(16#1FFFC#)), 18);
+    cos_sin.sin <= to_signed(integer(sine   * real(16#1FFFC#)), 18);
 
     -- Delay result to match hardware
     cos_dly : entity work.dlyreg generic map (

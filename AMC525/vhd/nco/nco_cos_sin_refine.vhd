@@ -45,7 +45,6 @@
 --      cos_acc_in, sin_acc_in : 37/-36
 --      cos_acc_out, sout_acc_out : 37/-36
 
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -89,23 +88,40 @@ architecture nco_cos_sin_refine of nco_cos_sin_refine is
     signal delta_cos : signed(9 downto 0) := (others => '0');
     signal delta_sin : signed(9 downto 0) := (others => '0');
 
+    signal cos_sin_in : cos_sin_i'SUBTYPE;
     signal cos_in : signed(18 downto 0);
     signal sin_in : signed(18 downto 0);
+    signal cos_in_pl : signed(18 downto 0);
+    signal sin_in_pl : signed(18 downto 0);
     signal cos_product : signed(28 downto 0) := (others => '0');
     signal sin_product : signed(28 downto 0) := (others => '0');
+    signal cos_product_pl : signed(28 downto 0) := (others => '0');
+    signal sin_product_pl : signed(28 downto 0) := (others => '0');
     signal cos_acc_in  : signed(36 downto 0) := (others => '0');
     signal sin_acc_in  : signed(36 downto 0) := (others => '0');
     signal cos_acc_out : signed(36 downto 0) := (others => '0');
     signal sin_acc_out : signed(36 downto 0) := (others => '0');
+    signal cos_acc_out_pl : signed(36 downto 0) := (others => '0');
+    signal sin_acc_out_pl : signed(36 downto 0) := (others => '0');
 
 begin
     -- This is the delay from cos_sin_i to cos_sin_o:
     --  cos_sin_i
+    --      => cos_sin_in
     --      => cos_in, sin_in
     --      => {cos,sin}_product,  {cos,sin}_acc_in
+    --      => {cos,sin}_product_pl,  {cos,sin}_acc_in_pl
     --      => {cos,sin}_acc_out
+    --      => {cos,sin}_acc_out_pl
     --      => cos_sin_o
-    assert REFINE_DELAY = 4 severity failure;
+    assert REFINE_DELAY = 7 severity failure;
+    -- We align cos_sin_i and delta: the delay from residue_i to delta must
+    -- match the lookup delay (from lookup to cos_sin_i):
+    --  residue_i
+    --      => residue
+    --      => delta_product
+    --      => delta_result
+    --      => delta
     assert LOOKUP_DELAY = 4 severity failure;
 
     process (clk_i) begin
@@ -115,26 +131,38 @@ begin
             residue <= signed('0' & residue_i(18 downto 11));
             delta_product <= PI_SCALED * residue;
             delta_result <= delta_product;
-            delta_pl <= delta_result(17 downto 8);
-            delta <= delta_pl;
+            delta <= delta_result(17 downto 8);
+            -- At this point delta and cos_sin_i should be in step
 
             -- Final fixup with enough register delays so that it fits in a DSP
-            cos_in <= cos_sin_i.cos;
-            sin_in <= cos_sin_i.sin;
-            delta_cos <= delta;
-            delta_sin <= delta;
+            cos_sin_in <= cos_sin_i;
+            delta_pl <= delta;
+
+            cos_in <= cos_sin_in.cos;
+            sin_in <= cos_sin_in.sin;
+            delta_cos <= delta_pl;
+            delta_sin <= delta_pl;
 
             cos_product <= delta_cos * cos_in;
             sin_product <= delta_sin * sin_in;
-            cos_acc_in <= cos_in & 18X"00000";
-            sin_acc_in <= sin_in & 18X"00000";
 
-            cos_acc_out <= cos_acc_in - sin_product;
-            sin_acc_out <= sin_acc_in + cos_product;
+            cos_product_pl <= cos_product;
+            sin_product_pl <= sin_product;
+            cos_in_pl <= cos_in;
+            sin_in_pl <= sin_in;
+
+            cos_acc_in <= cos_in_pl & 18X"00000";
+            sin_acc_in <= sin_in_pl & 18X"00000";
+
+            cos_acc_out <= cos_acc_in - sin_product_pl;
+            sin_acc_out <= sin_acc_in + cos_product_pl;
+
+            cos_acc_out_pl <= cos_acc_out;
+            sin_acc_out_pl <= sin_acc_out;
 
             -- Round the result
-            cos_sin_o.cos <= round(cos_acc_out, 18);
-            cos_sin_o.sin <= round(sin_acc_out, 18);
+            cos_sin_o.cos <= round(cos_acc_out_pl, 18);
+            cos_sin_o.sin <= round(sin_acc_out_pl, 18);
         end if;
     end process;
 end;

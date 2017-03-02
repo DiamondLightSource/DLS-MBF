@@ -42,6 +42,7 @@ architecture arch of testbench is
 
     signal reference : cos_sin_18_t;
     signal difference : cos_sin_18_t;
+    signal sim_error : boolean;
 
 begin
     clk <= not clk after 1 ns;
@@ -70,6 +71,9 @@ begin
     );
     difference.cos <= unscaled.cos - reference.cos;
     difference.sin <= unscaled.sin - reference.sin;
+    process (clk) begin
+        sim_error <= abs(difference.cos) > 1 or abs(difference.sin) > 1;
+    end process;
 
 
     -- Sweeping through frequencies

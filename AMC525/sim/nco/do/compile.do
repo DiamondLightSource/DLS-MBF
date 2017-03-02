@@ -34,6 +34,18 @@ add wave -group "NCO" sim:/testbench/nco/*
 add wave -group "Refine" sim:/testbench/nco/refine/*
 add wave sim:*
 
+add wave -noupdate \
+    -childformat { \
+        {/testbench/difference.cos -radix decimal} \
+        {/testbench/difference.sin -radix decimal}} \
+    -expand -subitemconfig { \
+        /testbench/difference.cos \
+            {-format Analog-Step \
+                -height 84 -max 2.0 -min -2.0 -radix decimal} \
+        /testbench/difference.sin \
+            {-format Analog-Step \
+                -height 84 -max 2.0 -min -2.0 -radix decimal}} \
+    /testbench/difference
 
 run 2us
 
