@@ -78,32 +78,43 @@ begin
 
     -- Core processing DSP chain
     taps_gen : for t in TAPS_RANGE generate
-        signal taps : signed(TAP_WIDTH-1 downto 0);
+        signal tap : signed(TAP_WIDTH-1 downto 0);
+        signal tap_pl : signed(TAP_WIDTH-1 downto 0);
         signal data_pl : signed(DATA_IN_WIDTH-1 downto 0);
         signal data_in : signed(DATA_IN_WIDTH-1 downto 0);
         signal product : signed(PRODUCT_WIDTH-1 downto 0);
         signal accum_in_pl : signed(DELAY_WIDTH-1 downto 0);
         signal accum_in : signed(ACCUM_WIDTH-1 downto 0);
         signal accum : signed(ACCUM_WIDTH-1 downto 0);
+
+        -- Stop the DSP unit from eating the outermost input registers
+        attribute DONT_TOUCH : string;
+        attribute DONT_TOUCH of tap_pl : signal is "yes";
+        attribute DONT_TOUCH of data_pl : signal is "yes";
+
     begin
         process (clk_i) begin
             if rising_edge(clk_i) then
-                -- Accumulator optimised for DSP unit
-                taps <= taps_i(TAP_COUNT-1 - t);     -- Reverse taps
+                tap_pl <= taps_i(TAP_COUNT-1 - t);     -- Taps in reverse order
                 data_pl <= data_i;
-                data_in <= data_pl;
-                product <= taps * data_in;
-                accum <= accum_in + product;
 
+                -- Three stages of pipeline are needed for the DSP48E1
+                tap <= tap_pl;
+                data_in <= data_pl;
+
+                product <= tap * data_in;
                 -- Assemble input accumulator from its components
                 accum_in(DELAY_RANGE) <= accum_in_pl;
                 accum_in(ROUND_OFFSET) <= '1';
                 accum_in(PADDING_RANGE) <= (others => '0');
+
+                accum <= accum_in + product;
+
             end if;
         end process;
 
         out_delay : entity work.dlyreg generic map (
-            DLY => 2,
+            DLY => 3,
             DW => ACCUM_WIDTH
         ) port map (
             clk_i => clk_i,
