@@ -58,15 +58,22 @@ architecture bunch_fir of bunch_fir is
 
     -- Delay from data in valid to accum_out valid.  This is derived from the
     -- following data path:
-    --      data_i => data_in => product => accum_out
-    constant DATA_VALID_DELAY : natural := 3;
+    --  data_i
+    --      => data_pl
+    --      => data_in
+    --      => product
+    --      => accum_out
+    constant DATA_VALID_DELAY : natural := 4;
     -- Data valid for data out and updating delay line
     signal accum_out_valid : std_logic;
 
     -- Delay from delay_out to accum_out, used for delay line, derived from
     -- this data path:
-    --      delay_out => accum_in => accum => accum_pl => accum_out
-    constant PROCESS_DELAY : natural := 4;
+    --  delay_out
+    --      => accum_in
+    --      => accum
+    --      => accum_out
+    constant PROCESS_DELAY : natural := 3;
 
 begin
     -- Ensure we fit within the DSP48E1
@@ -83,9 +90,7 @@ begin
         signal data_pl : signed(DATA_IN_WIDTH-1 downto 0);
         signal data_in : signed(DATA_IN_WIDTH-1 downto 0);
         signal product : signed(PRODUCT_WIDTH-1 downto 0);
-        signal accum_in_pl : signed(DELAY_WIDTH-1 downto 0);
         signal accum_in : signed(ACCUM_WIDTH-1 downto 0);
-        signal accum : signed(ACCUM_WIDTH-1 downto 0);
 
         -- Stop the DSP unit from eating the outermost input registers
         attribute DONT_TOUCH : string;
@@ -104,32 +109,13 @@ begin
 
                 product <= tap * data_in;
                 -- Assemble input accumulator from its components
-                accum_in(DELAY_RANGE) <= accum_in_pl;
+                accum_in(DELAY_RANGE) <= delay_out(t);
                 accum_in(ROUND_OFFSET) <= '1';
                 accum_in(PADDING_RANGE) <= (others => '0');
 
-                accum <= accum_in + product;
-
+                accum_out(t) <= accum_in + product;
             end if;
         end process;
-
-        out_delay : entity work.dlyreg generic map (
-            DLY => 3,
-            DW => ACCUM_WIDTH
-        ) port map (
-            clk_i => clk_i,
-            data_i => std_logic_vector(accum),
-            signed(data_o) => accum_out(t)
-        );
-
-        in_delay : entity work.dlyreg generic map (
-            DLY => 2,
-            DW => DELAY_WIDTH
-        ) port map (
-            clk_i => clk_i,
-            data_i => std_logic_vector(delay_out(t)),
-            signed(data_o) => accum_in_pl
-        );
     end generate;
 
 
