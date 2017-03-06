@@ -15,7 +15,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/edge_detect.vhd \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/system/adc_phase.vhd \
-    $vhd_dir/dsp/adc_to_dsp.vhd \
+    $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/registers/register_read_adc.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
     $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
@@ -41,6 +41,8 @@ add wave -group "MMS Store" \
     sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/*
 add wave -group "mem(0)" \
     sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/*
+add wave -group "bram(0)" \
+    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/bram/*
 add wave -group "mem(1)" \
     sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(1)/memory_inst/*
 add wave -group "update" \
@@ -49,10 +51,9 @@ add wave -group "Readout" \
     sim:/testbench/min_max_sum_inst/readout_inst/*
 add wave -group "Limit" sim:/testbench/min_max_limit_inst/*
 
-add wave -group "Top" sim:*
-# add wave sim:*
+add wave sim:*
 
 
-run 2 us
+run 4 us
 
 # vim: set filetype=tcl:

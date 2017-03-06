@@ -10,7 +10,7 @@ entity testbench is
 end testbench;
 
 architecture testbench of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_logic; count : in natural := 1) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -48,7 +48,7 @@ architecture testbench of testbench is
     signal delta : unsigned(15 downto 0);
     signal overflow : std_logic;
 
-    constant BUNCH_COUNT : natural := 6;   -- A very small ring!
+    constant BUNCH_COUNT : natural := 12;   -- A very small ring!
 
 begin
 
@@ -66,7 +66,7 @@ begin
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
         adc_phase_i => adc_phase,
-        turn_clock_i => turn_clock,
+        turn_clock_adc_i => turn_clock,
         data_i => adc_data,
         delta_o => delta,
         overflow_o => overflow,
@@ -76,7 +76,9 @@ begin
     );
 
     min_max_limit_inst : entity work.min_max_limit port map (
+        adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
+        adc_phase_i => adc_phase,
         delta_i => delta,
         limit_i => limit,
         reset_event_i => reset_event,
@@ -88,17 +90,17 @@ begin
     -- A little sawtooth for the ADC data should be enough
     process (adc_clk) begin
         if rising_edge(adc_clk) then
-            if adc_data_raw < 7 then
-                adc_data_raw <= adc_data_raw + 1;
+            if adc_data_raw = 0 then
+                adc_data_raw <= to_signed(BUNCH_COUNT-1, 16);
             else
-                adc_data_raw <= to_signed(-3, 16);
+                adc_data_raw <= adc_data_raw - 1;
             end if;
 
-            if turn_clock = '1' and adc_phase = '1' then
---                 adc_data <= (others => 'X');
-                adc_data <= (others => '0');
+            if turn_clock = '1' then
+                -- Special labelling of one bunch so we can see it
+                adc_data <= to_signed(0, 16);
             else
-                adc_data <= adc_data_raw;
+                adc_data <= 20 + adc_data_raw;
             end if;
         end if;
     end process;
@@ -106,31 +108,51 @@ begin
     -- Bunch counter.
     process begin
         turn_clock <= '0';
-        tick_wait(2);
+        clk_wait(adc_clk, 2);
         loop
             turn_clock <= '1';
-            tick_wait;
+            clk_wait(adc_clk, 1);
             turn_clock <= '0';
-            tick_wait(BUNCH_COUNT-1);
+            clk_wait(adc_clk, BUNCH_COUNT-1);
         end loop;
     end process;
 
-    -- Register control
+
+    -- Register control and bank readout
     process
+        variable read_result : reg_data_t;
+
         procedure read_register(reg : natural) is
         begin
             read_strobe(reg) <= '1';
             tick_wait;
             read_strobe(reg) <= '0';
             wait until rising_edge(dsp_clk) and read_ack(reg) = '1';
+            read_result := read_data(reg);
         end;
 
         -- Readout bank
         procedure readout_bank is
+            variable min : std_logic_vector(15 downto 0);
+            variable max : std_logic_vector(15 downto 0);
+            variable sum : std_logic_vector(31 downto 0);
+            variable sum2 : std_logic_vector(47 downto 0);
         begin
-            -- 8 words for each bunch pair
-            for i in 0 to 8*BUNCH_COUNT-1 loop
+            -- 4 words for each bunch
+            for i in 0 to BUNCH_COUNT-1 loop
                 read_register(1);
+                min := read_result(15 downto 0);
+                max := read_result(31 downto 16);
+                read_register(1);
+                sum := read_result;
+                read_register(1);
+                sum2(31 downto 0) := read_result;
+                read_register(1);
+                sum2(47 downto 32) := read_result(15 downto 0);
+
+                report "bunch[" & integer'image(i) & "] = { " &
+                    to_hstring(min) & ", " & to_hstring(max) & "; " &
+                    to_hstring(sum) & ", " & to_hstring(sum2) & " }";
             end loop;
         end;
 
@@ -138,23 +160,36 @@ begin
         procedure switch_bank is
         begin
             read_register(0);
+            report "switch: frame count = " &
+                to_hstring(read_result(28 downto 0)) &
+                ", count_ovfl = " &
+                std_logic'image(read_result(29)) &
+                ", sum_ovfl = " &
+                std_logic'image(read_result(30)) &
+                ", sum2_ovfl = " &
+                std_logic'image(read_result(31));
         end;
     begin
         read_strobe <= "00";
+        tick_wait(10);      -- Wait for clocking to settle
+
+        -- Loop alternately reading out banks.
+        loop
+            report "---------------------------------------------------------";
+            switch_bank;
+            readout_bank;
+        end loop;
+        wait;
+    end process;
+
+
+    -- Limit detection
+    process begin
         reset_event <= '0';
-
-        -- To get things working we need to start by resetting both banks
-        tick_wait(3);
-        readout_bank;
-        switch_bank;
-        readout_bank;
-        switch_bank;
-        readout_bank;
-
+        tick_wait(200);
         reset_event <= '1';
         tick_wait;
         reset_event <= '0';
-
         wait;
     end process;
 
