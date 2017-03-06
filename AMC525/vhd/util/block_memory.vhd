@@ -29,7 +29,8 @@ use ieee.numeric_std.all;
 entity block_memory is
     generic (
         ADDR_BITS : natural;
-        DATA_BITS : natural
+        DATA_BITS : natural;
+        READ_DELAY : natural := 2   -- Validation parameter only
     );
     port (
         -- Read interface
@@ -58,6 +59,12 @@ architecture block_memory of block_memory is
         := (others => '0');
 
 begin
+    -- For callers to verify if required:
+    --  read_addr_i
+    --      => read_data
+    --      => read_data_o
+    assert READ_DELAY = 2 severity failure;
+
     process (write_clk_i) begin
         if rising_edge(write_clk_i) then
             if write_strobe_i = '1' then

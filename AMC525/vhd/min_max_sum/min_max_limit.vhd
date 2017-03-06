@@ -19,7 +19,7 @@ entity min_max_limit is
         limit_i : in unsigned;
         reset_event_i : in std_logic;
 
-        limit_event_o : out std_logic
+        limit_event_o : out std_logic := '0'
     );
 end;
 

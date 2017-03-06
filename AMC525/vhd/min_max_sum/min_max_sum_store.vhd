@@ -56,13 +56,23 @@ architecture min_max_sum_store of min_max_sum_store is
     signal write_bank : natural range 0 to 1;
     signal write_bank_std : std_logic;
 
-    -- Skew from update read to write address
-    constant WRITE_DELAY : natural := 6 + UPDATE_DELAY;
+    -- Delay read_addr => read_data
+    constant READ_DELAY : natural := 3;
+    -- Skew from update read to write address:
+    --  update_addr_i => update_write_addr and update_data_i must match:
+    --  update_addr_i
+    --      => read_addr(read_addr_bank)
+    --      =(READ_DELAY)=> read_data(read_addr_bank)
+    --      => update_data_o
+    --      =(UPDATE_DELAY)=> update_data_i
+    constant WRITE_DELAY : natural := READ_DELAY + UPDATE_DELAY + 2;
 
 begin
     -- Memory interface
     mem_gen : for i in 0 to 1 generate
-        memory_inst : entity work.min_max_sum_memory port map (
+        memory_inst : entity work.min_max_sum_memory generic map (
+            READ_DELAY => READ_DELAY
+        ) port map (
             clk_i => clk_i,
             read_addr_i => read_addr(i),
             read_data_o => read_data(i),
@@ -102,26 +112,29 @@ begin
     --
     -- The following timing diagram illustrates this:
     --
-    --  clk_i       /     /     /     /     / ... /     /     /     /
-    --  ra      ----X A   X-------------------------------------------
-    --  rab     ----X B   X-------------------------------------------
-    --  ra[B]   ----------X MA  X-------------------------------------
-    --  rd[B]   ----------------------X MA  X-------------------------
-    --  rdb     ----------------------X B   X-------------------------
-    --  ud_o    ----------------------------X MA  X-------------------
-    --                                      |---->| UPDATE_DELAY
-    --  ud_i    ----------------------------------X UMA X-------------
-    --  wa      ----------------------------------X A   X-------------
-    --  wb      ----------------------------------X B   X-------------
-    --  wa[B]   ----------------------------------------X A   X-------
-    --  wd[B]   ----------------------------------------X UMA X-------
+    --  clk_i       /     /     /     /     /     /     /     /     /
+    --  ra      ----X A   X----------------------------------------------------
+    --  rab     ----X B   X----------------------------------------------------
+    --  ra[B]   ----------X MA  X----------------------------------------------
+    --                    |-- READ_DELAY -->|
+    --  rd[B]   ----------------------------X MA  X----------------------------
+    --  rdb     ----------------------------X B   X----------------------------
+    --  ud_o    ----------------------------------------X MA  X----------------
+    --                                      |---------->| UPDATE_DELAY
+    --  ud_i    ----------------------------------------------X UMA X----------
+    --  wa      ----------------------------------------------X A   X----------
+    --  wb      ----------------------------------------------X B   X----------
+    --              |--------- WRITE_DELAY ------------------>|
+    --  wa[B]   ----------------------------------------------------X A   X----
+    --  wd[B]   ----------------------------------------------------X UMA X----
     --
     -- ra = update_addr_i, rab = read_addr_bank, ra[B] = read_addr(B),
     -- rd[B] = read_data(B), rdb = read_data_bank, ud_o = update_data_o,
     -- ud_i = update_data_i, wa = update_write_addr, bw = write_bank,
     -- wa[B] = write_addr(B), wd[N] = write_data(B).
+
     dly_read_inst : entity work.dlyline generic map (
-        DLY => 3
+        DLY => READ_DELAY + 1
     ) port map (
         clk_i => clk_i,
         data_i(0) => to_std_logic(read_addr_bank),
@@ -129,7 +142,7 @@ begin
     );
     read_data_bank <= to_integer(read_data_bank_std);
 
-    dly_write_bank_inst : entity work.dlyreg generic map (
+    dly_write_bank_inst : entity work.dlyline generic map (
         DLY => WRITE_DELAY
     ) port map (
         clk_i => clk_i,

@@ -29,6 +29,9 @@ use work.support.all;
 use work.min_max_sum_defs.all;
 
 entity min_max_sum_update is
+    generic (
+        UPDATE_DELAY : natural
+    );
     port (
         clk_i : in std_logic;
 
@@ -36,9 +39,9 @@ entity min_max_sum_update is
         mms_i : in mms_row_t;
         mms_o : out mms_row_t := mms_reset_value;
 
-        sum_overflow_o : out std_logic;
-        sum2_overflow_o : out std_logic;
-        delta_o : out unsigned(15 downto 0)
+        sum_overflow_o : out std_logic := '0';
+        sum2_overflow_o : out std_logic := '0';
+        delta_o : out unsigned(15 downto 0) := (others => '0')
     );
 end;
 
@@ -52,13 +55,19 @@ architecture min_max_sum_update of min_max_sum_update is
     signal product : signed(31 downto 0) := (others => '0');
 
     -- Overflow detection
-    signal old_sum_top : std_logic_vector(1 downto 0);
-    signal delta_sum_top : std_logic_vector(3 downto 0);
-    signal old_sum2_top : std_logic;
-    signal delta_sum2_top : std_logic_vector(1 downto 0);
-    signal sum_overflow : std_logic;
+    signal old_sum_top : std_logic_vector(1 downto 0) := "00";
+    signal delta_sum_top : std_logic_vector(3 downto 0) := "0000";
+    signal old_sum2_top : std_logic := '0';
+    signal delta_sum2_top : std_logic_vector(1 downto 0) := "00";
+    signal sum_overflow : std_logic := '0';
 
 begin
+    -- Delay mms_i => mms_o
+    --  mms_i
+    --      => mms
+    --      => mms_o
+    assert UPDATE_DELAY = 2 severity failure;
+
     -- Start with a data pipeline protected from being eaten by the DSP unit.
     dlyreg_inst : entity work.dlyreg generic map (
         DLY => 2,

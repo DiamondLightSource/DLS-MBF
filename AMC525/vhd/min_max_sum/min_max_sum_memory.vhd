@@ -14,12 +14,15 @@ use work.defines.all;
 use work.min_max_sum_defs.all;
 
 entity min_max_sum_memory is
+    generic (
+        READ_DELAY : natural
+    );
     port (
         clk_i : in std_logic;
 
         -- Read interface
         read_addr_i : in unsigned;
-        read_data_o : out mms_row_t;
+        read_data_o : out mms_row_t := mms_reset_value;
 
         -- Write interface
         write_strobe_i : in std_logic;
@@ -36,25 +39,38 @@ architecture min_max_sum_memory of min_max_sum_memory is
     subtype bram_row_t is std_logic_vector(LANE_ROW_BITS-1 downto 0);
 
     signal read_row : bram_row_t;
+
+    signal write_strobe : std_logic;
+    signal write_addr : write_addr_i'SUBTYPE;
     signal write_row : bram_row_t;
 
 begin
-    memory_inst : entity work.block_memory generic map (
+    -- Delay from read_addr_i to read_data_o
+    --  read_addr_i
+    --      =(2)=> read_row (block_memory)
+    --      => read_data_o
+    assert READ_DELAY = 3 severity failure;
+
+    bram : entity work.block_memory generic map (
         ADDR_BITS => ADDR_BITS,
-        DATA_BITS => LANE_ROW_BITS
+        DATA_BITS => LANE_ROW_BITS,
+        READ_DELAY => 2
     ) port map (
         read_clk_i => clk_i,
         read_addr_i => read_addr_i,
         read_data_o => read_row,
         write_clk_i => clk_i,
-        write_strobe_i => write_strobe_i,
-        write_addr_i => write_addr_i,
+        write_strobe_i => write_strobe,
+        write_addr_i => write_addr,
         write_data_i => write_row
     );
 
     process (clk_i) begin
         if rising_edge(clk_i) then
             read_data_o <= bits_to_mms_row(read_row);
+
+            write_strobe <= write_strobe_i;
+            write_addr <= write_addr_i;
             write_row <= mms_row_to_bits(write_data_i);
         end if;
     end process;

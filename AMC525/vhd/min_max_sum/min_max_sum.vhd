@@ -167,7 +167,9 @@ begin
 
 
     -- Update min/max/sum
-    min_max_sum_update_inst : entity work.min_max_sum_update port map (
+    min_max_sum_update_inst : entity work.min_max_sum_update generic map (
+        UPDATE_DELAY => UPDATE_DELAY
+    ) port map (
         clk_i => adc_clk_i,
         data_i => data,
         mms_i => update_data_read,
