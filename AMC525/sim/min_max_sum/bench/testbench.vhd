@@ -19,7 +19,8 @@ architecture testbench of testbench is
     end procedure;
 
 
-    signal dsp_clk : std_logic;
+    signal adc_clk : std_logic := '1';
+    signal dsp_clk : std_logic := '0';
 
 
     procedure tick_wait(count : natural) is
@@ -32,8 +33,6 @@ architecture testbench of testbench is
         clk_wait(dsp_clk, 1);
     end procedure;
 
-    signal adc_clk : std_logic;
-    signal adc_phase : std_logic;
     signal turn_clock : std_logic;
 
     signal adc_data_raw : signed(15 downto 0) := (others => '0');
@@ -51,13 +50,9 @@ architecture testbench of testbench is
     constant BUNCH_COUNT : natural := 12;   -- A very small ring!
 
 begin
+    adc_clk <= not adc_clk after 1 ns;
+    dsp_clk <= not dsp_clk after 2 ns;
 
-    -- ADC and DSP clocks with phase generator
-    clocks_inst : entity work.clocks port map (
-        adc_clk_o => adc_clk,
-        dsp_clk_o => dsp_clk,
-        adc_phase_o => adc_phase
-    );
 
     -- Device under test
     min_max_sum_inst : entity work.min_max_sum generic map (
@@ -65,7 +60,6 @@ begin
     ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        adc_phase_i => adc_phase,
         turn_clock_adc_i => turn_clock,
         data_i => adc_data,
         delta_o => delta,
@@ -78,7 +72,6 @@ begin
     min_max_limit_inst : entity work.min_max_limit port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        adc_phase_i => adc_phase,
         delta_i => delta,
         limit_i => limit,
         reset_event_i => reset_event,

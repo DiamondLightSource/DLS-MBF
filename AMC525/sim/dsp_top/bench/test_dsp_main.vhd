@@ -16,7 +16,6 @@ architecture testbench of testbench is
     -- DSP Main signals
     signal adc_clk : std_logic;
     signal dsp_clk : std_logic;
-    signal adc_phase : std_logic;
 
     signal adc_data : signed_array(CHANNELS)(13 downto 0)
         := (others => (others => '0'));
@@ -57,8 +56,7 @@ architecture testbench of testbench is
 begin
     clock_inst : entity work.clock_support port map (
         adc_clk_o => adc_clk,
-        dsp_clk_o => dsp_clk,
-        adc_phase_o => adc_phase
+        dsp_clk_o => dsp_clk
     );
 
     -- Simple ADC data simulation: we just generate a ramp.
@@ -91,7 +89,6 @@ begin
     dsp_main_inst : entity work.dsp_main port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        adc_phase_i => adc_phase,
 
         adc_data_i => adc_data,
         dac_data_o => dac_data,

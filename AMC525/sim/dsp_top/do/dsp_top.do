@@ -4,13 +4,10 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/clock_support.vhd \
     $bench_dir/test_dsp_top.vhd
 
-vsim -t 1ps \
-    -pli "/dls_sw/FPGA/Xilinx/Vivado/2015.1/lib/lnx64.o/libxil_vsim.so" \
-    -lib xil_defaultlib testbench
+vsim -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "ADC Phase" sim:/testbench/clock_inst/adc_phase_inst/*
 add wave -group "Clocks" sim:/testbench/clock_inst/*
 
 add wave -group "Bunch" sim:/testbench/dsp_top_inst/bunch_select_inst/*

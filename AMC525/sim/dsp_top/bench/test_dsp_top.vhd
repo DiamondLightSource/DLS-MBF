@@ -15,7 +15,6 @@ end testbench;
 architecture testbench of testbench is
     signal adc_clk : std_logic;
     signal dsp_clk : std_logic;
-    signal adc_phase : std_logic;
 
     signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
     signal dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
@@ -27,19 +26,14 @@ architecture testbench of testbench is
     signal read_data : reg_data_array_t(0 to 15);
     signal read_ack : std_logic_vector(0 to 15);
 
-    signal dram1_strobe : std_logic;
-    signal dram1_error : std_logic;
-    signal dram1_address : unsigned(22 downto 0);
-    signal dram1_data : std_logic_vector(63 downto 0);
-
     signal control_to_dsp : control_to_dsp_t;
     signal dsp_to_control : dsp_to_control_t;
+    signal dsp_event : std_logic;
 
 begin
     clock_inst : entity work.clock_support port map (
         adc_clk_o => adc_clk,
-        dsp_clk_o => dsp_clk,
-        adc_phase_o => adc_phase
+        dsp_clk_o => dsp_clk
     );
 
     -- Simple ADC data simulation: we just generate a ramp.
@@ -56,7 +50,6 @@ begin
     dsp_top_inst : entity work.dsp_top port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        adc_phase_i => adc_phase,
 
         adc_data_i => adc_data,
         dac_data_o => dac_data,
@@ -71,27 +64,18 @@ begin
         control_to_dsp_i => control_to_dsp,
         dsp_to_control_o => dsp_to_control,
 
-        dram1_strobe_o => dram1_strobe,
-        dram1_error_i => dram1_error,
-        dram1_address_o => dram1_address,
-        dram1_data_o => dram1_data
+        dsp_event_o => dsp_event
     );
 
     -- Simple pass-through of control interface
     process (dsp_clk) begin
         if rising_edge(dsp_clk) then
             control_to_dsp.adc_data   <= dsp_to_control.adc_data;
-            for l in LANES loop
-                control_to_dsp.nco_0_data(l) <=
-                    dsp_to_control.nco_0_data(l).cos;
-                control_to_dsp.nco_1_data(l) <=
-                    dsp_to_control.nco_1_data(l).cos;
-            end loop;
+            control_to_dsp.nco_0_data <= dsp_to_control.nco_0_data.cos;
+            control_to_dsp.nco_1_data <= dsp_to_control.nco_1_data.cos;
         end if;
     end process;
 
-
-    dram1_error <= '0';
 
     -- Register control testbench
     process
