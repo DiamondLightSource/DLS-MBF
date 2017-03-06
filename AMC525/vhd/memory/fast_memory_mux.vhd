@@ -12,7 +12,6 @@ entity fast_memory_mux is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Input control
         mux_select_i : in std_logic_vector(3 downto 0);
@@ -30,6 +29,8 @@ entity fast_memory_mux is
 end;
 
 architecture fast_memory_mux of fast_memory_mux is
+    signal adc_phase : std_logic;
+
     -- Incoming data
     signal adc    : signed_array(CHANNELS)(15 downto 0);
     signal fir_in : signed_array(CHANNELS)(FIR_DATA_RANGE);
@@ -42,6 +43,12 @@ architecture fast_memory_mux of fast_memory_mux is
     signal wide_data : std_logic_vector(63 downto 0);
 
 begin
+    phase : entity work.adc_dsp_phase port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_o => adc_phase
+    );
+
     pipeline_inst : entity work.fast_memory_pipeline port map (
         clk_i => adc_clk_i,
 
@@ -108,7 +115,7 @@ begin
     -- Retime the data across to the DSP clock domain
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            case adc_phase_i is
+            case adc_phase is
                 when '0' => wide_data(31 downto  0) <= data_out;
                 when '1' => wide_data(63 downto 32) <= data_out;
                 when others =>

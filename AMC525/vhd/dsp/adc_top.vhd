@@ -21,7 +21,6 @@ entity adc_top is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
         turn_clock_adc_i : in std_logic;    -- start of machine revolution
 
         -- Data flow
@@ -110,7 +109,6 @@ begin
     adc_overflow_inst : entity work.adc_overflow port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         data_i => delayed_data,
         limit_i => input_limit,
@@ -124,7 +122,6 @@ begin
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         write_start_i => write_start_i,
         write_strobe_i => write_strobe_i(DSP_ADC_TAPS_REG_W),
@@ -141,7 +138,6 @@ begin
     min_max_sum_inst : entity work.min_max_sum port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
         turn_clock_adc_i => turn_clock_adc_i,
 
         data_i => filtered_data,
@@ -157,7 +153,6 @@ begin
     min_max_limit_inst : entity work.min_max_limit port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         delta_i => mms_delta,
         limit_i => delta_limit,

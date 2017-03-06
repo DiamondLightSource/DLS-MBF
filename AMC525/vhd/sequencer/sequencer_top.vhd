@@ -29,7 +29,6 @@ entity sequencer_top is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Clocking
         turn_clk_i : in std_logic;      -- Start of a machine revolution
@@ -107,6 +106,8 @@ architecture sequencer_top of sequencer_top is
     signal hom_gain : unsigned(3 downto 0);
     signal hom_window : hom_win_t;
     signal bunch_bank : unsigned(1 downto 0);
+
+    signal adc_phase : std_logic;
 
 begin
     sequencer_registers : entity work.sequencer_registers port map (
@@ -240,11 +241,17 @@ begin
     );
 
 
+    phase : entity work.adc_dsp_phase port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_o => adc_phase
+    );
+
     -- Register NCO controls on ADC clock
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            seq_start_o <= seq_start and adc_phase_i;
-            seq_write_o <= seq_write and adc_phase_i;
+            seq_start_o <= seq_start and adc_phase;
+            seq_write_o <= seq_write and adc_phase;
             hom_freq_o <= hom_freq;
             hom_gain_o <= hom_gain;
             hom_window_o <= hom_window;

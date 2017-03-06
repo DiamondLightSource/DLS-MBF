@@ -30,7 +30,6 @@ architecture top of top is
     signal reg_clk_ok : std_logic;
     signal adc_pll_ok : std_logic;
 
-    signal adc_phase : std_logic;
 
     -- -------------------------------------------------------------------------
     -- Interconnect wiring
@@ -298,13 +297,6 @@ begin
         read_data_o => adc_idelay_read_data,
 
         adc_pll_ok_o => adc_pll_ok
-    );
-
-    -- adc_phase is a copy of DSP clock available as an ADC synchronous signal
-    adc_phase_inst : entity work.adc_phase port map (
-        adc_clk_i => adc_clk,
-        dsp_clk_ok_i => dsp_clk_ok,
-        adc_phase_o => adc_phase
     );
 
     -- Controllable delay for revolution clock
@@ -689,7 +681,6 @@ begin
     dsp_main_inst : entity work.dsp_main port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        adc_phase_i => adc_phase,
 
         adc_data_i => dsp_adc_data,
         dac_data_o => dsp_dac_data,

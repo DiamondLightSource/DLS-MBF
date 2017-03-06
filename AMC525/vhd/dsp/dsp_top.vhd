@@ -18,7 +18,6 @@ entity dsp_top is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- External data in and out
         adc_data_i : in signed;
@@ -142,7 +141,6 @@ begin
     bunch_select_inst : entity work.bunch_select port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
         turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
         write_strobe_i => write_strobe_i(DSP_BUNCH_REGS),
@@ -201,7 +199,6 @@ begin
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
         turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
         data_i => adc_data_in,
@@ -230,7 +227,6 @@ begin
     ) port map (
         dsp_clk_i => dsp_clk_i,
         adc_clk_i => adc_clk_i,
-        adc_phase_i => adc_phase_i,
 
         data_i => control_to_dsp_i.adc_data,
         data_o => fir_data,
@@ -255,7 +251,6 @@ begin
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
         turn_clock_adc_i => control_to_dsp_i.turn_clock_adc,
 
         bunch_config_i => bunch_config,
@@ -304,7 +299,6 @@ begin
     sequencer_top_inst : entity work.sequencer_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         turn_clk_i => control_to_dsp_i.turn_clock_dsp,
         blanking_i => control_to_dsp_i.blanking,

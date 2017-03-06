@@ -11,7 +11,6 @@ entity register_read_adc is
     port (
         dsp_clk_i : in std_logic;
         adc_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Register interface on DSP clock
         dsp_read_strobe_i : in std_logic_vector;
@@ -26,6 +25,8 @@ entity register_read_adc is
 end;
 
 architecture register_read_adc of register_read_adc is
+    signal adc_phase : std_logic;
+
     subtype register_range is natural range dsp_read_strobe_i'RANGE;
     signal read_strobe : dsp_read_strobe_i'SUBTYPE;
     signal read_ack : std_logic_vector(register_range) := (others => '0');
@@ -34,14 +35,20 @@ architecture register_read_adc of register_read_adc is
     signal read_data_pl : dsp_read_data_o'SUBTYPE;
 
 begin
+    phase : entity work.adc_dsp_phase port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_o => adc_phase
+    );
+
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             for r in register_range loop
-                adc_read_strobe_o(r) <= read_strobe(r) and adc_phase_i;
+                adc_read_strobe_o(r) <= read_strobe(r) and adc_phase;
                 if adc_read_ack_i(r) = '1' then
                     read_data(r) <= adc_read_data_i(r);
                     read_ack(r) <= '1';
-                elsif adc_phase_i = '0' then
+                elsif adc_phase = '0' then
                     read_ack(r) <= '0';
                 end if;
             end loop;

@@ -21,7 +21,6 @@ entity dac_top is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
         turn_clock_adc_i : in std_logic;       -- start of machine revolution
 
         -- Data inputs
@@ -165,7 +164,6 @@ begin
     min_max_sum_inst : entity work.min_max_sum port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
         turn_clock_adc_i => turn_clock_adc_i,
 
         data_i => data_out,
@@ -184,7 +182,6 @@ begin
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         write_start_i => write_start_i,
         write_strobe_i => write_strobe_i(DSP_DAC_TAPS_REG_W),

@@ -15,7 +15,6 @@ entity dsp_control_top is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Control register interface
         write_strobe_i : in std_logic_vector;
@@ -144,7 +143,6 @@ begin
     fast_memory_top_inst : entity work.fast_memory_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         write_strobe_i => write_strobe_i(CTRL_MEM_REGS),
         write_data_i => write_data_i,
@@ -193,7 +191,6 @@ begin
     trigger_inst : entity work.trigger_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         write_strobe_i => write_strobe_i(CTRL_TRIGGER_REGS),
         write_data_i => write_data_i,

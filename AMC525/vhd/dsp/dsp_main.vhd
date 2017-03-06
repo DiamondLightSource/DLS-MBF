@@ -16,7 +16,6 @@ entity dsp_main is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- External data in and out (on ADC clock)
         adc_data_i : in signed_array;
@@ -98,7 +97,6 @@ architecture dsp_main of dsp_main is
     signal dsp_read_ack : vector_array(CHANNELS)(DSP_REGS_RANGE);
 
     -- DSP control interface
-    signal adc_phase : std_logic_vector(CHANNELS);
     signal dsp_to_control : dsp_to_control_array_t;
     signal control_to_dsp : control_to_dsp_array_t;
 
@@ -161,7 +159,6 @@ begin
     dsp_control_top_inst : entity work.dsp_control_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         write_strobe_i => ctrl_write_strobe,
         write_data_i => ctrl_write_data,
@@ -219,20 +216,9 @@ begin
             read_ack_i => dsp_read_ack(c)
         );
 
-        -- Delay line for the ADC phase to help with timing, also generates
-        -- channel specific copy of phase
-        adc_phase_delay : entity work.dlyreg generic map (
-            DLY => 2
-        ) port map (
-            clk_i => adc_clk_i,
-            data_i(0) => adc_phase_i,
-            data_o(0) => adc_phase(c)
-        );
-
         dsp_top_inst : entity work.dsp_top port map (
             adc_clk_i => adc_clk_i,
             dsp_clk_i => dsp_clk_i,
-            adc_phase_i => adc_phase(c),
 
             adc_data_i => adc_data_i(c),
             dac_data_o => dac_data_o(c),

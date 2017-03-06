@@ -13,7 +13,6 @@ entity dsp_to_adc is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         dsp_data_i : in signed_array;
         adc_data_o : out signed
@@ -21,8 +20,7 @@ entity dsp_to_adc is
 end;
 
 architecture dsp_to_adc of dsp_to_adc is
-    signal adc_phase_in : std_logic;
-    signal adc_phase : LANES;
+    signal adc_phase : std_logic;
     signal dsp_data : dsp_data_i'SUBTYPE := (others => (others => '0'));
     signal adc_data : adc_data_o'SUBTYPE := (others => '0');
 
@@ -41,13 +39,10 @@ begin
     --  adc_data_o _____X_______X__D0___X__D1___X__D2___X__D3___X__D4___X___
     --
 
-    -- Simple delay line to help with distribution.
-    dlyreg_inst : entity work.dlyreg generic map (
-        DLY => 2
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i(0) => adc_phase_i,
-        data_o(0) => adc_phase_in
+    phase : entity work.adc_dsp_phase port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_o => adc_phase
     );
 
     -- Local register of incoming data to help with difficult clock crossing.
@@ -58,10 +53,9 @@ begin
     end process;
 
     -- Transfer across synchronous clock boundary with phase advance.
-    adc_phase <= to_integer(not adc_phase_in);
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            adc_data <= dsp_data(adc_phase);
+            adc_data <= dsp_data(to_integer(adc_phase));
         end if;
     end process;
 

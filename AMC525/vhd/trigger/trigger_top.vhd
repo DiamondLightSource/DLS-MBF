@@ -14,7 +14,6 @@ entity trigger_top is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Register control interface (clocked by dsp_clk_i)
         write_strobe_i : in std_logic_vector;
@@ -127,7 +126,6 @@ begin
     turn_clock_inst : entity work.trigger_turn_clock port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         start_sync_i => turn_setup.start_sync,
         start_sample_i => turn_setup.start_sample,

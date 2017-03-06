@@ -11,7 +11,6 @@ entity adc_overflow is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Data flow
         data_i : in signed;                 -- on ADC clock
@@ -43,7 +42,6 @@ begin
     pulse_adc_to_dsp_inst : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         pulse_i => overflow,
         pulse_o => overflow_o

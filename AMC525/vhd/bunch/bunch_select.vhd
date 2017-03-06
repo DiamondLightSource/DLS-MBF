@@ -14,7 +14,6 @@ entity bunch_select is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
         turn_clock_adc_i : in std_logic;       -- Revolution clock
 
         -- Bunch configuration SBC interface for writing configuration

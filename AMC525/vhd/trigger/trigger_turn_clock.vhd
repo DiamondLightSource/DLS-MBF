@@ -12,7 +12,6 @@ entity trigger_turn_clock is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Control interface
         start_sync_i : in std_logic;    -- Resynchronise request
@@ -60,13 +59,10 @@ begin
     -- -------------------------------------------------------------------------
     -- Revolution clock at ADC clock rate
 
-    -- Take our own copy of adc_phase to reduce timing pressure
-    adc_phase_delay : entity work.dlyreg generic map (
-        DLY => 2
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i(0) => adc_phase_i,
-        data_o(0) => adc_phase
+    phase : entity work.adc_dsp_phase port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_o => adc_phase
     );
 
     process (adc_clk_i) begin

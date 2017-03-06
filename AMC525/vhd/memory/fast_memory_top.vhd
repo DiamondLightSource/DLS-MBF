@@ -14,7 +14,6 @@ entity fast_memory_top is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Control register interface
         write_strobe_i : in std_logic_vector;
@@ -166,7 +165,6 @@ begin
     mux_inst : entity work.fast_memory_mux port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         mux_select_i => mux_select,
         fir_gain_i => fir_gain,

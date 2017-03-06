@@ -13,10 +13,7 @@ entity fast_fir_top is
     );
     port (
         adc_clk_i : in std_logic;
-
-        -- DSP clocking needed to transport overflow to DSP clock
         dsp_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- Taps write interface
         write_start_i : in std_logic;
@@ -76,7 +73,6 @@ begin
     pulse_adc_to_dsp_inst : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_i => adc_phase_i,
 
         pulse_i => fir_overflow,
         pulse_o => overflow_o

@@ -18,7 +18,6 @@ entity bunch_fir_top is
     port (
         dsp_clk_i : in std_logic;
         adc_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         data_i : in signed;
         data_o : out signed;

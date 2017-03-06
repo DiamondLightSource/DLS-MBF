@@ -11,7 +11,6 @@ entity min_max_limit is
     port (
         dsp_clk_i : in std_logic;
         adc_clk_i : in std_logic;
-        adc_phase_i : in std_logic;
 
         -- The incoming delta is on the ADC clock
         delta_i : in unsigned;
@@ -24,16 +23,23 @@ entity min_max_limit is
 end;
 
 architecture min_max_limit of min_max_limit is
+    signal adc_phase : std_logic;
     signal limit_detect_adc : std_logic := '0';
     signal limit_detect : std_logic := '0';
     signal limit_event : std_logic := '0';
     signal limit_event_edge : std_logic;
 
 begin
+    phase : entity work.adc_dsp_phase port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        adc_phase_o => adc_phase
+    );
+
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             limit_detect_adc <= to_std_logic(delta_i > limit_i);
-            if adc_phase_i = '0' then
+            if adc_phase = '0' then
                 limit_detect <= limit_detect_adc;
             else
                 limit_detect <= limit_detect or limit_detect_adc;
