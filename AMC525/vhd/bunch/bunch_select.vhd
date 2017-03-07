@@ -14,7 +14,7 @@ entity bunch_select is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        turn_clock_adc_i : in std_logic;       -- Revolution clock
+        turn_clock_i : in std_logic;       -- Revolution clock
 
         -- Bunch configuration SBC interface for writing configuration
         write_strobe_i : in std_logic_vector;
@@ -43,7 +43,7 @@ architecture bunch_select of bunch_select is
 begin
     -- Register management
     register_file_inst : entity work.register_file port map (
-        clk_i => adc_clk_i,
+        clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_BUNCH_CONFIG_REG),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_BUNCH_CONFIG_REG),
@@ -60,7 +60,7 @@ begin
     -- Bunch counter
     bunch_counter : entity work.bunch_counter port map (
         clk_i => adc_clk_i,
-        turn_clock_i => turn_clock_adc_i,
+        turn_clock_i => turn_clock_i,
         bunch_index_o => bunch_index
     );
 

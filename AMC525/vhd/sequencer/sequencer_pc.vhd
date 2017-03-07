@@ -1,8 +1,8 @@
 -- Sequencer program counter and reset
 --
--- Note that state_end_i must be valid for several clocks before turn_clk_i to
+-- Note that state_end_i must be valid for several clocks before turn_clock_i to
 -- allow time for the next state to be loaded, and is sampled immediately after
--- turn_clk_i.
+-- turn_clock_i.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -16,7 +16,7 @@ use work.sequencer_defs.all;
 entity sequencer_pc is
     port (
         dsp_clk_i : in std_logic;
-        turn_clk_i : in std_logic;
+        turn_clock_i : in std_logic;
 
         trigger_i : in std_logic;       -- Sequencer trigger
 
@@ -77,7 +77,7 @@ begin
                 reset_in <= '0';
             end if;
 
-            if turn_clk_i = '1' then
+            if turn_clock_i = '1' then
                 reset_out <= reset_in;
             end if;
 
@@ -94,14 +94,14 @@ begin
             -- seen to avoid a glitch between trigger armed and sequencer busy.
             if trigger_in = '1' then
                 busy_o <= '1';
-            elsif turn_clk_i = '1' and seq_pc = 0 then
+            elsif turn_clock_i = '1' and seq_pc = 0 then
                 busy_o <= '0';
             end if;
 
             -- Program counter and control
             if loading = '1' then
                 start_load <= '0';
-                if turn_clk_i = '1' then
+                if turn_clock_i = '1' then
                     loading <= '0';
                 end if;
             elsif state_end_i = '1' or reset_out = '1' then

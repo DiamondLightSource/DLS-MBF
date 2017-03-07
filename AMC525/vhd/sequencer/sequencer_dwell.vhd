@@ -1,15 +1,15 @@
 -- Dwell clock generator
 --
 -- Generates capture clock outputs for a single dwell.  The output first_turn_o
--- is pulsed for one clock immediately after turn_clk_i on the first turn of a
+-- is pulsed for one clock immediately after turn_clock_i on the first turn of a
 -- data capture dwell, and last_turn_o is held high for the entire duration of
--- the last turn of a capture except for the clock immediately after turn_clk_i
+-- the last turn of capture except for the clock immediately after turn_clock_i
 -- when last_turn_o is held low.  Note that last_turn_o is valid for the
--- preceding turn during turn_clk_i.
+-- preceding turn during turn_clock_i.
 --
 --                    . Dwell     . Holdoff   . Two turn dwell        .
 --                    _           _           _           _           _
---  turn_clk_i      _/ \_________/ \_________/ \_________/ \_________/ \__
+--  turn_clock_i    _/ \_________/ \_________/ \_________/ \_________/ \__
 --                      _                       _
 --  first_turn_o    ___/ \_____________________/ \________________________
 --                        _________                           _________
@@ -31,7 +31,7 @@ use work.sequencer_defs.all;
 entity sequencer_dwell is
     port (
         dsp_clk_i : in std_logic;
-        turn_clk_i : in std_logic;
+        turn_clock_i : in std_logic;
         reset_i : in std_logic;
 
         dwell_count_i : in dwell_count_t;   -- Dwell duration
@@ -54,7 +54,7 @@ architecture sequencer_dwell of sequencer_dwell is
 begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            if turn_clk_i = '1' then
+            if turn_clock_i = '1' then
                 if reset_i = '1' then
                     in_holdoff <= '1';
                     holdoff_ctr <= (others => '0');
@@ -93,7 +93,7 @@ begin
             end if;
 
             -- Last turn detection.
-            if turn_clk_i = '1' then
+            if turn_clock_i = '1' then
                 last_turn_o <= '0';
             else
                 last_turn_o <= not in_holdoff and to_std_logic(dwell_ctr = 0);

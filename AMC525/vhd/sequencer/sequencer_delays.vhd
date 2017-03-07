@@ -17,7 +17,7 @@ use work.sequencer_defs.all;
 entity sequencer_delays is
     port (
         dsp_clk_i : in std_logic;
-        turn_clk_i : in std_logic;
+        turn_clock_i : in std_logic;
 
         seq_state_i : in seq_state_t;
         seq_pc_i : in seq_pc_t;
@@ -36,16 +36,16 @@ begin
     bunch_bank_delay:
     entity work.dlyline generic map (DLY => 6) port map (
         clk_i => dsp_clk_i,
-        data_i(0) => turn_clk_i, data_o(0) => load_bunch_bank);
+        data_i(0) => turn_clock_i, data_o(0) => load_bunch_bank);
 
     hom_gain_delay:
     entity work.dlyline generic map (DLY => 1) port map (
         clk_i => dsp_clk_i,
-        data_i(0) => turn_clk_i, data_o(0) => load_hom_gain);
+        data_i(0) => turn_clock_i, data_o(0) => load_hom_gain);
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            if turn_clk_i = '1' then
+            if turn_clock_i = '1' then
                 seq_pc_o <= seq_pc_i;
             end if;
 

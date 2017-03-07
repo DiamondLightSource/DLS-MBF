@@ -21,7 +21,7 @@ entity dac_top is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        turn_clock_adc_i : in std_logic;       -- start of machine revolution
+        turn_clock_i : in std_logic;       -- start of machine revolution
 
         -- Data inputs
         bunch_config_i : in bunch_config_t;
@@ -89,7 +89,7 @@ begin
     untimed_inst : entity work.untimed_reg generic map (
         WIDTH => REG_DATA_WIDTH
     ) port map (
-        clk_i => adc_clk_i,
+        clk_i => dsp_clk_i,
         write_i => '1',
         data_i => config_register,
         data_o => config_untimed
@@ -164,7 +164,7 @@ begin
     min_max_sum_inst : entity work.min_max_sum port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_adc_i => turn_clock_adc_i,
+        turn_clock_i => turn_clock_i,
 
         data_i => data_out,
         delta_o => open,

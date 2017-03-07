@@ -17,7 +17,7 @@ use work.sequencer_defs.all;
 entity sequencer_counter is
     port (
         dsp_clk_i : in std_logic;
-        turn_clk_i : in std_logic;
+        turn_clock_i : in std_logic;
         reset_i : in std_logic;
 
         freq_base_i : in angle_t;       -- Frequency base
@@ -42,14 +42,14 @@ architecture sequencer_counter of sequencer_counter is
     signal next_capture_cntr : capture_count_t;
     signal capture_cntr_zero : std_logic;   -- Set when capture_cntr is zero
 
-    signal turn_clk_delay : std_logic;
+    signal turn_clock_delay : std_logic;
 
 begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             capture_cntr_zero <= to_std_logic(capture_cntr = 0);
 
-            -- Because most of the state transitions happen on turn_clk_i and
+            -- Because most of the state transitions happen on turn_clock_i and
             -- most of the state has already been stable for a while before that
             -- we can precompute a number of values.
             if capture_cntr_zero = '1' then
@@ -60,7 +60,7 @@ begin
                 next_hom_freq <= hom_freq + delta_freq_i;
             end if;
 
-            if turn_clk_i = '1' then
+            if turn_clock_i = '1' then
                 if reset_i = '1' then
                     capture_cntr <= (others => '0');
                 elsif last_turn_i = '1' then
@@ -70,8 +70,8 @@ begin
             end if;
 
             -- Emit state_end_o during last turn of last state.
-            turn_clk_delay <= turn_clk_i;
-            if turn_clk_i = '1' or turn_clk_delay = '1' then
+            turn_clock_delay <= turn_clock_i;
+            if turn_clock_i = '1' or turn_clock_delay = '1' then
                 state_end_o <= '0';
             else
                 state_end_o <= last_turn_i and capture_cntr_zero;

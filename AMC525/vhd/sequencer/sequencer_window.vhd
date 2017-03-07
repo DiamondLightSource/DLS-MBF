@@ -15,7 +15,7 @@ use work.sequencer_defs.all;
 entity sequencer_window is
     port (
         dsp_clk_i : in std_logic;
-        turn_clk_i : in std_logic;
+        turn_clock_i : in std_logic;
 
         write_strobe_i : in std_logic;
         write_addr_i : in unsigned;
@@ -71,7 +71,7 @@ begin
         data_o(0) => seq_start_o
     );
 
-    seq_write_in <= last_turn_i and turn_clk_i and write_enable;
+    seq_write_in <= last_turn_i and turn_clock_i and write_enable;
     write_dly : entity work.dlyline generic map (
         DLY => EXTRA_DELAY + 5
     ) port map (

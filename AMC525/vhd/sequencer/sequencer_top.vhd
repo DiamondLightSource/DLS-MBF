@@ -31,7 +31,7 @@ entity sequencer_top is
         dsp_clk_i : in std_logic;
 
         -- Clocking
-        turn_clk_i : in std_logic;      -- Start of a machine revolution
+        turn_clock_i : in std_logic;    -- Start of a machine revolution
         blanking_i : in std_logic;      -- Can be used to disable sequence
 
         -- Register interface
@@ -75,7 +75,7 @@ architecture sequencer_top of sequencer_top is
 
     -- Program Counter interface
     --
-    -- Valid from shortly after turn_clk_i, a rising edge on this signal
+    -- Valid from shortly after turn_clock_i, a rising edge on this signal
     -- triggers the program counter to advance.
     signal state_end : std_logic;
     -- Program counter and reset, also triggers loading of next state.
@@ -147,7 +147,7 @@ begin
 
     sequencer_pc : entity work.sequencer_pc port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clk_i => turn_clk_i,
+        turn_clock_i => turn_clock_i,
 
         trigger_i => trigger_i,
 
@@ -181,7 +181,7 @@ begin
     blanking_in <= blanking_i and seq_state.enable_blanking;
     sequencer_dwell : entity work.sequencer_dwell port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clk_i => turn_clk_i,
+        turn_clock_i => turn_clock_i,
         reset_i => reset_turn,
 
         dwell_count_i => seq_state.dwell_count,
@@ -195,7 +195,7 @@ begin
     -- Counts down dwells during a single state and manages frequency output.
     sequencer_counter : entity work.sequencer_counter port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clk_i => turn_clk_i,
+        turn_clock_i => turn_clock_i,
         reset_i => reset_turn,
 
         freq_base_i => nco_freq_base,
@@ -211,7 +211,7 @@ begin
     -- Generates detector window.
     sequencer_window : entity work.sequencer_window port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clk_i => turn_clk_i,
+        turn_clock_i => turn_clock_i,
 
         write_strobe_i => mem_write_strobe(MEM_WINDOW),
         write_addr_i => mem_write_addr,
@@ -232,7 +232,7 @@ begin
     -- Fine tuning to output
     sequencer_delays : entity work.sequencer_delays port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clk_i => turn_clk_i,
+        turn_clock_i => turn_clock_i,
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,

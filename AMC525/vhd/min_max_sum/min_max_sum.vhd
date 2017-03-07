@@ -15,7 +15,7 @@ entity min_max_sum is
     port (
         dsp_clk_i : in std_logic;
         adc_clk_i : in std_logic;
-        turn_clock_adc_i : in std_logic;
+        turn_clock_i : in std_logic;
 
         data_i : in signed(15 downto 0);
         delta_o : out unsigned(15 downto 0);
@@ -41,7 +41,7 @@ architecture min_max_sum of min_max_sum is
     -- Delay from update_data_read to update_data_write.
     constant UPDATE_DELAY : natural := 2;
 
-    signal turn_clock_adc : std_logic;
+    signal turn_clock : std_logic;
     signal data : signed(15 downto 0);
 
     signal read_strobe : std_logic_vector(0 to 1);
@@ -73,8 +73,8 @@ begin
         DLY => 2
     ) port map (
         clk_i => adc_clk_i,
-        data_i(0) => turn_clock_adc_i,
-        data_o(0) => turn_clock_adc
+        data_i(0) => turn_clock_i,
+        data_o(0) => turn_clock
     );
 
     data_delay : entity work.dlyreg generic map (
@@ -127,7 +127,7 @@ begin
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        turn_clock_i => turn_clock_adc,
+        turn_clock_i => turn_clock,
 
         count_read_strobe_i => read_strobe(COUNT_REG),
         count_read_data_o => read_data(COUNT_REG),
@@ -175,7 +175,7 @@ begin
         delta_o => delta
     );
 
-    -- Convert ADC pulse to DSP pulse
+    -- Convert overflow pulse on ADC clock to DSP clock
     pulse_adc_to_dsp_inst : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,

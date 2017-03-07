@@ -21,7 +21,7 @@ entity adc_top is
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
-        turn_clock_adc_i : in std_logic;    -- start of machine revolution
+        turn_clock_i : in std_logic;    -- start of machine revolution
 
         -- Data flow
         data_i : in signed;                 -- at ADC data rate
@@ -138,7 +138,7 @@ begin
     min_max_sum_inst : entity work.min_max_sum port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_adc_i => turn_clock_adc_i,
+        turn_clock_i => turn_clock_i,
 
         data_i => filtered_data,
         delta_o => mms_delta,
