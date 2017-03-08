@@ -63,12 +63,22 @@ architecture fast_memory_top of fast_memory_top is
     signal data_valid : std_logic;
     signal extra_data : std_logic_vector(63 downto 0);
 
-    signal data_out : data_o'SUBTYPE;
 
     -- We don't expect the error bits to ever be seen
-    signal data_error : std_logic := '0';
-    signal addr_error : std_logic := '0';
-    signal brsp_error : std_logic := '0';
+    signal error_bits : std_logic_vector(2 downto 0);
+
+
+    -- We need a very long pipeline for the data output
+    constant OUT_PIPELINE : natural := 10;
+    constant IN_PIPELINE : natural := 10;
+
+    -- Pipeline signals
+    signal capture_enable_out : std_logic;
+    signal data_valid_out : std_logic;
+    signal data_out : data_o'SUBTYPE;
+    signal data_ready_in : std_logic;
+    signal error_bits_in : std_logic_vector(2 downto 0);
+    signal capture_address_in : capture_address_i'SUBTYPE;
 
 begin
     -- -------------------------------------------------------------------------
@@ -132,13 +142,70 @@ begin
 
     -- Active status
     status_register <= (
-        0 => data_error or addr_error or brsp_error,
-        1 => data_error,
-        2 => addr_error,
-        3 => brsp_error,
-        4 => capture_enable_o,
+        2 downto 0 => error_bits,
+        3 => vector_or(error_bits),
+        4 => capture_enable_out,
         others => '0'
     );
+
+
+    -- -------------------------------------------------------------------------
+    -- Pipelines to and from AXI control
+
+    -- We need to be rather generous with our pipelines as there is a large
+    -- geographical separation from our data sources to the DRAM0 controller
+
+    -- Pipeline data out to relax timing
+    data_delay : entity work.dlyreg generic map (
+        DLY => OUT_PIPELINE,
+        DW => data_o'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => data_out,
+        data_o => data_o
+    );
+
+    -- Same pipeline for data control signals
+    control_delay : entity work.dlyreg generic map (
+        DLY => OUT_PIPELINE,
+        DW => 2
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i(0) => capture_enable_out, data_i(1) => data_valid_out,
+        data_o(0) => capture_enable_o,   data_o(1) => data_valid_o
+    );
+
+    -- Pipeline for error signals
+    error_delay : entity work.dlyreg generic map (
+        DLY => IN_PIPELINE,
+        DW => 3
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i(0) => data_error_i,
+        data_i(1) => addr_error_i,
+        data_i(2) => brsp_error_i,
+        data_o => error_bits_in
+    );
+
+    -- Pipeline for capture address
+    address_delay : entity work.dlyreg generic map (
+        DLY => IN_PIPELINE,
+        DW => capture_address_i'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => capture_address_i,
+        data_o => capture_address_in
+    );
+
+    -- data_ready_i current unused
+    ready_delay : entity work.dlyreg generic map (
+        DLY => IN_PIPELINE
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i(0) => data_ready_i,
+        data_o(0) => data_ready_in
+    );
+
 
 
     -- -------------------------------------------------------------------------
@@ -150,8 +217,8 @@ begin
         start_i => start,
         stop_i => stop or memory_trigger_i,
         count_i => count,
-        capture_enable_o => capture_enable_o,
-        capture_address_i => capture_address_i,
+        capture_enable_o => capture_enable_out,
+        capture_address_i => capture_address_in,
         capture_address_o => capture_address
     );
 
@@ -173,31 +240,17 @@ begin
         dsp_to_control_i => dsp_to_control_i,
         extra_i => extra_data,
 
-        data_valid_o => data_valid_o,
+        data_valid_o => data_valid_out,
         data_o => data_out
-    );
-
-    -- Pipeline data out to relax timing
-    dlyreg_inst : entity work.dlyreg generic map (
-        DLY => 10,
-        DW => data_o'LENGTH
-    ) port map (
-        clk_i => dsp_clk_i,
-        data_i => data_out,
-        data_o => data_o
     );
 
     -- Gather error bits together
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             if reset_errors = '1' then
-                data_error <= '0';
-                addr_error <= '0';
-                brsp_error <= '0';
+                error_bits <= (others => '0');
             else
-                data_error <= data_error or data_error_i;
-                addr_error <= addr_error or addr_error_i;
-                brsp_error <= brsp_error or brsp_error_i;
+                error_bits <= error_bits or error_bits_in;
             end if;
         end if;
     end process;

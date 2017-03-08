@@ -133,7 +133,7 @@ begin
     -- ud_i = update_data_i, wa = update_write_addr, bw = write_bank,
     -- wa[B] = write_addr(B), wd[N] = write_data(B).
 
-    dly_read_inst : entity work.dlyline generic map (
+    dly_read_inst : entity work.dlyreg generic map (
         DLY => READ_DELAY + 1
     ) port map (
         clk_i => clk_i,
@@ -142,7 +142,7 @@ begin
     );
     read_data_bank <= to_integer(read_data_bank_std);
 
-    dly_write_bank_inst : entity work.dlyline generic map (
+    dly_write_bank_inst : entity work.dlyreg generic map (
         DLY => WRITE_DELAY
     ) port map (
         clk_i => clk_i,

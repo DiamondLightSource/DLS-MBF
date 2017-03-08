@@ -107,10 +107,7 @@ begin
 
 
     pulsed_bits <= (
-        0 => dram0_data_error_i,
-        1 => dram0_addr_error_i,
-        2 => dram0_brsp_error_i,
-        3 => dram1_brsp_error_i,
+        0 => dram1_brsp_error_i,
         others => '0'
     );
 
