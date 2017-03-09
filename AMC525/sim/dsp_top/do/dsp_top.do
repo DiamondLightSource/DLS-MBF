@@ -1,14 +1,11 @@
 do compile.do
 
 vcom -64 -2008 -work xil_defaultlib \
-    $bench_dir/clock_support.vhd \
     $bench_dir/test_dsp_top.vhd
 
 vsim -t 1ps -lib xil_defaultlib testbench
 
 view wave
-
-add wave -group "Clocks" sim:/testbench/clock_inst/*
 
 add wave -group "Bunch" sim:/testbench/dsp_top_inst/bunch_select_inst/*
 add wave -group "Bunch Mem" \
@@ -25,7 +22,8 @@ add wave -group "DAC Top" sim:/testbench/dsp_top_inst/dac_top_inst/*
 add wave -group "DAC Mux" \
     sim:/testbench/dsp_top_inst/dac_top_inst/lanes_gen(0)/dac_output_mux_inst/*
 add wave -group "DSP Top" sim:/testbench/dsp_top_inst/*
-add wave -group "Top" sim:*
+
+add wave *
 
 
 run 100 ns

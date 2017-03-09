@@ -13,8 +13,8 @@ end testbench;
 
 
 architecture testbench of testbench is
-    signal adc_clk : std_logic;
-    signal dsp_clk : std_logic;
+    signal adc_clk : std_logic := '1';
+    signal dsp_clk : std_logic := '0';
 
     signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
     signal dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
@@ -31,10 +31,8 @@ architecture testbench of testbench is
     signal dsp_event : std_logic;
 
 begin
-    clock_inst : entity work.clock_support port map (
-        adc_clk_o => adc_clk,
-        dsp_clk_o => dsp_clk
-    );
+    adc_clk <= not adc_clk after 1 ns;
+    dsp_clk <= not dsp_clk after 2 ns;
 
     -- Simple ADC data simulation: we just generate a ramp.
     process (adc_clk) begin

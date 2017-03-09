@@ -24,7 +24,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/dsp_main.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
-    $bench_dir/clock_support.vhd \
     $bench_dir/test_dsp_main.vhd
 
 # Add -novopt to prevent optimisation from deleting things
@@ -39,6 +38,8 @@ set dsp1_top $dsp_main/dsp_gen(1)/dsp_top_inst
 
 add wave -group "DSP Main" $dsp_main/*
 add wave -group "Ctrl Top" $ctrl_top/*
+add wave -group "Fast Mem Top" $ctrl_top/fast_memory_top/*
+add wave -group "Fast Mem Ctrl" $ctrl_top/fast_memory_top/fast_memory_control/*
 add wave -group "Trigger Top" $ctrl_top/trigger_inst/*
 add wave -group "Trigger Registers" \
     $ctrl_top/trigger_inst/trigger_registers_inst/*
@@ -49,13 +50,12 @@ add wave -group "Trigger DRAM" $ctrl_top/trigger_inst/dram0_trigger_inst/*
 add wave -group "Trigger handler DRAM" \
     $ctrl_top/trigger_inst/dram0_trigger_inst/trigger_handler/*
 add wave -group "DSP(1)" $dsp1_top/*
-add wave -group "Fast Mem" $dsp_main/dsp_control_top_inst/fast_memory_top_inst/*
 add wave -group "DSP(1) Fir" $dsp1_top/bunch_fir_top_inst/*
 add wave -group "DSP(1) Seq" $dsp1_top/sequencer_top_inst/*
 add wave -group "DSP(0) Seq" $dsp0_top/sequencer_top_inst/*
 add wave -group "DSP(0) Seq Sup" $dsp0_top/sequencer_top_inst/sequencer_super/*
 
-add wave -group "Top" *
+add wave *
 
 run 1 us
 

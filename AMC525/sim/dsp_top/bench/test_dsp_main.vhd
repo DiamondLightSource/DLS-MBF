@@ -14,8 +14,8 @@ end testbench;
 
 architecture testbench of testbench is
     -- DSP Main signals
-    signal adc_clk : std_logic;
-    signal dsp_clk : std_logic;
+    signal adc_clk : std_logic := '1';
+    signal dsp_clk : std_logic := '0';
 
     signal adc_data : signed_array(CHANNELS)(13 downto 0)
         := (others => (others => '0'));
@@ -54,10 +54,8 @@ architecture testbench of testbench is
     signal dram1_ready_delay : natural := 5;
 
 begin
-    clock_inst : entity work.clock_support port map (
-        adc_clk_o => adc_clk,
-        dsp_clk_o => dsp_clk
-    );
+    adc_clk <= not adc_clk after 1 ns;
+    dsp_clk <= not dsp_clk after 2 ns;
 
     -- Simple ADC data simulation: we just generate a ramp.
     process (adc_clk) begin
@@ -126,12 +124,26 @@ begin
 
 
     dram0_data_ready <= '1';
-    dram0_capture_address <= (others => '0');
     dram0_data_error <= '0';
     dram0_addr_error <= '0';
     dram0_brsp_error <= '0';
 
     dram1_brsp_error <= '0';
+
+
+    -- DRAM0 simulation
+    process begin
+        wait until dram0_capture_enable = '1';
+        dram0_capture_address <= (others => '0');
+        while dram0_capture_enable = '1' loop
+            clk_wait(dsp_clk);
+            if dram0_data_valid = '1' then
+                dram0_capture_address <= std_logic_vector(
+                    signed(dram0_capture_address) + 1);
+            end if;
+        end loop;
+    end process;
+
 
     -- DRAM1 ready handshaking
     process
