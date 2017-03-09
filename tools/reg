@@ -2,7 +2,11 @@
 
 import sys
 
-from driver import REGS
+import driver
+
+REGS = [
+    driver.REG_SYSTEM, driver.REG_CTRL, driver.REG_DSP[0], driver.REG_DSP[1]]
+
 
 args = [int(arg, 0) for arg in sys.argv[1:]]
 

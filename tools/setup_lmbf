@@ -2,7 +2,7 @@
 
 # Simple LMBF test setup
 
-from driver import REGS
+from driver import REG_DSP
 
 import setup_pll
 import setup_adc
@@ -43,12 +43,9 @@ def setup_dac_output(dsp):
     dsp[11] = 8
 
 
-DSP0 = REGS[2, :]
-DSP1 = REGS[3, :]
-
 setup_fmc500()
 
-for dsp in [DSP0, DSP1]:
+for dsp in REG_DSP:
     setup_fast_fir(dsp, 3, 8)       # ADC compensation filter
     setup_fast_fir(dsp, 10, 8)      # DAC pre-emphasis filter
     setup_bunch_control(dsp, 467)

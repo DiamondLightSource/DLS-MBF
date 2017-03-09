@@ -32,12 +32,19 @@ class Regs:
         self.reg_map = mmap.mmap(self.reg_file, reg_size)
         regs = numpy.frombuffer(self.reg_map, dtype = numpy.uint32)
 
-        # Reshape register space into individual modules
-        regs = regs[:MOD_ADDR_COUNT * REG_ADDR_COUNT]
-        regs = regs.reshape((MOD_ADDR_COUNT, REG_ADDR_COUNT))
+        # Extract the four relevant register banks according to the following
+        # address map:
+        #   0x0000..0x0FFF  System registers: top level hardware control
+        #   0x2000..0x27FF  DSP master control
+        #   0x2800..0x2FFF  (unused)
+        #   0x3000..0x37FF  DSP 0 control
+        #   0x3800..0x3FFF  DSP 1 control
+        # For convenience we just export the first 32 registers in each block.
+        self.reg_system   = regs[0x0000:0x0020]
+        self.reg_dsp_ctrl = regs[0x2000:0x2020]
+        self.reg_dsp      = [regs[0x3000:0x3020], regs[0x3800:0x3820]]
 
-        self.regs = regs
-        self.spi_reg = self.regs[0, 4:5]
+        self.spi_reg = self.reg_system[4:5]
 
     def spi_read(self, dev, addr):
         dev &= 3
@@ -71,10 +78,16 @@ class SPI:
 
 regs = Regs(REGS_NAME)
 
-REGS = regs.regs
 PLL = SPI(regs, 0)
 ADC = SPI(regs, 1)
 DAC = SPI(regs, 2)
 
+REG_SYSTEM = regs.reg_system
+REG_CTRL   = regs.reg_dsp_ctrl
+REG_DSP    = regs.reg_dsp
 
-__all__ = ['DDR0_BUF_LEN', 'regs', 'PLL', 'ADC', 'DAC']
+__all__ = [
+    'DDR0_BUF_LEN',
+    'PLL', 'ADC', 'DAC',
+    'REG_SYSTEM', 'REG_CTRL', 'REG_DSP',
+]

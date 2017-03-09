@@ -4,15 +4,11 @@
 
 import time
 
-from driver import REGS, DAC
+from driver import REG_SYSTEM, DAC
 
 def setup_dac():
-    # Power on the DAC and take it out of power down
-    REGS[0, 2] |= 2
-    while REGS[0, 1] & (1 << 4) == 0:
-        pass
-
-
+    # Check that the DAC power good signal is ok
+#     assert REG_SYSTEM[1] & (1 << 4), "DAC power good not detected"
 
     # Apply a reset, give it time to respond.
     DAC[0x00] = 0x20

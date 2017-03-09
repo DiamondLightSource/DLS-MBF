@@ -4,14 +4,13 @@
 
 import time
 
-from driver import REGS, ADC
+from driver import REG_SYSTEM, ADC
 
 
 def setup_adc():
-    # Power on the ADC and take it out of power down
-    REGS[0, 2] |= 1
-    while REGS[0, 1] & (1 << 3) == 0:
-        pass
+    # Check that the VCXO and ADC power good signals are ok
+    assert REG_SYSTEM[1] & (1 << 2), "VCXO power good not detected"
+#     assert REG_SYSTEM[1] & (1 << 3), "ADC power good not detected"
 
     # Start by resetting the ADC, must sleep for 5ms before doing anything more.
     ADC[0] = 0x81
@@ -42,7 +41,7 @@ def setup_adc():
 
 
     # Set up data capture from ADC
-    REGS[0, 3] = 0x10c
+    REG_SYSTEM[3] = 0x10c
 
 
 if __name__ == '__main__':
