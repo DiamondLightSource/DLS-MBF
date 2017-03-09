@@ -14,8 +14,8 @@ entity all_pulsed_bits is
 
         -- Control register interface
         read_strobe_i : in std_logic;
-        read_data_o : out reg_data_t;
-        read_ack_o : out std_logic;
+        read_data_o : out reg_data_t := (others => '0');
+        read_ack_o : out std_logic := '0';
 
         -- Input pulsed bits
         pulsed_bits_i : in reg_data_t

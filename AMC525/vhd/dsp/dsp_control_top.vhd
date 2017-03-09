@@ -137,7 +137,7 @@ begin
 
 
     -- DRAM0 capture control
-    fast_memory_top_inst : entity work.fast_memory_top port map (
+    fast_memory_top : entity work.fast_memory_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 

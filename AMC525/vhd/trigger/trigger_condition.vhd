@@ -14,7 +14,7 @@ entity trigger_condition is
     port (
         clk_i : in std_logic;
         trigger_i : in std_logic;
-        trigger_o : out std_logic
+        trigger_o : out std_logic := '0'
     );
 end;
 

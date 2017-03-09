@@ -15,7 +15,7 @@ entity fast_memory_control is
         stop_i : in std_logic;
         count_i : in unsigned;
 
-        capture_enable_o : out std_logic;
+        capture_enable_o : out std_logic := '0';
         capture_address_i : in std_logic_vector;
         capture_address_o : out std_logic_vector
     );

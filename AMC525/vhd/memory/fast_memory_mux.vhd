@@ -20,11 +20,11 @@ entity fast_memory_mux is
         -- Data processing
         data_valid_i : in std_logic;
         dsp_to_control_i : in dsp_to_control_array_t;
-        extra_i : in std_logic_vector;
+        extra_i : in std_logic_vector(63 downto 0);
 
         -- Data out with write enable
-        data_valid_o : out std_logic;
-        data_o : out std_logic_vector
+        data_valid_o : out std_logic := '0';
+        data_o : out std_logic_vector(63 downto 0) := (others => '0')
     );
 end;
 
@@ -38,9 +38,10 @@ architecture fast_memory_mux of fast_memory_mux is
     signal dac    : signed_array(CHANNELS)(15 downto 0);
     signal extra  : signed_array(CHANNELS)(15 downto 0);
     -- Outgoing data
-    signal data   : signed_array(CHANNELS)(15 downto 0);
+    signal data   : signed_array(CHANNELS)(15 downto 0)
+        := (others => (others => '0'));
     signal data_out : std_logic_vector(31 downto 0);
-    signal wide_data : std_logic_vector(63 downto 0);
+    signal wide_data : std_logic_vector(63 downto 0) := (others => '0');
 
 begin
     phase : entity work.adc_dsp_phase port map (

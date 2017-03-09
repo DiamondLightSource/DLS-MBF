@@ -65,7 +65,7 @@ architecture fast_memory_top of fast_memory_top is
 
 
     -- We don't expect the error bits to ever be seen
-    signal error_bits : std_logic_vector(2 downto 0);
+    signal error_bits : std_logic_vector(2 downto 0) := "000";
 
 
     -- We need a very long pipeline for the data output
@@ -212,7 +212,7 @@ begin
     -- Implementation
 
     -- Simple capture control
-    control_inst : entity work.fast_memory_control port map (
+    fast_memory_control : entity work.fast_memory_control port map (
         dsp_clk_i => dsp_clk_i,
         start_i => start,
         stop_i => stop or memory_trigger_i,
@@ -229,7 +229,7 @@ begin
         (not enable_select(0) and not enable_select(1));
 
     -- Select data to be written
-    mux_inst : entity work.fast_memory_mux port map (
+    fast_memory_mux : entity work.fast_memory_mux port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 

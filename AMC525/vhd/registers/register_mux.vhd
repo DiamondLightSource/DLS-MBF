@@ -27,7 +27,7 @@ entity register_mux is
         read_strobe_i : in std_logic;
         read_address_i : in unsigned;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic;
+        read_ack_o : out std_logic := '0';
 
         -- Multiplexed registers
         read_data_i : in reg_data_array_t;      -- Individual read registers
