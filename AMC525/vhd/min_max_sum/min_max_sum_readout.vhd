@@ -28,7 +28,7 @@ entity min_max_sum_readout is
     );
 end;
 
-architecture min_max_sum_readout of min_max_sum_readout is
+architecture arch of min_max_sum_readout is
     -- Number of words read per sample
     constant WORD_COUNT : natural := 4;
 

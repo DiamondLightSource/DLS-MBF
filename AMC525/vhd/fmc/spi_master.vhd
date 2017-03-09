@@ -35,7 +35,7 @@ entity spi_master is
     );
 end;
 
-architecture spi_master of spi_master is
+architecture arch of spi_master is
     constant SCLK_DIVISOR : natural := 2**LOG_SCLK_DIVISOR;
     constant OUT_BITS : natural := 1 + ADDRESS_BITS + DATA_BITS;
 

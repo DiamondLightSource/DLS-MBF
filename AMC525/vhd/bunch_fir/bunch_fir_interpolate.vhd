@@ -18,7 +18,7 @@ entity bunch_fir_interpolate is
     );
 end;
 
-architecture bunch_fir_interpolate of bunch_fir_interpolate is
+architecture arch of bunch_fir_interpolate is
     signal read_data : data_i'SUBTYPE := (others => '0');
     signal data_out : data_o'SUBTYPE := (others => '0');
 

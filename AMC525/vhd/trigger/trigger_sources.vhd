@@ -30,7 +30,7 @@ entity trigger_sources is
     );
 end;
 
-architecture trigger_sources of trigger_sources is
+architecture arch of trigger_sources is
     -- Trigger detect and report.  enables_i selects a mask of possible
     -- trigger sources and blanking_i selects which of these are to be ignored
     -- during the blanking pulse.  When a trigger is detected we latch the

@@ -28,7 +28,7 @@ entity dsp_registers is
     );
 end;
 
-architecture dsp_registers of dsp_registers is
+architecture arch of dsp_registers is
 begin
     -- Strobed bits for single clock control
     strobed_bits_inst : entity work.strobed_bits port map (

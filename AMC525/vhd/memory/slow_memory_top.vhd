@@ -29,7 +29,7 @@ entity slow_memory_top is
     );
 end;
 
-architecture slow_memory_top of slow_memory_top is
+architecture arch of slow_memory_top is
     subtype CHANNELS is natural range dsp_strobe_i'RANGE;
     constant CHANNEL_BITS : natural := bits(CHANNELS'HIGH);
 

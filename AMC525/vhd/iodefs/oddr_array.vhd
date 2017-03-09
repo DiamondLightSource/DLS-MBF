@@ -21,7 +21,7 @@ entity oddr_array is
     );
 end;
 
-architecture oddr_array of oddr_array is
+architecture arch of oddr_array is
 begin
     oddr_array:
     for i in 0 to COUNT-1 generate

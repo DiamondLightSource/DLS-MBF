@@ -18,7 +18,7 @@ entity trigger_condition is
     );
 end;
 
-architecture trigger_condition of trigger_condition is
+architecture arch of trigger_condition is
     signal trigger : std_logic;
     signal trigger_edge : std_logic;
 

@@ -19,7 +19,7 @@ entity obuf_array is
     );
 end;
 
-architecture obuf_array of obuf_array is
+architecture arch of obuf_array is
 begin
     obuf_array:
     for i in 0 to COUNT-1 generate

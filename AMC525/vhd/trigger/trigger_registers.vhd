@@ -44,7 +44,7 @@ entity trigger_registers is
     );
 end;
 
-architecture trigger_registers of trigger_registers is
+architecture arch of trigger_registers is
     -- Register interface
     signal strobed_bits : reg_data_t;
     signal pulsed_bits : reg_data_t;

@@ -21,7 +21,7 @@ entity iddr_array is
     );
 end;
 
-architecture iddr_array of iddr_array is
+architecture arch of iddr_array is
 begin
     iddr_array:
     for i in 0 to COUNT-1 generate

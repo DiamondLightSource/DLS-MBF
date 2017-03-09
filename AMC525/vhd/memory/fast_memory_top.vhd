@@ -40,7 +40,7 @@ entity fast_memory_top is
     );
 end;
 
-architecture fast_memory_top of fast_memory_top is
+architecture arch of fast_memory_top is
     signal config_registers : reg_data_array_t(CTRL_MEM_CONFIG_REGS);
     signal config_untimed : reg_data_array_t(CTRL_MEM_CONFIG_REGS);
     signal command_bits : reg_data_t;

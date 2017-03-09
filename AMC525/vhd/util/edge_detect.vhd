@@ -11,7 +11,7 @@ entity edge_detect is
     );
 end;
 
-architecture edge_detect of edge_detect is
+architecture arch of edge_detect is
     signal last_data : std_logic := '0';
 
 begin

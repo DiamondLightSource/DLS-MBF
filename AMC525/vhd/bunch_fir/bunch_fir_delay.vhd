@@ -19,7 +19,7 @@ entity bunch_fir_delay is
     );
 end;
 
-architecture bunch_fir_delay of bunch_fir_delay is
+architecture arch of bunch_fir_delay is
     -- Delay the write address by the external processing duration, together
     -- with a compensation for the block memory delay
     --

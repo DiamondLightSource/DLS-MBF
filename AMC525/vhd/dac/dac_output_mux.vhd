@@ -32,7 +32,7 @@ entity dac_output_mux is
     );
 end;
 
-architecture dac_output_mux of dac_output_mux is
+architecture arch of dac_output_mux is
     constant GAIN_WIDTH : natural := bunch_config_i.gain'LENGTH;
     -- So that we can reliably catch the overflow from adding three quantities,
     -- we need two extra bits in the accumulator.

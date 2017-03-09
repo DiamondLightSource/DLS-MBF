@@ -67,7 +67,7 @@ entity nco_cos_sin_refine is
     );
 end;
 
-architecture nco_cos_sin_refine of nco_cos_sin_refine is
+architecture arch of nco_cos_sin_refine is
     -- 2^6 * PI = 2^5 2 PI : 9/-5
     constant PI_SCALED : signed(8 downto 0) := to_signed(201, 9);
 

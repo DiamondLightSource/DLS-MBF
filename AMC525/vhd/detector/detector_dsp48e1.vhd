@@ -48,7 +48,7 @@ entity detector_dsp48e1 is
     );
 end;
 
-architecture detector_dsp48e1 of detector_dsp48e1 is
+architecture arch of detector_dsp48e1 is
     signal carrycasc : std_logic;
     signal multsign : std_logic;
 

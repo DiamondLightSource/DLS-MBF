@@ -28,7 +28,7 @@ entity slow_memory_control is
     );
 end;
 
-architecture slow_memory_control of slow_memory_control is
+architecture arch of slow_memory_control is
     subtype ADDRESS_RANGE is natural range dram1_address_o'RANGE;
     signal target_count : unsigned(ADDRESS_RANGE);
     signal interval_shift_in : natural range 0 to 15;

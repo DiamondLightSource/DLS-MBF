@@ -19,7 +19,7 @@ entity adc_to_dsp is
     );
 end;
 
-architecture adc_to_dsp of adc_to_dsp is
+architecture arch of adc_to_dsp is
     signal adc_phase : std_logic;
     signal adc_data_in : adc_data_i'SUBTYPE := (others => '0');
     signal dsp_data : signed_array(LANES)(adc_data_i'RANGE)

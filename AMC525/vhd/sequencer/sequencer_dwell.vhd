@@ -43,7 +43,7 @@ entity sequencer_dwell is
     );
 end;
 
-architecture sequencer_dwell of sequencer_dwell is
+architecture arch of sequencer_dwell is
     -- Set during holdoff period
     signal in_holdoff : std_logic := '0';
     -- Counts turns during holdoff

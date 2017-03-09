@@ -19,7 +19,7 @@ entity dlyreg is
     );
 end;
 
-architecture dlyreg of dlyreg is
+architecture arch of dlyreg is
     type dlyline_t is array(DLY-1 downto 0) of std_logic_vector(DW-1 downto 0);
     signal dlyline : dlyline_t := (others => (others => '0'));
     attribute SHREG_EXTRACT : string;

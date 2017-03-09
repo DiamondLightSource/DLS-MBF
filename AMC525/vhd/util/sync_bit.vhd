@@ -14,7 +14,7 @@ entity sync_bit is
     );
 end;
 
-architecture rtl of sync_bit is
+architecture arch of sync_bit is
     signal bit_meta : std_logic := '0';
 
     attribute async_reg : string;

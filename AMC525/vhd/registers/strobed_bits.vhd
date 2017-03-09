@@ -21,7 +21,7 @@ entity strobed_bits is
     );
 end;
 
-architecture strobed_bits of strobed_bits is
+architecture arch of strobed_bits is
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then

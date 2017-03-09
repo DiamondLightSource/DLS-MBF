@@ -25,7 +25,7 @@ entity fmc_digital_io is
     );
 end;
 
-architecture fmc_digital_io of fmc_digital_io is
+architecture arch of fmc_digital_io is
     signal buf_input_p : std_logic_vector(4 downto 0);
     signal buf_input_n : std_logic_vector(4 downto 0);
 

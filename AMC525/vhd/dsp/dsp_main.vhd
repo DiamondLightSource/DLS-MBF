@@ -57,7 +57,7 @@ entity dsp_main is
     );
 end;
 
-architecture dsp_main of dsp_main is
+architecture arch of dsp_main is
     constant ADDRESS_BITS : natural := write_address_i'LENGTH;
     subtype DECODE_RANGE is natural range ADDRESS_BITS-1 downto ADDRESS_BITS-2;
     subtype MAIN_ADDR_RANGE is natural range ADDRESS_BITS-3 downto 0;

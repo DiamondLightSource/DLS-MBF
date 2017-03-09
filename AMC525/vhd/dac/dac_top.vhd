@@ -51,7 +51,7 @@ entity dac_top is
     );
 end;
 
-architecture dac_top of dac_top is
+architecture arch of dac_top is
     -- Configuration register
     signal config_register : reg_data_t;
     signal config_untimed : reg_data_t;

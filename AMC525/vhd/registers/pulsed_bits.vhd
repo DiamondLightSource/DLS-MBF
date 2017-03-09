@@ -33,7 +33,7 @@ entity pulsed_bits is
     );
 end;
 
-architecture pulsed_bits of pulsed_bits is
+architecture arch of pulsed_bits is
     signal pulsed_bits_in : reg_data_t;
     signal pulsed_bits : reg_data_t := (others => '0');
 

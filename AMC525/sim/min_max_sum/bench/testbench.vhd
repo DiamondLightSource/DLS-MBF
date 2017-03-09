@@ -9,7 +9,7 @@ use work.min_max_sum_defs.all;
 entity testbench is
 end testbench;
 
-architecture testbench of testbench is
+architecture arch of testbench is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural := 1) is
         variable i : natural;
     begin

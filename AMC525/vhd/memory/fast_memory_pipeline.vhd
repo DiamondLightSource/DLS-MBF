@@ -19,7 +19,7 @@ entity fast_memory_pipeline is
     );
 end;
 
-architecture fast_memory_pipeline of fast_memory_pipeline is
+architecture arch of fast_memory_pipeline is
 begin
     channel_gen : for c in CHANNELS generate
         -- Because of a bug in Questa Sim we can't assign directly to output!

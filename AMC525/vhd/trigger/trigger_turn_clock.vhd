@@ -35,7 +35,7 @@ entity trigger_turn_clock is
     );
 end;
 
-architecture trigger_turn_clock of trigger_turn_clock is
+architecture arch of trigger_turn_clock is
     signal adc_phase : std_logic;
 
     signal max_bunch : bunch_count_t := (others => '0');

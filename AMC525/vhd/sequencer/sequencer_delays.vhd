@@ -28,7 +28,7 @@ entity sequencer_delays is
     );
 end;
 
-architecture sequencer_delays of sequencer_delays is
+architecture arch of sequencer_delays is
     signal load_bunch_bank : std_logic;
     signal load_hom_gain : std_logic;
 

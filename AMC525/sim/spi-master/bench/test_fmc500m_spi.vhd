@@ -9,7 +9,7 @@ end test_fmc500m_spi;
 use work.support.all;
 use work.defines.all;
 
-architecture test_fmc500m_spi of test_fmc500m_spi is
+architecture arch of test_fmc500m_spi is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
         variable i : natural;
     begin

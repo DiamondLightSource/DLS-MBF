@@ -22,7 +22,7 @@ entity all_pulsed_bits is
     );
 end;
 
-architecture all_pulsed_bits of all_pulsed_bits is
+architecture arch of all_pulsed_bits is
     signal pulsed_bits : reg_data_t := (others => '0');
 
 begin

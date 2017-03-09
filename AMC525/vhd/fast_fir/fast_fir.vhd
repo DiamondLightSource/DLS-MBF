@@ -41,7 +41,7 @@ entity fast_fir is
     );
 end;
 
-architecture fast_fir of fast_fir is
+architecture arch of fast_fir is
     -- Extract data in and out dimensions from arguments
     constant BIT_WIDTH_IN  : natural := data_i'LENGTH;
     constant BIT_WIDTH_OUT : natural := data_o'LENGTH;

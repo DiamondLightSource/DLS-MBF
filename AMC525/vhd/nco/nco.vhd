@@ -22,7 +22,7 @@ entity nco is
     );
 end;
 
-architecture nco of nco is
+architecture arch of nco is
     constant IN_DELAY : natural := 4;
     constant OUT_DELAY : natural := 8;
 

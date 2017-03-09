@@ -53,7 +53,7 @@ entity dsp_control_top is
     );
 end;
 
-architecture dsp_control_top of dsp_control_top is
+architecture arch of dsp_control_top is
     signal pulsed_bits : reg_data_t;
     signal control_register : reg_data_t;
 

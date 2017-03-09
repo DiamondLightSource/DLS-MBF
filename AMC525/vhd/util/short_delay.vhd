@@ -19,7 +19,7 @@ entity short_delay is
     );
 end;
 
-architecture short_delay of short_delay is
+architecture arch of short_delay is
     constant DELAY_BITS : natural := delay_i'LENGTH;
     constant MAX_DELAY : natural := 2**DELAY_BITS-1;
 

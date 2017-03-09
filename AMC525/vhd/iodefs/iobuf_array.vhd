@@ -21,7 +21,7 @@ entity iobuf_array is
     );
 end;
 
-architecture iobuf_array of iobuf_array is
+architecture arch of iobuf_array is
 begin
     iobuf_array:
     for i in 0 to COUNT-1 generate

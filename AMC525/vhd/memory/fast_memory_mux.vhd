@@ -28,7 +28,7 @@ entity fast_memory_mux is
     );
 end;
 
-architecture fast_memory_mux of fast_memory_mux is
+architecture arch of fast_memory_mux is
     signal adc_phase : std_logic;
 
     -- Incoming data

@@ -24,7 +24,7 @@ entity bunch_fir_counter is
     );
 end;
 
-architecture bunch_fir_counter of bunch_fir_counter is
+architecture arch of bunch_fir_counter is
     signal turn_clock : std_logic;
     signal bunch_index : bunch_count_t := (others => '0');
 

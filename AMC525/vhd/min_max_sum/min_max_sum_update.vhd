@@ -45,7 +45,7 @@ entity min_max_sum_update is
     );
 end;
 
-architecture min_max_sum_update of min_max_sum_update is
+architecture arch of min_max_sum_update is
     -- We hang onto the computed min and max values so that the delta can be
     -- computed accurately now, and not one turn later -- we could even miss an
     -- event if a buffer swap occurred at the wrong time!

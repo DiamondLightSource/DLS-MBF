@@ -37,7 +37,7 @@ entity register_cc is
     );
 end;
 
-architecture register_cc of register_cc is
+architecture arch of register_cc is
     signal reading : std_logic;
     signal out_read_strobe : std_logic;
     signal read_pending : std_logic := '0';

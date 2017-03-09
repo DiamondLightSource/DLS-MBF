@@ -30,7 +30,7 @@ entity min_max_sum is
     );
 end;
 
-architecture min_max_sum of min_max_sum is
+architecture arch of min_max_sum is
     -- Register indices.
     constant COUNT_REG : natural := 0;
     constant READOUT_REG : natural := 1;

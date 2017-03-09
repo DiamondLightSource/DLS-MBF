@@ -15,7 +15,7 @@ entity sync_reset is
     );
 end;
 
-architecture sync_reset of sync_reset is
+architecture arch of sync_reset is
     signal clk_ok_meta : std_logic;
     signal clk_ok_delay : std_logic;    -- Delay to help with reset distribution
 

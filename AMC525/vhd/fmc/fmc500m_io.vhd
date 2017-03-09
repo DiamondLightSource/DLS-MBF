@@ -75,7 +75,7 @@ entity fmc500m_io is
     );
 end;
 
-architecture fmc500m_io of fmc500m_io is
+architecture arch of fmc500m_io is
     signal adc_spi_sdio_tri : std_logic;
     signal adc_data_p : std_logic_vector(13 downto 0);
     signal adc_data_n : std_logic_vector(13 downto 0);

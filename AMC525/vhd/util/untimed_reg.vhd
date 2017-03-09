@@ -19,7 +19,7 @@ entity untimed_reg is
     );
 end;
 
-architecture untimed_reg of untimed_reg is
+architecture arch of untimed_reg is
     -- Note that the signal name here and the fact that it names an actual
     -- register are used by the constraints file, where an explicit timing
     -- "false path" is created from this register to all other flip-flops.

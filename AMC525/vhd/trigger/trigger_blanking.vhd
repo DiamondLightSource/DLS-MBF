@@ -18,7 +18,7 @@ entity trigger_blanking is
     );
 end;
 
-architecture trigger_blanking of trigger_blanking is
+architecture arch of trigger_blanking is
     signal blanking_counter : blanking_interval_i'SUBTYPE
         := (others => (others => '0'));
 

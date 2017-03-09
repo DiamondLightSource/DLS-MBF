@@ -32,7 +32,7 @@ entity trigger_setup is
     );
 end;
 
-architecture trigger_setup of trigger_setup is
+architecture arch of trigger_setup is
     -- Input signals converted to synchronous rising edge pulse
     signal event_trigger : std_logic;
     signal postmortem_trigger : std_logic;

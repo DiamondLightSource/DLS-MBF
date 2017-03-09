@@ -46,7 +46,7 @@ entity register_top is
     );
 end;
 
-architecture register_top of register_top is
+architecture arch of register_top is
     constant SYSTEM_MOD : natural := 0;
     constant DSP_MOD : natural := 1;
 

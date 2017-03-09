@@ -17,7 +17,7 @@ entity long_delay is
     );
 end;
 
-architecture long_delay of long_delay is
+architecture arch of long_delay is
     constant ADDR_BITS : natural := delay_i'LENGTH;
     subtype address_t is unsigned(ADDR_BITS-1 downto 0);
 

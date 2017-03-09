@@ -47,7 +47,7 @@ entity block_memory is
     );
 end;
 
-architecture block_memory of block_memory is
+architecture arch of block_memory is
     -- Block RAM
     subtype data_t is std_logic_vector(DATA_BITS-1 downto 0);
     type memory_t is array(0 to 2**ADDR_BITS-1) of data_t;

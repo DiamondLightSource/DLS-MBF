@@ -24,7 +24,7 @@ entity register_read_adc is
     );
 end;
 
-architecture register_read_adc of register_read_adc is
+architecture arch of register_read_adc is
     signal adc_phase : std_logic;
 
     subtype register_range is natural range dsp_read_strobe_i'RANGE;

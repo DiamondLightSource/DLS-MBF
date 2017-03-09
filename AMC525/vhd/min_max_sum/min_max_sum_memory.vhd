@@ -31,7 +31,7 @@ entity min_max_sum_memory is
     );
 end;
 
-architecture min_max_sum_memory of min_max_sum_memory is
+architecture arch of min_max_sum_memory is
     constant ADDR_BITS : natural := read_addr_i'LENGTH;
 
     -- Declare block ram

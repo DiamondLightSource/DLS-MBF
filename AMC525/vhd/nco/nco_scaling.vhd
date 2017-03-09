@@ -17,7 +17,7 @@ entity nco_scaling is
     );
 end;
 
-architecture nco_scaling of nco_scaling is
+architecture arch of nco_scaling is
     signal scaled : cos_sin_18_t;
 
 begin

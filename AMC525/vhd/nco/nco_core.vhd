@@ -22,7 +22,7 @@ entity nco_core is
     );
 end;
 
-architecture nco_core of nco_core is
+architecture arch of nco_core is
     -- Delay from lookup valid to cos_sin_raw valid
     constant LOOKUP_DELAY : natural := 4;
     -- Delay from cos_sin_raw to cos_sin_refined

@@ -30,7 +30,7 @@ entity bunch_select is
     );
 end;
 
-architecture bunch_select of bunch_select is
+architecture arch of bunch_select is
     signal config_register : reg_data_t;
 
     signal write_start : std_logic;

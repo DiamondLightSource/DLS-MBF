@@ -40,7 +40,7 @@ entity dsp_top is
     );
 end;
 
-architecture dsp_top of dsp_top is
+architecture arch of dsp_top is
     -- General readback status bits
     signal status_bits : reg_data_t;
 

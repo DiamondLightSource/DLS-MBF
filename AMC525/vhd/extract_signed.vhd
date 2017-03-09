@@ -25,7 +25,7 @@ entity extract_signed is
     );
 end;
 
-architecture extract_signed of extract_signed is
+architecture arch of extract_signed is
     constant BIT_WIDTH_IN  : natural := data_i'LENGTH;
     constant BIT_WIDTH_OUT : natural := data_o'LENGTH;
     constant ROUNDED_WIDTH : natural := BIT_WIDTH_IN - OFFSET + EXTRA;

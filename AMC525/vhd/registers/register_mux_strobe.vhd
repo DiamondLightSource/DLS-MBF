@@ -38,7 +38,7 @@ entity register_mux_strobe is
     );
 end;
 
-architecture register_mux_strobe of register_mux_strobe is
+architecture arch of register_mux_strobe is
     signal address : natural;
     signal ack_in : std_logic;
     signal busy : boolean := false;

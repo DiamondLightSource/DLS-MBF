@@ -19,7 +19,7 @@ entity dsp_to_adc is
     );
 end;
 
-architecture dsp_to_adc of dsp_to_adc is
+architecture arch of dsp_to_adc is
     signal adc_phase : std_logic;
     signal dsp_data : dsp_data_i'SUBTYPE := (others => (others => '0'));
     signal adc_data : adc_data_o'SUBTYPE := (others => '0');

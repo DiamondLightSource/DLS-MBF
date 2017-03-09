@@ -19,7 +19,7 @@ entity bunch_fir is
     );
 end;
 
-architecture bunch_fir of bunch_fir is
+architecture arch of bunch_fir is
     -- Widths and counts derived from arguments.
     constant TAP_COUNT : natural := taps_i'LENGTH;
     constant TAP_WIDTH : natural := taps_i(0)'LENGTH;

@@ -32,7 +32,7 @@ entity debug is
     );
 end;
 
-architecture debug of debug is
+architecture arch of debug is
     -- Capture memory.
     subtype capture_t is std_logic_vector(WIDTH-1 downto 0);
     type memory_t is array(0 to DEPTH-1) of capture_t;

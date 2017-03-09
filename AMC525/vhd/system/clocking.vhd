@@ -43,7 +43,7 @@ entity clocking is
     );
 end;
 
-architecture clocking of clocking is
+architecture arch of clocking is
     -- Processed incoming signals
     signal clk125mhz : std_logic;
     signal adc_dco_delay : std_logic;

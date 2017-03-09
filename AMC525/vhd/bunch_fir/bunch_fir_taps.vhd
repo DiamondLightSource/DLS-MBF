@@ -28,7 +28,7 @@ entity bunch_fir_taps is
     );
 end;
 
-architecture bunch_fir_taps of bunch_fir_taps is
+architecture arch of bunch_fir_taps is
     constant TAP_COUNT : natural := taps_o'LENGTH;
     constant TAP_WIDTH : natural := taps_o(0)'LENGTH;
 

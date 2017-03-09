@@ -23,7 +23,7 @@ entity dac_test_pattern is
     );
 end;
 
-architecture dac_test_pattern of dac_test_pattern is
+architecture arch of dac_test_pattern is
     signal test_mode : std_logic;
     signal test_pattern : reg_data_t;
     signal frame : std_logic := '0';

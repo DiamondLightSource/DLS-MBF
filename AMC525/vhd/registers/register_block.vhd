@@ -23,7 +23,7 @@ entity register_block is
     );
 end;
 
-architecture register_block of register_block is
+architecture arch of register_block is
     constant COUNT : natural := registers_o'LENGTH;
     constant COUNT_BITS : natural := bits(COUNT-1);
 

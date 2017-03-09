@@ -38,7 +38,7 @@ entity bunch_fir_top is
     );
 end;
 
-architecture bunch_fir_top of bunch_fir_top is
+architecture arch of bunch_fir_top is
     -- Control values
     signal config_register : reg_data_t;
     signal config_untimed : reg_data_t;

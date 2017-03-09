@@ -36,7 +36,7 @@ entity sequencer_pc is
     );
 end;
 
-architecture sequencer_pc of sequencer_pc is
+architecture arch of sequencer_pc is
     -- Reset processing.  The reset_i pulse comes in as a one clock asynchronous
     -- pulse, here we synchronise it to the turn clock and generate a one turn
     -- long reset output pulse.

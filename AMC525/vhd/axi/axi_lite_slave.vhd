@@ -103,7 +103,7 @@ entity axi_lite_slave is
     );
 end;
 
-architecture axi_lite_slave of axi_lite_slave is
+architecture arch of axi_lite_slave is
     constant BYTE_BITS : natural := bits(wstrb_i'LENGTH-1);
     constant ADDR_WIDTH : natural := read_address_o'LENGTH;
 

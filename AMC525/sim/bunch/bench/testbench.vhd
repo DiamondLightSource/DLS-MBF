@@ -11,7 +11,7 @@ use work.sim_support.all;
 entity testbench is
 end testbench;
 
-architecture testbench of testbench is
+architecture arch of testbench is
     subtype SELECT_REGS is natural range 0 to 1;
     subtype FIR_REGS is natural range 2 to 3;
 

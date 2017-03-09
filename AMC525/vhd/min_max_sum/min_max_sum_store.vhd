@@ -34,7 +34,7 @@ entity min_max_sum_store is
     );
 end;
 
-architecture min_max_sum_store of min_max_sum_store is
+architecture arch of min_max_sum_store is
     -- This is [0..1][rows]row, ie a three dimenstional array of bits
     type mms_row_array_t is array(natural range 0 to 1) of mms_row_t;
 

@@ -12,7 +12,7 @@ entity testbench is
 end testbench;
 
 
-architecture testbench of testbench is
+architecture arch of testbench is
     signal adc_clk : std_logic := '1';
     signal dsp_clk : std_logic := '0';
 

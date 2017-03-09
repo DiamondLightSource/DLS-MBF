@@ -66,7 +66,7 @@ entity axi_burst_master is
     );
 end;
 
-architecture axi_burst_master of axi_burst_master is
+architecture arch of axi_burst_master is
     constant DATA_ADDR_BITS : natural := bits(DATA_WIDTH/8-1);
     constant BURST_BITS : natural := bits(BURST_LENGTH-1);
     constant BURST_ADDR_BASE : natural := DATA_ADDR_BITS + BURST_BITS;

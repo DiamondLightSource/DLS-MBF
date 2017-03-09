@@ -56,7 +56,7 @@ entity fmc500m_spi is
     );
 end;
 
-architecture fmc500m_spi of fmc500m_spi is
+architecture arch of fmc500m_spi is
 
     -- Internal SPI signals
     signal spi15_start : std_logic := '0';

@@ -25,7 +25,7 @@ entity nco_cos_sin_prepare is
     );
 end;
 
-architecture nco_cos_sin_prepare of nco_cos_sin_prepare is
+architecture arch of nco_cos_sin_prepare is
     -- Delay in this block:
     --  angle_i => lookup_o, residue_o
     constant PREPARE_DELAY : natural := 1;

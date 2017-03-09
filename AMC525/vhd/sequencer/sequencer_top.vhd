@@ -59,7 +59,7 @@ entity sequencer_top is
     );
 end;
 
-architecture sequencer_top of sequencer_top is
+architecture arch of sequencer_top is
     -- Register configuration
     signal seq_abort : std_logic;
     signal target_seq_pc : seq_pc_t;

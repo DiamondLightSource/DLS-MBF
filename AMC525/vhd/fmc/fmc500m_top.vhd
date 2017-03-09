@@ -44,7 +44,7 @@ entity fmc500m_top is
     );
 end;
 
-architecture fmc500m_top of fmc500m_top is
+architecture arch of fmc500m_top is
     -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     -- Signal interfaces to IO.
 

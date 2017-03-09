@@ -38,7 +38,7 @@ entity axi_lite_master is
     );
 end;
 
-architecture axi_lite_master of axi_lite_master is
+architecture arch of axi_lite_master is
     constant DATA_WIDTH : natural := data_i'LENGTH;
     constant ADDR_WIDTH : natural := address_i'LENGTH;
     constant BASE_BITS : natural := bits(DATA_WIDTH/8 - 1); -- Byte address

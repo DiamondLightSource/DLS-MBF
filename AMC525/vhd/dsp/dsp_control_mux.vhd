@@ -31,7 +31,7 @@ entity dsp_control_mux is
     );
 end;
 
-architecture dsp_control_mux of dsp_control_mux is
+architecture arch of dsp_control_mux is
     -- Aliases for more compact code
     alias d2c0 : dsp_to_control_t is dsp_to_control_i(0);
     alias d2c1 : dsp_to_control_t is dsp_to_control_i(1);

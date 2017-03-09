@@ -22,7 +22,7 @@ entity min_max_limit is
     );
 end;
 
-architecture min_max_limit of min_max_limit is
+architecture arch of min_max_limit is
     signal adc_phase : std_logic;
     signal limit_detect_adc : std_logic := '0';
     signal limit_detect : std_logic := '0';

@@ -54,7 +54,7 @@ entity system_registers is
     );
 end;
 
-architecture system_registers of system_registers is
+architecture arch of system_registers is
     signal status_read_data : reg_data_t;
 
 begin

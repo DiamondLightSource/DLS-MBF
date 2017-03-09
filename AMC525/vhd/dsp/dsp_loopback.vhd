@@ -20,7 +20,7 @@ entity dsp_loopback is
     );
 end;
 
-architecture dsp_loopback of dsp_loopback is
+architecture arch of dsp_loopback is
     signal loopback : std_logic;
     signal output_enable : std_logic;
 

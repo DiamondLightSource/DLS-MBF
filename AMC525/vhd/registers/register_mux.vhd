@@ -36,7 +36,7 @@ entity register_mux is
     );
 end;
 
-architecture register_mux of register_mux is
+architecture arch of register_mux is
     signal read_address : natural;
     signal read_data : reg_data_t;
     signal read_ack : std_logic;

@@ -20,7 +20,7 @@ entity ibufds_array is
     );
 end;
 
-architecture ibufds_array of ibufds_array is
+architecture arch of ibufds_array is
 begin
     ibufds_array:
     for i in 0 to COUNT-1 generate

@@ -9,7 +9,7 @@ use work.register_defs.all;
 use work.fmc500m_defs.all;
 use work.dsp_defs.all;
 
-architecture top of top is
+architecture arch of top is
     -- IO instances
     signal uled_out : std_logic_vector(3 downto 0);
     signal n_coldrst_in : std_logic;

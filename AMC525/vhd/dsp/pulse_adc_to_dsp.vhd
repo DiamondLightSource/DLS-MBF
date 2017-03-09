@@ -15,7 +15,7 @@ entity pulse_adc_to_dsp is
     );
 end;
 
-architecture pulse_adc_to_dsp of pulse_adc_to_dsp is
+architecture arch of pulse_adc_to_dsp is
     signal adc_phase : std_logic;
     signal pulse : std_logic := '0';
 

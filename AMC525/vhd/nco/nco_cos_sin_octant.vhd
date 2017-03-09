@@ -18,7 +18,7 @@ entity nco_cos_sin_octant is
     );
 end;
 
-architecture nco_cos_sin_octant of nco_cos_sin_octant is
+architecture arch of nco_cos_sin_octant is
     signal octant : octant_t;
     signal p_cos : signed(17 downto 0);
     signal p_sin : signed(17 downto 0);

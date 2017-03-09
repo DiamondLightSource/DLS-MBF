@@ -21,7 +21,7 @@ entity sim_dsp96 is
     );
 end;
 
-architecture sim_dsp96 of sim_dsp96 is
+architecture arch of sim_dsp96 is
     signal data_in : signed(24 downto 0);
     signal mul_in : signed(17 downto 0);
     signal product : signed(42 downto 0);

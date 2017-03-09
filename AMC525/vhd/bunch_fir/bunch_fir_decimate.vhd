@@ -23,7 +23,7 @@ entity bunch_fir_decimate is
     );
 end;
 
-architecture bunch_fir_decimate of bunch_fir_decimate is
+architecture arch of bunch_fir_decimate is
     -- We can accumulate up to the maximum value of decimation_shift_i extra
     -- bits.
     constant ACCUM_BITS : natural :=

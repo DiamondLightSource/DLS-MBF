@@ -12,7 +12,7 @@ library work;
 use work.support.all;
 use work.defines.all;
 
-architecture STRUCTURE of interconnect_tb is
+architecture arch of interconnect_tb is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
         variable i : natural;
     begin

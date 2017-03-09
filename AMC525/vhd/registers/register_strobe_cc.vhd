@@ -26,7 +26,7 @@ entity register_strobe_cc is
     );
 end;
 
-architecture register_strobe_cc of register_strobe_cc is
+architecture arch of register_strobe_cc is
     -- REG clock
     signal reg_request : std_logic;
     signal reg_response : std_logic;

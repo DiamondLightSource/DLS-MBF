@@ -23,7 +23,7 @@ entity sequencer_super is
     );
 end;
 
-architecture sequencer_super of sequencer_super is
+architecture arch of sequencer_super is
     type freq_memory_t is array(0 to 2**super_count_t'LENGTH-1) of angle_t;
     signal freq_memory : freq_memory_t := (others => (others => '0'));
     attribute ram_style : string;

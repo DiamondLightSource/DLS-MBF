@@ -15,7 +15,7 @@ entity bunch_counter is
     );
 end;
 
-architecture bunch_counter of bunch_counter is
+architecture arch of bunch_counter is
     signal turn_clock : std_logic;
     signal bunch_index : bunch_count_t := (others => '0');
 

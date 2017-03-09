@@ -22,7 +22,7 @@ entity slow_memory_priority is
     );
 end;
 
-architecture slow_memory_priority of slow_memory_priority is
+architecture arch of slow_memory_priority is
     constant INPUT_COUNT : natural := input_ready_o'LENGTH;
 
     function priority_select(input : std_logic_vector) return natural is

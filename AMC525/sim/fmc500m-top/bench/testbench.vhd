@@ -10,7 +10,7 @@ use work.support.all;
 use work.defines.all;
 use work.fmc500m_defs.all;
 
-architecture testbench of testbench is
+architecture arch of testbench is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
         variable i : natural;
     begin

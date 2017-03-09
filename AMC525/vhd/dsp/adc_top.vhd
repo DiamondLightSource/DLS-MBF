@@ -47,7 +47,7 @@ entity adc_top is
     );
 end;
 
-architecture adc_top of adc_top is
+architecture arch of adc_top is
     signal limit_register_in : reg_data_t;
     signal limit_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);

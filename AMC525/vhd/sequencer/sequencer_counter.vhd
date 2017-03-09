@@ -31,7 +31,7 @@ entity sequencer_counter is
     );
 end;
 
-architecture sequencer_counter of sequencer_counter is
+architecture arch of sequencer_counter is
     -- Frequency generator output and capture count: advance the frequency and
     -- count a capture on a successful completion of a dwell.  On a reset force
     -- the capture counter to zero.

@@ -35,7 +35,7 @@ entity sequencer_window is
     );
 end;
 
-architecture sequencer_window of sequencer_window is
+architecture arch of sequencer_window is
     -- As well as an intrinsic delay of 4 clocks we need an extra delay so that
     -- controls to the detector arrive at the same time as the IQ data.
     constant EXTRA_DELAY : natural := 3;

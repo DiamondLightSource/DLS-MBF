@@ -27,7 +27,7 @@ entity bunch_store is
     );
 end;
 
-architecture bunch_store of bunch_store is
+architecture arch of bunch_store is
     -- Assemble address from bank_select_i and bunch_index_i
     constant ADDR_BITS : natural := bank_select_i'LENGTH + bunch_index_i'LENGTH;
     signal read_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');

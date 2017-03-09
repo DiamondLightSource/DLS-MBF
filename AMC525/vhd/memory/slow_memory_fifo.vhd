@@ -28,7 +28,7 @@ entity slow_memory_fifo is
     );
 end;
 
-architecture slow_memory_fifo of slow_memory_fifo is
+architecture arch of slow_memory_fifo is
     -- The FIFO is structured into four parts: INPUT, OUTPUT, STORE, STATE.
 
     -- STORE where the fifo data is stored.

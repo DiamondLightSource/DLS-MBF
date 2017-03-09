@@ -20,7 +20,7 @@ entity obufds_array is
     );
 end;
 
-architecture obufds_array of obufds_array is
+architecture arch of obufds_array is
 begin
     obufds_array:
     for i in 0 to COUNT-1 generate

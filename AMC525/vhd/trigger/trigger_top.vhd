@@ -42,7 +42,7 @@ entity trigger_top is
     );
 end;
 
-architecture trigger_top of trigger_top is
+architecture arch of trigger_top is
     -- Input signals converted to synchronous rising edge pulse
     signal revolution_clock : std_logic;    -- On ADC clock
     signal blanking_trigger : std_logic;

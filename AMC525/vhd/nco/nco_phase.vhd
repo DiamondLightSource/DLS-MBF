@@ -19,7 +19,7 @@ entity nco_phase is
     );
 end;
 
-architecture nco_phase of nco_phase is
+architecture arch of nco_phase is
     signal reset : std_logic;
     signal phase_advance : angle_t := (others => '0');
     signal phase : angle_t := (others => '0');

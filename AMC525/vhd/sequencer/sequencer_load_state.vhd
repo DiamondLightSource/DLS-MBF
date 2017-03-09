@@ -27,7 +27,7 @@ entity sequencer_load_state is
     );
 end;
 
-architecture sequencer_load_state of sequencer_load_state is
+architecture arch of sequencer_load_state is
     type seq_program_t is array(0 to 63) of reg_data_t;
     signal seq_program : seq_program_t := (others => (others => '0'));
     attribute ram_style : string;

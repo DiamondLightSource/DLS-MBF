@@ -30,7 +30,7 @@ entity idelay_control is
     );
 end;
 
-architecture idelay_control of idelay_control is
+architecture arch of idelay_control is
     signal delay_in : std_logic_vector(4 downto 0);
     signal delay_strobe : std_logic;
     signal inc_decn : std_logic;

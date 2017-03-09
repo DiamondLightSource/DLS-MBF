@@ -26,7 +26,7 @@ entity adc_dsp_phase is
     );
 end;
 
-architecture adc_dsp_phase of adc_dsp_phase is
+architecture arch of adc_dsp_phase is
     signal phase_0 : std_logic := '0';
     signal phase_90 : std_logic := '0';
 

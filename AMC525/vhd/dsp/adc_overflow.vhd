@@ -19,7 +19,7 @@ entity adc_overflow is
     );
 end;
 
-architecture adc_overflow of adc_overflow is
+architecture arch of adc_overflow is
     signal abs_data : unsigned(data_i'RANGE) := (others => '0');
     signal overflow : std_logic := '0';
 

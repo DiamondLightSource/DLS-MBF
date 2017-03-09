@@ -6,7 +6,7 @@ entity test_spi_master is
 end test_spi_master;
 
 
-architecture test_spi_master of test_spi_master is
+architecture arch of test_spi_master is
     procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
         variable i : natural;
     begin

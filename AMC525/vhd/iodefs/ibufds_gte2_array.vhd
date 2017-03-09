@@ -21,7 +21,7 @@ entity ibufds_gte2_array is
     );
 end;
 
-architecture ibufds_gte2_array of ibufds_gte2_array is
+architecture arch of ibufds_gte2_array is
 begin
     ibufds_gte2_array:
     for i in 0 to COUNT-1 generate

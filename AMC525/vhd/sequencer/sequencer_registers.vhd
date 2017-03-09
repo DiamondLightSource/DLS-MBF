@@ -40,7 +40,7 @@ entity sequencer_registers is
     );
 end;
 
-architecture sequencer_registers of sequencer_registers is
+architecture arch of sequencer_registers is
     signal strobed_bits : reg_data_t;
     signal readback_register : reg_data_t;
     signal register_file : reg_data_t;

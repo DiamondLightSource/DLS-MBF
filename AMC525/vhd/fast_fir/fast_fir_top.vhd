@@ -28,7 +28,7 @@ entity fast_fir_top is
     );
 end;
 
-architecture fast_fir_top of fast_fir_top is
+architecture arch of fast_fir_top is
     signal taps_in : reg_data_array_t(0 to TAP_COUNT-1);
     signal taps : reg_data_array_t(0 to TAP_COUNT-1);
     signal fir_overflow : std_logic;

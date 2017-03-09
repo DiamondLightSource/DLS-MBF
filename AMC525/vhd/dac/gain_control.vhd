@@ -20,7 +20,7 @@ entity gain_control is
     );
 end;
 
-architecture gain_control of gain_control is
+architecture arch of gain_control is
     constant WIDTH_IN : natural := data_i'LENGTH;
     constant WIDTH_OUT : natural := data_o'LENGTH;
     constant SEL_BITS : natural := gain_sel_i'LENGTH;

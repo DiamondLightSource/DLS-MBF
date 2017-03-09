@@ -19,7 +19,7 @@ entity ibuf_array is
     );
 end;
 
-architecture ibuf_array of ibuf_array is
+architecture arch of ibuf_array is
 begin
     ibuf_array:
     for i in 0 to COUNT-1 generate

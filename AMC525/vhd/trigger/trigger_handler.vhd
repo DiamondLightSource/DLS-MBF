@@ -24,7 +24,7 @@ entity trigger_handler is
     );
 end;
 
-architecture trigger_handler of trigger_handler is
+architecture arch of trigger_handler is
     type trig_state_t is (TRIGGER_IDLE, TRIGGER_ARMED, TRIGGER_TRIGGERED);
     signal trig_state : trig_state_t := TRIGGER_IDLE;
 
