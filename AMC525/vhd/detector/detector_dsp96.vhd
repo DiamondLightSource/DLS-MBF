@@ -1,4 +1,4 @@
--- Explicit instantiation of DSP48E1 cores
+-- Explicit instantiation of two DSP48E1 cores for a 96 bit accumulator
 --
 -- Unfortunately it would appear that the 96 bit accumulator cannot be inferred,
 -- so we have to instantiate the complete DSP48E1 core explicitly.  This is
@@ -34,7 +34,7 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-entity detector_dsp48e1 is
+entity detector_dsp96 is
     port (
         clk_i : in std_logic;
 
@@ -48,7 +48,7 @@ entity detector_dsp48e1 is
     );
 end;
 
-architecture arch of detector_dsp48e1 is
+architecture arch of detector_dsp96 is
     signal carrycasc : std_logic;
     signal multsign : std_logic;
 

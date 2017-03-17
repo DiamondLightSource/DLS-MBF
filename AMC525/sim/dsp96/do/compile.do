@@ -7,7 +7,7 @@ vlib msim
 vlib msim/xil_defaultlib
 
 vcom -64 -2008 -work xil_defaultlib \
-    $vhd_dir/detector/detector_dsp48e1.vhd \
+    $vhd_dir/detector/detector_dsp96.vhd \
     $bench_dir/sim_dsp96.vhd
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -18,10 +18,9 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "Top" sim:*
-add wave -group "DSP48E1" sim:/testbench/dsp48e1/*
+add wave -group "DSP96" sim:/testbench/dsp96/*
 add wave -group "Sim" sim:/testbench/sim_dsp96/*
-
+add wave sim:*
 
 run 100ns
 

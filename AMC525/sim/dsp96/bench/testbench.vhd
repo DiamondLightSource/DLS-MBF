@@ -39,7 +39,7 @@ begin
 
     clk <= not clk after 1 ns;
 
-    dsp48e1 : entity work.detector_dsp48e1 port map (
+    dsp96 : entity work.detector_dsp96 port map (
         clk_i => clk,
 
         data_i => data,
@@ -93,6 +93,4 @@ begin
 
         wait;
     end process;
-
-
-end testbench;
+end;
