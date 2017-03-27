@@ -29,10 +29,12 @@ entity memory_buffer_simple is
         input_valid_i : in std_logic;
         input_ready_o : out std_logic;
         input_data_i : in std_logic_vector;
+        input_addr_i : in unsigned;
 
         output_valid_o : out std_logic;
         output_ready_i : in std_logic;
-        output_data_o : out std_logic_vector
+        output_data_o : out std_logic_vector;
+        output_addr_o : in unsigned
     );
 end;
 
@@ -48,6 +50,7 @@ begin
                     if input_valid_i = '1' then
                         state <= FULL;
                         output_data_o <= input_data_i;
+                        output_addr_o <= input_addr_i;
                     end if;
                 when FULL =>
                     if output_ready_i = '1' then

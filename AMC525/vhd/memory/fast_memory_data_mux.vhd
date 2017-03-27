@@ -8,7 +8,7 @@ use work.support.all;
 use work.defines.all;
 use work.dsp_defs.all;
 
-entity fast_memory_mux is
+entity fast_memory_data_mux is
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
@@ -28,7 +28,7 @@ entity fast_memory_mux is
     );
 end;
 
-architecture arch of fast_memory_mux is
+architecture arch of fast_memory_data_mux is
     signal adc_phase : std_logic;
 
     -- Incoming data
@@ -50,7 +50,9 @@ begin
         adc_phase_o => adc_phase
     );
 
-    pipeline_inst : entity work.fast_memory_pipeline port map (
+    pipeline_inst : entity work.fast_memory_pipeline generic map (
+        DELAY => 4
+    ) port map (
         clk_i => adc_clk_i,
 
         dsp_to_control_i => dsp_to_control_i,

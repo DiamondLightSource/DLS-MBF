@@ -3,12 +3,12 @@ do compile.do
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/register_mux_strobe.vhd \
     $vhd_dir/registers/register_mux.vhd \
-    $vhd_dir/memory/slow_memory_fifo.vhd \
-    $vhd_dir/memory/slow_memory_priority.vhd \
+    $vhd_dir/memory/memory_fifo.vhd \
+    $vhd_dir/memory/memory_mux_priority.vhd \
     $vhd_dir/memory/slow_memory_top.vhd \
     $vhd_dir/memory/fast_memory_control.vhd \
     $vhd_dir/memory/fast_memory_pipeline.vhd \
-    $vhd_dir/memory/fast_memory_mux.vhd \
+    $vhd_dir/memory/fast_memory_data_mux.vhd \
     $vhd_dir/memory/fast_memory_top.vhd \
     $vhd_dir/trigger/trigger_defs.vhd \
     $vhd_dir/trigger/trigger_registers.vhd \

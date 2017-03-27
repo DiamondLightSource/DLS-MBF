@@ -229,7 +229,7 @@ begin
         (not enable_select(0) and not enable_select(1));
 
     -- Select data to be written
-    fast_memory_mux : entity work.fast_memory_mux port map (
+    fast_memory_mux : entity work.fast_memory_data_mux port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 

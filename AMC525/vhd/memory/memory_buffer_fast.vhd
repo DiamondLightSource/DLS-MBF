@@ -20,7 +20,7 @@
 --  |       |     |   1 : HALF
 --  +-------+-----+-----+---------+-----------
 --  ir = input_ready_o, ov = output_valid_o, iv = input_valid_i,
---  or = output_read_i, od = output_data_o, id = input_data_i, d2 = full_buffer
+--  or = output_read_i, od = output_data_o, id = input_data_i, d2 = full_data
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -35,10 +35,12 @@ entity memory_buffer_fast is
         input_valid_i : in std_logic;
         input_ready_o : out std_logic;
         input_data_i : in std_logic_vector;
+        input_addr_i : in unsigned;
 
         output_valid_o : out std_logic;
         output_ready_i : in std_logic;
-        output_data_o : out std_logic_vector
+        output_data_o : out std_logic_vector;
+        output_addr_o : in unsigned
     );
 end;
 
@@ -46,7 +48,9 @@ architecture arch of memory_buffer_fast is
     type state_t is (EMPTY, HALF, FULL);
     signal state : state_t := EMPTY;
 
-    signal full_buffer : input_data_i'SUBTYPE;
+    signal full_data : input_data_i'SUBTYPE;
+    signal full_addr : input_addr_i'SUBTYPE;
+
     signal input_output_state : std_logic_vector(0 to 1);
 
 begin
@@ -58,6 +62,7 @@ begin
                     if input_valid_i = '1' then
                         state <= HALF;
                         output_data_o <= input_data_i;
+                        output_addr_o <= input_addr_i;
                     end if;
                 when HALF =>
                     case input_output_state is
@@ -66,14 +71,17 @@ begin
                             state <= EMPTY;
                         when "10" =>
                             state <= FULL;
-                            full_buffer <= input_data_i;
+                            full_data <= input_data_i;
+                            full_addr <= input_addr_i;
                         when "11" =>
                             output_data_o <= input_data_i;
+                            output_addr_o <= input_addr_i;
                     end case;
                 when FULL =>
                     if output_ready_i = '1' then
                         state <= HALF;
-                        output_data_o <= full_buffer;
+                        output_data_o <= full_data;
+                        output_addr_o <= full_addr;
                     end if;
             end case;
         end if;

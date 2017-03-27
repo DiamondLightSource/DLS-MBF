@@ -17,10 +17,12 @@ entity memory_buffer is
         input_valid_i : in std_logic;
         input_ready_o : out std_logic;
         input_data_i : in std_logic_vector;
+        input_addr_i : in unsigned;
 
         output_valid_o : out std_logic;
         output_ready_i : in std_logic;
-        output_data_o : out std_logic_vector
+        output_data_o : out std_logic_vector;
+        output_addr_o : in unsigned
     );
 end;
 
@@ -28,6 +30,7 @@ architecture arch of memory_buffer is
     signal valid : std_logic_vector(0 to LENGTH);
     signal ready : std_logic_vector(0 to LENGTH);
     signal data : vector_array(0 to LENGTH)(input_data_i'RANGE);
+    signal addr : unsigned_array(0 to LENGTH)(input_addr_i'RANGE);
 
 begin
     gen_buffer : for n in 0 to LENGTH-1 generate
@@ -37,9 +40,11 @@ begin
                 input_valid_i => valid(n),
                 input_ready_o => ready(n),
                 input_data_i => data(n),
+                input_addr_i => addr(n),
                 output_valid_o => valid(n + 1),
                 output_ready_i => ready(n + 1),
-                output_data_o => data(n + 1)
+                output_data_o => data(n + 1),
+                output_addr_o => addr(n + 1)
             );
         else generate
             simple : entity work.memory_buffer_simple port map (
@@ -47,9 +52,11 @@ begin
                 input_valid_i => valid(n),
                 input_ready_o => ready(n),
                 input_data_i => data(n),
+                input_addr_i => addr(n),
                 output_valid_o => valid(n + 1),
                 output_ready_i => ready(n + 1),
-                output_data_o => data(n + 1)
+                output_data_o => data(n + 1),
+                output_addr_o => addr(n + 1)
             );
         end generate;
     end generate;
@@ -57,8 +64,10 @@ begin
     valid(0) <= input_valid_i;
     input_ready_o <= ready(0);
     data(0) <= input_data_i;
+    addr(0) <= input_addr_i;
 
     output_valid_o <= valid(LENGTH);
     ready(LENGTH) <= output_ready_i;
     output_data_o <= data(LENGTH);
+    output_addr_o <= addr(LENGTH);
 end;

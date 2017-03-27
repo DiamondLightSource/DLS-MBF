@@ -35,39 +35,35 @@ architecture arch of slow_memory_top is
 
     constant DATA_WIDTH : natural := dram1_data_o'LENGTH;
     constant ADDR_WIDTH : natural := dram1_address_o'LENGTH;
-    constant FIFO_WIDTH : natural := DATA_WIDTH + ADDR_WIDTH;
 
     signal fifo_write_ready : std_logic_vector(CHANNELS);
     signal fifo_read_valid : std_logic_vector(CHANNELS);
     signal fifo_read_ready : std_logic_vector(CHANNELS);
-    signal fifo_read_data : vector_array(CHANNELS)(FIFO_WIDTH-1 downto 0);
-
-    signal input_data : vector_array(CHANNELS)(FIFO_WIDTH-1 downto 0);
-    signal output_data : std_logic_vector(FIFO_WIDTH-1 downto 0);
+    signal fifo_read_data : vector_array(CHANNELS)(DATA_WIDTH-1 downto 0);
+    signal fifo_read_addr : unsigned_array(CHANNELS)(ADDR_WIDTH-1 downto 0);
 
 begin
     fifo_gen : for c in CHANNELS generate
-        -- Assemble incoming data into FIFO channels
-        input_data(c)(DATA_WIDTH-1 downto 0) <= dsp_data_i(c);
-        input_data(c)(FIFO_WIDTH-CHANNEL_BITS-1 downto DATA_WIDTH)
-            <= std_logic_vector(dsp_address_i(c));
-        input_data(c)(FIFO_WIDTH-1 downto FIFO_WIDTH-CHANNEL_BITS)
-            <= std_logic_vector(to_unsigned(c, CHANNEL_BITS));
-
-
+        constant CHANNEL_PREFIX : unsigned(CHANNEL_BITS-1 downto 0)
+            := to_unsigned(c, CHANNEL_BITS);
+        signal dsp_address : dram1_address_o'SUBTYPE;
+    begin
         -- One FIFO for each incoming channel
-        fifo_inst : entity work.slow_memory_fifo generic map (
+        dsp_address <= CHANNEL_PREFIX & dsp_address_i(c);
+        fifo_inst : entity work.memory_fifo generic map (
             FIFO_BITS => FIFO_BITS
         ) port map (
             clk_i => dsp_clk_i,
 
             write_valid_i => dsp_strobe_i(c),
             write_ready_o => fifo_write_ready(c),
-            write_data_i => input_data(c),
+            write_data_i => dsp_data_i(c),
+            write_addr_i => dsp_address,
 
             read_valid_o => fifo_read_valid(c),
             read_ready_i => fifo_read_ready(c),
-            read_data_o => fifo_read_data(c)
+            read_data_o => fifo_read_data(c),
+            read_addr_o => fifo_read_addr(c)
         );
     end generate;
 
@@ -83,20 +79,17 @@ begin
 
 
     -- Priority multiplexer for output
-    priority_inst : entity work.slow_memory_priority port map (
+    priority_inst : entity work.memory_mux_priority port map (
         clk_i => dsp_clk_i,
 
         input_valid_i => fifo_read_valid,
         input_ready_o => fifo_read_ready,
         data_i => fifo_read_data,
+        addr_i => fifo_read_addr,
 
         output_ready_i => dram1_data_ready_i,
         output_valid_o => dram1_data_valid_o,
-        data_o => output_data
+        data_o => dram1_data_o,
+        addr_o => dram1_address_o
     );
-
-
-    -- Disassemble outgoing data
-    dram1_data_o <= output_data(DATA_WIDTH-1 downto 0);
-    dram1_address_o <= unsigned(output_data(FIFO_WIDTH-1 downto DATA_WIDTH));
 end;
