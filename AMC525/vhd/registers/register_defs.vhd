@@ -80,6 +80,8 @@ package register_defs is
         -- RW  1[0]    ADC mux: if set channel 0 has copy of channel 1 ADC
         -- RW  1[1]    NCO0 mux: if set channel 0 has sin data from channel 1
         -- RW  1[2]    NCO1 mux: if set channel 0 has sin data from channel 1
+        -- RW  1[4:3]  Channel loopback
+        -- RW  1[6:5]  Channel output enable
         constant CTRL_CONTROL_REG : natural := 1;
         subtype CTRL_MEM_REGS is natural range 2 to 5;
             -- Control and readout registers

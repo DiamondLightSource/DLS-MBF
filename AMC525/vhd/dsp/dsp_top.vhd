@@ -49,9 +49,6 @@ architecture arch of dsp_top is
     signal write_start : std_logic;
     signal delta_reset : std_logic;
 
-    signal loopback : std_logic;
-    signal dac_output_enable : std_logic;
-
     -- Captured pulsed events
     signal pulsed_bits : reg_data_t;
     signal adc_input_overflow : std_logic;
@@ -82,9 +79,7 @@ architecture arch of dsp_top is
     signal nco_1_gain : unsigned(3 downto 0);
 
     -- Data flow
-    signal adc_data_in : adc_data_i'SUBTYPE;
     signal fir_data : signed(FIR_DATA_WIDTH-1 downto 0);
-    signal dac_data_out : dac_data_o'SUBTYPE;
 
 
     -- Hacks
@@ -201,7 +196,7 @@ begin
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => control_to_dsp_i.turn_clock_adc,
 
-        data_i => adc_data_in,
+        data_i => adc_data_i,
         data_o => dsp_to_control_o.adc_data,
 
         write_strobe_i => write_strobe_i(DSP_ADC_REGS),
@@ -260,7 +255,7 @@ begin
         nco_1_gain_i => nco_1_gain,
 
         data_store_o => dsp_to_control_o.dac_data,
-        data_o => dac_data_out,
+        data_o => dac_data_o,
         fir_overflow_o => dac_fir_overflow,
         mux_overflow_o => dac_mux_overflow,
         mms_overflow_o => dac_mms_overflow,
@@ -274,22 +269,6 @@ begin
         read_ack_o => read_ack_o(DSP_DAC_REGS),
 
         write_start_i => write_start
-    );
-
-
-    -- Loopback enable for internal testing and output control
-    loopback_inst : entity work.dsp_loopback port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-
-        loopback_i => loopback,
-        output_enable_i => dac_output_enable,
-
-        adc_data_i => adc_data_i,
-        dac_data_i => dac_data_out,
-
-        adc_data_o => adc_data_in,
-        dac_data_o => dac_data_o
     );
 
 
@@ -341,8 +320,6 @@ begin
     read_ack_o(DSP_HACK_REGS) <= (others => '1');
 
 
-    loopback <= hack_registers(DSP_HACK_REG0)(2);
-    dac_output_enable <= hack_registers(DSP_HACK_REG0)(3);
 
     nco_0_phase_advance <= unsigned(hack_registers(DSP_HACK_REG1));
 

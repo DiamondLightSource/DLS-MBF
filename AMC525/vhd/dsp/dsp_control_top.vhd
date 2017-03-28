@@ -27,6 +27,8 @@ entity dsp_control_top is
         -- DSP controls
         control_to_dsp_o : out control_to_dsp_array_t;
         dsp_to_control_i : in dsp_to_control_array_t;
+        loopback_o : out std_logic_vector(CHANNELS);
+        output_enable_o : out std_logic_vector(CHANNELS);
 
         -- DRAM0 capture control
         dram0_capture_enable_o : out std_logic;
@@ -110,6 +112,9 @@ begin
         0 => dram1_brsp_error_i,
         others => '0'
     );
+
+    loopback_o <= control_register(4 downto 3);
+    output_enable_o <= control_register(6 downto 5);
 
 
     -- Channel data multiplexing control
