@@ -45,6 +45,7 @@ begin
                 when '1' =>
                     dac_data(0) <= signed(test_pattern(15 downto 0));
                     dac_data(1) <= signed(test_pattern(31 downto 16));
+                when others =>
             end case;
         end if;
     end process;
