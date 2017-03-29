@@ -11,9 +11,11 @@ AMC525_IP = 192.168.40.199
 SRCDIR = $(TOP)/AMC525
 TCLDIR = $(SRCDIR)/tcl
 BDDIR = $(SRCDIR)/bd
+PYTHONDIR = $(SRCDIR)/python
 
 VPATH = $(SRCDIR)
 VPATH += $(SRCDIR)/vhd/nco      # Needed for nco_cos_sin_table.vhd
+VPATH += $(PYTHONDIR)           # Needed for generated files
 
 
 RUN_VIVADO = source $(VIVADO) && vivado
@@ -48,10 +50,10 @@ $(INTERCONNECT_BD): $(BDDIR)/interconnect.tcl
 # Generate top entity
 built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
-	cd built  &&  $(TOP)/scripts/make_entity.py $^ top
+	cd built  &&  $(PYTHONDIR)/make_entity.py $^ top
 
 # Other generated vhd files
-built/%.vhd: %.py %.vhd.in
+built/%.vhd: %.py %.in
 	python $^ >$@
 
 # Build final target

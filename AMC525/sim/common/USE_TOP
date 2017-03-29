@@ -2,11 +2,17 @@
 
 include $(TOP)/Makefile.common
 
+VPATH += $(TOP)/AMC525/python
+
 VHDDIR = $(TOP)/AMC525/vhd
 
 RUN_VSIM = VHD_DIR=$(VHDDIR) BENCH_DIR=$(SIMDIR)/bench $(VSIM)
 
 default: vsim
+
+%.vhd: %.py %.in
+	python $^ >$@
+
 
 .PHONY: default vsim
 

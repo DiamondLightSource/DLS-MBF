@@ -13,7 +13,4 @@ vsim: nco_cos_sin_table.vhd
 	ln -sf $(COMMON_DIR)/modelsim.ini .
 	$(RUN_VSIM)
 
-%.vhd: %.py %.vhd.in
-	python $^ >$@
-
 endif
