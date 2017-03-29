@@ -63,11 +63,14 @@ begin
     -- Limit register.
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_ADC_LIMIT_REG_W),
+        write_strobe_i(0) => write_strobe_i(DSP_ADC_LIMIT_REG),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_ADC_LIMIT_REG_W),
+        write_ack_o(0) => write_ack_o(DSP_ADC_LIMIT_REG),
         register_data_o(0) => limit_register_in
     );
+    read_data_o(DSP_ADC_LIMIT_REG) <= (others => '0');
+    read_ack_o(DSP_ADC_LIMIT_REG) <= '1';
+
     -- Make these control settings untimed to help with FPGA timing
     untimed_inst : entity work.untimed_reg generic map (
         WIDTH => REG_DATA_WIDTH
@@ -124,14 +127,16 @@ begin
         dsp_clk_i => dsp_clk_i,
 
         write_start_i => write_start_i,
-        write_strobe_i => write_strobe_i(DSP_ADC_TAPS_REG_W),
+        write_strobe_i => write_strobe_i(DSP_ADC_TAPS_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_ADC_TAPS_REG_W),
+        write_ack_o => write_ack_o(DSP_ADC_TAPS_REG),
 
         data_i => delayed_data,
         data_o => filtered_data,
         overflow_o => fir_overflow_o
     );
+    read_data_o(DSP_ADC_TAPS_REG) <= (others => '0');
+    read_ack_o(DSP_ADC_TAPS_REG) <= '1';
 
 
     -- Min/Max/Sum
@@ -144,10 +149,11 @@ begin
         delta_o => mms_delta,
         overflow_o => mms_overflow_o,
 
-        read_strobe_i => read_strobe_i(DSP_ADC_MMS_REGS_R),
-        read_data_o => read_data_o(DSP_ADC_MMS_REGS_R),
-        read_ack_o => read_ack_o(DSP_ADC_MMS_REGS_R)
+        read_strobe_i => read_strobe_i(DSP_ADC_MMS_REGS),
+        read_data_o => read_data_o(DSP_ADC_MMS_REGS),
+        read_ack_o => read_ack_o(DSP_ADC_MMS_REGS)
     );
+    write_ack_o(DSP_ADC_MMS_REGS) <= (others => '1');
 
     -- Bunch movement detection
     min_max_limit_inst : entity work.min_max_limit port map (

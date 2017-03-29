@@ -229,12 +229,12 @@ begin
         turn_clock_i => control_to_dsp_i.turn_clock_adc,
         bunch_config_i => bunch_config,
 
-        write_strobe_i => write_strobe_i(DSP_B_FIR_REGS),
+        write_strobe_i => write_strobe_i(DSP_FIR_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_B_FIR_REGS),
-        read_strobe_i => read_strobe_i(DSP_B_FIR_REGS),
-        read_data_o => read_data_o(DSP_B_FIR_REGS),
-        read_ack_o => read_ack_o(DSP_B_FIR_REGS),
+        write_ack_o => write_ack_o(DSP_FIR_REGS),
+        read_strobe_i => read_strobe_i(DSP_FIR_REGS),
+        read_data_o => read_data_o(DSP_FIR_REGS),
+        read_ack_o => read_ack_o(DSP_FIR_REGS),
 
         write_start_i => write_start
     );
@@ -321,7 +321,7 @@ begin
 
 
 
-    nco_0_phase_advance <= unsigned(hack_registers(DSP_HACK_REG1));
+    nco_0_phase_advance <= unsigned(hack_registers(DSP_HACK_REG1_REG));
 
     -- These will need to be hardware triggers
     nco_0_reset <= strobed_bits(30);

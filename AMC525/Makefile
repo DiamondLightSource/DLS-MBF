@@ -14,6 +14,7 @@ BDDIR = $(SRCDIR)/bd
 PYTHONDIR = $(SRCDIR)/python
 
 VPATH = $(SRCDIR)
+VPATH += $(SRCDIR)/vhd
 VPATH += $(SRCDIR)/vhd/nco      # Needed for nco_cos_sin_table.vhd
 VPATH += $(PYTHONDIR)           # Needed for generated files
 
@@ -22,6 +23,7 @@ RUN_VIVADO = source $(VIVADO) && vivado
 
 
 BUILT_FILES += built/top_entity.vhd
+BUILT_FILES += built/register_defs.vhd
 BUILT_FILES += built/nco_cos_sin_table.vhd
 
 SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)

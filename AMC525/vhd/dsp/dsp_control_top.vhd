@@ -194,12 +194,12 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(CTRL_TRIGGER_REGS),
+        write_strobe_i => write_strobe_i(CTRL_TRG_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CTRL_TRIGGER_REGS),
-        read_strobe_i => read_strobe_i(CTRL_TRIGGER_REGS),
-        read_data_o => read_data_o(CTRL_TRIGGER_REGS),
-        read_ack_o => read_ack_o(CTRL_TRIGGER_REGS),
+        write_ack_o => write_ack_o(CTRL_TRG_REGS),
+        read_strobe_i => read_strobe_i(CTRL_TRG_REGS),
+        read_data_o => read_data_o(CTRL_TRG_REGS),
+        read_ack_o => read_ack_o(CTRL_TRG_REGS),
 
         revolution_clock_i => revolution_clock_i,
         event_trigger_i => event_trigger_i,

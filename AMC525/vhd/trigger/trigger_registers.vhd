@@ -52,23 +52,23 @@ architecture arch of trigger_registers is
     signal config_registers : reg_data_array_t(CTRL_TRG_CONFIG_REGS);
 
     alias readback_status : reg_data_t is
-        readback_registers(CTRL_TRG_READBACK_REG_STATUS);
+        readback_registers(CTRL_TRG_READBACK_STATUS_REG);
     alias readback_sources : reg_data_t is
-        readback_registers(CTRL_TRG_READBACK_REG_SOURCES);
+        readback_registers(CTRL_TRG_READBACK_SOURCES_REG);
     alias config_turn_setup : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_REG_TURN_SETUP);
+        config_registers(CTRL_TRG_CONFIG_TURN_SETUP_REG);
     alias config_blanking : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_REG_BLANKING);
+        config_registers(CTRL_TRG_CONFIG_BLANKING_REG);
     alias config_delay_seq_0 : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_REG_DELAY_SEQ_0);
+        config_registers(CTRL_TRG_CONFIG_DELAY_SEQ_0_REG);
     alias config_delay_seq_1 : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_REG_DELAY_SEQ_1);
+        config_registers(CTRL_TRG_CONFIG_DELAY_SEQ_1_REG);
     alias config_delay_dram : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_REG_DELAY_DRAM);
+        config_registers(CTRL_TRG_CONFIG_DELAY_DRAM_REG);
     alias config_trig_seq : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_REG_TRIG_SEQ);
+        config_registers(CTRL_TRG_CONFIG_TRIG_SEQ_REG);
     alias config_trig_dram : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_REG_TRIG_DRAM);
+        config_registers(CTRL_TRG_CONFIG_TRIG_DRAM_REG);
 
 begin
     -- -------------------------------------------------------------------------

@@ -69,9 +69,9 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(DSP_BUNCH_BANK_REG_W),
+        write_strobe_i => write_strobe_i(DSP_BUNCH_BANK_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_BUNCH_BANK_REG_W),
+        write_ack_o => write_ack_o(DSP_BUNCH_BANK_REG),
         write_start_i => write_start,
         write_bank_i => write_bank,
 

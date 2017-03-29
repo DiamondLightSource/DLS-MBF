@@ -2,7 +2,9 @@
 
 include $(TOP)/Makefile.common
 
-VPATH += $(TOP)/AMC525/python
+PYTHONDIR = $(TOP)/AMC525/python
+
+VPATH += $(PYTHONDIR)
 
 VHDDIR = $(TOP)/AMC525/vhd
 

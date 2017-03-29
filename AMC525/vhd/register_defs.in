@@ -1,0 +1,245 @@
+# Input definitions for registers
+
+# The control register address space consists of 16384 32-bit words
+# organised into four active banks with the following addressing:
+#
+#  Address         Alias   Controlled bank
+#  =============== ======= ============================================
+#  0x0000..0x0FFF  SYS     System registers: top level hardware control
+#  0x2000..0x27FF  CTRL    DSP master control
+#  0x2800..0x2FFF          (unused)
+#  0x3000..0x37FF  DSP0    DSP 0 control
+#  0x3800..0x3FFF  DSP1    DSP 1 control
+#
+# The active registers in each bank are identified and named below.
+
+# System registers
+# These occupy addresses 0x0000..0x0FFF
+# Used for top level hardware management
+SYS
+    # No fields yet specified
+    VERSION
+
+    # Status register
+    # R  [0]        Set if DSP clock is currently good
+    # R  [1]        Set during capture to DDR0
+    # R  [2]        FMC500 VCXO power ok
+    # R  [3]        FMC500 ADC power ok
+    # R  [4]        FMC500 DAC power ok
+    # R  [5]        FMC500 PLL status LD1: VCXO locked
+    # R  [6]        FMC500 PLL status LD2: VCO locked
+    # R  [7]        FMC500 DAC interrupt request
+    # R  [8]        FMC500 temperature alert
+    STATUS
+
+    # Control register
+    # RW [3]        FMC500 PLL clkin sel0
+    # RW [4]        FMC500 PLL clkin sel1
+    # RW [5]        FMC500 PLL sync
+    # RW [6]        ADC power down (leave at 0 for normal operation)
+    # RW [7]        DAC reset (leave at 0 for normal operation)
+    # RW [8]        Enable DAC test data generation
+    CONTROL
+
+    # ADC DCO IDELAY control
+    # W  [4:0]      IDELAY value
+    # W  [8]        Enable write to IDELAY, so write number of form 0x1xx
+    # W  [12]       Enable increment or decrement of IDELAY
+    # W  [13]       Increment if 1, decrement if 0
+    # W  [31]       Force reset of ADC PLL
+    # R  [4:0]      Current IDELAY setting
+    # R  [31]       Set if ADC PLL not locked
+    ADC_IDELAY
+
+    # FMC500 SPI control
+    FMC_SPI
+
+    # DAC test data pattern
+    DAC_TEST        2
+
+    # Revolution clock IDELAY control
+    # W  [4:0]      IDELAY value
+    # W  [8]        Enable write to IDELAY, so write number of form 0x1xx
+    # W  [12]       Enable increment or decrement of IDELAY
+    # W  [13]       Increment if 1, decrement if 0
+    # R  [4:0]      Current IDELAY setting
+    REV_IDELAY
+
+
+# Control registers
+# These occupy addresses 0x2000..02x7FF
+# Used for shared DSP control
+CTRL
+    # Captures single clock pulsed events.  Write a bit pattern to reset those
+    # bits and latch the current state.
+    # RW [0]        Set if DRAM0 data error detected
+    # RW [1]        Set if DRAM0 address error detected
+    # RW [2]        Set if DRAM0 write error detected
+    # RW [3]        Set if DRAM1 write error detected
+    PULSED
+
+    # Miscellaneous control
+    # RW [0]    ADC mux: if set channel 0 has copy of channel 1 ADC
+    # RW [1]    NCO0 mux: if set channel 0 has sin data from channel 1
+    # RW [2]    NCO1 mux: if set channel 0 has sin data from channel 1
+    # RW [4:3]  Channel loopback
+    # RW [6:5]  Channel output enable
+    CONTROL
+
+    MEM
+        # Control and readout registers
+        CONFIG
+            CONFIG
+            COUNT
+
+        # Overlaid pulse command and address readback registers
+        COMMAND/ADDRESS
+
+        STATUS
+
+    TRG
+        # Pulsed trigger control events
+        # W  [0]        Start turn clock synchronisation
+        # W  [1]        Request turn clock sample
+        # W  [2]        Arm sequencer 0 trigger
+        # W  [3]        Disarm sequencer 0 trigger
+        # W  [4]        Arm sequencer 1 trigger
+        # W  [5]        Disarm sequencer 1 trigger
+        # W  [6]        Arm DRAM0 trigger
+        # W  [7]        Disarm DRAM0 trigger
+        # W  [8]        Generate soft trigger event
+        # Capture trigger events
+        # R  [0]        Soft trigger
+        # R  [1]        External event trigger
+        # R  [2]        Postmortem trigger
+        # R  [3]        ADC 0 motion trigger
+        # R  [4]        ADC 1 motion trigger
+        # R  [5]        State 0 trigger
+        # R  [6]        State 1 trigger
+        CONTROL/PULSED
+
+        READBACK
+            # Trigger status readbacks
+            #     7[0]        Start clock synchronisation busy
+            #     7[1]        ADC clock phase after turn synchronisation
+            #     7[2]        Synchronisation error detected
+            #     7[3]        Waiting for turn clock sample
+            #     7[4]        ADC clock phase after sample
+            #     7[5]        Sequencer 0 trigger armed
+            #     7[6]        Sequencer 1 trigger armed
+            #     7[7]        DRAM0 trigger armed
+            #     7[25:16]    Turn clock counter captured by sample
+            STATUS
+
+            # R   8       Trigger event sources.
+            #     8[6:0]      Sequencer 0 trigger source mask
+            #     8[14:8]     Sequencer 1 trigger source mask
+            #     8[22:16]    DRAM0 trigger source mask
+            SOURCES
+
+        CONFIG
+            # RW  9       Turn clock configuration setup
+            #     9[9:0]      Maximum bunch count
+            #     9[19:10]    DSP 0 turn clock offset
+            #     9[29:20]    DSP 1 turn clock offset
+            TURN_SETUP
+
+            # RW  10      Blanking windows
+            #     10[15:0]    DSP 0 blanking window (in turns)
+            #     10[31:16]   DSP 1 blanking window (in turns)
+            BLANKING
+
+            # RW  11[23:0]    Sequencer 0 trigger delay
+            DELAY_SEQ_0
+
+            # RW  12[23:0]    Sequencer 1 trigger delay
+            DELAY_SEQ_1
+
+            # RW  13[23:0]    DRAM0 trigger delay
+            DELAY_DRAM
+
+            # RW  14      Sequencer trigger configuration
+            #     14[6:0]     Sequencer 0 trigger enable mask
+            #     14[14:8]    Sequencer 0 blanking enable mask
+            #     14[22:16]   Sequencer 1 trigger enable mask
+            #     14[30:24]   Sequencer 1 blanking enable mask
+            TRIG_SEQ
+
+            # RW  15      DRAM0 trigger configuration
+            #     15[6:0]     DRAM trigger enable mask
+            #     15[14:8]    DRAM blanking enable mask
+            #     15[16]      DRAM turn clock selection
+            #     15[18:17]   DRAM blanking pulse selection mask
+            TRIG_DRAM
+
+
+# DSP registers
+# These occupy addresses 0x3000..0x37FF and 0x3800..3FFF
+# Used for channel specific DSP control
+DSP
+    GENERAL
+        #  0       W   Strobed bits
+        #  0       R   General status bits
+        #  1       RW  Latched pulsed events
+        STROBE/STATUS
+
+        PULSED
+
+    ADC
+        #  2   R   31:0    Read MMS count and switch banks
+        #  3   R   31:0    Read and reset MMS bunch entries
+        #  2   W   13:0    Configure data input limit
+        #  2   W   15      Configure ADC fine delay
+        #  2   W   31:16   Configure MMS event limit
+        #  3   W   31:7    Write FIR taps
+        LIMIT
+        TAPS
+        MMS             2
+
+    BUNCH
+        #  4   W  1:0      Determines bunch bank to be written
+        #  5   W           Configure selected bank
+        CONFIG
+        BANK
+
+    SLOW_MEM
+
+    FIR
+        CONFIG
+        TAPS
+    DAC
+        #  9   R   31:0    Read MMS count and switch banks
+        #  9   W   9:0     Configure DAC output delay
+        #  9   W  105:12   NCO 0 gain
+        #  9   W  109:16   NCO 1 gain
+        #  9   W   24:20   FIR gain
+        #  9   W   25      FIR enable
+        #  9   W   26      NCO 0 enable
+        #  9   W   27      NCO10 enable
+        # 10   R   31:9    Read and reset MMS bunch entries
+        # 10   W   31:7    Write FIR taps
+        MMS             2
+        CONFIG
+        TAPS
+
+    SEQ
+        # W   0       Abort sequencer if running
+        # W   1       Initiate block memory write sequence
+        # R   2:0     Current sequencer program counter
+        # R   4       Set if sequencer busy
+        # R   17:8    Current super sequencer state
+        COMMAND/STATUS
+
+        # RW  2:0     Target sequencer program counter
+        # RW  6:4     Sequencer state to generate event
+        # RW  17:8    Target super sequencer state
+        # RW  29:28   Block memory to write
+        #             0 => sequencer program memory
+        #             1 => detector window memory
+        #             2 => super sequencer memory
+        CONFIG
+        WRITE
+
+    HACK
+        REG0
+        REG1

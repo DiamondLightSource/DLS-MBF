@@ -58,32 +58,32 @@ begin
     strobed_bits_inst : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(DSP_SEQ_COMMAND_W),
+        write_strobe_i => write_strobe_i(DSP_SEQ_COMMAND_REG_W),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_SEQ_COMMAND_W),
+        write_ack_o => write_ack_o(DSP_SEQ_COMMAND_REG_W),
 
         strobed_bits_o => strobed_bits
     );
 
-    read_data_o(DSP_SEQ_STATUS_R) <= readback_register;
-    read_ack_o(DSP_SEQ_STATUS_R) <= '1';
+    read_data_o(DSP_SEQ_STATUS_REG_R) <= readback_register;
+    read_ack_o(DSP_SEQ_STATUS_REG_R) <= '1';
 
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
 
-        write_strobe_i(0) => write_strobe_i(DSP_SEQ_CONFIG),
+        write_strobe_i(0) => write_strobe_i(DSP_SEQ_CONFIG_REG),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_SEQ_CONFIG),
+        write_ack_o(0) => write_ack_o(DSP_SEQ_CONFIG_REG),
 
         register_data_o(0) => register_file
     );
 
-    read_data_o(DSP_SEQ_CONFIG) <= register_file;
-    read_ack_o(DSP_SEQ_CONFIG) <= '1';
+    read_data_o(DSP_SEQ_CONFIG_REG) <= register_file;
+    read_ack_o(DSP_SEQ_CONFIG_REG) <= '1';
 
 
     -- Block write support
-    write_strobe <= write_strobe_i(DSP_SEQ_WRITE);
+    write_strobe <= write_strobe_i(DSP_SEQ_WRITE_REG);
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             if start_write = '1' then
@@ -102,10 +102,10 @@ begin
             end if;
         end if;
     end process;
-    write_ack_o(DSP_SEQ_WRITE) <= '1';
+    write_ack_o(DSP_SEQ_WRITE_REG) <= '1';
 
-    read_data_o(DSP_SEQ_WRITE) <= (others => '0');
-    read_ack_o(DSP_SEQ_WRITE) <= '1';
+    read_data_o(DSP_SEQ_WRITE_REG) <= (others => '0');
+    read_ack_o(DSP_SEQ_WRITE_REG) <= '1';
 
 
     -- -------------------------------------------------------------------------

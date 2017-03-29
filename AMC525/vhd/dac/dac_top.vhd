@@ -80,11 +80,14 @@ begin
     -- Register mapping
     register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG_W),
+        write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_DAC_CONFIG_REG_W),
+        write_ack_o(0) => write_ack_o(DSP_DAC_CONFIG_REG),
         register_data_o(0) => config_register
     );
+    read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
+    read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
+
     -- Bring this over to the ADC clock without a timing constraint
     untimed_inst : entity work.untimed_reg generic map (
         WIDTH => REG_DATA_WIDTH
@@ -170,10 +173,11 @@ begin
         delta_o => open,
         overflow_o => mms_overflow_o,
 
-        read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS_R),
-        read_data_o => read_data_o(DSP_DAC_MMS_REGS_R),
-        read_ack_o => read_ack_o(DSP_DAC_MMS_REGS_R)
+        read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS),
+        read_data_o => read_data_o(DSP_DAC_MMS_REGS),
+        read_ack_o => read_ack_o(DSP_DAC_MMS_REGS)
     );
+    write_ack_o(DSP_DAC_MMS_REGS) <= (others => '1');
 
 
     -- Compensation filter
@@ -184,14 +188,16 @@ begin
         dsp_clk_i => dsp_clk_i,
 
         write_start_i => write_start_i,
-        write_strobe_i => write_strobe_i(DSP_DAC_TAPS_REG_W),
+        write_strobe_i => write_strobe_i(DSP_DAC_TAPS_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_DAC_TAPS_REG_W),
+        write_ack_o => write_ack_o(DSP_DAC_TAPS_REG),
 
         data_i => data_out,
         data_o => filtered_data,
         overflow_o => preemph_overflow_o
     );
+    read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
+    read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
 
     -- Pipeline to help with timing
     filter_dly : entity work.dlyreg generic map (

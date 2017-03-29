@@ -100,10 +100,10 @@ begin
     ) port map (
         clk_i => dsp_clk_i,
         write_i => '1',
-        data_i(31 downto  0) => config_registers(CTRL_MEM_CONFIG_REG),
-        data_i(63 downto 32) => config_registers(CTRL_MEM_COUNT_REG),
-        data_o(31 downto  0) => config_untimed(CTRL_MEM_CONFIG_REG),
-        data_o(63 downto 32) => config_untimed(CTRL_MEM_COUNT_REG)
+        data_i(31 downto  0) => config_registers(CTRL_MEM_CONFIG_CONFIG_REG),
+        data_i(63 downto 32) => config_registers(CTRL_MEM_CONFIG_COUNT_REG),
+        data_o(31 downto  0) => config_untimed(CTRL_MEM_CONFIG_CONFIG_REG),
+        data_o(63 downto 32) => config_untimed(CTRL_MEM_CONFIG_COUNT_REG)
     );
 
 
@@ -129,11 +129,12 @@ begin
     -- Register mapping
 
     -- Configuration fields extracted from config registers
-    mux_select <= config_untimed(CTRL_MEM_CONFIG_REG)(3 downto 0);
-    fir_gain <= unsigned(config_untimed(CTRL_MEM_CONFIG_REG)(7 downto 4));
-    enable_select <= config_untimed(CTRL_MEM_CONFIG_REG)(9 downto 8);
+    mux_select <= config_untimed(CTRL_MEM_CONFIG_CONFIG_REG)(3 downto 0);
+    fir_gain <=
+        unsigned(config_untimed(CTRL_MEM_CONFIG_CONFIG_REG)(7 downto 4));
+    enable_select <= config_untimed(CTRL_MEM_CONFIG_CONFIG_REG)(9 downto 8);
     count <= unsigned(
-        config_untimed(CTRL_MEM_COUNT_REG)(COUNT_BITS-1 downto 0));
+        config_untimed(CTRL_MEM_CONFIG_COUNT_REG)(COUNT_BITS-1 downto 0));
 
     -- Control events
     start <= command_bits(0);
