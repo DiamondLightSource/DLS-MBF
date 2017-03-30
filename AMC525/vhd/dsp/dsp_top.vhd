@@ -71,19 +71,13 @@ architecture arch of dsp_top is
 
     -- Oscillator control
     signal nco_0_phase_advance : angle_t;
-    signal nco_0_reset : std_logic;
     signal nco_0_cos_sin : cos_sin_18_t;
     signal nco_1_phase_advance : angle_t;
-    signal nco_1_reset : std_logic;
     signal nco_1_cos_sin : cos_sin_18_t;
     signal nco_1_gain : unsigned(3 downto 0);
 
     -- Data flow
     signal fir_data : signed(FIR_DATA_WIDTH-1 downto 0);
-
-
-    -- Hacks
-    signal hack_registers : reg_data_array_t(DSP_HACK_REGS);
 
 begin
     -- -------------------------------------------------------------------------
@@ -93,17 +87,18 @@ begin
         dsp_clk_i => dsp_clk_i,
 
         -- DSP general control registers
-        write_strobe_i => write_strobe_i(DSP_GENERAL_REGS),
+        write_strobe_i => write_strobe_i(DSP_MISC_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_GENERAL_REGS),
-        read_strobe_i => read_strobe_i(DSP_GENERAL_REGS),
-        read_data_o => read_data_o(DSP_GENERAL_REGS),
-        read_ack_o => read_ack_o(DSP_GENERAL_REGS),
+        write_ack_o => write_ack_o(DSP_MISC_REGS),
+        read_strobe_i => read_strobe_i(DSP_MISC_REGS),
+        read_data_o => read_data_o(DSP_MISC_REGS),
+        read_ack_o => read_ack_o(DSP_MISC_REGS),
 
         -- Processed registers
         strobed_bits_o => strobed_bits,
         status_bits_i => status_bits,
-        pulsed_bits_i => pulsed_bits
+        pulsed_bits_i => pulsed_bits,
+        nco_0_frequency_o => nco_0_phase_advance
     );
 
     write_start <= strobed_bits(0);
@@ -154,7 +149,6 @@ begin
     nco_0_inst : entity work.nco port map (
         clk_i => adc_clk_i,
         phase_advance_i => nco_0_phase_advance,
-        reset_i => nco_0_reset,
         cos_sin_o => nco_0_cos_sin
     );
     dsp_to_control_o.nco_0_data <= nco_0_cos_sin;
@@ -162,7 +156,6 @@ begin
     nco_1_inst : entity work.nco port map (
         clk_i => adc_clk_i,
         phase_advance_i => nco_1_phase_advance,
-        reset_i => nco_1_reset,
         cos_sin_o => nco_1_cos_sin
     );
     dsp_to_control_o.nco_1_data <= nco_1_cos_sin;
@@ -305,27 +298,7 @@ begin
     -- Transfer NCO gain over to ADC clock
 
 
-    -- -------------------------------------------------------------------------
-    -- Work in progress hacks below
 
-    -- registers for temporary hacks
-    hack_regs_inst : entity work.register_file port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(DSP_HACK_REGS),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_HACK_REGS),
-        register_data_o => hack_registers
-    );
-    read_data_o(DSP_HACK_REGS) <= hack_registers;
-    read_ack_o(DSP_HACK_REGS) <= (others => '1');
-
-
-
-    nco_0_phase_advance <= unsigned(hack_registers(DSP_HACK_REG1_REG));
-
-    -- These will need to be hardware triggers
-    nco_0_reset <= strobed_bits(30);
-    nco_1_reset <= strobed_bits(29);
 
     dsp_event_o <= '0';
 

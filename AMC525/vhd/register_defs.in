@@ -177,13 +177,15 @@ CTRL
 # These occupy addresses 0x3000..0x37FF and 0x3800..3FFF
 # Used for channel specific DSP control
 DSP
-    GENERAL
+    MISC
         #  0       W   Strobed bits
         #  0       R   General status bits
         #  1       RW  Latched pulsed events
         STROBE/STATUS
 
         PULSED
+
+        NCO0_FREQ
 
     ADC
         #  2   R   31:0    Read MMS count and switch banks
@@ -239,7 +241,3 @@ DSP
         #             2 => super sequencer memory
         CONFIG
         WRITE
-
-    HACK
-        REG0
-        REG1

@@ -14,10 +14,7 @@ use work.nco_defs.all;
 entity nco is
     port (
         clk_i : in std_logic;
-
         phase_advance_i : in angle_t;
-        reset_i : in std_logic;
-
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );
 end;
@@ -27,7 +24,6 @@ architecture arch of nco is
     constant OUT_DELAY : natural := 8;
 
     signal phase_advance : angle_t;
-    signal reset : std_logic;
     signal cos_sin : cos_sin_18_t;
 
 begin
@@ -40,19 +36,10 @@ begin
         unsigned(data_o) => phase_advance
     );
 
-    reset_dly : entity work.dlyreg generic map (
-        DLY => IN_DELAY
-    ) port map (
-        clk_i => clk_i,
-        data_i(0) => reset_i,
-        data_o(0) => reset
-    );
-
 
     nco_core : entity work.nco_core port map (
         clk_i => clk_i,
         phase_advance_i => phase_advance,
-        reset_i => reset,
         cos_sin_o => cos_sin
     );
 

@@ -14,10 +14,7 @@ use work.nco_defs.all;
 entity nco_core is
     port (
         clk_i : in std_logic;
-
         phase_advance_i : in angle_t;
-        reset_i : in std_logic;
-
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );
 end;
@@ -44,7 +41,6 @@ begin
     nco_phase : entity work.nco_phase port map (
         clk_i => clk_i,
         phase_advance_i => phase_advance_i,
-        reset_i => reset_i,
         phase_o => phase
     );
 

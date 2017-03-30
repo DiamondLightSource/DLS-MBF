@@ -35,7 +35,6 @@ architecture arch of testbench is
 
 
     signal phase_advance : angle_t;
-    signal reset : std_logic := '0';
     signal unscaled : cos_sin_18_t;
     signal gain : unsigned(3 downto 0);
     signal scaled : cos_sin_16_t;
@@ -50,7 +49,6 @@ begin
     nco : entity work.nco_core port map (
         clk_i => clk,
         phase_advance_i => phase_advance,
-        reset_i => reset,
         cos_sin_o => unscaled
     );
 
@@ -66,7 +64,6 @@ begin
     sim_nco : entity work.sim_nco port map (
         clk_i => clk,
         phase_advance_i => phase_advance,
-        reset_i => reset,
         cos_sin_o => reference
     );
     difference.cos <= unscaled.cos - reference.cos;
@@ -94,25 +91,6 @@ begin
             gain <= to_unsigned(g, 4);
             tick_wait(50);
         end loop;
-        wait;
-    end process;
-
-
-    -- Test reset
-    process begin
-        reset <= '0';
-        tick_wait(100);
-        reset <= '1';
-        tick_wait;
-        reset <= '0';
-        tick_wait(100);
-        reset <= '1';
-        tick_wait(20);
-        reset <= '0';
-        tick_wait(400);
-        reset <= '1';
-        tick_wait;
-        reset <= '0';
         wait;
     end process;
 end;
