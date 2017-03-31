@@ -25,15 +25,6 @@ reg_template   = '    constant %s : natural := %d;'
 range_template = '    subtype %s is natural range %d to %d;'
 
 
-# A register definition may be followed by a count, in which case this will
-# define a range rather than a single register.
-def parse_register_count(line):
-    parse = line.split()
-    if len(parse) == 1:
-        return parse[0], 1
-    else:
-        return parse[0], int(parse[1])
-
 
 def prefix_name(prefix, name, suffix):
     return '%s%s_%s' % ('_'.join(prefix + ['']), name, suffix)
@@ -62,23 +53,32 @@ def emit_register(prefix, name, index):
         emit_register_name(prefix, name, index, 'REG')
 
 
+def generate_group(prefix, index, top_name, defs):
+    count = 0
+    for name, more_defs in defs:
+        count += generate_defs(
+            prefix + [top_name], index + count, name, more_defs)
+    emit_range(prefix, top_name, index, count)
+    return count
+
+def generate_single(prefix, index, name):
+    parse = name.split()
+    if len(parse) == 1:
+        emit_register(prefix, name, index)
+        return 1
+    else:
+        name, count = parse[0], int(parse[1])
+        emit_range(prefix, name, index, count)
+        return count
+
+
 # Generates the definitions for a single group of registers, returns the number
 # of registers in that group.
-def generate_defs(prefix, index, top_name, defs):
+def generate_defs(prefix, index, name, defs):
     if defs:
-        count = 0
-        for name, more_defs in defs:
-            count += generate_defs(
-                prefix + [top_name], index + count, name, more_defs)
-        emit_range(prefix, top_name, index, count)
-        return count
+        return generate_group(prefix, index, name, defs)
     else:
-        reg_name, count = parse_register_count(top_name)
-        if count > 1:
-            emit_range(prefix, reg_name, index, count)
-        else:
-            emit_register(prefix, reg_name, index)
-        return count
+        return generate_single(prefix, index, name)
 
 
 # Generates complete entity definition

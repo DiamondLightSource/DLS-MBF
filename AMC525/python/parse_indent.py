@@ -95,7 +95,7 @@ def parse_indent_level(new_indent, lines):
             result[-1][1] = parse_indent_level(indent, lines)
         else:
             result.append([value, []])
-    return result
+    return map(tuple, result)
 
 
 def parse_indented_file(file_name, comment = '^#'):
