@@ -64,6 +64,7 @@ entity nco_cos_sin_refine is
 
         cos_sin_i : in cos_sin_19_t;    -- Unrefined in
         cos_sin_o : out cos_sin_18_t    -- Refined out
+            := (others => (others => '0'))
     );
 end;
 
@@ -80,7 +81,7 @@ architecture arch of nco_cos_sin_refine is
     --  {cos,sin}_acc_in : 37/-36
 
     -- Signals for computing delta
-    signal residue : signed(8 downto 0);
+    signal residue : signed(8 downto 0) := (others => '0');
     signal delta_product : signed(17 downto 0) := (others => '0');
     signal delta_result : signed(17 downto 0) := (others => '0');
     signal delta : signed(9 downto 0) := (others => '0');

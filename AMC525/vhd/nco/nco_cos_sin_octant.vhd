@@ -14,7 +14,7 @@ entity nco_cos_sin_octant is
 
         octant_i : octant_t;
         cos_sin_i : in cos_sin_18_t;
-        cos_sin_o : out cos_sin_18_t
+        cos_sin_o : out cos_sin_18_t := (others => (others => '0'))
     );
 end;
 
