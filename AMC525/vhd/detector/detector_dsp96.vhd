@@ -12,7 +12,8 @@
 --             data_in <= data_i when enable_i = '1' else (others => '0');
 --             mul_in  <= mul_i  when enable_i = '1' else (others => '0');
 --             product <= mul_in * data_in;
---             start_delay <= start_i;
+--             start_in <= start_i;
+--             start_delay <= start_in;
 --             if start_delay = '1' then
 --                 accum <= resize(product, accum'LENGTH);
 --             else
@@ -44,17 +45,19 @@ entity detector_dsp96 is
         enable_i : in std_logic;
         start_i : in std_logic;
 
-        sum_o : out signed(95 downto 0)
+        sum_o : out signed(95 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of detector_dsp96 is
     signal carrycasc : std_logic;
     signal multsign : std_logic;
+    signal start_in : std_logic := '0';
 
     signal opmode_low : std_logic_vector(6 downto 0);
     signal opmode_high : std_logic_vector(6 downto 0);
     signal carryinsel_high : std_logic_vector(2 downto 0);
+    signal alumode_high : std_logic_vector(3 downto 0);
     signal sum_low : signed(47 downto 0);
 
 begin
@@ -63,26 +66,29 @@ begin
     -- programmed differently when starting, and the high unit needs to be
     -- controlled one tick later.
 
-    process (start_i) begin
-        if start_i = '1' then
-            opmode_low  <= "000" & "01" & "01";     -- Load M into P
-        else
-            opmode_low  <= "010" & "01" & "01";     -- Add M to P
-        end if;
-    end process;
-
     process (clk_i) begin
         if rising_edge(clk_i) then
+            start_in <= start_i;
+
             if start_i = '1' then
-                -- In this condition we need to extend the MULTSIGN from the low
-                -- unit, but need to ignore the accumulator carry.
-                opmode_high <= "000" & "10" & "00";     -- Use MACC extend, no P
-                carryinsel_high <= "000";               -- CARRYIN = '1'
+                opmode_low  <= "000" & "01" & "01";     -- Load M into P
+            else
+                opmode_low  <= "010" & "01" & "01";     -- Add M to P
+            end if;
+
+            if start_in = '1' then
+                -- Here we load the sign bit from the previous load (available
+                -- as sum_low(47) into P; to reduce routing costs we do the
+                -- appropriate calculations in the DSP unit.
+                opmode_high <= "000" & "10" & "00";     -- -1 + CARRYIN
+                carryinsel_high <= "000";               -- Select CARRYIN = sign
+                alumode_high <= "0010";                 -- Inverted result
             else
                 -- In this mode we need to add both the multiplier sign
                 -- extension and the accumulator carry.
                 opmode_high <= "100" & "10" & "00";     -- MACC_EXTEND
                 carryinsel_high <= "010";               -- CARRYCASCIN
+                alumode_high <= "0000";
             end if;
 
             sum_o(47 downto 0) <= sum_low;
@@ -153,7 +159,6 @@ begin
     -- High order unit, just accumulates product sign extension and accumulator
     -- carry, so we can turn the multiply unit off.
     dsp48e1_high : DSP48E1 generic map (
-        ALUMODEREG => 0,
         CARRYINREG => 0,
         INMODEREG => 0,
         USE_MULT => "NONE",
@@ -161,17 +166,17 @@ begin
     ) port map (
         A => (others => '0'),
         ACIN => (others => '0'),
-        ALUMODE => "0000",
+        ALUMODE => alumode_high,
         B => (others => '0'),
         BCIN => (others => '0'),
         C => (others => '0'),
         CARRYCASCIN => carrycasc,
-        CARRYIN => '1',
+        CARRYIN => sum_low(47),
         CARRYINSEL => carryinsel_high,
         CEA1 => '0',
         CEA2 => '0',
         CEAD => '0',
-        CEALUMODE => '0',
+        CEALUMODE => '1',
         CEB1 => '0',
         CEB2 => '0',
         CEC => '0',
