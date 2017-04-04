@@ -19,7 +19,7 @@ entity detector_bunch_mem is
 
         read_clk_i : in std_logic;
         read_addr_i : in unsigned;
-        read_data_o : out std_logic
+        read_data_o : out std_logic := '0'
     );
 end;
 
@@ -27,18 +27,17 @@ architecture arch of detector_bunch_mem is
     constant ADDR_BITS : natural := write_addr_i'LENGTH;
 
     type memory_t is array(0 to 2**ADDR_BITS-1) of reg_data_t;
-    signal memory : memory_t;
+    signal memory : memory_t := (others => (others => '0'));
     attribute ram_style : string;
     attribute ram_style of memory : signal is "block";
 
     signal read_addr_word : unsigned(ADDR_BITS-1 downto 0);
     signal read_addr_bit_0 : unsigned(4 downto 0);
-    signal read_addr_bit_1 : unsigned(4 downto 0);
-    signal read_addr_bit_2 : unsigned(4 downto 0);
+    signal read_addr_bit_1 : unsigned(4 downto 0) := (others => '0');
+    signal read_addr_bit_2 : unsigned(4 downto 0) := (others => '0');
 
-    signal read_word_0 : reg_data_t;
-    signal read_word_1 : reg_data_t;
-    signal read_word_2 : reg_data_t;
+    signal read_word_1 : reg_data_t := (others => '0');
+    signal read_word_2 : reg_data_t := (others => '0');
 
 begin
     assert read_addr_i'LENGTH = write_addr_i'LENGTH + 5 severity failure;
@@ -56,8 +55,7 @@ begin
 
     process (read_clk_i) begin
         if rising_edge(read_clk_i) then
-            read_word_0 <= memory(to_integer(read_addr_word));
-            read_word_1 <= read_word_0;
+            read_word_1 <= memory(to_integer(read_addr_word));
             read_word_2 <= read_word_1;
 
             read_addr_bit_1 <= read_addr_bit_0;

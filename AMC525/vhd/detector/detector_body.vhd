@@ -37,12 +37,12 @@ entity detector_body is
         output_underrun_o : out std_logic;
 
         -- Output scaling control on DSP clock
-        output_scaling_i : in unsigned;
+        output_scaling_i : in unsigned(2 downto 0);
 
         -- Detector data out, all on ADC clock, with AXI style handshake
         valid_o : out std_logic;
         ready_i : in std_logic;
-        data_o : out signed
+        data_o : out std_logic_vector(63 downto 0)
     );
 end;
 
@@ -56,6 +56,7 @@ architecture arch of detector_body is
     signal output_valid : std_logic;
     signal output_ready : std_logic;
     signal output_data : data_o'SUBTYPE;
+    signal dummy_addr : unsigned(-1 downto 0);
 
 begin
     -- Bunch selection
@@ -68,7 +69,7 @@ begin
         write_strobe_i => bunch_write_i,
         write_data_i => write_data_i,
 
-        bunch_detect_o => bunch_enable
+        bunch_enable_o => bunch_enable
     );
 
 
@@ -125,11 +126,11 @@ begin
         input_valid_i => output_valid,
         input_ready_o => output_ready,
         input_data_i => output_data,
-        input_addr_i(0 to -1) => "",
+        input_addr_i(dummy_addr'RANGE) => "",
 
         output_valid_o => valid_o,
         output_ready_i => ready_i,
         output_data_o => data_o,
-        output_addr_o(0 to -1) => open
+        output_addr_o => dummy_addr
     );
 end;

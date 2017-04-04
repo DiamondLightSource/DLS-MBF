@@ -26,7 +26,7 @@ end;
 architecture arch of detector_bunch_select is
     -- We read a bit at a time, but write 32 bits at a time, so there are 5
     -- fewer write than read addresses
-    signal read_address : bunch_count_t;
+    signal read_address : bunch_count_t := (others => '0');
     signal write_address : unsigned(read_address'LEFT-5 downto 0);
 
 begin

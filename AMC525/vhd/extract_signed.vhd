@@ -21,7 +21,7 @@ entity extract_signed is
 
         data_i : in signed;
         data_o : out signed;
-        overflow_o : out std_logic
+        overflow_o : out std_logic := '0'
     );
 end;
 
@@ -30,11 +30,11 @@ architecture arch of extract_signed is
     constant BIT_WIDTH_OUT : natural := data_o'LENGTH;
     constant ROUNDED_WIDTH : natural := BIT_WIDTH_IN - OFFSET + EXTRA;
 
-    signal sign : std_logic;
+    signal sign : std_logic := '0';
     signal rounded : signed(ROUNDED_WIDTH-1 downto 0) := (others => '0');
     signal truncated : data_o'SUBTYPE := (others => '0');
     signal data_out : data_o'SUBTYPE := (others => '0');
-    signal overflow : std_logic;
+    signal overflow : std_logic := '0';
 
 begin
     process (clk_i) begin

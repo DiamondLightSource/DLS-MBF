@@ -49,7 +49,7 @@ begin
     end process;
 
     -- Truncation, rounding and overflow detection of result
-    extract_signed_inst : entity work.extract_signed generic map (
+    extract : entity work.extract_signed generic map (
         OFFSET => 1,
         EXTRA => 1
     ) port map (

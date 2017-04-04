@@ -40,7 +40,7 @@ entity memory_buffer_fast is
         output_valid_o : out std_logic;
         output_ready_i : in std_logic;
         output_data_o : out std_logic_vector;
-        output_addr_o : in unsigned
+        output_addr_o : out unsigned
     );
 end;
 
@@ -76,6 +76,7 @@ begin
                         when "11" =>
                             output_data_o <= input_data_i;
                             output_addr_o <= input_addr_i;
+                        when others =>
                     end case;
                 when FULL =>
                     if output_ready_i = '1' then

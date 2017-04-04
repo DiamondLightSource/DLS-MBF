@@ -98,73 +98,32 @@ begin
     -- detector will have its own set of bunches programmed, but otherwise will
     -- operate in step.
     detectors : for d in DETECTOR_RANGE generate
-        signal bunch_enable : std_logic;
-
-        signal valid : std_logic;
-        signal ready : std_logic;
-        signal addr : mem_addr_o'SUBTYPE;
-        signal data : mem_data_o'SUBTYPE;
-
-    begin
-        -- Bunch selection
-        bunch_select : entity work.detector_bunch_select port map (
+        detector_body : entity work.detector_body generic map (
+            BUFFER_LENGTH => BUFFER_LENGTH,
+        ) port map (
             adc_clk_i => adc_clk_i,
             dsp_clk_i => dsp_clk_i,
             turn_clock_i => turn_clock_i,
 
             start_write_i => start_write,
-            write_strobe_i => bunch_write(d),
+            bunch_write_i => bunch_write(d),
             write_data_i => write_data_i,
 
-            bunch_detect_o => bunch_enable
-        );
-
-        -- IQ Detector
-        detector : entity work.detector_core port map (
-            clk_i => adc_clk_i,
             data_i => data_in,
             iq_i => iq_i,
-            bunch_enable_i => bunch_enable,
-            overflow_i => fir_overflow_in,
-            overflow_o => fir_overflow(d),
-
             start_i => start_i,
             write_i => write_i,
-            write_o => write,
-            iq_o => iq_detect
-        );
+            data_overflow_i => fir_overflow_in,
 
-        -- Scale and make output available to DRAM
-        output : entity work.detector_output port map (
-            adc_clk_i => adc_clk_i,
-            dsp_clk_i => dsp_clk_i,
+            data_overflow_o => fir_overflow(d),
+            detector_overflow_o => detector_overflow(d),
+            output_underrun_o => output_underrun(d),
 
-            scaling_i => output_scaling(d),
-            write_i => write,
-            data_i => iq_detect,
+            output_scaling_i => output_scaling(d),
 
-            output_valid_o => output_valid(d),
-            output_ready_i => output_ready(d),
-            output_data_o => output_data(d),
-            output_underrun_o => output_underrun(d)
-        );
-
-
-        -- Buffer to allow detector to be separated from memory
-        memory_buffer : entity work.memory_buffer generic map (
-            LENGTH => BUFFER_LENGTH
-        ) port map (
-            clk_i => dsp_clk_i,
-
-            input_valid_i => valid,
-            input_ready_o => ready,
-            input_data_i => data,
-            input_addr_i(0 to -1) => "",
-
-            output_valid_o => output_valid(d),
-            output_ready_i => output_ready(d),
-            output_data_o => output_data(d),
-            output_addr_o(0 to -1) => open
+            valid_o => output_valid(d),
+            ready_i => output_ready(d),
+            data_o => output_data(d)
         );
     end generate;
 

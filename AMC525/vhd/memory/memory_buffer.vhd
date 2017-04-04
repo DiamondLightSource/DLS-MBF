@@ -22,7 +22,7 @@ entity memory_buffer is
         output_valid_o : out std_logic;
         output_ready_i : in std_logic;
         output_data_o : out std_logic_vector;
-        output_addr_o : in unsigned
+        output_addr_o : out unsigned
     );
 end;
 
