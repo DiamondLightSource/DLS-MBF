@@ -54,11 +54,11 @@ architecture arch of detector_dsp96 is
     signal multsign : std_logic;
     signal start_in : std_logic := '0';
 
-    signal opmode_low : std_logic_vector(6 downto 0);
-    signal opmode_high : std_logic_vector(6 downto 0);
-    signal carryinsel_high : std_logic_vector(2 downto 0);
-    signal alumode_high : std_logic_vector(3 downto 0);
-    signal sum_low : signed(47 downto 0);
+    signal opmode_low : std_logic_vector(6 downto 0) := "0000101";
+    signal opmode_high : std_logic_vector(6 downto 0) := "0001000";
+    signal carryinsel_high : std_logic_vector(2 downto 0) := "000";
+    signal alumode_high : std_logic_vector(3 downto 0) := "0010";
+    signal sum_low : signed(47 downto 0) := (others => '0');
 
 begin
     -- Both the OPMODE and CARRYINSEL controls are registered, so we need to
@@ -68,14 +68,13 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            start_in <= start_i;
-
             if start_i = '1' then
                 opmode_low  <= "000" & "01" & "01";     -- Load M into P
             else
                 opmode_low  <= "010" & "01" & "01";     -- Add M to P
             end if;
 
+            start_in <= start_i;
             if start_in = '1' then
                 -- Here we load the sign bit from the previous load (available
                 -- as sum_low(47) into P; to reduce routing costs we do the
