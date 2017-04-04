@@ -80,6 +80,8 @@ begin
             tick_wait(60);
             phase_advance <= shift_left(phase_advance, 1);
         end loop;
+        phase_advance <= X"00000000";
+        tick_wait;
         phase_advance <= X"00147AE1";
         wait;
     end process;

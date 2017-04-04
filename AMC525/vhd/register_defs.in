@@ -178,52 +178,56 @@ CTRL
 # Used for channel specific DSP control
 DSP
     MISC
-        #  0       W   Strobed bits
-        #  0       R   General status bits
-        #  1       RW  Latched pulsed events
+        # W   Strobed bits
+        # R   General status bits
+        # RW  Latched pulsed events
         STROBE/STATUS
 
         PULSED
 
         NCO0_FREQ
 
+    # Input signal processing
     ADC
-        #  2   R   31:0    Read MMS count and switch banks
-        #  3   R   31:0    Read and reset MMS bunch entries
-        #  2   W   13:0    Configure data input limit
-        #  2   W   15      Configure ADC fine delay
-        #  2   W   31:16   Configure MMS event limit
-        #  3   W   31:7    Write FIR taps
+        # R   31:0    Read MMS count and switch banks
+        # R   31:0    Read and reset MMS bunch entries
+        # W   13:0    Configure data input limit
+        # W   15      Configure ADC fine delay
+        # W   31:16   Configure MMS event limit
+        # W   31:7    Write FIR taps
         LIMIT
         TAPS
-        MMS             2
+        MMS         2
 
+    # Shared bunch by bunch configuration
     BUNCH
         #  4   W  1:0      Determines bunch bank to be written
         #  5   W           Configure selected bank
         CONFIG
         BANK
 
-    SLOW_MEM
-
+    # Bunch by bunch filter
     FIR
         CONFIG
         TAPS
+
+    # Output signal processing
     DAC
-        #  9   R   31:0    Read MMS count and switch banks
-        #  9   W   9:0     Configure DAC output delay
-        #  9   W  105:12   NCO 0 gain
-        #  9   W  109:16   NCO 1 gain
-        #  9   W   24:20   FIR gain
-        #  9   W   25      FIR enable
-        #  9   W   26      NCO 0 enable
-        #  9   W   27      NCO10 enable
-        # 10   R   31:9    Read and reset MMS bunch entries
-        # 10   W   31:7    Write FIR taps
-        MMS             2
+        # R   31:0    Read MMS count and switch banks
+        # W   9:0     Configure DAC output delay
+        # W  105:12   NCO 0 gain
+        # W  109:16   NCO 1 gain
+        # W   24:20   FIR gain
+        # W   25      FIR enable
+        # W   26      NCO 0 enable
+        # W   27      NCO10 enable
+        # R   31:9    Read and reset MMS bunch entries
+        # W   31:7    Write FIR taps
         CONFIG
         TAPS
+        MMS         2
 
+    # Sequencer control
     SEQ
         # W   0       Abort sequencer if running
         # W   1       Initiate block memory write sequence
@@ -241,3 +245,9 @@ DSP
         #             2 => super sequencer memory
         CONFIG
         WRITE
+
+    # Detector control
+    DET
+        CONFIG
+        COMMAND/EVENTS
+        BUNCH       4

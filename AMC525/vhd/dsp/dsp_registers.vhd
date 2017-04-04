@@ -64,7 +64,7 @@ begin
 
 
     -- Fixed register
-    hack_regs_inst : entity work.register_file port map (
+    register_file_inst : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_MISC_NCO0_FREQ_REG),
         write_data_i => write_data_i,
