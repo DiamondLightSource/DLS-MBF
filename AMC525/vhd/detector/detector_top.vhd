@@ -9,8 +9,12 @@ use work.defines.all;
 
 use work.nco_defs.all;
 use work.detector_defs.all;
+use work.register_defs.all;
 
 entity detector_top is
+    generic (
+        MEMORY_BUFFER_LENGTH : natural
+    );
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
@@ -43,13 +47,27 @@ entity detector_top is
 end;
 
 architecture arch of detector_top is
-    signal enable : std_logic_vector(DETECTOR_RANGE);
+    -- Register control settings
+    signal fir_gain : unsigned(0 downto 0);
+    signal data_select : std_logic;
+    signal start_write : std_logic;
+    signal bunch_write : std_logic_vector(DETECTOR_RANGE);
+    signal output_scaling : unsigned_array(DETECTOR_RANGE)(2 downto 0);
+    signal output_reset : std_logic;
+    signal output_enables : std_logic_vector(DETECTOR_RANGE);
+    -- Event feedbacks (all on DSP clock)
+    signal fir_overflow : std_logic_vector(DETECTOR_RANGE);
+    signal detector_overflow : std_logic_vector(DETECTOR_RANGE);
+    signal output_underrun : std_logic_vector(DETECTOR_RANGE);
 
-    -- Memory multiplexing
-    signal mem_valid : std_logic_vector(DETECTOR_RANGE);
-    signal mem_ready : std_logic_vector(DETECTOR_RANGE);
-    signal mem_addr : unsigned_array(DETECTOR_RANGE)(mem_addr_o'RANGE);
-    signal mem_data : vector_array(DETECTOR_RANGE)(mem_data_o'RANGE);
+    -- Internal paths
+    signal data_in : signed(24 downto 0);
+    signal fir_overflow_in : std_logic;
+
+    -- Output data streams
+    signal output_valid : std_logic_vector(DETECTOR_RANGE);
+    signal output_ready : std_logic_vector(DETECTOR_RANGE);
+    signal output_data : vector_array(DETECTOR_RANGE)(mem_data_o'RANGE);
 
 begin
     -- Register interface
@@ -63,18 +81,17 @@ begin
         read_data_o => read_data_o,
         read_ack_o => read_ack_o,
 
-        fir_overflow_i => fir_overflow,
-        det_overflow_i => det_overflow,
-        write_underrun_i => write_underrun,
-
         fir_gain_o => fir_gain,
-        detector_gains_o => detector_gains,
-
+        data_select_o => data_select,
         start_write_o => start_write,
         bunch_write_o => bunch_write,
+        output_scaling_o => output_scaling,
+        output_reset_o => output_reset,
+        output_enables_o => output_enables,
 
-        dram_reset_o => dram_reset,
-        dram_enables_o => detector_enables
+        fir_overflow_i => fir_overflow,
+        detector_overflow_i => detector_overflow,
+        output_underrun_i => output_underrun
     );
 
 
@@ -98,9 +115,14 @@ begin
     -- detector will have its own set of bunches programmed, but otherwise will
     -- operate in step.
     detectors : for d in DETECTOR_RANGE generate
-        detector_body : entity work.detector_body generic map (
-            BUFFER_LENGTH => BUFFER_LENGTH,
-        ) port map (
+        signal valid : std_logic;
+        signal ready : std_logic;
+        signal data : mem_data_o'SUBTYPE;
+        signal dummy_addr : unsigned(-1 downto 0);
+
+    begin
+        -- Detector
+        detector_body : entity work.detector_body port map (
             adc_clk_i => adc_clk_i,
             dsp_clk_i => dsp_clk_i,
             turn_clock_i => turn_clock_i,
@@ -110,7 +132,7 @@ begin
             write_data_i => write_data_i,
 
             data_i => data_in,
-            iq_i => iq_i,
+            iq_i => nco_iq_i,
             start_i => start_i,
             write_i => write_i,
             data_overflow_i => fir_overflow_in,
@@ -121,13 +143,30 @@ begin
 
             output_scaling_i => output_scaling(d),
 
-            valid_o => output_valid(d),
-            ready_i => output_ready(d),
-            data_o => output_data(d)
+            valid_o => valid,
+            ready_i => ready,
+            data_o => data
+        );
+
+        -- Buffer to allow detector to be separated from memory
+        memory_buffer : entity work.memory_buffer generic map (
+            LENGTH => MEMORY_BUFFER_LENGTH
+        ) port map (
+            clk_i => dsp_clk_i,
+
+            input_valid_i => valid,
+            input_ready_o => ready,
+            input_data_i => data,
+            input_addr_i(dummy_addr'RANGE) => "",
+
+            output_valid_o => output_valid(d),
+            output_ready_i => output_ready(d),
+            output_data_o => output_data(d),
+            output_addr_o => dummy_addr
         );
     end generate;
 
-
+    -- Gather multiple output streams together into a single stream
     dram_output : entity work.detector_dram_output port map (
         clk_i => dsp_clk_i,
 

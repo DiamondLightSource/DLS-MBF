@@ -7,6 +7,7 @@ use work.support.all;
 
 use work.nco_defs.all;
 use work.detector_defs.all;
+use work.register_defs.all;
 
 entity testbench is
 end testbench;
@@ -26,24 +27,23 @@ architecture arch of testbench is
 
     constant TURN_COUNT : natural := 7;
 
-    signal nco_frequency : angle_t := X"31234567";
-
-    -- detector_core parameters
-    signal start_write : std_logic;
-    signal bunch_write : std_logic;
+    -- detector_top parameters
+    signal write_strobe : std_logic_vector(DSP_DET_REGS);
     signal write_data : reg_data_t;
-    signal data : signed(24 downto 0);
-    signal iq_in : cos_sin_18_t;
+    signal write_ack : std_logic_vector(DSP_DET_REGS);
+    signal read_strobe : std_logic_vector(DSP_DET_REGS);
+    signal read_data : reg_data_array_t(DSP_DET_REGS);
+    signal read_ack : std_logic_vector(DSP_DET_REGS);
+    signal adc_data : signed(15 downto 0);
+    signal fir_data : signed(35 downto 0);
+    signal nco_iq : cos_sin_18_t;
+    signal window : signed(17 downto 0);
     signal start : std_logic;
-    signal write_in : std_logic;
-    signal data_overflow_in : std_logic;
-    signal data_overflow : std_logic;
-    signal detector_overflow : std_logic;
-    signal output_underrun : std_logic;
-    signal output_scaling : unsigned(2 downto 0);
-    signal valid : std_logic;
-    signal ready : std_logic;
-    signal data_out : std_logic_vector(63 downto 0);
+    signal write : std_logic;
+    signal mem_valid : std_logic;
+    signal mem_ready : std_logic;
+    signal mem_addr : unsigned(19 downto 0);
+    signal mem_data : std_logic_vector(63 downto 0);
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -61,102 +61,98 @@ begin
         wait;
     end process;
 
-    -- Data ramp
---     process begin
---         clk_wait(adc_clk);
---         data <= data + 1234;
---     end process;
-    data <= 25X"0000FFF";
+    nco_iq.cos <= 18X"1FFFF";
+    nco_iq.sin <= 18X"1FFFF";
 
-    -- Oscillator for detector
---     nco : entity work.nco_core port map (
---         clk_i => adc_clk,
---         phase_advance_i => nco_frequency,
---         cos_sin_o => iq_in
---     );
-    iq_in.cos <= 18X"1FFFF";
-    iq_in.sin <= 18X"1FFFF";
+    adc_data <= 16X"1234";
+    fir_data <= 36X"123456789";
+    window <= 18X"1FFFF";
 
-
-    -- Detector under test
-    detector_body : entity work.detector_body generic map (
-        BUFFER_LENGTH => 2
+    detector : entity work.detector_top generic map (
+        MEMORY_BUFFER_LENGTH => 2
     ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
         turn_clock_i => turn_clock,
-        start_write_i => start_write,
-        bunch_write_i => bunch_write,
+        write_strobe_i => write_strobe,
         write_data_i => write_data,
-        data_i => data,
-        iq_i => iq_in,
+        write_ack_o => write_ack,
+        read_strobe_i => read_strobe,
+        read_data_o => read_data,
+        read_ack_o => read_ack,
+        adc_data_i => adc_data,
+        fir_data_i => fir_data,
+        nco_iq_i => nco_iq,
+        window_i => window,
         start_i => start,
-        write_i => write_in,
-        data_overflow_i => data_overflow_in,
-        data_overflow_o => data_overflow,
-        detector_overflow_o => detector_overflow,
-        output_underrun_o => output_underrun,
-        output_scaling_i => output_scaling,
-        valid_o => valid,
-        ready_i => ready,
-        data_o => data_out
+        write_i => write,
+        mem_valid_o => mem_valid,
+        mem_ready_i => mem_ready,
+        mem_addr_o => mem_addr,
+        mem_data_o => mem_data
     );
 
-    data_overflow_in <= '0';
-
-    -- Initialise the bunch memory
-    process begin
-        start_write <= '0';
-        bunch_write <= '0';
-        clk_wait(dsp_clk, 2);
-
-        start_write <= '1';
-        clk_wait(dsp_clk);
-        start_write <= '0';
-
-        write_data <= X"00000055";
-        bunch_write <= '1';
-        clk_wait(dsp_clk);
-        bunch_write <= '0';
-
-        wait;
-    end process;
+    write_strobe <= (others => '0');
+    read_strobe <= (others => '0');
+    start <= '0';
+    write <= '0';
+    mem_ready <= '1';
 
 
-    -- Generate cycles of capture
-    process begin
-        start <= '0';
-        write_in <= '0';
 
-        clk_wait(adc_clk, 2);
-        start <= '1';
-        clk_wait(adc_clk);
-        start <= '0';
-
-        loop
-            clk_wait(adc_clk, 10);
-            start <= '1';
-            write_in <= '1';
-            clk_wait(adc_clk);
-            start <= '0';
-            write_in <= '0';
-        end loop;
-
-        wait;
-    end process;
-
-
-    -- Test sequence with gain changes and data flow
-    process begin
-        ready <= '1';
-        output_scaling <= "000";
-
-        clk_wait(dsp_clk, 22);
-        output_scaling <= "001";
-
-        clk_wait(dsp_clk, 10);
-        ready <= '0';
-
-        wait;
-    end process;
+--     -- Initialise the bunch memory
+--     process begin
+--         start_write <= '0';
+--         bunch_write <= '0';
+--         clk_wait(dsp_clk, 2);
+-- 
+--         start_write <= '1';
+--         clk_wait(dsp_clk);
+--         start_write <= '0';
+-- 
+--         write_data <= X"00000055";
+--         bunch_write <= '1';
+--         clk_wait(dsp_clk);
+--         bunch_write <= '0';
+-- 
+--         wait;
+--     end process;
+-- 
+-- 
+--     -- Generate cycles of capture
+--     process begin
+--         start <= '0';
+--         write_in <= '0';
+-- 
+--         clk_wait(adc_clk, 2);
+--         start <= '1';
+--         clk_wait(adc_clk);
+--         start <= '0';
+-- 
+--         loop
+--             clk_wait(adc_clk, 10);
+--             start <= '1';
+--             write_in <= '1';
+--             clk_wait(adc_clk);
+--             start <= '0';
+--             write_in <= '0';
+--         end loop;
+-- 
+--         wait;
+--     end process;
+-- 
+-- 
+--     -- Test sequence with gain changes and data flow
+--     process begin
+--         ready <= '1';
+--         output_scaling <= "000";
+-- 
+--         clk_wait(dsp_clk, 22);
+--         output_scaling <= "001";
+-- 
+--         clk_wait(dsp_clk, 10);
+--         ready <= '0';
+-- 
+--         wait;
+--     end process;
 end;

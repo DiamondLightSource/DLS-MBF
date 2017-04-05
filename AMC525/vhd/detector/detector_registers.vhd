@@ -8,6 +8,7 @@ use work.support.all;
 use work.defines.all;
 
 use work.detector_defs.all;
+use work.register_defs.all;
 
 entity detector_registers is
     port (
@@ -21,22 +22,19 @@ entity detector_registers is
         read_data_o : out reg_data_array_t;
         read_ack_o : out std_logic_vector;
 
-        -- Overflow events
-        fir_overflow_i : in std_logic;
-        det_overflow_i : in std_logic_vector(DETECTOR_RANGE);
-        write_underrun_i : in std_logic;
-
-        -- Input and output gain controls
-        fir_gain_o : out unsigned;
-        detector_gains_o : out unsigned_array(DETECTOR_RANGE);
-
-        -- Detector bunch memory
+        -- Controls
+        fir_gain_o : out unsigned(0 downto 0);
+        data_select_o : out std_logic;
         start_write_o : out std_logic;
         bunch_write_o : out std_logic_vector(DETECTOR_RANGE);
+        output_scaling_o : out unsigned_array(DETECTOR_RANGE)(2 downto 0);
+        output_reset_o : out std_logic;
+        output_enables_o : out std_logic_vector(DETECTOR_RANGE);
 
-        -- DRAM output controller
-        dram_reset_o : out std_logic;
-        dram_enables_o : out std_logic_vector(DETECTOR_RANGE)
+        -- Error event inputs
+        fir_overflow_i : in std_logic_vector(DETECTOR_RANGE);
+        detector_overflow_i : in std_logic_vector(DETECTOR_RANGE);
+        output_underrun_i : in std_logic_vector(DETECTOR_RANGE)
     );
 end;
 
@@ -46,6 +44,9 @@ architecture arch of detector_registers is
     signal event_bits : reg_data_t;
 
 begin
+    -- -------------------------------------------------------------------------
+    -- Register mapping
+
     -- Configuration register
     registers : entity work.register_file port map (
         clk_i => dsp_clk_i,
@@ -57,7 +58,6 @@ begin
     read_data_o(DSP_DET_CONFIG_REG) <= register_file;
     read_ack_o(DSP_DET_CONFIG_REG) <= '1';
 
-
     -- Command bits for triggering events
     command : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
@@ -68,7 +68,6 @@ begin
 
         strobed_bits_o => command_bits
     );
-
 
     -- Event sensing bits
     events : entity work.all_pulsed_bits port map (
@@ -89,20 +88,27 @@ begin
     read_ack_o(DSP_DET_BUNCH_REGS) <= (others => '1');
 
 
+    -- -------------------------------------------------------------------------
+    -- Field management
+
+    -- Incoming events
     event_bits <= (
-        0 => fir_overflow_i,
-        1 => write_underrun_i,
-        11 downto 8 => det_overflow_i,
+        3 downto 0 => detector_overflow_i,
+        7 downto 4 => output_underrun_i,
+        11 downto 8 => fir_overflow_i,
         others => '0'
     );
 
+    -- Outgoing events
     start_write_o <= command_bits(0);
-    dram_reset_o <= command_bits(1);
+    output_reset_o <= command_bits(1);
 
-    fir_gain_o <= unsigned(register_file());
-    detector_gains_o(0) <= unsigned(register_file());
-    detector_gains_o(1) <= unsigned(register_file());
-    detector_gains_o(2) <= unsigned(register_file());
-    detector_gains_o(3) <= unsigned(register_file());
-    dram_enables_o <= register_file();
+    -- Control fields
+    fir_gain_o <= unsigned(register_file(0 downto 0));
+    data_select_o <= register_file(1);
+    output_scaling_o(0) <= unsigned(register_file(4 downto 2));
+    output_scaling_o(1) <= unsigned(register_file(7 downto 5));
+    output_scaling_o(2) <= unsigned(register_file(10 downto 8));
+    output_scaling_o(3) <= unsigned(register_file(13 downto 11));
+    output_enables_o <= register_file(17 downto 14);
 end;

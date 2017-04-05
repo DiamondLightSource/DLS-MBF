@@ -11,9 +11,6 @@ use work.nco_defs.all;
 use work.detector_defs.all;
 
 entity detector_body is
-    generic (
-        BUFFER_LENGTH : natural
-    );
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
@@ -52,11 +49,6 @@ architecture arch of detector_body is
     signal data_overflow : std_logic;
     signal det_write : std_logic;
     signal det_iq : cos_sin_96_t;
-
-    signal output_valid : std_logic;
-    signal output_ready : std_logic;
-    signal output_data : data_o'SUBTYPE;
-    signal dummy_addr : unsigned(-1 downto 0);
 
 begin
     -- Bunch selection
@@ -110,27 +102,9 @@ begin
         write_i => det_write,
         data_i => det_iq,
 
-        output_valid_o => output_valid,
-        output_ready_i => output_ready,
-        output_data_o => output_data,
-        output_underrun_o => output_underrun_o
-    );
-
-
-    -- Buffer to allow detector to be separated from memory
-    memory_buffer : entity work.memory_buffer generic map (
-        LENGTH => BUFFER_LENGTH
-    ) port map (
-        clk_i => dsp_clk_i,
-
-        input_valid_i => output_valid,
-        input_ready_o => output_ready,
-        input_data_i => output_data,
-        input_addr_i(dummy_addr'RANGE) => "",
-
         output_valid_o => valid_o,
         output_ready_i => ready_i,
         output_data_o => data_o,
-        output_addr_o => dummy_addr
+        output_underrun_o => output_underrun_o
     );
 end;
