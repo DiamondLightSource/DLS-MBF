@@ -7,18 +7,16 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
-use work.detector_defs.all;
-
 entity detector_dram_output is
     port (
         clk_i : in std_logic;
 
-        output_reset_i : in std_logic;
-        output_enables_i : in std_logic_vector(DETECTOR_RANGE);
+        address_reset_i : in std_logic;
+        input_enable_i : in std_logic_vector;
 
-        input_valid_i : in std_logic_vector(DETECTOR_RANGE);
-        input_ready_o : out std_logic_vector(DETECTOR_RANGE);
-        input_data_i : vector_array(DETECTOR_RANGE)(open);
+        input_valid_i : in std_logic_vector;
+        input_ready_o : out std_logic_vector;
+        input_data_i : vector_array;
 
         output_valid_o : out std_logic;
         output_ready_i : in std_logic;
@@ -28,10 +26,77 @@ entity detector_dram_output is
 end;
 
 architecture arch of detector_dram_output is
+    constant INPUT_COUNT : natural := input_enable_i'LENGTH;
+
+    signal selection : natural range 0 to INPUT_COUNT-1 := 0;
+    signal input_valid : boolean;
+    signal input_enable : boolean;
+    signal emit_output : boolean;
+    signal advance_input : boolean;
+    signal output_ready : boolean;
+    signal output_busy : boolean := false;
+
 begin
-    -- quick and dirty!
-    output_valid_o <= input_valid_i(0);
-    input_ready_o <= (0 => output_ready_i, others => '0');
-    output_data_o <= input_data_i(0);
-    output_addr_o <= (output_addr_o'RANGE => '0');
+    -- Input state management
+    --
+    input_valid <= input_valid_i(selection) = '1';
+    input_enable <= input_enable_i(selection) = '1';
+    emit_output <= input_valid and input_enable;
+    advance_input <= input_valid and (output_ready or not input_enable);
+    process (clk_i) begin
+        if rising_edge(clk_i) then
+            if address_reset_i = '1' then
+                selection <= 0;
+            elsif advance_input then
+                selection <= (selection + 1) mod INPUT_COUNT;
+            end if;
+
+            if advance_input then
+                input_ready_o <=
+                    reverse(compute_strobe(selection, INPUT_COUNT));
+            else
+                input_ready_o <= (input_ready_o'RANGE => '0');
+            end if;
+        end if;
+    end process;
+
+
+    -- Output state management
+    --
+    --    state  ov rdy  e or  state'  action
+    --  +-------+------+------+-------+---------------
+    --  | idle  | 0 1  | 0    : idle   -
+    --  |       |      | 1    : busy   od <= id(n)
+    --  +-------+------+------+-------+---------------
+    --  | busy  | 1 or |   0  : busy   -
+    --  |       |      | 0 1  : idle   oa <= oa+1
+    --  |       |      | 1 1  : busy   oa <= oa+1; od <= id(n)
+    --  +-------+------+------+-------+---------------
+    --  Outputs: ov = output_valid_o, rdy = output_ready, od = output_data_o,
+    --      n = selection, oa = output_address_o
+    --  Inputs: e = emit_output, or = output_ready_i, id = input_data_i.
+    output_ready <= not output_busy or output_ready_i = '1';
+    process (clk_i) begin
+        if rising_edge(clk_i) then
+            -- We remain busy while we have requests for output and we haven't
+            -- managed to get rid of our data.
+            output_busy <=
+                emit_output or (output_busy and output_ready_i = '0');
+
+            -- When we're ready to take output use the current selection; the
+            -- input stage manager will advance the selection.
+            if emit_output and output_ready then
+                output_data_o <= input_data_i(selection);
+            end if;
+
+            -- When data is taken advance the address.
+            if address_reset_i = '1' then
+                output_addr_o <= (output_addr_o'RANGE => '0');
+            elsif output_busy and output_ready_i = '1' then
+                output_addr_o <= output_addr_o + 1;
+            end if;
+        end if;
+    end process;
+
+    output_valid_o <= to_std_logic(output_busy);
 end;

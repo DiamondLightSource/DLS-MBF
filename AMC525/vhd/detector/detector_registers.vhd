@@ -28,8 +28,8 @@ entity detector_registers is
         start_write_o : out std_logic;
         bunch_write_o : out std_logic_vector(DETECTOR_RANGE);
         output_scaling_o : out unsigned_array(DETECTOR_RANGE)(2 downto 0);
-        output_reset_o : out std_logic;
-        output_enables_o : out std_logic_vector(DETECTOR_RANGE);
+        address_reset_o : out std_logic;
+        input_enable_o : out std_logic_vector(DETECTOR_RANGE);
 
         -- Error event inputs
         fir_overflow_i : in std_logic_vector(DETECTOR_RANGE);
@@ -42,6 +42,8 @@ architecture arch of detector_registers is
     signal register_file : reg_data_t;
     signal command_bits : reg_data_t;
     signal event_bits : reg_data_t;
+
+    signal bunch_write_index : unsigned(bits(DETECTOR_COUNT-1)-1 downto 0);
 
 begin
     -- -------------------------------------------------------------------------
@@ -61,31 +63,25 @@ begin
     -- Command bits for triggering events
     command : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
-
         write_strobe_i => write_strobe_i(DSP_DET_COMMAND_REG_W),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_DET_COMMAND_REG_W),
-
         strobed_bits_o => command_bits
     );
 
     -- Event sensing bits
     events : entity work.all_pulsed_bits port map (
         clk_i => dsp_clk_i,
-
         read_strobe_i => read_strobe_i(DSP_DET_EVENTS_REG_R),
         read_data_o => read_data_o(DSP_DET_EVENTS_REG_R),
         read_ack_o => read_ack_o(DSP_DET_EVENTS_REG_R),
-
         pulsed_bits_i => event_bits
     );
 
-
-    -- Bunch memory writes forwarded to corresponding detector
-    bunch_write_o <= write_strobe_i(DSP_DET_BUNCH_REGS);
-    write_ack_o(DSP_DET_BUNCH_REGS) <= (others => '1');
-    read_data_o(DSP_DET_BUNCH_REGS) <= (others => (others => '0'));
-    read_ack_o(DSP_DET_BUNCH_REGS) <= (others => '1');
+    -- The detector bunch register is treated specially below
+    write_ack_o(DSP_DET_BUNCH_REG) <= '1';
+    read_data_o(DSP_DET_BUNCH_REG) <= (others => '0');
+    read_ack_o(DSP_DET_BUNCH_REG) <= '1';
 
 
     -- -------------------------------------------------------------------------
@@ -101,14 +97,23 @@ begin
 
     -- Outgoing events
     start_write_o <= command_bits(0);
-    output_reset_o <= command_bits(1);
+    address_reset_o <= command_bits(1);
 
     -- Control fields
     fir_gain_o <= unsigned(register_file(0 downto 0));
     data_select_o <= register_file(1);
-    output_scaling_o(0) <= unsigned(register_file(4 downto 2));
-    output_scaling_o(1) <= unsigned(register_file(7 downto 5));
-    output_scaling_o(2) <= unsigned(register_file(10 downto 8));
-    output_scaling_o(3) <= unsigned(register_file(13 downto 11));
-    output_enables_o <= register_file(17 downto 14);
+    output_scaling_o(0) <= unsigned(register_file(10 downto 8));
+    input_enable_o(0) <= register_file(11);
+    output_scaling_o(1) <= unsigned(register_file(14 downto 12));
+    input_enable_o(1) <= register_file(15);
+    output_scaling_o(2) <= unsigned(register_file(18 downto 16));
+    input_enable_o(2) <= register_file(19);
+    output_scaling_o(3) <= unsigned(register_file(22 downto 20));
+    input_enable_o(3) <= register_file(23);
+
+    -- Bunch write strobe
+    bunch_write_index <= unsigned(register_file(31 downto 30));
+    bunch_write_o <=
+        compute_strobe(to_integer(bunch_write_index), DETECTOR_COUNT)
+        when write_strobe_i(DSP_DET_BUNCH_REG) = '1' else (others => '0');
 end;

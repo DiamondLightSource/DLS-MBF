@@ -8,6 +8,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity rounded_product is
+    generic (
+        -- Bits to silently discard from the top
+        DISCARD_TOP : natural := 0
+    );
     port (
         clk_i : in std_logic;
 
@@ -22,7 +26,7 @@ architecture arch of rounded_product is
     constant B_WIDTH : natural := b_i'LENGTH;
     constant OUT_WIDTH : natural := ab_o'LENGTH;
     constant PRODUCT_WIDTH : natural := A_WIDTH + B_WIDTH;
-    constant DISCARD_WIDTH : natural := PRODUCT_WIDTH - OUT_WIDTH;
+    constant DISCARD_WIDTH : natural := PRODUCT_WIDTH - OUT_WIDTH - DISCARD_TOP;
 
     signal a_in : a_i'SUBTYPE := (others => '0');
     signal b_in : b_i'SUBTYPE := (others => '0');
@@ -49,5 +53,5 @@ begin
         end if;
     end process;
 
-    ab_o <= ab_out(PRODUCT_WIDTH-1 downto DISCARD_WIDTH);
+    ab_o <= ab_out(PRODUCT_WIDTH-DISCARD_TOP-1 downto DISCARD_WIDTH);
 end;

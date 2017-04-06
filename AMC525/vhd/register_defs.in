@@ -250,4 +250,4 @@ DSP
     DET
         CONFIG
         COMMAND/EVENTS
-        BUNCH       4
+        BUNCH

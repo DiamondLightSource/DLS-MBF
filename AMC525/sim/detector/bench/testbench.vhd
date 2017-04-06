@@ -9,18 +9,12 @@ use work.nco_defs.all;
 use work.detector_defs.all;
 use work.register_defs.all;
 
+use work.sim_support.all;
+
 entity testbench is
 end testbench;
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural := 1) is
-        variable i : natural;
-    begin
-        for i in 0 to count-1 loop
-            wait until rising_edge(clk_i);
-        end loop;
-    end procedure;
-
     signal adc_clk : std_logic := '1';
     signal dsp_clk : std_logic := '0';
     signal turn_clock : std_logic;
@@ -68,6 +62,7 @@ begin
     fir_data <= 36X"123456789";
     window <= 18X"1FFFF";
 
+
     detector : entity work.detector_top generic map (
         MEMORY_BUFFER_LENGTH => 2
     ) port map (
@@ -92,67 +87,95 @@ begin
         mem_data_o => mem_data
     );
 
-    write_strobe <= (others => '0');
-    read_strobe <= (others => '0');
-    start <= '0';
-    write <= '0';
-    mem_ready <= '1';
+
+    -- Generate cycles of capture
+    process begin
+        start <= '0';
+        write <= '0';
+
+        clk_wait(adc_clk, 2);
+        start <= '1';
+        clk_wait(adc_clk);
+        start <= '0';
+
+        loop
+            clk_wait(adc_clk, 10);
+            start <= '1';
+            write <= '1';
+            clk_wait(adc_clk);
+            start <= '0';
+            write <= '0';
+        end loop;
+
+        wait;
+    end process;
 
 
+    -- Memory consumer
+    process
+        procedure receive is
+        begin
+            receive_mem(dsp_clk, mem_valid, mem_ready, mem_data, mem_addr);
+        end;
 
---     -- Initialise the bunch memory
---     process begin
---         start_write <= '0';
---         bunch_write <= '0';
---         clk_wait(dsp_clk, 2);
--- 
---         start_write <= '1';
---         clk_wait(dsp_clk);
---         start_write <= '0';
--- 
---         write_data <= X"00000055";
---         bunch_write <= '1';
---         clk_wait(dsp_clk);
---         bunch_write <= '0';
--- 
---         wait;
---     end process;
--- 
--- 
---     -- Generate cycles of capture
---     process begin
---         start <= '0';
---         write_in <= '0';
--- 
---         clk_wait(adc_clk, 2);
---         start <= '1';
---         clk_wait(adc_clk);
---         start <= '0';
--- 
---         loop
---             clk_wait(adc_clk, 10);
---             start <= '1';
---             write_in <= '1';
---             clk_wait(adc_clk);
---             start <= '0';
---             write_in <= '0';
---         end loop;
--- 
---         wait;
---     end process;
--- 
--- 
---     -- Test sequence with gain changes and data flow
---     process begin
---         ready <= '1';
---         output_scaling <= "000";
--- 
---         clk_wait(dsp_clk, 22);
---         output_scaling <= "001";
--- 
---         clk_wait(dsp_clk, 10);
---         ready <= '0';
--- 
---         wait;
---     end process;
+    begin
+        mem_ready <= '0';
+        clk_wait(dsp_clk, 2);
+        receive;
+    end process;
+
+
+    -- Register control interface
+    process
+        procedure write_reg(reg : natural; value : reg_data_t) is
+        begin
+            write_reg(
+                dsp_clk, write_data, write_strobe, write_ack, reg, value);
+        end;
+
+        procedure write_config(value : reg_data_t) is
+        begin
+            write_reg(DSP_DET_CONFIG_REG, value);
+        end;
+
+        procedure write_command(value : reg_data_t) is
+        begin
+            write_reg(DSP_DET_COMMAND_REG_W, value);
+        end;
+
+        procedure write_bunch(value : reg_data_t) is
+        begin
+            write_reg(DSP_DET_BUNCH_REG, value);
+        end;
+
+        procedure read_events is
+        begin
+            read_reg(
+                dsp_clk, read_data, read_strobe, read_ack,
+                DSP_DET_EVENTS_REG_R);
+        end;
+
+    begin
+        write_strobe <= (others => '0');
+        read_strobe <= (others => '0');
+
+        -- Write the bunch memories
+        write_command(X"0000_0003");
+        write_config(X"0000_0000");
+        write_bunch(X"0000_0055");
+        write_config(X"4000_0000");
+        write_bunch(X"0000_0055");
+        write_config(X"8000_0000");
+        write_bunch(X"0000_0055");
+        write_config(X"C000_0000");
+        write_bunch(X"0000_0055");
+
+        -- Enable all four outputs with different scaling, select FIR input with
+        -- attenuation.
+        write_config(X"00_092B_03");
+
+        read_events;
+
+        wait;
+    end process;
 end;

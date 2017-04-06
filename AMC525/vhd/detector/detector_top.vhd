@@ -53,8 +53,8 @@ architecture arch of detector_top is
     signal start_write : std_logic;
     signal bunch_write : std_logic_vector(DETECTOR_RANGE);
     signal output_scaling : unsigned_array(DETECTOR_RANGE)(2 downto 0);
-    signal output_reset : std_logic;
-    signal output_enables : std_logic_vector(DETECTOR_RANGE);
+    signal address_reset : std_logic;
+    signal input_enable : std_logic_vector(DETECTOR_RANGE);
     -- Event feedbacks (all on DSP clock)
     signal fir_overflow : std_logic_vector(DETECTOR_RANGE);
     signal detector_overflow : std_logic_vector(DETECTOR_RANGE);
@@ -86,8 +86,8 @@ begin
         start_write_o => start_write,
         bunch_write_o => bunch_write,
         output_scaling_o => output_scaling,
-        output_reset_o => output_reset,
-        output_enables_o => output_enables,
+        address_reset_o => address_reset,
+        input_enable_o => input_enable,
 
         fir_overflow_i => fir_overflow,
         detector_overflow_i => detector_overflow,
@@ -170,8 +170,8 @@ begin
     dram_output : entity work.detector_dram_output port map (
         clk_i => dsp_clk_i,
 
-        output_reset_i => output_reset,
-        output_enables_i => output_enables,
+        address_reset_i => address_reset,
+        input_enable_i => input_enable,
 
         input_valid_i => output_valid,
         input_ready_o => output_ready,

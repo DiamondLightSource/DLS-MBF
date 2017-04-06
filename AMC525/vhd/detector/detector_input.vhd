@@ -37,7 +37,7 @@ architecture arch of detector_input is
 
     signal data_in : data_o'SUBTYPE := (others => '0');
 
-    -- We shift the ADC data left so that it sits almost at the top of the word
+    -- Shift the ADC data left so that it sits almost at the top of the word
     constant ADC_SHIFT : natural := data_o'LENGTH - adc_data_i'LENGTH - 2;
 
 begin
@@ -69,13 +69,19 @@ begin
         end if;
     end process;
 
-    -- Multiply incoming data by window for final output
-    product : entity work.rounded_product port map (
+
+    -- Multiply incoming data by window for final output.  We discard the
+    -- top-most bit of the product, as this is only significant if both input
+    -- terms are min-int, and the FIR value never will be.
+    product : entity work.rounded_product generic map (
+        DISCARD_TOP => 1
+    ) port map (
         clk_i => clk_i,
         a_i => window_i,
         b_i => data_in,
         ab_o => data_o
     );
+
 
     -- Delay overflow report to match data delay:
     --  data_in =(3)=> data_o

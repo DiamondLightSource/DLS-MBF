@@ -39,6 +39,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
+    $bench_dir/sim_support.vhd \
     $bench_dir/testbench.vhd \
 
 
@@ -47,10 +48,15 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 view wave
 
 add wave -group "Input" sim:/testbench/detector/detector_input/*
-add wave -group "Detector" sim:/testbench/detector/*
+add wave -group "Body(0) Output" \
+    sim:/testbench/detector/detectors(0)/detector_body/output/*
+add wave -group "Body(0)" \
+    sim:/testbench/detector/detectors(0)/detector_body/*
+add wave -group "DRAM" sim:/testbench/detector/dram_output/*
+add wave -group "Top" sim:/testbench/detector/*
 add wave sim:*
 
 
-run 100 ns
+run 200 ns
 
 # vim: set filetype=tcl:
