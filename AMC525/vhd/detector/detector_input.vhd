@@ -11,6 +11,9 @@ use work.defines.all;
 use work.detector_defs.all;
 
 entity detector_input is
+    generic (
+        BUFFER_LENGTH : natural
+    );
     port (
         clk_i : in std_logic;
 
@@ -30,6 +33,8 @@ entity detector_input is
 end;
 
 architecture arch of detector_input is
+    signal fir_data_in : fir_data_i'SUBTYPE;
+    signal adc_data_in : adc_data_i'SUBTYPE;
     signal scaled_adc_data : data_o'SUBTYPE;
     signal scaled_fir_data : data_o'SUBTYPE;
     signal fir_overflow_in : std_logic;
@@ -41,18 +46,39 @@ architecture arch of detector_input is
     constant ADC_SHIFT : natural := data_o'LENGTH - adc_data_i'LENGTH - 2;
 
 begin
+    -- Input data buffers
+    fir_buffer : entity work.dlyreg generic map (
+        DLY => BUFFER_LENGTH,
+        DW => fir_data_i'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(fir_data_i),
+        signed(data_o) => fir_data_in
+    );
+
+    adc_buffer : entity work.dlyreg generic map (
+        DLY => BUFFER_LENGTH,
+        DW => adc_data_i'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(adc_data_i),
+        signed(data_o) => adc_data_in
+    );
+
+
     fir_gain : entity work.gain_control generic map (
         INTERVAL => 8,
         EXTRA_SHIFT => 3
     ) port map (
         clk_i => clk_i,
         gain_sel_i => fir_gain_i,
-        data_i => fir_data_i,
+        data_i => fir_data_in,
         data_o => scaled_fir_data,
         overflow_o => fir_overflow_in
     );
 
-    scaled_adc_data <= shift_left(resize(adc_data_i, data_o'LENGTH), ADC_SHIFT);
+    scaled_adc_data <=
+        shift_left(resize(adc_data_in, data_o'LENGTH), ADC_SHIFT);
 
     -- Input multiplexer
     process (clk_i) begin

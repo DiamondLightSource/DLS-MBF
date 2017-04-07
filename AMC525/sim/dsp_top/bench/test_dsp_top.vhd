@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 use work.dsp_defs.all;
+use work.register_defs.all;
 
 use work.sim_support.all;
 
@@ -19,14 +20,14 @@ architecture arch of testbench is
     signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
     signal dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
 
-    signal write_strobe : std_logic_vector(0 to 15) := (others => '0');
+    signal write_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
     signal write_data : reg_data_t := (others => '0');
-    signal write_ack : std_logic_vector(0 to 15);
-    signal read_strobe : std_logic_vector(0 to 15) := (others => '0');
-    signal read_data : reg_data_array_t(0 to 15);
-    signal read_ack : std_logic_vector(0 to 15);
+    signal write_ack : std_logic_vector(DSP_REGS_RANGE);
+    signal read_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal read_data : reg_data_array_t(DSP_REGS_RANGE);
+    signal read_ack : std_logic_vector(DSP_REGS_RANGE);
 
-    signal control_to_dsp : control_to_dsp_t;
+    signal control_to_dsp : control_to_dsp_t := control_to_dsp_reset;
     signal dsp_to_control : dsp_to_control_t;
     signal dsp_event : std_logic;
 
@@ -45,7 +46,7 @@ begin
 
 
     -- The dsp_top instance.
-    dsp_top_inst : entity work.dsp_top port map (
+    dsp_top : entity work.dsp_top port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
 
@@ -132,4 +133,4 @@ begin
 
     end process;
 
-end testbench;
+end;

@@ -64,6 +64,8 @@ begin
 
 
     detector : entity work.detector_top generic map (
+        DATA_BUFFER_LENGTH => 2,
+        NCO_BUFFER_LENGTH => 2,
         MEMORY_BUFFER_LENGTH => 2
     ) port map (
         adc_clk_i => adc_clk,

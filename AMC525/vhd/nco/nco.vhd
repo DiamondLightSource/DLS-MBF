@@ -44,21 +44,11 @@ begin
     );
 
 
-    cos_dly : entity work.dlyreg generic map (
-        DLY => OUT_DELAY,
-        DW => 18
+    cos_sin_dly : entity work.nco_delay generic map (
+        DELAY => OUT_DELAY
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin.cos),
-        signed(data_o) => cos_sin_o.cos
-    );
-
-    sin_dly : entity work.dlyreg generic map (
-        DLY => OUT_DELAY,
-        DW => 18
-    ) port map (
-        clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin.sin),
-        signed(data_o) => cos_sin_o.sin
+        cos_sin_i => cos_sin,
+        cos_sin_o => cos_sin_o
     );
 end;

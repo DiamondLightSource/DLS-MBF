@@ -29,7 +29,7 @@ package dsp_defs is
         dram0_enable : std_logic;
 
         -- Data out to DRAM1
-        dram1_strobe : std_logic;
+        dram1_valid : std_logic;
         dram1_address : unsigned(DRAM1_ADDR_RANGE);
         dram1_data : std_logic_vector(63 downto 0);
 
@@ -44,8 +44,8 @@ package dsp_defs is
         nco_0_data : signed(NCO_DATA_RANGE);
         nco_1_data : signed(NCO_DATA_RANGE);
 
-        -- DRAM1 write overflow
-        dram1_error : std_logic;
+        -- DRAM1 write ready
+        dram1_ready : std_logic;
 
         -- Events from triggering system
         blanking : std_logic;
@@ -59,7 +59,7 @@ package dsp_defs is
         adc_data   => (others => '0'),
         nco_0_data => (others => '0'),
         nco_1_data => (others => '0'),
-        dram1_error => '0',
+        dram1_ready => '0',
         blanking => '0',
         turn_clock_adc => '0',
         turn_clock_dsp => '0',

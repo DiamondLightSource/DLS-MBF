@@ -196,8 +196,8 @@ begin
         data_o => filtered_data,
         overflow_o => preemph_overflow_o
     );
-    read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
-    read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
+    read_data_o(DSP_DAC_TAPS_REG) <= (others => '0');
+    read_ack_o(DSP_DAC_TAPS_REG) <= '1';
 
     -- Pipeline to help with timing
     filter_dly : entity work.dlyreg generic map (

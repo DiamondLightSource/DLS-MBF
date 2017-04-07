@@ -13,6 +13,8 @@ use work.register_defs.all;
 
 entity detector_top is
     generic (
+        DATA_BUFFER_LENGTH : natural;
+        NCO_BUFFER_LENGTH : natural;
         MEMORY_BUFFER_LENGTH : natural
     );
     port (
@@ -96,7 +98,9 @@ begin
 
 
     -- Data preparation: selection, FIR gain, and windowing
-    detector_input : entity work.detector_input port map (
+    detector_input : entity work.detector_input generic map (
+        BUFFER_LENGTH => DATA_BUFFER_LENGTH
+    ) port map (
         clk_i => adc_clk_i,
 
         fir_gain_i => fir_gain,
@@ -115,12 +119,23 @@ begin
     -- detector will have its own set of bunches programmed, but otherwise will
     -- operate in step.
     detectors : for d in DETECTOR_RANGE generate
+        signal nco_iq_in : nco_iq_i'SUBTYPE;
+
         signal valid : std_logic;
         signal ready : std_logic;
         signal data : mem_data_o'SUBTYPE;
         signal dummy_addr : unsigned(-1 downto 0);
 
     begin
+        -- Delay for NCO to allow for placement
+        nco_delay : entity work.nco_delay generic map (
+            DELAY => NCO_BUFFER_LENGTH
+        ) port map (
+            clk_i => adc_clk_i,
+            cos_sin_i => nco_iq_i,
+            cos_sin_o => nco_iq_in
+        );
+
         -- Detector
         detector_body : entity work.detector_body port map (
             adc_clk_i => adc_clk_i,
@@ -132,7 +147,7 @@ begin
             write_data_i => write_data_i,
 
             data_i => data_in,
-            iq_i => nco_iq_i,
+            iq_i => nco_iq_in,
             start_i => start_i,
             write_i => write_i,
             data_overflow_i => fir_overflow_in,
@@ -165,6 +180,7 @@ begin
             output_addr_o => dummy_addr
         );
     end generate;
+
 
     -- Gather multiple output streams together into a single stream
     dram_output : entity work.detector_dram_output port map (

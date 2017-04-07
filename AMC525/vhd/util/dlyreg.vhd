@@ -26,15 +26,17 @@ architecture arch of dlyreg is
     attribute SHREG_EXTRACT of dlyline : signal is "no";
 
 begin
-    assert DLY > 0 severity failure;
-
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            dlyline(0) <= data_i;
-            for i in 1 to DLY-1 loop
-                dlyline(i) <= dlyline(i-1);
-            end loop;
-        end if;
-    end process;
-    data_o <= dlyline(DLY-1);
+    dly_gen : if DLY > 0 generate
+        process (clk_i) begin
+            if rising_edge(clk_i) then
+                dlyline(0) <= data_i;
+                for i in 1 to DLY-1 loop
+                    dlyline(i) <= dlyline(i-1);
+                end loop;
+            end if;
+        end process;
+        data_o <= dlyline(DLY-1);
+    else generate
+        data_o <= data_i;
+    end generate;
 end;

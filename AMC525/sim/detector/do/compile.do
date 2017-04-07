@@ -19,6 +19,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/system/adc_dsp_phase.vhd \
     $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/nco/nco_defs.vhd \
+    $vhd_dir/nco/nco_delay.vhd \
     $vhd_dir/arithmetic/extract_signed.vhd \
     $vhd_dir/arithmetic/gain_control.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \

@@ -83,7 +83,7 @@ begin
     -- -------------------------------------------------------------------------
     -- General register handling
 
-    dsp_registers_inst : entity work.dsp_registers port map (
+    dsp_registers : entity work.dsp_registers port map (
         dsp_clk_i => dsp_clk_i,
 
         -- DSP general control registers
@@ -119,7 +119,6 @@ begin
         5 => dac_mux_overflow,      -- Overflow in output multiplexer
         6 => dac_mms_overflow,      -- DAC MMS accumulator overflow
         7 => dac_preemph_overflow,  -- Preemphasis filter overflow
-        8 => control_to_dsp_i.dram1_error,  -- Overrun writing to DRAM1
         others => '0'
     );
 
@@ -128,7 +127,7 @@ begin
     -- Miscellaneous control
 
     -- Bunch specific control
-    bunch_select_inst : entity work.bunch_select port map (
+    bunch_select : entity work.bunch_select port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => control_to_dsp_i.turn_clock_adc,
@@ -146,14 +145,14 @@ begin
 
 
     -- Oscillators
-    nco_0_inst : entity work.nco port map (
+    nco_0 : entity work.nco port map (
         clk_i => adc_clk_i,
         phase_advance_i => nco_0_phase_advance,
         cos_sin_o => nco_0_cos_sin
     );
     dsp_to_control_o.nco_0_data <= nco_0_cos_sin;
 
-    nco_1_inst : entity work.nco port map (
+    nco_1 : entity work.nco port map (
         clk_i => adc_clk_i,
         phase_advance_i => nco_1_phase_advance,
         cos_sin_o => nco_1_cos_sin
@@ -161,28 +160,11 @@ begin
     dsp_to_control_o.nco_1_data <= nco_1_cos_sin;
 
 
-    slow_memory_control_inst : entity work.slow_memory_control port map (
-        dsp_clk_i => dsp_clk_i,
-
-        write_strobe_i => write_strobe_i(DSP_SLOW_MEM_REG),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_SLOW_MEM_REG),
-        read_strobe_i => read_strobe_i(DSP_SLOW_MEM_REG),
-        read_data_o => read_data_o(DSP_SLOW_MEM_REG),
-        read_ack_o => read_ack_o(DSP_SLOW_MEM_REG),
-
-        dram1_strobe_o => dsp_to_control_o.dram1_strobe,
-        dram1_error_i => control_to_dsp_i.dram1_error,
-        dram1_address_o => dsp_to_control_o.dram1_address,
-        dram1_data_o => dsp_to_control_o.dram1_data
-    );
-
-
     -- -------------------------------------------------------------------------
     -- Signal processing chain
 
     -- ADC input processing
-    adc_top_inst : entity work.adc_top generic map (
+    adc_top : entity work.adc_top generic map (
         TAP_COUNT => ADC_FIR_TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
@@ -210,7 +192,7 @@ begin
 
 
     -- FIR processing
-    bunch_fir_top_inst : entity work.bunch_fir_top generic map (
+    bunch_fir_top : entity work.bunch_fir_top generic map (
         TAP_COUNT => BUNCH_FIR_TAP_COUNT
     ) port map (
         dsp_clk_i => dsp_clk_i,
@@ -234,7 +216,7 @@ begin
     dsp_to_control_o.fir_data <= fir_data;
 
     -- DAC output processing
-    dac_top_inst : entity work.dac_top generic map (
+    dac_top : entity work.dac_top generic map (
         TAP_COUNT => DAC_FIR_TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
@@ -268,7 +250,7 @@ begin
     -- -------------------------------------------------------------------------
     -- Sequencer and detector
 
-    sequencer_top_inst : entity work.sequencer_top port map (
+    sequencer : entity work.sequencer_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -295,7 +277,36 @@ begin
         bunch_bank_o => current_bank
     );
 
-    -- Transfer NCO gain over to ADC clock
+    detector : entity work.detector_top generic map (
+        DATA_BUFFER_LENGTH => 2,
+        NCO_BUFFER_LENGTH => 2,
+        MEMORY_BUFFER_LENGTH => 2
+    ) port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        turn_clock_i => control_to_dsp_i.turn_clock_adc,
+
+        write_strobe_i => write_strobe_i(DSP_DET_REGS),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_DET_REGS),
+        read_strobe_i => read_strobe_i(DSP_DET_REGS),
+        read_data_o => read_data_o(DSP_DET_REGS),
+        read_ack_o => read_ack_o(DSP_DET_REGS),
+
+        adc_data_i => control_to_dsp_i.adc_data,
+        fir_data_i => fir_data,
+        nco_iq_i => nco_1_cos_sin,
+        window_i => detector_window,
+
+        start_i => sequencer_start,
+        write_i => sequencer_write,
+
+        mem_valid_o => dsp_to_control_o.dram1_valid,
+        mem_ready_i => control_to_dsp_i.dram1_ready,
+        mem_addr_o => dsp_to_control_o.dram1_address,
+        mem_data_o => dsp_to_control_o.dram1_data
+    );
+
 
 
 

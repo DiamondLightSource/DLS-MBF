@@ -26,7 +26,9 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/register_block.vhd \
     $vhd_dir/registers/register_read_adc.vhd \
-    $vhd_dir/extract_signed.vhd \
+    $vhd_dir/arithmetic/extract_signed.vhd \
+    $vhd_dir/arithmetic/gain_control.vhd \
+    $vhd_dir/arithmetic/rounded_product.vhd \
     $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/fast_fir/fast_fir.vhd \
     $vhd_dir/fast_fir/fast_fir_top.vhd \
@@ -49,9 +51,9 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/nco/nco_cos_sin_refine.vhd \
     $vhd_dir/nco/nco_cos_sin_octant.vhd \
     $vhd_dir/nco/nco_core.vhd \
+    $vhd_dir/nco/nco_delay.vhd \
     $vhd_dir/nco/nco.vhd \
     $vhd_dir/dsp/dsp_to_adc.vhd \
-    $vhd_dir/dac/gain_control.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
     $vhd_dir/dac/dac_top.vhd \
     $vhd_dir/bunch_fir/bunch_fir_taps.vhd \
@@ -61,7 +63,9 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/bunch_fir/bunch_fir_interpolate.vhd \
     $vhd_dir/bunch_fir/bunch_fir.vhd \
     $vhd_dir/bunch_fir/bunch_fir_top.vhd \
-    $vhd_dir/memory/slow_memory_control.vhd \
+    $vhd_dir/memory/memory_buffer_fast.vhd \
+    $vhd_dir/memory/memory_buffer_simple.vhd \
+    $vhd_dir/memory/memory_buffer.vhd \
     $vhd_dir/sequencer/sequencer_defs.vhd \
     $vhd_dir/sequencer/sequencer_registers.vhd \
     $vhd_dir/sequencer/sequencer_super.vhd \
@@ -72,6 +76,17 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/sequencer/sequencer_window.vhd \
     $vhd_dir/sequencer/sequencer_delays.vhd \
     $vhd_dir/sequencer/sequencer_top.vhd \
+    $vhd_dir/detector/detector_defs.vhd \
+    $vhd_dir/detector/detector_registers.vhd \
+    $vhd_dir/detector/detector_bunch_mem.vhd \
+    $vhd_dir/detector/detector_bunch_select.vhd \
+    $vhd_dir/detector/detector_dsp96.vhd \
+    $vhd_dir/detector/detector_core.vhd \
+    $vhd_dir/detector/detector_output.vhd \
+    $vhd_dir/detector/detector_body.vhd \
+    $vhd_dir/detector/detector_input.vhd \
+    $vhd_dir/detector/detector_dram_output.vhd \
+    $vhd_dir/detector/detector_top.vhd \
     $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dsp/dsp_registers.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
