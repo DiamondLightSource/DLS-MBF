@@ -31,16 +31,14 @@ package support is
     function round(
         data : unsigned;
         in_width : natural;
-        extra_width : natural
+        extra_width : natural := 0
     ) return unsigned;
-    function round(data : unsigned; in_width : natural) return unsigned;
 
     function round(
         data : signed;
         in_width : natural;
-        extra_width : natural
+        extra_width : natural := 0
     ) return signed;
-    function round(data : signed; in_width : natural) return signed;
 
 
     -- Assigns input to output and overflow after discarding the rightmost
@@ -58,23 +56,13 @@ package support is
     procedure truncate_result(
         signal output : out signed;
         signal overflow : out std_logic;
-        input : signed; offset : natural);
-    -- Allow offset to default to zero.
-    procedure truncate_result(
-        signal output : out signed;
-        signal overflow : out std_logic;
-        input : signed);
+        input : signed; offset : natural := 0);
 
     -- Same for unsigned.  In this case of course overflow detection is simpler.
     procedure truncate_result(
         signal output : out unsigned;
         signal overflow : out std_logic;
-        input : unsigned; offset : natural);
-    -- Allow offset to default to zero.
-    procedure truncate_result(
-        signal output : out unsigned;
-        signal overflow : out std_logic;
-        input : unsigned);
+        input : unsigned; offset : natural := 0);
 
 
     -- Checks data for consistency, returns '1' if all bits are not the same, ie
@@ -164,7 +152,7 @@ package body support is
     function round(
         data : unsigned;
         in_width : natural;
-        extra_width : natural
+        extra_width : natural := 0
     ) return unsigned is
         constant right : natural := data'left - in_width + 1;
         constant out_width : natural := in_width + extra_width;
@@ -174,15 +162,10 @@ package body support is
             resize(data(right-1 downto right-1), out_width);
     end function;
 
-    function round(data : unsigned; in_width : natural) return unsigned is
-    begin
-        return round(data, in_width, 0);
-    end function;
-
     function round(
         data : signed;
         in_width : natural;
-        extra_width : natural
+        extra_width : natural := 0
     ) return signed is
         constant right : natural := data'left - in_width + 1;
         constant out_width : natural := in_width + extra_width;
@@ -190,11 +173,6 @@ package body support is
         return
             resize(data(data'left downto right), out_width) +
             resize('0' & data(right-1 downto right-1), out_width);
-    end function;
-
-    function round(data : signed; in_width : natural) return signed is
-    begin
-        return round(data, in_width, 0);
     end function;
 
 
@@ -208,7 +186,7 @@ package body support is
     procedure truncate_result(
         signal output : out signed;
         signal overflow : out std_logic;
-        input : signed; offset : natural)
+        input : signed; offset : natural := 0)
     is
         constant output_left : natural := output'length - 1 + offset;
     begin
@@ -217,30 +195,14 @@ package body support is
     end;
 
     procedure truncate_result(
-        signal output : out signed;
-        signal overflow : out std_logic;
-        input : signed) is
-    begin
-        truncate_result(output, overflow, input, 0);
-    end;
-
-    procedure truncate_result(
         signal output : out unsigned;
         signal overflow : out std_logic;
-        input : unsigned; offset : natural)
+        input : unsigned; offset : natural := 0)
     is
         constant output_left : natural := output'length - 1 + offset;
     begin
         output <= input(output_left downto offset);
         overflow <= vector_or(input(input'left downto output_left+1));
-    end;
-
-    procedure truncate_result(
-        signal output : out unsigned;
-        signal overflow : out std_logic;
-        input : unsigned) is
-    begin
-        truncate_result(output, overflow, input, 0);
     end;
 
 
