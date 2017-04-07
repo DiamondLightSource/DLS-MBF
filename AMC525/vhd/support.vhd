@@ -139,6 +139,10 @@ package support is
     function compute_strobe(index : natural; length : natural)
         return std_logic_vector;
 
+    procedure compute_strobe(
+        signal output : out std_logic_vector;
+        index : natural; value : std_logic := '1');
+
     -- Reverses order of bits in vector
     function reverse(data : in std_logic_vector) return std_logic_vector;
 
@@ -393,6 +397,16 @@ package body support is
     begin
         result(index) := '1';
         return result;
+    end;
+
+
+    procedure compute_strobe(
+        signal output : out std_logic_vector;
+        index : natural; value : std_logic := '1') is
+    begin
+        for n in output'RANGE loop
+            output(n) <= value when index = n else '0';
+        end loop;
     end;
 
 

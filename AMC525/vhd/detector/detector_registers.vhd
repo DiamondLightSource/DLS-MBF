@@ -43,7 +43,7 @@ architecture arch of detector_registers is
     signal command_bits : reg_data_t;
     signal event_bits : reg_data_t;
 
-    signal bunch_write_index : unsigned(bits(DETECTOR_COUNT-1)-1 downto 0);
+    signal bunch_write_index : DETECTOR_RANGE;
 
 begin
     -- -------------------------------------------------------------------------
@@ -112,8 +112,7 @@ begin
     input_enable_o(3) <= register_file(23);
 
     -- Bunch write strobe
-    bunch_write_index <= unsigned(register_file(31 downto 30));
-    bunch_write_o <=
-        compute_strobe(to_integer(bunch_write_index), DETECTOR_COUNT)
-        when write_strobe_i(DSP_DET_BUNCH_REG) = '1' else (others => '0');
+    bunch_write_index <= to_integer(unsigned(register_file(31 downto 30)));
+    compute_strobe(
+        bunch_write_o, bunch_write_index, write_strobe_i(DSP_DET_BUNCH_REG));
 end;

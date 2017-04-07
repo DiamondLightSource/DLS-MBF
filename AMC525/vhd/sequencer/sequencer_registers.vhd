@@ -92,13 +92,11 @@ begin
                 write_address <= write_address + 1;
             end if;
 
+            compute_strobe(
+                mem_write_strobe_o, to_integer(write_target), write_strobe);
             if write_strobe = '1' then
-                mem_write_strobe_o <=
-                    compute_strobe(to_integer(write_target), WRITE_LENGTH);
                 mem_write_addr_o <= write_address;
                 mem_write_data_o <= write_data_i;
-            else
-                mem_write_strobe_o <= (mem_write_strobe_o'RANGE => '0');
             end if;
         end if;
     end process;

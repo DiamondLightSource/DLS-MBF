@@ -5,7 +5,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.support.all;
-use work.defines.all;
 
 entity detector_dram_output is
     port (
@@ -26,9 +25,9 @@ entity detector_dram_output is
 end;
 
 architecture arch of detector_dram_output is
-    constant INPUT_COUNT : natural := input_enable_i'LENGTH;
+    subtype selection_t is natural range input_enable_i'RANGE;
+    signal selection : selection_t := selection_t'LOW;
 
-    signal selection : natural range 0 to INPUT_COUNT-1 := 0;
     signal input_valid : boolean;
     signal input_enable : boolean;
     signal emit_output : boolean;
@@ -48,15 +47,15 @@ begin
             if address_reset_i = '1' then
                 selection <= 0;
             elsif advance_input then
-                selection <= (selection + 1) mod INPUT_COUNT;
+                if selection = selection_t'HIGH then
+                    selection <= selection_t'LOW;
+                else
+                    selection <= selection + 1;
+                end if;
             end if;
 
-            if advance_input then
-                input_ready_o <=
-                    reverse(compute_strobe(selection, INPUT_COUNT));
-            else
-                input_ready_o <= (input_ready_o'RANGE => '0');
-            end if;
+            compute_strobe(
+                input_ready_o, selection, to_std_logic(advance_input));
         end if;
     end process;
 
@@ -72,9 +71,13 @@ begin
     --  |       |      | 0 1  : idle   oa <= oa+1
     --  |       |      | 1 1  : busy   oa <= oa+1; od <= id(n)
     --  +-------+------+------+-------+---------------
-    --  Outputs: ov = output_valid_o, rdy = output_ready, od = output_data_o,
-    --      n = selection, oa = output_address_o
-    --  Inputs: e = emit_output, or = output_ready_i, id = input_data_i.
+    --  Outputs:
+    --      ov = output_valid_o, rdy = output_ready,
+    --      od = output_data_o, oa = output_address_o
+    --  Inputs:
+    --      e = emit_output, or = output_ready_i,
+    --      id(n) = input_data_i(selection)
+    --
     output_ready <= not output_busy or output_ready_i = '1';
     process (clk_i) begin
         if rising_edge(clk_i) then

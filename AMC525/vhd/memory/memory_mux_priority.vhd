@@ -25,8 +25,6 @@ entity memory_mux_priority is
 end;
 
 architecture arch of memory_mux_priority is
-    constant INPUT_COUNT : natural := input_ready_o'LENGTH;
-
     function priority_select(input : std_logic_vector) return natural is
     begin
         for n in input'RANGE loop
@@ -53,7 +51,7 @@ begin
                     if vector_or(input_valid_i) then
                         data_o <= data_i(selection);
                         addr_o <= addr_i(selection);
-                        input_ready <= compute_strobe(selection, INPUT_COUNT);
+                        compute_strobe(input_ready, selection);
                         out_state <= BUSY;
                     end if;
                 when BUSY =>
