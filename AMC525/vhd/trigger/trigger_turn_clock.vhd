@@ -31,7 +31,7 @@ entity trigger_turn_clock is
         revolution_clock_i : in std_logic;
         -- Generated turn clocks, one per channel
         turn_clock_adc_o : out std_logic_vector(CHANNELS);
-        turn_clock_dsp_o : out std_logic_vector(CHANNELS)
+        turn_clock_dsp_o : out std_logic_vector(CHANNELS) := (others => '0')
     );
 end;
 
@@ -52,8 +52,8 @@ architecture arch of trigger_turn_clock is
     signal sample_phase : std_logic;
     signal sample_count : bunch_count_t;
 
-    signal turn_clock_adc : std_logic_vector(CHANNELS);
-    signal turn_clock_dsp : std_logic_vector(CHANNELS);
+    signal turn_clock_adc : std_logic_vector(CHANNELS) := (others => '0');
+    signal turn_clock_dsp : std_logic_vector(CHANNELS) := (others => '0');
 
 begin
     -- -------------------------------------------------------------------------

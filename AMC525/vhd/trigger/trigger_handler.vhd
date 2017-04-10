@@ -17,7 +17,7 @@ entity trigger_handler is
         disarm_i : in std_logic;
         delay_i : in unsigned;
 
-        trigger_o : out std_logic;
+        trigger_o : out std_logic := '0';
         armed_o : out std_logic;
 
         trigger_seen_o : out std_logic  -- Captured effective trigger pulse

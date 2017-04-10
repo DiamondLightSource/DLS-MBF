@@ -14,7 +14,7 @@ entity trigger_blanking is
         blanking_i : in std_logic;
         blanking_interval_i : in unsigned_array(CHANNELS);
         turn_clock_i : in std_logic_vector(CHANNELS);
-        blanking_window_o : out std_logic_vector(CHANNELS)
+        blanking_window_o : out std_logic_vector(CHANNELS) := (others => '0')
     );
 end;
 
