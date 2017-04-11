@@ -11,6 +11,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/defines.vhd \
     register_defs.vhd \
     $vhd_dir/system/adc_dsp_phase.vhd \
+    $vhd_dir/system/pulse_adc_to_dsp.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/sync_bit.vhd \
@@ -29,7 +30,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/arithmetic/extract_signed.vhd \
     $vhd_dir/arithmetic/gain_control.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
-    $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/fast_fir/fast_fir.vhd \
     $vhd_dir/fast_fir/fast_fir_top.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
@@ -90,7 +90,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dsp/dsp_registers.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
-    $vhd_dir/dsp/pulse_adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_overflow.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_top.vhd \
