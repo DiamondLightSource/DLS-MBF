@@ -37,10 +37,13 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
+add wave -group "Registers" sim:/testbench/triggers/registers/*
+add wave -group "Turn Clock" sim:/testbench/triggers/turn_clock/*
+add wave -group "Blanking" sim:/testbench/triggers/blanking/*
 add wave -group "Triggers" sim:/testbench/triggers/*
 add wave sim:*
 
 
-run 100 ns
+run 200 ns
 
 # vim: set filetype=tcl:

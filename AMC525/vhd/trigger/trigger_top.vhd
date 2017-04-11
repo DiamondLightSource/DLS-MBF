@@ -56,7 +56,6 @@ architecture arch of trigger_top is
 
     -- Triggers
     signal soft_trigger : std_logic;
-    signal soft_trigger_delay : std_logic;
     signal triggers : std_logic_vector(TRIGGER_SET);
 
     -- Sequencer triggering
@@ -74,7 +73,7 @@ architecture arch of trigger_top is
 
 begin
     -- Register control interface
-    trigger_registers_inst : entity work.trigger_registers port map (
+    registers : entity work.trigger_registers port map (
         clk_i => dsp_clk_i,
 
         write_strobe_i => write_strobe_i,
@@ -103,7 +102,7 @@ begin
 
 
     -- Signal conditioning for asynchronous inputs
-    trigger_setup_inst : entity work.trigger_setup port map (
+    setup : entity work.trigger_setup port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -123,7 +122,7 @@ begin
 
 
     -- Revolution clock
-    turn_clock_inst : entity work.trigger_turn_clock port map (
+    turn_clock : entity work.trigger_turn_clock port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -146,7 +145,7 @@ begin
 
 
     -- Blanking window
-    trigger_blanking_inst : entity work.trigger_blanking port map (
+    blanking : entity work.trigger_blanking port map (
         dsp_clk_i => dsp_clk_i,
 
         blanking_i => blanking_trigger,
@@ -158,7 +157,7 @@ begin
 
     -- Sequence triggers
     gen : for c in CHANNELS generate
-        seq_trigger_inst : entity work.trigger_sources port map (
+        seq_trigger : entity work.trigger_sources port map (
             dsp_clk_i => dsp_clk_i,
             turn_clock_i => turn_clock_dsp_o(c),
 
@@ -185,7 +184,7 @@ begin
         vector_or(blanking_window_o and dram0_blanking_select);
 
     -- Memory capture trigger
-    dram0_trigger_inst : entity work.trigger_sources port map (
+    dram0_trigger : entity work.trigger_sources port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => dram0_turn_clock,
 

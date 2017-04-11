@@ -60,7 +60,7 @@ begin
     ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
-        turn_clock_adc_i => turn_clock,
+        turn_clock_i => turn_clock,
         data_i => adc_data,
         delta_o => delta,
         overflow_o => overflow,
@@ -186,4 +186,4 @@ begin
         wait;
     end process;
 
-end testbench;
+end;

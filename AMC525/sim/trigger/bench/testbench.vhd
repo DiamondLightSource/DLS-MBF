@@ -42,7 +42,7 @@ begin
     dsp_clk <= not dsp_clk after 2 ns;
 
     revolution_clock <= not revolution_clock after 17.3 ns;
-    event_trigger <= '0';
+
     postmortem_trigger <= '0';
     blanking_trigger <= '0';
     adc_trigger <= "00";
@@ -75,6 +75,16 @@ begin
     );
 
 
+    -- Event generation
+    process begin
+        event_trigger <= '0';
+
+        wait for 111 ns;
+        event_trigger <= '1';
+
+        wait;
+    end process;
+
 
     -- Register control interface
     process
@@ -84,9 +94,38 @@ begin
                 dsp_clk, write_data, write_strobe, write_ack, reg, value);
         end;
 
+        procedure read_reg(reg : natural) is
+        begin
+            read_reg(dsp_clk, read_data, read_strobe, read_ack, reg);
+        end;
+
     begin
         write_strobe <= (others => '0');
         read_strobe <= (others => '0');
+
+        clk_wait(dsp_clk);
+
+        -- max_bunch = 6 (7 ticks per turn)
+        write_reg(CTRL_TRG_CONFIG_TURN_SETUP_REG,   X"0000_0806");
+        write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0001");
+
+        read_reg(CTRL_TRG_PULSED_REG_R);
+        read_reg(CTRL_TRG_READBACK_STATUS_REG);
+        read_reg(CTRL_TRG_READBACK_SOURCES_REG);
+
+        -- Blanking 3 for channel 0, 5 for channel 1
+        write_reg(CTRL_TRG_CONFIG_BLANKING_REG,     X"0005_0003");
+        write_reg(CTRL_TRG_CONFIG_DELAY_SEQ_0_REG,  X"0000_0010");
+        write_reg(CTRL_TRG_CONFIG_DELAY_SEQ_1_REG,  X"0000_0000");
+        write_reg(CTRL_TRG_CONFIG_DELAY_DRAM_REG,   X"0000_0005");
+        write_reg(CTRL_TRG_CONFIG_TRIG_SEQ_REG,     X"00FF_FFFF");
+        write_reg(CTRL_TRG_CONFIG_TRIG_DRAM_REG,    X"0000_00FF");
+
+        -- Arm SEQ and DRAM0
+        write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0054");
+
+        -- Sample phase of clock
+        write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0002");
 
         wait;
     end process;

@@ -22,8 +22,8 @@ entity pulse_adc_to_dsp is
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
 
-        pulse_i : in std_logic;
-        pulse_o : out std_logic := '0'
+        pulse_i : in std_logic;             -- On ADC clock
+        pulse_o : out std_logic := '0'      -- On DSP clock
     );
 end;
 

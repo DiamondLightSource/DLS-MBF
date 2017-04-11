@@ -12,57 +12,47 @@ entity min_max_limit is
         dsp_clk_i : in std_logic;
         adc_clk_i : in std_logic;
 
-        -- The incoming delta is on the ADC clock
-        delta_i : in unsigned;
+        delta_i : in unsigned;                  -- On ADC clock
 
-        limit_i : in unsigned;
-        reset_event_i : in std_logic;
-
-        limit_event_o : out std_logic := '0'
+        limit_i : in unsigned;                  -- On DSP clock
+        reset_event_i : in std_logic;           -- On DSP clock
+        limit_event_o : out std_logic           -- On DSP clock
     );
 end;
 
 architecture arch of min_max_limit is
-    signal adc_phase : std_logic;
-    signal limit_detect_adc : std_logic := '0';
+    signal reset_event : std_logic;
     signal limit_detect : std_logic := '0';
     signal limit_event : std_logic := '0';
-    signal limit_event_edge : std_logic;
+    signal limit_event_edge : std_logic := '0';
 
 begin
-    phase : entity work.adc_dsp_phase port map (
+    -- Bring reset event over to ADC clock where the event detection occurs
+    reset_to_adc : entity work.pulse_dsp_to_adc port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_o => adc_phase
+        pulse_i => reset_event_i,
+        pulse_o => reset_event
     );
 
+    -- Pipelined event detection
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            limit_detect_adc <= to_std_logic(delta_i > limit_i);
-            if adc_phase = '0' then
-                limit_detect <= limit_detect_adc;
-            else
-                limit_detect <= limit_detect or limit_detect_adc;
-            end if;
-        end if;
-    end process;
-
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            if reset_event_i = '1' then
+            limit_detect <= to_std_logic(delta_i > limit_i);
+            if reset_event = '1' then
                 limit_event <= '0';
             elsif limit_detect = '1' then
                 limit_event <= '1';
+                limit_event_edge <= limit_detect and not limit_event;
             end if;
-
-            limit_event_o <= limit_event_edge;
         end if;
     end process;
 
-    -- Convert detection of event into a single pulse
-    edge_detect_inst : entity work.edge_detect port map (
-        clk_i => dsp_clk_i,
-        data_i => limit_event,
-        edge_o => limit_event_edge
+    -- Stretch event detection to DSP clock
+    event_to_adc : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => limit_event_edge,
+        pulse_o => limit_event_o
     );
 end;

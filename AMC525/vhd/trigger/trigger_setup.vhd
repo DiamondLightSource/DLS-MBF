@@ -14,19 +14,19 @@ entity trigger_setup is
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
 
-        -- External trigger sources
+        -- External trigger sources, all asynchronous
         revolution_clock_i : in std_logic;
         event_trigger_i : in std_logic;
         postmortem_trigger_i : in std_logic;
         blanking_trigger_i : in std_logic;
 
-        -- Internal trigger sources
+        -- Internal trigger sources, all on DSP clock
         soft_trigger_i : in std_logic;
         adc_trigger_i : in std_logic_vector(CHANNELS);
         seq_trigger_i : in std_logic_vector(CHANNELS);
 
         -- Results
-        revolution_clock_o : out std_logic;
+        revolution_clock_o : out std_logic;     -- On ADC clock
         blanking_trigger_o : out std_logic;
         trigger_set_o : out std_logic_vector(TRIGGER_SET)
     );

@@ -1,5 +1,8 @@
 -- Management of turn clock
 
+-- All the controls and readbacks are on the DSP clock, while the revolution
+-- clock and generated turn clock are on the ADC clock.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -157,5 +160,4 @@ begin
             sample_count_o <= sample_count;
         end if;
     end process;
-
 end;

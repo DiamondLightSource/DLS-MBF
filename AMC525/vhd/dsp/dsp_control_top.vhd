@@ -215,6 +215,7 @@ begin
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger
     );
+
     -- Map events to individual DSP units
     triggers_gen : for c in CHANNELS generate
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;

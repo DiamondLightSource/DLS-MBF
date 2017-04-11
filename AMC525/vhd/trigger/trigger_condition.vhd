@@ -14,13 +14,12 @@ entity trigger_condition is
     port (
         clk_i : in std_logic;
         trigger_i : in std_logic;
-        trigger_o : out std_logic := '0'
+        trigger_o : out std_logic
     );
 end;
 
 architecture arch of trigger_condition is
     signal trigger : std_logic;
-    signal trigger_edge : std_logic;
 
 begin
     -- Stabilise the incoming turn clock relative to the clock
@@ -31,16 +30,11 @@ begin
     );
 
     -- Detect rising edge of trigger
-    edge_detect_inst : entity work.edge_detect port map (
+    edge_detect_inst : entity work.edge_detect generic map (
+        REGISTER_EDGE => true
+    ) port map (
         clk_i => clk_i,
         data_i => trigger,
-        edge_o => trigger_edge
+        edge_o => trigger_o
     );
-
-    -- Register the detected edge
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            trigger_o <= trigger_edge;
-        end if;
-    end process;
 end;
