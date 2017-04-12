@@ -36,7 +36,6 @@ entity trigger_top is
         -- Trigger outputs
         blanking_window_o : out std_logic_vector(CHANNELS);
         turn_clock_adc_o : out std_logic_vector(CHANNELS);
-        turn_clock_dsp_o : out std_logic_vector(CHANNELS);
         seq_start_o : out std_logic_vector(CHANNELS);
         dram0_trigger_o : out std_logic
     );
@@ -50,6 +49,7 @@ architecture arch of trigger_top is
     -- Revolution clock control
     signal turn_setup : turn_clock_setup_t;
     signal turn_readback : turn_clock_readback_t;
+    signal turn_clock_dsp : std_logic_vector(CHANNELS);
 
     -- Blanking
     signal blanking_interval : unsigned_array(CHANNELS)(15 downto 0);
@@ -139,8 +139,7 @@ begin
         sample_count_o => turn_readback.sample_count,
 
         revolution_clock_i => revolution_clock,
-        turn_clock_adc_o => turn_clock_adc_o,
-        turn_clock_dsp_o => turn_clock_dsp_o
+        turn_clock_o => turn_clock_adc_o
     );
 
 
@@ -150,16 +149,25 @@ begin
 
         blanking_i => blanking_trigger,
         blanking_interval_i => blanking_interval,
-        turn_clock_i => turn_clock_dsp_o,
+        turn_clock_i => turn_clock_dsp,
         blanking_window_o => blanking_window_o
     );
 
 
     -- Sequence triggers
     gen : for c in CHANNELS generate
+        -- We need a DSP clocked version of the turn clock for the rest of our
+        -- trigger processing
+        turn_clock : entity work.pulse_adc_to_dsp port map (
+            adc_clk_i => adc_clk_i,
+            dsp_clk_i => dsp_clk_i,
+            pulse_i => turn_clock_adc_o(c),
+            pulse_o => turn_clock_dsp(c)
+        );
+
         seq_trigger : entity work.trigger_sources port map (
             dsp_clk_i => dsp_clk_i,
-            turn_clock_i => turn_clock_dsp_o(c),
+            turn_clock_i => turn_clock_dsp(c),
 
             triggers_i => triggers,
             blanking_window_i => blanking_window_o(c),
@@ -179,7 +187,7 @@ begin
 
 
     -- For the DRAM0 trigger we need a choice of turn clock and blanking
-    dram0_turn_clock <= turn_clock_dsp_o(to_integer(dram0_turn_select));
+    dram0_turn_clock <= turn_clock_dsp(to_integer(dram0_turn_select));
     dram0_blanking_window <=
         vector_or(blanking_window_o and dram0_blanking_select);
 

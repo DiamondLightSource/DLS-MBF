@@ -33,8 +33,7 @@ entity trigger_turn_clock is
         -- Input clock
         revolution_clock_i : in std_logic;
         -- Generated turn clocks, one per channel
-        turn_clock_adc_o : out std_logic_vector(CHANNELS);
-        turn_clock_dsp_o : out std_logic_vector(CHANNELS) := (others => '0')
+        turn_clock_o : out std_logic_vector(CHANNELS)
     );
 end;
 
@@ -55,8 +54,7 @@ architecture arch of trigger_turn_clock is
     signal sample_phase : std_logic;
     signal sample_count : bunch_count_t;
 
-    signal turn_clock_adc : std_logic_vector(CHANNELS) := (others => '0');
-    signal turn_clock_dsp : std_logic_vector(CHANNELS) := (others => '0');
+    signal turn_clock : std_logic_vector(CHANNELS) := (others => '0');
 
 begin
     -- -------------------------------------------------------------------------
@@ -121,16 +119,10 @@ begin
             -- Output of channel specific turn clocks
             for c in CHANNELS loop
                 if sync_request or sync_holdoff then
-                    turn_clock_adc(c) <= '0';
+                    turn_clock(c) <= '0';
                 else
-                    turn_clock_adc(c) <=
+                    turn_clock(c) <=
                         to_std_logic(bunch_counter = clock_offsets(c));
-                end if;
-
-                if turn_clock_adc(c) = '1' then
-                    turn_clock_dsp(c) <= '1';
-                elsif adc_phase = '0' then
-                    turn_clock_dsp(c) <= '0';
                 end if;
             end loop;
         end if;
@@ -142,16 +134,14 @@ begin
         DW => CHANNEL_COUNT
     ) port map (
         clk_i => adc_clk_i,
-        data_i => turn_clock_adc,
-        data_o => turn_clock_adc_o
+        data_i => turn_clock,
+        data_o => turn_clock_o
     );
 
 
     -- Pull all our DSP output across to the DSP clock
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            turn_clock_dsp_o <= turn_clock_dsp;
-
             sync_busy_o <= to_std_logic(sync_request or sync_holdoff);
             sync_phase_o <= sync_phase;
             sync_error_o <= to_std_logic(sync_error);
