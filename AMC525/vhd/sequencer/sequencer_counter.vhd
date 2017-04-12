@@ -26,8 +26,8 @@ entity sequencer_counter is
         capture_count_i : in capture_count_t;   -- Number of dwells to generate
         last_turn_i : in std_logic;     -- Dwell is in its last turn
 
-        state_end_o : out std_logic;    -- Set during last turn of state
-        hom_freq_o : out angle_t        -- Output frequency
+        state_end_o : out std_logic := '0';  -- Set during last turn of state
+        hom_freq_o : out angle_t := (others => '0')  -- Output frequency
     );
 end;
 

@@ -11,7 +11,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/defines.vhd \
     register_defs.vhd \
     $vhd_dir/util/dlyline.vhd \
-    $vhd_dir/system/adc_dsp_phase.vhd \
+    $vhd_dir/system/pulse_adc_to_dsp.vhd \
+    $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/nco/nco_defs.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
@@ -24,6 +25,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/sequencer/sequencer_counter.vhd \
     $vhd_dir/sequencer/sequencer_window.vhd \
     $vhd_dir/sequencer/sequencer_delays.vhd \
+    $vhd_dir/sequencer/sequencer_clocking.vhd \
     $vhd_dir/sequencer/sequencer_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -35,10 +37,19 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "Sequencer" sim:/testbench/sequencer/*
+add wave -group "Registers" sim:sequencer/registers/*
+add wave -group "Super" sim:sequencer/super/*
+add wave -group "PC" sim:sequencer/pc/*
+add wave -group "Load State" sim:sequencer/load_state/*
+add wave -group "Dwell" sim:sequencer/dwell/*
+add wave -group "Counter" sim:sequencer/counter/*
+add wave -group "Window" sim:sequencer/window/*
+add wave -group "Delays" sim:sequencer/delays/*
+add wave -group "Clocking" sim:sequencer/clocking/*
+add wave -group "Sequencer" sim:sequencer/*
 add wave sim:*
 
 
-run 100 ns
+run 200 ns
 
 # vim: set filetype=tcl:

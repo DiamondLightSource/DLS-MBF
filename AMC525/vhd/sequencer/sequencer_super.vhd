@@ -19,7 +19,7 @@ entity sequencer_super is
         write_data_i : in reg_data_t;
 
         super_state_i : in super_count_t;
-        nco_freq_base_o : out angle_t
+        nco_freq_base_o : out angle_t := (others => '0')
     );
 end;
 

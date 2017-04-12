@@ -20,7 +20,9 @@ architecture arch of testbench is
     signal dsp_clk : std_logic := '0';
     signal turn_clock : std_logic;
 
-    constant TURN_COUNT : natural := 7;
+    -- This is pretty well the shortest turn if the sequencer is to have enough
+    -- time to load its next state
+    constant TURN_COUNT : natural := 19;
 
     signal blanking : std_logic;
     signal write_strobe : std_logic_vector(DSP_SEQ_REGS);
@@ -56,12 +58,13 @@ begin
     end process;
 
     blanking <= '0';
+    trigger <= '0';
 
     sequencer : entity work.sequencer_top port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
 
-        turn_clock_i => turn_clock,
+        turn_clock_adc_i => turn_clock,
         blanking_i => blanking,
 
         write_strobe_i => write_strobe,
@@ -74,8 +77,8 @@ begin
         trigger_i => trigger,
         state_trigger_o => state_trigger,
 
-        seq_start_o => seq_start,
-        seq_write_o => seq_write,
+        seq_start_adc_o => seq_start,
+        seq_write_adc_o => seq_write,
 
         hom_freq_o => hom_freq,
         hom_gain_o => hom_gain,

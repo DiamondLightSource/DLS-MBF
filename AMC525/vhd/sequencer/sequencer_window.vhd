@@ -31,7 +31,7 @@ entity sequencer_window is
 
         seq_start_o : out std_logic;
         seq_write_o : out std_logic;
-        hom_window_o : out hom_win_t        -- Generated window
+        hom_window_o : out hom_win_t := (others => '0') -- Generated window
     );
 end;
 
@@ -59,8 +59,8 @@ architecture arch of sequencer_window is
 
     signal seq_write_in : std_logic;
     -- Extra register to help with flow
-    signal hom_window : hom_win_t;
-    signal hom_window_read : hom_win_t;
+    signal hom_window : hom_win_t := (others => '0');
+    signal hom_window_read : hom_win_t := (others => '0');
 
 begin
     start_dly : entity work.dlyline generic map (

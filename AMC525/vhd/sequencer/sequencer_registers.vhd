@@ -46,6 +46,7 @@ architecture arch of sequencer_registers is
     signal register_file : reg_data_t;
 
     constant WRITE_LENGTH : natural := mem_write_strobe_o'LENGTH;
+    signal mem_write_strobe : mem_write_strobe_o'SUBTYPE := (others => '0');
     signal start_write : std_logic;
     signal write_target : unsigned(bits(WRITE_LENGTH)-1 downto 0);
     signal write_address : mem_write_addr_o'SUBTYPE;
@@ -93,7 +94,7 @@ begin
             end if;
 
             compute_strobe(
-                mem_write_strobe_o, to_integer(write_target), write_strobe);
+                mem_write_strobe, to_integer(write_target), write_strobe);
             if write_strobe = '1' then
                 mem_write_addr_o <= write_address;
                 mem_write_data_o <= write_data_i;
@@ -104,6 +105,8 @@ begin
 
     read_data_o(DSP_SEQ_WRITE_REG) <= (others => '0');
     read_ack_o(DSP_SEQ_WRITE_REG) <= '1';
+
+    mem_write_strobe_o <= mem_write_strobe;
 
 
     -- -------------------------------------------------------------------------

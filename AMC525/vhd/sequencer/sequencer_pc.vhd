@@ -31,7 +31,7 @@ entity sequencer_pc is
         start_load_o : out std_logic;   -- Triggers loading of next state
         seq_pc_o : out seq_pc_t;        -- Current PC
         super_count_o : out super_count_t;  -- Current sequencer meta state
-        busy_o : out std_logic;         -- Set from trigger until program done
+        busy_o : out std_logic := '0';  -- Set from trigger until program done
         reset_o : out std_logic         -- Program reset command, aborts dwell
     );
 end;

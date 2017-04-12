@@ -14,6 +14,12 @@
 --  hom_window_o    Detector window
 --  seq_start_o     Detector dwell start accumulator reset
 --  seq_write_o     Detector dwell end
+--
+-- The following signals on this interface are on the ADC clock:
+--
+--  turn_clock_adc_i
+--  seq_start_adc_o
+--  seq_write_adc_o
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -31,7 +37,7 @@ entity sequencer_top is
         dsp_clk_i : in std_logic;
 
         -- Clocking
-        turn_clock_i : in std_logic;    -- Start of a machine revolution
+        turn_clock_adc_i : in std_logic;    -- Start of a machine revolution
         blanking_i : in std_logic;      -- Can be used to disable sequence
 
         -- Register interface
@@ -49,8 +55,8 @@ entity sequencer_top is
         -- internal event for event generation elsewhere.
         state_trigger_o : out std_logic; -- Sequencer about to start state
 
-        seq_start_o : out std_logic;    -- Resets detector at start of dwell
-        seq_write_o : out std_logic;    -- End of dwell interval
+        seq_start_adc_o : out std_logic;    -- Resets detector at start of dwell
+        seq_write_adc_o : out std_logic;    -- End of dwell interval
 
         hom_freq_o : out angle_t;       -- NCO frequency
         hom_gain_o : out unsigned(3 downto 0);  -- NCO gain
@@ -73,9 +79,11 @@ architecture arch of sequencer_top is
     signal mem_write_addr : unsigned(9 downto 0);
     signal mem_write_data : reg_data_t;
 
+    signal turn_clock : std_logic;
+
     -- Program Counter interface
     --
-    -- Valid from shortly after turn_clock_i, a rising edge on this signal
+    -- Valid from shortly after turn_clock, a rising edge on this signal
     -- triggers the program counter to advance.
     signal state_end : std_logic;
     -- Program counter and reset, also triggers loading of next state.
@@ -102,15 +110,9 @@ architecture arch of sequencer_top is
     -- Pipelined outputs
     signal seq_start : std_logic;
     signal seq_write : std_logic;
-    signal hom_freq : angle_t;
-    signal hom_gain : unsigned(3 downto 0);
-    signal hom_window : hom_win_t;
-    signal bunch_bank : unsigned(1 downto 0);
-
-    signal adc_phase : std_logic;
 
 begin
-    sequencer_registers : entity work.sequencer_registers port map (
+    registers : entity work.sequencer_registers port map (
         dsp_clk_i => dsp_clk_i,
 
         write_strobe_i => write_strobe_i,
@@ -134,7 +136,7 @@ begin
         mem_write_data_o => mem_write_data
     );
 
-    sequencer_super : entity work.sequencer_super port map (
+    super : entity work.sequencer_super port map (
         dsp_clk_i => dsp_clk_i,
 
         write_strobe_i => mem_write_strobe(MEM_FREQUENCY),
@@ -145,9 +147,9 @@ begin
         nco_freq_base_o => nco_freq_base
     );
 
-    sequencer_pc : entity work.sequencer_pc port map (
+    pc : entity work.sequencer_pc port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_i => turn_clock,
 
         trigger_i => trigger_i,
 
@@ -165,7 +167,7 @@ begin
         reset_o => reset_turn
     );
 
-    sequencer_load_state : entity work.sequencer_load_state port map (
+    load_state : entity work.sequencer_load_state port map (
         dsp_clk_i => dsp_clk_i,
 
         write_strobe_i => mem_write_strobe(MEM_PROGRAM),
@@ -179,9 +181,9 @@ begin
 
     -- Central sequencer engine, generates start and end of dwell signals.
     blanking_in <= blanking_i and seq_state.enable_blanking;
-    sequencer_dwell : entity work.sequencer_dwell port map (
+    dwell : entity work.sequencer_dwell port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_i => turn_clock,
         reset_i => reset_turn,
 
         dwell_count_i => seq_state.dwell_count,
@@ -193,9 +195,9 @@ begin
     );
 
     -- Counts down dwells during a single state and manages frequency output.
-    sequencer_counter : entity work.sequencer_counter port map (
+    counter : entity work.sequencer_counter port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_i => turn_clock,
         reset_i => reset_turn,
 
         freq_base_i => nco_freq_base,
@@ -205,13 +207,13 @@ begin
         last_turn_i => last_turn,
 
         state_end_o => state_end,
-        hom_freq_o => hom_freq
+        hom_freq_o => hom_freq_o
     );
 
     -- Generates detector window.
-    sequencer_window : entity work.sequencer_window port map (
+    window : entity work.sequencer_window port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_i => turn_clock,
 
         write_strobe_i => mem_write_strobe(MEM_WINDOW),
         write_addr_i => mem_write_addr,
@@ -226,37 +228,32 @@ begin
 
         seq_start_o => seq_start,
         seq_write_o => seq_write,
-        hom_window_o => hom_window
+        hom_window_o => hom_window_o
     );
 
     -- Fine tuning to output
-    sequencer_delays : entity work.sequencer_delays port map (
+    delays : entity work.sequencer_delays port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_i => turn_clock,
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
-        hom_gain_o => hom_gain,
-        bunch_bank_o => bunch_bank
+        hom_gain_o => hom_gain_o,
+        bunch_bank_o => bunch_bank_o
     );
 
 
-    phase : entity work.adc_dsp_phase port map (
+    clocking : entity work.sequencer_clocking port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_o => adc_phase
+
+        turn_clock_adc_i => turn_clock_adc_i,
+        turn_clock_dsp_o => turn_clock,
+
+        seq_start_dsp_i => seq_start,
+        seq_start_adc_o => seq_start_adc_o,
+
+        seq_write_dsp_i => seq_write,
+        seq_write_adc_o => seq_write_adc_o
     );
-
-    -- Register NCO controls on ADC clock
-    process (adc_clk_i) begin
-        if rising_edge(adc_clk_i) then
-            seq_start_o <= seq_start and adc_phase;
-            seq_write_o <= seq_write and adc_phase;
-            hom_freq_o <= hom_freq;
-            hom_gain_o <= hom_gain;
-            hom_window_o <= hom_window;
-            bunch_bank_o <= bunch_bank;
-        end if;
-    end process;
 end;
-

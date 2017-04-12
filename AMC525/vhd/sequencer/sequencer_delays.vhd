@@ -22,9 +22,9 @@ entity sequencer_delays is
         seq_state_i : in seq_state_t;
         seq_pc_i : in seq_pc_t;
 
-        seq_pc_o : out seq_pc_t;
-        hom_gain_o : out unsigned(3 downto 0);
-        bunch_bank_o : out unsigned(1 downto 0)
+        seq_pc_o : out seq_pc_t := (others => '0');
+        hom_gain_o : out unsigned(3 downto 0) := (others => '0');
+        bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );
 end;
 
