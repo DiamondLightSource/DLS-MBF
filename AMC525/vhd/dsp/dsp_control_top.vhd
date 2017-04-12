@@ -67,17 +67,16 @@ architecture arch of dsp_control_top is
     signal mux_nco_1_out : signed_array(CHANNELS)(NCO_DATA_RANGE);
 
     -- DRAM1 interface
-    signal dram1_strobe : std_logic_vector(CHANNELS);
-    signal dram1_error : std_logic_vector(CHANNELS);
-    signal dram1_address : unsigned_array(CHANNELS)(DRAM1_ADDR_RANGE);
+    signal dram1_valid : std_logic_vector(CHANNELS);
+    signal dram1_ready : std_logic_vector(CHANNELS);
+    signal dram1_address : unsigned_array(CHANNELS)(dram1_address_o'RANGE);
     signal dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
 
     -- Triggering and events interface
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
     signal blanking_window : std_logic_vector(CHANNELS);
-    signal turn_clock_adc : std_logic_vector(CHANNELS);
-    signal turn_clock_dsp : std_logic_vector(CHANNELS);
+    signal turn_clock : std_logic_vector(CHANNELS);
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
 
@@ -97,7 +96,7 @@ begin
     );
 
     -- General control register
-    register_file_inst : entity work.register_file port map (
+    register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(CTRL_CONTROL_REG),
         write_data_i => write_data_i,
@@ -121,7 +120,7 @@ begin
     adc_mux <= control_register(0);
     nco_0_mux <= control_register(1);
     nco_1_mux <= control_register(2);
-    dsp_control_mux_inst : entity work.dsp_control_mux port map (
+    dsp_control_mux : entity work.dsp_control_mux port map (
         clk_i => adc_clk_i,
 
         adc_mux_i => adc_mux,
@@ -169,28 +168,32 @@ begin
 
     -- DRAM1 memory multiplexer
     chan_gen : for c in CHANNELS generate
-        dram1_strobe(c) <= dsp_to_control_i(c).dram1_strobe;
-        dram1_address(c) <= dsp_to_control_i(c).dram1_address;
+        dram1_valid(c) <= dsp_to_control_i(c).dram1_valid;
+        control_to_dsp_o(c).dram1_ready <= dram1_ready(c);
+        -- The top bit of each address identifies the generating DSP unit
+        dram1_address(c) <= unsigned(
+            to_std_logic(c) &
+            std_logic_vector(dsp_to_control_i(c).dram1_address));
         dram1_data(c) <= dsp_to_control_i(c).dram1_data;
-        control_to_dsp_o(c).dram1_error <= dram1_error(c);
     end generate;
-    slow_memory_top_inst : entity work.slow_memory_top port map (
-        dsp_clk_i => dsp_clk_i,
 
-        dsp_strobe_i => dram1_strobe,
-        dsp_address_i => dram1_address,
-        dsp_data_i => dram1_data,
-        dsp_error_o => dram1_error,
+    memory_mux : entity work.memory_mux_priority port map (
+        clk_i => dsp_clk_i,
 
-        dram1_address_o => dram1_address_o,
-        dram1_data_o => dram1_data_o,
-        dram1_data_valid_o => dram1_data_valid_o,
-        dram1_data_ready_i => dram1_data_ready_i
+        input_valid_i => dram1_valid,
+        input_ready_o => dram1_ready,
+        data_i => dram1_data,
+        addr_i => dram1_address,
+
+        output_ready_i => dram1_data_ready_i,
+        output_valid_o => dram1_data_valid_o,
+        data_o => dram1_data_o,
+        addr_o => dram1_address_o
     );
 
 
     -- Triggers and event generation
-    trigger_inst : entity work.trigger_top port map (
+    trigger : entity work.trigger_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -210,8 +213,7 @@ begin
         seq_trigger_i => seq_trigger,
 
         blanking_window_o => blanking_window,
-        turn_clock_adc_o => turn_clock_adc,
-        turn_clock_dsp_o => turn_clock_dsp,
+        turn_clock_adc_o => turn_clock,
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger
     );
@@ -221,8 +223,7 @@ begin
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
         control_to_dsp_o(c).blanking <= blanking_window(c);
-        control_to_dsp_o(c).turn_clock_adc <= turn_clock_adc(c);
-        control_to_dsp_o(c).turn_clock_dsp <= turn_clock_dsp(c);
+        control_to_dsp_o(c).turn_clock <= turn_clock(c);
         control_to_dsp_o(c).seq_start <= seq_start(c);
     end generate;
 end;
