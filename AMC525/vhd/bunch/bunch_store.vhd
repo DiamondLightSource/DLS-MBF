@@ -30,6 +30,7 @@ end;
 architecture arch of bunch_store is
     -- Assemble address from bank_select_i and bunch_index_i
     constant ADDR_BITS : natural := bank_select_i'LENGTH + bunch_index_i'LENGTH;
+    signal bank_select_in : bank_select_i'SUBTYPE := (others => '0');
     signal read_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
     signal write_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
 
@@ -62,8 +63,12 @@ begin
     -- Bring result to ADC clock
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            config <= bits_to_bunch_config(read_data);
+            -- Assemble addresses from selected bank and target bunch
+            bank_select_in <= bank_select_i;
+            read_addr <= bank_select_in & bunch_index_i;
+
             -- Register the bunch configuration
+            config <= bits_to_bunch_config(read_data);
             config_out <= config;
         end if;
     end process;
@@ -77,8 +82,6 @@ begin
     write_data_in.nco_1_enable <= write_data_i(6);
     write_data_in.gain         <= signed  (write_data_i(31 downto 19));
 
-    -- Assemble addresses from selected bank and target bunch
-    read_addr <= bank_select_i & bunch_index_i;
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then

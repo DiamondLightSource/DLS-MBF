@@ -80,6 +80,8 @@ architecture arch of sequencer_top is
     signal mem_write_data : reg_data_t;
 
     signal turn_clock : std_logic;
+    signal hom_gain : hom_gain_o'SUBTYPE;
+    signal hom_window : hom_window_o'SUBTYPE;
 
     -- Program Counter interface
     --
@@ -228,7 +230,7 @@ begin
 
         seq_start_o => seq_start,
         seq_write_o => seq_write,
-        hom_window_o => hom_window_o
+        hom_window_o => hom_window
     );
 
     -- Fine tuning to output
@@ -238,7 +240,7 @@ begin
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
-        hom_gain_o => hom_gain_o,
+        hom_gain_o => hom_gain,
         bunch_bank_o => bunch_bank_o
     );
 
@@ -254,6 +256,12 @@ begin
         seq_start_adc_o => seq_start_adc_o,
 
         seq_write_dsp_i => seq_write,
-        seq_write_adc_o => seq_write_adc_o
+        seq_write_adc_o => seq_write_adc_o,
+
+        hom_gain_dsp_i => hom_gain,
+        hom_gain_adc_o => hom_gain_o,
+
+        hom_window_dsp_i => hom_window,
+        hom_window_adc_o => hom_window_o
     );
 end;

@@ -20,7 +20,13 @@ entity sequencer_clocking is
         seq_start_adc_o : out std_logic;
 
         seq_write_dsp_i : in std_logic;
-        seq_write_adc_o : out std_logic
+        seq_write_adc_o : out std_logic;
+
+        hom_gain_dsp_i : in unsigned;
+        hom_gain_adc_o : out unsigned;
+
+        hom_window_dsp_i : in signed;
+        hom_window_adc_o : out signed
     );
 end;
 
@@ -46,4 +52,11 @@ begin
         pulse_i => seq_write_dsp_i,
         pulse_o => seq_write_adc_o
     );
+
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            hom_gain_adc_o <= hom_gain_dsp_i;
+            hom_window_adc_o <= hom_window_dsp_i;
+        end if;
+    end process;
 end;
