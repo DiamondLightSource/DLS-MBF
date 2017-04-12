@@ -31,6 +31,8 @@ architecture arch of detector_output is
     signal write_in : std_logic;
     signal write_dly : std_logic;
 
+    signal data_in : data_i'SUBTYPE;
+
     signal cos_overflow : std_logic;
     signal sin_overflow : std_logic;
 
@@ -49,7 +51,7 @@ begin
         pulse_o => write_in
     );
     write_delay : entity work.dlyline generic map (
-        DLY => 3
+        DLY => 4
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => write_in,
@@ -63,7 +65,7 @@ begin
     ) port map (
         clk_i => dsp_clk_i,
         gain_sel_i => scaling_i,
-        data_i => data_i.cos,
+        data_i => data_in.cos,
         data_o => cos_out,
         overflow_o => cos_overflow
     );
@@ -73,13 +75,17 @@ begin
     ) port map (
         clk_i => dsp_clk_i,
         gain_sel_i => scaling_i,
-        data_i => data_i.sin,
+        data_i => data_in.sin,
         data_o => sin_out,
         overflow_o => sin_overflow
     );
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
+            if write_in then
+                data_in <= data_i;
+            end if;
+
             -- There's something a bit tricky about overflow detection -- it's
             -- done asynchronously to data handshaking.
             overflow_o <= output_valid and (cos_overflow or sin_overflow);

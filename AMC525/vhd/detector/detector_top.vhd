@@ -13,6 +13,7 @@ use work.register_defs.all;
 
 entity detector_top is
     generic (
+        DATA_IN_BUFFER_LENGTH : natural;
         DATA_BUFFER_LENGTH : natural;
         NCO_BUFFER_LENGTH : natural;
         MEMORY_BUFFER_LENGTH : natural
@@ -99,7 +100,7 @@ begin
 
     -- Data preparation: selection, FIR gain, and windowing
     detector_input : entity work.detector_input generic map (
-        BUFFER_LENGTH => DATA_BUFFER_LENGTH
+        BUFFER_LENGTH => DATA_IN_BUFFER_LENGTH
     ) port map (
         clk_i => adc_clk_i,
 
@@ -120,11 +121,15 @@ begin
     -- operate in step.
     detectors : for d in DETECTOR_RANGE generate
         signal nco_iq_in : nco_iq_i'SUBTYPE;
+        signal data_delay : data_in'SUBTYPE;
 
         signal valid : std_logic;
         signal ready : std_logic;
         signal data : mem_data_o'SUBTYPE;
-        signal dummy_addr : unsigned(-1 downto 0);
+
+        -- Annoyingly we can't assign an unconstrained output to open.
+        -- Note, the VHDL range of an empty string is (1 to 0).
+        signal dummy_addr : unsigned(1 to 0);
 
     begin
         -- Delay for NCO to allow for placement
@@ -134,6 +139,16 @@ begin
             clk_i => adc_clk_i,
             cos_sin_i => nco_iq_i,
             cos_sin_o => nco_iq_in
+        );
+
+        -- Incoming data delay
+        data_delay_reg : entity work.dlyreg generic map (
+            DW => data_in'LENGTH,
+            DLY => DATA_BUFFER_LENGTH
+        ) port map (
+            clk_i => adc_clk_i,
+            data_i => std_logic_vector(data_in),
+            signed(data_o) => data_delay
         );
 
         -- Detector
@@ -146,7 +161,7 @@ begin
             bunch_write_i => bunch_write(d),
             write_data_i => write_data_i,
 
-            data_i => data_in,
+            data_i => data_delay,
             iq_i => nco_iq_in,
             start_i => start_i,
             write_i => write_i,
@@ -172,7 +187,7 @@ begin
             input_valid_i => valid,
             input_ready_o => ready,
             input_data_i => data,
-            input_addr_i(dummy_addr'RANGE) => "",
+            input_addr_i => "",
 
             output_valid_o => output_valid(d),
             output_ready_i => output_ready(d),

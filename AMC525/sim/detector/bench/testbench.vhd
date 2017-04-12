@@ -64,6 +64,7 @@ begin
 
 
     detector : entity work.detector_top generic map (
+        DATA_IN_BUFFER_LENGTH => 2,
         DATA_BUFFER_LENGTH => 2,
         NCO_BUFFER_LENGTH => 2,
         MEMORY_BUFFER_LENGTH => 2
