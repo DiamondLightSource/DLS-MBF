@@ -49,8 +49,7 @@ package dsp_defs is
 
         -- Events from triggering system
         blanking : std_logic;
-        turn_clock_adc : std_logic;     -- On ADC clock
-        turn_clock_dsp : std_logic;     -- On DSP clock
+        turn_clock : std_logic;             -- On ADC clock
         seq_start : std_logic;
     end record;
 
@@ -61,8 +60,7 @@ package dsp_defs is
         nco_1_data => (others => '0'),
         dram1_ready => '0',
         blanking => '0',
-        turn_clock_adc => '0',
-        turn_clock_dsp => '0',
+        turn_clock => '0',
         seq_start => '0'
     );
 

@@ -38,10 +38,10 @@ architecture arch of bunch_store is
     signal write_data : data_t;
 
     signal write_bunch : bunch_index_i'SUBTYPE;
-    signal write_strobe : std_logic;
+    signal write_strobe : std_logic := '0';
 
     signal write_data_in : bunch_config_t;
-    signal config : bunch_config_t;
+    signal config : bunch_config_t := default_bunch_config_t;
     signal config_out : bunch_config_t := default_bunch_config_t;
 
 begin

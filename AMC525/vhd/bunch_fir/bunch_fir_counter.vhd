@@ -19,8 +19,8 @@ entity bunch_fir_counter is
         bunch_index_o : out bunch_count_t;
 
         decimation_limit_i : in unsigned;
-        first_turn_o : out std_logic;
-        last_turn_o : out std_logic
+        first_turn_o : out std_logic := '0';
+        last_turn_o : out std_logic := '0'
     );
 end;
 

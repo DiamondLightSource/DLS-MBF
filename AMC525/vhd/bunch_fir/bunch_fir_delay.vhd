@@ -40,10 +40,11 @@ architecture arch of bunch_fir_delay is
     -- D = PROCESS_DELAY
     constant WRITE_DELAY : natural := PROCESS_DELAY + 4;
 
-    signal write_strobe : std_logic;
-    signal data_in : data_i'SUBTYPE;
-    signal data_out : data_o'SUBTYPE;
-    signal read_addr : bunch_index_i'SUBTYPE;
+    signal write_strobe : std_logic := '0';
+    signal data_in : data_i'SUBTYPE := (others => '0');
+    signal data_out : data_o'SUBTYPE := (others => '0');
+    signal data_o_init : data_o'SUBTYPE := (others => '0');
+    signal read_addr : bunch_index_i'SUBTYPE := (others => '0');
     signal write_addr : bunch_index_i'SUBTYPE;
 
 begin
@@ -55,9 +56,10 @@ begin
             write_strobe <= write_strobe_i;
             data_in <= data_i;
             read_addr <= bunch_index_i;
-            data_o <= data_out;
+            data_o_init <= data_out;
         end if;
     end process;
+    data_o <= data_o_init;
 
     -- Delay line
     memory_inst : entity work.block_memory generic map (

@@ -38,11 +38,12 @@ architecture arch of bunch_fir_taps is
 
     signal fir_select_pl : fir_select_i'SUBTYPE;
     signal fir_select : fir_select_i'SUBTYPE;
-    signal taps : signed_array_array(BANKS_RANGE)(TAPS_RANGE)(TAP_RANGE)
+    signal taps_table : signed_array_array(BANKS_RANGE)(TAPS_RANGE)(TAP_RANGE)
         := (others => (others => (others => '0')));
     signal tap_index : unsigned(bits(TAP_COUNT-1)-1 downto 0);
 
     signal taps_out : taps_o'SUBTYPE := (others => (others => '0'));
+    signal taps : taps_o'SUBTYPE := (others => (others => '0'));
 
 begin
     process (adc_clk_i) begin
@@ -50,10 +51,11 @@ begin
             -- Output selected taps
             fir_select_pl <= fir_select_i;
             fir_select <= fir_select_pl;
-            taps_out <= taps(to_integer(fir_select));
-            taps_o <= taps_out;
+            taps_out <= taps_table(to_integer(fir_select));
+            taps <= taps_out;
         end if;
     end process;
+    taps_o <= taps;
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
@@ -61,7 +63,7 @@ begin
             if write_start_i then
                 tap_index <= (others => '0');
             elsif write_strobe_i then
-                taps(to_integer(write_fir_i))(to_integer(tap_index)) <=
+                taps_table(to_integer(write_fir_i))(to_integer(tap_index)) <=
                     signed(write_data_i(31 downto 32-TAP_WIDTH));
                 tap_index <= tap_index + 1;
             end if;

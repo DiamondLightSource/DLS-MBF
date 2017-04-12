@@ -34,6 +34,10 @@ architecture arch of register_read_adc is
     signal read_ack_pl : std_logic_vector(register_range) := (others => '0');
     signal read_data_pl : dsp_read_data_o'SUBTYPE;
 
+    -- Initialised outputs
+    signal dsp_read_ack : dsp_read_ack_o'SUBTYPE := (others => '0');
+    signal adc_read_strobe : adc_read_strobe_o'SUBTYPE := (others => '0');
+
 begin
     phase : entity work.adc_dsp_phase port map (
         adc_clk_i => adc_clk_i,
@@ -44,7 +48,7 @@ begin
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             for r in register_range loop
-                adc_read_strobe_o(r) <= read_strobe(r) and adc_phase;
+                adc_read_strobe(r) <= read_strobe(r) and adc_phase;
                 if adc_read_ack_i(r) = '1' then
                     read_data(r) <= adc_read_data_i(r);
                     read_ack(r) <= '1';
@@ -54,6 +58,7 @@ begin
             end loop;
         end if;
     end process;
+    adc_read_strobe_o <= adc_read_strobe;
 
     -- Ensure that our outputs are properly registered on the DSP clock domain
     -- and add a pipeline stage to assist with timing.
@@ -63,7 +68,8 @@ begin
             read_data_pl <= read_data;
             read_ack_pl <= read_ack;
             dsp_read_data_o <= read_data_pl;
-            dsp_read_ack_o <= read_ack_pl;
+            dsp_read_ack <= read_ack_pl;
         end if;
     end process;
+    dsp_read_ack_o <= dsp_read_ack;
 end;

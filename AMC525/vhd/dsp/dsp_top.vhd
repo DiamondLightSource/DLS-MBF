@@ -83,7 +83,7 @@ begin
     -- -------------------------------------------------------------------------
     -- General register handling
 
-    dsp_registers : entity work.dsp_registers port map (
+    registers : entity work.dsp_registers port map (
         dsp_clk_i => dsp_clk_i,
 
         -- DSP general control registers
@@ -130,7 +130,7 @@ begin
     bunch_select : entity work.bunch_select port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => control_to_dsp_i.turn_clock_adc,
+        turn_clock_i => control_to_dsp_i.turn_clock,
 
         write_strobe_i => write_strobe_i(DSP_BUNCH_REGS),
         write_data_i => write_data_i,
@@ -169,7 +169,7 @@ begin
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => control_to_dsp_i.turn_clock_adc,
+        turn_clock_i => control_to_dsp_i.turn_clock,
 
         data_i => adc_data_i,
         data_o => dsp_to_control_o.adc_data,
@@ -189,6 +189,7 @@ begin
         mms_overflow_o => adc_mms_overflow,
         delta_event_o => adc_delta_event
     );
+    dsp_to_control_o.adc_trigger <= adc_delta_event;
 
 
     -- FIR processing
@@ -201,7 +202,7 @@ begin
         data_i => control_to_dsp_i.adc_data,
         data_o => fir_data,
 
-        turn_clock_i => control_to_dsp_i.turn_clock_adc,
+        turn_clock_i => control_to_dsp_i.turn_clock,
         bunch_config_i => bunch_config,
 
         write_strobe_i => write_strobe_i(DSP_FIR_REGS),
@@ -215,13 +216,14 @@ begin
     );
     dsp_to_control_o.fir_data <= fir_data;
 
+
     -- DAC output processing
     dac_top : entity work.dac_top generic map (
         TAP_COUNT => DAC_FIR_TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => control_to_dsp_i.turn_clock_adc,
+        turn_clock_i => control_to_dsp_i.turn_clock,
 
         bunch_config_i => bunch_config,
         fir_data_i => fir_data,
@@ -254,7 +256,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        turn_clock_i => control_to_dsp_i.turn_clock_dsp,
+        turn_clock_adc_i => control_to_dsp_i.turn_clock,
         blanking_i => control_to_dsp_i.blanking,
 
         write_strobe_i => write_strobe_i(DSP_SEQ_REGS),
@@ -268,14 +270,16 @@ begin
 
         state_trigger_o => dsp_to_control_o.seq_trigger,
 
-        seq_start_o => sequencer_start,
-        seq_write_o => sequencer_write,
+        seq_start_adc_o => sequencer_start,
+        seq_write_adc_o => sequencer_write,
 
         hom_freq_o => nco_1_phase_advance,
         hom_gain_o => nco_1_gain,
         hom_window_o => detector_window,
         bunch_bank_o => current_bank
     );
+    dsp_event_o <= dsp_to_control_o.seq_trigger;
+
 
     detector : entity work.detector_top generic map (
         DATA_BUFFER_LENGTH => 2,
@@ -284,7 +288,7 @@ begin
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => control_to_dsp_i.turn_clock_adc,
+        turn_clock_i => control_to_dsp_i.turn_clock,
 
         write_strobe_i => write_strobe_i(DSP_DET_REGS),
         write_data_i => write_data_i,
@@ -308,12 +312,5 @@ begin
     );
 
 
-
-
-
-    dsp_event_o <= '0';
-
     dsp_to_control_o.dram0_enable <= '1';
-    dsp_to_control_o.adc_trigger <= adc_delta_event;
-
 end;

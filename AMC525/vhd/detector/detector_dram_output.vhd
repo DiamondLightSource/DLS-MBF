@@ -35,6 +35,8 @@ architecture arch of detector_dram_output is
     signal output_ready : boolean;
     signal output_busy : boolean := false;
 
+    signal input_ready_out : input_ready_o'SUBTYPE := (others => '0');
+
 begin
     -- Input state management
     --
@@ -55,9 +57,10 @@ begin
             end if;
 
             compute_strobe(
-                input_ready_o, selection, to_std_logic(advance_input));
+                input_ready_out, selection, to_std_logic(advance_input));
         end if;
     end process;
+    input_ready_o <= input_ready_out;
 
 
     -- Output state management

@@ -19,7 +19,7 @@ entity bunch_fir_decimate is
         last_turn_i : in std_logic;
         data_i : in signed;
         data_o : out signed;
-        data_valid_o : out std_logic
+        data_valid_o : out std_logic := '0'
     );
 end;
 
@@ -35,14 +35,14 @@ architecture arch of bunch_fir_decimate is
     --      => accumulator = accum.data_i
     constant PROCESS_DELAY : natural := 2;
 
-    signal data_in : signed(ACCUM_BITS-1 downto 0);
-    signal read_data : signed(ACCUM_BITS-1 downto 0);
+    signal data_in : signed(ACCUM_BITS-1 downto 0) := (others => '0');
+    signal read_data : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     signal read_data_pl : signed(ACCUM_BITS-1 downto 0);
-    signal accumulator : signed(ACCUM_BITS-1 downto 0);
-    signal write_data : signed(ACCUM_BITS-1 downto 0);
-    signal data_out : signed(ACCUM_BITS-1 downto 0);
+    signal accumulator : signed(ACCUM_BITS-1 downto 0) := (others => '0');
+    signal write_data : signed(ACCUM_BITS-1 downto 0) := (others => '0');
+    signal data_out : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     -- The data valid is derived from last_turn_i with a two tick delay
-    signal data_valid : std_logic;
+    signal data_valid : std_logic := '0';
 
 begin
     -- Bunch memory for accumulator

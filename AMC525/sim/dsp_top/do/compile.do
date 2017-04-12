@@ -12,6 +12,7 @@ vcom -64 -2008 -work xil_defaultlib \
     register_defs.vhd \
     $vhd_dir/system/adc_dsp_phase.vhd \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
+    $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/sync_bit.vhd \
@@ -75,6 +76,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/sequencer/sequencer_counter.vhd \
     $vhd_dir/sequencer/sequencer_window.vhd \
     $vhd_dir/sequencer/sequencer_delays.vhd \
+    $vhd_dir/sequencer/sequencer_clocking.vhd \
     $vhd_dir/sequencer/sequencer_top.vhd \
     $vhd_dir/detector/detector_defs.vhd \
     $vhd_dir/detector/detector_registers.vhd \

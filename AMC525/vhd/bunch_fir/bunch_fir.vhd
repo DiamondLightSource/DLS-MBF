@@ -14,7 +14,7 @@ entity bunch_fir is
 
         data_valid_i : in std_logic;
         data_i : in signed;
-        data_valid_o : out std_logic;
+        data_valid_o : out std_logic := '0';
         data_o : out signed
     );
 end;
@@ -41,9 +41,11 @@ architecture arch of bunch_fir is
     -- Signal processing chain
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
     -- Path from DSP to memory
-    signal accum_out : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0);
+    signal accum_out : signed_array(TAPS_RANGE)(ACCUM_WIDTH-1 downto 0)
+        := (others => (others => '0'));
     -- Path from memory to DSP
-    signal delay_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0);
+    signal delay_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0)
+        := (others => (others => '0'));
 
     -- The accumulator input is assembled from three parts of widths as shown:
     --
@@ -75,6 +77,8 @@ architecture arch of bunch_fir is
     --      => accum_out
     constant PROCESS_DELAY : natural := 3;
 
+    signal data_out : data_o'SUBTYPE := (others => '0');
+
 begin
     -- Ensure we fit within the DSP48E1
     assert TAP_WIDTH <= 25 severity failure;
@@ -85,12 +89,12 @@ begin
 
     -- Core processing DSP chain
     taps_gen : for t in TAPS_RANGE generate
-        signal tap : signed(TAP_WIDTH-1 downto 0);
-        signal tap_pl : signed(TAP_WIDTH-1 downto 0);
-        signal data_pl : signed(DATA_IN_WIDTH-1 downto 0);
-        signal data_in : signed(DATA_IN_WIDTH-1 downto 0);
-        signal product : signed(PRODUCT_WIDTH-1 downto 0);
-        signal accum_in : signed(ACCUM_WIDTH-1 downto 0);
+        signal tap : signed(TAP_WIDTH-1 downto 0) := (others => '0');
+        signal tap_pl : signed(TAP_WIDTH-1 downto 0) := (others => '0');
+        signal data_pl : signed(DATA_IN_WIDTH-1 downto 0) := (others => '0');
+        signal data_in : signed(DATA_IN_WIDTH-1 downto 0) := (others => '0');
+        signal product : signed(PRODUCT_WIDTH-1 downto 0) := (others => '0');
+        signal accum_in : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
 
         -- Stop the DSP unit from eating the outermost input registers
         attribute DONT_TOUCH : string;
@@ -123,10 +127,11 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             delay_out(0) <= (others => '0');
-            data_o <= round(accum_out(TAP_COUNT-1), DATA_OUT_WIDTH);
+            data_out <= round(accum_out(TAP_COUNT-1), DATA_OUT_WIDTH);
             data_valid_o <= accum_out_valid;
         end if;
     end process;
+    data_o <= data_out;
 
 
     valid_delay_inst : entity work.dlyline generic map (

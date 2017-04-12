@@ -27,7 +27,7 @@ entity dac_output_mux is
         -- Generated outputs.  Note that the FIR overflow is pipelined through
         -- so that we know whether to ignore it, if the output was unused.
         data_o : out signed;
-        fir_overflow_o : out std_logic;
+        fir_overflow_o : out std_logic := '0';
         mux_overflow_o : out std_logic
     );
 end;

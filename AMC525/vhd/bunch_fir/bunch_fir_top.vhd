@@ -62,7 +62,7 @@ architecture arch of bunch_fir_top is
     signal data_out : data_o'SUBTYPE;
 
 begin
-    register_file_inst : entity work.register_file port map (
+    register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_FIR_CONFIG_REG),
         write_data_i => write_data_i,
@@ -86,7 +86,7 @@ begin
 
 
     -- Taps for FIR
-    bunch_fir_taps_inst : entity work.bunch_fir_taps port map (
+    bunch_fir_taps : entity work.bunch_fir_taps port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -105,7 +105,7 @@ begin
 
 
     -- Decimation counter
-    bunch_fir_counter_inst : entity work.bunch_fir_counter port map (
+    counter : entity work.bunch_fir_counter port map (
         clk_i => adc_clk_i,
         decimation_limit_i => decimation_limit,
         turn_clock_i => turn_clock_i,
@@ -116,7 +116,7 @@ begin
 
 
     -- Bunch by bunch data reduction
-    decimate_inst : entity work.bunch_fir_decimate port map (
+    decimate : entity work.bunch_fir_decimate port map (
         clk_i => adc_clk_i,
 
         bunch_index_i => bunch_index,
@@ -130,7 +130,7 @@ begin
     );
 
     -- The filter
-    fir_inst : entity work.bunch_fir port map (
+    bunch_fir : entity work.bunch_fir port map (
         clk_i => adc_clk_i,
         bunch_index_i => bunch_index,
         taps_i => taps,
@@ -142,7 +142,7 @@ begin
     );
 
     -- Interpolate the reduced data back to full speed
-    interpolate_inst : entity work.bunch_fir_interpolate port map (
+    interpolate : entity work.bunch_fir_interpolate port map (
         clk_i => adc_clk_i,
         bunch_index_i => bunch_index,
         data_valid_i => filtered_valid,
@@ -150,7 +150,7 @@ begin
         data_o => data_out
     );
 
-    -- need data_o pipeline ohere
+    -- need data_o pipeline here
     filtered_delay : entity work.dlyreg generic map (
         DLY => 4,
         DW => data_o'LENGTH

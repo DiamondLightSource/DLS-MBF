@@ -17,6 +17,9 @@ architecture arch of testbench is
     signal adc_clk : std_logic := '1';
     signal dsp_clk : std_logic := '0';
 
+    constant TURN_COUNT : natural := 19;
+    signal turn_clock : std_logic;
+
     signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
     signal dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
 
@@ -66,12 +69,27 @@ begin
         dsp_event_o => dsp_event
     );
 
+
+    -- Generate turn clock
+    process begin
+        turn_clock <= '0';
+        loop
+            clk_wait(adc_clk, TURN_COUNT-1);
+            turn_clock <= '1';
+            clk_wait(adc_clk);
+            turn_clock <= '0';
+        end loop;
+        wait;
+    end process;
+
+
     -- Simple pass-through of control interface
-    process (dsp_clk) begin
-        if rising_edge(dsp_clk) then
+    process (adc_clk) begin
+        if rising_edge(adc_clk) then
             control_to_dsp.adc_data   <= dsp_to_control.adc_data;
             control_to_dsp.nco_0_data <= dsp_to_control.nco_0_data.cos;
             control_to_dsp.nco_1_data <= dsp_to_control.nco_1_data.cos;
+            control_to_dsp.turn_clock <= turn_clock;
         end if;
     end process;
 
@@ -130,7 +148,5 @@ begin
         write_reg(9, X"06000011");     -- 17 tick delay, enable NCO0
 
         wait;
-
     end process;
-
 end;
