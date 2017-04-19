@@ -77,6 +77,8 @@ architecture arch of bunch_fir is
     --      => accum_out
     constant PROCESS_DELAY : natural := 3;
 
+    subtype DATA_OUT_RANGE is natural
+        range ACCUM_WIDTH-1 downto ACCUM_WIDTH - DATA_OUT_WIDTH;
     signal data_out : data_o'SUBTYPE := (others => '0');
 
 begin
@@ -127,7 +129,7 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             delay_out(0) <= (others => '0');
-            data_out <= round(accum_out(TAP_COUNT-1), DATA_OUT_WIDTH);
+            data_out <= accum_out(TAP_COUNT-1)(DATA_OUT_RANGE);
             data_valid_o <= accum_out_valid;
         end if;
     end process;
