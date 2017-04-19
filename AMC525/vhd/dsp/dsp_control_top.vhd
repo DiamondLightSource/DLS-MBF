@@ -62,9 +62,11 @@ architecture arch of dsp_control_top is
     signal adc_mux : std_logic;
     signal nco_0_mux : std_logic;
     signal nco_1_mux : std_logic;
+    signal bank_mux : std_logic;
     signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
     signal mux_nco_0_out : signed_array(CHANNELS)(NCO_DATA_RANGE);
     signal mux_nco_1_out : signed_array(CHANNELS)(NCO_DATA_RANGE);
+    signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
     -- DRAM1 interface
     signal dram1_valid : std_logic_vector(CHANNELS);
@@ -112,31 +114,35 @@ begin
         others => '0'
     );
 
-    loopback_o <= control_register(4 downto 3);
-    output_enable_o <= control_register(6 downto 5);
+    loopback_o <= control_register(5 downto 4);
+    output_enable_o <= control_register(7 downto 6);
 
 
     -- Channel data multiplexing control
     adc_mux <= control_register(0);
     nco_0_mux <= control_register(1);
     nco_1_mux <= control_register(2);
+    bank_mux <= control_register(3);
     dsp_control_mux : entity work.dsp_control_mux port map (
         clk_i => adc_clk_i,
 
         adc_mux_i => adc_mux,
         nco_0_mux_i => nco_0_mux,
         nco_1_mux_i => nco_1_mux,
+        bank_mux_i => bank_mux,
 
         dsp_to_control_i => dsp_to_control_i,
 
         adc_o => mux_adc_out,
         nco_0_o => mux_nco_0_out,
-        nco_1_o => mux_nco_1_out
+        nco_1_o => mux_nco_1_out,
+        bank_select_o => bank_select_out
     );
     mux_gen : for c in CHANNELS generate
         control_to_dsp_o(c).adc_data <= mux_adc_out(c);
         control_to_dsp_o(c).nco_0_data <= mux_nco_0_out(c);
         control_to_dsp_o(c).nco_1_data <= mux_nco_1_out(c);
+        control_to_dsp_o(c).bank_select <= bank_select_out(c);
     end generate;
 
 

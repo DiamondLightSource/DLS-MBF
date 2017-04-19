@@ -20,6 +20,7 @@ entity dsp_control_mux is
         adc_mux_i : in std_logic;
         nco_0_mux_i : in std_logic;
         nco_1_mux_i : in std_logic;
+        bank_mux_i : in std_logic;
 
         -- Data channels
         dsp_to_control_i : in dsp_to_control_array_t;
@@ -27,7 +28,8 @@ entity dsp_control_mux is
         -- Outgoing data
         adc_o   : out signed_array;
         nco_0_o : out signed_array;
-        nco_1_o : out signed_array
+        nco_1_o : out signed_array;
+        bank_select_o : out unsigned_array
     );
 end;
 
@@ -62,6 +64,14 @@ begin
             else
                 nco_1_o(1) <= d2c1.nco_1_data.cos;
             end if;
+
+            -- Bank selection
+            if bank_mux_i = '1' then
+                bank_select_o(0) <= d2c1.bank_select;
+            else
+                bank_select_o(0) <= d2c0.bank_select;
+            end if;
+            bank_select_o(1) <= d2c1.bank_select;
         end if;
     end process;
 end;

@@ -21,6 +21,9 @@ package dsp_defs is
         fir_data : signed(FIR_DATA_RANGE);
         dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
 
+        -- Bank selection from sequencer
+        bank_select : unsigned(1 downto 0);
+
         -- NCO signals
         nco_0_data : cos_sin_18_t;
         nco_1_data : cos_sin_18_t;
@@ -44,6 +47,9 @@ package dsp_defs is
         nco_0_data : signed(NCO_DATA_RANGE);
         nco_1_data : signed(NCO_DATA_RANGE);
 
+        -- Bank selection
+        bank_select : unsigned(1 downto 0);
+
         -- DRAM1 write ready
         dram1_ready : std_logic;
 
@@ -58,6 +64,7 @@ package dsp_defs is
         adc_data   => (others => '0'),
         nco_0_data => (others => '0'),
         nco_1_data => (others => '0'),
+        bank_select => (others => '0'),
         dram1_ready => '0',
         blanking => '0',
         turn_clock => '0',

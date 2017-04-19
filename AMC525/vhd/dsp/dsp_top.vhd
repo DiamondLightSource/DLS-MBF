@@ -61,7 +61,6 @@ architecture arch of dsp_top is
     signal dac_preemph_overflow : std_logic;
 
     -- Bunch control
-    signal current_bank : unsigned(1 downto 0);
     signal bunch_config : bunch_config_t;
     signal detector_window : hom_win_t;
 
@@ -139,7 +138,7 @@ begin
         read_data_o => read_data_o(DSP_BUNCH_REGS),
         read_ack_o => read_ack_o(DSP_BUNCH_REGS),
 
-        bank_select_i => current_bank,
+        bank_select_i => control_to_dsp_i.bank_select,
         bunch_config_o => bunch_config
     );
 
@@ -276,7 +275,7 @@ begin
         hom_freq_o => nco_1_phase_advance,
         hom_gain_o => nco_1_gain,
         hom_window_o => detector_window,
-        bunch_bank_o => current_bank
+        bunch_bank_o => dsp_to_control_o.bank_select
     );
     dsp_event_o <= dsp_to_control_o.seq_trigger;
 
