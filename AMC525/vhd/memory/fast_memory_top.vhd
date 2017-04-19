@@ -42,7 +42,6 @@ end;
 
 architecture arch of fast_memory_top is
     signal config_registers : reg_data_array_t(CTRL_MEM_CONFIG_REGS);
-    signal config_untimed : reg_data_array_t(CTRL_MEM_CONFIG_REGS);
     signal command_bits : reg_data_t;
     signal status_register : reg_data_t;
 
@@ -95,17 +94,6 @@ begin
     read_data_o(CTRL_MEM_CONFIG_REGS) <= config_registers;
     read_ack_o(CTRL_MEM_CONFIG_REGS) <= (others => '1');
 
-    untimed_inst : entity work.untimed_reg generic map (
-        WIDTH => 64
-    ) port map (
-        clk_i => dsp_clk_i,
-        write_i => '1',
-        data_i(31 downto  0) => config_registers(CTRL_MEM_CONFIG_CONFIG_REG),
-        data_i(63 downto 32) => config_registers(CTRL_MEM_CONFIG_COUNT_REG),
-        data_o(31 downto  0) => config_untimed(CTRL_MEM_CONFIG_CONFIG_REG),
-        data_o(63 downto 32) => config_untimed(CTRL_MEM_CONFIG_COUNT_REG)
-    );
-
 
     -- Pulsed command events
     strobed_bits_inst : entity work.strobed_bits port map (
@@ -129,12 +117,12 @@ begin
     -- Register mapping
 
     -- Configuration fields extracted from config registers
-    mux_select <= config_untimed(CTRL_MEM_CONFIG_CONFIG_REG)(3 downto 0);
+    mux_select <= config_registers(CTRL_MEM_CONFIG_CONFIG_REG)(3 downto 0);
     fir_gain <=
-        unsigned(config_untimed(CTRL_MEM_CONFIG_CONFIG_REG)(7 downto 4));
-    enable_select <= config_untimed(CTRL_MEM_CONFIG_CONFIG_REG)(9 downto 8);
+        unsigned(config_registers(CTRL_MEM_CONFIG_CONFIG_REG)(7 downto 4));
+    enable_select <= config_registers(CTRL_MEM_CONFIG_CONFIG_REG)(9 downto 8);
     count <= unsigned(
-        config_untimed(CTRL_MEM_CONFIG_COUNT_REG)(COUNT_BITS-1 downto 0));
+        config_registers(CTRL_MEM_CONFIG_COUNT_REG)(COUNT_BITS-1 downto 0));
 
     -- Control events
     start <= command_bits(0);

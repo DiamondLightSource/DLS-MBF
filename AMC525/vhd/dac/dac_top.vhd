@@ -54,7 +54,6 @@ end;
 architecture arch of dac_top is
     -- Configuration register
     signal config_register : reg_data_t;
-    signal config_untimed : reg_data_t;
     -- Configuration settings from register
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(4 downto 0);
@@ -88,23 +87,13 @@ begin
     read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
     read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
 
-    -- Bring this over to the ADC clock without a timing constraint
-    untimed_inst : entity work.untimed_reg generic map (
-        WIDTH => REG_DATA_WIDTH
-    ) port map (
-        clk_i => dsp_clk_i,
-        write_i => '1',
-        data_i => config_register,
-        data_o => config_untimed
-    );
-
     -- Not all of these will remain in registers
-    dac_delay  <= unsigned(config_untimed(9 downto 0));
-    fir_gain   <= unsigned(config_untimed(24 downto 20));
-    nco_0_gain <= unsigned(config_untimed(15 downto 12));
-    fir_enable   <= config_untimed(25);
-    nco_0_enable <= config_untimed(26);
-    nco_1_enable <= config_untimed(27);
+    dac_delay  <= unsigned(config_register(9 downto 0));
+    fir_gain   <= unsigned(config_register(24 downto 20));
+    nco_0_gain <= unsigned(config_register(15 downto 12));
+    fir_enable   <= config_register(25);
+    nco_0_enable <= config_register(26);
+    nco_1_enable <= config_register(27);
 
 
     -- -------------------------------------------------------------------------

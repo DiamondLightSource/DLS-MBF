@@ -87,6 +87,7 @@ begin
     read_data_o(SYS_CONTROL_REG) <= control_data_o;
     read_ack_o(SYS_CONTROL_REG) <= '1';
 
+
     -- Clock domain crossing for ADC IDELAY control.
     adc_idelay_register_cc_inst : entity work.register_cc port map (
         reg_clk_i => reg_clk_i,
@@ -143,7 +144,7 @@ begin
         write_strobe_i => write_strobe_i(SYS_DAC_TEST_REGS),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(SYS_DAC_TEST_REGS),
-        register_data_o => dac_test_pattern_o
+        register_data_o(SYS_DAC_TEST_REGS) => dac_test_pattern_o
     );
     read_data_o(SYS_DAC_TEST_REGS) <= dac_test_pattern_o;
     read_ack_o(SYS_DAC_TEST_REGS) <= (others => '1');

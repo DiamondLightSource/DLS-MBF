@@ -41,7 +41,6 @@ end;
 architecture arch of bunch_fir_top is
     -- Control values
     signal config_register : reg_data_t;
-    signal config_untimed : reg_data_t;
     signal write_fir : unsigned(FIR_BANK_BITS-1 downto 0);
     signal decimation_limit : unsigned(6 downto 0);
     signal decimation_shift : unsigned(2 downto 0);
@@ -72,17 +71,9 @@ begin
     read_data_o(DSP_FIR_CONFIG_REG) <= config_register;
     read_ack_o(DSP_FIR_CONFIG_REG) <= '1';
 
-    untimed_inst : entity work.untimed_reg generic map (
-        WIDTH => 32
-    ) port map (
-        clk_i => dsp_clk_i,
-        write_i => '1',
-        data_i => config_register,
-        data_o => config_untimed
-    );
-    write_fir        <= unsigned(config_untimed(1 downto 0));
-    decimation_limit <= unsigned(config_untimed(8 downto 2));
-    decimation_shift <= unsigned(config_untimed(11 downto 9));
+    write_fir        <= unsigned(config_register(1 downto 0));
+    decimation_limit <= unsigned(config_register(8 downto 2));
+    decimation_shift <= unsigned(config_register(11 downto 9));
 
 
     -- Taps for FIR

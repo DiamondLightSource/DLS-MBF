@@ -48,7 +48,6 @@ entity adc_top is
 end;
 
 architecture arch of adc_top is
-    signal limit_register_in : reg_data_t;
     signal limit_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
@@ -66,20 +65,10 @@ begin
         write_strobe_i(0) => write_strobe_i(DSP_ADC_LIMIT_REG),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_ADC_LIMIT_REG),
-        register_data_o(0) => limit_register_in
+        register_data_o(0) => limit_register
     );
     read_data_o(DSP_ADC_LIMIT_REG) <= (others => '0');
     read_ack_o(DSP_ADC_LIMIT_REG) <= '1';
-
-    -- Make these control settings untimed to help with FPGA timing
-    untimed_inst : entity work.untimed_reg generic map (
-        WIDTH => REG_DATA_WIDTH
-    ) port map (
-        clk_i => dsp_clk_i,
-        write_i => '1',
-        data_i => limit_register_in,
-        data_o => limit_register
-    );
 
     input_limit <= unsigned(limit_register(13 downto 0));
     data_delay  <= unsigned(limit_register(15 downto 15));

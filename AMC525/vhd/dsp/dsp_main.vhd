@@ -245,7 +245,6 @@ begin
         -- Loopback enable for internal testing and output control
         loopback_inst : entity work.dsp_loopback port map (
             adc_clk_i => adc_clk_i,
-            dsp_clk_i => dsp_clk_i,
 
             loopback_i => loopback(c),
             output_enable_i => output_enable(c),
