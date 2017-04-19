@@ -19,7 +19,7 @@ architecture arch of testbench is
     signal dsp_clk : std_logic := '0';
     signal turn_clock : std_logic;
 
-    constant TURN_COUNT : natural := 7;
+    constant TURN_COUNT : natural := 33;
 
     -- detector_top parameters
     signal write_strobe : std_logic_vector(DSP_DET_REGS);
@@ -166,6 +166,7 @@ begin
         write_command(X"0000_0003");
         write_config(X"0000_0000");
         write_bunch(X"0000_0055");
+        write_bunch(X"FFFF_FFFF");
         write_config(X"4000_0000");
         write_bunch(X"0000_0055");
         write_config(X"8000_0000");

@@ -48,11 +48,14 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "Input" sim:/testbench/detector/detector_input/*
+add wave -group "Input" sim:detector/detector_input/*
+add wave -group "Body(0) Bunch Mem" \
+    sim:detector/detectors(0)/detector_body/bunch_select/bunch_mem/*
+add wave -group "Body(0) Bunch" \
+    sim:detector/detectors(0)/detector_body/bunch_select/*
 add wave -group "Body(0) Output" \
-    sim:/testbench/detector/detectors(0)/detector_body/output/*
-add wave -group "Body(0)" \
-    sim:/testbench/detector/detectors(0)/detector_body/*
+    sim:detector/detectors(0)/detector_body/output/*
+add wave -group "Body(0)" sim:detector/detectors(0)/detector_body/*
 add wave -group "DRAM" sim:/testbench/detector/dram_output/*
 add wave -group "Top" sim:/testbench/detector/*
 add wave sim:*
