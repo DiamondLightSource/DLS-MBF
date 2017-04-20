@@ -33,6 +33,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_bunch_select.vhd \
     $vhd_dir/detector/detector_dsp96.vhd \
     $vhd_dir/detector/detector_core.vhd \
+    $vhd_dir/detector/detector_gain_control.vhd \
     $vhd_dir/detector/detector_output.vhd \
     $vhd_dir/detector/detector_body.vhd \
     $vhd_dir/detector/detector_input.vhd \

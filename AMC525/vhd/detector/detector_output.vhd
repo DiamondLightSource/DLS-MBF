@@ -60,7 +60,7 @@ begin
 
 
     -- Gain control on input data
-    cos_gain : entity work.gain_control generic map (
+    cos_gain : entity work.detector_gain_control generic map (
         INTERVAL => 8
     ) port map (
         clk_i => dsp_clk_i,
@@ -70,7 +70,7 @@ begin
         overflow_o => cos_overflow
     );
 
-    sin_gain : entity work.gain_control generic map (
+    sin_gain : entity work.detector_gain_control generic map (
         INTERVAL => 8
     ) port map (
         clk_i => dsp_clk_i,
