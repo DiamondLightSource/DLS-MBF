@@ -10,7 +10,8 @@ use work.bunch_defs.all;
 
 entity dac_output_mux is
     port (
-        clk_i : in std_logic;
+        adc_clk_i : in std_logic;
+        dsp_clk_i : in std_logic;
 
         -- output selection and gain
         bunch_config_i : in bunch_config_t;
@@ -70,6 +71,8 @@ architecture arch of dac_output_mux is
     -- multiplication which we now want to discard.
     constant OUTPUT_OFFSET : natural := GAIN_WIDTH - 1;
 
+    signal fir_overflow : std_logic := '0';
+    signal mux_overflow : std_logic;
 
     -- If enable, widens data to required width, otherwise returns 0.
     function prepare(data : signed; enable : std_logic) return signed
@@ -87,9 +90,9 @@ begin
     nco_0_enable <= nco_0_enable_i and bunch_config_i.nco_0_enable;
     nco_1_enable <= nco_1_enable_i and bunch_config_i.nco_1_enable;
 
-    process (clk_i) begin
-        if rising_edge(clk_i) then
-            fir_overflow_o <= fir_overflow_i and fir_enable;
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            fir_overflow <= fir_overflow_i and fir_enable;
             -- Widen and select the three inputs.
             fir_data_pl   <= prepare(fir_data_i, fir_enable);
             nco_0_data_pl <= prepare(nco_0_i,    nco_0_enable);
@@ -118,9 +121,27 @@ begin
     extract_signed : entity work.extract_signed generic map (
         OFFSET => OUTPUT_OFFSET
     ) port map (
-        clk_i => clk_i,
+        clk_i => adc_clk_i,
         data_i => full_dac_out,
         data_o => data_o,
-        overflow_o => mux_overflow_o
+        overflow_o => mux_overflow
+    );
+
+
+    -- Convert the two overflow events to DSP events
+    fir_overflow_dac : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        pulse_i => fir_overflow,
+        pulse_o => fir_overflow_o
+    );
+
+    mux_overflow_dac : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        pulse_i => mux_overflow,
+        pulse_o => mux_overflow_o
     );
 end;

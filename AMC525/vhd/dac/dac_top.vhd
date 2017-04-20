@@ -129,7 +129,8 @@ begin
 
     -- Output multiplexer
     dac_output_mux_inst : entity work.dac_output_mux port map (
-        clk_i => adc_clk_i,
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
 
         bunch_config_i => bunch_config_i,
 
