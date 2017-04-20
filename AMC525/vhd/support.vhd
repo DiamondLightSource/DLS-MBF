@@ -70,7 +70,7 @@ package support is
     function overflow_detect(data : signed) return std_logic;
 
 
-    -- Taking overflow into account returns saturated value if necessar.
+    -- Taking overflow into account returns saturated value if necessary.
     function saturate(
         data : signed; overflow : std_logic; sign : std_logic) return signed;
     function saturate(data : unsigned; overflow : std_logic) return unsigned;

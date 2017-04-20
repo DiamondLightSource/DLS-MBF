@@ -82,6 +82,7 @@ architecture arch of sequencer_top is
     signal turn_clock : std_logic;
     signal hom_gain : hom_gain_o'SUBTYPE;
     signal hom_window : hom_window_o'SUBTYPE;
+    signal bunch_bank : bunch_bank_o'SUBTYPE;
 
     -- Program Counter interface
     --
@@ -241,7 +242,7 @@ begin
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
         hom_gain_o => hom_gain,
-        bunch_bank_o => bunch_bank_o
+        bunch_bank_o => bunch_bank
     );
 
 
@@ -262,6 +263,9 @@ begin
         hom_gain_adc_o => hom_gain_o,
 
         hom_window_dsp_i => hom_window,
-        hom_window_adc_o => hom_window_o
+        hom_window_adc_o => hom_window_o,
+
+        bunch_bank_i => bunch_bank,
+        bunch_bank_o => bunch_bank_o
     );
 end;
