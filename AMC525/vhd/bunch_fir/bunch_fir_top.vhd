@@ -40,6 +40,7 @@ end;
 
 architecture arch of bunch_fir_top is
     -- Control values
+    signal turn_clock : std_logic;
     signal config_register : reg_data_t;
     signal write_fir : unsigned(FIR_BANK_BITS-1 downto 0);
     signal decimation_limit : unsigned(6 downto 0);
@@ -53,6 +54,7 @@ architecture arch of bunch_fir_top is
     signal decimated_valid : std_logic;
 
     -- Data flow and decimation control
+    signal data_in : data_i'SUBTYPE;
     signal bunch_index : bunch_count_t;
     signal first_turn : std_logic;
     signal last_turn : std_logic;
@@ -95,11 +97,29 @@ begin
     read_ack_o(DSP_FIR_TAPS_REG) <= '1';
 
 
+    turn_clock_delay : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => turn_clock_i,
+        data_o(0) => turn_clock
+    );
+
+    data_delay : entity work.dlyreg generic map (
+        DLY => 6,
+        DW => data_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_i),
+        signed(data_o) => data_in
+    );
+
+
     -- Decimation counter
     counter : entity work.bunch_fir_counter port map (
         clk_i => adc_clk_i,
         decimation_limit_i => decimation_limit,
-        turn_clock_i => turn_clock_i,
+        turn_clock_i => turn_clock,
         bunch_index_o => bunch_index,
         first_turn_o => first_turn,
         last_turn_o => last_turn
@@ -115,7 +135,7 @@ begin
 
         first_turn_i => first_turn,
         last_turn_i => last_turn,
-        data_i => data_i,
+        data_i => data_in,
         data_o => decimated_data,
         data_valid_o => decimated_valid
     );

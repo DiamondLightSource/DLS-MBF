@@ -100,8 +100,16 @@ begin
         nco_0_frequency_o => nco_0_phase_advance
     );
 
-    write_start <= strobed_bits(0);
-    delta_reset <= strobed_bits(1);
+    -- Delay line for the strobed bits
+    strobed_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => 2
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => strobed_bits(1 downto 0),
+        data_o(0) => write_start,
+        data_o(1) => delta_reset
+    );
 
     -- Miscellaneous status bits etc
     status_bits <= (
