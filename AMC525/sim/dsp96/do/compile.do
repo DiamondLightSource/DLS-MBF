@@ -8,6 +8,7 @@ vlib msim/xil_defaultlib
 
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_dsp96.vhd \
+    $vhd_dir/util/dlyline.vhd \
     $bench_dir/sim_dsp96.vhd
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -22,6 +23,6 @@ add wave -group "DSP96" sim:/testbench/dsp96/*
 add wave -group "Sim" sim:/testbench/sim_dsp96/*
 add wave sim:*
 
-run 100ns
+run 1 us
 
 # vim: set filetype=tcl:

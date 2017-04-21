@@ -15,9 +15,9 @@
 --             start_in <= start_i;
 --             start_delay <= start_in;
 --             if start_delay = '1' then
---                 accum <= resize(product, accum'LENGTH);
+--                 accum <= product + preload_i;
 --             else
---                 accum <= accum + product;
+--                 accum <= product + accum;
 --             end if;
 --             sum_o <= accum;
 --         end if;
@@ -27,6 +27,38 @@
 --
 --      0         1          2          3        4
 --      data_i -> data_in -> product -> accum -> sum_o
+--
+-- Perhaps somewhat more to the point is the four and five tick delay from
+-- start_i to sum_o and overflow_o as shown below:
+--
+--  clk_i           /       /       /       /       /       /       /       /
+--                    _______   1       2       3       4       5
+--  start_i         _/       \_______________________________________________
+--
+--  register c low     mask  / load  /  mask
+--  C low              mask          / load  /  mask
+--
+--  P low            / Pn-2  / Pn-1  / Pn    / P0    / P1    / P2    / P3    /
+--  detect_low       / Pn-2  / Pn-1  / Pn    / xxxxx / P1    / P2    / P3    /
+--  detect_low_pl    / Pn-3  / Pn-2  / Pn-1  / Pn    / xxxxx / P1    / P2    /
+--
+--  register c high    mask          / load  /  mask
+--  C high             mask                  / load  /  mask
+--
+--  P high           / Pn-3  / Pn-2  / Pn-1  / Pn    / P0    / P1    / P2    /
+--  detect_high      / Pn-3  / Pn-2  / Pn-1  / Pn    / xxxxx / P0    / P1    /
+--
+--  sum_o            / Pn-3  / Pn-2  / Pn-1  / Pn    / P0    / P1    / P2    /
+--  overflow_o       / Pn-4  / Pn-3  / Pn-2  / Pn-1  / Pn    / xxxxx / P0    /
+--
+--  delay from start    0       1       2       3       4       5
+--
+-- Several details to note here.  Firstly, there is significant pipelining
+-- required to keep the DSP units happy.  Secondly, because both the preload and
+-- pattern compare masks share the C register, this means that immediately after
+-- loading P the pattern detect bits are invalid; fortunately, the pattern we're
+-- actually interested in (the last updated value) is valid.  Finally, in this
+-- design there is a skew between sum_o and overflow_o.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -45,7 +77,11 @@ entity detector_dsp96 is
         enable_i : in std_logic;
         start_i : in std_logic;
 
-        sum_o : out signed(95 downto 0) := (others => '0')
+        overflow_mask_i : in signed(95 downto 0);
+        preload_i : in signed(95 downto 0);
+
+        sum_o : out signed(95 downto 0) := (others => '0');
+        overflow_o : out std_logic
     );
 end;
 
@@ -57,8 +93,16 @@ architecture arch of detector_dsp96 is
     signal opmode_low : std_logic_vector(6 downto 0) := "0000101";
     signal opmode_high : std_logic_vector(6 downto 0) := "0001000";
     signal carryinsel_high : std_logic_vector(2 downto 0) := "000";
-    signal alumode_high : std_logic_vector(3 downto 0) := "0010";
     signal sum_low : signed(47 downto 0) := (others => '0');
+
+    signal register_c_low : signed(47 downto 0);
+    signal register_c_high : signed(95 downto 48);
+    signal detect_low : std_logic;
+    signal detect_low_bar : std_logic;
+    signal detect_low_pl : std_logic;
+    signal detect_low_bar_pl : std_logic;
+    signal detect_high : std_logic;
+    signal detect_high_bar : std_logic;
 
 begin
     -- Both the OPMODE and CARRYINSEL controls are registered, so we need to
@@ -69,9 +113,11 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             if start_i = '1' then
-                opmode_low  <= "000" & "01" & "01";     -- Load M into P
+                opmode_low  <= "011" & "01" & "01";     -- Load M + C into P
+                register_c_low <= preload_i(47 downto 0);
             else
-                opmode_low  <= "010" & "01" & "01";     -- Add M to P
+                opmode_low  <= "010" & "01" & "01";     -- Accumulate M into P
+                register_c_low <= overflow_mask_i(47 downto 0);
             end if;
 
             start_in <= start_i;
@@ -79,18 +125,26 @@ begin
                 -- Here we load the sign bit from the previous load (available
                 -- as sum_low(47) into P; to reduce routing costs we do the
                 -- appropriate calculations in the DSP unit.
-                opmode_high <= "000" & "10" & "00";     -- -1 + CARRYIN
+                opmode_high <= "011" & "10" & "00";     -- C + -1 + CARRYIN
                 carryinsel_high <= "000";               -- Select CARRYIN = sign
-                alumode_high <= "0010";                 -- Inverted result
+                register_c_high <= preload_i(95 downto 48);
             else
                 -- In this mode we need to add both the multiplier sign
                 -- extension and the accumulator carry.
                 opmode_high <= "100" & "10" & "00";     -- MACC_EXTEND
                 carryinsel_high <= "010";               -- CARRYCASCIN
-                alumode_high <= "0000";
+                register_c_high <= overflow_mask_i(95 downto 48);
             end if;
 
             sum_o(47 downto 0) <= sum_low;
+
+            detect_low_pl <= detect_low;
+            detect_low_bar_pl <= detect_low_bar;
+
+            -- Detect overflow if we don't get perfect pattern match.
+            overflow_o <= not (
+                (detect_low_pl and detect_high) or
+                (detect_low_bar_pl and detect_high_bar));
         end if;
     end process;
 
@@ -101,14 +155,16 @@ begin
     dsp48e1_low : DSP48E1 generic map (
         ALUMODEREG => 0,
         CARRYINSELREG => 0,
-        INMODEREG => 0
+        INMODEREG => 0,
+        USE_PATTERN_DETECT => "PATDET",
+        SEL_MASK => "C"
     ) port map (
         A => std_logic_vector(resize(data_i, 30)),
         ACIN => (others => '0'),
         ALUMODE => "0000",
         B => std_logic_vector(mul_i),
         BCIN => (others => '0'),
-        C => (others => '0'),
+        C => std_logic_vector(register_c_low),
         CARRYCASCIN => '0',
         CARRYIN => '0',
         CARRYINSEL => "000",
@@ -118,7 +174,7 @@ begin
         CEALUMODE => '0',
         CEB1 => '0',
         CEB2 => '1',
-        CEC => '0',
+        CEC => '1',
         CECARRYIN => '0',
         CECTRL => '1',
         CED => '0',
@@ -149,8 +205,8 @@ begin
         MULTSIGNOUT => multsign,
         OVERFLOW => open,
         signed(P) => sum_low,
-        PATTERNBDETECT => open,
-        PATTERNDETECT => open,
+        PATTERNBDETECT => detect_low_bar,
+        PATTERNDETECT => detect_low,
         PCOUT => open,
         UNDERFLOW => open
     );
@@ -158,19 +214,22 @@ begin
     -- High order unit, just accumulates product sign extension and accumulator
     -- carry, so we can turn the multiply unit off.
     dsp48e1_high : DSP48E1 generic map (
+        ALUMODEREG => 0,
         CARRYINREG => 0,
         INMODEREG => 0,
+        MREG => 0,
         USE_MULT => "NONE",
-        MREG => 0
+        USE_PATTERN_DETECT => "PATDET",
+        SEL_MASK => "C"
     ) port map (
         A => (others => '0'),
         ACIN => (others => '0'),
-        ALUMODE => alumode_high,
+        ALUMODE => "0000",
         B => (others => '0'),
         BCIN => (others => '0'),
-        C => (others => '0'),
+        C => std_logic_vector(register_c_high),
         CARRYCASCIN => carrycasc,
-        CARRYIN => sum_low(47),
+        CARRYIN => not sum_low(47),
         CARRYINSEL => carryinsel_high,
         CEA1 => '0',
         CEA2 => '0',
@@ -178,7 +237,7 @@ begin
         CEALUMODE => '1',
         CEB1 => '0',
         CEB2 => '0',
-        CEC => '0',
+        CEC => '1',
         CECARRYIN => '0',
         CECTRL => '1',
         CED => '0',
@@ -209,8 +268,8 @@ begin
         MULTSIGNOUT => open,
         OVERFLOW => open,
         signed(P) => sum_o(95 downto 48),
-        PATTERNBDETECT => open,
-        PATTERNDETECT => open,
+        PATTERNBDETECT => detect_high,
+        PATTERNDETECT => detect_high_bar,
         PCOUT => open,
         UNDERFLOW => open
     );

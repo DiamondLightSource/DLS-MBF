@@ -17,7 +17,11 @@ entity sim_dsp96 is
         enable_i : in std_logic;
         start_i : in std_logic;
 
-        sum_o : out signed(95 downto 0) := (others => '0')
+        overflow_mask_i : in signed(95 downto 0);
+        preload_i : in signed(95 downto 0);
+
+        sum_o : out signed(95 downto 0) := (others => '0');
+        overflow_o : out std_logic
     );
 end;
 
@@ -29,7 +33,13 @@ architecture arch of sim_dsp96 is
     signal start_in : std_logic := '0';
     signal start_delay : std_logic := '0';
 
+    signal match_zero : std_logic;
+    signal match_ones : std_logic;
+
 begin
+    match_zero <= and (not sum_o or overflow_mask_i);
+    match_ones <= and (sum_o or overflow_mask_i);
+
     process (clk_i) begin
         if rising_edge(clk_i) then
             if enable_i = '1' then
@@ -44,12 +54,13 @@ begin
             start_in <= start_i;
             start_delay <= start_in;
             if start_delay = '1' then
-                accum <= resize(product, accum'LENGTH);
+                accum <= product + preload_i;
             else
-                accum <= accum + product;
+                accum <= product + accum;
             end if;
 
             sum_o <= accum;
+            overflow_o <= not (match_zero or match_ones);
         end if;
     end process;
 end;
