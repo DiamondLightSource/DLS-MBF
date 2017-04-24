@@ -47,8 +47,19 @@ architecture arch of detector_body is
     signal bunch_enable : std_logic;
 
     signal data_overflow : std_logic;
+    signal detector_overflow : std_logic;
     signal det_write : std_logic;
     signal det_iq : cos_sin_96_t;
+    signal iq_out : cos_sin_32_t;
+
+    signal shift : integer;
+    signal base_mask : unsigned(95 downto 0) := (others => '1');
+    signal overflow_mask : signed(95 downto 0);
+    signal preload_extra : signed(96 downto 0);
+    signal preload : signed(95 downto 0);
+
+    signal det_write_dsp : std_logic;
+    signal det_write_out : std_logic;
 
 begin
     -- Bunch selection
@@ -65,6 +76,13 @@ begin
     );
 
 
+    -- Compute preload and overflow detection mask for output shift.
+    shift <= to_integer(8 * output_scaling_i);
+    preload_extra <= shift_left(97X"0_0000_0000_0000_0000_0000_0001", shift);
+    preload <= preload_extra(96 downto 1);
+    overflow_mask <= signed(shift_right(base_mask, shift));
+
+
     -- IQ Detector
     detector : entity work.detector_core port map (
         clk_i => adc_clk_i,
@@ -72,8 +90,12 @@ begin
         data_i => data_i,
         iq_i => iq_i,
         bunch_enable_i => bunch_enable,
-        overflow_i => data_overflow_i,
-        overflow_o => data_overflow,
+        data_overflow_i => data_overflow_i,
+        data_overflow_o => data_overflow,
+        detector_overflow_o => detector_overflow,
+
+        overflow_mask_i => overflow_mask,
+        preload_i => preload,
 
         start_i => start_i,
         write_i => write_i,
@@ -81,26 +103,49 @@ begin
         iq_o => det_iq
     );
 
+    write_to_dsp : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
 
-    -- Bring data overflow over to DSP clock
-    adc_to_dsp : entity work.pulse_adc_to_dsp port map (
+        pulse_i => det_write,
+        pulse_o => det_write_dsp
+    );
+
+    -- Shift of detector output
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            if det_write_dsp = '1' then
+                iq_out.cos <= shift_right(det_iq.cos, shift)(31 downto 0);
+                iq_out.sin <= shift_right(det_iq.sin, shift)(31 downto 0);
+            end if;
+            det_write_out <= det_write_dsp;
+        end if;
+    end process;
+
+
+    -- Bring overflows over to DSP clock
+    data_to_dsp : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
         pulse_i => data_overflow,
         pulse_o => data_overflow_o
     );
-
-
-    -- Scale and make output available to DRAM
-    output : entity work.detector_output port map (
+    detector_to_dsp : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        scaling_i => output_scaling_i,
-        overflow_o => detector_overflow_o,
-        write_i => det_write,
-        data_i => det_iq,
+        pulse_i => detector_overflow,
+        pulse_o => detector_overflow_o
+    );
+
+
+    -- Make output available to DRAM
+    output : entity work.detector_output port map (
+        dsp_clk_i => dsp_clk_i,
+
+        write_i => det_write_out,
+        data_i => iq_out,
 
         output_valid_o => valid_o,
         output_ready_i => ready_i,
