@@ -192,6 +192,10 @@ def check_args(args, max_length, line_no):
     if len(args) > max_length:
         fail_parse('Unexpected extra arguments', line_no)
 
+def check_body(parse):
+    if parse.body:
+        fail_parse('No sub-definitions allowed here', parse.line_no)
+
 def is_int(value):
     return value and value[0] in '0123456789'
 
@@ -203,7 +207,7 @@ def check_rw(rw, line_no):
 # Determines whether this is a register or group definition by looking more
 # closely at the parse.
 def is_register_def(parse):
-    line, body, doc, line_no = parse
+    line, body, _, line_no = parse
 
     # Three separate cases identify a register definition
     if not body:
@@ -221,16 +225,16 @@ def is_register_def(parse):
 
 
 def is_field_skip(parse):
-    line, body, doc, line_no = parse
-    return line.split()[0] == '-'
+    return parse.line.split()[0] == '-'
 
 
 def parse_field_def(offset, parse):
-    line, body, doc, line_no = parse
+    line, _, doc, line_no = parse
     line = line.split()
     name = line[0]
     args = line[1:]
 
+    check_body(parse)
     if name[0] != '.':
         fail_parse('Expected field definition', line_no)
     name = name[1:]
@@ -258,7 +262,7 @@ def parse_field_def(offset, parse):
 
 
 def parse_field_skip(parse):
-    line, body, doc, line_no = parse
+    line, body, _, line_no = parse
     line = line.split()
     check_args(line, 2, line_no)
 
@@ -301,21 +305,20 @@ def is_reg_array(parse):
 
 
 def parse_reg_array(offset, parse):
-    line, body, doc, line_no = parse
+    line, _, doc, line_no = parse
     line = line.split()
     if len(line) < 2:
         fail_parse('Expected register count', line_no)
     count = parse_int(line[1], line_no)
     rw = line[2] if len(line) > 2 else ''
     check_args(line, 3, line_no)
-    if body:
-        fail_parse('Unexpected field definitions', line_no)
+    check_body(parse)
     return (RegisterArray(line[0], (offset, count), rw, doc), count)
 
 
 
 def parse_reg_pair(offset, parse):
-    line, body, doc, line_no = parse
+    _, body, _, line_no = parse
     if len(body) != 2:
         fail_parse('Must have two registers', line_no)
     reg1 = parse_reg_def(offset, body[0], expect = 'R')
@@ -324,11 +327,13 @@ def parse_reg_pair(offset, parse):
     return [reg1, reg2]
 
 
-def parse_shared_name(offset, line, defines):
+def parse_shared_name(offset, parse, defines):
+    line, body, _, line_no = parse
     line = line.split()
     name = line[1] if len(line) > 1 else line[0]
     define = defines[line[0]]
     if isinstance(define, Group):
+        check_body(parse)
         length = define.range[1]
         return (
             define._replace(
@@ -336,10 +341,11 @@ def parse_shared_name(offset, line, defines):
                 content = [], definition = define),
             length)
     elif isinstance(define, Register):
+        fields = parse_field_defs(body)
         return (
             define._replace(
                 name = name, offset = offset,
-                content = [], definition = define),
+                content = fields, definition = define),
             1)
     else:
         assert False
@@ -348,14 +354,15 @@ def parse_shared_name(offset, line, defines):
 # Returns a list of results together with the number of registers spanned by the
 # returned result.
 def parse_group_entry(offset, parse, defines):
-    line, body, doc, line_no = parse
+    line, body, _, line_no = parse
     if line[0] in '.-':
         parse_fail('Field definition not allowed here', line_no)
 
     # Dispatch the parse
     if line[0] == ':':
         # shared_name = ":"...
-        return parse_shared_name(offset, line[1:], defines)
+        return parse_shared_name(
+            offset, parse._replace(line = line[1:]), defines)
     elif not is_register_def(parse):
         # Not a register definition, must be a group
         return parse_group_def(offset, parse, defines)
@@ -390,7 +397,6 @@ def parse_group_def(offset, parse, defines):
 
 
 def parse_shared_def(parse, defines):
-    line, body, doc, line_no = parse
     # Parsing one of shared_reg_def or shared_group_def.  Use the rest of
     # the line as the name.
     line = parse.line[1:]

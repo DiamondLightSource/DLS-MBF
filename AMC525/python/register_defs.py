@@ -14,10 +14,6 @@ head_template = '''\
 
 -- Register definitions
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
 package %s is
 '''
 tail_template = 'end;'
