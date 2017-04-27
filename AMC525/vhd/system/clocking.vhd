@@ -11,6 +11,8 @@ use unisim.vcomponents.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
+
 entity clocking is
     port (
         -- Raw input clocks and reset
@@ -80,7 +82,8 @@ architecture arch of clocking is
 
 begin
     -- ADC PLL reset request
-    adc_pll_reset_request <= write_data_i(31) and write_strobe_i;
+    adc_pll_reset_request <=
+        write_data_i(SYS_ADC_IDELAY_PLL_LOCK_BIT) and write_strobe_i;
 
     -- Programmable delay for adc_dco input
     idelay_inst : entity work.idelay_control port map (
@@ -93,9 +96,9 @@ begin
         read_data_o => read_data
     );
 
-    -- Temporary fixup of read_data_o
+    -- Add our ADC PLL lock status to the IDELAY readback
     read_data_o(30 downto 0) <= read_data(30 downto 0);
-    read_data_o(31) <= not dsp_clk_ok;
+    read_data_o(SYS_ADC_IDELAY_PLL_LOCK_BIT) <= not dsp_clk_ok;
 
     -- We do seem to need this IDELAYCTRL instance so that our IDELAYE2 works.
     idelayctrl_inst : IDELAYCTRL port map (

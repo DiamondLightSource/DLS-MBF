@@ -13,33 +13,94 @@
 #
 # The active registers in each bank are identified and named below.
 
+
+:IDELAY     RW
+    # Write new IDELAY value, returns current IDELAY setting
+    .VALUE      5       RW
+    # Enable write to IDELAY, so write number of form 0x1xx
+    .WRITE      @8      W
+    -           3
+    # Enable increment or decrement of IDELAY
+    .STEP       @12     W
+    # Increment if 1, decrement if 0
+    .INC_DECN           W
+
+:MMS
+    # Reading this register swaps MMS banks and returns the number of turns
+    # recorded in the now current readout bank.  Read the READOUT register
+    # repeatedly to read the bank.
+    COUNT       R
+        # Number of turns since last MMS bank exchange
+        .TURNS      29
+        # Set if the turn count has overflowed
+        .TURNS_OVFL
+        # Set if any of the sum fields have overflowed
+        .SUM_OVFL
+        # Set if any of the sum of squared fields have overflowed
+        .SUM2_OVFL
+
+    # Read four times for each bunch, returning the following data for each
+    # bunch:
+    #
+    #   ======= ======= =====================================
+    #   Word    Bits    Value
+    #   ======= ======= =====================================
+    #   0       15:0    Minimum value during capture period
+    #   0       31:16   Maximum value during capture period
+    #   1       31:0    Sum of all values during capture
+    #                   period
+    #   3:2     47:0    Sum of squares of values during
+    #                   capture period
+    #   ======= ======= =====================================
+    ##
+    ## Note the layout of the above table is for .rst generation into a fixed
+    ## width target.
+    READOUT     R
+
+
 # System registers
 # These occupy addresses 0x0000..0x0FFF
 # Used for top level hardware management
 SYS
-    # No fields yet specified
-    VERSION
+    # No fields yet defined
+    VERSION     R
 
-    # Status register
-    # R  [0]        Set if DSP clock is currently good
-    # R  [1]        Set during capture to DDR0
-    # R  [2]        FMC500 VCXO power ok
-    # R  [3]        FMC500 ADC power ok
-    # R  [4]        FMC500 DAC power ok
-    # R  [5]        FMC500 PLL status LD1: VCXO locked
-    # R  [6]        FMC500 PLL status LD2: VCO locked
-    # R  [7]        FMC500 DAC interrupt request
-    # R  [8]        FMC500 temperature alert
-    STATUS
+    # System status register
+    STATUS      R
+        # Set if ADC clock is currently good
+        .DSP_OK
+        # Set during capture to DDR0
+        .DRAM0_ENABLE
+        # Set if FMC500 VCXO power ok
+        .VCXO_OK
+        # Set if FMC500 ADC power ok
+        .ADC_OK
+        # Set if FMC500 DAC power ok
+        .DAC_OK
+        # Set if FMC500 PLL status LD1: VCXO locked
+        .PLL_LD1
+        # FMC500 PLL status LD2: set if VCO locked
+        .PLL_LD2
+        # FMC500 DAC interrupt request
+        .DAC_IRQN
+        # FMC500 temperature alert
+        .TEMP_ALERT
 
     # Control register
-    # RW [3]        FMC500 PLL clkin sel0
-    # RW [4]        FMC500 PLL clkin sel1
-    # RW [5]        FMC500 PLL sync
-    # RW [6]        ADC power down (leave at 0 for normal operation)
-    # RW [7]        DAC reset (leave at 0 for normal operation)
-    # RW [8]        Enable DAC test data generation
-    CONTROL
+    CONTROL     RW
+        -           3
+        # FMC500 PLL clkin sel0
+        .PLL_SEL0
+        # FMC500 PLL clkin sel1
+        .PLL_SEL1
+        # FMC500 PLL sync
+        .PLL_SYNC
+        # ADC power down (leave at 0 for normal operation)
+        .ADC_PDWN
+        # DAC reset (leave at 0 for normal operation)
+        .DAC_RSTN
+        # Enable DAC test data generation
+        .DAC_TESTMODE
 
     # ADC DCO IDELAY control
     # W  [4:0]      IDELAY value
@@ -49,21 +110,32 @@ SYS
     # W  [31]       Force reset of ADC PLL
     # R  [4:0]      Current IDELAY setting
     # R  [31]       Set if ADC PLL not locked
-    ADC_IDELAY
+    :IDELAY     ADC_IDELAY
+        # Set if ADC PLL not locked, write to trigger reset of ADC PLL.
+        .PLL_LOCK   @31     RW
 
-    # FMC500 SPI control
-    FMC_SPI
+    # FMC500 SPI control.  Reads and writes to the three SPI devices on the
+    # FMC500M ADC/DAC card.
+    FMC_SPI     RW
+        # Data to write and returned data
+        .DATA       8       RW
+        # Register address within selected device
+        .ADDRESS    15      W
+        # Select device to address:
+        #
+        # :0: Clock controller, LMK04826B
+        # :1: ADC, AD9684
+        # :2: DAC, AD9122
+        .SELECT     2 @29   W
+        # Set to 1 to trigger a read cycle on the selected SPI address, follow
+        # up by reading from this register to read the result
+        .RW_N       @31     W
 
     # DAC test data pattern
-    DAC_TEST        2
+    DAC_TEST    2 RW
 
     # Revolution clock IDELAY control
-    # W  [4:0]      IDELAY value
-    # W  [8]        Enable write to IDELAY, so write number of form 0x1xx
-    # W  [12]       Enable increment or decrement of IDELAY
-    # W  [13]       Increment if 1, decrement if 0
-    # R  [4:0]      Current IDELAY setting
-    REV_IDELAY
+    :IDELAY     REV_IDELAY
 
 
 # Control registers
@@ -93,7 +165,9 @@ CTRL
             COUNT
 
         # Overlaid pulse command and address readback registers
-        COMMAND/ADDRESS
+        *RW
+            ADDRESS     R
+            COMMAND     W
 
         STATUS
 
@@ -116,7 +190,9 @@ CTRL
         # R  [4]        ADC 1 motion trigger
         # R  [5]        State 0 trigger
         # R  [6]        State 1 trigger
-        CONTROL/PULSED
+        *RW
+            PULSED      R
+            CONTROL     W
 
         READBACK
             # Trigger status readbacks
@@ -181,7 +257,9 @@ DSP
         # W   Strobed bits
         # R   General status bits
         # RW  Latched pulsed events
-        STROBE/STATUS
+        *RW
+            STATUS      R
+            STROBE      W
 
         PULSED
 
@@ -197,7 +275,7 @@ DSP
         # W   31:7    Write FIR taps
         LIMIT
         TAPS
-        MMS         2
+        :MMS
 
     # Shared bunch by bunch configuration
     BUNCH
@@ -225,7 +303,7 @@ DSP
         # W   31:7    Write FIR taps
         CONFIG
         TAPS
-        MMS         2
+        :MMS
 
     # Sequencer control
     SEQ
@@ -234,7 +312,9 @@ DSP
         # R   2:0     Current sequencer program counter
         # R   4       Set if sequencer busy
         # R   17:8    Current super sequencer state
-        COMMAND/STATUS
+        *RW
+            STATUS      R
+            COMMAND     W
 
         # RW  2:0     Target sequencer program counter
         # RW  6:4     Sequencer state to generate event
@@ -249,5 +329,7 @@ DSP
     # Detector control
     DET
         CONFIG
-        COMMAND/EVENTS
+        *RW
+            EVENTS      R
+            COMMAND     W
         BUNCH

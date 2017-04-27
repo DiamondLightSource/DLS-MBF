@@ -35,6 +35,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/sync_reset.vhd \
     $vhd_dir/util/sync_bit.vhd \
     $vhd_dir/util/edge_detect.vhd \
+    $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/registers/register_mux_strobe.vhd \
     $vhd_dir/registers/register_mux.vhd \
     $vhd_dir/registers/register_strobe_cc.vhd \
