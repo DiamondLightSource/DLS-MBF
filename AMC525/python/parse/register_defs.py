@@ -44,7 +44,7 @@
 import sys
 from collections import namedtuple, OrderedDict
 
-import parse_indent
+import indent
 
 
 # ------------------------------------------------------------------------------
@@ -429,7 +429,7 @@ def separate_defines(defines):
 
 
 # Converts a list of indented parses into a list of Group definitions
-def parse_register_defs(parse):
+def parse(parse):
     defines = OrderedDict()
     groups = []
 
@@ -444,6 +444,6 @@ def parse_register_defs(parse):
 
 if __name__ == '__main__':
     import sys
-    indent = parse_indent.parse_file(file(sys.argv[1]))
-    parse = parse_register_defs(indent)
+    indent_parse = indent.parse_file(file(sys.argv[1]))
+    parse = parse(indent_parse)
     print_parse(parse)

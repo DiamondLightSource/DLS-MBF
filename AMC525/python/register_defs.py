@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import parse_indent
-import parse_register_defs
+import parse
 
 
 head_template = '''\
@@ -48,7 +47,7 @@ def emit_constant(prefix, name, index, suffix):
     print reg_template % (reg_name, index)
 
 
-class Generate(parse_register_defs.WalkParse):
+class Generate(parse.register_defs.WalkParse):
     def walk_register_array(self, prefix, array):
         emit_range(prefix, array.name, array.range, 'REGS', 'to')
 
@@ -89,6 +88,6 @@ def generate_package(package, parse):
 
 if __name__ == '__main__':
     package = sys.argv[2] if len(sys.argv) > 2 else 'register_defs'
-    indent = parse_indent.parse_file(file(sys.argv[1]))
-    parse = parse_register_defs.parse_register_defs(indent)
+    indent = parse.indent.parse_file(file(sys.argv[1]))
+    parse = parse.register_defs.parse(indent)
     generate_package(package, parse)
