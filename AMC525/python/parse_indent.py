@@ -1,103 +1,186 @@
-# This file exports two functions of interest:
+# This file exports this function:
 #   parse_indented_file(file_name) -> list of parsed indented sections
-#   parse_register_file(file_name) -> dictionary of register definitions
 #
-# The more abstract function is parse_indented_file(): in this case the data
-# structure returned can be described as a list of Parse values, where a Parse
-# is a pair consisting of a parsed line and a list of sub-parses:
+# The data structure returned can be described as a list of Parse values, where
+# a Parse is a pair consisting of a parsed line, a list of sub-parses,
+# documentation lines, and finally the input line number for reporting:
 #
 #   type FileParse = [Parse]
-#   type Parse = (Line, [Parse])
+#   type Parse = Parse(Line, [Parse], [Line], LineNo)
 #
 # For example, a file containing the following lines:
 #
 #   a
+#       # doc
 #       b
 #           c
 #       d
 #
-# will return the following parse: [['a', [['b', [['c', []]]], ['d', []]]]] .
+# will return the following parse:
 #
-# The function parse_register_file(file_name) digests such a parse with
-# assumptions appropriate to a register file to produce a rather simpler parse,
-# consisting of a dictionary mapping block names to the block number and a list
-# of field names and definitions:
-#
-#   type RegFileParse = {Key -> (Index, [(FieldName, FieldValue)])}
-#
-# For example, a file containing the following lines:
-#
-#   *REG        0
-#       FPGA_VERSION            0
-#
-# returns the following parse: {'*REG': ('0', [['FPGA_VERSION', '0']])}
+#   [
+#       Parse(line = 'a', body = [
+#           Parse(line = 'b', body = [
+#               Parse(line = 'c', body = [], doc = [], line_no = 4),
+#           ], doc = [' doc'], line_no = 3),
+#           Parse(line = 'd', body = [], doc = [], line_no = 5),
+#       ], doc = [], line_no = 1)
+#   ]
 
-import re
-
-class ParseFail(Exception):
-    def __init__(self, line_no, message):
-        self.line_no = line_no
-        self.message = message
-
-    def __str__(self):
-        return 'Line %d: %s' % (self.line_no, self.message)
+import sys
+from collections import namedtuple
 
 
-# Implements line reading so that we can keep track of line numbers.  Also
-# supports one level of undo on the process of iterating through the lines
+Parse = namedtuple('Parse', ['line', 'body', 'doc', 'line_no'])
+
+
 class read_lines:
-    def __init__(self, input, comment):
+    # Line classification
+    EOF = 0         # End of file
+    BLANK = 1       # Blank line, used for comment separation
+    COMMENT = 2     # Documentation line
+    LINE = 3        # Body line
+
+    def __init__(self, input):
         self.__input = input
-        self.__last = None
         self.__undo = False
-        self.__comment = re.compile(comment)
+        self.__result = ()
         self.line_no = 0
 
-    def __iter__(self):
-        return self
 
-    def next(self):
+    def fail(self, message):
+        print >>sys.stderr, 'Error: %s on line %d' % (message, self.line_no)
+        sys.exit(1)
+
+    def warn(self, message):
+        print >>sys.stderr, 'Warning: %s on line %d' % (message, self.line_no)
+
+
+    def __read_line(self):
+        line = self.__input.readline()
+        self.line_no += 1
+        if line:
+            if line[-1] != '\n':
+                self.fail('Missing newline at end of file')
+            content = line.lstrip(' ')
+            if content == '\n':
+                return (self.BLANK, 0, '')
+            else:
+                indent = len(line) - len(content)
+                if content.startswith('##'):
+                    return None
+                elif content.startswith('#'):
+                    return (self.COMMENT, indent, content[1:-1])
+                else:
+                    return (self.LINE, indent, content[:-1])
+        else:
+            return (self.EOF, 0, '')
+
+    def __fill(self, undo):
         if not self.__undo:
-            self.__last = self.read_line()
-        self.__undo = False
-        return self.__last
+            while True:
+                self.__result = self.__read_line()
+                if self.__result:
+                    break
+        self.__undo = undo
+        return self.__result
+
+    def read_line(self):
+        return self.__fill(False)
+
+    def lookahead(self):
+        return self.__fill(True)
 
     def undo(self):
         self.__undo = True
 
-    def read_line(self):
-        while True:
-            line = self.__input.next()
-            self.line_no += 1
-            content = line.lstrip(' ')
-            if content[0] != '\n' and not self.__comment.match(content):
-                break
-        assert content[-1] == '\n', 'Unexpected end of input'
-        return len(line) - len(content), content[:-1]
 
-    def check(self, test, message):
-        if not test:
-            raise ParseFail(self.line_no, message)
+# First gather together any comments with the correct indent as a documentation
+# block.  We allow a blank line to discard comments so we can also have true
+# comments.
+def parse_comments(input, indent):
+    comments = []
+    while True:
+        token, new_indent, line = input.read_line()
 
-
-# Parses lines at and above the given indentation, returns a nested list of the
-# resulting parse.
-def parse_indent_level(new_indent, lines):
-    result = []
-    for indent, value in lines:
-        if indent < new_indent:
-            lines.undo()
-            break
-        elif indent > new_indent:
-            lines.undo()
-            lines.check(result, 'Invalid indentation')
-            lines.check(not result[-1][1], 'Sub-fields already parsed')
-            result[-1][1] = parse_indent_level(indent, lines)
+        if token == input.BLANK:
+            if comments:
+                input.warn('Discarding inline comments')
+            comments = []
+        elif token == input.COMMENT:
+            if indent != new_indent:
+                input.fail('Bad comment indentation')
+            if line and line[0] == '#':
+                # Discard all lines with ## comment prefix; these act as true
+                # comments rather than documentation lines.
+                pass
+            else:
+                comments.append(line)
         else:
-            result.append([value, []])
-    return map(tuple, result)
+            input.undo()
+            return comments
 
 
-def parse_indented_file(file_name, comment = '^#'):
-    lines = read_lines(file(file_name), comment)
-    return parse_indent_level(0, lines)
+def parse_line(input, indent):
+    comments = parse_comments(input, indent)
+    token, new_indent, line = input.read_line()
+    line_no = input.line_no
+
+    if token == input.EOF:
+        if comments:
+            input.warn('Discarding comments at end of file')
+        return None
+    else:
+        assert token == input.LINE
+        if new_indent != indent:
+            input.fail('Invalid identation')
+
+        sub_lines = parse_sub_lines(input, indent)
+        return Parse(line, sub_lines, comments, line_no)
+
+
+def find_new_indent(input):
+    while True:
+        token, indent, _ = input.read_line()
+        if token == input.EOF:
+            return 0
+        elif token != input.BLANK:
+            input.undo()
+            return indent
+
+
+def parse_sub_lines(input, indent):
+    lines = []
+    new_indent = find_new_indent(input)
+    if new_indent > indent:
+        indent = new_indent
+        while True:
+            line = parse_line(input, indent)
+            if line:
+                lines.append(line)
+            else:
+                break
+            _, new_indent, _ = input.lookahead()
+            if new_indent > indent:
+                input.fail('Invalid indentation')
+            elif new_indent < indent:
+                break
+    return lines
+
+
+def parse_file(input):
+    return parse_sub_lines(read_lines(input), -1)
+
+
+def print_parse(prefix, parse):
+    for line, body, doc, line_no in parse:
+        for c in doc:
+            print '     %s#%s' % (prefix, c)
+        print '% 4d %s%s' % (line_no, prefix, line)
+        print_parse(prefix + '    ', body)
+
+
+if __name__ == '__main__':
+    input = file(sys.argv[1])
+    parse = parse_file(input)
+    print_parse('', parse)
