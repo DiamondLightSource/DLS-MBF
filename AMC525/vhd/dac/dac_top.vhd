@@ -39,12 +39,12 @@ entity dac_top is
         preemph_overflow_o : out std_logic; -- Preemphasis FIR overflow detect
 
         -- General register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(DSP_DAC_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(DSP_DAC_REGS);
+        read_strobe_i : in std_logic_vector(DSP_DAC_REGS);
+        read_data_o : out reg_data_array_t(DSP_DAC_REGS);
+        read_ack_o : out std_logic_vector(DSP_DAC_REGS);
 
         -- Pulse events
         write_start_i : in std_logic        -- For register block writes
@@ -88,12 +88,12 @@ begin
     read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
 
     -- Not all of these will remain in registers
-    dac_delay  <= unsigned(config_register(9 downto 0));
-    fir_gain   <= unsigned(config_register(24 downto 20));
-    nco_0_gain <= unsigned(config_register(15 downto 12));
-    fir_enable   <= config_register(25);
-    nco_0_enable <= config_register(26);
-    nco_1_enable <= config_register(27);
+    dac_delay  <= unsigned(config_register(DSP_DAC_CONFIG_DELAY_BITS));
+    fir_gain   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
+    nco_0_gain <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
+    fir_enable   <= config_register(DSP_DAC_CONFIG_FIR_ENABLE_BIT);
+    nco_0_enable <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
+    nco_1_enable <= config_register(DSP_DAC_CONFIG_NCO1_ENABLE_BIT);
 
 
     -- -------------------------------------------------------------------------

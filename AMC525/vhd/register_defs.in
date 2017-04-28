@@ -397,20 +397,14 @@ DSP
 
     # Input signal processing
     ADC
-        # R   31:0    Read MMS count and switch banks
-        # R   31:0    Read and reset MMS bunch entries
-        # W   13:0    Configure data input limit
-        # W   15      Configure ADC fine delay
-        # W   31:16   Configure MMS event limit
-        # W   31:7    Write FIR taps
-        LIMIT
+        CONFIG       W
             # Input threshold for reporting input overflow
             .THRESHOLD  14
             # Optional 1 clock delay on ADC input.  Probably not useful.
             .DELAY      1
             # Limit threshold for min/max/sum bunch motion event detector
             .DELTA      16
-        # After trigginer write start, input compensation taps are written to
+        # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS
         # Bunch by bunch motion for ADC input data, after compensation filter
@@ -418,10 +412,12 @@ DSP
 
     # Shared bunch by bunch configuration
     BUNCH
-        #  4   W  1:0      Determines bunch bank to be written
-        #  5   W           Configure selected bank
-        CONFIG
-        BANK
+        CONFIG      W
+            # Determines bunch bank to be written, resets write pointer
+            .BANK       2
+        # Repeated writes to this register update the configuration for
+        # successive bunches
+        BANK        W
 
     # Bunch by bunch filter
     FIR
@@ -439,41 +435,63 @@ DSP
         # The tap write counter is reset by any write to the config register.
         TAPS        W
 
-    # Output signal processing
     DAC
-        # R   31:0    Read MMS count and switch banks
-        # W   9:0     Configure DAC output delay
-        # W  105:12   NCO 0 gain
-        # W  109:16   NCO 1 gain
-        # W   24:20   FIR gain
-        # W   25      FIR enable
-        # W   26      NCO 0 enable
-        # W   27      NCO10 enable
-        # R   31:9    Read and reset MMS bunch entries
-        # W   31:7    Write FIR taps
-        CONFIG
+        # Output to DAC configuration control
+        CONFIG      W
+            # Output delay for final DAC output
+            .DELAY          10
+            # Gain for FIR output
+            .FIR_GAIN       5
+            # Gain for NCO0 output (NCO1 gain is under sequencer control)
+            .NCO0_GAIN      4
+            # Global control for FIR enable
+            .FIR_ENABLE
+            # Global control for NCO0 enable
+            .NCO0_ENABLE
+            # Global control for NCO1 enable
+            .NCO1_ENABLE
+        # After triggering write start, input compensation taps are written to
+        # this register in sequence.
         TAPS
+        # Bunch by bunch motion for DAC input data, before pre-emphasis filter
         :MMS
 
     # Sequencer control
     SEQ
-        # W   0       Abort sequencer if running
-        # W   1       Initiate block memory write sequence
-        # R   2:0     Current sequencer program counter
-        # R   4       Set if sequencer busy
-        # R   17:8    Current super sequencer state
         *RW
             STATUS      R
+                # Current sequencer state
+                .PC         3
+                # Set if sequencer busy
+                .BUSY
+                # Current super sequencer counter
+                .SUPER      10
             COMMAND     W
+                # Interrupts sequencer if running and resets to state 0
+                .ABORT
+                # Initiates write to selected memory block
+                .WRITE
 
-        # RW  2:0     Target sequencer program counter
-        # RW  6:4     Sequencer state to generate event
-        # RW  17:8    Target super sequencer state
-        # RW  29:28   Block memory to write
-        #             0 => sequencer program memory
-        #             1 => detector window memory
-        #             2 => super sequencer memory
-        CONFIG
+        CONFIG      RW
+            # Starting sequencer program counter when triggered
+            .PC             3
+            # Sequencer state to generate trigger event
+            .TRIGGER        3
+            # Starting super sequencer counter when triggered
+            .SUPER_COUNT    10
+            # Identifies which memory block is written when writing to the WRITE
+            # register:
+            #
+            #   ======= ====================================
+            #   Value   Target
+            #   ======= ====================================
+            #   0       sequencer program memory
+            #   1       detector window memory
+            #   2       super sequencer memory
+            #   ======= ====================================
+            .TARGET         2
+        # Writing to this register updates the selected internal sequencer
+        # memory bank.
         WRITE
 
     # Detector control

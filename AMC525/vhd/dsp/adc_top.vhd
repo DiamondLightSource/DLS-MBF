@@ -48,7 +48,7 @@ entity adc_top is
 end;
 
 architecture arch of adc_top is
-    signal limit_register : reg_data_t;
+    signal config_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
     signal data_delay : unsigned(0 downto 0);
@@ -62,17 +62,17 @@ begin
     -- Limit register.
     register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_ADC_LIMIT_REG),
+        write_strobe_i(0) => write_strobe_i(DSP_ADC_CONFIG_REG),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_ADC_LIMIT_REG),
-        register_data_o(0) => limit_register
+        write_ack_o(0) => write_ack_o(DSP_ADC_CONFIG_REG),
+        register_data_o(0) => config_register
     );
-    read_data_o(DSP_ADC_LIMIT_REG) <= (others => '0');
-    read_ack_o(DSP_ADC_LIMIT_REG) <= '1';
+    read_data_o(DSP_ADC_CONFIG_REG) <= (others => '0');
+    read_ack_o(DSP_ADC_CONFIG_REG) <= '1';
 
-    input_limit <= unsigned(limit_register(DSP_ADC_LIMIT_THRESHOLD_BITS));
-    data_delay  <= unsigned(limit_register(DSP_ADC_LIMIT_DELAY_BITS));
-    delta_limit <= unsigned(limit_register(DSP_ADC_LIMIT_DELTA_BITS));
+    input_limit <= unsigned(config_register(DSP_ADC_CONFIG_THRESHOLD_BITS));
+    data_delay  <= unsigned(config_register(DSP_ADC_CONFIG_DELAY_BITS));
+    delta_limit <= unsigned(config_register(DSP_ADC_CONFIG_DELTA_BITS));
 
 
     -- Register pipeline on input to help with timing

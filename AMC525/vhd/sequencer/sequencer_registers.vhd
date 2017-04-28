@@ -15,12 +15,12 @@ entity sequencer_registers is
         dsp_clk_i : in std_logic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(DSP_SEQ_REGS);
+        read_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
+        read_data_o : out reg_data_array_t(DSP_SEQ_REGS);
+        read_ack_o : out std_logic_vector(DSP_SEQ_REGS);
 
         -- Sequencer configuration settings
         seq_abort_o : out std_logic;
@@ -112,18 +112,22 @@ begin
     -- -------------------------------------------------------------------------
     -- Register mapping
 
-    seq_abort_o <= strobed_bits(0);
-    start_write <= strobed_bits(1);
+    seq_abort_o <= strobed_bits(DSP_SEQ_COMMAND_ABORT_BIT);
+    start_write <= strobed_bits(DSP_SEQ_COMMAND_WRITE_BIT);
 
     readback_register <= (
-        2 downto 0 => std_logic_vector(seq_pc_i),
-        4 => seq_busy_i,
-        17 downto 8 => std_logic_vector(super_count_i),
+        DSP_SEQ_STATUS_PC_BITS    => std_logic_vector(seq_pc_i),
+        DSP_SEQ_STATUS_BUSY_BIT   => seq_busy_i,
+        DSP_SEQ_STATUS_SUPER_BITS => std_logic_vector(super_count_i),
         others => '0'
     );
 
-    target_seq_pc_o <= seq_pc_t(register_file(2 downto 0));
-    trigger_state_o <= seq_pc_t(register_file(6 downto 4));
-    target_super_count_o <= super_count_t(register_file(17 downto 8));
-    write_target <= unsigned(register_file(29 downto 28));
+    target_seq_pc_o <=
+        seq_pc_t(register_file(DSP_SEQ_CONFIG_PC_BITS));
+    trigger_state_o <=
+        seq_pc_t(register_file(DSP_SEQ_CONFIG_TRIGGER_BITS));
+    target_super_count_o <=
+        super_count_t(register_file(DSP_SEQ_CONFIG_SUPER_COUNT_BITS));
+    write_target <=
+        unsigned(register_file(DSP_SEQ_CONFIG_TARGET_BITS));
 end;
