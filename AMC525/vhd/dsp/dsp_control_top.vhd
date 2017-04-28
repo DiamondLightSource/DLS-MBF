@@ -17,14 +17,14 @@ entity dsp_control_top is
         dsp_clk_i : in std_logic;
 
         -- Control register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(CTRL_REGS_RANGE);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(CTRL_REGS_RANGE);
+        read_strobe_i : in std_logic_vector(CTRL_REGS_RANGE);
+        read_data_o : out reg_data_array_t(CTRL_REGS_RANGE);
+        read_ack_o : out std_logic_vector(CTRL_REGS_RANGE);
 
-        -- DSP controls
+        -- DSP controls and data streams from DSP units
         control_to_dsp_o : out control_to_dsp_array_t;
         dsp_to_control_i : in dsp_to_control_array_t;
         loopback_o : out std_logic_vector(CHANNELS);
@@ -84,18 +84,14 @@ architecture arch of dsp_control_top is
 
 begin
     -- Capture of pulsed bits.
-    pulsed_bits_inst : entity work.pulsed_bits port map (
+    pulsed_bits_inst : entity work.all_pulsed_bits port map (
         clk_i => dsp_clk_i,
-
-        write_strobe_i => write_strobe_i(CTRL_PULSED_REG),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CTRL_PULSED_REG),
         read_strobe_i => read_strobe_i(CTRL_PULSED_REG),
         read_data_o => read_data_o(CTRL_PULSED_REG),
         read_ack_o => read_ack_o(CTRL_PULSED_REG),
-
         pulsed_bits_i => pulsed_bits
     );
+    write_ack_o(CTRL_PULSED_REG) <= '1';
 
     -- General control register
     register_file : entity work.register_file port map (
@@ -110,19 +106,19 @@ begin
 
 
     pulsed_bits <= (
-        0 => dram1_brsp_error_i,
+        CTRL_PULSED_DRAM1_ERROR_BIT => dram1_brsp_error_i,
         others => '0'
     );
 
-    loopback_o <= control_register(5 downto 4);
-    output_enable_o <= control_register(7 downto 6);
+    loopback_o      <= control_register(CTRL_CONTROL_LOOPBACK_BITS);
+    output_enable_o <= control_register(CTRL_CONTROL_OUTPUT_BITS);
 
 
     -- Channel data multiplexing control
-    adc_mux <= control_register(0);
-    nco_0_mux <= control_register(1);
-    nco_1_mux <= control_register(2);
-    bank_mux <= control_register(3);
+    adc_mux   <= control_register(CTRL_CONTROL_ADC_MUX_BIT);
+    nco_0_mux <= control_register(CTRL_CONTROL_NCO0_MUX_BIT);
+    nco_1_mux <= control_register(CTRL_CONTROL_NCO1_MUX_BIT);
+    bank_mux  <= control_register(CTRL_CONTROL_BANK_MUX_BIT);
     dsp_control_mux : entity work.dsp_control_mux port map (
         clk_i => adc_clk_i,
 

@@ -103,13 +103,6 @@ SYS
         .DAC_TESTMODE
 
     # ADC DCO IDELAY control
-    # W  [4:0]      IDELAY value
-    # W  [8]        Enable write to IDELAY, so write number of form 0x1xx
-    # W  [12]       Enable increment or decrement of IDELAY
-    # W  [13]       Increment if 1, decrement if 0
-    # W  [31]       Force reset of ADC PLL
-    # R  [4:0]      Current IDELAY setting
-    # R  [31]       Set if ADC PLL not locked
     :IDELAY     ADC_IDELAY
         # Set if ADC PLL not locked, write to trigger reset of ADC PLL.
         .PLL_LOCK   @31     RW
@@ -142,111 +135,230 @@ SYS
 # These occupy addresses 0x2000..02x7FF
 # Used for shared DSP control
 CTRL
-    # Captures single clock pulsed events.  Write a bit pattern to reset those
-    # bits and latch the current state.
-    # RW [0]        Set if DRAM0 data error detected
-    # RW [1]        Set if DRAM0 address error detected
-    # RW [2]        Set if DRAM0 write error detected
-    # RW [3]        Set if DRAM1 write error detected
-    PULSED
+    # Captures single clock pulsed events, resets on read.
+    PULSED      R
+        # Set if an AXI data error occurs when writing to slow memory.  Should
+        # never occur.
+        .DRAM1_ERROR
 
-    # Miscellaneous control
-    # RW [0]    ADC mux: if set channel 0 has copy of channel 1 ADC
-    # RW [1]    NCO0 mux: if set channel 0 has sin data from channel 1
-    # RW [2]    NCO1 mux: if set channel 0 has sin data from channel 1
-    # RW [4:3]  Channel loopback
-    # RW [6:5]  Channel output enable
-    CONTROL
+    # Control over central inter-channel multiplexers, and related global
+    # settings.  All MUX fields should be set to the same value for normal
+    # operation: for independent channels, set all MUX bits to 0, for coupled
+    # channels set to 1.
+    CONTROL     RW
+        # ADC mux: if set input to channel 0 FIR has copy of channel 1 ADC
+        .ADC_MUX
+        # NCO0 mux: if set channel 0 NCO0 has sin data from channel 1
+        .NCO0_MUX
+        # NCO1 mux: if set channel 0 NCO1 has sin data from channel 1
+        .NCO1_MUX
+        # Bank mux: if set channel 0 bank selection is copy of bank selection
+        # from channel 1.
+        .BANK_MUX
+        # If set to 1 the output from the corresponding channel is looped back
+        # to the ADC input.  Set to 0 for normal operation.
+        .LOOPBACK   2
+        # Set to 1 to enable output to DAC on the corresponding channel,
+        # otherwise zero is output.
+        .OUTPUT     2
 
+    # Control and readout registers for capture to fast memory.
     MEM
-        # Control and readout registers
-        CONFIG
-            CONFIG
-            COUNT
+        CONFIG      RW
+            # Select pattern of data written to memory according to the table
+            # below:
+            #
+            #   ===== ===== =====
+            #   Mux   Ch0   Ch1
+            #   ===== ===== =====
+            #   0     ADC0  ADC1
+            #   1     ADC0  FIR1
+            #   2     ADC0  DAC1
+            #   3     ADC0  FIR0
+            #   4     FIR0  ADC1
+            #   5     FIR0  FIR1
+            #   6     FIR0  DAC1
+            #   7     FIR0  DAC0
+            #   8     DAC0  ADC1
+            #   9     DAC0  FIR1
+            #   10    DAC0  DAC1
+            #   11    DAC0  ADC0
+            #   12    ADC1  FIR1
+            #   13    FIR1  DAC1
+            #   14    DAC1  ADC1
+            #   15    0     0
+            #   ===== ===== =====
+            .MUX_SELECT     4
+            # Gain selection for FIR capture to DRAM
+            .FIR_GAIN       4
+            # Individual channel enables.  Do not use, leave as all zeros.
+            .ENABLES        2
+        COUNT       RW
+            # Number of words to capture to memory after STOP event
+            .COUNT          28
 
-        # Overlaid pulse command and address readback registers
         *RW
+            # Only valid after STOP has been triggered, returns the write
+            # address at the time of the trigger event
             ADDRESS     R
+            # Write to this register to trigger the select actions
             COMMAND     W
+                # Starts capture to memory
+                .START
+                # Stops capture to memory after specified post trigger capture
+                # count has completed.  Has same effect as enabled external
+                # trigger event if configured.
+                .STOP
+                # Resets all error bits
+                .RESET
 
-        STATUS
+        # Active status bits
+        STATUS      R
+            # DRAM data capture error bits.  We hope to never see any of these
+            # bits set.  The bits correspond to AXI errors as follows:
+            #
+            #   === ================================================
+            #   Bit Error
+            #   === ================================================
+            #   0   Data error: data overrun while writing
+            #   1   Address error: invalid AXI address
+            #   2   Data response error: memory write refused
+            #   === ================================================
+            #
+            # None of the above errors should ever occur!
+            .ERRORS     3
+            # This bit is set if any of the data capture error bits is set.
+            .ERROR
+            # This bit is set during capture to DRAM
+            .ENABLE
 
     TRG
-        # Pulsed trigger control events
-        # W  [0]        Start turn clock synchronisation
-        # W  [1]        Request turn clock sample
-        # W  [2]        Arm sequencer 0 trigger
-        # W  [3]        Disarm sequencer 0 trigger
-        # W  [4]        Arm sequencer 1 trigger
-        # W  [5]        Disarm sequencer 1 trigger
-        # W  [6]        Arm DRAM0 trigger
-        # W  [7]        Disarm DRAM0 trigger
-        # W  [8]        Generate soft trigger event
-        # Capture trigger events
-        # R  [0]        Soft trigger
-        # R  [1]        External event trigger
-        # R  [2]        Postmortem trigger
-        # R  [3]        ADC 0 motion trigger
-        # R  [4]        ADC 1 motion trigger
-        # R  [5]        State 0 trigger
-        # R  [6]        State 1 trigger
         *RW
             PULSED      R
+                # Each bit records a raw trigger event from the corresponding
+                # trigger source:
+                #
+                #   ======= ===================================
+                #   Bit     Source
+                #   ======= ===================================
+                #   0       Soft trigger
+                #   1       External event trigger
+                #   2       Postmortem trigger
+                #   3       ADC 0 motion trigger
+                #   4       ADC 1 motion trigger
+                #   5       State 0 trigger
+                #   6       State 1 trigger
+                #   ======= ===================================
+                .TRIGGERS   7
+            # Pulsed trigger control events
             CONTROL     W
+                # Start turn clock synchronisation
+                .SYNC_TURN
+                # Request turn clock sample
+                .SAMPLE_TURN
+                # Arm sequencer 0 trigger
+                .SEQ0_ARM
+                # Disarm sequencer 0 trigger
+                .SEQ0_DISARM
+                # Arm sequencer 1 trigger
+                .SEQ1_ARM
+                # Disarm sequencer 1 trigger
+                .SEQ1_DISARM
+                # Arm DRAM0 trigger
+                .DRAM0_ARM
+                # Disarm DRAM0 trigger
+                .DRAM0_DISARM
+                # Generate soft trigger event
+                .TRIGGER
 
-        READBACK
-            # Trigger status readbacks
-            #     7[0]        Start clock synchronisation busy
-            #     7[1]        ADC clock phase after turn synchronisation
-            #     7[2]        Synchronisation error detected
-            #     7[3]        Waiting for turn clock sample
-            #     7[4]        ADC clock phase after sample
-            #     7[5]        Sequencer 0 trigger armed
-            #     7[6]        Sequencer 1 trigger armed
-            #     7[7]        DRAM0 trigger armed
-            #     7[25:16]    Turn clock counter captured by sample
-            STATUS
+        # Trigger status readbacks
+        STATUS      R
+            # Start clock synchronisation busy
+            .SYNC_BUSY
+            # ADC clock phase after turn synchronisation
+            .SYNC_PHASE
+            # Synchronisation error detected
+            .SYNC_ERROR
+            # Waiting for turn clock sample
+            .SAMPLE_BUSY
+            # ADC clock phase after sample
+            .SAMPLE_PHASE
+            # Sequencer 0 trigger armed
+            .SEQ0_ARMED
+            # Sequencer 1 trigger armed
+            .SEQ1_ARMED
+            # DRAM0 trigger armed
+            .DRAM0_ARMED
+            # Turn clock counter captured by sample
+            .SAMPLE     10 @16
 
-            # R   8       Trigger event sources.
-            #     8[6:0]      Sequencer 0 trigger source mask
-            #     8[14:8]     Sequencer 1 trigger source mask
-            #     8[22:16]    DRAM0 trigger source mask
-            SOURCES
+        # Trigger event sources.
+        SOURCES     R
+            # Sequencer 0 trigger source mask
+            .SEQ0       7
+            -
+            # Sequencer 1 trigger source mask
+            .SEQ1       7
+            -
+            # DRAM0 trigger source mask
+            .DRAM0      7
 
         CONFIG
-            # RW  9       Turn clock configuration setup
-            #     9[9:0]      Maximum bunch count
-            #     9[19:10]    DSP 0 turn clock offset
-            #     9[29:20]    DSP 1 turn clock offset
-            TURN_SETUP
+            # Turn clock configuration setup
+            TURN        RW
+                # Configures the internal revolution clock frequency.  Set to
+                # the number of machine bunches-1
+                .MAX_BUNCH      10
+                # Turn clock offset for channel 0 from sync trigger
+                .DSP0_OFFSET    10
+                # Turn clock offset for channel 1 from sync trigger
+                .DSP1_OFFSET    10
 
-            # RW  10      Blanking windows
-            #     10[15:0]    DSP 0 blanking window (in turns)
-            #     10[31:16]   DSP 1 blanking window (in turns)
-            BLANKING
+            # Blanking windows
+            BLANKING    RW
+                # DSP 0 blanking window (in turns)
+                .DSP0           16
+                # DSP 1 blanking window (in turns)
+                .DSP1           16
 
-            # RW  11[23:0]    Sequencer 0 trigger delay
-            DELAY_SEQ_0
+            SEQ0        RW
+                # Sequencer 0 trigger delay
+                .DELAY          24
 
-            # RW  12[23:0]    Sequencer 1 trigger delay
-            DELAY_SEQ_1
+            SEQ1        RW
+                # Sequencer 1 trigger delay
+                .DELAY          24
 
-            # RW  13[23:0]    DRAM0 trigger delay
-            DELAY_DRAM
+            DRAM0       RW
+                # DRAM0 trigger delay
+                .DELAY          24
 
-            # RW  14      Sequencer trigger configuration
-            #     14[6:0]     Sequencer 0 trigger enable mask
-            #     14[14:8]    Sequencer 0 blanking enable mask
-            #     14[22:16]   Sequencer 1 trigger enable mask
-            #     14[30:24]   Sequencer 1 blanking enable mask
-            TRIG_SEQ
+            # Sequencer trigger configuration
+            TRIG_SEQ    RW
+                # Sequencer 0 trigger enable mask
+                .ENABLE0        7
+                -
+                # Sequencer 0 blanking enable mask
+                .BLANKING0      7
+                -
+                # Sequencer 1 trigger enable mask
+                .ENABLE1        7
+                -
+                # Sequencer 1 blanking enable mask
+                .BLANKING1      7
 
-            # RW  15      DRAM0 trigger configuration
-            #     15[6:0]     DRAM trigger enable mask
-            #     15[14:8]    DRAM blanking enable mask
-            #     15[16]      DRAM turn clock selection
-            #     15[18:17]   DRAM blanking pulse selection mask
-            TRIG_DRAM
+            # DRAM0 trigger configuration
+            TRIG_DRAM   RW
+                # Trigger enable mask
+                .ENABLE         7
+                -
+                # Blanking enable mask
+                .BLANKING       7
+                -
+                # Turn clock selection
+                .TURN_SEL       1
+                # Blanking pulse selection mask
+                .BLANKING_SEL   2
 
 
 # DSP registers
@@ -328,8 +440,53 @@ DSP
 
     # Detector control
     DET
-        CONFIG
+        # Configures global behaviour of the four detectors
+        CONFIG      RW
+            # Select FIR gain: 0 selects low order bits from FIR, 1 selects
+            # high order bits
+            .FIR_GAIN   1
+            # Select data input source: 0 selects ADC data, 1 selects scaled
+            # FIR data
+            .SELECT
+            -           6
+            # Output scaling for detector 0
+            .SCALE0     3
+            # Output enable for detector 0
+            .ENABLE0
+            # Output scaling for detector 1
+            .SCALE1     3
+            # Output enable for detector 1
+            .ENABLE1
+            # Output scaling for detector 2
+            .SCALE2     3
+            # Output enable for detector 2
+            .ENABLE2
+            # Output scaling for detector 3
+            .SCALE3     3
+            # Output enable for detector 3
+            .ENABLE3
+            # Select which bunch bank is written to when writing to the detector
+            # bunch register
+            .BANK       2 @30
         *RW
+            # Captures events generated by the detector, reset on readout
             EVENTS      R
+                # For each detector, set if output overflow was detected when
+                # transmitting detector result
+                .OUTPUT_OVFL    4
+                # For each detector, set if data was lost.  This can happen if
+                # detector data is written to rapidly
+                .UNDERRUN       4
+                # For each detector, set if FIR overflow was detected on data
+                # used in the detector.
+                .FIR_OVFL       4
             COMMAND     W
-        BUNCH
+                # Triggers start of write to detector bunch enable memory.
+                .WRITE
+                # Resets output address for detector capture
+                .RESET
+        # Writing to this register programs the bunch enable memory for the
+        # detector selected by writing to the CONFIG BANK selection.  First
+        # reset the address by setting COMMAND RESET and then write 32 enable
+        # bits at a time until all bunches have been programmed.
+        BUNCH       W

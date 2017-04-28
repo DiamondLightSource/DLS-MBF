@@ -89,30 +89,31 @@ begin
 
     -- Incoming events
     event_bits <= (
-        3 downto 0 => detector_overflow_i,
-        7 downto 4 => output_underrun_i,
-        11 downto 8 => fir_overflow_i,
+        DSP_DET_EVENTS_OUTPUT_OVFL_BITS => detector_overflow_i,
+        DSP_DET_EVENTS_UNDERRUN_BITS => output_underrun_i,
+        DSP_DET_EVENTS_FIR_OVFL_BITS => fir_overflow_i,
         others => '0'
     );
 
     -- Outgoing events
-    start_write_o <= command_bits(0);
-    address_reset_o <= command_bits(1);
+    start_write_o <= command_bits(DSP_DET_COMMAND_WRITE_BIT);
+    address_reset_o <= command_bits(DSP_DET_COMMAND_RESET_BIT);
 
     -- Control fields
-    fir_gain_o <= unsigned(register_file(0 downto 0));
-    data_select_o <= register_file(1);
-    output_scaling_o(0) <= unsigned(register_file(10 downto 8));
-    input_enable_o(0) <= register_file(11);
-    output_scaling_o(1) <= unsigned(register_file(14 downto 12));
-    input_enable_o(1) <= register_file(15);
-    output_scaling_o(2) <= unsigned(register_file(18 downto 16));
-    input_enable_o(2) <= register_file(19);
-    output_scaling_o(3) <= unsigned(register_file(22 downto 20));
-    input_enable_o(3) <= register_file(23);
+    fir_gain_o <= unsigned(register_file(DSP_DET_CONFIG_FIR_GAIN_BITS));
+    data_select_o <= register_file(DSP_DET_CONFIG_SELECT_BIT);
+    output_scaling_o(0) <= unsigned(register_file(DSP_DET_CONFIG_SCALE0_BITS));
+    input_enable_o(0) <= register_file(DSP_DET_CONFIG_ENABLE0_BIT);
+    output_scaling_o(1) <= unsigned(register_file(DSP_DET_CONFIG_SCALE1_BITS));
+    input_enable_o(1) <= register_file(DSP_DET_CONFIG_ENABLE1_BIT);
+    output_scaling_o(2) <= unsigned(register_file(DSP_DET_CONFIG_SCALE2_BITS));
+    input_enable_o(2) <= register_file(DSP_DET_CONFIG_ENABLE2_BIT);
+    output_scaling_o(3) <= unsigned(register_file(DSP_DET_CONFIG_SCALE3_BITS));
+    input_enable_o(3) <= register_file(DSP_DET_CONFIG_ENABLE3_BIT);
 
     -- Bunch write strobe
-    bunch_write_index <= to_integer(unsigned(register_file(31 downto 30)));
+    bunch_write_index <=
+        to_integer(unsigned(register_file(DSP_DET_CONFIG_BANK_BITS)));
     compute_strobe(
         bunch_write_o, bunch_write_index, write_strobe_i(DSP_DET_BUNCH_REG));
 end;

@@ -8,6 +8,8 @@ use work.support.all;
 use work.defines.all;
 use work.min_max_sum_defs.all;
 
+use work.register_defs.all;
+
 entity min_max_sum is
     generic (
         ADDR_BITS : natural := 9
@@ -24,17 +26,13 @@ entity min_max_sum is
         -- Two register readout interface:
         -- First returns the accumulated event count and swaps buffers
         -- Read second repeatedly to return and reset memory bank
-        read_strobe_i : in std_logic_vector(0 to 1);
-        read_data_o : out reg_data_array_t(0 to 1);
-        read_ack_o : out std_logic_vector(0 to 1)
+        read_strobe_i : in std_logic_vector(MMS_REGS_RANGE);
+        read_data_o : out reg_data_array_t(MMS_REGS_RANGE);
+        read_ack_o : out std_logic_vector(MMS_REGS_RANGE)
     );
 end;
 
 architecture arch of min_max_sum is
-    -- Register indices.
-    constant COUNT_REG : natural := 0;
-    constant READOUT_REG : natural := 1;
-
     -- Delay from bank selection and update address in to _store to
     -- update_data_read valid.
     constant READ_DELAY : natural := 4;
@@ -129,9 +127,9 @@ begin
         clk_i => adc_clk_i,
         turn_clock_i => turn_clock,
 
-        count_read_strobe_i => read_strobe(COUNT_REG),
-        count_read_data_o => read_data(COUNT_REG),
-        count_read_ack_o => read_ack(COUNT_REG),
+        count_read_strobe_i => read_strobe(MMS_COUNT_REG),
+        count_read_data_o => read_data(MMS_COUNT_REG),
+        count_read_ack_o => read_ack(MMS_COUNT_REG),
 
         bank_select_o => bank_select,
         update_addr_o => update_addr,
@@ -188,12 +186,12 @@ begin
     -- Readout capture
     readout_inst : entity work.min_max_sum_readout port map (
         clk_i => adc_clk_i,
-        reset_readout_i => read_strobe(COUNT_REG),
+        reset_readout_i => read_strobe(MMS_COUNT_REG),
         data_i => readout_data_read,
         readout_strobe_o => readout_strobe,
         readout_ack_i => readout_ack,
-        read_strobe_i => read_strobe(READOUT_REG),
-        read_data_o => read_data(READOUT_REG),
-        read_ack_o => read_ack(READOUT_REG)
+        read_strobe_i => read_strobe(MMS_READOUT_REG),
+        read_data_o => read_data(MMS_READOUT_REG),
+        read_ack_o => read_ack(MMS_READOUT_REG)
     );
 end;

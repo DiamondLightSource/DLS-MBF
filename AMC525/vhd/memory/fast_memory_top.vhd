@@ -16,12 +16,12 @@ entity fast_memory_top is
         dsp_clk_i : in std_logic;
 
         -- Control register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(CTRL_MEM_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(CTRL_MEM_REGS);
+        read_strobe_i : in std_logic_vector(CTRL_MEM_REGS);
+        read_data_o : out reg_data_array_t(CTRL_MEM_REGS);
+        read_ack_o : out std_logic_vector(CTRL_MEM_REGS);
 
         -- Input data stream
         dsp_to_control_i : in dsp_to_control_array_t;
@@ -41,7 +41,8 @@ entity fast_memory_top is
 end;
 
 architecture arch of fast_memory_top is
-    signal config_registers : reg_data_array_t(CTRL_MEM_CONFIG_REGS);
+    signal config_register : reg_data_t;
+    signal count_register : reg_data_t;
     signal command_bits : reg_data_t;
     signal status_register : reg_data_t;
 
@@ -84,19 +85,29 @@ begin
     -- Register control
 
     -- Configuration registers with readback
-    register_file_inst : entity work.register_file port map (
+    config_reg : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(CTRL_MEM_CONFIG_REGS),
+        write_strobe_i(0) => write_strobe_i(CTRL_MEM_CONFIG_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CTRL_MEM_CONFIG_REGS),
-        register_data_o => config_registers
+        write_ack_o(0) => write_ack_o(CTRL_MEM_CONFIG_REG),
+        register_data_o(0) => config_register
     );
-    read_data_o(CTRL_MEM_CONFIG_REGS) <= config_registers;
-    read_ack_o(CTRL_MEM_CONFIG_REGS) <= (others => '1');
+    read_data_o(CTRL_MEM_CONFIG_REG) <= config_register;
+    read_ack_o(CTRL_MEM_CONFIG_REG) <= '1';
+
+    count_reg : entity work.register_file port map (
+        clk_i => dsp_clk_i,
+        write_strobe_i(0) => write_strobe_i(CTRL_MEM_COUNT_REG),
+        write_data_i => write_data_i,
+        write_ack_o(0) => write_ack_o(CTRL_MEM_COUNT_REG),
+        register_data_o(0) => count_register
+    );
+    read_data_o(CTRL_MEM_COUNT_REG) <= count_register;
+    read_ack_o(CTRL_MEM_COUNT_REG) <= '1';
 
 
     -- Pulsed command events
-    strobed_bits_inst : entity work.strobed_bits port map (
+    strobed_bits : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
         write_strobe_i => write_strobe_i(CTRL_MEM_COMMAND_REG_W),
         write_data_i => write_data_i,
@@ -117,23 +128,21 @@ begin
     -- Register mapping
 
     -- Configuration fields extracted from config registers
-    mux_select <= config_registers(CTRL_MEM_CONFIG_CONFIG_REG)(3 downto 0);
-    fir_gain <=
-        unsigned(config_registers(CTRL_MEM_CONFIG_CONFIG_REG)(7 downto 4));
-    enable_select <= config_registers(CTRL_MEM_CONFIG_CONFIG_REG)(9 downto 8);
-    count <= unsigned(
-        config_registers(CTRL_MEM_CONFIG_COUNT_REG)(COUNT_BITS-1 downto 0));
+    mux_select <= config_register(CTRL_MEM_CONFIG_MUX_SELECT_BITS);
+    fir_gain <= unsigned(config_register(CTRL_MEM_CONFIG_FIR_GAIN_BITS));
+    enable_select <= config_register(CTRL_MEM_CONFIG_ENABLES_BITS);
+    count <= unsigned(count_register(COUNT_BITS-1 downto 0));
 
     -- Control events
-    start <= command_bits(0);
-    stop  <= command_bits(1);
-    reset_errors <= command_bits(2);
+    start <= command_bits(CTRL_MEM_COMMAND_START_BIT);
+    stop  <= command_bits(CTRL_MEM_COMMAND_STOP_BIT);
+    reset_errors <= command_bits(CTRL_MEM_COMMAND_RESET_BIT);
 
     -- Active status
     status_register <= (
-        2 downto 0 => error_bits,
-        3 => vector_or(error_bits),
-        4 => capture_enable_out,
+        CTRL_MEM_STATUS_ERRORS_BITS => error_bits,
+        CTRL_MEM_STATUS_ERROR_BIT => vector_or(error_bits),
+        CTRL_MEM_STATUS_ENABLE_BIT => capture_enable_out,
         others => '0'
     );
 
