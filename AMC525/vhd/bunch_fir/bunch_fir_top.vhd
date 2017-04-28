@@ -26,15 +26,12 @@ entity bunch_fir_top is
         bunch_config_i : in bunch_config_t;
 
         -- General register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(DSP_FIR_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
-
-        -- Pulse events
-        write_start_i : in std_logic        -- For register block writes
+        write_ack_o : out std_logic_vector(DSP_FIR_REGS);
+        read_strobe_i : in std_logic_vector(DSP_FIR_REGS);
+        read_data_o : out reg_data_array_t(DSP_FIR_REGS);
+        read_ack_o : out std_logic_vector(DSP_FIR_REGS)
     );
 end;
 
@@ -45,6 +42,7 @@ architecture arch of bunch_fir_top is
     signal write_fir : unsigned(FIR_BANK_BITS-1 downto 0);
     signal decimation_limit : unsigned(6 downto 0);
     signal decimation_shift : unsigned(2 downto 0);
+    signal write_start : std_logic;
 
     -- Data types
     subtype TAP_RANGE  is natural range TAP_WIDTH-1 downto 0;
@@ -73,9 +71,12 @@ begin
     read_data_o(DSP_FIR_CONFIG_REG) <= config_register;
     read_ack_o(DSP_FIR_CONFIG_REG) <= '1';
 
-    write_fir        <= unsigned(config_register(1 downto 0));
-    decimation_limit <= unsigned(config_register(8 downto 2));
-    decimation_shift <= unsigned(config_register(11 downto 9));
+    -- Use write to config register to trigger start of taps write
+    write_start <= write_strobe_i(DSP_FIR_CONFIG_REG);
+
+    write_fir        <= unsigned(config_register(DSP_FIR_CONFIG_BANK_BITS));
+    decimation_limit <= unsigned(config_register(DSP_FIR_CONFIG_LIMIT_BITS));
+    decimation_shift <= unsigned(config_register(DSP_FIR_CONFIG_SHIFT_BITS));
 
 
     -- Taps for FIR
@@ -83,7 +84,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        write_start_i => write_start_i,
+        write_start_i => write_start,
         write_fir_i => write_fir,
 
         write_strobe_i => write_strobe_i(DSP_FIR_TAPS_REG),

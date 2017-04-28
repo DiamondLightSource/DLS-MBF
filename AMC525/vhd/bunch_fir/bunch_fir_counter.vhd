@@ -28,12 +28,11 @@ architecture arch of bunch_fir_counter is
     signal turn_clock : std_logic;
     signal bunch_index : bunch_count_t := (others => '0');
 
-    constant DECIMATION_BITS : natural := decimation_limit_i'LENGTH;
-    signal decimation_counter : natural range 0 to 2**DECIMATION_BITS-1;
+    signal decimation_counter : decimation_limit_i'SUBTYPE;
     signal last_turn : boolean;
 
 begin
-    last_turn <= decimation_counter = decimation_limit_i;
+    last_turn <= decimation_counter = 0;
 
     turn_clock_delay : entity work.dlyreg generic map (
         DLY => 4
@@ -48,9 +47,9 @@ begin
             if turn_clock = '1' then
                 bunch_index <= (others => '0');
                 if last_turn then
-                    decimation_counter <= 0;
+                    decimation_counter <= decimation_limit_i;
                 else
-                    decimation_counter <= decimation_counter + 1;
+                    decimation_counter <= decimation_counter - 1;
                 end if;
                 last_turn_o <= to_std_logic(last_turn);
                 first_turn_o <= last_turn_o;

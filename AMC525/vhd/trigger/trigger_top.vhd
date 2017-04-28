@@ -8,6 +8,7 @@ use work.support.all;
 use work.defines.all;
 
 use work.trigger_defs.all;
+use work.register_defs.all;
 
 entity trigger_top is
     port (
@@ -16,12 +17,12 @@ entity trigger_top is
         dsp_clk_i : in std_logic;
 
         -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(CTRL_TRG_REGS);
+        read_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        read_data_o : out reg_data_array_t(CTRL_TRG_REGS);
+        read_ack_o : out std_logic_vector(CTRL_TRG_REGS);
 
         -- External trigger sources
         revolution_clock_i : in std_logic;

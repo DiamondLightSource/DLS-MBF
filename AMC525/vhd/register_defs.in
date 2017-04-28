@@ -366,16 +366,34 @@ CTRL
 # Used for channel specific DSP control
 DSP
     MISC
-        # W   Strobed bits
-        # R   General status bits
-        # RW  Latched pulsed events
         *RW
-            STATUS      R
+            PULSED      R
+                # Set if input data exceeds ADC input limit setting
+                .ADC_INP_OVF
+                # Set if overflow detected during input compensation filter
+                .ADC_FIR_OVF
+                # Set if any of the ADC min/max/sum accumulators overflow
+                .ADC_MMS_OVF
+                # Set when ADC min/max/sum motion exceeds configured threshold
+                .ADC_DELTA
+                # Set when overflow in FIR data detected in DAC output
+                .DAC_FIR_OVF
+                # Set when DAC outpu multiplexer detects overflow
+                .DAC_MUX_OVF
+                # Set if any of the DAC min/max/sum accumulators overflow
+                .DAC_MMS_OVF
+                # Set if overflow detected during output preemphasis filter
+                .DAC_OUT_OVF
+
+            # Writing to this register generates a pulse on the selected bits
             STROBE      W
+                # Starts block write to ADC and DAC fast FIR taps
+                .WRITE
+                # Resets ADC min/max event detector to enable further events
+                .RESET_DELTA
 
-        PULSED
-
-        NCO0_FREQ
+        # Sets NCO0 frequency
+        NCO0_FREQ   RW
 
     # Input signal processing
     ADC
@@ -386,7 +404,16 @@ DSP
         # W   31:16   Configure MMS event limit
         # W   31:7    Write FIR taps
         LIMIT
+            # Input threshold for reporting input overflow
+            .THRESHOLD  14
+            # Optional 1 clock delay on ADC input.  Probably not useful.
+            .DELAY      1
+            # Limit threshold for min/max/sum bunch motion event detector
+            .DELTA      16
+        # After trigginer write start, input compensation taps are written to
+        # this register in sequence.
         TAPS
+        # Bunch by bunch motion for ADC input data, after compensation filter
         :MMS
 
     # Shared bunch by bunch configuration
@@ -398,8 +425,19 @@ DSP
 
     # Bunch by bunch filter
     FIR
-        CONFIG
-        TAPS
+        CONFIG      RW
+            # Configures which group of taps will be written when writing to the
+            # TAPS register.
+            .BANK       2
+            # Determines decimation count: set this to target decimation count
+            # less 1.
+            .LIMIT      7
+            # Scaling factor for decimated data, needs to be set up correctly to
+            # avoid silent overflow.
+            .SHIFT      3
+        # Writing to this register programs the FIR taps for the selected bank.
+        # The tap write counter is reset by any write to the config register.
+        TAPS        W
 
     # Output signal processing
     DAC
