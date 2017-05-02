@@ -18,7 +18,7 @@ package %s is
 '''
 tail_template = 'end;'
 
-reg_template   = '    constant %s : natural := %d;'
+reg_template   = '    constant %(reg_name)s : natural := %(index)d;'
 
 subtype_template = '    subtype %%(reg_name)s is natural range %s;'
 range_templates = {
@@ -40,7 +40,7 @@ def emit_range(prefix, name, range, suffix, direction):
 
 def emit_constant(prefix, name, index, suffix):
     reg_name = prefix_name(prefix, name, suffix)
-    print reg_template % (reg_name, index)
+    print reg_template % locals()
 
 
 class Generate(parse.register_defs.WalkParse):
@@ -62,8 +62,8 @@ class Generate(parse.register_defs.WalkParse):
 
     def walk_group(self, prefix, group):
         suffix = 'REGS' if prefix else 'REGS_RANGE'
-        self.walk_subgroups(prefix + [group.name], group)
         emit_range(prefix, group.name, group.range, suffix, 'to')
+        self.walk_subgroups(prefix + [group.name], group)
 
 
 def generate_list(walk, values):

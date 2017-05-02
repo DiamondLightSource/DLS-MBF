@@ -25,7 +25,7 @@
     # Increment if 1, decrement if 0
     .INC_DECN           W
 
-:MMS
+:!MMS
     # Reading this register swaps MMS banks and returns the number of turns
     # recorded in the now current readout bank.  Read the READOUT register
     # repeatedly to read the bank.
@@ -61,7 +61,7 @@
 # System registers
 # These occupy addresses 0x0000..0x0FFF
 # Used for top level hardware management
-SYS
+!SYS
     # No fields yet defined
     VERSION     R
 
@@ -134,7 +134,7 @@ SYS
 # Control registers
 # These occupy addresses 0x2000..02x7FF
 # Used for shared DSP control
-CTRL
+!CTRL
     # Captures single clock pulsed events, resets on read.
     PULSED      R
         # Set if an AXI data error occurs when writing to slow memory.  Should
@@ -163,7 +163,7 @@ CTRL
         .OUTPUT     2
 
     # Control and readout registers for capture to fast memory.
-    MEM
+    !MEM
         CONFIG      RW
             # Select pattern of data written to memory according to the table
             # below:
@@ -232,7 +232,7 @@ CTRL
             # This bit is set during capture to DRAM
             .ENABLE
 
-    TRG
+    !TRG
         *RW
             PULSED      R
                 # Each bit records a raw trigger event from the corresponding
@@ -303,7 +303,7 @@ CTRL
             # DRAM0 trigger source mask
             .DRAM0      7
 
-        CONFIG
+        !CONFIG
             # Turn clock configuration setup
             TURN        RW
                 # Configures the internal revolution clock frequency.  Set to
@@ -364,8 +364,8 @@ CTRL
 # DSP registers
 # These occupy addresses 0x3000..0x37FF and 0x3800..3FFF
 # Used for channel specific DSP control
-DSP
-    MISC
+!DSP
+    !MISC
         *RW
             PULSED      R
                 # Set if input data exceeds ADC input limit setting
@@ -396,7 +396,7 @@ DSP
         NCO0_FREQ   RW
 
     # Input signal processing
-    ADC
+    !ADC
         CONFIG       W
             # Input threshold for reporting input overflow
             .THRESHOLD  14
@@ -411,7 +411,7 @@ DSP
         :MMS
 
     # Shared bunch by bunch configuration
-    BUNCH
+    !BUNCH
         CONFIG      W
             # Determines bunch bank to be written, resets write pointer
             .BANK       2
@@ -420,7 +420,7 @@ DSP
         BANK        W
 
     # Bunch by bunch filter
-    FIR
+    !FIR
         CONFIG      RW
             # Configures which group of taps will be written when writing to the
             # TAPS register.
@@ -435,7 +435,7 @@ DSP
         # The tap write counter is reset by any write to the config register.
         TAPS        W
 
-    DAC
+    !DAC
         # Output to DAC configuration control
         CONFIG      W
             # Output delay for final DAC output
@@ -457,7 +457,7 @@ DSP
         :MMS
 
     # Sequencer control
-    SEQ
+    !SEQ
         *RW
             STATUS      R
                 # Current sequencer state
@@ -495,7 +495,7 @@ DSP
         WRITE
 
     # Detector control
-    DET
+    !DET
         # Configures global behaviour of the four detectors
         CONFIG      RW
             # Select FIR gain: 0 selects low order bits from FIR, 1 selects

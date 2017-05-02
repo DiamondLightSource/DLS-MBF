@@ -6,7 +6,7 @@
 #   register_def_entry = group_def | shared_def
 #   shared_def = shared_reg_def | shared_group_def
 #
-#   group_def = name { group_entry }+
+#   group_def = "!"name { group_entry }+
 #   group_entry = group_def | reg_def | reg_pair | reg_array | shared_name
 #
 #   reg_def = name [ rw ] { field_def | field_skip }*
@@ -43,6 +43,7 @@
 
 import sys
 from collections import namedtuple, OrderedDict
+import re
 
 import indent
 
@@ -192,6 +193,11 @@ def check_args(args, max_length, line_no):
     if len(args) > max_length:
         fail_parse('Unexpected extra arguments', line_no)
 
+name_pattern = re.compile(r'[A-Z][A-Z0-9_]*$', re.I)
+def check_name(name, line_no):
+    if not name_pattern.match(name):
+        fail_parse('Invalid name "%s"' % name, line_no)
+
 def check_body(parse):
     if parse.body:
         fail_parse('No sub-definitions allowed here', parse.line_no)
@@ -202,26 +208,6 @@ def is_int(value):
 def check_rw(rw, line_no):
     if rw not in ['R', 'W', 'RW', '']:
         fail_parse('Invalid R/W specification', line_no)
-
-
-# Determines whether this is a register or group definition by looking more
-# closely at the parse.
-def is_register_def(parse):
-    line, body, _, line_no = parse
-
-    # Three separate cases identify a register definition
-    if not body:
-        # A group definition must be non empty
-        return True
-    elif len(line.split()) > 1:
-        # A group definition can only be a single word
-        return True
-    else:
-        body_line, _, _, _ = body[0]
-        if body_line[0] in '.-':
-            # A group definition cannot be followed by fields
-            return True
-    return False
 
 
 def is_field_skip(parse):
@@ -288,6 +274,8 @@ def parse_field_defs(field_list):
 def parse_reg_def(offset, parse, expect = None):
     line, body, doc, line_no = parse
     line = line.split()
+    name = line[0]
+    check_name(name, line_no)
     rw = line[1] if len(line) > 1 else ''
     check_rw(rw, line_no)
     check_args(line, 2, line_no)
@@ -296,7 +284,7 @@ def parse_reg_def(offset, parse, expect = None):
     overlaid = bool(expect)
 
     fields = parse_field_defs(body)
-    return Register(line[0], offset, rw, overlaid, fields, None, doc)
+    return Register(name, offset, rw, overlaid, fields, None, doc)
 
 
 def is_reg_array(parse):
@@ -307,48 +295,50 @@ def is_reg_array(parse):
 def parse_reg_array(offset, parse):
     line, _, doc, line_no = parse
     line = line.split()
+    name = line[0]
+    check_name(name, line_no)
     if len(line) < 2:
         fail_parse('Expected register count', line_no)
     count = parse_int(line[1], line_no)
     rw = line[2] if len(line) > 2 else ''
     check_args(line, 3, line_no)
     check_body(parse)
-    return (RegisterArray(line[0], (offset, count), rw, doc), count)
-
+    return (RegisterArray(name, (offset, count), rw, doc), count)
 
 
 def parse_reg_pair(offset, parse):
     _, body, _, line_no = parse
     if len(body) != 2:
         fail_parse('Must have two registers', line_no)
-    reg1 = parse_reg_def(offset, body[0], expect = 'R')
-    reg2 = parse_reg_def(offset, body[1], expect = 'W')
-    return [reg2, reg1]
-    return [reg1, reg2]
+    return [
+        parse_reg_def(offset, body[0], expect = 'R'),
+        parse_reg_def(offset, body[1], expect = 'W')]
 
 
 def parse_shared_name(offset, parse, defines):
     line, body, _, line_no = parse
     line = line.split()
-    name = line[1] if len(line) > 1 else line[0]
-    define = defines[line[0]]
+    key = line[0]
+    name = line[1] if len(line) > 1 else key
+    check_name(name, line_no)
+    if key not in defines:
+        fail_parse('Unknown shared name', line_no)
+    define = defines[key]
     if isinstance(define, Group):
         check_body(parse)
         length = define.range[1]
-        return (
-            define._replace(
-                name = name, range = (offset, length),
-                content = [], definition = define),
-            length)
+        result = define._replace(
+            name = name, range = (offset, length),
+            content = [], definition = define)
     elif isinstance(define, Register):
         fields = parse_field_defs(body)
-        return (
-            define._replace(
-                name = name, offset = offset,
-                content = fields, definition = define),
-            1)
+        length = 1
+        result = define._replace(
+            name = name, offset = offset,
+            content = fields, definition = define)
     else:
         assert False
+    return (result, length)
 
 
 # Returns a list of results together with the number of registers spanned by the
@@ -356,14 +346,14 @@ def parse_shared_name(offset, parse, defines):
 def parse_group_entry(offset, parse, defines):
     line, body, _, line_no = parse
     if line[0] in '.-':
-        parse_fail('Field definition not allowed here', line_no)
+        fail_parse('Field definition not allowed here', line_no)
 
     # Dispatch the parse
     if line[0] == ':':
         # shared_name = ":"...
         return parse_shared_name(
             offset, parse._replace(line = line[1:]), defines)
-    elif not is_register_def(parse):
+    elif line[0] == '!':
         # Not a register definition, must be a group
         return parse_group_def(offset, parse, defines)
     elif is_reg_array(parse):
@@ -376,7 +366,14 @@ def parse_group_entry(offset, parse, defines):
 # number of registers in the parsed group
 def parse_group_def(offset, parse, defines):
     line, body, doc, line_no = parse
-    check_args(line.split(), 1, line_no)
+
+    line = line.split()
+    name = line[0]
+    assert name[0] == '!'
+    name = name[1:]
+    check_name(name, line_no)
+
+    check_args(line, 1, line_no)
 
     content = []
     count = 0
@@ -393,20 +390,18 @@ def parse_group_def(offset, parse, defines):
             count += entry_count
             content.append(result)
 
-    return (Group(line, (offset, count), content, None, doc), count)
+    return (Group(name, (offset, count), content, None, doc), count)
 
 
 def parse_shared_def(parse, defines):
-    # Parsing one of shared_reg_def or shared_group_def.  Use the rest of
-    # the line as the name.
+    # Parsing one of shared_reg_def or shared_group_def.
     line = parse.line[1:]
-    name = line.split()[0]
     parse = parse._replace(line = line)
-    if is_register_def(parse):
-        result = parse_reg_def(0, parse)
-    else:
+    if line[0] == '!':
         result, _ = parse_group_def(0, parse, {})
-    defines[name] = result
+    else:
+        result = parse_reg_def(0, parse)
+    defines[result.name] = result
 
 
 # Parse for a top level entry -- either a reusable name definition, if prefixed
@@ -415,9 +410,11 @@ def parse_register_def_entry(parse, defines):
     if parse.line[0] == ':':
         parse_shared_def(parse, defines)
         return []
-    else:
+    elif parse.line[0] == '!':
         group, count = parse_group_def(0, parse, defines)
         return [group]
+    else:
+        fail_parse('Ungrouped register definition not expected here')
 
 
 # Pull the defines apart into register and group definitions.
@@ -445,7 +442,6 @@ def parse(parse):
 
     group_defs, register_defs = separate_defines(defines)
     return Parse(group_defs, register_defs, groups)
-
 
 
 if __name__ == '__main__':
