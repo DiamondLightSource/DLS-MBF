@@ -12,7 +12,6 @@ use work.register_defs.all;
 entity system_registers is
     port (
         reg_clk_i : in std_logic;       -- Register clock
-        reg_clk_ok_i : in std_logic;
         ref_clk_i : in std_logic;       -- Timing reference clock
         ref_clk_ok_i : in std_logic;
 

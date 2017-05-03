@@ -603,7 +603,6 @@ begin
     --  DSP{0,1}    Individual control of DSP elements
     register_top_inst : entity work.register_top port map (
         reg_clk_i => reg_clk,
-        reg_clk_ok_i => reg_clk_ok,
         dsp_clk_i => dsp_clk,
         dsp_clk_ok_i => dsp_clk_ok,
 
@@ -640,7 +639,6 @@ begin
     -- System registers for hardware management
     system_registers_inst : entity work.system_registers port map (
         reg_clk_i => reg_clk,
-        reg_clk_ok_i => reg_clk_ok,
         ref_clk_i => ref_clk,
         ref_clk_ok_i => ref_clk_ok,
 
