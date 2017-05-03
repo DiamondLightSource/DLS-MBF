@@ -53,7 +53,9 @@ entity dsp_main is
         event_trigger_i : in std_logic;
         postmortem_trigger_i : in std_logic;
         blanking_trigger_i : in std_logic;
-        dsp_events_o : out std_logic_vector
+        dsp_events_o : out std_logic_vector;
+
+        interrupts_o : out std_logic_vector
     );
 end;
 
@@ -183,7 +185,9 @@ begin
         revolution_clock_i => revolution_clock_i,
         event_trigger_i => event_trigger_i,
         postmortem_trigger_i => postmortem_trigger_i,
-        blanking_trigger_i => blanking_trigger_i
+        blanking_trigger_i => blanking_trigger_i,
+
+        interrupts_o => interrupts_o
     );
 
 

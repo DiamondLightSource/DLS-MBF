@@ -68,7 +68,7 @@ begin
     read_ack_o(SYS_STATUS_REG) <= '1';
     -- Pipeline the status to avoid annoying timing problems.
     status_dly_inst : entity work.dlyreg generic map (
-        DW => 32, DLY => 1
+        DW => 32, DLY => 8
     ) port map (
         clk_i => reg_clk_i,
         data_i => status_read_data_i,

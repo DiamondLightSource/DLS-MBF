@@ -47,7 +47,9 @@ entity dsp_main is
         event_trigger_i : in std_logic;
         postmortem_trigger_i : in std_logic;
         blanking_trigger_i : in std_logic;
-        dsp_events_o : out std_logic_vector
+        dsp_events_o : out std_logic_vector;
+
+        interrupts_o : out std_logic_vector
     );
 end;
 

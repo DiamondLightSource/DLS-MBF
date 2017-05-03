@@ -65,9 +65,12 @@ architecture arch of fast_memory_top is
     -- We don't expect the error bits to ever be seen
     signal error_bits : std_logic_vector(2 downto 0) := "000";
 
-    -- We need a very long pipeline for the data output
-    constant OUT_PIPELINE : natural := 10;
-    constant IN_PIPELINE : natural := 10;
+    -- We have a variety of pipelines to the AXI DRAM0 controller so that we can
+    -- be instantiated some distance from the DRAM0 system.
+    constant DATA_PIPELINE : natural := 12;
+    constant ERROR_PIPELINE : natural := 12;
+    constant ENABLE_PIPELINE : natural := 8;
+    constant ADDRESS_PIPELINE : natural := 12;
 
     -- Pipeline signals
     signal capture_enable_out : std_logic;
@@ -149,7 +152,7 @@ begin
 
     -- Pipeline data out to relax timing
     data_delay : entity work.dlyreg generic map (
-        DLY => OUT_PIPELINE,
+        DLY => DATA_PIPELINE,
         DW => data_o'LENGTH
     ) port map (
         clk_i => dsp_clk_i,
@@ -159,7 +162,7 @@ begin
 
     -- Same pipeline for data control signals
     control_delay : entity work.dlyreg generic map (
-        DLY => OUT_PIPELINE
+        DLY => ENABLE_PIPELINE
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => capture_enable_out,
@@ -168,7 +171,7 @@ begin
 
     -- Pipeline for error signals
     error_delay : entity work.dlyreg generic map (
-        DLY => IN_PIPELINE,
+        DLY => ERROR_PIPELINE,
         DW => 3
     ) port map (
         clk_i => dsp_clk_i,
@@ -180,7 +183,7 @@ begin
 
     -- Pipeline for capture address
     address_delay : entity work.dlyreg generic map (
-        DLY => IN_PIPELINE,
+        DLY => ADDRESS_PIPELINE,
         DW => capture_address_i'LENGTH
     ) port map (
         clk_i => dsp_clk_i,

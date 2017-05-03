@@ -51,7 +51,9 @@ entity dsp_control_top is
         revolution_clock_i : in std_logic;
         event_trigger_i : in std_logic;
         postmortem_trigger_i : in std_logic;
-        blanking_trigger_i : in std_logic
+        blanking_trigger_i : in std_logic;
+
+        interrupts_o : out std_logic_vector
     );
 end;
 
@@ -81,6 +83,10 @@ architecture arch of dsp_control_top is
     signal turn_clock : std_logic_vector(CHANNELS);
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
+
+    signal interrupts : interrupts_o'SUBTYPE;
+
+    constant INTERRUPT_PIPELINE : natural := 8;
 
 begin
     -- Capture of pulsed bits.
@@ -228,4 +234,20 @@ begin
         control_to_dsp_o(c).turn_clock <= turn_clock(c);
         control_to_dsp_o(c).seq_start <= seq_start(c);
     end generate;
+
+
+    -- Interrupt assignment and pipeline to help with placement.
+    interrupt_delay : entity work.dlyreg generic map (
+        DLY => INTERRUPT_PIPELINE,
+        DW => interrupts'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => interrupts,
+        data_o => interrupts_o
+    );
+
+    interrupts <= (
+        0 => dram0_capture_enable_o,
+        others => '0'
+    );
 end;

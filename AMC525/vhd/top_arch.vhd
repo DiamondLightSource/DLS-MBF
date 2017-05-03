@@ -243,12 +243,6 @@ begin
         1 => fmc500_inputs.pll_status_ld2
     );
 
-    -- Interrupt events
-    INTR <= (
-        0 => DRAM0_capture_enable,
-        1 => not DRAM0_capture_enable,
-        others => '0'
-    );
 
     -- -------------------------------------------------------------------------
     -- Clocking
@@ -711,7 +705,9 @@ begin
         event_trigger_i => event_trigger,
         postmortem_trigger_i => postmortem_trigger,
         blanking_trigger_i => blanking_trigger,
-        dsp_events_o => dsp_events
+        dsp_events_o => dsp_events,
+
+        interrupts_o => INTR
     );
 
     -- Generate DAC test data if necessary
