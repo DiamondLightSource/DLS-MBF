@@ -237,4 +237,4 @@ begin
         wait;
     end process;
 
-end STRUCTURE;
+end;

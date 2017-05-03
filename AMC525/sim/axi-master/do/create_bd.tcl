@@ -10,7 +10,7 @@ set_property target_language VHDL [current_project]
 source $bd_script
 
 # Internal source directory needed for building simulation
-set src_dir interconnect/interconnect.srcs/sources_1/bd/interconnect
+set src_dir interconnect
 
 open_bd_design $src_dir/interconnect.bd
 generate_target all [get_files $src_dir/interconnect.bd]

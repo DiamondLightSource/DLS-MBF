@@ -7,15 +7,25 @@
 # IP Integrator Tcl commands easier.
 ################################################################
 
+namespace eval _tcl {
+proc get_script_folder {} {
+   set script_path [file normalize [info script]]
+   set script_folder [file dirname $script_path]
+   return $script_folder
+}
+}
+variable script_folder
+set script_folder [_tcl::get_script_folder]
+
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2015.1
+set scripts_vivado_version 2016.4
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
    puts ""
-   puts "ERROR: This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."
+   catch {common::send_msg_id "BD_TCL-109" "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
 
    return 1
 }
@@ -27,85 +37,81 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # To test this script, run the following commands from Vivado Tcl console:
 # source interconnect_script.tcl
 
-# If you do not already have a project created,
-# you can create a project using the following command:
-#    create_project project_1 myproj -part xc7vx690tffg1761-2
+# If there is no project opened, this script will create a
+# project, but make sure you do not have an existing project
+# <./myproj/project_1.xpr> in the current working folder.
 
-# CHECKING IF PROJECT EXISTS
-if { [get_projects -quiet] eq "" } {
-   puts "ERROR: Please open or create a project!"
-   return 1
+set list_projs [get_projects -quiet]
+if { $list_projs eq "" } {
+   create_project project_1 myproj -part xc7vx690tffg1761-2
 }
-
 
 
 # CHANGE DESIGN NAME HERE
 set design_name interconnect
 
-# If you do not already have an existing IP Integrator design open,
-# you can create a design using the following command:
-#    create_bd_design $design_name
+# This script was generated for a remote BD. To create a non-remote design,
+# change the variable <run_remote_bd_flow> to <0>.
 
-# Creating design if needed
-set errMsg ""
-set nRet 0
+set run_remote_bd_flow 1
+if { $run_remote_bd_flow == 1 } {
+  # Set the reference directory for source file relative paths (by default 
+  # the value is script directory path)
+  set origin_dir .
 
-set cur_design [current_bd_design -quiet]
-set list_cells [get_bd_cells -quiet]
+  # Use origin directory path location variable, if specified in the tcl shell
+  if { [info exists ::origin_dir_loc] } {
+     set origin_dir $::origin_dir_loc
+  }
 
-if { ${design_name} eq "" } {
-   # USE CASES:
-   #    1) Design_name not set
+  set str_bd_folder [file normalize ${origin_dir}]
+  set str_bd_filepath ${str_bd_folder}/${design_name}/${design_name}.bd
 
-   set errMsg "ERROR: Please set the variable <design_name> to a non-empty value."
-   set nRet 1
+  # Check if remote design exists on disk
+  if { [file exists $str_bd_filepath ] == 1 } {
+     catch {common::send_msg_id "BD_TCL-110" "ERROR" "The remote BD file path <$str_bd_filepath> already exists!"}
+     common::send_msg_id "BD_TCL-008" "INFO" "To create a non-remote BD, change the variable <run_remote_bd_flow> to <0>."
+     common::send_msg_id "BD_TCL-009" "INFO" "Also make sure there is no design <$design_name> existing in your current project."
 
-} elseif { ${cur_design} ne "" && ${list_cells} eq "" } {
-   # USE CASES:
-   #    2): Current design opened AND is empty AND names same.
-   #    3): Current design opened AND is empty AND names diff; design_name NOT in project.
-   #    4): Current design opened AND is empty AND names diff; design_name exists in project.
+     return 1
+  }
 
-   if { $cur_design ne $design_name } {
-      puts "INFO: Changing value of <design_name> from <$design_name> to <$cur_design> since current design is empty."
-      set design_name [get_property NAME $cur_design]
-   }
-   puts "INFO: Constructing design in IPI design <$cur_design>..."
+  # Check if design exists in memory
+  set list_existing_designs [get_bd_designs -quiet $design_name]
+  if { $list_existing_designs ne "" } {
+     catch {common::send_msg_id "BD_TCL-111" "ERROR" "The design <$design_name> already exists in this project! Will not create the remote BD <$design_name> at the folder <$str_bd_folder>."}
 
-} elseif { ${cur_design} ne "" && $list_cells ne "" && $cur_design eq $design_name } {
-   # USE CASES:
-   #    5) Current design opened AND has components AND same names.
+     common::send_msg_id "BD_TCL-010" "INFO" "To create a non-remote BD, change the variable <run_remote_bd_flow> to <0> or please set a different value to variable <design_name>."
 
-   set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
-   set nRet 1
-} elseif { [get_files -quiet ${design_name}.bd] ne "" } {
-   # USE CASES: 
-   #    6) Current opened design, has components, but diff names, design_name exists in project.
-   #    7) No opened design, design_name exists in project.
+     return 1
+  }
 
-   set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
-   set nRet 2
+  # Check if design exists on disk within project
+  set list_existing_designs [get_files */${design_name}.bd]
+  if { $list_existing_designs ne "" } {
+     catch {common::send_msg_id "BD_TCL-112" "ERROR" "The design <$design_name> already exists in this project at location:
+    $list_existing_designs"}
+     catch {common::send_msg_id "BD_TCL-113" "ERROR" "Will not create the remote BD <$design_name> at the folder <$str_bd_folder>."}
 
+     common::send_msg_id "BD_TCL-011" "INFO" "To create a non-remote BD, change the variable <run_remote_bd_flow> to <0> or please set a different value to variable <design_name>."
+
+     return 1
+  }
+
+  # Now can create the remote BD
+  # NOTE - usage of <-dir> will create <$str_bd_folder/$design_name/$design_name.bd>
+  create_bd_design -dir $str_bd_folder $design_name
 } else {
-   # USE CASES:
-   #    8) No opened design, design_name not in project.
-   #    9) Current opened design, has components, but diff names, design_name not in project.
 
-   puts "INFO: Currently there is no design <$design_name> in project, so creating one..."
+  # Create regular design
+  if { [catch {create_bd_design $design_name} errmsg] } {
+     common::send_msg_id "BD_TCL-012" "INFO" "Please set a different value to variable <design_name>."
 
-   create_bd_design $design_name
-
-   puts "INFO: Making design <$design_name> as current_bd_design."
-   current_bd_design $design_name
-
+     return 1
+  }
 }
 
-puts "INFO: Currently the variable <design_name> is equal to \"$design_name\"."
-
-if { $nRet != 0 } {
-   puts $errMsg
-   return $nRet
-}
+current_bd_design $design_name
 
 ##################################################################
 # DESIGN PROCs
@@ -117,6 +123,8 @@ if { $nRet != 0 } {
 # procedure reusable. If parentCell is "", will use root.
 proc create_root_design { parentCell } {
 
+  variable script_folder
+
   if { $parentCell eq "" } {
      set parentCell [get_bd_cells /]
   }
@@ -124,14 +132,14 @@ proc create_root_design { parentCell } {
   # Get object for parentCell
   set parentObj [get_bd_cells $parentCell]
   if { $parentObj == "" } {
-     puts "ERROR: Unable to find parent cell <$parentCell>!"
+     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
      return
   }
 
   # Make sure parentObj is hier blk
   set parentType [get_property TYPE $parentObj]
   if { $parentType ne "hier" } {
-     puts "ERROR: Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."
+     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
      return
   }
 
@@ -144,11 +152,41 @@ proc create_root_design { parentCell } {
 
   # Create interface ports
   set S_AXI [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI ]
-  set_property -dict [ list CONFIG.ADDR_WIDTH {48} CONFIG.ARUSER_WIDTH {1} CONFIG.AWUSER_WIDTH {1} CONFIG.BUSER_WIDTH {1} CONFIG.DATA_WIDTH {64} CONFIG.FREQ_HZ {100000000} CONFIG.ID_WIDTH {4} CONFIG.MAX_BURST_LENGTH {256} CONFIG.NUM_READ_OUTSTANDING {8} CONFIG.NUM_WRITE_OUTSTANDING {8} CONFIG.PHASE {0.000} CONFIG.PROTOCOL {AXI4} CONFIG.READ_WRITE_MODE {READ_WRITE} CONFIG.RUSER_WIDTH {1} CONFIG.SUPPORTS_NARROW_BURST {1} CONFIG.WUSER_WIDTH {1}  ] $S_AXI
+  set_property -dict [ list \
+CONFIG.ADDR_WIDTH {48} \
+CONFIG.ARUSER_WIDTH {1} \
+CONFIG.AWUSER_WIDTH {1} \
+CONFIG.BUSER_WIDTH {1} \
+CONFIG.DATA_WIDTH {64} \
+CONFIG.HAS_BRESP {1} \
+CONFIG.HAS_BURST {1} \
+CONFIG.HAS_CACHE {1} \
+CONFIG.HAS_LOCK {1} \
+CONFIG.HAS_PROT {1} \
+CONFIG.HAS_QOS {1} \
+CONFIG.HAS_REGION {1} \
+CONFIG.HAS_RRESP {1} \
+CONFIG.HAS_WSTRB {1} \
+CONFIG.ID_WIDTH {4} \
+CONFIG.MAX_BURST_LENGTH {256} \
+CONFIG.NUM_READ_OUTSTANDING {8} \
+CONFIG.NUM_READ_THREADS {1} \
+CONFIG.NUM_WRITE_OUTSTANDING {8} \
+CONFIG.NUM_WRITE_THREADS {1} \
+CONFIG.PROTOCOL {AXI4} \
+CONFIG.READ_WRITE_MODE {READ_WRITE} \
+CONFIG.RUSER_BITS_PER_BYTE {0} \
+CONFIG.RUSER_WIDTH {1} \
+CONFIG.SUPPORTS_NARROW_BURST {1} \
+CONFIG.WUSER_BITS_PER_BYTE {0} \
+CONFIG.WUSER_WIDTH {1} \
+ ] $S_AXI
 
   # Create ports
   set s_axi_aclk [ create_bd_port -dir I -type clk s_axi_aclk ]
-  set_property -dict [ list CONFIG.ASSOCIATED_RESET {s_axi_aresetn}  ] $s_axi_aclk
+  set_property -dict [ list \
+CONFIG.ASSOCIATED_RESET {s_axi_aresetn} \
+ ] $s_axi_aclk
   set s_axi_aresetn [ create_bd_port -dir I -type rst s_axi_aresetn ]
 
   # Create instance: axi_dwidth_converter_0, and set properties
@@ -156,7 +194,13 @@ proc create_root_design { parentCell } {
 
   # Create instance: cdn_axi_bfm_0, and set properties
   set cdn_axi_bfm_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:cdn_axi_bfm:5.0 cdn_axi_bfm_0 ]
-  set_property -dict [ list CONFIG.C_MODE_SELECT {1} CONFIG.C_S_AXI4_ADDR_WIDTH {48} CONFIG.C_S_AXI4_DATA_WIDTH {256} CONFIG.C_S_AXI4_HIGHADDR {0xffffffffffff} CONFIG.C_S_AXI4_MEMORY_MODEL_MODE {1}  ] $cdn_axi_bfm_0
+  set_property -dict [ list \
+CONFIG.C_MODE_SELECT {1} \
+CONFIG.C_S_AXI4_ADDR_WIDTH {48} \
+CONFIG.C_S_AXI4_DATA_WIDTH {256} \
+CONFIG.C_S_AXI4_HIGHADDR {0xffffffffffff} \
+CONFIG.C_S_AXI4_MEMORY_MODEL_MODE {1} \
+ ] $cdn_axi_bfm_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net S_AXI_1 [get_bd_intf_ports S_AXI] [get_bd_intf_pins axi_dwidth_converter_0/S_AXI]
@@ -167,8 +211,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net s_axi_aresetn_1 [get_bd_ports s_axi_aresetn] [get_bd_pins axi_dwidth_converter_0/s_axi_aresetn] [get_bd_pins cdn_axi_bfm_0/s_axi_aresetn]
 
   # Create address segments
-  create_bd_addr_seg -range 0x1000000000000 -offset 0x0 [get_bd_addr_spaces S_AXI] [get_bd_addr_segs cdn_axi_bfm_0/axi_slave/Mem0] SEG_cdn_axi_bfm_0_Mem0
-  
+  create_bd_addr_seg -range 0x0001000000000000 -offset 0x00000000 [get_bd_addr_spaces S_AXI] [get_bd_addr_segs cdn_axi_bfm_0/axi_slave/Mem0] SEG_cdn_axi_bfm_0_Mem0
+
 
   # Restore current instance
   current_bd_instance $oldCurInst
