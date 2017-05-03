@@ -28,9 +28,6 @@ package dsp_defs is
         nco_0_data : cos_sin_18_t;
         nco_1_data : cos_sin_18_t;
 
-        -- DRAM0 data out enable
-        dram0_enable : std_logic;
-
         -- Data out to DRAM1
         dram1_valid : std_logic;
         dram1_address : unsigned(DRAM1_ADDR_RANGE);

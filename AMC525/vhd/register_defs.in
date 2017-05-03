@@ -191,8 +191,7 @@
             .MUX_SELECT     4
             # Gain selection for FIR capture to DRAM
             .FIR_GAIN       4
-            # Individual channel enables.  Do not use, leave as all zeros.
-            .ENABLES        2
+
         COUNT       RW
             # Number of words to capture to memory after STOP event
             .COUNT          28

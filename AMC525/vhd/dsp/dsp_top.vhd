@@ -310,7 +310,4 @@ begin
         mem_addr_o => dsp_to_control_o.dram1_address,
         mem_data_o => dsp_to_control_o.dram1_data
     );
-
-
-    dsp_to_control_o.dram0_enable <= '1';
 end;

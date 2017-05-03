@@ -50,7 +50,6 @@ architecture arch of fast_memory_top is
     constant COUNT_BITS : natural := 28;
     signal mux_select : std_logic_vector(3 downto 0);
     signal fir_gain : unsigned(3 downto 0);
-    signal enable_select : std_logic_vector(CHANNELS);
     signal count : unsigned(COUNT_BITS-1 downto 0);
 
     -- Command
@@ -63,10 +62,8 @@ architecture arch of fast_memory_top is
     signal data_valid : std_logic;
     signal extra_data : std_logic_vector(63 downto 0);
 
-
     -- We don't expect the error bits to ever be seen
     signal error_bits : std_logic_vector(2 downto 0) := "000";
-
 
     -- We need a very long pipeline for the data output
     constant OUT_PIPELINE : natural := 10;
@@ -74,9 +71,7 @@ architecture arch of fast_memory_top is
 
     -- Pipeline signals
     signal capture_enable_out : std_logic;
-    signal data_valid_out : std_logic;
     signal data_out : data_o'SUBTYPE;
-    signal data_ready_in : std_logic;
     signal error_bits_in : std_logic_vector(2 downto 0);
     signal capture_address_in : capture_address_i'SUBTYPE;
 
@@ -130,7 +125,6 @@ begin
     -- Configuration fields extracted from config registers
     mux_select <= config_register(CTRL_MEM_CONFIG_MUX_SELECT_BITS);
     fir_gain <= unsigned(config_register(CTRL_MEM_CONFIG_FIR_GAIN_BITS));
-    enable_select <= config_register(CTRL_MEM_CONFIG_ENABLES_BITS);
     count <= unsigned(count_register(COUNT_BITS-1 downto 0));
 
     -- Control events
@@ -165,12 +159,11 @@ begin
 
     -- Same pipeline for data control signals
     control_delay : entity work.dlyreg generic map (
-        DLY => OUT_PIPELINE,
-        DW => 2
+        DLY => OUT_PIPELINE
     ) port map (
         clk_i => dsp_clk_i,
-        data_i(0) => capture_enable_out, data_i(1) => data_valid_out,
-        data_o(0) => capture_enable_o,   data_o(1) => data_valid_o
+        data_i(0) => capture_enable_out,
+        data_o(0) => capture_enable_o
     );
 
     -- Pipeline for error signals
@@ -195,16 +188,6 @@ begin
         data_o => capture_address_in
     );
 
-    -- data_ready_i current unused
-    ready_delay : entity work.dlyreg generic map (
-        DLY => IN_PIPELINE
-    ) port map (
-        clk_i => dsp_clk_i,
-        data_i(0) => data_ready_i,
-        data_o(0) => data_ready_in
-    );
-
-
 
     -- -------------------------------------------------------------------------
     -- Implementation
@@ -220,12 +203,6 @@ begin
         capture_address_o => capture_address
     );
 
-    -- Enable data according to input channel selection.
-    data_valid <=
-        (dsp_to_control_i(0).dram0_enable and enable_select(0)) or
-        (dsp_to_control_i(1).dram0_enable and enable_select(1)) or
-        (not enable_select(0) and not enable_select(1));
-
     -- Select data to be written
     fast_memory_mux : entity work.fast_memory_data_mux port map (
         adc_clk_i => adc_clk_i,
@@ -234,11 +211,9 @@ begin
         mux_select_i => mux_select,
         fir_gain_i => fir_gain,
 
-        data_valid_i => data_valid,
         dsp_to_control_i => dsp_to_control_i,
         extra_i => extra_data,
 
-        data_valid_o => data_valid_out,
         data_o => data_out
     );
 
@@ -253,7 +228,8 @@ begin
         end if;
     end process;
 
+
     -- Currently this is just a placeholder.
     extra_data <= (others => '0');
-
+    data_valid_o <= '1';
 end;
