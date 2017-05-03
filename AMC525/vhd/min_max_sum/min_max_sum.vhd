@@ -63,12 +63,18 @@ architecture arch of min_max_sum is
     signal readout_strobe : std_logic;
     signal readout_ack : std_logic;
 
+    -- Pipeline delays
+    constant TURN_CLOCK_PIPELINE : natural := 4;
+    constant DATA_PIPELINE : natural := 4;
+    constant DELTA_PIPELINE : natural := 2;
+    constant OVERFLOW_PIPELINE : natural := 4;
+
 begin
     -- -------------------------------------------------------------------------
     -- Pipelines for all inputs and outputs
 
-    adc_delay : entity work.dlyreg generic map (
-        DLY => 2
+    turn_clock_delay : entity work.dlyreg generic map (
+        DLY => TURN_CLOCK_PIPELINE
     ) port map (
         clk_i => adc_clk_i,
         data_i(0) => turn_clock_i,
@@ -76,7 +82,7 @@ begin
     );
 
     data_delay : entity work.dlyreg generic map (
-        DLY => 2,
+        DLY => DATA_PIPELINE,
         DW => 16
     ) port map (
         clk_i => adc_clk_i,
@@ -85,7 +91,7 @@ begin
     );
 
     delta_delay : entity work.dlyreg generic map (
-        DLY => 2,
+        DLY => DELTA_PIPELINE,
         DW => 16
     ) port map (
         clk_i => adc_clk_i,
@@ -94,7 +100,7 @@ begin
     );
 
     overflow_delay : entity work.dlyreg generic map (
-        DLY => 2
+        DLY => OVERFLOW_PIPELINE
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => overflow,

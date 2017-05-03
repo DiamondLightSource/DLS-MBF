@@ -86,7 +86,7 @@ architecture arch of dsp_control_top is
 
     signal interrupts : interrupts_o'SUBTYPE;
 
-    constant INTERRUPT_PIPELINE : natural := 8;
+    constant INTERRUPT_PIPELINE : natural := 4;
 
 begin
     -- Capture of pulsed bits.

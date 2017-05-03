@@ -69,7 +69,7 @@ architecture arch of fast_memory_top is
     -- be instantiated some distance from the DRAM0 system.
     constant DATA_PIPELINE : natural := 12;
     constant ERROR_PIPELINE : natural := 12;
-    constant ENABLE_PIPELINE : natural := 8;
+    constant ENABLE_PIPELINE : natural := 4;
     constant ADDRESS_PIPELINE : natural := 12;
 
     -- Pipeline signals
