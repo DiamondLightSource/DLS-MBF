@@ -6,7 +6,7 @@
 #   register_def_entry = group_def | shared_def
 #   shared_def = shared_reg_def | shared_group_def
 #
-#   group_def = "!"name { group_entry }+
+#   group_def = "!"name { group_entry }*
 #   group_entry = group_def | reg_def | reg_pair | reg_array | shared_name
 #
 #   reg_def = name [ rw ] { field_def | field_skip }*
@@ -37,8 +37,7 @@
 #
 #   group = (name, range, [group | register | register_array], definition, doc)
 #   register = (name, offset, rw, overlaid, [field | bit], definition, doc)
-#   field = (name, range, rw, doc)
-#   bit = (name, offset, rw, doc)
+#   field = (name, range, is_bit, rw, doc)
 #   register_array = (name, range, rw, doc)
 
 import sys
@@ -58,9 +57,7 @@ Register = namedtuple('Register',
 RegisterArray = namedtuple('RegisterArray',
     ['name', 'range', 'rw', 'doc'])
 Field = namedtuple('Field',
-    ['name', 'range', 'rw', 'doc'])
-Bit = namedtuple('Bit',
-    ['name', 'offset', 'rw', 'doc'])
+    ['name', 'range', 'is_bit', 'rw', 'doc'])
 
 Parse = namedtuple('Parse', ['group_defs', 'register_defs', 'groups'])
 
@@ -75,7 +72,6 @@ class WalkParse:
 
         def walk_register_array(self, context, array):
         def walk_field(self, context, field):
-        def walk_bit(self, context, bit):
         def walk_group(self, context, group):
         def walk_register(self, context, reg):
 
@@ -96,17 +92,9 @@ class WalkParse:
             self.walk_subgroup(context, entry)
             for entry in group.content]
 
-    def walk_field_def(self, context, field):
-        if isinstance(field, Field):
-            return self.walk_field(context, field)
-        elif isinstance(field, Bit):
-            return self.walk_bit(context, field)
-        else:
-            assert False
-
     def walk_fields(self, context, register):
         return [
-            self.walk_field_def(context, field)
+            self.walk_field(context, field)
             for field in register.content]
 
 
@@ -141,11 +129,7 @@ class PrintMethods(WalkParse):
         print
 
     def walk_field(self, n, field):
-        self.__do_print(n, 'F', field, field.range, field.rw)
-        print
-
-    def walk_bit(self, n, bit):
-        self.__do_print(n, 'B', bit, bit.offset, bit.rw)
+        self.__do_print(n, 'F', field, field.range, field.is_bit, field.rw)
         print
 
     def walk_group(self, n, group):
@@ -185,7 +169,7 @@ def fail_parse(message, line_no):
 
 def parse_int(value, line_no):
     try:
-        return int(value)
+        return int(value, 0)
     except:
         fail_parse('Expected integer', line_no)
 
@@ -240,11 +224,7 @@ def parse_field_def(offset, parse):
     rw = args[0] if args else ''
     check_args(args, 1, line_no)
 
-    if is_bit:
-        result = Bit(name, offset, rw, doc)
-    else:
-        result = Field(name, (offset, count), rw, doc)
-    return (result, offset + count)
+    return (Field(name, (offset, count), is_bit, rw, doc), offset + count)
 
 
 def parse_field_skip(parse):
@@ -362,19 +342,7 @@ def parse_group_entry(offset, parse, defines):
         return (parse_reg_def(offset, parse), 1)
 
 
-# Parses a group definition, returns the resulting parse together with the
-# number of registers in the parsed group
-def parse_group_def(offset, parse, defines):
-    line, body, doc, line_no = parse
-
-    line = line.split()
-    name = line[0]
-    assert name[0] == '!'
-    name = name[1:]
-    check_name(name, line_no)
-
-    check_args(line, 1, line_no)
-
+def parse_group_entries(offset, body, defines):
     content = []
     count = 0
     for entry in body:
@@ -389,7 +357,23 @@ def parse_group_def(offset, parse, defines):
                 parse_group_entry(offset + count, entry, defines)
             count += entry_count
             content.append(result)
+    return content, count
 
+
+# Parses a group definition, returns the resulting parse together with the
+# number of registers in the parsed group
+def parse_group_def(offset, parse, defines):
+    line, body, doc, line_no = parse
+
+    line = line.split()
+    name = line[0]
+    assert name[0] == '!'
+    name = name[1:]
+    check_name(name, line_no)
+
+    check_args(line, 1, line_no)
+
+    content, count = parse_group_entries(offset, body, defines)
     return (Group(name, (offset, count), content, None, doc), count)
 
 
@@ -414,7 +398,8 @@ def parse_register_def_entry(parse, defines):
         group, count = parse_group_def(0, parse, defines)
         return [group]
     else:
-        fail_parse('Ungrouped register definition not expected here')
+        fail_parse(
+            'Ungrouped register definition not expected here', parse.line_no)
 
 
 # Pull the defines apart into register and group definitions.

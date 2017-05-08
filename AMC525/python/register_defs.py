@@ -48,10 +48,10 @@ class Generate(parse.register_defs.WalkParse):
         emit_range(prefix, array.name, array.range, 'REGS', 'to')
 
     def walk_field(self, prefix, field):
-        emit_range(prefix, field.name, field.range, 'BITS', 'downto')
-
-    def walk_bit(self, prefix, bit):
-        emit_constant(prefix, bit.name, bit.offset, 'BIT')
+        if field.is_bit:
+            emit_constant(prefix, field.name, field.range[0], 'BIT')
+        else:
+            emit_range(prefix, field.name, field.range, 'BITS', 'downto')
 
     def walk_register(self, prefix, register):
         suffix = 'REG'
