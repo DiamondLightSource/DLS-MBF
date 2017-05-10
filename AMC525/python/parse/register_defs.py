@@ -9,19 +9,19 @@
 #   group_def = "!"name { group_entry }*
 #   group_entry = group_def | reg_def | reg_pair | reg_array | shared_name
 #
-#   reg_def = name [ rw ] { field_def | field_skip }*
+#   reg_def = name rw { field_def | field_skip }*
 #   field_def = "."name [ width ] [ "@"offset ] [ rw ]
 #   field_skip = "-" [ width ]
 #
 #   reg_pair = "*RW" { reg_def }2
-#   reg_array = name count [ rw ]
+#   reg_array = name count rw
 #
 #   shared_reg_def = ":"reg_def
 #   shared_group_def = ":"group_def
 #
 #   shared_name = ":"saved_name new_name
 #
-#   rw = "R" | "W" | "RW"
+#   rw = "R" | "W" | "RW" | "WP"
 #
 #   name and new_name are any valid VHDL identifier
 #   saved_name is a previously defined shared_reg_def or shared_group_def name
@@ -173,7 +173,9 @@ def parse_int(value, line_no):
     except:
         fail_parse('Expected integer', line_no)
 
-def check_args(args, max_length, line_no):
+def check_args(args, min_length, max_length, line_no):
+    if len(args) < min_length:
+        fail_parse('Expected more arguments', line_no)
     if len(args) > max_length:
         fail_parse('Unexpected extra arguments', line_no)
 
@@ -190,7 +192,7 @@ def is_int(value):
     return value and value[0] in '0123456789'
 
 def check_rw(rw, line_no):
-    if rw not in ['R', 'W', 'RW', '']:
+    if rw not in ['R', 'W', 'RW', 'WP']:
         fail_parse('Invalid R/W specification', line_no)
 
 
@@ -198,6 +200,7 @@ def is_field_skip(parse):
     return parse.line.split()[0] == '-'
 
 
+# field_def = "."name [ width ] [ "@"offset ] [ rw ]
 def parse_field_def(offset, parse):
     line, _, doc, line_no = parse
     line = line.split()
@@ -221,16 +224,21 @@ def parse_field_def(offset, parse):
         offset = parse_int(args[0][1:], line_no)
         del args[0]
 
-    rw = args[0] if args else ''
-    check_args(args, 1, line_no)
+    check_args(args, 0, 1, line_no)
+    if args:
+        rw = args[0]
+        check_rw(rw, line_no)
+    else:
+        rw = ''
 
     return (Field(name, (offset, count), is_bit, rw, doc), offset + count)
 
 
+# field_skip = "-" [ width ]
 def parse_field_skip(parse):
     line, body, _, line_no = parse
     line = line.split()
-    check_args(line, 2, line_no)
+    check_args(line, 1, 2, line_no)
 
     if len(line) > 1:
         return parse_int(line[1], line_no)
@@ -250,16 +258,16 @@ def parse_field_defs(field_list):
     return fields
 
 
-# reg_def = name [ rw ] { field_def }*
-def parse_reg_def(offset, parse, expect = None):
+# reg_def = name rw { field_def | field_skip }*
+def parse_reg_def(offset, parse, expect = []):
     line, body, doc, line_no = parse
     line = line.split()
+    check_args(line, 2, 2, line_no)
     name = line[0]
     check_name(name, line_no)
-    rw = line[1] if len(line) > 1 else ''
+    rw = line[1]
     check_rw(rw, line_no)
-    check_args(line, 2, line_no)
-    if expect and rw != expect:
+    if expect and rw not in expect:
         fail_parse('Expected %s field' % expect, line_no)
     overlaid = bool(expect)
 
@@ -272,29 +280,31 @@ def is_reg_array(parse):
     return len(line) > 1 and is_int(line[1])
 
 
+# reg_array = name count rw
 def parse_reg_array(offset, parse):
     line, _, doc, line_no = parse
     line = line.split()
+    check_args(line, 3, 3, line_no)
     name = line[0]
     check_name(name, line_no)
-    if len(line) < 2:
-        fail_parse('Expected register count', line_no)
     count = parse_int(line[1], line_no)
-    rw = line[2] if len(line) > 2 else ''
-    check_args(line, 3, line_no)
+    rw = line[2]
+    check_rw(rw, line_no)
     check_body(parse)
     return (RegisterArray(name, (offset, count), rw, doc), count)
 
 
+# reg_pair = "*RW" { reg_def }2
 def parse_reg_pair(offset, parse):
     _, body, _, line_no = parse
     if len(body) != 2:
         fail_parse('Must have two registers', line_no)
     return [
-        parse_reg_def(offset, body[0], expect = 'R'),
-        parse_reg_def(offset, body[1], expect = 'W')]
+        parse_reg_def(offset, body[0], expect = ['R']),
+        parse_reg_def(offset, body[1], expect = ['W', 'WP'])]
 
 
+# shared_name = ":"saved_name new_name
 def parse_shared_name(offset, parse, defines):
     line, body, _, line_no = parse
     line = line.split()
@@ -323,6 +333,8 @@ def parse_shared_name(offset, parse, defines):
 
 # Returns a list of results together with the number of registers spanned by the
 # returned result.
+#
+# group_entry = group_def | reg_def | reg_pair | reg_array | shared_name
 def parse_group_entry(offset, parse, defines):
     line, body, _, line_no = parse
     if line[0] in '.-':
@@ -362,6 +374,8 @@ def parse_group_entries(offset, body, defines):
 
 # Parses a group definition, returns the resulting parse together with the
 # number of registers in the parsed group
+#
+# group_def = "!"name { group_entry }*
 def parse_group_def(offset, parse, defines):
     line, body, doc, line_no = parse
 
@@ -371,12 +385,13 @@ def parse_group_def(offset, parse, defines):
     name = name[1:]
     check_name(name, line_no)
 
-    check_args(line, 1, line_no)
+    check_args(line, 1, 1, line_no)
 
     content, count = parse_group_entries(offset, body, defines)
     return (Group(name, (offset, count), content, None, doc), count)
 
 
+# shared_def = shared_reg_def | shared_group_def
 def parse_shared_def(parse, defines):
     # Parsing one of shared_reg_def or shared_group_def.
     line = parse.line[1:]
@@ -390,6 +405,8 @@ def parse_shared_def(parse, defines):
 
 # Parse for a top level entry -- either a reusable name definition, if prefixed
 # with :, or a top level group definition.
+#
+# register_def_entry = group_def | shared_def
 def parse_register_def_entry(parse, defines):
     if parse.line[0] == ':':
         parse_shared_def(parse, defines)

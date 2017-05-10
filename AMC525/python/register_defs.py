@@ -56,7 +56,7 @@ class Generate(parse.register_defs.WalkParse):
     def walk_register(self, prefix, register):
         suffix = 'REG'
         if register.overlaid:
-            suffix += '_' + register.rw
+            suffix += '_' + register.rw[:1]
         emit_constant(prefix, register.name, register.offset, suffix)
         self.walk_fields(prefix + [register.name], register)
 

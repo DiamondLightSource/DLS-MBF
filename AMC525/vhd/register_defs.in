@@ -201,7 +201,7 @@
             # address at the time of the trigger event
             ADDRESS     R
             # Write to this register to trigger the select actions
-            COMMAND     W
+            COMMAND     WP
                 # Starts capture to memory
                 .START
                 # Stops capture to memory after specified post trigger capture
@@ -250,7 +250,7 @@
                 #   ======= ===================================
                 .TRIGGERS   7
             # Pulsed trigger control events
-            CONTROL     W
+            CONTROL     WP
                 # Start turn clock synchronisation
                 .SYNC_TURN
                 # Request turn clock sample
@@ -385,7 +385,7 @@
                 .DAC_OUT_OVF
 
             # Writing to this register generates a pulse on the selected bits
-            STROBE      W
+            STROBE      WP
                 # Starts block write to ADC and DAC fast FIR taps
                 .WRITE
                 # Resets ADC min/max event detector to enable further events
@@ -405,7 +405,7 @@
             .DELTA      16
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
-        TAPS
+        TAPS        W
         # Bunch by bunch motion for ADC input data, after compensation filter
         :MMS
 
@@ -451,7 +451,7 @@
             .NCO1_ENABLE
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
-        TAPS
+        TAPS        W
         # Bunch by bunch motion for DAC input data, before pre-emphasis filter
         :MMS
 
@@ -465,7 +465,7 @@
                 .BUSY
                 # Current super sequencer counter
                 .SUPER      10
-            COMMAND     W
+            COMMAND     WP
                 # Interrupts sequencer if running and resets to state 0
                 .ABORT
                 # Initiates write to selected memory block
@@ -491,7 +491,7 @@
             .TARGET         2
         # Writing to this register updates the selected internal sequencer
         # memory bank.
-        WRITE
+        WRITE       W
 
     # Detector control
     !DET
@@ -535,7 +535,7 @@
                 # For each detector, set if FIR overflow was detected on data
                 # used in the detector.
                 .FIR_OVFL       4
-            COMMAND     W
+            COMMAND     WP
                 # Triggers start of write to detector bunch enable memory.
                 .WRITE
                 # Resets output address for detector capture
