@@ -16,6 +16,7 @@ from parse import register_defs
 import parse
 
 
+# Reads and writes a bit-field in a register
 class Field:
     def __init__(self, field):
         self._name = field.name
@@ -39,6 +40,18 @@ class Field:
         parent._write_value((value << offset) | (reg & ~mask))
 
 
+# Dummy storage for register without hardware.
+class DummyBase:
+    def __init__(self, value):
+        self.value = value
+
+    def _read_value(self, offset, rw):
+        return self.value
+
+    def _write_value(self, offset, rw, value):
+        self.value = value
+
+
 # Computes a register class from the given register parse and fields
 def make_register(register, fields):
     class Register(object):
@@ -46,36 +59,30 @@ def make_register(register, fields):
         __offset = register.offset
         __rw = register.rw
 
-        def __init__(self, parent, value = 0):
+        def __init__(self, parent):
             self.__parent = parent
-            self.__value = value
+
 
         def _read_value(self):
-            if self.__parent:
-                if self.__rw in ['R', 'RW']:
-                    self.__value = self.__parent._read_value(self.__offset)
-                elif self.__rw == 'WP':
-                    self.__value = 0
-            return self.__value
+            return self.__parent._read_value(self.__offset, self.__rw)
 
         def _write_value(self, value):
-            self.__value = value
-            if self.__parent:
-                assert self.__rw != 'R', 'Read only register'
-                self.__parent._write_value(self.__offset, value)
+            self.__parent._write_value(self.__offset, self.__rw, value)
 
         # _value returns the underlying register value
         _value = property(_read_value, _write_value)
 
+
         def __get_fields(self):
-            return self.__class__(None, self._value)
+            return self.__class__(DummyBase(self._value))
 
         def __set_fields(self, value):
-            self._value = value.__value
+            self._value = value._value
 
         # _fields returns an updatable image of the current register settings as
         # a group of settable fields
         _fields = property(__get_fields, __set_fields)
+
 
         _field_names = []
         def __repr__(self):
@@ -99,37 +106,28 @@ class Delegator(object):
     def __init__(self, parent):
         self.__parent = parent
 
-    def _read_value(self, offset):
-        return self.__parent._read_value(offset)
+    def _read_value(self, offset, rw):
+        return self.__parent._read_value(offset, rw)
 
-    def _write_value(self, offset, value):
-        self.__parent._write_value(offset, value)
-
-
-def make_group(group, fields):
-    class Group(Delegator):
-        _name = group.name
-
-    for field in fields:
-        setattr(Group, field._name, property(field))
-
-    return Group
+    def _write_value(self, offset, rw, value):
+        self.__parent._write_value(offset, rw, value)
 
 
 def make_array(array):
     class RegisterArray(Delegator):
         _name = array.name
         __range = array.range
+        __rw = array.rw
 
         def __setitem__(self, index, value):
             base, length = self.__range
             assert 0 <= index < length, 'Index out of range'
-            self._write_value(base + index, value)
+            self._write_value(base + index, self.__rw, value)
 
         def __getitem__(self, index):
             base, length = self.__range
             assert 0 <= index < length, 'Index out of range'
-            return self._read_value(base + index)
+            return self._read_value(base + index, self.__rw)
 
         def __repr__(self):
             base, length = self.__range
@@ -138,6 +136,48 @@ def make_array(array):
                 self._name, base, ', '.join(values))
 
     return RegisterArray
+
+
+def make_group(group, attributes):
+    class Group(Delegator):
+        _name = group.name
+
+    for attribute in attributes:
+        setattr(Group, attribute._name, property(attribute))
+
+    return Group
+
+
+def make_top(group, attributes):
+    class Top:
+        _name = group.name
+
+        def __init__(self, hardware):
+            self.__hardware = hardware
+            # Cached values for write only registers
+            self.__values = {}
+
+        def _read_value(self, offset, rw):
+            if rw == 'W':
+                # Write only register, return cached value
+                return self.__values.get(offset, 0)
+            elif rw == 'WP':
+                # Pulse register, only ever reads as zero
+                return 0
+            else:
+                return self.__hardware._read_value(offset)
+
+        def _write_value(self, offset, rw, value):
+            assert rw != 'R', 'Writing to read only register'
+            if rw == 'W':
+                # Cache value written to write-only register
+                self.__values[offset] = value
+            self.__hardware._write_value(offset, value)
+
+    for attribute in attributes:
+        setattr(Top, attribute._name, property(attribute))
+
+    return Top
 
 
 class Generate(parse.register_defs.WalkParse):
@@ -153,6 +193,10 @@ class Generate(parse.register_defs.WalkParse):
     def walk_group(self, context, group):
         return make_group(group, self.walk_subgroups(context, group))
 
+    def walk_top(self, group):
+        return make_top(group, self.walk_subgroups(None, group))
+
+
 generate = Generate()
 
 
@@ -163,10 +207,10 @@ defs = parse.register_defs.flatten(defs)
 
 groups = {}
 for group in defs.groups:
-    groups[group.name] = generate.walk_group(None, group)
+    groups[group.name] = generate.walk_top(group)
 
 
-class BaseAddress(object):
+class BaseAddress:
     def __init__(self, base_address):
         self.base_address = base_address
 
@@ -205,6 +249,7 @@ if __name__ == '__main__':
     print dsp0.ADC.MMS.COUNT
     print dsp0.ADC.MMS.READOUT
 
+    print
     dsp0.MISC.STROBE.WRITE = 1
     dsp0.MISC.STROBE.RESET_DELTA = 1
 
