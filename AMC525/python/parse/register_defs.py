@@ -446,8 +446,53 @@ def parse(parse):
     return Parse(group_defs, register_defs, groups)
 
 
+# ------------------------------------------------------------------------------
+# Flattening
+
+class FlattenMethods(WalkParse):
+    def walk_field(self, offset, field):
+        return field
+
+    def walk_register_array(self, offset, array):
+        base, length = array.range
+        return array._replace(range = (base + offset, length))
+
+    def walk_group(self, offset, group):
+        base, length = group.range
+        group_def = group.definition
+        if group_def:
+            content = self.walk_subgroups(offset + base, group_def)
+            return group_def._replace(
+                name = group.name,
+                range = (base + offset, length), content = content)
+        else:
+            content = self.walk_subgroups(offset, group)
+            return group._replace(
+                range = (base + offset, length), content = content)
+
+    def walk_register(self, offset, reg):
+        reg_def = reg.definition
+        if reg_def:
+            return reg._replace(
+                name = reg.name, offset = reg.offset,
+                content = reg_def.content + reg.content)
+        else:
+            return reg._replace(offset = reg.offset + offset)
+
+
+# Eliminates definitions from a parse by replacing all group and register
+# entries by their corresponding definitions
+def flatten(parse):
+    flatten = FlattenMethods()
+    groups = [flatten.walk_group(0, group) for group in parse.groups]
+    return parse._replace(groups = groups)
+
+
+# ------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     import sys
     indent_parse = indent.parse_file(file(sys.argv[1]))
     parse = parse(indent_parse)
-    print_parse(parse)
+#     print_parse(parse)
+    print_parse(flatten(parse))
