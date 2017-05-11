@@ -36,7 +36,7 @@
 # ordering of fields and bits is important for documentation.
 #
 #   group = (name, range, [group | register | register_array], definition, doc)
-#   register = (name, offset, rw, overlaid, [field | bit], definition, doc)
+#   register = (name, offset, rw, [field], definition, doc)
 #   field = (name, range, is_bit, rw, doc)
 #   register_array = (name, range, rw, doc)
 
@@ -53,11 +53,12 @@ import indent
 Group = namedtuple('Group',
     ['name', 'range', 'content', 'definition', 'doc'])
 Register = namedtuple('Register',
-    ['name', 'offset', 'rw', 'overlaid', 'content', 'definition', 'doc'])
+    ['name', 'offset', 'rw', 'fields', 'definition', 'doc'])
 RegisterArray = namedtuple('RegisterArray',
     ['name', 'range', 'rw', 'doc'])
 Field = namedtuple('Field',
     ['name', 'range', 'is_bit', 'rw', 'doc'])
+Overlay = namedtuple('Overlay', ['registers'])
 
 Parse = namedtuple('Parse', ['group_defs', 'register_defs', 'groups'])
 
@@ -74,6 +75,7 @@ class WalkParse:
         def walk_field(self, context, field):
         def walk_group(self, context, group):
         def walk_register(self, context, reg):
+        def walk_overlay(self, context, overlay):
 
     '''
 
@@ -84,6 +86,8 @@ class WalkParse:
             return self.walk_register(context, entry)
         elif isinstance(entry, RegisterArray):
             return self.walk_register_array(context, entry)
+        elif isinstance(entry, Overlay):
+            return self.walk_overlay(context, entry)
         else:
             assert False
 
@@ -95,7 +99,7 @@ class WalkParse:
     def walk_fields(self, context, register):
         return [
             self.walk_field(context, field)
-            for field in register.content]
+            for field in register.fields]
 
 
 # ------------------------------------------------------------------------------
@@ -140,11 +144,17 @@ class PrintMethods(WalkParse):
         self.walk_subgroups(n + 1, group)
 
     def walk_register(self, n, reg):
-        self.__do_print(n, 'R', reg, reg.offset, reg.rw, reg.overlaid)
+        self.__do_print(n, 'R', reg, reg.offset, reg.rw)
         if reg.definition:
             print ':', reg.definition.name,
         print
         self.walk_fields(n + 1, reg)
+
+    def walk_overlay(self, n, overlay):
+        self.__print_prefix(n, 'O')
+        print
+        for reg in overlay.registers:
+            self.walk_register(n + 1, reg)
 
 
 def print_parse(parse):
@@ -269,10 +279,9 @@ def parse_reg_def(offset, parse, expect = []):
     check_rw(rw, line_no)
     if expect and rw not in expect:
         fail_parse('Expected %s field' % expect, line_no)
-    overlaid = bool(expect)
 
     fields = parse_field_defs(body)
-    return Register(name, offset, rw, overlaid, fields, None, doc)
+    return Register(name, offset, rw, fields, None, doc)
 
 
 def is_reg_array(parse):
@@ -296,12 +305,14 @@ def parse_reg_array(offset, parse):
 
 # reg_pair = "*RW" { reg_def }2
 def parse_reg_pair(offset, parse):
-    _, body, _, line_no = parse
+    line, body, _, line_no = parse
+    if line != '*RW':
+        fail_parse('Expected *RW here', line_no)
     if len(body) != 2:
         fail_parse('Must have two registers', line_no)
-    return [
+    return (Overlay([
         parse_reg_def(offset, body[0], expect = ['R']),
-        parse_reg_def(offset, body[1], expect = ['W', 'WP'])]
+        parse_reg_def(offset, body[1], expect = ['W', 'WP'])]), 1)
 
 
 # shared_name = ":"saved_name new_name
@@ -325,7 +336,7 @@ def parse_shared_name(offset, parse, defines):
         length = 1
         result = define._replace(
             name = name, offset = offset,
-            content = fields, definition = define)
+            fields = fields, definition = define)
     else:
         assert False
     return (result, length)
@@ -345,6 +356,8 @@ def parse_group_entry(offset, parse, defines):
         # shared_name = ":"...
         return parse_shared_name(
             offset, parse._replace(line = line[1:]), defines)
+    elif line[0] == '*':
+        return parse_reg_pair(offset, parse)
     elif line[0] == '!':
         # Not a register definition, must be a group
         return parse_group_def(offset, parse, defines)
@@ -352,24 +365,6 @@ def parse_group_entry(offset, parse, defines):
         return parse_reg_array(offset, parse)
     else:
         return (parse_reg_def(offset, parse), 1)
-
-
-def parse_group_entries(offset, body, defines):
-    content = []
-    count = 0
-    for entry in body:
-        # Need to handle register pairs specially at this level as they return a
-        # pair of registers
-        if entry.line == '*RW':
-            result = parse_reg_pair(offset + count, entry)
-            count += 1
-            content.extend(result)
-        else:
-            result, entry_count = \
-                parse_group_entry(offset + count, entry, defines)
-            count += entry_count
-            content.append(result)
-    return content, count
 
 
 # Parses a group definition, returns the resulting parse together with the
@@ -387,7 +382,14 @@ def parse_group_def(offset, parse, defines):
 
     check_args(line, 1, 1, line_no)
 
-    content, count = parse_group_entries(offset, body, defines)
+    content = []
+    count = 0
+    for entry in body:
+        result, entry_count = \
+            parse_group_entry(offset + count, entry, defines)
+        count += entry_count
+        content.append(result)
+
     return (Group(name, (offset, count), content, None, doc), count)
 
 
@@ -475,9 +477,15 @@ class FlattenMethods(WalkParse):
         if reg_def:
             return reg._replace(
                 name = reg.name, offset = reg.offset,
-                content = reg_def.content + reg.content)
+                fields = reg_def.fields + reg.fields)
         else:
             return reg._replace(offset = reg.offset + offset)
+
+    def walk_overlay(self, offset, overlay):
+        registers = [
+            self.walk_register(offset, reg)
+            for reg in overlay.registers]
+        return overlay._replace(registers = registers)
 
 
 # Eliminates definitions from a parse by replacing all group and register

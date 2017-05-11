@@ -138,12 +138,21 @@ def make_array(array):
     return RegisterArray
 
 
+def add_attributes(target, attributes):
+    for attribute in attributes:
+        if isinstance(attribute, list):
+            # When we parsed an overlay we were returned a list of attributes
+            add_attributes(target, attribute)
+        else:
+            setattr(target, attribute._name, property(attribute))
+
+
+# An ordinary group just delegates its attributes
 def make_group(group, attributes):
     class Group(Delegator):
         _name = group.name
 
-    for attribute in attributes:
-        setattr(Group, attribute._name, property(attribute))
+    add_attributes(Group, attributes)
 
     return Group
 
@@ -174,13 +183,12 @@ def make_top(group, attributes):
                 self.__values[offset] = value
             self.__hardware._write_value(offset, value)
 
-    for attribute in attributes:
-        setattr(Top, attribute._name, property(attribute))
+    add_attributes(Top, attributes)
 
     return Top
 
 
-class Generate(parse.register_defs.WalkParse):
+class GenerateMethods(parse.register_defs.WalkParse):
     def walk_field(self, context, field):
         return Field(field)
 
@@ -193,11 +201,16 @@ class Generate(parse.register_defs.WalkParse):
     def walk_group(self, context, group):
         return make_group(group, self.walk_subgroups(context, group))
 
+    def walk_overlay(self, context, overlay):
+        return [
+            self.walk_register(context, register)
+            for register in overlay.registers]
+
     def walk_top(self, group):
         return make_top(group, self.walk_subgroups(None, group))
 
 
-generate = Generate()
+generate = GenerateMethods()
 
 
 
