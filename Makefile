@@ -20,7 +20,7 @@ FPGA_TARGETS = \
 
 $(FPGA_TARGETS): $(FPGA_BUILD_DIR)
 	make -C $(FPGA_BUILD_DIR) -f $(TOP)/AMC525/Makefile \
-            TOP=$(TOP) VIVADO=$(VIVADO) $(MAKECMDGOALS)
+            TOP=$(TOP) $(MAKECMDGOALS)
 
 $(FPGA_BUILD_DIR):
 	mkdir -p $@

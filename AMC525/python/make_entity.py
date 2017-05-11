@@ -1,5 +1,3 @@
-#!/bin/env dls-python
-
 import sys
 import os
 import types
