@@ -30,3 +30,9 @@ PYTHON = python
 # Common definitions
 
 RUN_VIVADO = source $(VIVADO) && vivado
+
+# The default shell used by make is sh, but we may want to use the bash pipefail
+# option.  On most systems this still works because sh is now usually linked to
+# bash, but on Ubuntu sh is linked to dash which doesn't support pipefail.
+# Setting this option is always safe, just makes bash a dependency.
+SHELL = bash
