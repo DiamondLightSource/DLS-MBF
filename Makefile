@@ -21,27 +21,25 @@ FPGA_TARGETS = \
     fpga fpga_project runvivado edit_bd save_bd create_bd load_fpga fpga_built
 .PHONY: $(FPGA_TARGETS)
 
-
 $(FPGA_TARGETS): $(FPGA_BUILD_DIR)
-	make -C $< -f $(TOP)/AMC525/Makefile TOP=$(TOP) $(MAKECMDGOALS)
+	make -C $< -f $(TOP)/AMC525/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
 
 $(FPGA_BUILD_DIR):
 	mkdir -p $@
 
-clean_fpga:
+clean-fpga:
 	rm -rf $(FPGA_BUILD_DIR)
-.PHONY: clean_fpga
+.PHONY: clean-fpga
 
 
 # ------------------------------------------------------------------------------
 # Driver build
 
-DRIVER_TARGETS = \
-    driver insmod rmmod modperm
+DRIVER_TARGETS = driver insmod rmmod
 .PHONY: $(DRIVER_TARGETS)
 
 $(DRIVER_TARGETS): $(DRIVER_BUILD_DIR)
-	make -C $< -f $(TOP)/driver/Makefile TOP=$(TOP) $(MAKECMDGOALS)
+	make -C $< -f $(TOP)/driver/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
 
 $(DRIVER_BUILD_DIR):
 	mkdir -p $@
@@ -54,13 +52,19 @@ clean-driver:
 # ------------------------------------------------------------------------------
 # Tools build
 
-tools: $(TOOLS_BUILD_DIR)
-	$(MAKE) -C $< -f $(TOP)/tools/Makefile TOP=$(TOP) $(MAKECMDGOALS)
+TOOLS_TARGETS = tools
+.PHONY: $(TOOLS_TARGETS)
+
+$(TOOLS_TARGETS): $(TOOLS_BUILD_DIR)
+	$(MAKE) -C $< -f $(TOP)/tools/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
 
 $(TOOLS_BUILD_DIR):
 	mkdir -p $@
 
-.PHONY: tools
+clean-tools:
+	rm -rf $(TOOLS_BUILD_DIR)
+.PHONY: clean-tools
+
 
 
 # ------------------------------------------------------------------------------
