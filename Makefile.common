@@ -5,8 +5,6 @@ BUILD_DIR = $(TOP)/build
 VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.4/settings64.sh
 VSIM = /dls_sw/FPGA/Questa/10.6/questasim/bin/vsim
 
-KERNEL_DIR = /lib/modules/$(shell uname -r)/build
-
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
 TOOLS_BUILD_DIR = $(BUILD_DIR)/tools
