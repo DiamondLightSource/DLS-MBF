@@ -17,6 +17,12 @@ KBUILD_DIR = $(CURDIR)/kbuild-$(kernelver)
 
 DRIVER_NAME = amc525_lmbf
 
+# The set valid characters in an rpm version string is a bit restricted, so go
+# with the valid rules: only letters, digits, and periods.
+# Note: see https://fedoraproject.org/wiki/Packaging:Versioning for information
+# on RPM versioning.  We'll want to obey some of these rules if we can.
+RPM_VERSION = $(shell printf %s $(GIT_VERSION) | tr -c a-zA-Z0-9 .)
+
 
 # Default target is to build the driver
 default: driver
@@ -44,12 +50,15 @@ $(DRIVER_BUILD_FILES): $(KBUILD_DIR)/%: $(SRCDIR)/%
 	ln -s $$(readlink -e $<) $@
 
 $(DRIVER_KO): $(DRIVER_BUILD_FILES)
-	$(MAKE) -C $(KERNEL_DIR) M=$(KBUILD_DIR) VERSION=$(GIT_VERSION) modules
+	$(MAKE) -C $(KERNEL_DIR) M=$(KBUILD_DIR) VERSION=$(RPM_VERSION) modules
 	touch $@
 
 
 # ------------------------------------------------------------------------------
 # Standalone testing
+
+udev:
+	sudo install -m0644 -t /etc/udev/rules.d $(SRCDIR)/11-amc525_lmbf.rules
 
 # We need to go via /tmp before invoking insmod at DLS due to our configuration.
 insmod: $(DRIVER_KO)
@@ -65,11 +74,11 @@ rmmod:
 # ------------------------------------------------------------------------------
 # Install dkms in target system
 
-DKMS_SRC_DIR = $(DESTDIR)/usr/src/amc525_lmbf-$(GIT_VERSION)/
+DKMS_SRC_DIR = $(DESTDIR)/usr/src/amc525_lmbf-$(RPM_VERSION)/
 
 # We substitute the version information into dkms.conf
 dkms.conf: dkms.conf.in
-	sed s/@@VERSION@@/$(GIT_VERSION)/g $< >$@
+	sed s/@@VERSION@@/$(RPM_VERSION)/g $< >$@
 
 # Install files where dkms needs them.  Supports DESTDIR for local install
 dkms-files: dkms.conf Makefile $(DRIVER_FILES)
@@ -82,13 +91,13 @@ dkms-files: dkms.conf Makefile $(DRIVER_FILES)
 # This rule needs to be run as root
 install-dkms: dkms-files
 	[ $$(id -u) = 0 ]    # Must be run as root
-	dkms add amc525_lmbf/$(GIT_VERSION)
-	dkms build amc525_lmbf/$(GIT_VERSION)
-	dkms install amc525_lmbf/$(GIT_VERSION)
+	dkms add amc525_lmbf/$(RPM_VERSION)
+	dkms build amc525_lmbf/$(RPM_VERSION)
+	dkms install amc525_lmbf/$(RPM_VERSION)
 	modprobe amc525_lmbf
 
 # To remove dkms run
-#       dkms remove amc525_lmbf/$(GIT_VERSION) --all
+#       dkms remove amc525_lmbf/$(RPM_VERSION) --all
 
 .PHONY: dkms-files install-dkms
 
@@ -96,4 +105,17 @@ install-dkms: dkms-files
 # ------------------------------------------------------------------------------
 # Build dkms RPM
 
+RPM_FILE = amc525_lmbf-$(RPM_VERSION)-1dkms.noarch.rpm
 
+amc525_lmbf.spec: amc525_lmbf.spec.in
+	sed s/@@VERSION@@/$(RPM_VERSION)/g $< >$@
+
+driver-rpm: dkms.conf amc525_lmbf.spec
+	mkdir -p rpmbuild/RPMS rpmbuild/BUILD
+	rpmbuild -bb \
+            --define '_curdir $(CURDIR)' \
+            --define '_topdir %{_curdir}/rpmbuild' \
+            --define '_sourcedir $(SRCDIR)' \
+            --define '_tmppath %{_topdir}/BUILD' \
+            amc525_lmbf.spec
+	ln -sf rpmbuild/RPMS/noarch/$(RPM_FILE) .
