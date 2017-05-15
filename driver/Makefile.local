@@ -4,6 +4,9 @@ ifndef TOP
 $(error Do not call this file directly)
 endif
 
+SRCDIR = $(TOP)/driver
+VPATH += $(SRCDIR)
+
 kernelver = $(shell uname -r)
 KERNEL_DIR = /lib/modules/$(kernelver)/build
 
@@ -24,7 +27,12 @@ default: driver
 # Build the kernel driver
 
 DRIVER_KO = $(KBUILD_DIR)/$(DRIVER_NAME).ko
-DRIVER_FILES = $(wildcard $(SRCDIR)/*)
+
+DRIVER_FILES =
+DRIVER_FILES += $(wildcard $(SRCDIR)/*.c)
+DRIVER_FILES += $(wildcard $(SRCDIR)/*.h)
+DRIVER_FILES += $(SRCDIR)/Kbuild
+
 
 driver: $(DRIVER_KO)
 .PHONY: driver
@@ -36,7 +44,7 @@ $(DRIVER_BUILD_FILES): $(KBUILD_DIR)/%: $(SRCDIR)/%
 	ln -s $$(readlink -e $<) $@
 
 $(DRIVER_KO): $(DRIVER_BUILD_FILES)
-	$(MAKE) -C $(KERNEL_DIR) M=$(KBUILD_DIR) modules
+	$(MAKE) -C $(KERNEL_DIR) M=$(KBUILD_DIR) VERSION=$(GIT_VERSION) modules
 	touch $@
 
 
@@ -52,6 +60,37 @@ rmmod:
 	sudo rmmod $(DRIVER_NAME)
 
 .PHONY: insmod rmmod
+
+
+# ------------------------------------------------------------------------------
+# Install dkms in target system
+
+DKMS_SRC_DIR = $(DESTDIR)/usr/src/amc525_lmbf-$(GIT_VERSION)/
+
+# We substitute the version information into dkms.conf
+dkms.conf: dkms.conf.in
+	sed s/@@VERSION@@/$(GIT_VERSION)/g $< >$@
+
+# Install files where dkms needs them.  Supports DESTDIR for local install
+dkms-files: dkms.conf Makefile $(DRIVER_FILES)
+	install -d $(DESTDIR)/etc/udev/rules.d/
+	install -m0644 -t $(DESTDIR)/etc/udev/rules.d/ \
+            $(SRCDIR)/11-amc525_lmbf.rules
+	install -d $(DKMS_SRC_DIR)
+	install -m0644 -t $(DKMS_SRC_DIR) $^
+
+# This rule needs to be run as root
+install-dkms: dkms-files
+	[ $$(id -u) = 0 ]    # Must be run as root
+	dkms add amc525_lmbf/$(GIT_VERSION)
+	dkms build amc525_lmbf/$(GIT_VERSION)
+	dkms install amc525_lmbf/$(GIT_VERSION)
+	modprobe amc525_lmbf
+
+# To remove dkms run
+#       dkms remove amc525_lmbf/$(GIT_VERSION) --all
+
+.PHONY: dkms-files install-dkms
 
 
 # ------------------------------------------------------------------------------

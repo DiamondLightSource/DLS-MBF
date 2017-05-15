@@ -35,7 +35,7 @@ clean-fpga:
 # ------------------------------------------------------------------------------
 # Driver build
 
-DRIVER_TARGETS = driver insmod rmmod
+DRIVER_TARGETS = driver insmod rmmod install-dkms
 .PHONY: $(DRIVER_TARGETS)
 
 $(DRIVER_TARGETS): $(DRIVER_BUILD_DIR)

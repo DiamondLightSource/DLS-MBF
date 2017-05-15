@@ -19,6 +19,8 @@ EXTRA_CFLAGS += -Wno-missing-field-initializers
 EXTRA_CFLAGS += -Wno-empty-body
 EXTRA_CFLAGS += -Wno-sign-compare
 
+EXTRA_CFLAGS += -DVERSION=$(VERSION)
+
 
 obj-m := amc525_lmbf.o
 

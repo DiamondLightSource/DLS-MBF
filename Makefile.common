@@ -25,6 +25,9 @@ PYTHON = python
 SPACE := $(subst ,, )
 export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE))
 
+# Get our version from git.  The name of the most recent parent tag is
+# optionally followed by a commit count and a git code.
+GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)
 
 
 # The default shell used by make is sh, but we may want to use the bash pipefail
