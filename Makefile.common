@@ -13,21 +13,19 @@ SIM_BUILD_DIR = $(BUILD_DIR)/sim
 PYTHONDIR = $(TOP)/AMC525/python
 
 
-LM_LICENSE_FILE_LIST = \
+LM_LICENSE_FILE = \
     2100@diamcslicserv01.dc.diamond.ac.uk \
     1717@diamcslicserv01.dc.diamond.ac.uk
-
-SPACE := $(subst ,, )
-export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE_LIST))
 
 PYTHON = python
 
 -include $(TOP)/CONFIG
 
+# Convert license file from space separate to : separated list
+SPACE := $(subst ,, )
+export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE))
 
-# Common definitions
 
-RUN_VIVADO = source $(VIVADO) && vivado
 
 # The default shell used by make is sh, but we may want to use the bash pipefail
 # option.  On most systems this still works because sh is now usually linked to
