@@ -77,7 +77,7 @@ begin
 
 
     -- Compute preload and overflow detection mask for output shift.
-    shift <= to_integer(8 * output_scaling_i);
+    shift <= 8 * to_integer(output_scaling_i);
     preload_extra <= shift_left(97X"0_0000_0000_0000_0000_0000_0001", shift);
     preload <= preload_extra(96 downto 1);
     overflow_mask <= signed(shift_right(base_mask, shift));
