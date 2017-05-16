@@ -50,6 +50,7 @@ architecture arch of detector_body is
     signal detector_overflow : std_logic;
     signal det_write : std_logic;
     signal det_iq : cos_sin_96_t;
+    signal iq_shift : cos_sin_96_t;
     signal iq_out : cos_sin_32_t;
 
     signal shift : integer;
@@ -59,6 +60,7 @@ architecture arch of detector_body is
     signal preload : signed(95 downto 0);
 
     signal det_write_dsp : std_logic;
+    signal det_shift_dsp : std_logic;
     signal det_write_out : std_logic;
 
 begin
@@ -115,10 +117,14 @@ begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             if det_write_dsp = '1' then
-                iq_out.cos <= shift_right(det_iq.cos, shift)(31 downto 0);
-                iq_out.sin <= shift_right(det_iq.sin, shift)(31 downto 0);
+                iq_shift <= det_iq;
             end if;
-            det_write_out <= det_write_dsp;
+            det_shift_dsp <= det_write_dsp;
+            if det_shift_dsp = '1' then
+                iq_out.cos <= shift_right(iq_shift.cos, shift)(31 downto 0);
+                iq_out.sin <= shift_right(iq_shift.sin, shift)(31 downto 0);
+            end if;
+            det_write_out <= det_shift_dsp;
         end if;
     end process;
 
