@@ -15,12 +15,12 @@ entity trigger_registers is
         clk_i : in std_logic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(CTRL_TRG_REGS);
+        read_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        read_data_o : out reg_data_array_t(CTRL_TRG_REGS);
+        read_ack_o : out std_logic_vector(CTRL_TRG_REGS);
 
         -- Revolution clock synchronisation
         turn_setup_o : out turn_clock_setup_t;
@@ -48,23 +48,20 @@ architecture arch of trigger_registers is
     -- Register interface
     signal strobed_bits : reg_data_t;
     signal pulsed_bits : reg_data_t;
-    signal readback_registers : reg_data_array_t(CTRL_TRG_READBACK_REGS);
+    signal readback_status : reg_data_t;
+    signal readback_sources : reg_data_t;
     signal config_registers : reg_data_array_t(CTRL_TRG_CONFIG_REGS);
 
-    alias readback_status : reg_data_t is
-        readback_registers(CTRL_TRG_READBACK_STATUS_REG);
-    alias readback_sources : reg_data_t is
-        readback_registers(CTRL_TRG_READBACK_SOURCES_REG);
     alias config_turn_setup : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_TURN_SETUP_REG);
+        config_registers(CTRL_TRG_CONFIG_TURN_REG);
     alias config_blanking : reg_data_t is
         config_registers(CTRL_TRG_CONFIG_BLANKING_REG);
     alias config_delay_seq_0 : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_DELAY_SEQ_0_REG);
+        config_registers(CTRL_TRG_CONFIG_SEQ0_REG);
     alias config_delay_seq_1 : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_DELAY_SEQ_1_REG);
+        config_registers(CTRL_TRG_CONFIG_SEQ1_REG);
     alias config_delay_dram : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_DELAY_DRAM_REG);
+        config_registers(CTRL_TRG_CONFIG_DRAM0_REG);
     alias config_trig_seq : reg_data_t is
         config_registers(CTRL_TRG_CONFIG_TRIG_SEQ_REG);
     alias config_trig_dram : reg_data_t is
@@ -93,9 +90,13 @@ begin
         pulsed_bits_i => pulsed_bits
     );
 
-    read_data_o(CTRL_TRG_READBACK_REGS) <= readback_registers;
-    read_ack_o(CTRL_TRG_READBACK_REGS) <= (others => '1');
-    write_ack_o(CTRL_TRG_READBACK_REGS) <= (others => '1');
+    read_data_o(CTRL_TRG_STATUS_REG) <= readback_status;
+    read_ack_o(CTRL_TRG_STATUS_REG) <= '1';
+    write_ack_o(CTRL_TRG_STATUS_REG) <= '1';
+
+    read_data_o(CTRL_TRG_SOURCES_REG) <= readback_sources;
+    read_ack_o(CTRL_TRG_SOURCES_REG) <= '1';
+    write_ack_o(CTRL_TRG_SOURCES_REG) <= '1';
 
     register_file_inst : entity work.register_file port map (
         clk_i => clk_i,
@@ -111,60 +112,75 @@ begin
     -- -------------------------------------------------------------------------
     -- Register mappings
 
-    turn_setup_o.start_sync   <= strobed_bits(0);
-    turn_setup_o.start_sample <= strobed_bits(1);
-    seq_setup_o(0).arm        <= strobed_bits(2);
-    seq_setup_o(0).disarm     <= strobed_bits(3);
-    seq_setup_o(1).arm        <= strobed_bits(4);
-    seq_setup_o(1).disarm     <= strobed_bits(5);
-    dram0_setup_o.arm         <= strobed_bits(6);
-    dram0_setup_o.disarm      <= strobed_bits(7);
-    soft_trigger_o            <= strobed_bits(8);
+    turn_setup_o.start_sync  <= strobed_bits(CTRL_TRG_CONTROL_SYNC_TURN_BIT);
+    turn_setup_o.start_sample <= strobed_bits(CTRL_TRG_CONTROL_SAMPLE_TURN_BIT);
+    seq_setup_o(0).arm       <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_ARM_BIT);
+    seq_setup_o(0).disarm    <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_DISARM_BIT);
+    seq_setup_o(1).arm       <= strobed_bits(CTRL_TRG_CONTROL_SEQ1_ARM_BIT);
+    seq_setup_o(1).disarm    <= strobed_bits(CTRL_TRG_CONTROL_SEQ1_DISARM_BIT);
+    dram0_setup_o.arm        <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_ARM_BIT);
+    dram0_setup_o.disarm     <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_DISARM_BIT);
+    soft_trigger_o           <= strobed_bits(CTRL_TRG_CONTROL_TRIGGER_BIT);
 
     pulsed_bits <= (
-        TRIGGER_SET => triggers_i,
+        CTRL_TRG_PULSED_TRIGGERS_BITS => triggers_i,
         others => '0'
     );
 
     readback_status <= (
         -- Revolution clock readbacks
-        0 => turn_readback_i.sync_busy,
-        1 => turn_readback_i.sync_phase,
-        2 => turn_readback_i.sync_error,
-        3 => turn_readback_i.sample_busy,
-        4 => turn_readback_i.sample_phase,
-        5 => seq_readback_i(0).armed,
-        6 => seq_readback_i(1).armed,
-        7 => dram0_readback_i.armed,
-        25 downto 16 => std_logic_vector(turn_readback_i.sample_count),
+        CTRL_TRG_STATUS_SYNC_BUSY_BIT    => turn_readback_i.sync_busy,
+        CTRL_TRG_STATUS_SYNC_PHASE_BIT   => turn_readback_i.sync_phase,
+        CTRL_TRG_STATUS_SYNC_ERROR_BIT   => turn_readback_i.sync_error,
+        CTRL_TRG_STATUS_SAMPLE_BUSY_BIT  => turn_readback_i.sample_busy,
+        CTRL_TRG_STATUS_SAMPLE_PHASE_BIT => turn_readback_i.sample_phase,
+        CTRL_TRG_STATUS_SEQ0_ARMED_BIT   => seq_readback_i(0).armed,
+        CTRL_TRG_STATUS_SEQ1_ARMED_BIT   => seq_readback_i(1).armed,
+        CTRL_TRG_STATUS_DRAM0_ARMED_BIT  => dram0_readback_i.armed,
+        CTRL_TRG_STATUS_SAMPLE_BITS =>
+            std_logic_vector(turn_readback_i.sample_count),
         others => '0'
     );
 
     readback_sources <= (
-        6 downto 0 => seq_readback_i(0).source,
-        14 downto 8 => seq_readback_i(1).source,
-        22 downto 16 => dram0_readback_i.source,
+        CTRL_TRG_SOURCES_SEQ0_BITS  => seq_readback_i(0).source,
+        CTRL_TRG_SOURCES_SEQ1_BITS  => seq_readback_i(1).source,
+        CTRL_TRG_SOURCES_DRAM0_BITS => dram0_readback_i.source,
         others => '0'
     );
 
-    turn_setup_o.max_bunch <= bunch_count_t(config_turn_setup(9 downto 0));
+    turn_setup_o.max_bunch <=
+        bunch_count_t(config_turn_setup(CTRL_TRG_CONFIG_TURN_MAX_BUNCH_BITS));
     turn_setup_o.clock_offsets(0) <=
-        bunch_count_t(config_turn_setup(19 downto 10));
+        bunch_count_t(config_turn_setup(CTRL_TRG_CONFIG_TURN_DSP0_OFFSET_BITS));
     turn_setup_o.clock_offsets(1) <=
-        bunch_count_t(config_turn_setup(29 downto 20));
-    blanking_interval_o(0) <= unsigned(config_blanking(15 downto 0));
-    blanking_interval_o(1) <= unsigned(config_blanking(31 downto 16));
+        bunch_count_t(config_turn_setup(CTRL_TRG_CONFIG_TURN_DSP1_OFFSET_BITS));
+    blanking_interval_o(0) <=
+        unsigned(config_blanking(CTRL_TRG_CONFIG_BLANKING_DSP0_BITS));
+    blanking_interval_o(1) <=
+        unsigned(config_blanking(CTRL_TRG_CONFIG_BLANKING_DSP1_BITS));
 
-    seq_setup_o(0).delay    <= unsigned(config_delay_seq_0(23 downto 0));
-    seq_setup_o(1).delay    <= unsigned(config_delay_seq_1(23 downto 0));
-    seq_setup_o(0).enables  <= config_trig_seq(6  downto 0);
-    seq_setup_o(0).blanking <= config_trig_seq(14 downto 8);
-    seq_setup_o(1).enables  <= config_trig_seq(22 downto 16);
-    seq_setup_o(1).blanking <= config_trig_seq(30 downto 24);
+    seq_setup_o(0).delay <=
+        unsigned(config_delay_seq_0(CTRL_TRG_CONFIG_SEQ0_DELAY_BITS));
+    seq_setup_o(1).delay <=
+        unsigned(config_delay_seq_1(CTRL_TRG_CONFIG_SEQ1_DELAY_BITS));
+    seq_setup_o(0).enables <=
+        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE0_BITS);
+    seq_setup_o(0).blanking <=
+        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_BLANKING0_BITS);
+    seq_setup_o(1).enables <=
+        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE1_BITS);
+    seq_setup_o(1).blanking <=
+        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_BLANKING1_BITS);
 
-    dram0_setup_o.delay     <= unsigned(config_delay_dram(23 downto 0));
-    dram0_setup_o.enables   <= config_trig_dram(6 downto 0);
-    dram0_setup_o.blanking  <= config_trig_dram(14 downto 8);
-    dram0_turn_select_o     <= unsigned(config_trig_dram(16 downto 16));
-    dram0_blanking_select_o <= reverse(config_trig_dram(18 downto 17));
+    dram0_setup_o.delay <=
+        unsigned(config_delay_dram(CTRL_TRG_CONFIG_DRAM0_DELAY_BITS));
+    dram0_setup_o.enables <=
+        config_trig_dram(CTRL_TRG_CONFIG_TRIG_DRAM_ENABLE_BITS);
+    dram0_setup_o.blanking <=
+        config_trig_dram(CTRL_TRG_CONFIG_TRIG_DRAM_BLANKING_BITS);
+    dram0_turn_select_o <=
+        unsigned(config_trig_dram(CTRL_TRG_CONFIG_TRIG_DRAM_TURN_SEL_BITS));
+    dram0_blanking_select_o <=
+        reverse(config_trig_dram(CTRL_TRG_CONFIG_TRIG_DRAM_BLANKING_SEL_BITS));
 end;

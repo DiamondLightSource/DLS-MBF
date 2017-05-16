@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import parse_indent
+import parse
 
 
 head_template = '''\
@@ -14,84 +14,80 @@ head_template = '''\
 
 -- Register definitions
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
 package %s is
 '''
 tail_template = 'end;'
-reg_template   = '    constant %s : natural := %d;'
-range_template = '    subtype %s is natural range %d to %d;'
 
+reg_template   = '    constant %(reg_name)s : natural := %(index)d;'
+
+subtype_template = '    subtype %%(reg_name)s is natural range %s;'
+range_templates = {
+    'to'     : subtype_template % '%(low)d to %(high)d',
+    'downto' : subtype_template % '%(high)d downto %(low)d',
+}
 
 
 def prefix_name(prefix, name, suffix):
     return '%s%s_%s' % ('_'.join(prefix + ['']), name, suffix)
 
-
 # Emits a range of register values
-def emit_range(prefix, name, index, count):
-    suffix = 'REGS' if prefix else 'REGS_RANGE'
+def emit_range(prefix, name, range, suffix, direction):
+    low, count = range
+    high = low + count - 1
     reg_name = prefix_name(prefix, name, suffix)
-    print range_template % (reg_name, index, index + count - 1)
+    template = range_templates[direction]
+    print template % locals()
 
-
-def emit_register_name(prefix, name, index, suffix):
+def emit_constant(prefix, name, index, suffix):
     reg_name = prefix_name(prefix, name, suffix)
-    print reg_template % (reg_name, index)
+    print reg_template % locals()
 
 
-# Emits a single register definition, or a R/W pair of definitions if the
-# register definition consists of two names.
-def emit_register(prefix, name, index):
-    parse = name.split('/')
-    if len(parse) > 1:
-        emit_register_name(prefix, parse[0], index, 'REG_W')
-        emit_register_name(prefix, parse[1], index, 'REG_R')
-    else:
-        emit_register_name(prefix, name, index, 'REG')
+class Generate(parse.register_defs.WalkParse):
+    def walk_register_array(self, prefix, array):
+        emit_range(prefix, array.name, array.range, 'REGS', 'to')
+
+    def walk_field(self, prefix, field):
+        if field.is_bit:
+            emit_constant(prefix, field.name, field.range[0], 'BIT')
+        else:
+            emit_range(prefix, field.name, field.range, 'BITS', 'downto')
+
+    def walk_register(self, prefix, register, overlay = False):
+        suffix = 'REG'
+        if overlay:
+            suffix += '_' + register.rw[:1]
+        emit_constant(prefix, register.name, register.offset, suffix)
+        self.walk_fields(prefix + [register.name], register)
+
+    def walk_group(self, prefix, group):
+        suffix = 'REGS' if prefix else 'REGS_RANGE'
+        emit_range(prefix, group.name, group.range, suffix, 'to')
+        self.walk_subgroups(prefix + [group.name], group)
+
+    def walk_overlay(self, prefix, overlay):
+        for reg in overlay.registers:
+            self.walk_register(prefix, reg, overlay = True)
 
 
-def generate_group(prefix, index, top_name, defs):
-    count = 0
-    for name, more_defs in defs:
-        count += generate_defs(
-            prefix + [top_name], index + count, name, more_defs)
-    emit_range(prefix, top_name, index, count)
-    return count
-
-def generate_single(prefix, index, name):
-    parse = name.split()
-    if len(parse) == 1:
-        emit_register(prefix, name, index)
-        return 1
-    else:
-        name, count = parse[0], int(parse[1])
-        emit_range(prefix, name, index, count)
-        return count
-
-
-# Generates the definitions for a single group of registers, returns the number
-# of registers in that group.
-def generate_defs(prefix, index, name, defs):
-    if defs:
-        return generate_group(prefix, index, name, defs)
-    else:
-        return generate_single(prefix, index, name)
-
-
-# Generates complete entity definition
-def generate_entity(entity, input):
-    print head_template % entity
-    for group_name, group_body in input:
-        print '    -- Definitions for %s' % group_name
-        generate_defs([], 0, group_name, group_body)
+def generate_list(walk, values):
+    for value in values:
+        print '    -- Definitions for %s' % value.name
+        walk([], value)
         print
+
+# Generates complete package definition
+def generate_package(package, parse):
+    generate = Generate()
+    print head_template % package
+    generate_list(generate.walk_register, parse.register_defs)
+    generate_list(generate.walk_group, parse.group_defs)
+    generate_list(generate.walk_group, parse.groups)
     print tail_template
 
 
 if __name__ == '__main__':
-    entity = sys.argv[2] if len(sys.argv) > 2 else 'register_defs'
-    input = parse_indent.parse_indented_file(sys.argv[1])
-    generate_entity(entity, input)
+    package = sys.argv[2] if len(sys.argv) > 2 else 'register_defs'
+    indent = parse.indent.parse_file(file(sys.argv[1]))
+    parse = parse.register_defs.parse(indent)
+    generate_package(package, parse)

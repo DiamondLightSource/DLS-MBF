@@ -49,6 +49,7 @@ entity axi_burst_master is
         -- goes low, at which point data_ready_o will go low.
         capture_enable_i : in std_logic;
         data_ready_o : out std_logic;
+
         -- This is the address of the currently written data word.
         capture_address_o : out std_logic_vector(RAM_ADDR_WIDTH-1 downto 0)
             := (others => '0');
@@ -81,7 +82,7 @@ architecture arch of axi_burst_master is
     signal first_write_done : boolean := false;
     signal first_burst : std_logic := '0';
     signal enable_request : std_logic := '0';
-    signal first_write : std_logic := '0';
+    signal first_write : std_logic;
     signal starting : boolean := false;
     signal next_burst : boolean := false;
     signal data_active : boolean := false;
@@ -94,8 +95,8 @@ architecture arch of axi_burst_master is
     signal awvalid : boolean := false;
 
     -- Data channel
-    signal beat_counter : unsigned(BURST_BITS-1 downto 0)
-        := (others => '0');
+    signal reset_beat : boolean := true;
+    signal beat_counter : unsigned(BURST_BITS-1 downto 0);
     signal wlast_early : std_logic;
     signal wlast_early_edge : std_logic := '0';
     signal wvalid : boolean := false;
@@ -246,7 +247,11 @@ begin
             elsif awready_i = '1' then
                 awvalid <= false;
             end if;
+        end if;
+    end process;
 
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             -- Manage burst address.
             if first_write = '1' then
                 burst_address <= (others => '0');
@@ -294,10 +299,21 @@ begin
     process (rstn_i, clk_i) begin
         if rstn_i = '0' then
             wvalid <= false;
-            wlast <= false;
-            beat_counter <= (others => '0');
+            reset_beat <= true;
         elsif rising_edge(clk_i) then
+            -- The wvalid bit is set when we're writing data, otherwise
+            -- reset on an acknowledged write.
+            if burst_active and (data_valid_i = '1' or not data_active) then
+                wvalid <= true;
+            elsif wready_i = '1' then
+                wvalid <= false;
+            end if;
+            reset_beat <= false;
+        end if;
+    end process;
 
+    process (clk_i) begin
+        if rising_edge(clk_i) then
             if burst_active then
                 -- During each burst generate data
                 if data_active then
@@ -312,16 +328,11 @@ begin
                 end if;
             end if;
 
-            -- The wvalid bit is set when we're writing data, otherwise
-            -- reset on an acknowledged write.
-            if burst_active and (data_valid_i = '1' or not data_active) then
-                wvalid <= true;
-            elsif wready_i = '1' then
-                wvalid <= false;
-            end if;
-
             -- Count each completed beat
-            if wvalid and wready_i = '1' then
+            if reset_beat then
+                beat_counter <= (others => '0');
+                wlast <= false;
+            elsif wvalid and wready_i = '1' then
                 beat_counter <= beat_counter + 1;
                 wlast <= wlast_early = '1';
             end if;
@@ -336,6 +347,7 @@ begin
             brsp_error_o <= to_std_logic(bvalid_i = '1' and bresp_i /= "00");
         end if;
     end process;
+
 
     -- Generate a single pulse half way through the burst to trigger the next
     -- address.

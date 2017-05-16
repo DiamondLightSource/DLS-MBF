@@ -13,6 +13,7 @@ use unisim.vcomponents.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
 
 entity idelay_control is
     port (
@@ -40,17 +41,16 @@ architecture arch of idelay_control is
 begin
     -- Clock control
     -- Set the IDELAY with value of form 0x1xx for xx in range 0 to 31.
-    delay_in <= write_data_i(4 downto 0);
-    delay_strobe <= write_data_i(8) and write_strobe_i;
+    delay_in <= write_data_i(IDELAY_VALUE_BITS);
+    delay_strobe <= write_data_i(IDELAY_WRITE_BIT) and write_strobe_i;
     -- Increment IDELAY by writing 0x3000, decrement with 0x1000.
-    inc_decn <= write_data_i(13);
-    inc_decn_strobe <= write_data_i(12) and write_strobe_i;
+    inc_decn <= write_data_i(IDELAY_INC_DECN_BIT);
+    inc_decn_strobe <= write_data_i(IDELAY_STEP_BIT) and write_strobe_i;
     -- Read current value
     read_data_o <= (
-        4 downto 0 => delay_out,
+        IDELAY_VALUE_BITS => delay_out,
         others => '0'
     );
-
 
     -- Input delay control
     idelay_inst : IDELAYE2 generic map (
@@ -79,5 +79,4 @@ begin
         REGRST => '0',
         LDPIPEEN => '0'
     );
-
 end;

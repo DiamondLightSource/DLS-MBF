@@ -18,16 +18,36 @@
 #include "memory.h"
 #include "debug.h"
 
+#define _S(x)   #x
+#define S(x)    _S(x)
 
 MODULE_AUTHOR("Michael Abbott, Diamond Light Source Ltd.");
 MODULE_DESCRIPTION("Driver for LMBF AMC525 FPGA MTCA card");
 MODULE_LICENSE("GPL");
-// MODULE_VERSION(S(VERSION));
-MODULE_VERSION("0");
+MODULE_VERSION(S(VERSION));
+
+/* The following module alias supports the automatic loading of this kernel
+ * module at system boot.  As documented at
+ *  https://wiki.archlinux.org/index.php/Modalias
+ *
+ * we have the following fields here:
+ *  v  000010EE     Vendor ID (Xilinx)
+ *  d  00007038     Device ID (Xilinx default: PCIe3 8 lanes)
+ *  sv 000010EE     Subsystem Vendor ID, also default
+ *  sd 00000007     Subsystem ID
+ *  bc 11           Base Class (Signal processing controller)
+ *  sc 80           Subclass (Signal processing controller)
+ *  i  00           Interface code
+ *
+ * This alias needs to match the settings in the pci_driver .id_table below in
+ * this file, and the definitions in the the block device definition in
+ * AMC525/bd/interconnect.tcl. */
+MODULE_ALIAS("pci:v000010EEd00007038sv000010EEsd00000007bc11sc80i00");
 
 /* Card identification. */
 #define XILINX_VID      0x10EE
 #define AMC525_DID      0x7038
+#define AMC525_SID      0x0007
 
 
 /* Physical layout in DDR address space of the two memory areas. */
@@ -340,7 +360,8 @@ static void amc525_lmbf_remove(struct pci_dev *pdev)
 static struct pci_driver amc525_lmbf_driver = {
     .name = DEVICE_NAME,
     .id_table = (const struct pci_device_id[]) {
-        { PCI_DEVICE(XILINX_VID, AMC525_DID) },
+        { PCI_DEVICE_SUB(XILINX_VID, AMC525_DID, XILINX_VID, AMC525_SID) },
+        { 0 }
     },
     .probe = amc525_lmbf_probe,
     .remove = amc525_lmbf_remove,

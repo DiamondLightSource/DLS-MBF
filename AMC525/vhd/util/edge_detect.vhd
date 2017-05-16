@@ -23,13 +23,16 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             last_data <= data_i;
-            if REGISTER_EDGE then
-                edge_o <= edge;
-            end if;
         end if;
     end process;
 
-    gen_reg : if not REGISTER_EDGE generate
+    gen_reg : if REGISTER_EDGE generate
+        process (clk_i) begin
+            if rising_edge(clk_i) then
+                edge_o <= edge;
+            end if;
+        end process;
+    else generate
         edge_o <= edge;
     end generate;
 end;

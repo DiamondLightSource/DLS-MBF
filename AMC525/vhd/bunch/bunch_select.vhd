@@ -17,12 +17,12 @@ entity bunch_select is
         turn_clock_i : in std_logic;       -- Revolution clock
 
         -- Bunch configuration SBC interface for writing configuration
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(DSP_BUNCH_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(DSP_BUNCH_REGS);
+        read_strobe_i : in std_logic_vector(DSP_BUNCH_REGS);
+        read_data_o : out reg_data_array_t(DSP_BUNCH_REGS);
+        read_ack_o : out std_logic_vector(DSP_BUNCH_REGS);
 
         -- Bunch configuration readout
         bank_select_i : in unsigned(1 downto 0);       -- Current bunch bank
@@ -42,7 +42,7 @@ architecture arch of bunch_select is
 
 begin
     -- Register management
-    register_file_inst : entity work.register_file port map (
+    register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_BUNCH_CONFIG_REG),
         write_data_i => write_data_i,

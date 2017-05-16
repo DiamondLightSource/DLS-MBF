@@ -30,6 +30,7 @@ use work.support.all;
 
 use work.nco_defs.all;
 use work.sequencer_defs.all;
+use work.register_defs.all;
 
 entity sequencer_top is
     port (
@@ -41,12 +42,12 @@ entity sequencer_top is
         blanking_i : in std_logic;      -- Can be used to disable sequence
 
         -- Register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(DSP_SEQ_REGS);
+        read_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
+        read_data_o : out reg_data_array_t(DSP_SEQ_REGS);
+        read_ack_o : out std_logic_vector(DSP_SEQ_REGS);
 
         -- Triggering control for starting sequencer
         trigger_i : in std_logic;       -- Sequencer trigger

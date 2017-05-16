@@ -6,7 +6,11 @@ include Makefile.common
 
 
 
-default: fpga
+default:
+	echo Need to specify a build target
+	false
+.PHONY: default
+
 
 
 # ------------------------------------------------------------------------------
@@ -17,74 +21,50 @@ FPGA_TARGETS = \
     fpga fpga_project runvivado edit_bd save_bd create_bd load_fpga fpga_built
 .PHONY: $(FPGA_TARGETS)
 
-
 $(FPGA_TARGETS): $(FPGA_BUILD_DIR)
-	make -C $(FPGA_BUILD_DIR) -f $(TOP)/AMC525/Makefile \
-            TOP=$(TOP) VIVADO=$(VIVADO) $(MAKECMDGOALS)
+	make -C $< -f $(TOP)/AMC525/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
 
 $(FPGA_BUILD_DIR):
 	mkdir -p $@
 
-clean_fpga:
+clean-fpga:
 	rm -rf $(FPGA_BUILD_DIR)
-.PHONY: clean_fpga
+.PHONY: clean-fpga
 
 
 # ------------------------------------------------------------------------------
 # Driver build
 
-DRIVER_NAME = amc525_lmbf
-DRIVER_KO = $(DRIVER_BUILD_DIR)/$(DRIVER_NAME).ko
+DRIVER_TARGETS = driver insmod rmmod install-dkms driver-rpm udev
+.PHONY: $(DRIVER_TARGETS)
 
-DRIVER_FILES = $(wildcard driver/*)
-
-driver: $(DRIVER_KO)
-.PHONY: driver
-
-# The usual dance for building kernel modules out of tree
-DRIVER_BUILD_FILES := $(DRIVER_FILES:driver/%=$(DRIVER_BUILD_DIR)/%)
-$(DRIVER_BUILD_FILES): $(DRIVER_BUILD_DIR)/%: driver/%
-	ln -s $$(readlink -e $<) $@
-
-$(DRIVER_KO): $(DRIVER_BUILD_DIR) $(DRIVER_BUILD_FILES)
-	$(MAKE) -C $(KERNEL_DIR) M=$< modules
-	touch $@
+$(DRIVER_TARGETS): $(DRIVER_BUILD_DIR)
+	make -C $< -f $(TOP)/driver/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
 
 $(DRIVER_BUILD_DIR):
 	mkdir -p $@
 
-
-insmod: $(DRIVER_KO)
-	cp $^ /tmp
-ifdef DMA_BUF_SHIFT
-	sudo insmod /tmp/$(DRIVER_NAME).ko dma_block_shift=$(DMA_BUF_SHIFT)
-else
-	sudo insmod /tmp/$(DRIVER_NAME).ko
-endif
-	sudo chgrp dcs /dev/amc525_lmbf.*
-	sudo chmod g+rw /dev/amc525_lmbf.*
-
-rmmod:
-	sudo rmmod $(DRIVER_NAME)
-
-modperm:
-	sudo chgrp dcs /dev/amc525_lmbf.*
-	sudo chmod g+rw /dev/amc525_lmbf.*
-
-.PHONY: insmod rmmod modperm
+clean-driver:
+	rm -rf $(DRIVER_BUILD_DIR)
+.PHONY: clean-driver
 
 
 # ------------------------------------------------------------------------------
 # Tools build
 
-tools: $(TOOLS_BUILD_DIR)
-	$(MAKE) -C $(TOOLS_BUILD_DIR) -f $(TOP)/tools/Makefile \
-            VPATH=$(TOP)/tools TOP=$(TOP)
+TOOLS_TARGETS = tools
+.PHONY: $(TOOLS_TARGETS)
+
+$(TOOLS_TARGETS): $(TOOLS_BUILD_DIR)
+	$(MAKE) -C $< -f $(TOP)/tools/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
 
 $(TOOLS_BUILD_DIR):
 	mkdir -p $@
 
-.PHONY: tools
+clean-tools:
+	rm -rf $(TOOLS_BUILD_DIR)
+.PHONY: clean-tools
+
 
 
 # ------------------------------------------------------------------------------

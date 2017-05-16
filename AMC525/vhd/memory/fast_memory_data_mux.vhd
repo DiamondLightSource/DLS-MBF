@@ -17,13 +17,9 @@ entity fast_memory_data_mux is
         mux_select_i : in std_logic_vector(3 downto 0);
         fir_gain_i : in unsigned(3 downto 0);
 
-        -- Data processing
-        data_valid_i : in std_logic;
         dsp_to_control_i : in dsp_to_control_array_t;
         extra_i : in std_logic_vector(63 downto 0);
 
-        -- Data out with write enable
-        data_valid_o : out std_logic := '0';
         data_o : out std_logic_vector(63 downto 0) := (others => '0')
     );
 end;
@@ -106,8 +102,6 @@ begin
                 when "1111" => data <= extra;
                 when others =>
             end case;
-
-            data_valid_o <= data_valid_i;
         end if;
     end process;
 

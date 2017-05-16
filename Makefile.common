@@ -5,24 +5,33 @@ BUILD_DIR = $(TOP)/build
 VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.4/settings64.sh
 VSIM = /dls_sw/FPGA/Questa/10.6/questasim/bin/vsim
 
-KERNEL_DIR = /lib/modules/$(shell uname -r)/build
-
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
 TOOLS_BUILD_DIR = $(BUILD_DIR)/tools
 SIM_BUILD_DIR = $(BUILD_DIR)/sim
 
+PYTHONDIR = $(TOP)/AMC525/python
 
-LM_LICENSE_FILE_LIST = \
+
+LM_LICENSE_FILE = \
     2100@diamcslicserv01.dc.diamond.ac.uk \
     1717@diamcslicserv01.dc.diamond.ac.uk
 
-SPACE := $(subst ,, )
-export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE_LIST))
+PYTHON = python
 
 -include $(TOP)/CONFIG
 
+# Convert license file from space separate to : separated list
+SPACE := $(subst ,, )
+export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE))
 
-# Common definitions
+# Get our version from git.  The name of the most recent parent tag is
+# optionally followed by a commit count and a git code.
+GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)
 
-RUN_VIVADO = source $(VIVADO) && vivado
+
+# The default shell used by make is sh, but we may want to use the bash pipefail
+# option.  On most systems this still works because sh is now usually linked to
+# bash, but on Ubuntu sh is linked to dash which doesn't support pipefail.
+# Setting this option is always safe, just makes bash a dependency.
+SHELL = bash

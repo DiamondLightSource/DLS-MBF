@@ -12,7 +12,6 @@ use work.register_defs.all;
 entity system_registers is
     port (
         reg_clk_i : in std_logic;       -- Register clock
-        reg_clk_ok_i : in std_logic;
         ref_clk_i : in std_logic;       -- Timing reference clock
         ref_clk_ok_i : in std_logic;
 
@@ -57,6 +56,8 @@ end;
 architecture arch of system_registers is
     signal status_read_data : reg_data_t;
 
+    constant STATUS_PIPELINE : natural := 4;
+
 begin
     -- Version register, read only.
     write_ack_o(SYS_VERSION_REG) <= '1';
@@ -69,7 +70,8 @@ begin
     read_ack_o(SYS_STATUS_REG) <= '1';
     -- Pipeline the status to avoid annoying timing problems.
     status_dly_inst : entity work.dlyreg generic map (
-        DW => 32, DLY => 1
+        DW => 32,
+        DLY => STATUS_PIPELINE
     ) port map (
         clk_i => reg_clk_i,
         data_i => status_read_data_i,

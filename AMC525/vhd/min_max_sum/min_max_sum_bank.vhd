@@ -8,6 +8,7 @@ use work.support.all;
 use work.defines.all;
 
 use work.min_max_sum_defs.all;
+use work.register_defs.all;
 
 entity min_max_sum_bank is
     generic (
@@ -68,9 +69,10 @@ begin
             -- Count each frame, readout and reset on request
             if turn_clock_i = '1' then
                 if switch_request then
-                    count_read_data_o(28 downto 0) <=
+                    count_read_data_o(MMS_COUNT_TURNS_BITS) <=
                         std_logic_vector(frame_count(28 downto 0));
-                    count_read_data_o(29) <= frame_count_overflow;
+                    count_read_data_o(MMS_COUNT_TURNS_OVFL_BIT) <=
+                        frame_count_overflow;
                     frame_count <= (others => '0');
                     frame_count_overflow <= '0';
                 else
@@ -100,8 +102,8 @@ begin
 
             -- Latch the overflow bits when they're ready
             if overflow_readout = '1' then
-                count_read_data_o(30) <= sum_overflow;
-                count_read_data_o(31) <= sum2_overflow;
+                count_read_data_o(MMS_COUNT_SUM_OVFL_BIT) <= sum_overflow;
+                count_read_data_o(MMS_COUNT_SUM2_OVFL_BIT) <= sum2_overflow;
                 sum_overflow <= sum_overflow_i;
                 sum2_overflow <= sum2_overflow_i;
             else

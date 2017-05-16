@@ -3,22 +3,22 @@ ifndef TOP
 $(error Do not call this make file directly)
 endif
 
-# The default shell used by make is sh, but in this makefile we use the bash
-# pipefail option.  On most systems this still works because sh is now usually
-# linked to bash, but on Ubuntu sh is linked to dash which doesn't support
-# pipefail.  Setting this option is always safe, just makes bash a dependency.
-SHELL = bash
+include $(TOP)/Makefile.common
+
+SRCDIR = $(TOP)/tools
+
+VPATH = $(SRCDIR)
 
 
 TOOLS = testmem read_debug
 
 
-# Git version
+# (not) git version
 BUILD_DATE_TIME = $(shell date +'%Y-%m-%d %H:%M:%S')
 
 
-default: $(TOOLS)
-.PHONY: default
+tools: $(TOOLS)
+.PHONY: tools
 
 
 CFLAGS += -std=gnu99

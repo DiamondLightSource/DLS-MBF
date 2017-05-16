@@ -243,12 +243,6 @@ begin
         1 => fmc500_inputs.pll_status_ld2
     );
 
-    -- Interrupt events
-    INTR <= (
-        0 => DRAM0_capture_enable,
-        1 => not DRAM0_capture_enable,
-        others => '0'
-    );
 
     -- -------------------------------------------------------------------------
     -- Clocking
@@ -603,7 +597,6 @@ begin
     --  DSP{0,1}    Individual control of DSP elements
     register_top_inst : entity work.register_top port map (
         reg_clk_i => reg_clk,
-        reg_clk_ok_i => reg_clk_ok,
         dsp_clk_i => dsp_clk,
         dsp_clk_ok_i => dsp_clk_ok,
 
@@ -640,7 +633,6 @@ begin
     -- System registers for hardware management
     system_registers_inst : entity work.system_registers port map (
         reg_clk_i => reg_clk,
-        reg_clk_ok_i => reg_clk_ok,
         ref_clk_i => ref_clk,
         ref_clk_ok_i => ref_clk_ok,
 
@@ -713,7 +705,9 @@ begin
         event_trigger_i => event_trigger,
         postmortem_trigger_i => postmortem_trigger,
         blanking_trigger_i => blanking_trigger,
-        dsp_events_o => dsp_events
+        dsp_events_o => dsp_events,
+
+        interrupts_o => INTR
     );
 
     -- Generate DAC test data if necessary
@@ -735,24 +729,24 @@ begin
     );
 
     status_data <= (
-        0 => dsp_clk_ok,
-        1 => DRAM0_capture_enable,
-        2 => fmc500_inputs.vcxo_pwr_good,
-        3 => fmc500_inputs.adc_pwr_good,
-        4 => fmc500_inputs.dac_pwr_good,
-        5 => fmc500_inputs.pll_status_ld1,
-        6 => fmc500_inputs.pll_status_ld2,
-        7 => fmc500_inputs.dac_irqn,
-        8 => not fmc500_inputs.temp_alert_n,
+        SYS_STATUS_DSP_OK_BIT       => dsp_clk_ok,
+        SYS_STATUS_DRAM0_ENABLE_BIT => DRAM0_capture_enable,
+        SYS_STATUS_VCXO_OK_BIT      => fmc500_inputs.vcxo_pwr_good,
+        SYS_STATUS_ADC_OK_BIT       => fmc500_inputs.adc_pwr_good,
+        SYS_STATUS_DAC_OK_BIT       => fmc500_inputs.dac_pwr_good,
+        SYS_STATUS_PLL_LD1_BIT      => fmc500_inputs.pll_status_ld1,
+        SYS_STATUS_PLL_LD2_BIT      => fmc500_inputs.pll_status_ld2,
+        SYS_STATUS_DAC_IRQN_BIT     => fmc500_inputs.dac_irqn,
+        SYS_STATUS_TEMP_ALERT_BIT   => not fmc500_inputs.temp_alert_n,
         others => '0'
     );
 
-    fmc500_outputs.pll_clkin_sel0 <= control_data(3);
-    fmc500_outputs.pll_clkin_sel1 <= control_data(4);
-    fmc500_outputs.pll_sync <= control_data(5);
-    fmc500_outputs.adc_pdwn <= control_data(6);
-    fmc500_outputs.dac_rstn <= not control_data(7);
-    dac_test_mode <= control_data(8);
+    fmc500_outputs.pll_clkin_sel0 <= control_data(SYS_CONTROL_PLL_SEL0_BIT);
+    fmc500_outputs.pll_clkin_sel1 <= control_data(SYS_CONTROL_PLL_SEL1_BIT);
+    fmc500_outputs.pll_sync <= control_data(SYS_CONTROL_PLL_SYNC_BIT);
+    fmc500_outputs.adc_pdwn <= control_data(SYS_CONTROL_ADC_PDWN_BIT);
+    fmc500_outputs.dac_rstn <= not control_data(SYS_CONTROL_DAC_RSTN_BIT);
+    dac_test_mode <= control_data(SYS_CONTROL_DAC_TESTMODE_BIT);
 
     -- External events
     event_trigger      <= dio_inputs(0);

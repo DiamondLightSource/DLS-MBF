@@ -12,7 +12,6 @@ entity register_top is
     port (
         -- Clocking
         reg_clk_i : in std_logic;
-        reg_clk_ok_i : in std_logic;
         dsp_clk_i : in std_logic;
         dsp_clk_ok_i : in std_logic;
 

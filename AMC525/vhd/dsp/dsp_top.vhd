@@ -12,6 +12,7 @@ use work.dsp_defs.all;
 use work.bunch_defs.all;
 use work.nco_defs.all;
 use work.sequencer_defs.all;
+use work.register_defs.all;
 
 entity dsp_top is
     port (
@@ -24,12 +25,12 @@ entity dsp_top is
         dac_data_o : out signed;
 
         -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(DSP_REGS_RANGE);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(DSP_REGS_RANGE);
+        read_strobe_i : in std_logic_vector(DSP_REGS_RANGE);
+        read_data_o : out reg_data_array_t(DSP_REGS_RANGE);
+        read_ack_o : out std_logic_vector(DSP_REGS_RANGE);
 
         -- External control: data multiplexing and shared control
         control_to_dsp_i : in control_to_dsp_t;
@@ -41,9 +42,6 @@ entity dsp_top is
 end;
 
 architecture arch of dsp_top is
-    -- General readback status bits
-    signal status_bits : reg_data_t;
-
     -- Strobed control signals
     signal strobed_bits : reg_data_t;
     signal write_start : std_logic;
@@ -95,7 +93,6 @@ begin
 
         -- Processed registers
         strobed_bits_o => strobed_bits,
-        status_bits_i => status_bits,
         pulsed_bits_i => pulsed_bits,
         nco_0_frequency_o => nco_0_phase_advance
     );
@@ -106,26 +103,23 @@ begin
         DW => 2
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => strobed_bits(1 downto 0),
+        data_i(0) => strobed_bits(DSP_MISC_STROBE_WRITE_BIT),
+        data_i(1) => strobed_bits(DSP_MISC_STROBE_RESET_DELTA_BIT),
         data_o(0) => write_start,
         data_o(1) => delta_reset
     );
 
-    -- Miscellaneous status bits etc
-    status_bits <= (
-        others => '0'
-    );
 
     -- Capture of single clock events
     pulsed_bits <= (
-        0 => adc_input_overflow,    -- ADC out of limit
-        1 => adc_fir_overflow,      -- Compensation filter overflow
-        2 => adc_mms_overflow,      -- ADC MMS accumulator overflow
-        3 => adc_delta_event,       -- Bunch by bunch motion over threshold
-        4 => dac_fir_overflow,      -- FIR overflow in output
-        5 => dac_mux_overflow,      -- Overflow in output multiplexer
-        6 => dac_mms_overflow,      -- DAC MMS accumulator overflow
-        7 => dac_preemph_overflow,  -- Preemphasis filter overflow
+        DSP_MISC_PULSED_ADC_INP_OVF_BIT => adc_input_overflow,
+        DSP_MISC_PULSED_ADC_FIR_OVF_BIT => adc_fir_overflow,
+        DSP_MISC_PULSED_ADC_MMS_OVF_BIT => adc_mms_overflow,
+        DSP_MISC_PULSED_ADC_DELTA_BIT   => adc_delta_event,
+        DSP_MISC_PULSED_DAC_FIR_OVF_BIT => dac_fir_overflow,
+        DSP_MISC_PULSED_DAC_MUX_OVF_BIT => dac_mux_overflow,
+        DSP_MISC_PULSED_DAC_MMS_OVF_BIT => dac_mms_overflow,
+        DSP_MISC_PULSED_DAC_OUT_OVF_BIT => dac_preemph_overflow,
         others => '0'
     );
 
@@ -217,9 +211,7 @@ begin
         write_ack_o => write_ack_o(DSP_FIR_REGS),
         read_strobe_i => read_strobe_i(DSP_FIR_REGS),
         read_data_o => read_data_o(DSP_FIR_REGS),
-        read_ack_o => read_ack_o(DSP_FIR_REGS),
-
-        write_start_i => write_start
+        read_ack_o => read_ack_o(DSP_FIR_REGS)
     );
     dsp_to_control_o.fir_data <= fir_data;
 
@@ -318,7 +310,4 @@ begin
         mem_addr_o => dsp_to_control_o.dram1_address,
         mem_data_o => dsp_to_control_o.dram1_data
     );
-
-
-    dsp_to_control_o.dram0_enable <= '1';
 end;

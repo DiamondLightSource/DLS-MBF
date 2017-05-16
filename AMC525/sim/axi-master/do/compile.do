@@ -16,16 +16,19 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/interconnect_tb.vhd
 
 # Libraries taken from generated interconnect_wrapper_elaborate.do
-vopt -64 +acc -L unisims_ver -L unimacro_ver -L secureip -L xil_defaultlib -L \
-    generic_baseblocks_v2_1 -L fifo_generator_v12_0 -L axi_data_fifo_v2_1 -L \
-    axi_infrastructure_v1_1 -L axi_register_slice_v2_1 -L \
-    axi_protocol_converter_v2_1 -L axi_clock_converter_v2_1 \
-    -L blk_mem_gen_v8_2 -L \
-    axi_dwidth_converter_v2_1 -work xil_defaultlib \
-    xil_defaultlib.interconnect_tb xil_defaultlib.glbl -o interconnect_tb_opt
+# Alas, we need to change wrapper to tb in this, otherwise the file should be
+# executed as it stands.
+vopt -64 +acc=npr -L xil_defaultlib -L xpm -L generic_baseblocks_v2_1_0 -L \
+fifo_generator_v13_1_3 -L axi_data_fifo_v2_1_10 -L axi_infrastructure_v1_1_0 -L \
+axi_register_slice_v2_1_11 -L axi_protocol_converter_v2_1_11 -L \
+axi_clock_converter_v2_1_10 -L blk_mem_gen_v8_3_5 -L \
+axi_dwidth_converter_v2_1_11 -L unisims_ver -L unimacro_ver -L secureip -work \
+xil_defaultlib xil_defaultlib.interconnect_tb xil_defaultlib.glbl -o \
+interconnect_tb_opt
+
 
 vsim -t 1ps \
-    -pli "/dls_sw/FPGA/Xilinx/Vivado/2015.1/lib/lnx64.o/libxil_vsim.so" \
+    -pli "/dls_sw/FPGA/Xilinx/Vivado/2016.4/lib/lnx64.o/libxil_vsim.so" \
     -lib xil_defaultlib interconnect_tb_opt
 
 view wave
