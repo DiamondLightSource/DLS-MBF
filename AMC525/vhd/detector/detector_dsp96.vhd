@@ -89,14 +89,19 @@ architecture arch of detector_dsp96 is
     signal carrycasc : std_logic;
     signal multsign : std_logic;
     signal start_in : std_logic := '0';
+    signal pc_in_out : std_logic_vector(47 downto 0);
+    signal m47 : std_logic;
+    signal c47 : std_logic;
 
     signal opmode_low : std_logic_vector(6 downto 0) := "0000101";
     signal opmode_high : std_logic_vector(6 downto 0) := "0001000";
+    signal carryin_high : std_logic;
     signal carryinsel_high : std_logic_vector(2 downto 0) := "000";
     signal sum_low : signed(47 downto 0) := (others => '0');
 
     signal register_c_low : signed(47 downto 0);
     signal register_c_high : signed(95 downto 48);
+    signal preload_in : signed(95 downto 48);
     signal detect_low : std_logic;
     signal detect_low_bar : std_logic;
     signal detect_low_pl : std_logic;
@@ -120,14 +125,33 @@ begin
                 register_c_low <= overflow_mask_i(47 downto 0);
             end if;
 
+            -- Compute the expected product sign
+            m47 <= enable_i and (data_i(24) xor mul_i(17));
+            c47 <= preload_i(47);
+
             start_in <= start_i;
+            preload_in <= preload_i(95 downto 48);
             if start_in = '1' then
-                -- Here we load the sign bit from the previous load (available
-                -- as sum_low(47) into P; to reduce routing costs we do the
-                -- appropriate calculations in the DSP unit.
-                opmode_high <= "011" & "10" & "00";     -- C + -1 + CARRYIN
-                carryinsel_high <= "000";               -- Select CARRYIN = sign
-                register_c_high <= preload_i(95 downto 48);
+                -- Sign extend the product into the upper half using the
+                -- appropriate OPMODE multiplexer input selection.
+                if m47 = '1' then
+                    opmode_high <= "011" & "10" & "00";     -- C + CIN - 1
+                else
+                    opmode_high <= "011" & "00" & "00";     -- C + CIN
+                end if;
+
+                case std_logic_vector'(m47 & c47) is
+                    when "00" =>
+                        carryinsel_high <= "000";       -- CIN = 0
+                        carryin_high <= '0';
+                    when "11" =>
+                        carryinsel_high <= "000";       -- CIN = 1
+                        carryin_high <= '1';
+                    when "01" | "10" =>
+                        carryinsel_high <= "001";       -- CIN = ~P[47]
+                    when others => -- simulation only
+                end case;
+                register_c_high <= preload_in(95 downto 48);
             else
                 -- In this mode we need to add both the multiplier sign
                 -- extension and the accumulator carry.
@@ -207,7 +231,7 @@ begin
         signed(P) => sum_low,
         PATTERNBDETECT => detect_low_bar,
         PATTERNDETECT => detect_low,
-        PCOUT => open,
+        PCOUT => pc_in_out,
         UNDERFLOW => open
     );
 
@@ -215,7 +239,6 @@ begin
     -- carry, so we can turn the multiply unit off.
     dsp48e1_high : DSP48E1 generic map (
         ALUMODEREG => 0,
-        CARRYINREG => 0,
         INMODEREG => 0,
         MREG => 0,
         USE_MULT => "NONE",
@@ -229,7 +252,7 @@ begin
         BCIN => (others => '0'),
         C => std_logic_vector(register_c_high),
         CARRYCASCIN => carrycasc,
-        CARRYIN => not sum_low(47),
+        CARRYIN => carryin_high,
         CARRYINSEL => carryinsel_high,
         CEA1 => '0',
         CEA2 => '0',
@@ -238,7 +261,7 @@ begin
         CEB1 => '0',
         CEB2 => '0',
         CEC => '1',
-        CECARRYIN => '0',
+        CECARRYIN => '1',
         CECTRL => '1',
         CED => '0',
         CEINMODE => '0',
@@ -249,7 +272,7 @@ begin
         INMODE => "00000",
         MULTSIGNIN => multsign,
         OPMODE => opmode_high,
-        PCIN => (others => '0'),
+        PCIN => pc_in_out,
         RSTA => '0',
         RSTALLCARRYIN => '0',
         RSTALUMODE => '0',

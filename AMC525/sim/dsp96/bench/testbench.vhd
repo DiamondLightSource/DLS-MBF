@@ -123,7 +123,7 @@ begin
         tick_wait(4);
 
         -- Force a negative number and load it
-        preload <= 96X"0000_0000_0000_0001_0000_0000";
+        preload <= 96X"0000_F000_0000_0001_0000_0000";
         mul  <= 18X"20000";
         pulse_start;
         tick_wait(5);
@@ -136,6 +136,15 @@ begin
         pulse_start;
         tick_wait(5);
 
+        pulse_start;
+        tick_wait(5);
+
+        -- Now try with a preload with some more tricky bits set
+        preload <= 96X"0000_F000_000F_F001_0000_0000";
+        pulse_start;
+        tick_wait(5);
+
+        mul  <= 18X"20000";
         pulse_start;
         tick_wait(5);
 

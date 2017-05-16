@@ -30,6 +30,8 @@ architecture arch of sim_dsp96 is
     signal mul_in : signed(17 downto 0) := (others => '0');
     signal product : signed(42 downto 0) := (others => '0');
     signal accum : signed(95 downto 0) := (others => '0');
+    signal preload_in : signed(95 downto 0) := (others => '0');
+    signal preload : signed(95 downto 0) := (others => '0');
     signal start_in : std_logic := '0';
     signal start_delay : std_logic := '0';
 
@@ -51,10 +53,13 @@ begin
             end if;
             product <= mul_in * data_in;
 
+            preload_in <= preload_i;
+            preload <= preload_in;
+
             start_in <= start_i;
             start_delay <= start_in;
             if start_delay = '1' then
-                accum <= product + preload_i;
+                accum <= product + preload;
             else
                 accum <= product + accum;
             end if;
