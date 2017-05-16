@@ -5,6 +5,14 @@ TOP := $(CURDIR)
 include Makefile.common
 
 
+# Get our version from git.  The name of the most recent parent tag is
+# optionally followed by a commit count and a git code.
+GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)
+
+MAKE_LOCAL = \
+    $(MAKE) -C $< -f $(TOP)/$1/Makefile.local \
+        TOP=$(TOP) GIT_VERSION=$(GIT_VERSION) $(MAKECMDGOALS)
+
 
 default:
 	echo Need to specify a build target
@@ -22,7 +30,7 @@ FPGA_TARGETS = \
 .PHONY: $(FPGA_TARGETS)
 
 $(FPGA_TARGETS): $(FPGA_BUILD_DIR)
-	make -C $< -f $(TOP)/AMC525/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
+	$(call MAKE_LOCAL,AMC525)
 
 $(FPGA_BUILD_DIR):
 	mkdir -p $@
@@ -39,7 +47,7 @@ DRIVER_TARGETS = driver insmod rmmod install-dkms driver-rpm udev
 .PHONY: $(DRIVER_TARGETS)
 
 $(DRIVER_TARGETS): $(DRIVER_BUILD_DIR)
-	make -C $< -f $(TOP)/driver/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
+	$(call MAKE_LOCAL,driver)
 
 $(DRIVER_BUILD_DIR):
 	mkdir -p $@
@@ -56,7 +64,7 @@ TOOLS_TARGETS = tools
 .PHONY: $(TOOLS_TARGETS)
 
 $(TOOLS_TARGETS): $(TOOLS_BUILD_DIR)
-	$(MAKE) -C $< -f $(TOP)/tools/Makefile.local TOP=$(TOP) $(MAKECMDGOALS)
+	$(call MAKE_LOCAL,tools)
 
 $(TOOLS_BUILD_DIR):
 	mkdir -p $@
