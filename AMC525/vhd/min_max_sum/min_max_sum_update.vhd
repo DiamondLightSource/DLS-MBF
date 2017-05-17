@@ -5,7 +5,7 @@
 --                              | ----- 2 ----> |
 --  clk_i               /       /       /       /       /       /       /
 --  data_i          ----< d     >------------------------------------------
---  data            ------------< d     >----------------------------------
+--  data_in         ------------< d     >----------------------------------
 --  mms_i.min/max   ------------< mm    >----------------------------------
 --  mms_i.sum       ------------< s     >----------------------------------
 --  mms_i.sum2      ------------< s2    >----------------------------------
@@ -49,10 +49,12 @@ architecture arch of min_max_sum_update is
     -- We hang onto the computed min and max values so that the delta can be
     -- computed accurately now, and not one turn later -- we could even miss an
     -- event if a buffer swap occurred at the wrong time!
-    signal data_pl : signed(15 downto 0) := (others => '0');
-    signal data : signed(15 downto 0) := (others => '0');
+    signal data_in : data_i'SUBTYPE := (others => '0');
+    signal data_delay : data_i'SUBTYPE := (others => '0');
     signal mms : mms_row_t := mms_reset_value;
     signal product : signed(31 downto 0) := (others => '0');
+    signal data_small : boolean := false;
+    signal data_large : boolean := false;
 
     -- Overflow detection
     signal old_sum_top : std_logic_vector(1 downto 0) := "00";
@@ -61,6 +63,10 @@ architecture arch of min_max_sum_update is
     signal delta_sum2_top : std_logic_vector(1 downto 0) := "00";
     signal sum_overflow : std_logic := '0';
 
+    -- Prevent DSP unit for consuming an extra input register!
+    attribute DONT_TOUCH : string;
+    attribute DONT_TOUCH of data_i : signal is "yes";
+
 begin
     -- Delay mms_i => mms_o
     --  mms_i
@@ -68,49 +74,41 @@ begin
     --      => mms_o
     assert UPDATE_DELAY = 2 severity failure;
 
-    -- Start with a data pipeline protected from being eaten by the DSP unit.
-    dlyreg_inst : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => data_i'LENGTH
-    ) port map (
-        clk_i => clk_i,
-        data_i => std_logic_vector(data_i),
-        signed(data_o) => data_pl
-    );
-
     process (clk_i) begin
         if rising_edge(clk_i) then
-            -- Pipeline input data to help DSP unit
-            data <= data_pl;
+            -- Data pipeline
+            data_in <= data_i;
+            data_delay <= data_in;
 
             -- Min/Max
-            if data < mms_i.min then
-                mms.min <= data;
+            data_small <= data_in < mms_i.min;
+            mms.min <= mms_i.min;
+            if data_small then
+                mms_o.min <= data_delay;
             else
-                mms.min <= mms_i.min;
-            end if;
-            if data > mms_i.max then
-                mms.max <= data;
-            else
-                mms.max <= mms_i.max;
+                mms_o.min <= mms.min;
             end if;
 
-            -- Compute sum and pipeline sum of squares
-            mms.sum <= mms_i.sum + resize(data, 32);
-            mms.sum2 <= mms_i.sum2;
+            data_large <= data_in > mms_i.max;
+            mms.max <= mms_i.max;
+            if data_large then
+                mms_o.max <= data_delay;
+            else
+                mms_o.max <= mms.max;
+            end if;
 
-            -- Compute sum of squares
-            product <= data * data;
-            -- To ensure the accumulator stays inside the DSP48E1 unit we fake
-            -- it to perform signed arithmetic.  Doesn't change the results.
-            mms_o.sum2 <= unsigned(resize(product, 48) + signed(mms.sum2));
-
-            -- All outputs are generated together
-            mms_o.min <= mms.min;
-            mms_o.max <= mms.max;
+            -- Compute sum
+            mms.sum <= mms_i.sum + data_in;
             mms_o.sum <= mms.sum;
 
-            delta_o <= unsigned(mms.max - mms.min);
+            -- Compute sum of squares
+            product <= data_in * data_in;
+            mms.sum2 <= mms_i.sum2;
+            -- To ensure the accumulator stays inside the DSP48E1 unit we fake
+            -- it to perform signed arithmetic.  Doesn't change the results.
+            mms_o.sum2 <= unsigned(product + signed(mms.sum2));
+
+            delta_o <= unsigned(mms_o.max - mms_o.min);
 
 
             -- Overflow detection.  This is not synchronised to the outgoing

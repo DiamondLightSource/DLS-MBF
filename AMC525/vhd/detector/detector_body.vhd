@@ -60,7 +60,6 @@ architecture arch of detector_body is
     signal preload : signed(95 downto 0);
 
     signal det_write_dsp : std_logic;
-    signal det_shift_dsp : std_logic;
     signal det_write_out : std_logic;
 
 begin
@@ -116,15 +115,12 @@ begin
     -- Shift of detector output
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
+            iq_shift <= det_iq;
             if det_write_dsp = '1' then
-                iq_shift <= det_iq;
-            end if;
-            det_shift_dsp <= det_write_dsp;
-            if det_shift_dsp = '1' then
                 iq_out.cos <= shift_right(iq_shift.cos, shift)(31 downto 0);
                 iq_out.sin <= shift_right(iq_shift.sin, shift)(31 downto 0);
             end if;
-            det_write_out <= det_shift_dsp;
+            det_write_out <= det_write_dsp;
         end if;
     end process;
 
