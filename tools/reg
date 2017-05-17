@@ -2,10 +2,13 @@
 
 import sys
 
-import driver
+from driver import raw_registers
 
 REGS = [
-    driver.REG_SYSTEM, driver.REG_CTRL, driver.REG_DSP[0], driver.REG_DSP[1]]
+    raw_registers.reg_system,
+    raw_registers.reg_dsp_ctrl,
+    raw_registers.reg_dsp[0],
+    raw_registers.reg_dsp[1]]
 
 
 args = [int(arg, 0) for arg in sys.argv[1:]]
@@ -27,4 +30,4 @@ elif len(args) == 3:
     # Write one register
     bank[args[1]] = args[2]
 else:
-    assert False
+    assert False, 'Invalid number of arguments'

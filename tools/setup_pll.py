@@ -7,7 +7,7 @@
 
 from config_pll import SettingsBase
 
-from driver import PLL
+from driver import PLL_SPI as PLL
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

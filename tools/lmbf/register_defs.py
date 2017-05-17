@@ -73,15 +73,44 @@ def make_register(register, fields):
         _value = property(_read_value, _write_value)
 
 
-        def __get_fields(self):
-            return self.__class__(DummyBase(self._value))
+        def _get_fields(self, read = True):
+            value = self._value if read else 0
+            return self.__class__(DummyBase(value))
 
         def __set_fields(self, value):
             self._value = value._value
 
         # _fields returns an updatable image of the current register settings as
         # a group of settable fields
-        _fields = property(__get_fields, __set_fields)
+        _fields = property(_get_fields, __set_fields)
+
+        @property
+        def _fields_wo(self):
+            return self._get_fields(False)
+
+
+        # Single action update of a group of fields
+        def __write_fields(self, do_read, fields):
+            update = self._get_fields(do_read)
+            for field, value in fields.items():
+                setattr(update, field, value)
+            self.__set_fields(update)
+
+        def _write_fields_wo(self, **fields):
+            self.__write_fields(False, fields)
+
+        def _write_fields_rw(self, **fields):
+            self.__write_fields(True, fields)
+
+        @classmethod
+        def _writer(cls, parent, value):
+            register = cls(parent)
+            if isinstance(value, int):
+                register._write_value(value)
+            elif isinstance(value, Register):
+                register.__set_fields(value)
+            else:
+                assert False
 
 
         _field_names = []
@@ -144,7 +173,8 @@ def add_attributes(target, attributes):
             # When we parsed an overlay we were returned a list of attributes
             add_attributes(target, attribute)
         else:
-            setattr(target, attribute._name, property(attribute))
+            setattr(target, attribute._name,
+                property(attribute, getattr(attribute, '_writer', None)))
 
 
 # An ordinary group just delegates its attributes
@@ -215,12 +245,12 @@ generate = GenerateMethods()
 
 
 # Read the definitions in parsed form
-defs = parse.register_defs.parse(parse.indent.parse_file(file(DEFS)))
+defs = parse.register_defs.parse(parse.indent.parse_file(file(DEFS), False))
 defs = parse.register_defs.flatten(defs)
 
-groups = {}
+register_groups = {}
 for group in defs.groups:
-    groups[group.name] = generate.walk_top(group)
+    register_groups[group.name] = generate.walk_top(group)
 
 
 class BaseAddress:
@@ -240,7 +270,7 @@ class BaseAddress:
 
 
 if __name__ == '__main__':
-    sys = groups['SYS'](BaseAddress(0))
+    sys = register_groups['SYS'](BaseAddress(0))
 
     print sys.VERSION
     print sys.STATUS
@@ -250,7 +280,7 @@ if __name__ == '__main__':
     print sys.DAC_TEST
     print sys.REV_IDELAY
 
-    dsp0 = groups['DSP'](BaseAddress(0x3000))
+    dsp0 = register_groups['DSP'](BaseAddress(0x3000))
 
     print dsp0.MISC.PULSED
     print dsp0.MISC.STROBE
@@ -272,7 +302,12 @@ if __name__ == '__main__':
     dsp0.MISC.STROBE._fields = strobe
     print dsp0.MISC.STROBE
     dsp0.MISC.STROBE._fields = strobe
+    dsp0.MISC.STROBE._write_fields_wo(WRITE = 1, RESET_DELTA = 1)
 
     print
     dsp0.ADC.CONFIG.THRESHOLD = 1234
     print dsp0.ADC.CONFIG
+
+    print
+    dsp0.ADC.TAPS = 1234
+    dsp0.MISC.STROBE = strobe

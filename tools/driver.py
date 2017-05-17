@@ -1,7 +1,11 @@
+import sys
 import os
 import mmap
 import fcntl
 import numpy
+
+from lmbf.register_defs import register_groups
+
 
 # Driver device names
 DDR0_NAME = '/dev/amc525_lmbf.0.ddr0'
@@ -24,7 +28,7 @@ os.close(ddr0_file)
 
 
 
-class Regs:
+class RawRegisters:
     def __init__(self, regs_device):
         # Open register file and map into memory.
         self.reg_file = os.open(regs_device, os.O_RDWR | os.O_SYNC)
@@ -44,50 +48,56 @@ class Regs:
         self.reg_dsp_ctrl = regs[0x2000:0x2020]
         self.reg_dsp      = [regs[0x3000:0x3020], regs[0x3800:0x3820]]
 
-        self.spi_reg = self.reg_system[4:5]
 
-    def spi_read(self, dev, addr):
-        dev &= 3
-        addr &= 0xFFF
-        self.spi_reg[0] = 0x80000000 | (dev << 29) | (addr << 8)
-        return self.spi_reg[0]
+class RegisterMap:
+    def __init__(self, registers, name):
+        self.registers = registers
+        self.name = name
 
-    def spi_write(self, dev, addr, data):
-        dev &= 3
-        addr &= 0xFFF
-        data &= 0xFF
-        self.spi_reg[0] = (dev << 29) | (addr << 8) | data
-        # Must read back to ensure that write has completed
-        resp = self.spi_reg[0]
+    def _read_value(self, offset):
+        result = self.registers[offset]
+#         print >>sys.stderr, '%s[%d] => %08x' % (self.name, offset, result)
+        return result
+
+    def _write_value(self, offset, value):
+#         print >>sys.stderr, '%s[%d] <= %08x' % (self.name, offset, value)
+        self.registers[offset] = value
+
+
+raw_registers = RawRegisters(REGS_NAME)
+
+def make_register(name, map):
+    return register_groups[name](RegisterMap(map, name))
+
+
+SYSTEM  = make_register('SYS',  raw_registers.reg_system)
+CONTROL = make_register('CTRL', raw_registers.reg_dsp_ctrl)
+DSP0    = make_register('DSP',  raw_registers.reg_dsp[0])
+DSP1    = make_register('DSP',  raw_registers.reg_dsp[1])
 
 
 class SPI:
     def __init__(self, regs, dev):
-        self.regs = regs
+        self.spi_reg = regs.FMC_SPI
         self.dev = dev
 
     def read(self, addr):
-        return self.regs.spi_read(self.dev, addr)
+        # Trigger an SPI read
+        self.spi_reg._write_fields_wo(
+            ADDRESS = addr, SELECT = self.dev, RW_N = 1)
+        return self.spi_reg.DATA
 
     def write(self, addr, data):
-        self.regs.spi_write(self.dev, addr, data)
+        self.spi_reg._write_fields_wo(
+            ADDRESS = addr, SELECT = self.dev, DATA = data)
+        # Trigger readback to ensure write has completed.  Should get rid of
+        # this requirement one of these days...
+        value = self.spi_reg._value
 
     __getitem__ = read
     __setitem__ = write
 
 
-regs = Regs(REGS_NAME)
-
-PLL = SPI(regs, 0)
-ADC = SPI(regs, 1)
-DAC = SPI(regs, 2)
-
-REG_SYSTEM = regs.reg_system
-REG_CTRL   = regs.reg_dsp_ctrl
-REG_DSP    = regs.reg_dsp
-
-__all__ = [
-    'DDR0_BUF_LEN',
-    'PLL', 'ADC', 'DAC',
-    'REG_SYSTEM', 'REG_CTRL', 'REG_DSP',
-]
+PLL_SPI = SPI(SYSTEM, 0)
+ADC_SPI = SPI(SYSTEM, 1)
+DAC_SPI = SPI(SYSTEM, 2)

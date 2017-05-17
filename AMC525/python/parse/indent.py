@@ -41,10 +41,11 @@ class read_lines:
     COMMENT = 2     # Documentation line
     LINE = 3        # Body line
 
-    def __init__(self, input):
+    def __init__(self, input, warn):
         self.__input = input
         self.__undo = False
         self.__result = ()
+        self.__warn = warn
         self.line_no = 0
 
 
@@ -53,7 +54,9 @@ class read_lines:
         sys.exit(1)
 
     def warn(self, message):
-        print >>sys.stderr, 'Warning: %s on line %d' % (message, self.line_no)
+        if self.__warn:
+            print >>sys.stderr, \
+                'Warning: %s on line %d' % (message, self.line_no)
 
 
     def __read_line(self):
@@ -168,8 +171,8 @@ def parse_sub_lines(input, indent):
     return lines
 
 
-def parse_file(input):
-    return parse_sub_lines(read_lines(input), -1)
+def parse_file(input, warn = True):
+    return parse_sub_lines(read_lines(input, warn), -1)
 
 
 def print_parse(prefix, parse):
