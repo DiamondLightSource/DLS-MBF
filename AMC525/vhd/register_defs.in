@@ -417,6 +417,17 @@
         # Repeated writes to this register update the configuration for
         # successive bunches
         BANK        W
+            # Selects FIR to apply to this bunch
+            .FIR_SELECT     2
+            # Output gain
+            .GAIN           13
+            # Enable FIR output for this bunch
+            .FIR_ENABLE
+            # Enable NCO0 output
+            .NCO0_ENABLE
+            # Enable NCO1 output
+            .NCO1_ENABLE
+
 
     # Bunch by bunch filter
     !FIR
