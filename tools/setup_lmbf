@@ -37,7 +37,7 @@ def setup_bunch_control(dsp):
     setting.FIR_SELECT = 0
     setting.GAIN = 0x0FFF
     setting.FIR_ENABLE = 1
-    setting.NCO0_ENABLE = 0
+    setting.NCO0_ENABLE = 1
     setting.NCO1_ENABLE = 0
     for b in range(TURNS):
         dsp.BUNCH.BANK = setting
@@ -50,6 +50,7 @@ def setup_bunch_fir(dsp, taps):
 
 def setup_dac_output(dsp):
     dsp.DAC.CONFIG.FIR_ENABLE = 1
+    dsp.DAC.CONFIG.FIR_GAIN = 13
 
 
 setup_fmc500()

@@ -16,9 +16,6 @@ REGS_NAME = '/dev/amc525_lmbf.0.reg'
 LMBF_MAP_SIZE = ord('L') << 8           # _IO('L', 0)
 LMBF_BUF_SIZE = (ord('L') << 8) | 1     # _IO('L', 1)
 
-# Register map parameters.  These must match definitions in vhd/defines.vhd
-MOD_ADDR_COUNT = 2**2
-REG_ADDR_COUNT = 2**5
 
 
 # Interrogate DMA buffer size
@@ -55,12 +52,9 @@ class RegisterMap:
         self.name = name
 
     def _read_value(self, offset):
-        result = self.registers[offset]
-#         print >>sys.stderr, '%s[%d] => %08x' % (self.name, offset, result)
-        return result
+        return self.registers[offset]
 
     def _write_value(self, offset, value):
-#         print >>sys.stderr, '%s[%d] <= %08x' % (self.name, offset, value)
         self.registers[offset] = value
 
 
@@ -92,7 +86,7 @@ class SPI:
             ADDRESS = addr, SELECT = self.dev, DATA = data)
         # Trigger readback to ensure write has completed.  Should get rid of
         # this requirement one of these days...
-        value = self.spi_reg._value
+        value = self.spi_reg.DATA
 
     __getitem__ = read
     __setitem__ = write
