@@ -27,13 +27,21 @@ architecture arch of testbench is
 
     signal data : signed(24 downto 0) := (others => '0');
     signal mul : signed(17 downto 0);
+    signal overflow_mask : signed(95 downto 0) := (others => '0');
+    signal preload : signed(95 downto 0) := (others => '0');
     signal enable : std_logic;
     signal start : std_logic;
 
     signal sim_sum : signed(95 downto 0);
+    signal sim_overflow : std_logic;
     signal dsp_sum : signed(95 downto 0);
+    signal dsp_overflow : std_logic;
+
     signal diff : signed(95 downto 0);
-    signal ok : boolean;
+    signal start_dly : std_logic;
+
+    signal sum_ok : boolean;
+    signal ovf_ok : boolean;
 
 begin
     clk <= not clk after 1 ns;
@@ -46,7 +54,10 @@ begin
         mul_i => mul,
         enable_i => enable,
         start_i => start,
-        sum_o => dsp_sum
+        overflow_mask_i => overflow_mask,
+        preload_i => preload,
+        sum_o => dsp_sum,
+        overflow_o => dsp_overflow
     );
 
     -- Simulation of device
@@ -57,16 +68,30 @@ begin
         mul_i => mul,
         enable_i => enable,
         start_i => start,
-        sum_o => sim_sum
+        overflow_mask_i => overflow_mask,
+        preload_i => preload,
+        sum_o => sim_sum,
+        overflow_o => sim_overflow
+    );
+
+
+    start_delay : entity work.dlyline generic map (
+        DLY => 5
+    ) port map (
+        clk_i => clk,
+        data_i(0) => start,
+        data_o(0) => start_dly
     );
 
     -- Error checking.
     process (clk) begin
         if rising_edge(clk) then
+            -- (we only clock these to avoid annoying glitches)
             diff <= dsp_sum - sim_sum;
+            ovf_ok <= dsp_overflow = sim_overflow or start_dly = '1';
         end if;
     end process;
-    ok <= diff = 0;
+    sum_ok <= diff = 0;
 
 
     process
@@ -79,8 +104,10 @@ begin
         enable <= '1';
         data <= 25X"0000000";
         mul  <= 18X"00000";
+        preload <= 96X"0000_0001_0000_0001_0000_0000";
+        overflow_mask <= 96X"0000_0000_0000_FFFF_FFFF_FFFF";
         start <= '0';
-        tick_wait;
+        tick_wait(2);
 
         -- Start by loading zero and then accumulating some positive numbers
         pulse_start;
@@ -96,6 +123,7 @@ begin
         tick_wait(4);
 
         -- Force a negative number and load it
+        preload <= 96X"0000_F000_0000_0001_0000_0000";
         mul  <= 18X"20000";
         pulse_start;
         tick_wait(5);
@@ -108,6 +136,15 @@ begin
         pulse_start;
         tick_wait(5);
 
+        pulse_start;
+        tick_wait(5);
+
+        -- Now try with a preload with some more tricky bits set
+        preload <= 96X"0000_F000_000F_F001_0000_0000";
+        pulse_start;
+        tick_wait(5);
+
+        mul  <= 18X"20000";
         pulse_start;
         tick_wait(5);
 

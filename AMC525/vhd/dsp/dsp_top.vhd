@@ -281,10 +281,10 @@ begin
 
 
     detector : entity work.detector_top generic map (
-        DATA_IN_BUFFER_LENGTH => 2,
-        DATA_BUFFER_LENGTH => 2,
-        NCO_BUFFER_LENGTH => 2,
-        MEMORY_BUFFER_LENGTH => 2
+        DATA_IN_BUFFER_LENGTH => 4,
+        DATA_BUFFER_LENGTH => 4,
+        NCO_BUFFER_LENGTH => 4,
+        MEMORY_BUFFER_LENGTH => 4
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,

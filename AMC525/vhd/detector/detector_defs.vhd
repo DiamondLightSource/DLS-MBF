@@ -12,4 +12,5 @@ package detector_defs is
     subtype DETECTOR_RANGE is natural range DETECTOR_COUNT-1 downto 0;
 
     subtype cos_sin_96_t is cos_sin_t(cos(95 downto 0), sin(95 downto 0));
+    subtype cos_sin_32_t is cos_sin_t(cos(31 downto 0), sin(31 downto 0));
 end;

@@ -35,6 +35,7 @@ end;
 architecture arch of detector_input is
     signal fir_data_in : fir_data_i'SUBTYPE;
     signal adc_data_in : adc_data_i'SUBTYPE;
+    signal window_in : window_i'SUBTYPE;
     signal scaled_adc_data : data_o'SUBTYPE;
     signal scaled_fir_data : data_o'SUBTYPE;
     signal fir_overflow_in : std_logic;
@@ -63,6 +64,15 @@ begin
         clk_i => clk_i,
         data_i => std_logic_vector(adc_data_i),
         signed(data_o) => adc_data_in
+    );
+
+    window_buffer : entity work.dlyreg generic map (
+        DLY => BUFFER_LENGTH,
+        DW => window_i'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(window_i),
+        signed(data_o) => window_in
     );
 
 
@@ -103,7 +113,7 @@ begin
         DISCARD_TOP => 1
     ) port map (
         clk_i => clk_i,
-        a_i => window_i,
+        a_i => window_in,
         b_i => data_in,
         ab_o => data_o
     );

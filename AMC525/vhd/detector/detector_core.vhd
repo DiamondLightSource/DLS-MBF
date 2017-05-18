@@ -19,8 +19,12 @@ entity detector_core is
         iq_i : in cos_sin_18_t;
         bunch_enable_i : in std_logic;
 
-        overflow_i : in std_logic;
-        overflow_o : out std_logic := '0';
+        data_overflow_i : in std_logic;
+        data_overflow_o : out std_logic := '0';
+        detector_overflow_o : out std_logic;
+
+        overflow_mask_i : in signed(95 downto 0);
+        preload_i : in signed(95 downto 0);
 
         start_i : in std_logic;
         write_i : in std_logic;
@@ -32,6 +36,8 @@ end;
 
 architecture arch of detector_core is
     signal iq_out : iq_o'SUBTYPE;
+    signal cos_overflow : std_logic;
+    signal sin_overflow : std_logic;
 
     -- Typically both start_i and write_i are synchronous, and the delay from
     -- start_i to reset data out is 4 ticks, so we need the write delay to be
@@ -46,7 +52,10 @@ begin
         mul_i => iq_i.cos,
         enable_i => bunch_enable_i,
         start_i => start_i,
-        sum_o => iq_out.cos
+        overflow_mask_i => overflow_mask_i,
+        preload_i => preload_i,
+        sum_o => iq_out.cos,
+        overflow_o => cos_overflow
     );
 
     sin_detect : entity work.detector_dsp96 port map (
@@ -55,7 +64,10 @@ begin
         mul_i => iq_i.sin,
         enable_i => bunch_enable_i,
         start_i => start_i,
-        sum_o => iq_out.sin
+        overflow_mask_i => overflow_mask_i,
+        preload_i => preload_i,
+        sum_o => iq_out.sin,
+        overflow_o => sin_overflow
     );
 
     delay_write : entity work.dlyline generic map (
@@ -68,12 +80,13 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            overflow_o <= overflow_i and bunch_enable_i;
+            data_overflow_o <= data_overflow_i and bunch_enable_i;
 
+            write_o <= write_in;
             if write_in = '1' then
                 iq_o <= iq_out;
             end if;
-            write_o <= write_in;
+            detector_overflow_o <= write_o and (cos_overflow or sin_overflow);
         end if;
     end process;
 end;
