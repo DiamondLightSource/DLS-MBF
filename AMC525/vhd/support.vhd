@@ -101,6 +101,8 @@ package support is
     function to_std_logic(nat : natural range 0 to 1) return std_logic;
     function to_integer(data : std_logic) return natural;
     function to_boolean(data : std_logic) return boolean;
+    function to_std_logic_vector(nat : natural; width : natural)
+        return std_logic_vector;
 
 
     -- Helpers for reading and writing bit fields.
@@ -316,6 +318,12 @@ package body support is
 
     function to_boolean(data : std_logic) return boolean is begin
         return data = '1';
+    end;
+
+    function to_std_logic_vector(nat : natural; width : natural)
+        return std_logic_vector
+    is begin
+        return std_logic_vector(to_signed(nat, width));
     end;
 
 

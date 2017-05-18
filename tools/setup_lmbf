@@ -4,7 +4,7 @@
 
 import time
 
-from driver import CONTROL, DSP0, DSP1
+from driver import SYSTEM, CONTROL, DSP0, DSP1
 
 import setup_pll
 import setup_adc
@@ -59,10 +59,10 @@ setup_fmc500()
 CONTROL.TRG.CONFIG.TURN.MAX_BUNCH = TURNS - 1
 
 for dsp in [DSP0, DSP1]:
-    setup_fast_fir(dsp, dsp.ADC, 8)     # ADC compensation filter
-    setup_fast_fir(dsp, dsp.DAC, 8)     # DAC pre-emphasis filter
+    setup_fast_fir(dsp, dsp.ADC, SYSTEM.INFO.ADC_TAPS)
+    setup_fast_fir(dsp, dsp.DAC, SYSTEM.INFO.DAC_TAPS)
     setup_bunch_control(dsp)
-    setup_bunch_fir(dsp, 16)
+    setup_bunch_fir(dsp, SYSTEM.INFO.BUNCH_TAPS)
     setup_dac_output(dsp)
 
 CONTROL.CONTROL.OUTPUT = 3

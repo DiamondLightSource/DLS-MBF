@@ -168,6 +168,7 @@ architecture arch of top is
 
     -- Control registers
     signal version_data : reg_data_t;
+    signal info_data : reg_data_t;
     signal status_data : reg_data_t;
     signal control_data : reg_data_t;
 
@@ -644,6 +645,7 @@ begin
         read_ack_o => system_read_ack,
 
         version_read_data_i => version_data,
+        info_read_data_i => info_data,
         status_read_data_i => status_data,
         control_data_o => control_data,
 
@@ -724,7 +726,17 @@ begin
     -- -------------------------------------------------------------------------
     -- Control register mapping.
 
-    version_data(31 downto 0) <= (
+    version_data <= (
+        others => '0'
+    );
+
+    info_data <= (
+        SYS_INFO_ADC_TAPS_BITS     =>
+            to_std_logic_vector(ADC_FIR_TAP_COUNT, 8),
+        SYS_INFO_BUNCH_TAPS_BITS   =>
+            to_std_logic_vector(BUNCH_FIR_TAP_COUNT, 8),
+        SYS_INFO_DAC_TAPS_BITS     =>
+            to_std_logic_vector(DAC_FIR_TAP_COUNT, 8),
         others => '0'
     );
 

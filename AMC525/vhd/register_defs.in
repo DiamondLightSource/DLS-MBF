@@ -65,6 +65,15 @@
     # No fields yet defined
     VERSION     R
 
+    # Configuration information
+    INFO        R
+        # Number of taps in the ADC compensation filter
+        .ADC_TAPS       8
+        # Number of taps in the bunch-by-bunch feedback filter
+        .BUNCH_TAPS     8
+        # Number of taps in the DAC pre-emphasis filter
+        .DAC_TAPS       8
+
     # System status register
     STATUS      R
         # Set if ADC clock is currently good
