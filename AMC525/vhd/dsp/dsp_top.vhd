@@ -284,7 +284,8 @@ begin
         DATA_IN_BUFFER_LENGTH => 4,
         DATA_BUFFER_LENGTH => 4,
         NCO_BUFFER_LENGTH => 4,
-        MEMORY_BUFFER_LENGTH => 4
+        MEMORY_BUFFER_LENGTH => 4,
+        CONTROL_BUFFER_LENGTH => 4
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,

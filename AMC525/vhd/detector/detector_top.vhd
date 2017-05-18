@@ -16,7 +16,8 @@ entity detector_top is
         DATA_IN_BUFFER_LENGTH : natural;
         DATA_BUFFER_LENGTH : natural;
         NCO_BUFFER_LENGTH : natural;
-        MEMORY_BUFFER_LENGTH : natural
+        MEMORY_BUFFER_LENGTH : natural;
+        CONTROL_BUFFER_LENGTH : natural
     );
     port (
         adc_clk_i : in std_logic;
@@ -122,6 +123,8 @@ begin
     detectors : for d in DETECTOR_RANGE generate
         signal nco_iq_in : nco_iq_i'SUBTYPE;
         signal data_delay : data_in'SUBTYPE;
+        signal start : std_logic;
+        signal write : std_logic;
 
         signal valid : std_logic;
         signal ready : std_logic;
@@ -151,6 +154,15 @@ begin
             signed(data_o) => data_delay
         );
 
+        control_delay : entity work.dlyreg generic map (
+            DW => 2,
+            DLY => CONTROL_BUFFER_LENGTH
+        ) port map (
+            clk_i => adc_clk_i,
+            data_i(0) => start_i,   data_i(1) => write_i,
+            data_o(0) => start,     data_o(1) => write
+        );
+
         -- Detector
         detector_body : entity work.detector_body port map (
             adc_clk_i => adc_clk_i,
@@ -163,8 +175,8 @@ begin
 
             data_i => data_delay,
             iq_i => nco_iq_in,
-            start_i => start_i,
-            write_i => write_i,
+            start_i => start,
+            write_i => write,
             data_overflow_i => fir_overflow_in,
 
             data_overflow_o => fir_overflow(d),
