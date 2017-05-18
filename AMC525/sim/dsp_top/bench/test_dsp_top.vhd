@@ -107,45 +107,36 @@ begin
         end;
     begin
 
-        -- Initialise ADC FIR with passthrough.
         clk_wait(dsp_clk, 10);
-        write_reg(0, X"00000001");
-        write_reg(3, X"7FFFFFFF");
+
+        -- Simple test, small ring: just pass NCO0 through to DSP
+
+        -- Set a sensible NCO frequency
+        write_reg(1,  X"01000000");
 
         -- Configure bunch control
-        write_reg(4, X"00000004");      -- 10 bunches (2*5) in our ring!
-        write_reg(0, X"00000001");      -- Start write
-        write_reg(5, X"7FFF0070");      -- Enable all outpus with maximum gain
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
-        write_reg(5, X"7FFF0070");
+        write_reg(6,  X"00000000");
+        for n in 1 to TURN_COUNT loop
+            -- .FIR_SELECT = 0
+            -- .GAIN = 0x0FFF
+            -- .FIR_ENABLE = 0
+            -- .NCO0_ENABLE = 1
+            -- .NCO1_ENABLE = 0
+            write_reg(7, X"00013FFC");  -- Enable NCO0 at full gain
+        end loop;
 
-        -- Write 1 into first tap of bank 0
-        write_reg(8, X"7FFFFFFF");
-
-        -- Global DAC output config
-        write_reg(9, X"02000000");      -- Enable FIR, zero delay
+        -- Enable output
+        -- .DELAY = 0
+        -- .FIR_GAIN = 0
+        -- .NCO0_GAIN = 0
+        -- .FIR_ENABLE = 0
+        -- .NCO0_ENABLE = 1
+        -- .NCO1_ENABLE = 0
+        write_reg(10, X"00100000");
 
         -- Initialise DAC FIR
-        write_reg(0, X"00000001");
-        write_reg(10, X"7FFFFFFF");
-
-        -- Enable DAC output
-        write_reg(11, X"00000008");
-
-        -- Set both oscillator frequencies
-        write_reg(12, X"01000000");
-        write_reg(13, X"10000000");
-
-        clk_wait(dsp_clk, 10);
-
-        write_reg(9, X"06000011");     -- 17 tick delay, enable NCO0
+        write_reg(0,  X"00000001");
+        write_reg(11, X"7FFFFFFF");
 
         wait;
     end process;

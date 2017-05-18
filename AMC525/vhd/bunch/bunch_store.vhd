@@ -23,7 +23,7 @@ entity bunch_store is
         -- Bunch readout
         bank_select_i : in unsigned;
         bunch_index_i : in unsigned;
-        config_o : out bunch_config_t
+        config_o : out std_logic_vector
     );
 end;
 
@@ -41,9 +41,8 @@ architecture arch of bunch_store is
     signal write_bunch : bunch_index_i'SUBTYPE;
     signal write_strobe : std_logic := '0';
 
-    signal write_data_in : bunch_config_t;
-    signal config : bunch_config_t := default_bunch_config_t;
-    signal config_out : bunch_config_t := default_bunch_config_t;
+    signal config : data_t := (others => '0');
+    signal config_out : data_t := (others => '0');
 
 begin
     -- Bunch memory for each line
@@ -68,19 +67,10 @@ begin
             read_addr <= bank_select_in & bunch_index_i;
 
             -- Register the bunch configuration
-            config <= bits_to_bunch_config(read_data);
+            config <= read_data;
             config_out <= config;
         end if;
     end process;
-
-
-    -- We pack and unpack the written data simply so that the external bit
-    -- layout can be decoupled from the stored packed representation.
-    write_data_in.fir_select   <= unsigned(write_data_i(1 downto 0));
-    write_data_in.fir_enable   <= write_data_i(4);
-    write_data_in.nco_0_enable <= write_data_i(5);
-    write_data_in.nco_1_enable <= write_data_i(6);
-    write_data_in.gain         <= signed  (write_data_i(31 downto 19));
 
 
     process (dsp_clk_i) begin
@@ -91,7 +81,7 @@ begin
             elsif write_strobe_i = '1' then
                 -- Write a single value into the current bunch and lane
                 write_addr <= write_bank_i & write_bunch;
-                write_data <= bunch_config_to_bits(write_data_in);
+                write_data <= write_data_i(data_t'RANGE);
 
                 -- Advance to next entry
                 write_bunch <= write_bunch + 1;
@@ -102,6 +92,6 @@ begin
         end if;
     end process;
 
-    write_ack_o <= '1';
     config_o <= config_out;
+    write_ack_o <= '1';
 end;

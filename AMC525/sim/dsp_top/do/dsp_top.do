@@ -8,9 +8,11 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 view wave
 
 add wave -group "Registers" sim:dsp_top/registers/*
+add wave -group "Bunch Store" sim:dsp_top/bunch_select/bunch_store/*
 add wave -group "Bunch Select" sim:dsp_top/bunch_select/*
 add wave -group "ADC Top" sim:dsp_top/adc_top/*
 add wave -group "Bunch FIR Top" sim:dsp_top/bunch_fir_top/*
+add wave -group "DAC Output Mux" sim:dsp_top/dac_top/dac_output_mux/*
 add wave -group "DAC Top" sim:dsp_top/dac_top/*
 add wave -group "Sequencer" sim:dsp_top/sequencer/*
 add wave -group "Detector" sim:dsp_top/detector/*

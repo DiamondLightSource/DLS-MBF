@@ -37,8 +37,8 @@ architecture arch of bunch_select is
     signal write_bank : unsigned(BUNCH_BANK_BITS-1 downto 0);
 
     signal bunch_index : bunch_count_t := (others => '0');
-    signal bunch_config : bunch_config_t;
-    signal bunch_config_out : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal bunch_config : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal config_out : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
 
 begin
     -- Register management
@@ -65,7 +65,7 @@ begin
     );
 
     -- Bunch bank memory
-    bunch_mem : entity work.bunch_store port map (
+    bunch_store : entity work.bunch_store port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -86,8 +86,18 @@ begin
         DW  => BUNCH_CONFIG_BITS
     ) port map (
        clk_i => adc_clk_i,
-       data_i => bunch_config_to_bits(bunch_config),
-       data_o => bunch_config_out
+       data_i => bunch_config,
+       data_o => config_out
     );
-    bunch_config_o <= bits_to_bunch_config(bunch_config_out);
+
+    bunch_config_o.fir_select <=
+        unsigned(config_out(DSP_BUNCH_BANK_FIR_SELECT_BITS));
+    bunch_config_o.gain <=
+        signed(config_out(DSP_BUNCH_BANK_GAIN_BITS));
+    bunch_config_o.fir_enable <=
+        config_out(DSP_BUNCH_BANK_FIR_ENABLE_BIT);
+    bunch_config_o.nco_0_enable <=
+        config_out(DSP_BUNCH_BANK_NCO0_ENABLE_BIT);
+    bunch_config_o.nco_1_enable <=
+        config_out(DSP_BUNCH_BANK_NCO1_ENABLE_BIT);
 end;
