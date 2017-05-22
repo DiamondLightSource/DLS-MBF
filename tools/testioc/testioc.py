@@ -19,7 +19,7 @@ BUNCH_TAPS = SYSTEM.INFO.BUNCH_TAPS
 DAC_TAPS   = SYSTEM.INFO.DAC_TAPS
 
 BUNCH_COUNT = 936
-BUNCH_COUNT = 600
+BUNCH_COUNT = 468
 
 
 builder.SetDeviceName('TS-DI-LMBF-02')
@@ -71,7 +71,7 @@ class MMS:
 
     def scan(self, value):
         count = self.mms.COUNT._fields
-        turns = count.TURNS
+        turns = count.TURNS + 1
 
         minv  = numpy.empty(BUNCH_COUNT, dtype = numpy.int16)
         maxv  = numpy.empty(BUNCH_COUNT, dtype = numpy.int16)
@@ -107,6 +107,7 @@ builder.WaveformOut('FIR0', numpy.zeros(BUNCH_TAPS),
     on_update = set_bunch_fir)
 
 mms_adc = MMS('ADC', DSP0.ADC.MMS)
+mms_dac = MMS('DAC', DSP0.DAC.MMS)
 
 
 builder.LoadDatabase()

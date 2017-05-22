@@ -6,7 +6,9 @@ include ../common/SET_TOP
 else
 include $(COMMON_DIR)/USE_TOP
 
-vsim:
+VPATH += $(VHDDIR)
+
+vsim: register_defs.vhd
 	ln -sf $(SIMDIR)/do/*.do .
 	ln -sf $(COMMON_DIR)/modelsim.ini .
 	$(RUN_VSIM)

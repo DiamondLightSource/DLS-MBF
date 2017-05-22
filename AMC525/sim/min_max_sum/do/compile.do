@@ -9,6 +9,7 @@ vlib msim/xil_defaultlib
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
+    register_defs.vhd \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
     $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/util/dlyline.vhd \

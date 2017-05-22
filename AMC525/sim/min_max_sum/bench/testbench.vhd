@@ -89,24 +89,23 @@ begin
                 adc_data_raw <= adc_data_raw - 1;
             end if;
 
-            if turn_clock = '1' then
-                -- Special labelling of one bunch so we can see it
-                adc_data <= to_signed(0, 16);
-            else
-                adc_data <= 20 + adc_data_raw;
-            end if;
+            case adc_data_raw is
+                when X"0000" => adc_data <= (others => '0');
+                when X"0001" => adc_data <= X"7FFF";
+                when X"0002" => adc_data <= X"8000";
+                when others  => adc_data <= adc_data_raw - 5;
+            end case;
         end if;
     end process;
 
-    -- Bunch counter.
+    -- Turn clock
     process begin
         turn_clock <= '0';
-        clk_wait(adc_clk, 2);
         loop
-            turn_clock <= '1';
-            clk_wait(adc_clk, 1);
-            turn_clock <= '0';
             clk_wait(adc_clk, BUNCH_COUNT-1);
+            turn_clock <= '1';
+            clk_wait(adc_clk);
+            turn_clock <= '0';
         end loop;
     end process;
 

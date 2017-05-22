@@ -35,7 +35,7 @@ x 32
 y 24
 w 88
 h 14
-controlPv "TS-DI-LMBF-02:ADC:MMS:TURNS"
+controlPv "TS-DI-LMBF-02:$(mms):MMS:TURNS"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 3
@@ -58,7 +58,7 @@ x 32
 y 48
 w 88
 h 14
-controlPv "TS-DI-LMBF-02:ADC:MMS:SUM_OVFL"
+controlPv "TS-DI-LMBF-02:$(mms):MMS:SUM_OVFL"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 fgAlarm
@@ -82,7 +82,7 @@ x 32
 y 72
 w 88
 h 14
-controlPv "TS-DI-LMBF-02:ADC:MMS:SUM2_OVFL"
+controlPv "TS-DI-LMBF-02:$(mms):MMS:SUM2_OVFL"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 fgAlarm
@@ -129,8 +129,8 @@ y2Max 1
 # Trace Properties
 numTraces 2
 yPv {
-  0 "TS-DI-LMBF-02:ADC:MMS:MIN"
-  1 "TS-DI-LMBF-02:ADC:MMS:MAX"
+  0 "TS-DI-LMBF-02:$(mms):MMS:MIN"
+  1 "TS-DI-LMBF-02:$(mms):MMS:MAX"
 }
 plotUpdateMode {
   0 "y"
@@ -174,7 +174,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "TS-DI-LMBF-02:ADC:MMS:MEAN"
+  0 "TS-DI-LMBF-02:$(mms):MMS:MEAN"
 }
 plotUpdateMode {
   0 "y"
@@ -216,7 +216,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "TS-DI-LMBF-02:ADC:MMS:STD"
+  0 "TS-DI-LMBF-02:$(mms):MMS:STD"
 }
 plotUpdateMode {
   0 "y"
@@ -259,7 +259,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "TS-DI-LMBF-02:ADC:MMS:DELTA"
+  0 "TS-DI-LMBF-02:$(mms):MMS:DELTA"
 }
 plotUpdateMode {
   0 "y"
@@ -284,7 +284,7 @@ bgColor index 3
 inconsistentColor index 14
 topShadowColor index 1
 botShadowColor index 11
-controlPv "TS-DI-LMBF-02:ADC:MMS:SCAN.SCAN"
+controlPv "TS-DI-LMBF-02:$(mms):MMS:SCAN.SCAN"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -303,7 +303,7 @@ onColor index 3
 offColor index 3
 topShadowColor index 1
 botShadowColor index 11
-controlPv "TS-DI-LMBF-02:ADC:MMS:SCAN"
+controlPv "TS-DI-LMBF-02:$(mms):MMS:SCAN"
 pressValue "0"
 onLabel "Scanning"
 offLabel "Scan"

@@ -12,7 +12,7 @@ use work.register_defs.all;
 
 entity min_max_sum is
     generic (
-        ADDR_BITS : natural := 9
+        ADDR_BITS : natural := BUNCH_NUM_BITS
     );
     port (
         dsp_clk_i : in std_logic;
@@ -42,9 +42,9 @@ architecture arch of min_max_sum is
     signal turn_clock : std_logic;
     signal data : signed(15 downto 0);
 
-    signal read_strobe : std_logic_vector(0 to 1);
-    signal read_data : reg_data_array_t(0 to 1);
-    signal read_ack : std_logic_vector(0 to 1);
+    signal read_strobe : std_logic_vector(MMS_REGS_RANGE);
+    signal read_data : reg_data_array_t(MMS_REGS_RANGE);
+    signal read_ack : std_logic_vector(MMS_REGS_RANGE);
 
     signal bank_select : std_logic;
     signal update_addr : unsigned(ADDR_BITS-1 downto 0);

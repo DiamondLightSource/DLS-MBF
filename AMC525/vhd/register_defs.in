@@ -30,7 +30,7 @@
     # recorded in the now current readout bank.  Read the READOUT register
     # repeatedly to read the bank.
     COUNT       R
-        # Number of turns since last MMS bank exchange
+        # Number of turns since last MMS bank exchange (less 1)
         .TURNS      29
         # Set if the turn count has overflowed
         .TURNS_OVFL
