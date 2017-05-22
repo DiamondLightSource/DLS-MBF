@@ -2,6 +2,7 @@
 
 import os
 import sys
+import numpy
 
 # Hacks to pull in the the right definitions
 HERE = os.path.dirname(__file__)
@@ -105,7 +106,7 @@ def make_register(register, fields):
         @classmethod
         def _writer(cls, parent, value):
             register = cls(parent)
-            if isinstance(value, int):
+            if isinstance(value, (int, numpy.integer)):
                 register._write_value(value)
             elif isinstance(value, Register):
                 register.__set_fields(value)

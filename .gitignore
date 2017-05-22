@@ -1,6 +1,7 @@
 /CONFIG
 /build
 *.pyc
+*~
 
 # Put stuff we want to ignore here
 /ignore

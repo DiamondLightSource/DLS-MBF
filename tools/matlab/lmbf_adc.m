@@ -2,8 +2,6 @@
 function a = lmbf_adc(samples)
 
 capture = [fileparts(mfilename('fullpath')) '/../capture_dram0'];
-% device = '/dev/amc525_lmbf.0.ddr0';
-
 [rc, device] = system(sprintf('%s -d %d', capture, samples));
 
 f = fopen(device);

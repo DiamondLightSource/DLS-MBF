@@ -1,0 +1,314 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 137
+y 237
+w 505
+h 779
+font "helvetica-medium-r-12.0"
+ctlFont "helvetica-medium-r-12.0"
+btnFont "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 3
+textColor index 14
+ctlFgColor1 index 14
+ctlFgColor2 index 3
+ctlBgColor1 index 3
+ctlBgColor2 index 14
+topShadowColor index 1
+botShadowColor index 11
+showGrid
+snapToGrid
+gridSize 8
+disableScroll
+endScreenProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 32
+y 24
+w 88
+h 14
+controlPv "TS-DI-LMBF-02:ADC:MMS:TURNS"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 3
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 32
+y 48
+w 88
+h 14
+controlPv "TS-DI-LMBF-02:ADC:MMS:SUM_OVFL"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+fgAlarm
+bgColor index 3
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 3
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 32
+y 72
+w 88
+h 14
+controlPv "TS-DI-LMBF-02:ADC:MMS:SUM2_OVFL"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+fgAlarm
+bgColor index 3
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 3
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 24
+y 104
+w 456
+h 152
+# Appearance
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+showXAxis
+xAxisSrc "AutoScale"
+xMin 0
+xMax 936
+# Y axis properties
+showYAxis
+yAxisSrc "AutoScale"
+yMax 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 2
+yPv {
+  0 "TS-DI-LMBF-02:ADC:MMS:MIN"
+  1 "TS-DI-LMBF-02:ADC:MMS:MAX"
+}
+plotUpdateMode {
+  0 "y"
+  1 "y"
+}
+plotColor {
+  0 index 14
+  1 index 26
+}
+endObjectProperties
+
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 24
+y 424
+w 456
+h 152
+# Appearance
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+showXAxis
+xAxisSrc "AutoScale"
+xMax 1
+# Y axis properties
+showYAxis
+yAxisSrc "AutoScale"
+yMax 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 1
+yPv {
+  0 "TS-DI-LMBF-02:ADC:MMS:MEAN"
+}
+plotUpdateMode {
+  0 "y"
+}
+plotColor {
+  0 index 14
+}
+endObjectProperties
+
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 24
+y 592
+w 456
+h 152
+# Appearance
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+showXAxis
+xAxisSrc "AutoScale"
+xMax 1
+# Y axis properties
+showYAxis
+yAxisSrc "AutoScale"
+yMax 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 1
+yPv {
+  0 "TS-DI-LMBF-02:ADC:MMS:STD"
+}
+plotUpdateMode {
+  0 "y"
+}
+plotColor {
+  0 index 14
+}
+endObjectProperties
+
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 24
+y 264
+w 456
+h 152
+# Appearance
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+showXAxis
+xAxisSrc "AutoScale"
+xMin 0
+xMax 936
+# Y axis properties
+showYAxis
+yAxisSrc "AutoScale"
+yMax 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 1
+yPv {
+  0 "TS-DI-LMBF-02:ADC:MMS:DELTA"
+}
+plotUpdateMode {
+  0 "y"
+}
+plotColor {
+  0 index 14
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 328
+y 16
+w 96
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 14
+topShadowColor index 1
+botShadowColor index 11
+controlPv "TS-DI-LMBF-02:ADC:MMS:SCAN.SCAN"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 328
+y 48
+w 96
+h 24
+fgColor index 14
+onColor index 3
+offColor index 3
+topShadowColor index 1
+botShadowColor index 11
+controlPv "TS-DI-LMBF-02:ADC:MMS:SCAN"
+pressValue "0"
+onLabel "Scanning"
+offLabel "Scan"
+3d
+useEnumNumeric
+font "helvetica-medium-r-12.0"
+endObjectProperties
+

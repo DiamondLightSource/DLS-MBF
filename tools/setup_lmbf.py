@@ -11,8 +11,6 @@ import setup_adc
 import setup_dac
 
 
-TURNS = 936
-
 
 # Hardware initialisation
 def setup_fmc500():
@@ -29,7 +27,7 @@ def setup_fast_fir(dsp, group, taps):
     for i in range(taps - 1):
         group.TAPS = 0
 
-def setup_bunch_control(dsp):
+def setup_bunch_control(dsp, bunch_count):
     dsp.BUNCH.CONFIG.BANK = 0
 
     # Configure unity gain and FIR passthrough for all bunches
@@ -39,7 +37,7 @@ def setup_bunch_control(dsp):
     setting.FIR_ENABLE = 1
     setting.NCO0_ENABLE = 1
     setting.NCO1_ENABLE = 0
-    for b in range(TURNS):
+    for b in range(bunch_count):
         dsp.BUNCH.BANK = setting
 
 def setup_bunch_fir(dsp, taps):
@@ -53,16 +51,21 @@ def setup_dac_output(dsp):
     dsp.DAC.CONFIG.FIR_GAIN = 13
 
 
-setup_fmc500()
+def setup_lmbf(bunch_count):
+    setup_fmc500()
 
-# Configure revolution clock
-CONTROL.TRG.CONFIG.TURN.MAX_BUNCH = TURNS - 1
+    # Configure revolution clock
+    CONTROL.TRG.CONFIG.TURN.MAX_BUNCH = bunch_count - 1
 
-for dsp in [DSP0, DSP1]:
-    setup_fast_fir(dsp, dsp.ADC, SYSTEM.INFO.ADC_TAPS)
-    setup_fast_fir(dsp, dsp.DAC, SYSTEM.INFO.DAC_TAPS)
-    setup_bunch_control(dsp)
-    setup_bunch_fir(dsp, SYSTEM.INFO.BUNCH_TAPS)
-    setup_dac_output(dsp)
+    for dsp in [DSP0, DSP1]:
+        setup_fast_fir(dsp, dsp.ADC, SYSTEM.INFO.ADC_TAPS)
+        setup_fast_fir(dsp, dsp.DAC, SYSTEM.INFO.DAC_TAPS)
+        setup_bunch_control(dsp, bunch_count)
+        setup_bunch_fir(dsp, SYSTEM.INFO.BUNCH_TAPS)
+        setup_dac_output(dsp)
 
-CONTROL.CONTROL.OUTPUT = 3
+    CONTROL.CONTROL.OUTPUT = 3
+
+
+if __name__ == '__main__':
+    setup_lmbf(936)
