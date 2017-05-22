@@ -58,24 +58,6 @@ clean-driver:
 
 
 # ------------------------------------------------------------------------------
-# Tools build
-
-TOOLS_TARGETS = tools
-.PHONY: $(TOOLS_TARGETS)
-
-$(TOOLS_TARGETS): $(TOOLS_BUILD_DIR)
-	$(call MAKE_LOCAL,tools)
-
-$(TOOLS_BUILD_DIR):
-	mkdir -p $@
-
-clean-tools:
-	rm -rf $(TOOLS_BUILD_DIR)
-.PHONY: clean-tools
-
-
-
-# ------------------------------------------------------------------------------
 
 clean:
 	rm -rf $(BUILD_DIR)

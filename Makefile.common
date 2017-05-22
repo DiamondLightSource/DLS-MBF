@@ -7,7 +7,6 @@ VSIM = /dls_sw/FPGA/Questa/10.6/questasim/bin/vsim
 
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
-TOOLS_BUILD_DIR = $(BUILD_DIR)/tools
 SIM_BUILD_DIR = $(BUILD_DIR)/sim
 
 PYTHONDIR = $(TOP)/AMC525/python
