@@ -1,0 +1,102 @@
+
+
+write_burst:
+    -- Enter and leave with beat = 0
+    do:
+        while data_active and not data_valid_i:
+            wvalid_o <= 0
+            WAIT
+        if data_active:
+            wdata_o <= data_i
+            wstrb_o <= 255
+        else
+            wstrb_o <= 0
+        wvalid_o <= 1
+        wlast_o <= beat = 255
+        WAIT
+        while not wready_i:
+            WAIT
+        beat <= beat + 1
+    while beat < 255
+
+
+
+This is an attempt at a narrative description of the internal functionality of
+axi_burst_master.vhd.
+
+Inputs:
+
+    capture_enable_i
+    data_valid_i
+    data_i
+
+    awready_i
+    aready_i
+
+Outputs:
+
+    data_ready_o
+
+    awaddr_o
+    awready_o
+    wdata_o
+    wstrb_o
+    wlast_o
+    wready_o
+
+
+top_control:
+    while true:
+        single_transaction
+
+single_transaction:
+    WAIT for capture_enable_i
+    PAR:
+        write_first_burst
+    PAR:
+        while true:
+            WAIT for half_burst
+            if not capture_enable_i:
+                break
+            write_later_burst
+
+write_first_burst:
+    write_address true
+    DELAY 8 ticks
+    write_burst
+
+write_later_burst:
+    write_address false
+    WAIT for burst_end
+    write_burst
+
+
+write_address first_write:
+    if first_write:
+        burst_address <= 0
+    else:
+        burst_address +<= 1
+    awvalid_o <= 1
+    WAIT for awready_i
+    awvalid_o <= 0
+
+
+write_burst:
+    for beat in 0 to 255:
+        ENSURE data_valid_i or not data_active
+        if data_active:
+            wdata_o <= data_i
+            wstrb_o <= 0xFF
+        else:
+            wstrb_o <= 0
+        wlast_o <= beat = 255
+        half_burst <= beat = 128
+        WAIT wready_i
+
+WAIT for condition:
+    WAIT
+    ENSURE condition
+
+ENSURE condition:
+    while not condition:
+        WAIT

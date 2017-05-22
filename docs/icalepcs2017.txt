@@ -1,0 +1,13 @@
+A New Transverse and Longitudinal Bunch by Bunch Feedback Processor
+
+Michael Abbott, Guenther Rehm, Isa Uzun
+
+We describe the development of firmware to support Longitudinal Bunch by Bunch
+Feedback at Diamond Light source.  As well as feedback, the system supports
+complex experiments and the capture of detailed diagnostics.  In this paper we
+describe the firmware development and some details of the processing chain.  We
+focus on some of the challenges of FPGA development from the perspective of a
+software engineer.  Another interesting challenge was posed by the decision to
+develop the entire signal processing chain to run at 500 MHz.  This does work
+well enough, but presents numerous challenges; it would probably have been
+simpler to run at half the clock speed!
