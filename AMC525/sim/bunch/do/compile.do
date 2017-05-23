@@ -9,9 +9,11 @@ vlib msim/xil_defaultlib
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
+    register_defs.vhd \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/util/dlyline.vhd \
+    $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/bunch/bunch_defs.vhd \
     $vhd_dir/bunch/bunch_counter.vhd \
@@ -30,25 +32,18 @@ vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/testbench.vhd \
 
 
-vsim -t 1ps -lib xil_defaultlib testbench
+vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-# add wave -group "MMS" sim:/testbench/min_max_sum_inst/*
-
-add wave -group "Bunch" sim:/testbench/bunch_select_inst/*
-add wave -group "FIR Taps" sim:/testbench/bunch_fir_inst/bunch_fir_taps_inst/*
-add wave -group "FIR Counter" \
-    sim:/testbench/bunch_fir_inst/bunch_fir_counter_inst/*
-add wave -group "FIR Decimate" \
-    sim:/testbench/bunch_fir_inst/lanes_gen(0)/decimate_inst/*
-add wave -group "FIR Interp" \
-    sim:/testbench/bunch_fir_inst/lanes_gen(0)/interpolate_inst/*
-add wave -group "FIR" \
-    sim:/testbench/bunch_fir_inst/lanes_gen(0)/fir_inst/*
-add wave -group "FIR Top" sim:/testbench/bunch_fir_inst/*
-add wave -group "Top" sim:*
-# add wave sim:*
+add wave -group "Bunch" bunch_select/*
+add wave -group "FIR Taps" bunch_fir_top/bunch_fir_taps/*
+add wave -group "FIR Counter" bunch_fir_top/counter/*
+add wave -group "FIR Decimate" bunch_fir_top/decimate/*
+add wave -group "FIR Interp" bunch_fir_top/interpolate/*
+add wave -group "FIR" bunch_fir_top/bunch_fir/*
+add wave -group "FIR Top" bunch_fir_top/*
+add wave sim:*
 
 
 run 1000 ns

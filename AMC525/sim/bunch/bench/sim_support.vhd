@@ -57,6 +57,7 @@ package body sim_support is
         end loop;
         clk_wait(clk_i);
         strobe_o <= (strobe_o'RANGE => '0');
+        data_o <= (others => 'X');
         report "write_reg [" & natural'image(reg) & "] <= " & to_hstring(value);
     end procedure;
 
