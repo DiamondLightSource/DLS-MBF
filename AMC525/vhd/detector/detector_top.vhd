@@ -17,7 +17,8 @@ entity detector_top is
         DATA_BUFFER_LENGTH : natural;
         NCO_BUFFER_LENGTH : natural;
         MEMORY_BUFFER_LENGTH : natural;
-        CONTROL_BUFFER_LENGTH : natural
+        CONTROL_BUFFER_LENGTH : natural;
+        COMMAND_BUFFER_LENGTH : natural
     );
     port (
         adc_clk_i : in std_logic;
@@ -25,12 +26,12 @@ entity detector_top is
         turn_clock_i : in std_logic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_logic_vector(DSP_DET_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
-        read_strobe_i : in std_logic_vector;
-        read_data_o : out reg_data_array_t;
-        read_ack_o : out std_logic_vector;
+        write_ack_o : out std_logic_vector(DSP_DET_REGS);
+        read_strobe_i : in std_logic_vector(DSP_DET_REGS);
+        read_data_o : out reg_data_array_t(DSP_DET_REGS);
+        read_ack_o : out std_logic_vector(DSP_DET_REGS);
 
         -- Data in
         adc_data_i : in signed;
@@ -75,7 +76,9 @@ architecture arch of detector_top is
 
 begin
     -- Register interface
-    registers : entity work.detector_registers port map (
+    registers : entity work.detector_registers generic map (
+        COMMAND_BUFFER_LENGTH => COMMAND_BUFFER_LENGTH
+    ) port map (
         dsp_clk_i => dsp_clk_i,
 
         write_strobe_i => write_strobe_i,
