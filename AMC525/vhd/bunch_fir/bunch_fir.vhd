@@ -58,14 +58,16 @@ architecture arch of bunch_fir is
     subtype DELAY_RANGE is natural range ACCUM_WIDTH-1 downto ROUND_OFFSET+1;
     subtype PADDING_RANGE is natural range ROUND_OFFSET-1 downto 0;
 
+    signal data_in : signed_array(TAPS_RANGE)(data_i'RANGE);
+    constant DISTRIBUTION_DELAY : natural := 4;
+
     -- Delay from data in valid to accum_out valid.  This is derived from the
     -- following data path:
     --  data_i
-    --      => data_pl
-    --      => data_in
+    --      =(DISTRIBUTION_DELAY)=> data_in
     --      => product
     --      => accum_out
-    constant DATA_VALID_DELAY : natural := 4;
+    constant DATA_VALID_DELAY : natural := DISTRIBUTION_DELAY + 2;
     -- Data valid for data out and updating delay line
     signal accum_out_valid : std_logic;
 
@@ -89,31 +91,34 @@ begin
     -- Assume that accumulator is larger than the delay line.
     assert DELAY_WIDTH < ACCUM_WIDTH severity failure;
 
+    -- Data distribution delays.  Some of this will be absorbed into the
+    -- destination DSP units.
+    data_fanout : for t in TAPS_RANGE generate
+        delays : entity work.dlyreg generic map (
+            DLY => DISTRIBUTION_DELAY,
+            DW => data_i'LENGTH
+        ) port map (
+            clk_i => clk_i,
+            data_i => std_logic_vector(data_i),
+            signed(data_o) => data_in(t)
+        );
+    end generate;
+
     -- Core processing DSP chain
     taps_gen : for t in TAPS_RANGE generate
+        signal tap_in : signed(TAP_WIDTH-1 downto 0) := (others => '0');
         signal tap : signed(TAP_WIDTH-1 downto 0) := (others => '0');
-        signal tap_pl : signed(TAP_WIDTH-1 downto 0) := (others => '0');
-        signal data_pl : signed(DATA_IN_WIDTH-1 downto 0) := (others => '0');
-        signal data_in : signed(DATA_IN_WIDTH-1 downto 0) := (others => '0');
         signal product : signed(PRODUCT_WIDTH-1 downto 0) := (others => '0');
         signal accum_in : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-
-        -- Stop the DSP unit from eating the outermost input registers
-        attribute DONT_TOUCH : string;
-        attribute DONT_TOUCH of tap_pl : signal is "yes";
-        attribute DONT_TOUCH of data_pl : signal is "yes";
 
     begin
         process (clk_i) begin
             if rising_edge(clk_i) then
-                tap_pl <= taps_i(TAP_COUNT-1 - t);     -- Taps in reverse order
-                data_pl <= data_i;
-
                 -- Three stages of pipeline are needed for the DSP48E1
-                tap <= tap_pl;
-                data_in <= data_pl;
+                tap_in <= taps_i(TAP_COUNT-1 - t);     -- Taps in reverse order
+                tap <= tap_in;
 
-                product <= tap * data_in;
+                product <= tap * data_in(t);
                 -- Assemble input accumulator from its components
                 accum_in(DELAY_RANGE) <= delay_out(t);
                 accum_in(ROUND_OFFSET) <= '1';

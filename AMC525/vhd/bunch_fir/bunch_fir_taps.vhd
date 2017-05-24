@@ -9,6 +9,9 @@ use work.defines.all;
 use work.bunch_defs.all;
 
 entity bunch_fir_taps is
+    generic (
+        SELECT_BUFFER_LENGTH : natural := 4
+    );
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
@@ -29,46 +32,80 @@ entity bunch_fir_taps is
 end;
 
 architecture arch of bunch_fir_taps is
+    constant BANK_COUNT : natural := 2**FIR_BANK_BITS-1;
     constant TAP_COUNT : natural := taps_o'LENGTH;
     constant TAP_WIDTH : natural := taps_o(0)'LENGTH;
 
-    subtype BANKS_RANGE is natural range 0 to 2**FIR_BANK_BITS-1;
+    subtype BANKS_RANGE is natural range 0 to BANK_COUNT;
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
     subtype TAP_RANGE  is natural range TAP_WIDTH-1 downto 0;
 
-    signal fir_select_pl : fir_select_i'SUBTYPE;
-    signal fir_select : fir_select_i'SUBTYPE;
     signal taps_table : signed_array_array(BANKS_RANGE)(TAPS_RANGE)(TAP_RANGE)
         := (others => (others => (others => '0')));
     signal tap_index : unsigned(bits(TAP_COUNT-1)-1 downto 0);
 
-    signal taps_out : taps_o'SUBTYPE := (others => (others => '0'));
-    signal taps : taps_o'SUBTYPE := (others => (others => '0'));
-
 begin
-    process (adc_clk_i) begin
-        if rising_edge(adc_clk_i) then
-            -- Output selected taps
-            fir_select_pl <= fir_select_i;
-            fir_select <= fir_select_pl;
-            taps_out <= taps_table(to_integer(fir_select));
-            taps <= taps_out;
-        end if;
-    end process;
-    taps_o <= taps;
+    -- Readout of individual taps
+    readout : for tap in TAPS_RANGE generate
+        signal fir_select : fir_select_i'SUBTYPE;
 
+    begin
+        -- Distribute FIR bank selection to each tap
+        delay : entity work.dlyreg generic map (
+            DLY => SELECT_BUFFER_LENGTH,
+            DW => fir_select_i'LENGTH
+        ) port map (
+            clk_i => adc_clk_i,
+            data_i => std_logic_vector(fir_select_i),
+            unsigned(data_o) => fir_select
+        );
+
+        process (adc_clk_i) begin
+            if rising_edge(adc_clk_i) then
+                taps_o(tap) <= taps_table(to_integer(fir_select))(tap);
+            end if;
+        end process;
+    end generate;
+
+
+    -- Writing of individual taps
+    write_taps : for tap in TAPS_RANGE generate
+        write_banks : for bank in BANKS_RANGE generate
+            signal write_strobe : std_logic := '0';
+
+        begin
+            process (dsp_clk_i) begin
+                if rising_edge(dsp_clk_i) then
+                    write_strobe <= to_std_logic(
+                        write_strobe_i = '1' and
+                        to_integer(tap_index) = tap and
+                        to_integer(write_fir_i) = bank);
+
+                    write_ack_o <= write_strobe_i;
+                end if;
+            end process;
+
+            untimed_taps : entity work.untimed_reg generic map (
+                WIDTH => TAP_WIDTH
+            ) port map (
+                clk_i => dsp_clk_i,
+                write_i => write_strobe,
+                data_i =>
+                    std_logic_vector(write_data_i(31 downto 32-TAP_WIDTH)),
+                signed(data_o) => taps_table(bank)(tap)
+            );
+        end generate;
+    end generate;
+
+
+    -- Manage taps write counter
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            -- Write to selected taps
-            if write_start_i then
+            if write_start_i = '1' then
                 tap_index <= (others => '0');
-            elsif write_strobe_i then
-                taps_table(to_integer(write_fir_i))(to_integer(tap_index)) <=
-                    signed(write_data_i(31 downto 32-TAP_WIDTH));
+            elsif write_strobe_i = '1' then
                 tap_index <= tap_index + 1;
             end if;
         end if;
     end process;
-
-    write_ack_o <= '1';
 end;
