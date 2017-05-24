@@ -110,7 +110,7 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(prepare(nco_1_i, nco_0_enable)),
+        data_i => std_logic_vector(prepare(nco_1_i, nco_1_enable)),
         signed(data_o) => nco_1_data
     );
 
