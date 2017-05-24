@@ -45,9 +45,6 @@ architecture arch of dac_output_mux is
     signal nco_1_enable : std_logic;
 
     -- Selected data, widened for accumulator
-    signal fir_data_pl   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    signal nco_0_data_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    signal nco_1_data_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_0_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_1_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
@@ -90,17 +87,37 @@ begin
     nco_0_enable <= nco_0_enable_i and bunch_config_i.nco_0_enable;
     nco_1_enable <= nco_1_enable_i and bunch_config_i.nco_1_enable;
 
+    prepare_fir : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => ACCUM_WIDTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(prepare(fir_data_i, fir_enable)),
+        signed(data_o) => fir_data
+    );
+
+    prepare_nco_0 : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => ACCUM_WIDTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(prepare(nco_0_i, nco_0_enable)),
+        signed(data_o) => nco_0_data
+    );
+
+    prepare_nco_1 : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => ACCUM_WIDTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(prepare(nco_1_i, nco_0_enable)),
+        signed(data_o) => nco_1_data
+    );
+
+
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             fir_overflow <= fir_overflow_i and fir_enable;
-            -- Widen and select the three inputs.
-            fir_data_pl   <= prepare(fir_data_i, fir_enable);
-            nco_0_data_pl <= prepare(nco_0_i,    nco_0_enable);
-            nco_1_data_pl <= prepare(nco_1_i,    nco_1_enable);
-            fir_data   <= fir_data_pl;
-            nco_0_data <= nco_0_data_pl;
-            nco_1_data <= nco_1_data_pl;
-
             -- Also pipeline the gain so that the selection and gain match
             -- Probably not necessary
             bunch_gain_pl <= bunch_config_i.gain;
