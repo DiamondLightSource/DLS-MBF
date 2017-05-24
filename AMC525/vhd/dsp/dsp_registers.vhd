@@ -30,7 +30,8 @@ entity dsp_registers is
 end;
 
 architecture arch of dsp_registers is
-    signal nco0_frequency : reg_data_t; 
+    signal nco0_frequency : reg_data_t;
+
 begin
     -- Strobed bits for single clock control
     strobed_bits : entity work.strobed_bits port map (

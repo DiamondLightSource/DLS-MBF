@@ -10,7 +10,7 @@ use work.support.all;
 
 entity all_pulsed_bits is
     generic (
-        BUFFER_LENGTH : natural := 0
+        BUFFER_LENGTH : natural := 2
     );
     port (
         clk_i : in std_logic;
