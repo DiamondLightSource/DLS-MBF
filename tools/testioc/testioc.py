@@ -25,17 +25,58 @@ builder.SetDeviceName('TS-DI-LMBF-02')
 builder.stringIn('HOSTNAME', VAL = os.uname()[1])
 
 
-def set_bunch_fir(value):
-    value = numpy.clip(2**31 * value, -2**31, 2**31-1)
-    print value
-    value = numpy.require(value, dtype = numpy.int32)
-    print value
-    value = numpy.pad(value, (0, BUNCH_TAPS - len(value)), 'constant')
-    print value
+class BunchFIR:
+    def __init__(self, fir):
+        self.fir = fir
+        self.filter = builder.WaveformOut('FIR%d' % fir,
+            numpy.zeros(BUNCH_TAPS), on_update = self.set_bunch_fir)
 
-    DSP0.FIR.CONFIG.BANK = 0
-    for v in value:
-        DSP0.FIR.TAPS = v
+    def set_bunch_fir(self, value):
+        value = numpy.clip(2**31 * value, -2**31, 2**31-1)
+        value = numpy.require(value, dtype = numpy.int32)
+        value = numpy.pad(value, (0, BUNCH_TAPS - len(value)), 'constant')
+
+        DSP0.FIR.CONFIG.BANK = self.fir
+        for v in value:
+            DSP0.FIR.TAPS = v
+
+    def startup(self):
+        self.filter.set(1)
+
+
+class Bank:
+    def pv_name(self, suffix):
+        return 'BANK%d:%s' % (self.bank, suffix)
+
+    def waveform(self, name, dtype, value):
+        return builder.WaveformOut(
+            self.pv_name(name),
+            value * numpy.ones(BUNCH_COUNT, dtype = dtype),
+            on_update = self.on_update)
+
+    def __init__(self, bank):
+        self.bank = bank
+        self.fir = self.waveform('FIR', numpy.uint8, 0)
+        self.gain = self.waveform('GAIN', numpy.float, 1)
+        self.enables = self.waveform('ENABLES', numpy.uint8, 7)
+
+    def on_update(self, _):
+        DSP0.BUNCH.CONFIG = self.bank
+        fir = self.fir.get()
+        gain = self.gain.get()
+        enables = self.enables.get()
+        for f, g, e in zip(fir, gain, enables):
+            g = numpy.clip(2**12 * g, -2**12, 2**12-1)
+            g = int(g)
+            DSP0.BUNCH.BANK._write_fields_wo(
+                FIR_SELECT = f, GAIN = g,
+                FIR_ENABLE = e & 1,
+                NCO0_ENABLE = (e >> 1) & 1,
+                NCO1_ENABLE = (e >> 2) & 1)
+
+    def startup(self):
+        self.on_update(None)
+        pass
 
 
 class MMS:
@@ -102,16 +143,21 @@ class MMS:
         self.sum2_ovfl.set(count.SUM2_OVFL)
 
 
-builder.WaveformOut('FIR0', numpy.zeros(BUNCH_TAPS),
-    on_update = set_bunch_fir)
 
 mms_adc = MMS('ADC', DSP0.ADC.MMS)
 mms_dac = MMS('DAC', DSP0.DAC.MMS)
+
+firs = map(BunchFIR, range(4))
+banks = map(Bank, range(4))
 
 
 builder.LoadDatabase()
 softioc.iocInit()
 
 setup_lmbf.setup_lmbf(BUNCH_COUNT)
+for fir in firs:
+    fir.startup()
+for bank in banks:
+    bank.startup()
 
 softioc.interactive_ioc(globals())
