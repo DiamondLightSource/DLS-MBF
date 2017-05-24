@@ -4,7 +4,7 @@
 
 
 import sys
-import driver
+from lmbf.driver import driver
 
 args = [int(arg, 0) for arg in sys.argv[1:]]
 assert len(args) in [2, 3], 'Invalid number of arguments'

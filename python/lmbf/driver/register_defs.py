@@ -4,17 +4,12 @@ import os
 import sys
 import numpy
 
-# Hacks to pull in the the right definitions
-HERE = os.path.dirname(__file__)
-TOP = os.path.abspath(os.path.join(HERE, '../..'))
-sys.path.append(os.path.join(TOP, 'AMC525/python'))
-
-DEFS = os.path.join(TOP, 'AMC525/vhd/register_defs.in')
+from lmbf.defs_path import DEFS
 
 
-from parse import indent
-from parse import register_defs
-import parse
+from lmbf.parse import indent
+from lmbf.parse import register_defs
+import lmbf.parse as parse
 
 
 # Reads and writes a bit-field in a register

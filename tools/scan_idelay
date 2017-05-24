@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from driver import SYSTEM, CONTROL, DSP0, DSP1, ADC_SPI, DDR0_NAME
+from lmbf.driver.driver import SYSTEM, CONTROL, DSP0, DSP1, ADC_SPI, DDR0_NAME
 import numpy
 
 CAPTURE_COUNT = 1024*1024

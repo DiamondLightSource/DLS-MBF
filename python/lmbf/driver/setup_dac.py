@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Configuration for Analog Devices AD9122 DAC.
 
 import time

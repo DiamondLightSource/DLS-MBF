@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Configuration for Analog Devices AD9684 ADC.
 
 import time

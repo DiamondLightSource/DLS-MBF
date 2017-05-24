@@ -4,7 +4,7 @@ import mmap
 import fcntl
 import numpy
 
-from lmbf.register_defs import register_groups
+from register_defs import register_groups
 
 
 # Driver device names

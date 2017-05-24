@@ -11,8 +11,8 @@ from softioc import softioc, builder
 import cothread
 import numpy
 
-from driver import SYSTEM, CONTROL, DSP0, DSP1
-import setup_lmbf
+from lmbf.driver.driver import SYSTEM, CONTROL, DSP0, DSP1
+from lmbf.driver import setup_lmbf
 
 ADC_TAPS   = SYSTEM.INFO.ADC_TAPS
 BUNCH_TAPS = SYSTEM.INFO.BUNCH_TAPS

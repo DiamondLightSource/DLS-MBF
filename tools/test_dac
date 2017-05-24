@@ -4,7 +4,7 @@
 
 import time
 
-from driver import SYSTEM, DAC_SPI
+from lmbf.driver.driver import SYSTEM, DAC_SPI
 
 # Ensure DAC is powered on
 assert SYSTEM.STATUS.DAC_OK, 'DAC power problem'

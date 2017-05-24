@@ -1,17 +1,10 @@
+#!/usr/bin/env python
+
 # Script to compute C definitions from register_defs
 
-# Python path hacking, need to fix
-import os
-import sys
+from lmbf.defs_path import DEFS
 
-HERE = os.path.dirname(__file__)
-TOP = os.path.abspath(os.path.join(HERE, '..'))
-sys.path.append(os.path.join(TOP, 'AMC525/python'))
-DEFS = os.path.join(TOP, 'AMC525/vhd/register_defs.in')
-
-from parse import indent
-from parse import register_defs
-import parse
+from lmbf import parse
 
 
 def make_name(context, name):

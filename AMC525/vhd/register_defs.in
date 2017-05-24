@@ -1,4 +1,4 @@
-# Input definitions for registers
+## Input definitions for registers
 
 # The control register address space consists of 16384 32-bit words
 # organised into four active banks with the following addressing:

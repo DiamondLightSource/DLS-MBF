@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # All the programming here is derived from the documentation for the LMK04828
 # clock controller from Texas Instruments.  The documentation reference is
 # SNAS605 and the datasheet is avaliable at http://www.ti.com/lit/pdf/snas605

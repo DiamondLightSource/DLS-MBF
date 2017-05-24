@@ -6,7 +6,7 @@ import sys
 import argparse
 import time
 
-from driver import CONTROL, DDR0_NAME
+from lmbf.driver.driver import CONTROL, DDR0_NAME
 
 parser = argparse.ArgumentParser(description = 'Trigger data capture')
 parser.add_argument('-d', dest = 'print_device',

@@ -2,7 +2,7 @@
 
 import sys
 
-from driver import raw_registers
+from lmbf.driver.driver import raw_registers
 
 REGS = [
     raw_registers.reg_system,

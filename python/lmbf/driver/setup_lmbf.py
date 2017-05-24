@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Simple LMBF test setup
 
 import time
