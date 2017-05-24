@@ -30,7 +30,6 @@ architecture arch of detector_bunch_mem is
     signal read_addr_bit : unsigned(4 downto 0);
     signal read_word : reg_data_t;
     signal read_word_bits : reg_data_t := (others => '0');
-    signal read_data_out : std_logic := '0';
 
     -- Delay read_addr =(2)=> read_word
     constant READ_WORD_DELAY : natural := 2;
@@ -72,8 +71,7 @@ begin
     process (read_clk_i) begin
         if rising_edge(read_clk_i) then
             read_word_bits <= read_word;
-            read_data_out <= read_word_bits(to_integer(read_addr_bit));
-            read_data_o <= read_data_out;
+            read_data_o <= read_word_bits(to_integer(read_addr_bit));
         end if;
     end process;
 end;

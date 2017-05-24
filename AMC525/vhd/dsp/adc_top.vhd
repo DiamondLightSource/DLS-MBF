@@ -15,7 +15,9 @@ use work.register_defs.all;
 
 entity adc_top is
     generic (
-        TAP_COUNT : natural
+        TAP_COUNT : natural;
+        IN_BUFFER_LENGTH : natural := 4;
+        OUT_BUFFER_LENGTH : natural := 4
     );
     port (
         -- Clocking
@@ -76,8 +78,8 @@ begin
 
 
     -- Register pipeline on input to help with timing
-    adc_delay : entity work.dlyreg generic map (
-        DLY => 2,
+    input_delay : entity work.dlyreg generic map (
+        DLY => IN_BUFFER_LENGTH,
         DW => data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
@@ -156,7 +158,13 @@ begin
         limit_event_o => delta_event_o
     );
 
-
     -- Output for further processing
-    data_o <= filtered_data;
+    output_delay : entity work.dlyreg generic map (
+        DLY => OUT_BUFFER_LENGTH,
+        DW => data_o'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(filtered_data),
+        signed(data_o) => data_o
+    );
 end;

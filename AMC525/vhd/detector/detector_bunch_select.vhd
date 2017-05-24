@@ -24,6 +24,8 @@ entity detector_bunch_select is
 end;
 
 architecture arch of detector_bunch_select is
+    signal bunch_enable : std_logic;
+
     -- We read a bit at a time, but write 32 bits at a time, so there are 5
     -- fewer write than read addresses
     signal read_address : bunch_count_t := (others => '0');
@@ -38,7 +40,15 @@ begin
 
         read_clk_i => adc_clk_i,
         read_addr_i => read_address,
-        read_data_o => bunch_enable_o
+        read_data_o => bunch_enable
+    );
+
+    bunch_delay : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => bunch_enable,
+        data_o(0) => bunch_enable_o
     );
 
 
