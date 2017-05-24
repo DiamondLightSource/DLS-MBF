@@ -19,7 +19,6 @@ BUNCH_TAPS = SYSTEM.INFO.BUNCH_TAPS
 DAC_TAPS   = SYSTEM.INFO.DAC_TAPS
 
 BUNCH_COUNT = 936
-BUNCH_COUNT = 468
 
 
 builder.SetDeviceName('TS-DI-LMBF-02')
@@ -98,7 +97,7 @@ class MMS:
         mean = numpy.double(sumv) / turns
         self.mean.set(mean * scaling)
         var = numpy.double(sum2v) / turns - mean * mean
-        self.std.set(var * scaling)
+        self.std.set(numpy.sqrt(var) * scaling)
         self.sum_ovfl.set(count.SUM_OVFL)
         self.sum2_ovfl.set(count.SUM2_OVFL)
 
