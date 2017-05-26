@@ -9,7 +9,7 @@ use work.support.all;
 
 entity strobed_bits is
     generic (
-        BUFFER_LENGTH : natural := 2
+        BUFFER_LENGTH : natural := 4
     );
     port (
         clk_i : in std_logic;

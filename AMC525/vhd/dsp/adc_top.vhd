@@ -37,14 +37,6 @@ entity adc_top is
         read_data_o : out reg_data_array_t(DSP_ADC_REGS);
         read_ack_o : out std_logic_vector(DSP_ADC_REGS);
 
-        -- Pulse events
-        write_start_i : in std_logic;       -- For register block writes
-        delta_reset_i : in std_logic;       -- Reenable delta limit event
-
-        -- Event outputs
-        input_overflow_o : out std_logic;
-        fir_overflow_o : out std_logic;     -- FIR overflow detect
-        mms_overflow_o : out std_logic;     -- If an mms accumulator overflows
         delta_event_o : out std_logic       -- bunch movement over threshold
     );
 end;
@@ -54,6 +46,15 @@ architecture arch of adc_top is
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
     signal data_delay : unsigned(0 downto 0);
+
+    signal command_bits : reg_data_t;
+    signal write_start : std_logic;
+    signal delta_reset : std_logic;
+
+    signal event_bits : reg_data_t;
+    signal input_overflow : std_logic;
+    signal fir_overflow : std_logic;
+    signal mms_overflow : std_logic;
 
     signal filtered_data : data_o'SUBTYPE;
     signal data_in : data_i'SUBTYPE;
@@ -72,9 +73,38 @@ begin
     read_data_o(DSP_ADC_CONFIG_REG) <= (others => '0');
     read_ack_o(DSP_ADC_CONFIG_REG) <= '1';
 
+    -- Command register: start write and reset limit
+    command : entity work.strobed_bits port map (
+        clk_i => dsp_clk_i,
+        write_strobe_i => write_strobe_i(DSP_ADC_COMMAND_REG_W),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_ADC_COMMAND_REG_W),
+        strobed_bits_o => command_bits
+    );
+
+    -- Event detection register
+    events : entity work.all_pulsed_bits port map (
+        clk_i => dsp_clk_i,
+        read_strobe_i => read_strobe_i(DSP_ADC_EVENTS_REG_R),
+        read_data_o => read_data_o(DSP_ADC_EVENTS_REG_R),
+        read_ack_o => read_ack_o(DSP_ADC_EVENTS_REG_R),
+        pulsed_bits_i => event_bits
+    );
+
     input_limit <= unsigned(config_register(DSP_ADC_CONFIG_THRESHOLD_BITS));
     data_delay  <= unsigned(config_register(DSP_ADC_CONFIG_DELAY_BITS));
     delta_limit <= unsigned(config_register(DSP_ADC_CONFIG_DELTA_BITS));
+
+    write_start <= command_bits(DSP_ADC_COMMAND_WRITE_BIT);
+    delta_reset <= command_bits(DSP_ADC_COMMAND_RESET_DELTA_BIT);
+
+    event_bits <= (
+        DSP_ADC_EVENTS_INP_OVF_BIT => input_overflow,
+        DSP_ADC_EVENTS_FIR_OVF_BIT => fir_overflow,
+        DSP_ADC_EVENTS_MMS_OVF_BIT => mms_overflow,
+        DSP_ADC_EVENTS_DELTA_BIT   => delta_event_o,
+        others => '0'
+    );
 
 
     -- Register pipeline on input to help with timing
@@ -106,7 +136,7 @@ begin
 
         data_i => delayed_data,
         limit_i => input_limit,
-        overflow_o => input_overflow_o
+        overflow_o => input_overflow
     );
 
 
@@ -117,14 +147,14 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        write_start_i => write_start_i,
+        write_start_i => write_start,
         write_strobe_i => write_strobe_i(DSP_ADC_TAPS_REG),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_ADC_TAPS_REG),
 
         data_i => delayed_data,
         data_o => filtered_data,
-        overflow_o => fir_overflow_o
+        overflow_o => fir_overflow
     );
     read_data_o(DSP_ADC_TAPS_REG) <= (others => '0');
     read_ack_o(DSP_ADC_TAPS_REG) <= '1';
@@ -138,7 +168,7 @@ begin
 
         data_i => filtered_data,
         delta_o => mms_delta,
-        overflow_o => mms_overflow_o,
+        overflow_o => mms_overflow,
 
         read_strobe_i => read_strobe_i(DSP_ADC_MMS_REGS),
         read_data_o => read_data_o(DSP_ADC_MMS_REGS),
@@ -153,7 +183,7 @@ begin
 
         delta_i => mms_delta,
         limit_i => delta_limit,
-        reset_event_i => delta_reset_i,
+        reset_event_i => delta_reset,
 
         limit_event_o => delta_event_o
     );

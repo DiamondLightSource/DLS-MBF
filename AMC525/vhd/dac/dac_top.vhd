@@ -33,10 +33,6 @@ entity dac_top is
         -- Outputs and overflow detection
         data_store_o : out signed;          -- Data from intermediate processing
         data_o : out signed;                -- at ADC data rate
-        fir_overflow_o : out std_logic;     -- If overflowed FIR used
-        mux_overflow_o : out std_logic;     -- If overflow in output mux
-        mms_overflow_o : out std_logic;     -- If an mms accumulator overflows
-        preemph_overflow_o : out std_logic; -- Preemphasis FIR overflow detect
 
         -- General register interface
         write_strobe_i : in std_logic_vector(DSP_DAC_REGS);
@@ -44,23 +40,28 @@ entity dac_top is
         write_ack_o : out std_logic_vector(DSP_DAC_REGS);
         read_strobe_i : in std_logic_vector(DSP_DAC_REGS);
         read_data_o : out reg_data_array_t(DSP_DAC_REGS);
-        read_ack_o : out std_logic_vector(DSP_DAC_REGS);
-
-        -- Pulse events
-        write_start_i : in std_logic        -- For register block writes
+        read_ack_o : out std_logic_vector(DSP_DAC_REGS)
     );
 end;
 
 architecture arch of dac_top is
-    -- Configuration register
-    signal config_register : reg_data_t;
     -- Configuration settings from register
+    signal config_register : reg_data_t;
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(4 downto 0);
     signal nco_0_gain : unsigned(3 downto 0);
     signal fir_enable : std_logic;
     signal nco_0_enable : std_logic;
     signal nco_1_enable : std_logic;
+
+    signal command_bits : reg_data_t;
+    signal write_start : std_logic;
+
+    signal event_bits : reg_data_t;
+    signal fir_overflow : std_logic;
+    signal mux_overflow : std_logic;
+    signal mms_overflow : std_logic;
+    signal preemph_overflow : std_logic;
 
     -- Overflow detection
     signal fir_overflow_in : std_logic;
@@ -87,13 +88,40 @@ begin
     read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
     read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
 
-    -- Not all of these will remain in registers
+    -- Command register: start write and reset limit
+    command : entity work.strobed_bits port map (
+        clk_i => dsp_clk_i,
+        write_strobe_i => write_strobe_i(DSP_DAC_COMMAND_REG_W),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_DAC_COMMAND_REG_W),
+        strobed_bits_o => command_bits
+    );
+
+    -- Event detection register
+    events : entity work.all_pulsed_bits port map (
+        clk_i => dsp_clk_i,
+        read_strobe_i => read_strobe_i(DSP_DAC_EVENTS_REG_R),
+        read_data_o => read_data_o(DSP_DAC_EVENTS_REG_R),
+        read_ack_o => read_ack_o(DSP_DAC_EVENTS_REG_R),
+        pulsed_bits_i => event_bits
+    );
+
     dac_delay  <= unsigned(config_register(DSP_DAC_CONFIG_DELAY_BITS));
     fir_gain   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
     nco_0_gain <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
     fir_enable   <= config_register(DSP_DAC_CONFIG_FIR_ENABLE_BIT);
     nco_0_enable <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
     nco_1_enable <= config_register(DSP_DAC_CONFIG_NCO1_ENABLE_BIT);
+
+    write_start <= command_bits(DSP_DAC_COMMAND_WRITE_BIT);
+
+    event_bits <= (
+        DSP_DAC_EVENTS_FIR_OVF_BIT => fir_overflow,
+        DSP_DAC_EVENTS_MUX_OVF_BIT => mux_overflow,
+        DSP_DAC_EVENTS_MMS_OVF_BIT => mms_overflow,
+        DSP_DAC_EVENTS_OUT_OVF_BIT => preemph_overflow,
+        others => '0'
+    );
 
 
     -- -------------------------------------------------------------------------
@@ -143,8 +171,8 @@ begin
         nco_1_i => nco_1_data,
 
         data_o => data_out,
-        fir_overflow_o => fir_overflow_o,
-        mux_overflow_o => mux_overflow_o
+        fir_overflow_o => fir_overflow,
+        mux_overflow_o => mux_overflow
     );
 
     data_store_o <= data_out;
@@ -161,7 +189,7 @@ begin
 
         data_i => data_out,
         delta_o => open,
-        overflow_o => mms_overflow_o,
+        overflow_o => mms_overflow,
 
         read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS),
         read_data_o => read_data_o(DSP_DAC_MMS_REGS),
@@ -177,14 +205,14 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        write_start_i => write_start_i,
+        write_start_i => write_start,
         write_strobe_i => write_strobe_i(DSP_DAC_TAPS_REG),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_DAC_TAPS_REG),
 
         data_i => data_out,
         data_o => filtered_data,
-        overflow_o => preemph_overflow_o
+        overflow_o => preemph_overflow
     );
     read_data_o(DSP_DAC_TAPS_REG) <= (others => '0');
     read_ack_o(DSP_DAC_TAPS_REG) <= '1';

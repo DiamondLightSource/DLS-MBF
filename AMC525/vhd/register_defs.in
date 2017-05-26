@@ -373,35 +373,8 @@
 # These occupy addresses 0x3000..0x37FF and 0x3800..3FFF
 # Used for channel specific DSP control
 !DSP
-    !MISC
-        *RW
-            PULSED      R
-                # Set if input data exceeds ADC input limit setting
-                .ADC_INP_OVF
-                # Set if overflow detected during input compensation filter
-                .ADC_FIR_OVF
-                # Set if any of the ADC min/max/sum accumulators overflow
-                .ADC_MMS_OVF
-                # Set when ADC min/max/sum motion exceeds configured threshold
-                .ADC_DELTA
-                # Set when overflow in FIR data detected in DAC output
-                .DAC_FIR_OVF
-                # Set when DAC outpu multiplexer detects overflow
-                .DAC_MUX_OVF
-                # Set if any of the DAC min/max/sum accumulators overflow
-                .DAC_MMS_OVF
-                # Set if overflow detected during output preemphasis filter
-                .DAC_OUT_OVF
-
-            # Writing to this register generates a pulse on the selected bits
-            STROBE      WP
-                # Starts block write to ADC and DAC fast FIR taps
-                .WRITE
-                # Resets ADC min/max event detector to enable further events
-                .RESET_DELTA
-
-        # Sets NCO0 frequency
-        NCO0_FREQ   RW
+    # Sets NCO0 frequency
+    NCO0_FREQ   RW
 
     # Input signal processing
     !ADC
@@ -412,6 +385,22 @@
             .DELAY      1
             # Limit threshold for min/max/sum bunch motion event detector
             .DELTA      16
+        *RW
+            EVENTS      R
+                # Set if input data exceeds ADC input limit setting
+                .INP_OVF
+                # Set if overflow detected during input compensation filter
+                .FIR_OVF
+                # Set if any of the ADC min/max/sum accumulators overflow
+                .MMS_OVF
+                # Set when ADC min/max/sum motion exceeds configured threshold
+                .DELTA
+            # Writing to this register generates a pulse on the selected bits
+            COMMAND      WP
+                # Starts block write to ADC fast FIR taps
+                .WRITE
+                # Resets ADC min/max event detector to enable further events
+                .RESET_DELTA
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W
@@ -469,6 +458,20 @@
             .NCO0_ENABLE
             # Global control for NCO1 enable
             .NCO1_ENABLE
+        *RW
+            EVENTS      R
+                # Set when overflow in FIR data detected in DAC output
+                .FIR_OVF
+                # Set when DAC output multiplexer detects overflow
+                .MUX_OVF
+                # Set if any of the DAC min/max/sum accumulators overflow
+                .MMS_OVF
+                # Set if overflow detected during output preemphasis filter
+                .OUT_OVF
+            # Writing to this register generates a pulse on the selected bits
+            COMMAND      WP
+                # Starts block write to ADC and DAC fast FIR taps
+                .WRITE
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W

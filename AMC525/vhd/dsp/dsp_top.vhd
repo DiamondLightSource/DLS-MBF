@@ -42,21 +42,7 @@ entity dsp_top is
 end;
 
 architecture arch of dsp_top is
-    -- Strobed control signals
-    signal strobed_bits : reg_data_t;
-    signal write_start : std_logic;
-    signal delta_reset : std_logic;
-
-    -- Captured pulsed events
-    signal pulsed_bits : reg_data_t;
-    signal adc_input_overflow : std_logic;
-    signal adc_fir_overflow : std_logic;
-    signal adc_mms_overflow : std_logic;
-    signal adc_delta_event : std_logic;
-    signal dac_fir_overflow : std_logic;
-    signal dac_mux_overflow : std_logic;
-    signal dac_mms_overflow : std_logic;
-    signal dac_preemph_overflow : std_logic;
+    signal nco0_register : reg_data_t;
 
     -- Bunch control
     signal bunch_config : bunch_config_t;
@@ -80,48 +66,17 @@ begin
     -- -------------------------------------------------------------------------
     -- General register handling
 
-    registers : entity work.dsp_registers port map (
-        dsp_clk_i => dsp_clk_i,
-
-        -- DSP general control registers
-        write_strobe_i => write_strobe_i(DSP_MISC_REGS),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_MISC_REGS),
-        read_strobe_i => read_strobe_i(DSP_MISC_REGS),
-        read_data_o => read_data_o(DSP_MISC_REGS),
-        read_ack_o => read_ack_o(DSP_MISC_REGS),
-
-        -- Processed registers
-        strobed_bits_o => strobed_bits,
-        pulsed_bits_i => pulsed_bits,
-        nco_0_frequency_o => nco_0_phase_advance
-    );
-
-    -- Delay line for the strobed bits
-    strobed_delay : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => 2
-    ) port map (
+    register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        data_i(0) => strobed_bits(DSP_MISC_STROBE_WRITE_BIT),
-        data_i(1) => strobed_bits(DSP_MISC_STROBE_RESET_DELTA_BIT),
-        data_o(0) => write_start,
-        data_o(1) => delta_reset
+        write_strobe_i(0) => write_strobe_i(DSP_NCO0_FREQ_REG),
+        write_data_i => write_data_i,
+        write_ack_o(0) => write_ack_o(DSP_NCO0_FREQ_REG),
+        register_data_o(0) => nco0_register
     );
+    read_data_o(DSP_NCO0_FREQ_REG) <= nco0_register;
+    read_ack_o(DSP_NCO0_FREQ_REG) <= '1';
 
-
-    -- Capture of single clock events
-    pulsed_bits <= (
-        DSP_MISC_PULSED_ADC_INP_OVF_BIT => adc_input_overflow,
-        DSP_MISC_PULSED_ADC_FIR_OVF_BIT => adc_fir_overflow,
-        DSP_MISC_PULSED_ADC_MMS_OVF_BIT => adc_mms_overflow,
-        DSP_MISC_PULSED_ADC_DELTA_BIT   => adc_delta_event,
-        DSP_MISC_PULSED_DAC_FIR_OVF_BIT => dac_fir_overflow,
-        DSP_MISC_PULSED_DAC_MUX_OVF_BIT => dac_mux_overflow,
-        DSP_MISC_PULSED_DAC_MMS_OVF_BIT => dac_mms_overflow,
-        DSP_MISC_PULSED_DAC_OUT_OVF_BIT => dac_preemph_overflow,
-        others => '0'
-    );
+    nco_0_phase_advance <= angle_t(nco0_register);
 
 
     -- -------------------------------------------------------------------------
@@ -182,15 +137,8 @@ begin
         read_data_o => read_data_o(DSP_ADC_REGS),
         read_ack_o => read_ack_o(DSP_ADC_REGS),
 
-        write_start_i => write_start,
-        delta_reset_i => delta_reset,
-
-        input_overflow_o => adc_input_overflow,
-        fir_overflow_o => adc_fir_overflow,
-        mms_overflow_o => adc_mms_overflow,
-        delta_event_o => adc_delta_event
+        delta_event_o => dsp_to_control_o.adc_trigger
     );
-    dsp_to_control_o.adc_trigger <= adc_delta_event;
 
 
     -- FIR processing
@@ -232,19 +180,13 @@ begin
 
         data_store_o => dsp_to_control_o.dac_data,
         data_o => dac_data_o,
-        fir_overflow_o => dac_fir_overflow,
-        mux_overflow_o => dac_mux_overflow,
-        mms_overflow_o => dac_mms_overflow,
-        preemph_overflow_o => dac_preemph_overflow,
 
         write_strobe_i => write_strobe_i(DSP_DAC_REGS),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_DAC_REGS),
         read_strobe_i => read_strobe_i(DSP_DAC_REGS),
         read_data_o => read_data_o(DSP_DAC_REGS),
-        read_ack_o => read_ack_o(DSP_DAC_REGS),
-
-        write_start_i => write_start
+        read_ack_o => read_ack_o(DSP_DAC_REGS)
     );
 
 

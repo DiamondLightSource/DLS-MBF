@@ -7,7 +7,6 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "Registers" sim:dsp_top/registers/*
 add wave -group "Bunch Store" sim:dsp_top/bunch_select/bunch_store/*
 add wave -group "Bunch Select" sim:dsp_top/bunch_select/*
 add wave -group "ADC Top" sim:dsp_top/adc_top/*

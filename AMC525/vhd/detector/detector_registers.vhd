@@ -64,9 +64,7 @@ begin
     read_ack_o(DSP_DET_CONFIG_REG) <= '1';
 
     -- Command bits for triggering events
-    command : entity work.strobed_bits generic map (
-        BUFFER_LENGTH => COMMAND_BUFFER_LENGTH
-    ) port map (
+    command : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
         write_strobe_i => write_strobe_i(DSP_DET_COMMAND_REG_W),
         write_data_i => write_data_i,
@@ -75,9 +73,7 @@ begin
     );
 
     -- Event sensing bits
-    events : entity work.all_pulsed_bits generic map (
-        BUFFER_LENGTH => COMMAND_BUFFER_LENGTH
-    ) port map (
+    events : entity work.all_pulsed_bits port map (
         clk_i => dsp_clk_i,
         read_strobe_i => read_strobe_i(DSP_DET_EVENTS_REG_R),
         read_data_o => read_data_o(DSP_DET_EVENTS_REG_R),

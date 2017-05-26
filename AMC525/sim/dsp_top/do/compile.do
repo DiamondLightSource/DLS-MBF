@@ -91,7 +91,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_dram_output.vhd \
     $vhd_dir/detector/detector_top.vhd \
     $vhd_dir/dsp/dsp_defs.vhd \
-    $vhd_dir/dsp/dsp_registers.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
     $vhd_dir/dsp/adc_overflow.vhd \
     $vhd_dir/dsp/adc_to_dsp.vhd \
