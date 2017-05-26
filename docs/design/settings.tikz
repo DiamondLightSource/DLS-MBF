@@ -12,11 +12,11 @@
 
 % Define our colours
 \colorlet{normal colour}{green!60!blue!20}  % Normal coloured filled areas
-\colorlet{accent colour}{orange!20}         % Accented filled areas
-\colorlet{background colour}{black!15}      % Background groups
+\colorlet{accent colour}{orange!25}         % Accented filled areas
+\colorlet{background colour}{black!10}      % Background groups
 \colorlet{data colour}{black!50}            % Data flow
+\colorlet{trigger colour}{black!80}         % Trigger lines
 \colorlet{control colour}{blue!50}          % Other lines etc
-\colorlet{trigger colour}{black!60}          % Other lines etc
 
 
 % Common TikZ definitions
@@ -52,7 +52,7 @@
 %
     trigger line/.style={thin, trigger colour},
     trigger/.style={trigger line, >=open triangle 60, shorten >=-6pt, ->},
-    trigger dot/.style={fill, circle, inner sep=1pt},
+    trigger dot/.style={fill, circle, inner sep=1pt, line width=-1pt},
 }
 
 
@@ -98,7 +98,7 @@
 
 % Trick for reusing last coordinate
 \makeatletter
-\newcommand\lastcoordinate{\the\tikz@lastxsaved,\the\tikz@lastysaved}
+\newcommand\lastcoord{\the\tikz@lastxsaved,\the\tikz@lastysaved}
 \makeatother
 
 

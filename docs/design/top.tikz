@@ -108,9 +108,11 @@
     \drawpin{fmc digital io}{buf3}
     \node [anchor=north, yshift=-3pt, font=\small] at (circle) {BLK};
     \drawpin{fmc digital io}{buf4}
-    \node [anchor=north, yshift=-3pt, font=\small] at (circle) {SEQ0};
+    \node [anchor=north, yshift=-3pt, font=\small]
+        at (circle) {SEQ\textsubscript0};
     \drawpin{fmc digital io}{buf5}
-    \node [anchor=north, yshift=-3pt, font=\small] at (circle) {SEQ1};
+    \node [anchor=north, yshift=-3pt, font=\small]
+        at (circle) {SEQ\textsubscript1};
     \node [below right] at (fmc digital io.north west) {fmc digital io};
 
     \draw [thick, ->] (buf1) -- +(0,1) -| (fmc digital io.80);
@@ -151,7 +153,7 @@
     \draw [trigger] (DSP CLK) -- (DSP CLK-|dsp main.west);
     \draw [trigger line] (DSP CLK)
         -- ++(0,2.3) -- ++(0.8,0) -- ++(0,1)
-        -- ([xshift=-2mm]\lastcoordinate-|interconnect burst master)
+        -- ([xshift=-2mm]\lastcoord-|interconnect burst master)
         node [trigger dot] (DSP CLK) {};
     \draw [trigger]
         (DSP CLK) -- ([xshift=-2mm]interconnect burst master);
@@ -201,6 +203,9 @@
     \draw [bus] (dsp main.north-|axi lite master) -- (axi lite master);
     \draw [bus] (dsp main.north-|axi burst master) -- (axi burst master);
     \multipath [bus] {\draw (register top) -- (register top-|dsp main.west);}
+    \draw [trigger line, ->] (dsp main.25)
+        node [anchor=east, font=\small, black] {interrupts}
+        -- ++(0.5,0) |- (interconnect);
 
     % DSP main to FMC 500
     \draw [bus, <-] (dsp main.-165)
@@ -213,7 +218,7 @@
         node [anchor=east, font=\small] {TRG/PM/BLK}
         -| (fmc digital io.80);
     \draw [bus] (dsp main.-15)
-        node [anchor=east, font=\small] {SEQ\,0/1}
+        node [anchor=east, font=\small] {SEQ\textsubscript{0/1}}
         -| (fmc digital io.50);
 
     % Place the DAC test pattern unit

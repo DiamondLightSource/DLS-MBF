@@ -1,0 +1,69 @@
+\begin{tikzpicture}
+
+    \path
+        node [background fill,
+            minimum width=9cm, minimum height=4.5cm] (gen dsp) {};
+    \node [above right] at (gen dsp.south west) {$\times2$};
+
+    \path (gen dsp.north)
+        ++(-1.5,-1) node [box] (dsp registers) {register\\mux}
+        +(-4.5,0) node [box] (top registers) {register\\mux}
+        ++(0,-2) node [box, minimum width=3cm] (dsp) {dsp}
+        +(4,0) node [box] (loopback) {dsp\\loopback}
+        +(0,-3) node [box, minimum width=3cm] (control) {control};
+    \path (top registers)
+        ++(0,-4) node [box] (control registers) {register\\mux};
+    \path (dsp-|gen dsp.west) coordinate (adc in);
+
+    % Register wiring
+    \draw [bus] (top registers) -- (dsp registers);
+    \draw [bus] (dsp registers) -- (dsp);
+    \draw [bus] (top registers) -- (control registers);
+    \draw [bus] (control registers)
+        -- ++(2,0) |- ($(control.west)+(0,0.3)$);
+
+    % Main DSP wiring
+    \draw [bus] (dsp) -- (loopback);
+    \draw [bus] (loopback) -- ++(2.5,0)
+        coordinate (dac out)
+        node [anchor=west] {DAC\textsubscript{n}};
+    \draw [bus] ([xshift=-5mm]dsp.south) -- (\lastcoord|-control.north);
+    \draw [bus] ([xshift=5mm]control.north) -- (\lastcoord|-dsp.south);
+    \draw [trigger line, ->]
+        ($(dsp.east)+(0,-0.3)$) -- ++(1,0) -- ++(0,-1)
+        -- (\lastcoord-|dac out)
+        node [anchor=west] {SEQ\textsubscript{n}};
+
+    % ADC loopback wiring
+    \multipath [bus, multipath background=background colour]
+        {\draw (adc in)
+            -- ++(0.5,0) -- ++(0,1) -- ($(loopback)+(-1.5,1)$)
+            |- ($(loopback.west)+(0,0.3)$);}
+    \multipath [bus, multipath background=background colour]
+        {\draw ($(loopback.east)+(0,-0.3)$)
+            -- ++(0.5,0) -- ++(0,-0.7)
+            -| ($(adc in)+(1,0)$) -- (dsp);}
+    \multipath [bus, -] {\draw (adc in) -- +(-3,0)
+        node [anchor=east] {ADC\textsubscript{n}};}
+
+    % Move (adc in)
+    \path (adc in) -- +(-3,0) coordinate (adc in);
+
+    % Control I/O
+    \draw [bus] ($(control.east)+(0,0.4)$) -- (\lastcoord-|dac out)
+        node [anchor=west] {DRAM0};
+    \draw [bus] (control.east) -- (\lastcoord-|dac out)
+        node [anchor=west] {DRAM1};
+    \draw [trigger line, ->]
+        ($(control.east)+(0,-0.4)$) -- (\lastcoord-|dac out)
+        node [anchor=west] {interrupts};
+    \draw [trigger line, <-]
+        (control) -- (control-|adc in)
+        node [anchor=east] {f\textsubscript{REV}\\TRG\\PM\\BLK};
+    \draw [bus] (adc in|-top registers)
+        node [anchor=east] {control}
+        -- (top registers);
+
+\end{tikzpicture}
+
+% vim: filetype=tex:
