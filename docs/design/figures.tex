@@ -1,0 +1,43 @@
+\documentclass[a4paper]{article}
+
+% Simple margin hack from
+%   http://kb.mit.edu/confluence/pages/viewpage.action?pageId=3907057
+\usepackage[margin=2cm]{geometry}
+
+\usepackage{graphicx}       % Extended support for \includegraphics
+\usepackage{tikz}           % Powerful drawing package, part of pgf
+
+\usepackage{mathptmx}       % Mathematical PostScript fonts
+\usepackage{amsmath}        % General mathematical symbols
+\usepackage{textcomp}       % Text companion fonts
+
+\usepackage{url}            % \url command for decent line breaks in urls
+\usepackage{enumitem}       % For more control over list parameters.
+
+
+% Some paragraph tweaks from
+%   https://www.sharelatex.com/learn/Paragraph_formatting
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+% Tone down hyphenation and allow lines to stretch in compensation
+\hyphenpenalty 4000
+\sloppy
+
+
+\input{settings.tikz}
+
+
+\begin{document}
+
+
+
+\begin{figure}[ht]
+\begin{centering}
+\input{top.tikz}
+\end{centering}
+% This figure shows the top level structure of the AMC525 LMBF firmware.  The
+% ``interconnect'' entity is a Vivado block diagram containing all the Xilinx
+% proprietary components, and interfaces to PCIe and DRAM.
+\end{figure}
+\end{document}

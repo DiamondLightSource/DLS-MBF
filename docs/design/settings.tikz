@@ -1,0 +1,111 @@
+% PGF and TikZ definitions for this paper
+
+% TikZ library imports
+\usetikzlibrary{positioning}        % Anchor placement support
+\usetikzlibrary{calc}               % Coordinate calculations
+\usetikzlibrary{shapes.geometric}   % cylinder
+\usetikzlibrary{shapes.arrows}      % arrow shapes
+\usetikzlibrary{shapes.multipart}
+\usetikzlibrary{fit}                % Fitting outline to shape
+\usetikzlibrary{arrows}
+
+
+% Define our colours
+\colorlet{normal colour}{green!60!blue!20}  % Normal coloured filled areas
+\colorlet{accent colour}{orange!20}         % Accented filled areas
+\colorlet{background colour}{black!15}      % Background groups
+\colorlet{data colour}{black!50}            % Data flow
+\colorlet{control colour}{blue!50}          % Other lines etc
+\colorlet{trigger colour}{black!60}          % Other lines etc
+
+
+% Common TikZ definitions
+\tikzset{
+    % This seems a reasonably comfortable arrow shape
+    >=stealth,
+%
+    % Define a set of styles
+    % First some fills
+    background fill/.style={fill=background colour},
+    highlight fill/.style={fill=normal colour},
+    accent fill/.style={fill=accent colour},
+    % Next some lines
+    bus/.style={color=data colour, text=black, line width=0.6mm, ->},
+    control/.style={color=control colour, text=black, very thick, ->},
+%
+    % Used for creating an exact fit to an existing list of objects
+    tight fit/.style={fit=#1, inner sep=0, line width=0},
+    % We almost always want centre aligned node text
+    every node/.style={align=center},
+%
+    box/.style={
+        draw, rectangle, very thick, highlight fill,
+        minimum width=1.5cm, minimum height=1.1cm},
+    small box/.style={
+        draw, rectangle, highlight fill, font=\small},
+    component/.style={
+        draw, rectangle, thick, accent fill,
+        minimum width=11mm, minimum height=8mm},
+    buffer/.style={
+        regular polygon, regular polygon sides=3, anchor=center,
+        accent fill, thick, draw},
+%
+    trigger line/.style={thin, trigger colour},
+    trigger/.style={trigger line, >=open triangle 60, shorten >=-6pt, ->},
+    trigger dot/.style={fill, circle, inner sep=1pt},
+}
+
+
+% New tikz key definitions to control behaviour of \multipath.
+\tikzset{
+    % Default colour for multipath background
+    multipath background/.initial=white,
+    multipath margin/.initial=0.3mm,
+}
+
+% Draws multiple paths with an outline on each path.  Call with path options as
+% first optional argument and with a list of paths as the second argument.
+\newcommand{\multipath}[2][]{
+    \begin{scope}[#1]
+        % Pick up multipath margin and background definitions
+        \newcommand{\margin}{\pgfkeysvalueof{/tikz/multipath margin}}
+        \newcommand{\background}{\pgfkeysvalueof{/tikz/multipath background}}
+
+        % Draw a white background a bit larger than the programmed line
+        % thickness.  We turn off any arrows and shorten the line a trifle to
+        % avoid any erosion of the endpoints.
+        \begin{scope}[
+            line width=\pgflinewidth+\margin, color=\background,
+            shorten >=\margin, shorten <=\margin, -]
+        #2
+        \end{scope}
+
+        % Now draw the target path with its original options.
+        #2
+    \end{scope}
+}
+
+% Special coordinates along edge of box
+\newcommand{\northcoord}[3]{
+    \coordinate (#1 #2) at ($(#1.north west)!#3!(#1.north east)$)}
+\newcommand{\eastcoord}[3]{
+    \coordinate (#1 #2) at ($(#1.south east)!#3!(#1.north east)$)}
+\newcommand{\southcoord}[3]{
+    \coordinate (#1 #2) at ($(#1.south west)!#3!(#1.south east)$)}
+\newcommand{\westcoord}[3]{
+    \coordinate (#1 #2) at ($(#1.south west)!#3!(#1.north west)$)}
+
+
+% Trick for reusing last coordinate
+\makeatletter
+\newcommand\lastcoordinate{\the\tikz@lastxsaved,\the\tikz@lastysaved}
+\makeatother
+
+
+% It's convenient to have a background layer
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+
+
+
+% vim: set filetype=tex:
