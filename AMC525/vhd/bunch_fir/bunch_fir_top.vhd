@@ -53,7 +53,6 @@ architecture arch of bunch_fir_top is
 
     -- Data flow and decimation control
     signal data_in : data_i'SUBTYPE;
-    signal bunch_index : bunch_count_t;
     signal first_turn : std_logic;
     signal last_turn : std_logic;
     signal filtered_data : data_o'SUBTYPE;
@@ -116,26 +115,14 @@ begin
     );
 
 
-    -- Decimation counter
-    counter : entity work.bunch_fir_counter port map (
-        clk_i => adc_clk_i,
-        decimation_limit_i => decimation_limit,
-        turn_clock_i => turn_clock,
-        bunch_index_o => bunch_index,
-        first_turn_o => first_turn,
-        last_turn_o => last_turn
-    );
-
-
     -- Bunch by bunch data reduction
     decimate : entity work.bunch_fir_decimate port map (
         clk_i => adc_clk_i,
 
-        bunch_index_i => bunch_index,
+        turn_clock_i => turn_clock,
         decimation_shift_i => decimation_shift,
+        decimation_limit_i => decimation_limit,
 
-        first_turn_i => first_turn,
-        last_turn_i => last_turn,
         data_i => data_in,
         data_o => decimated_data,
         data_valid_o => decimated_valid
@@ -144,7 +131,7 @@ begin
     -- The filter
     bunch_fir : entity work.bunch_fir port map (
         clk_i => adc_clk_i,
-        bunch_index_i => bunch_index,
+        turn_clock_i => turn_clock,
         taps_i => taps,
 
         data_valid_i => decimated_valid,
@@ -156,7 +143,7 @@ begin
     -- Interpolate the reduced data back to full speed
     interpolate : entity work.bunch_fir_interpolate port map (
         clk_i => adc_clk_i,
-        bunch_index_i => bunch_index,
+        turn_clock_i => turn_clock,
         data_valid_i => filtered_valid,
         data_i => filtered_data,
         data_o => data_out

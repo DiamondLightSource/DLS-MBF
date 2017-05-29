@@ -11,7 +11,7 @@ use work.support.all;
 entity bunch_fir_interpolate is
     port (
         clk_i : in std_logic;
-        bunch_index_i : in unsigned;
+        turn_clock_i : in std_logic;
         data_valid_i : in std_logic;
         data_i : in signed;
         data_o : out signed
@@ -29,7 +29,7 @@ begin
         PROCESS_DELAY => 0
     ) port map (
         clk_i => clk_i,
-        bunch_index_i => bunch_index_i,
+        turn_clock_i => turn_clock_i,
         write_strobe_i => data_valid_i,
         data_i => data_i,
         data_o => read_data

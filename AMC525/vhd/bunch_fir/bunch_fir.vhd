@@ -9,7 +9,7 @@ use work.support.all;
 entity bunch_fir is
     port (
         clk_i : in std_logic;
-        bunch_index_i : in unsigned;
+        turn_clock_i : in std_logic;
         taps_i : in signed_array;
 
         data_valid_i : in std_logic;
@@ -58,7 +58,6 @@ architecture arch of bunch_fir is
     subtype DELAY_RANGE is natural range ACCUM_WIDTH-1 downto ROUND_OFFSET+1;
     subtype PADDING_RANGE is natural range ROUND_OFFSET-1 downto 0;
 
-    signal data_in : signed_array(TAPS_RANGE)(data_i'RANGE);
     constant DISTRIBUTION_DELAY : natural := 4;
 
     -- Delay from data in valid to accum_out valid.  This is derived from the
@@ -91,34 +90,34 @@ begin
     -- Assume that accumulator is larger than the delay line.
     assert DELAY_WIDTH < ACCUM_WIDTH severity failure;
 
-    -- Data distribution delays.  Some of this will be absorbed into the
-    -- destination DSP units.
-    data_fanout : for t in TAPS_RANGE generate
-        delays : entity work.dlyreg generic map (
-            DLY => DISTRIBUTION_DELAY,
-            DW => data_i'LENGTH
-        ) port map (
-            clk_i => clk_i,
-            data_i => std_logic_vector(data_i),
-            signed(data_o) => data_in(t)
-        );
-    end generate;
 
     -- Core processing DSP chain
     taps_gen : for t in TAPS_RANGE generate
+        signal data_in : signed(data_i'RANGE);
         signal tap_in : signed(TAP_WIDTH-1 downto 0) := (others => '0');
         signal tap : signed(TAP_WIDTH-1 downto 0) := (others => '0');
         signal product : signed(PRODUCT_WIDTH-1 downto 0) := (others => '0');
         signal accum_in : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
 
     begin
+        -- Data distribution delays.  Some of this will be absorbed into the
+        -- destination DSP units.
+        delays : entity work.dlyreg generic map (
+            DLY => DISTRIBUTION_DELAY,
+            DW => data_i'LENGTH
+        ) port map (
+            clk_i => clk_i,
+            data_i => std_logic_vector(data_i),
+            signed(data_o) => data_in
+        );
+
         process (clk_i) begin
             if rising_edge(clk_i) then
                 -- Three stages of pipeline are needed for the DSP48E1
                 tap_in <= taps_i(TAP_COUNT-1 - t);     -- Taps in reverse order
                 tap <= tap_in;
 
-                product <= tap * data_in(t);
+                product <= tap * data_in;
                 -- Assemble input accumulator from its components
                 accum_in(DELAY_RANGE) <= delay_out(t);
                 accum_in(ROUND_OFFSET) <= '1';
@@ -141,6 +140,7 @@ begin
     data_o <= data_out;
 
 
+    -- Line up data valid with data
     valid_delay_inst : entity work.dlyline generic map (
         DLY => DATA_VALID_DELAY
     ) port map (
@@ -151,22 +151,11 @@ begin
 
     -- Delay lines between each bunch
     delay_gen : for t in 1 to TAP_COUNT-1 generate
-        signal bunch_index : bunch_index_i'SUBTYPE;
-    begin
-        bunch_index_dly : entity work.dlyreg generic map (
-            DLY => 4,
-            DW => bunch_index_i'LENGTH
-        ) port map (
-            clk_i => clk_i,
-            data_i => std_logic_vector(bunch_index_i),
-            unsigned(data_o) => bunch_index
-        );
-
         data_delay_inst : entity work.bunch_fir_delay generic map (
             PROCESS_DELAY => PROCESS_DELAY
         ) port map (
             clk_i => clk_i,
-            bunch_index_i => bunch_index,
+            turn_clock_i => turn_clock_i,
             write_strobe_i => accum_out_valid,
             data_i => accum_out(t-1)(DELAY_RANGE),
             data_o => delay_out(t)

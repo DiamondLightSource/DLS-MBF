@@ -12,11 +12,10 @@ entity bunch_fir_decimate is
     port (
         clk_i : in std_logic;
 
-        bunch_index_i : in bunch_count_t;
+        turn_clock_i : in std_logic;
         decimation_shift_i : in unsigned;
+        decimation_limit_i : in unsigned;
 
-        first_turn_i : in std_logic;
-        last_turn_i : in std_logic;
         data_i : in signed;
         data_o : out signed;
         data_valid_o : out std_logic := '0'
@@ -35,13 +34,17 @@ architecture arch of bunch_fir_decimate is
     --      => accumulator = accum.data_i
     constant PROCESS_DELAY : natural := 2;
 
+    signal decimation_counter : decimation_limit_i'SUBTYPE;
+    signal first_turn : boolean := false;
+    signal last_turn : boolean := false;
+
     signal data_in : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     signal read_data : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     signal read_data_pl : signed(ACCUM_BITS-1 downto 0);
     signal accumulator : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     signal write_data : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     signal data_out : signed(ACCUM_BITS-1 downto 0) := (others => '0');
-    -- The data valid is derived from last_turn_i with a two tick delay
+    -- The data valid is derived from last_turn with a two tick delay
     signal data_valid : std_logic := '0';
 
 begin
@@ -50,7 +53,7 @@ begin
         PROCESS_DELAY => PROCESS_DELAY
     ) port map (
         clk_i => clk_i,
-        bunch_index_i => bunch_index_i,
+        turn_clock_i => turn_clock_i,
         write_strobe_i => '1',
         data_i => accumulator,
         data_o => read_data_pl
@@ -58,11 +61,22 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
+            -- First and last turn computation
+            if turn_clock_i = '1' then
+                if decimation_counter = 0 then
+                    decimation_counter <= decimation_limit_i;
+                else
+                    decimation_counter <= decimation_counter - 1;
+                end if;
+                last_turn <= decimation_counter = 0;
+                first_turn <= last_turn;
+            end if;
+
             data_in <= resize(data_i, ACCUM_BITS);
 
             -- On first turn we reset the accumulator, otherwise accumulate
             read_data <= read_data_pl;
-            if first_turn_i = '1' then
+            if first_turn then
                 accumulator <= data_in;
             else
                 accumulator <= data_in + read_data;
@@ -73,7 +87,7 @@ begin
             data_out <= shift_right(write_data, to_integer(decimation_shift_i));
 
             -- Delay last turn to match data delay
-            data_valid <= last_turn_i;
+            data_valid <= to_std_logic(last_turn);
             data_valid_o <= data_valid;
         end if;
     end process;
