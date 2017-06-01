@@ -1,7 +1,7 @@
 \begin{tikzpicture}
 
     \path
-        node [background fill,
+        node [generate,
             minimum width=9cm, minimum height=4.5cm] (gen dsp) {};
     \node [above right] at (gen dsp.south west) {$\times2$};
 
@@ -9,11 +9,29 @@
         ++(-1.5,-1) node [box] (dsp registers) {register\\mux}
         +(-4.5,0) node [box] (top registers) {register\\mux}
         ++(0,-2) node [box, minimum width=3cm] (dsp) {dsp}
-        +(4,0) node [box] (loopback) {dsp\\loopback}
         +(0,-3) node [box, minimum width=3cm] (control) {control};
     \path (top registers)
         ++(0,-4) node [box] (control registers) {register\\mux};
     \path (dsp-|gen dsp.west) coordinate (adc in);
+
+    % Loopback and internals
+    \path (dsp) +(4,0.5) node [box, minimum height=2cm]
+        (loopback) {\phantom{loopback}};
+    \node at (loopback.north) [anchor=north] {dsp\\loopback};
+    \node at (loopback) [
+        xshift=3mm, yshift=-6mm,
+        trapezium, accent fill, draw, thick, rotate=-90] (mux) {};
+    \draw [thick] (mux) -- (mux-|loopback.east);
+    \draw [thick] (dsp-|loopback.west) -- ++(3mm,0) coordinate (loopback in);
+    \draw [thick] (loopback in) |- (mux.south east);
+    \draw [thick] (loopback.-170) -- ++(5mm,0) |- (mux.south west);
+    \multipath [thick, multipath background=normal colour]
+        {\draw (loopback in) -- ++(0,2mm) -- ++(4mm,0)
+            |- ($(loopback.-10)+(-7mm,0)$)
+            node [trigger dot] {};}
+    \node [trigger dot] at (loopback in) {};
+    \draw [thick, ->] (loopback.-10) -- ++(-3mm,0) node [trigger dot] {}
+        -- ++(160:4mm);
 
     % Register wiring
     \draw [bus] (top registers) -- (dsp registers);
@@ -23,8 +41,8 @@
         -- ++(2,0) |- ($(control.west)+(0,0.3)$);
 
     % Main DSP wiring
-    \draw [bus] (dsp) -- (loopback);
-    \draw [bus] (loopback) -- ++(2.5,0)
+    \draw [bus] (dsp) -- (dsp-|loopback.west);
+    \draw [bus] (loopback.-10) -- ++(2,0)
         coordinate (dac out)
         node [anchor=west] {DAC\textsubscript{n}};
     \draw [bus] ([xshift=-5mm]dsp.south) -- (\lastcoord|-control.north);
@@ -37,11 +55,10 @@
     % ADC loopback wiring
     \multipath [bus, multipath background=background colour]
         {\draw (adc in)
-            -- ++(0.5,0) -- ++(0,1) -- ($(loopback)+(-1.5,1)$)
-            |- ($(loopback.west)+(0,0.3)$);}
+            -- ++(0.5,0) |- ($(dsp)+(2.5,1)$) |- (loopback.-170);}
     \multipath [bus, multipath background=background colour]
-        {\draw ($(loopback.east)+(0,-0.3)$)
-            -- ++(0.5,0) -- ++(0,-0.7)
+        {\draw (loopback.east|-mux)
+            -- ++(0.5,0) |- ($(dsp)+(0,-1)$) % -- ++(0,-1.0)
             -| ($(adc in)+(1,0)$) -- (dsp);}
     \multipath [bus, -] {\draw (adc in) -- +(-3,0)
         node [anchor=east] {ADC\textsubscript{n}};}

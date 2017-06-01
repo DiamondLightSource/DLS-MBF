@@ -1,6 +1,7 @@
 \newcommand{\drawpin}[2]{
-    \draw [thick] (#2) -- (#2|-#1.south) coordinate (circle);
-    \draw [thick, fill=white] (circle) circle (3pt);}
+    \draw [thick]
+        (#2) -- (#2|-#1.south)
+        node [draw, circle, fill=white, inner sep=2.2pt] (circle) {};}
 
 \begin{tikzpicture}
 
@@ -9,7 +10,7 @@
     %   axi burst master
     %   axi lite slave
     \path
-        node [box, minimum width=5cm] (interconnect) {interconnect}
+        node [box, minimum width=6cm] (interconnect) {interconnect}
         ++(0,-2.5) node [box] (axi burst master) {axi burst\\master}
         +(-3.5,0) node [box] (axi lite slave) {axi lite\\slave};
 
@@ -30,9 +31,9 @@
     \path (interconnect-|interconnect lite master)
         +(0,-2.5) node [box] (axi lite master) {axi lite\\master};
     \path (axi lite slave)
-        ++(0,-1.5) node [box] (register top) {register\\top}
+        ++(0,-1.7) node [box] (register top) {register\\top}
         ++(-3.5,0) node [box] (system registers) {system\\registers}
-        ++(0,-2.5) node [box, minimum height=2cm] (clocking) {clocking};
+        ++(0,-2.3) node [box, minimum height=2cm] (clocking) {clocking};
     \path (axi burst master)
         ++(1,-3) node [box, minimum width=5cm, minimum height=3.5cm]
             (dsp main) {dsp main};
@@ -55,13 +56,11 @@
     \node [anchor=north west, yshift=-3pt, xshift=-2mm, font=\small]
         at (circle) {ADC\textsubscript{in}};
     \drawpin{fmc500m}{ADC.-55}
-    \draw [bus] (ADC) -- ++(0,1) -| (fmc500m.60);
     % Paths to DAC
     \drawpin{fmc500m}{DAC.-125}
     \node [anchor=north west, yshift=-3pt, xshift=-4mm, font=\small]
         at (circle) {DAC\textsubscript{out}};
     \drawpin{fmc500m}{DAC.-55}
-    \draw [bus, <-] (DAC) -- ++(0,1) -| (DAC|-fmc500m.north);
     % Paths to PLL
     \drawpin{fmc500m}{PLL}
     \draw [trigger] ([yshift=2mm]circle) -- (PLL);
@@ -71,11 +70,11 @@
     \draw [trigger] (PLL) -- (DAC);
     % Fast trigger
     \draw [thick, ->]
-        ([xshift=-4mm]fmc500m.south east) coordinate (circle) --
-        +(0,3.5) -| (dsp main.-120);
-    \draw [thick, fill=white] (circle) circle (3pt);
-    \node [anchor=north, yshift=-3pt, xshift=1mm, font=\small]
-        at (circle) {f\textsubscript{REV}};
+        ([xshift=-4mm]fmc500m.south east) coordinate (circle)
+        node [draw, circle, fill=white, inner sep=2.2pt] {}
+        node [anchor=north, yshift=-3pt, xshift=1mm, font=\small]
+            at (circle) {f\textsubscript{REV}}
+        -- +(0,3.5) -| (dsp main.-120);
     % Place idelay
     \node [small box, yshift=35mm, xshift=10mm]
         at (circle) {idelay};
@@ -134,7 +133,7 @@
     % REG clock
     \draw [trigger line] ($(clocking.east)+(0,0.3)$)
         node [above right, font=\scriptsize, black] {REG\_CLK}
-        -- ++(1.4,0) -- ++(0,1.9)
+        -- ++(1.4,0) -- ++(0,1.7)
         node [trigger dot] {}
         coordinate (REG CLK);
     \draw [trigger] (REG CLK) -- (REG CLK-|system registers.east);
@@ -147,7 +146,7 @@
     % DSP clock
     \draw [trigger line] ($(clocking.east)+(0,-0.3)$)
         node [below right, font=\scriptsize, black] {DSP\_CLK}
-        -- ++(1.8,0) -- ++(0,1.5) -- ++(2.3,0) -- ++(0,1)
+        -- ++(1.8,0) -- ++(0,1.3) -- ++(2.3,0) -- ++(0,1)
         node [trigger dot] (DSP CLK) {};
     \draw [trigger] (DSP CLK) -- (DSP CLK-|register top.east);
     \draw [trigger] (DSP CLK) -- (DSP CLK-|dsp main.west);
@@ -194,10 +193,11 @@
     \draw [bus] (axi lite slave) -- (register top);
     \multipath [bus] {\draw (register top) -- (system registers);}
     \draw [bus] (system registers) -- (clocking);
-    \draw [bus] (system registers.160) -- ++(-0.5,0)
-        node [anchor=east, font=\small] {fmc500m};
-    \draw [bus] (system registers.-160) -- ++(-0.5,0)
-        node [anchor=east, font=\small] {dac test\\idelay};
+    \draw [bus] (system registers.west) -- ++(-0.5,0)
+        node [anchor=east, font=\small, align=right] {
+            fmc500m\\dac test\\idelay};
+    \draw [bus] (system registers.160) -- ++(-0.5,0);
+    \draw [bus] (system registers.-160) -- ++(-0.5,0);
 
     % dsp main connections
     \draw [bus] (dsp main.north-|axi lite master) -- (axi lite master);
@@ -210,10 +210,9 @@
     % DSP main to FMC 500
     \draw [bus, <-] (dsp main.-165)
         node [anchor=west, font=\small] {ADC ($\times2$)}
-        -| (fmc500m.60);
+        -| (fmc500m.60) |- ($(ADC)+(0,1)$) -- (ADC);
     \draw [bus] (dsp main.-155)
-        node [anchor=west, font=\small] {DAC ($\times2$)}
-        -| (DAC|-fmc500m.north);
+        node [anchor=west, font=\small] {DAC ($\times2$)} -| (DAC);
     \draw [bus, <-] (dsp main.-25)
         node [anchor=east, font=\small] {TRG/PM/BLK}
         -| (fmc digital io.80);
