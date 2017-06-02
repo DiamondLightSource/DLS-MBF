@@ -58,6 +58,15 @@
     trigger line/.style={thin, trigger colour},
     trigger/.style={trigger line, >=open triangle 60, shorten >=-6pt, ->},
     trigger dot/.style={fill, circle, inner sep=1pt, line width=-1pt},
+%
+    pics/buffer/.style args={#1/#2}{
+        code={
+            \draw [thick, -, black] (0.5mm,-2mm) -- (0.5mm,2mm);
+            \draw [thick, -, black] (-0.5mm,-2mm) -- (-0.5mm,2mm);
+            \node at (0,2mm) [
+                rotated anchor=-90, font=\scriptsize, inner sep=0.2em] {#1}
+            node at (0,-2mm) [
+                rotated anchor=90, font=\scriptsize, inner sep=0.2em] {#2};}},
 }
 
 
@@ -112,5 +121,45 @@
 \pgfsetlayers{background,main}
 
 
+
+% ------------------------------------------------------------------------------
+% This frightening looking code is used to compute an anchor that rotates with
+% the entire picture.  This is useful when anchoring a node in a pic that itself
+% will be rotated.
+%   Some really tricky code taken from stack overflow question here:
+%
+%   https://tex.stackexchange.com/questions/128565/
+%       how-to-allow-labels-anchors-in-tikz-to-be-affected-by-
+%       rotations-without-rotatin
+
+% \pgfmath@smuggleone
+%
+% Smuggle a macro outside a group.
+%
+% Changed by TT: Speedup by insisting, that smuggleone is directly
+% followed by \endgroup
+%
+\makeatletter
+\def\pgfmath@smuggleone#1\endgroup{%
+  \expandafter\endgroup\expandafter\def\expandafter#1\expandafter{#1}}
+
+\let\pgfmathsmuggle=\pgfmath@smuggleone
+\makeatother
+
+\tikzset{
+    rotated anchor/.code=%
+        \begingroup
+            \pgfcoordinate{qrr@origin}{\pgfpointorigin}%
+            \pgfcoordinate{qrr@direct}{\pgfpointpolarxy{#1}{1}}%
+            \pgftransformreset
+            \pgfmathanglebetweenpoints{%
+                \pgfpointanchor{qrr@origin}{center}}{%
+                    \pgfpointanchor{qrr@direct}{center}}%
+            \pgfmathsmuggle\pgfmathresult
+        \endgroup
+    \tikzset{anchor/.expanded=\pgfmathresult}%
+}
+
+% ------------------------------------------------------------------------------
 
 % vim: set filetype=tex:

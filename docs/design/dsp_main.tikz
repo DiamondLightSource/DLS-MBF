@@ -55,7 +55,8 @@
     % ADC loopback wiring
     \multipath [bus, multipath background=background colour]
         {\draw (adc in)
-            -- ++(0.5,0) |- ($(dsp)+(2.5,1)$) |- (loopback.-170);}
+            -- ++(0.5,0) |- ($(dsp)+(2.5,1)$) |- (loopback.-170)
+            pic [pos=0.75, sloped] {buffer={4/}};}
     \multipath [bus, multipath background=background colour]
         {\draw (loopback.east|-mux)
             -- ++(0.5,0) |- ($(dsp)+(0,-1)$) % -- ++(0,-1.0)

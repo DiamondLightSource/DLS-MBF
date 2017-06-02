@@ -212,7 +212,8 @@
         node [anchor=west, font=\small] {ADC ($\times2$)}
         -| (fmc500m.60) |- ($(ADC)+(0,1)$) -- (ADC);
     \draw [bus] (dsp main.-155)
-        node [anchor=west, font=\small] {DAC ($\times2$)} -| (DAC);
+        node [anchor=west, font=\small] {DAC ($\times2$)} -| (DAC)
+        pic [pos=0.73, sloped] (dac buffer) {buffer={4/}};
     \draw [bus, <-] (dsp main.-25)
         node [anchor=east, font=\small] {TRG/PM/BLK}
         -| (fmc digital io.80);
