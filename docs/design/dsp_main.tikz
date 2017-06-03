@@ -47,7 +47,7 @@
         node [anchor=west] {DAC\textsubscript{n}};
     \draw [bus] ([xshift=-5mm]dsp.south) -- (\lastcoord|-control.north);
     \draw [bus] ([xshift=5mm]control.north) -- (\lastcoord|-dsp.south);
-    \draw [trigger line, ->]
+    \draw [thick, ->]
         ($(dsp.east)+(0,-0.3)$) -- ++(1,0) -- ++(0,-1)
         -- (\lastcoord-|dac out)
         node [anchor=west] {SEQ\textsubscript{n}};
@@ -72,10 +72,10 @@
         node [anchor=west] {DRAM0};
     \draw [bus] (control.east) -- (\lastcoord-|dac out)
         node [anchor=west] {DRAM1};
-    \draw [trigger line, ->]
+    \draw [thick, ->]
         ($(control.east)+(0,-0.4)$) -- (\lastcoord-|dac out)
         node [anchor=west] {interrupts};
-    \draw [trigger line, <-]
+    \draw [thick, <-]
         (control) -- (control-|adc in)
         node [anchor=east] {f\textsubscript{REV}\\TRG\\PM\\BLK};
     \draw [bus] (adc in|-top registers)
