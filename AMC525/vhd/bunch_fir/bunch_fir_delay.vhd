@@ -25,26 +25,20 @@ architecture arch of bunch_fir_delay is
     -- with a compensation for the block memory delay
     --
     -- The figure below shows the data flow:
-    --          |     |     |     |     |     | ... |     |     |
-    -- ra      --------X A   X-------------------------------------
-    -- do      --------------------X MA  X-------------------------
-    -- do_o    --------------------------X MA  X-------------------
-    -- di_i    --------------------------------- ... X P   X-------
-    -- di      ---------------------------------     ------X P   X-
-    -- wa      --------------------------------- ... ------X A   X-
-    --                 |                 |<--- D --->|     |
-    -- WRITE_DELAY     |  1  .  2  .  3  .    ...    .  4  |
+    --          |     |     |     |    ...    |     |     |     |
+    -- ra      --X A   X------------------------------------------
+    -- do_o    --------------X MA  X------------------------------
+    -- wa      ---------------------   ...    -X A   X------------
+    -- di_i    ---------------------   ...    -X P   X------------
+    --           |<--- R --->|<------ D ------>|
     --
-    -- A = incoming address, ra = read_addr,
-    -- do = data_out, do_o = data_o, MA = stored data at address A,
-    -- D = PROCESS_DELAY
-    constant WRITE_DELAY : natural := PROCESS_DELAY + 4;
+    -- A = incoming address, ra = read_addr, do_o = data_o,
+    -- MA = stored data at address A, wa = write_addr, da_i = data_i,
+    -- P = processed data, R = READ_DELAY, D = PROCESS_DELAY
+    constant READ_DELAY : natural := 2;
+    constant WRITE_DELAY : natural := PROCESS_DELAY + READ_DELAY;
 
     signal turn_clock : std_logic;
-    signal write_strobe : std_logic := '0';
-    signal data_in : data_i'SUBTYPE := (others => '0');
-    signal data_out : data_o'SUBTYPE := (others => '0');
-    signal data_o_init : data_o'SUBTYPE := (others => '0');
     signal read_addr : bunch_count_t := (others => '0');
     signal write_addr : bunch_count_t;
 
@@ -60,14 +54,9 @@ begin
         data_o(0) => turn_clock
     );
 
+    -- Read address
     process (clk_i) begin
         if rising_edge(clk_i) then
-            -- Extra input register to help with timing
-            write_strobe <= write_strobe_i;
-            data_in <= data_i;
-            data_o_init <= data_out;
-
-            -- Read address
             if turn_clock = '1' then
                 read_addr <= (others => '0');
             else
@@ -75,22 +64,6 @@ begin
             end if;
         end if;
     end process;
-    data_o <= data_o_init;
-
-    -- Delay line
-    memory_inst : entity work.block_memory generic map (
-        ADDR_BITS => bunch_count_t'LENGTH,
-        DATA_BITS => data_i'LENGTH
-    ) port map (
-        read_clk_i => clk_i,
-        read_addr_i => read_addr,
-        signed(read_data_o) => data_out,
-
-        write_clk_i => clk_i,
-        write_strobe_i => write_strobe,
-        write_addr_i => write_addr,
-        write_data_i => std_logic_vector(data_in)
-    );
 
     -- Delay the write address relative to the read address
     delayline_inst : entity work.dlyline generic map (
@@ -100,5 +73,21 @@ begin
        clk_i => clk_i,
        data_i => std_logic_vector(read_addr),
        unsigned(data_o) => write_addr
+    );
+
+    -- Delay line
+    memory_inst : entity work.block_memory generic map (
+        ADDR_BITS => bunch_count_t'LENGTH,
+        DATA_BITS => data_i'LENGTH,
+        READ_DELAY => READ_DELAY
+    ) port map (
+        read_clk_i => clk_i,
+        read_addr_i => read_addr,
+        signed(read_data_o) => data_o,
+
+        write_clk_i => clk_i,
+        write_strobe_i => write_strobe_i,
+        write_addr_i => write_addr,
+        write_data_i => std_logic_vector(data_i)
     );
 end;

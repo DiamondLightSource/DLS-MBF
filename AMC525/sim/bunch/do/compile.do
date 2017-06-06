@@ -20,7 +20,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/bunch/bunch_store.vhd \
     $vhd_dir/bunch/bunch_select.vhd \
     $vhd_dir/bunch_fir/bunch_fir_taps.vhd \
-    $vhd_dir/bunch_fir/bunch_fir_counter.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_dsp.vhd \
     $vhd_dir/bunch_fir/bunch_fir_delay.vhd \
     $vhd_dir/bunch_fir/bunch_fir_decimate.vhd \
     $vhd_dir/bunch_fir/bunch_fir_interpolate.vhd \
@@ -38,7 +38,6 @@ view wave
 
 add wave -group "Bunch" bunch_select/*
 add wave -group "FIR Taps" bunch_fir_top/bunch_fir_taps/*
-add wave -group "FIR Counter" bunch_fir_top/counter/*
 add wave -group "FIR Decimate" bunch_fir_top/decimate/*
 add wave -group "FIR Interp" bunch_fir_top/interpolate/*
 add wave -group "FIR" bunch_fir_top/bunch_fir/*

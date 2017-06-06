@@ -22,16 +22,16 @@ architecture arch of testbench is
 
     signal write_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
     signal write_data : reg_data_t;
-    signal write_ack : std_logic_vector(DSP_REGS_RANGE);
+    signal write_ack : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
     signal read_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
     signal read_data : reg_data_array_t(DSP_REGS_RANGE);
-    signal read_ack : std_logic_vector(DSP_REGS_RANGE);
+    signal read_ack : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
 
     signal bank_select : unsigned(1 downto 0) := "00";
     signal bunch_config : bunch_config_t;
 
     signal data_in : signed(15 downto 0) := X"0000";
-    signal data_out : signed(15 downto 0);
+    signal data_out : signed(35 downto 0);
 
 begin
     adc_clk <= not adc_clk after 1 ns;

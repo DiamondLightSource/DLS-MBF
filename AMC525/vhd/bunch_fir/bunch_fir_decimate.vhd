@@ -34,7 +34,7 @@ architecture arch of bunch_fir_decimate is
     --      => accumulator = accum.data_i
     constant PROCESS_DELAY : natural := 2;
 
-    signal decimation_counter : decimation_limit_i'SUBTYPE;
+    signal decimation_counter : decimation_limit_i'SUBTYPE := (others => '0');
     signal first_turn : boolean := false;
     signal last_turn : boolean := false;
 

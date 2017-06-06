@@ -53,8 +53,6 @@ architecture arch of bunch_fir_top is
 
     -- Data flow and decimation control
     signal data_in : data_i'SUBTYPE;
-    signal first_turn : std_logic;
-    signal last_turn : std_logic;
     signal filtered_data : data_o'SUBTYPE;
     signal filtered_valid : std_logic;
     signal data_out : data_o'SUBTYPE;
