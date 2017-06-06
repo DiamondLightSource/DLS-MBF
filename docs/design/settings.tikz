@@ -43,7 +43,7 @@
         draw, rectangle, very thick, highlight fill,
         minimum width=1.5cm, minimum height=1.1cm},
     small box/.style={
-        draw, rectangle, highlight fill, font=\small},
+        draw, rectangle, thick, highlight fill},
     component/.style={
         draw, rectangle, thick, accent fill,
         minimum width=11mm, minimum height=8mm},

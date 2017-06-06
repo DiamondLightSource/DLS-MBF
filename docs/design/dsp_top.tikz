@@ -34,8 +34,8 @@
     \draw [bus] (dac.-20) -| (dac out);
 
     \draw [trigger line, ->]
-        (adc.-25) -- ++(15mm,0) -- ++(0,-45mm) -- (\lastcoord-|outputs)
-        node [anchor=west] {adc event};
+        (adc.-25) -- ++(15mm,0) -- ++(0,-44mm) -- (\lastcoord-|outputs)
+        node [anchor=west] {\strut adc event};
 
     \multipath [thick, ->] {\draw
         (sequencer.20) -- ++(10mm,0) -- ++(0,7mm)
@@ -74,7 +74,7 @@
         node [pos=0.5, anchor=north west, font=\scriptsize] {start/write};}
     \draw [trigger line, ->] (sequencer.-40)
         -- ++(10mm,0) -- ++(0,-8mm) -- (\lastcoord-|outputs)
-        node [anchor=west] {SEQ};
+        node [anchor=west] {\strut SEQ};
 
     \draw [bus] (detector) -- (detector-|outputs)
         node [anchor=west] {DRAM\textsubscript{1}};
