@@ -19,8 +19,8 @@ def setup_fmc500():
 
 
 # Configure FIR for passthrough
-def setup_fast_fir(dsp, group, taps):
-    dsp.MISC.STROBE.WRITE = 1
+def setup_fast_fir(group, taps):
+    group.COMMAND.WRITE = 1
     group.TAPS = 0x7FFFFFFF
     for i in range(taps - 1):
         group.TAPS = 0
@@ -56,8 +56,8 @@ def setup_lmbf(bunch_count):
     CONTROL.TRG.CONFIG.TURN.MAX_BUNCH = bunch_count - 1
 
     for dsp in [DSP0, DSP1]:
-        setup_fast_fir(dsp, dsp.ADC, SYSTEM.INFO.ADC_TAPS)
-        setup_fast_fir(dsp, dsp.DAC, SYSTEM.INFO.DAC_TAPS)
+        setup_fast_fir(dsp.ADC, SYSTEM.INFO.ADC_TAPS)
+        setup_fast_fir(dsp.DAC, SYSTEM.INFO.DAC_TAPS)
         setup_bunch_control(dsp, bunch_count)
         setup_bunch_fir(dsp, SYSTEM.INFO.BUNCH_TAPS)
         setup_dac_output(dsp)
