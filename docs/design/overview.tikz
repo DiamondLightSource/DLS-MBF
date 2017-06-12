@@ -4,7 +4,7 @@
         single arrow head extend=0pt, shape border rotate=#1},
     area label/.style={anchor=north west, font=\scriptsize, inner sep=1pt},
     mul/.style={
-        draw, circle, very thick, highlight fill, inner sep=0.5ex},
+        draw=black, circle, thick, highlight fill, inner sep=0.5ex},
     every node/.append style={font=\footnotesize},
     control mux/.style={
         small box, accent fill, label={[font=\tiny]above:MUX}, font=\tiny},
@@ -13,10 +13,10 @@
 
     \path [background fill] (0.3,1.6)
         node [area label] {adc} rectangle ++(2,-3.1);
-    \path [background fill] (2.8,1.6)
-        node [area label] {bunch fir} rectangle ++(2.9,-3.1);
+    \path [background fill] (2.7,1.6)
+        node [area label] {bunch fir} rectangle ++(3.0,-3.1);
     \path [background fill] (6.3,1.6) rectangle ++(4.6,-3.1)
-        ++(0,3) node [area label, anchor=north east] {dac};
+        ++(0,3.1) node [area label, anchor=north east] {dac};
 
     \path
         (0,0) node [adc-dac=180, label={ADC}] (adc in) {}
@@ -90,7 +90,6 @@
 
     \draw [bus] (detector) -- ++(2,0)
         node [anchor=west] {MEM\textsubscript{1}};
-
 
 \end{tikzpicture}
 

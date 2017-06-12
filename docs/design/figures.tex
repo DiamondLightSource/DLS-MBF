@@ -14,11 +14,17 @@
 \usepackage{url}            % \url command for decent line breaks in urls
 \usepackage{enumitem}       % For more control over list parameters.
 
+\usepackage{tabularx}       % tabularx environment
+\usepackage{booktabs}       % Improved tables
+\usepackage{multicol}       % Multiple columns inline
+
 
 % Some paragraph tweaks from
 %   https://www.sharelatex.com/learn/Paragraph_formatting
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.5em}
+\setlength\parindent{0pt}
+\setlength\parskip{0.5em}
+
+\setlength\extrarowheight{2pt}
 
 % Tone down hyphenation and allow lines to stretch in compensation
 \hyphenpenalty 4000
@@ -57,6 +63,24 @@
 \begin{centering}
 \input{overview.tikz}
 \end{centering}
+
+% \begin{tabularx}{\textwidth}{cXcX}
+%     \tikz [inline text] \node [small box] {OVF}; &
+%     Overflow detection.
+% \\
+%     \tikz [inline text] \node [small box] {MMS}; &
+%     Min/Max/Sum: computes mean bunch positions, peak to peak bunch motion, and
+%     standard deviation of bunch motion.
+% \\
+% \end{tabularx}
+
+% This figure shows the overall data processing path for a single channel.  Data
+% from the ADC is first checked for overflow and is passed through a short
+% compensation filter (first FIR).  The resulting ADC input stream is available
+% for capture to memory (MEM\textsubscript{0}), and can be used for tune
+% measurement in the detector.  The MMS (Min/Max/Sum) block measures the average
+% bunch position, and both the peak-to-peak and standard deviation of bunch
+% motion.
 \end{figure}
 
 

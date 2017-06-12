@@ -8,6 +8,7 @@
 \usetikzlibrary{shapes.multipart}
 \usetikzlibrary{fit}                % Fitting outline to shape
 \usetikzlibrary{arrows}
+\usetikzlibrary{arrows.meta}
 \usetikzlibrary{shadows}
 
 
@@ -56,8 +57,13 @@
             shadow xshift=1ex, shadow yshift=-1ex}},
 %
     trigger line/.style={thin, trigger colour},
-    trigger/.style={trigger line, >=open triangle 60, shorten >=-6pt, ->},
+    trigger/.style={
+        trigger line, >={Triangle[open, scale=1.2]}, shorten >=-5pt, ->},
     trigger dot/.style={fill, circle, inner sep=1pt, line width=-1pt},
+%
+    inline text/.style={
+        baseline=(current bounding box.base),
+        every node/.append style={anchor=base, font=\scriptsize},},
 %
     pics/buffer/.style args={#1/#2}{
         code={

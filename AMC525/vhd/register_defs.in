@@ -231,23 +231,34 @@
             # This bit is set during capture to DRAM
             .ENABLE
 
+    # Trigger management and control.  Seven trigger sources are available, and
+    # three trigger destinations can be configured.  The following trigger
+    # sources are managed as masks for a variety of registers below:
+    #
+    # ======= ===============================================
+    # Bit     Source
+    # ======= ===============================================
+    # 0       Soft trigger
+    # 1       External event trigger
+    # 2       Postmortem trigger
+    # 3       ADC 0 motion trigger
+    # 4       ADC 1 motion trigger
+    # 5       State 0 trigger
+    # 6       State 1 trigger
+    # ======= ===============================================
+    #
+    # The following trigger destinations are configured here:
+    #
+    # ======= ===============================================
+    # DRAM0   Stop capture to fast memory
+    # SEQ0    Start sequencer for DSP0
+    # SEQ1    Start sequencer for DSP1
+    # ======= ===============================================
     !TRG
         *RW
             PULSED      R
                 # Each bit records a raw trigger event from the corresponding
-                # trigger source:
-                #
-                # ======= ===============================================
-                # Bit     Source
-                # ======= ===============================================
-                # 0       Soft trigger
-                # 1       External event trigger
-                # 2       Postmortem trigger
-                # 3       ADC 0 motion trigger
-                # 4       ADC 1 motion trigger
-                # 5       State 0 trigger
-                # 6       State 1 trigger
-                # ======= ===============================================
+                # trigger source
                 .TRIGGERS   7
             # Pulsed trigger control events
             CONTROL     WP
@@ -435,6 +446,7 @@
         # The tap write counter is reset by any write to the config register.
         TAPS        W
 
+    # Output signal processing
     !DAC
         # Output to DAC configuration control
         CONFIG      W
