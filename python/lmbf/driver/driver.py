@@ -35,7 +35,7 @@ class RawRegisters:
 
         # Extract the four relevant register banks according to the following
         # address map:
-        #   0x0000..0x0FFF  System registers: top level hardware control
+        #   0x0000..0x1FFF  System registers: top level hardware control
         #   0x2000..0x27FF  DSP master control
         #   0x2800..0x2FFF  (unused)
         #   0x3000..0x37FF  DSP 0 control

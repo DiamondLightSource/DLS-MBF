@@ -317,26 +317,22 @@ def parse_reg_pair(offset, parse):
 
 # shared_name = ":"saved_name new_name
 def parse_shared_name(offset, parse, defines):
-    line, body, _, line_no = parse
+    line, body, doc, line_no = parse
     line = line.split()
     key = line[0]
     name = line[1] if len(line) > 1 else key
     check_name(name, line_no)
     if key not in defines:
-        fail_parse('Unknown shared name', line_no)
+        fail_parse('Unknown shared name %s' % key, line_no)
     define = defines[key]
     if isinstance(define, Group):
         check_body(parse)
         length = define.range[1]
-        result = define._replace(
-            name = name, range = (offset, length),
-            content = [], definition = define)
+        result = Group(name, (offset, length), [], define, doc)
     elif isinstance(define, Register):
         fields = parse_field_defs(body)
         length = 1
-        result = define._replace(
-            name = name, offset = offset,
-            fields = fields, definition = define)
+        result = Register(name, offset, define.rw, fields, define, doc)
     else:
         assert False
     return (result, length)
@@ -464,13 +460,10 @@ class FlattenMethods(WalkParse):
         group_def = group.definition
         if group_def:
             content = self.walk_subgroups(offset + base, group_def)
-            return group_def._replace(
-                name = group.name,
-                range = (base + offset, length), content = content)
         else:
             content = self.walk_subgroups(offset, group)
-            return group._replace(
-                range = (base + offset, length), content = content)
+        return group._replace(
+            range = (base + offset, length), content = content)
 
     def walk_register(self, offset, reg):
         reg_def = reg.definition
@@ -502,5 +495,6 @@ if __name__ == '__main__':
     import sys
     indent_parse = indent.parse_file(file(sys.argv[1]))
     parse = parse(indent_parse)
-#     print_parse(parse)
+    print_parse(parse)
+    print
     print_parse(flatten(parse))
