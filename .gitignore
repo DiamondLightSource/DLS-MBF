@@ -2,6 +2,7 @@
 /build
 *.pyc
 *~
+*.html
 
 # Put stuff we want to ignore here
 /ignore
