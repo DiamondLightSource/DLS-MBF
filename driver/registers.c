@@ -19,12 +19,14 @@ struct register_context {
     unsigned long base_page;
     size_t length;
     struct interrupt_control *interrupts;
+    struct register_locking *locking;
 };
 
 
 int lmbf_reg_open(
     struct file *file, struct pci_dev *dev,
-    struct interrupt_control *interrupts)
+    struct interrupt_control *interrupts,
+    struct register_locking *locking)
 {
     int rc = 0;
     struct register_context *context =
@@ -35,11 +37,22 @@ int lmbf_reg_open(
         .base_page = pci_resource_start(dev, 0) >> PAGE_SHIFT,
         .length = pci_resource_len(dev, 0),
         .interrupts = interrupts,
+        .locking = locking,
     };
+
+    /* Check for lock state and count ourself in if we can. */
+    mutex_lock(&locking->mutex);
+    TEST_OK(!locking->locked_by, rc = -EBUSY, locked,
+        "Device locked for exclusive access");
+    locking->reference_count += 1;
+    mutex_unlock(&locking->mutex);
 
     file->private_data = context;
     return 0;
 
+locked:
+    mutex_unlock(&locking->mutex);
+    kfree(context);
 no_context:
     return rc;
 }
@@ -47,7 +60,16 @@ no_context:
 
 static int lmbf_reg_release(struct inode *inode, struct file *file)
 {
-    kfree(file->private_data);
+    struct register_context *context = file->private_data;
+    struct register_locking *locking = context->locking;
+
+    mutex_lock(&locking->mutex);
+    if (locking->locked_by == context)
+        locking->locked_by = NULL;
+    locking->reference_count -= 1;
+    mutex_unlock(&locking->mutex);
+
+    kfree(context);
     return 0;
 }
 
@@ -73,6 +95,49 @@ static int lmbf_reg_mmap(struct file *file, struct vm_area_struct *vma)
 }
 
 
+static long lock_register(struct register_context *context)
+{
+    struct register_locking *locking = context->locking;
+    int rc = 0;
+
+    mutex_lock(&locking->mutex);
+    if (locking->reference_count > 1)
+    {
+        printk(KERN_WARNING DEVICE_NAME " device too busy to lock\n");
+        rc = -EBUSY;
+    }
+    else if (locking->locked_by)
+    {
+        printk(KERN_WARNING DEVICE_NAME " device already locked\n");
+        rc = -EBUSY;
+    }
+    else
+        locking->locked_by = context;
+    mutex_unlock(&locking->mutex);
+
+    return rc;
+}
+
+
+static long unlock_register(struct register_context *context)
+{
+    struct register_locking *locking = context->locking;
+    int rc = 0;
+
+    mutex_lock(&locking->mutex);
+    if (locking->locked_by == context)
+        locking->locked_by = NULL;
+    else
+    {
+        printk(KERN_WARNING DEVICE_NAME " device not locked by caller\n");
+        rc = -EINVAL;
+    }
+    mutex_unlock(&locking->mutex);
+
+    return rc;
+}
+
+
 static long lmbf_reg_ioctl(
     struct file *file, unsigned int cmd, unsigned long arg)
 {
@@ -81,6 +146,10 @@ static long lmbf_reg_ioctl(
     {
         case LMBF_MAP_SIZE:
             return context->length;
+        case LMBF_REG_LOCK:
+            return lock_register(context);
+        case LMBF_REG_UNLOCK:
+            return unlock_register(context);
         default:
             return -EINVAL;
     }

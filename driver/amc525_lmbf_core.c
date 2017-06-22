@@ -82,6 +82,9 @@ struct amc525_lmbf {
     /* BAR2 memory mapped region, used for driver control. */
     void __iomem *ctrl_memory;
 
+    /* Locking control for exclusive access to ctrl_memory. */
+    struct register_locking locking;
+
     /* DMA controller. */
     struct dma_control *dma;
 
@@ -123,7 +126,8 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
     switch (minor_index)
     {
         case MINOR_REG:
-            return lmbf_reg_open(file, lmbf->dev, lmbf->interrupts);
+            return lmbf_reg_open(
+                file, lmbf->dev, lmbf->interrupts, &lmbf->locking);
         case MINOR_DDR0:
             return lmbf_dma_open(file, lmbf->dma, DDR0_BASE, DDR0_LENGTH);
         case MINOR_DDR1:
@@ -317,6 +321,7 @@ static int amc525_lmbf_probe(
     lmbf->board = board;
     lmbf->major = major;
     lmbf->minor = minor;
+    mutex_init(&lmbf->locking.mutex);
 
     rc = enable_board(pdev);
     if (rc < 0)     goto no_enable;
