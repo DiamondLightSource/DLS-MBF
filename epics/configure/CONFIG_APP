@@ -20,3 +20,5 @@ endif
 
 # dbst based database optimization (default: NO)
 DB_OPT = NO
+
+# vim: set filetype=make:

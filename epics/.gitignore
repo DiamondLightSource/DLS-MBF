@@ -1,0 +1,6 @@
+# EPICS build process drops a lot of files in the source directory
+
+/db
+/dbd
+/bin
+O.*
