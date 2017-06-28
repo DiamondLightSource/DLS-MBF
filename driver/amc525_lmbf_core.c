@@ -357,8 +357,8 @@ static void amc525_lmbf_remove(struct pci_dev *pdev)
     destroy_device_nodes(lmbf, device_class);
     terminate_board(pdev);
     disable_board(pdev);
-    kfree(lmbf);
     release_board(lmbf->board);
+    kfree(lmbf);
 }
 
 
