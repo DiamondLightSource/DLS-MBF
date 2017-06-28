@@ -6,8 +6,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+#include <stdarg.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"
@@ -17,13 +19,104 @@
 #include "hardware.h"
 
 
+/* Externally published hardware configuration, initialised during call to
+ * initialise_hardware(), subsequently constant. */
+const struct hardware_config hardware_config;
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Register access support. */
+
+#define LOCK(mutex)     pthread_mutex_lock(&mutex)
+#define UNLOCK(mutex)   pthread_mutex_unlock(&mutex)
+
+
+/* I'm quite nervous of the compiler doing bad things to our register access, so
+ * we force all register IO to go through these two helper functions. */
+static void writel(volatile uint32_t *reg, uint32_t value)
+{
+    *reg = value;
+}
+
+static uint32_t readl(volatile uint32_t *reg)
+{
+    return *reg;
+}
+
+
+/* This rather tricksy macro ensures that we can safely execute the assignment
+ * reg = value, but actually converts the types on both sides so that we can do
+ * the assignment via writel() instead.  We do this to try and avoid unhealthy
+ * "optimisations" from the compiler, which seems to have some very dangerous
+ * notions about volatile. */
+#define _id_WRITEL(temp_val, temp_reg, reg, value) \
+    do { \
+        ENSURE_TYPE(typeof(reg), (value)); \
+        uint32_t temp_val = CAST_FROM_TO(typeof(value), uint32_t, (value)); \
+        volatile uint32_t *temp_reg = CAST_FROM_TO( \
+            volatile typeof(reg) *, volatile uint32_t *, &(reg)); \
+        writel(temp_reg, temp_val); \
+    } while(0)
+#define WRITEL(args...) \
+    _id_WRITEL(UNIQUE_ID(), UNIQUE_ID(), args)
+
+
+/* Similar for reading. */
+#define _id_READL(temp_reg, reg) \
+    ( { \
+        volatile uint32_t *temp_reg = CAST_FROM_TO( \
+            volatile typeof(reg) *, volatile uint32_t *, &(reg)); \
+        ENSURE_TYPE(typeof(reg), \
+            CAST_FROM_TO(uint32_t, typeof(reg), readl(temp_reg))); \
+    } )
+#define READL(args...) \
+    _id_READL(UNIQUE_ID(), args)
+
+
+/* This is used to write to a group of fields.  Mainly saves the work of writing
+ * the target type out. */
+#define WRITE_FIELDS(target, fields...) \
+    WRITEL(target, ((typeof(target)) { fields }))
+
+
+#define WRITE_DSP_MIRROR(channel, reg, field, value) \
+    dsp_mirror[channel].reg.field = (value); \
+    WRITEL(dsp_regs[channel]->reg, dsp_mirror[channel].reg)
+
+
+/* Convert array of bits to an array of booleans. */
+static void bits_to_bools(unsigned int count, uint32_t bits, bool bools[])
+{
+    for (unsigned int i = 0; i < count; i ++)
+    {
+        bools[i] = bits & 1;
+        bits >>= 1;
+    }
+}
+
+/* Convert an array of booleans to an array of bits. */
+static uint32_t bools_to_bits(unsigned int count, const bool bools[])
+{
+    uint32_t result = 0;
+    for (unsigned int i = 0; i < count; i ++)
+        result |= (unsigned) bools[i] << i;
+    return result;
+}
+
+
+/* Updates one bit in a bit array.*/
+static uint32_t write_selected_bit(
+    uint32_t bits, unsigned int bit, bool value)
+{
+    return (bits & ~(1U << bit)) | ((uint32_t) value << bit);
+}
 
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System control. */
+/* System registers. */
 
-static volatile struct sys *sys_space;
+static volatile struct sys *sys_regs;
 
 
 static const char *dram0_device_name;
@@ -34,25 +127,711 @@ error__t hw_read_fast_dram_name(char *name, size_t length)
     return ERROR_OK;
 }
 
-
 uint32_t hw_read_fpga_version(void)
 {
-    return sys_space->version;
+    return READL(sys_regs->version);
+}
+
+void hw_read_system_status(struct system_status *result)
+{
+    struct sys_status status = sys_regs->status;
+    result->dsp_ok = status.dsp_ok;
+    result->vcxo_ok = status.vcxo_ok;
+    result->adc_ok = status.adc_ok;
+    result->dac_ok = status.dac_ok;
+    result->vcxo_locked = status.pll_ld1;
+    result->vco_locked = status.pll_ld2;
+    result->dac_irq = !status.dac_irqn;
+    result->temp_alert = status.temp_alert;
+}
+
+void hw_write_rev_clk_idelay(unsigned int delay)
+{
+    WRITE_FIELDS(sys_regs->rev_idelay,
+        .value = delay & 0x1F,
+        .write = 1,
+    );
 }
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Shared Control registers. */
+
+static volatile struct ctrl *ctrl_regs;
+static pthread_mutex_t ctrl_lock = PTHREAD_MUTEX_INITIALIZER;
+static struct ctrl ctrl_mirror;
+
+
+void hw_write_channel_config(const struct channel_config *config)
+{
+    LOCK(ctrl_lock);
+    ctrl_mirror.control.adc_mux = config->adc_mux;
+    ctrl_mirror.control.nco0_mux = config->nco0_mux;
+    ctrl_mirror.control.nco1_mux = config->nco1_mux;
+    ctrl_mirror.control.bank_mux = config->bank_mux;
+    WRITEL(ctrl_regs->control, ctrl_mirror.control);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_loopback_enable(int channel, bool loopback)
+{
+    LOCK(ctrl_lock);
+    uint32_t loopbacks = write_selected_bit(
+        ctrl_mirror.control.loopback, (unsigned) channel, loopback);
+    ctrl_mirror.control.loopback = loopbacks & 0x3;
+    WRITEL(ctrl_regs->control, ctrl_mirror.control);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_output_enable(int channel, bool enable)
+{
+    LOCK(ctrl_lock);
+    uint32_t enables = write_selected_bit(
+        ctrl_mirror.control.output, (unsigned) channel, enable);
+    ctrl_mirror.control.output = enables & 0x3;
+    WRITEL(ctrl_regs->control, ctrl_mirror.control);
+    UNLOCK(ctrl_lock);
+}
+
+
+/* DRAM capture registers - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+void hw_write_dram_mux(unsigned int mux)
+{
+    LOCK(ctrl_lock);
+    ctrl_mirror.mem_config.mux_select = mux & 0xF;
+    WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_dram_fir_gain(unsigned int gain)
+{
+    LOCK(ctrl_lock);
+    ctrl_mirror.mem_config.fir_gain = gain & 0xF;
+    WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_dram_runout(unsigned int count)
+{
+    WRITE_FIELDS(ctrl_regs->mem_count, .count = count & 0xFFFFFFF);
+}
+
+unsigned int hw_read_dram_address(void)
+{
+    return readl(&ctrl_regs->mem_address);
+}
+
+void hw_write_dram_start_capture(bool auto_stop)
+{
+    WRITE_FIELDS(ctrl_regs->mem_command,
+        .start = 1,
+        .stop = auto_stop);
+}
+
+void hw_write_dram_stop_capture(void)
+{
+    WRITE_FIELDS(ctrl_regs->mem_command, .stop = 1);
+}
+
+bool hw_read_dram_active(void)
+{
+    struct ctrl_mem_status status = READL(ctrl_regs->mem_status);
+    return status.enable;
+}
+
+
+/* Trigger registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+STATIC_COMPILE_ASSERT(sizeof(struct trigger_sources) == 7);
+
+static void bits_to_sources(uint32_t bits, struct trigger_sources *sources)
+{
+    bits_to_bools(
+        sizeof(struct trigger_sources), bits,
+        CAST_FROM_TO(struct trigger_sources *, bool *, sources));
+}
+
+static uint32_t sources_to_bits(const struct trigger_sources *sources)
+{
+    return bools_to_bits(
+        sizeof(struct trigger_sources),
+        CAST_FROM_TO(const struct trigger_sources *, const bool *, sources));
+}
+
+
+static void hw_write_bunch_count(unsigned int bunches)
+{
+    LOCK(ctrl_lock);
+    ctrl_mirror.trg_config_turn.max_bunch = (bunches - 1) & 0x3FF;
+    WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_turn_clock_sync(void)
+{
+    WRITE_FIELDS(ctrl_regs->trg_control, .sync_turn = 1);
+}
+
+void hw_write_turn_clock_sample(void)
+{
+    WRITE_FIELDS(ctrl_regs->trg_control, .sample_turn = 1);
+}
+
+void hw_write_turn_clock_offset(int channel, unsigned int offset)
+{
+    LOCK(ctrl_lock);
+    switch (channel)
+    {
+        case 0:
+            ctrl_mirror.trg_config_turn.dsp0_offset = offset & 0x3FF;
+            break;
+        case 1:
+            ctrl_mirror.trg_config_turn.dsp1_offset = offset & 0x3FF;
+            break;
+    }
+    WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_read_trigger_events(struct trigger_sources *sources)
+{
+    struct ctrl_trg_pulsed events = READL(ctrl_regs->trg_pulsed);
+    bits_to_sources(events.triggers, sources);
+}
+
+void hw_write_trigger_arm(bool arm_seq0, bool arm_seq1, bool arm_dram)
+{
+    WRITE_FIELDS(ctrl_regs->trg_control,
+        .seq0_arm = arm_seq0,
+        .seq1_arm = arm_seq1,
+        .dram0_arm = arm_dram
+    );
+}
+
+void hw_write_trigger_disarm(
+    bool disarm_seq0, bool disarm_seq1, bool disarm_dram)
+{
+    WRITE_FIELDS(ctrl_regs->trg_control,
+        .seq0_disarm = disarm_seq0,
+        .seq1_disarm = disarm_seq1,
+        .dram0_disarm = disarm_dram
+    );
+}
+
+void hw_write_trigger_soft_trigger(void)
+{
+    WRITE_FIELDS(ctrl_regs->trg_control, .trigger = 1);
+}
+
+void hw_read_trigger_status(struct trigger_status *result)
+{
+    struct ctrl_trg_status status = READL(ctrl_regs->trg_status);
+    result->sync_busy = status.sync_busy;
+    result->sync_phase = status.sync_phase;
+    result->sync_error = status.sync_error;
+    result->sample_busy = status.sample_busy;
+    result->sample_phase = status.sample_phase;
+    result->seq0_armed = status.seq0_armed;
+    result->seq1_armed = status.seq1_armed;
+    result->dram_armed = status.dram0_armed;
+    result->clock_offset = status.sample;
+}
+
+void hw_write_trigger_sources(
+    enum trigger_destination destination,
+    const struct trigger_sources *sources)
+{
+    uint32_t source_mask = sources_to_bits(sources);
+    LOCK(ctrl_lock);
+    switch (destination)
+    {
+        case TRIGGER_SEQ0:
+            ctrl_mirror.trg_sources.seq0 = source_mask & 0x7F;
+            break;
+        case TRIGGER_SEQ1:
+            ctrl_mirror.trg_sources.seq1 = source_mask & 0x7F;
+            break;
+        case TRIGGER_DRAM:
+            ctrl_mirror.trg_sources.dram0 = source_mask & 0x7F;
+            break;
+    }
+    WRITEL(ctrl_regs->trg_sources, ctrl_mirror.trg_sources);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_trigger_blanking_duration(int channel, unsigned int duration)
+{
+    LOCK(ctrl_lock);
+    switch (channel)
+    {
+        case 0:
+            ctrl_mirror.trg_config_blanking.dsp0 = duration & 0xFFFF;
+            break;
+        case 1:
+            ctrl_mirror.trg_config_blanking.dsp1 = duration & 0xFFFF;
+            break;
+    }
+    WRITEL(ctrl_regs->trg_config_blanking, ctrl_mirror.trg_config_blanking);
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_trigger_delay(
+    enum trigger_destination destination, unsigned int delay)
+{
+    switch (destination)
+    {
+        case TRIGGER_SEQ0:
+            WRITE_FIELDS(
+                ctrl_regs->trg_config_seq0, .delay = delay & 0xFFFFFF);
+            break;
+        case TRIGGER_SEQ1:
+            WRITE_FIELDS(
+                ctrl_regs->trg_config_seq1, .delay = delay & 0xFFFFFF);
+            break;
+        case TRIGGER_DRAM:
+            WRITE_FIELDS(
+                ctrl_regs->trg_config_dram0, .delay = delay & 0xFFFFFF);
+            break;
+    }
+}
+
+void hw_write_trigger_enable_mask(
+    enum trigger_destination destination,
+    const struct trigger_sources *sources)
+{
+    uint32_t source_mask = sources_to_bits(sources);
+    LOCK(ctrl_lock);
+    switch (destination)
+    {
+        case TRIGGER_SEQ0:
+            ctrl_mirror.trg_config_trig_seq.enable0 = source_mask & 0x7F;
+            WRITEL(ctrl_regs->trg_config_trig_seq,
+                ctrl_mirror.trg_config_trig_seq);
+            break;
+        case TRIGGER_SEQ1:
+            ctrl_mirror.trg_config_trig_seq.enable1 = source_mask & 0x7F;
+            WRITEL(ctrl_regs->trg_config_trig_seq,
+                ctrl_mirror.trg_config_trig_seq);
+            break;
+        case TRIGGER_DRAM:
+            ctrl_mirror.trg_config_trig_dram.enable = source_mask & 0x7F;
+            WRITEL(ctrl_regs->trg_config_trig_dram,
+                ctrl_mirror.trg_config_trig_dram);
+            break;
+    }
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_trigger_blanking_mask(
+    enum trigger_destination destination,
+    const struct trigger_sources *sources)
+{
+    uint32_t source_mask = sources_to_bits(sources);
+    LOCK(ctrl_lock);
+    switch (destination)
+    {
+        case TRIGGER_SEQ0:
+            ctrl_mirror.trg_config_trig_seq.blanking0 = source_mask & 0x7F;
+            WRITEL(ctrl_regs->trg_config_trig_seq,
+                ctrl_mirror.trg_config_trig_seq);
+            break;
+        case TRIGGER_SEQ1:
+            ctrl_mirror.trg_config_trig_seq.blanking1 = source_mask & 0x7F;
+            WRITEL(ctrl_regs->trg_config_trig_seq,
+                ctrl_mirror.trg_config_trig_seq);
+            break;
+        case TRIGGER_DRAM:
+            ctrl_mirror.trg_config_trig_dram.blanking = source_mask & 0x7F;
+            WRITEL(ctrl_regs->trg_config_trig_dram,
+                ctrl_mirror.trg_config_trig_dram);
+            break;
+    }
+    UNLOCK(ctrl_lock);
+}
+
+void hw_write_trigger_dram_select(
+    int turn_channel, const bool blanking[CHANNEL_COUNT])
+{
+    uint32_t blanking_mask = bools_to_bits(CHANNEL_COUNT, blanking);
+    LOCK(ctrl_lock);
+    ctrl_mirror.trg_config_trig_dram.turn_sel = (unsigned) turn_channel & 1;
+    ctrl_mirror.trg_config_trig_dram.blanking_sel = blanking_mask & 0x3;
+    WRITEL(ctrl_regs->trg_config_trig_dram, ctrl_mirror.trg_config_trig_dram);
+    UNLOCK(ctrl_lock);
+}
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Miscellaneous control. */
+/* DSP registers. */
 
-static volatile struct ctrl *ctrl_space;
+static volatile struct dsp *dsp_regs[2];
+static pthread_mutex_t dsp_locks[2] = {
+    PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, };
+static struct dsp dsp_mirror[2];
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* DSP control. */
+/* Reads min/max/sum: shared between ADC and DAC, which have identical
+ * registers. */
+static void read_mms(
+    int channel, volatile struct mms *mms, struct mms_result *result)
+{
+    LOCK(dsp_locks[channel]);
 
-static volatile struct dsp *dsp_space[2];
+    struct mms_count count = mms->count;
+    result->turns = count.turns;
+    result->turns_ovfl = count.turns_ovfl;
+    result->sum_ovfl = count.sum_ovfl;
+    result->sum2_ovfl = count.sum2_ovfl;
 
+    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
+    {
+        uint32_t readout = readl(&mms->readout);
+        result->minimum[i] = (short) (readout & 0xFFFF);
+        result->maximum[i] = (short) (readout >> 16);
+
+        result->sum[i] = (int) readl(&mms->readout);
+
+        uint32_t sum2_low = readl(&mms->readout);
+        uint32_t sum2_high = readl(&mms->readout) & 0xFFFF;
+        result->sum2[i] = (long int) (sum2_low | (uint64_t) sum2_high << 32);
+    }
+
+    UNLOCK(dsp_locks[channel]);
+}
+
+
+void hw_write_nco0_frequency(int channel, unsigned int frequency)
+{
+    writel(&dsp_regs[channel]->nco0_freq, frequency);
+}
+
+
+/* ADC registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+void hw_write_adc_overflow_threshold(int channel, unsigned int threshold)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, adc_config, threshold, threshold & 0x3FFF);
+    LOCK(dsp_locks[channel]);
+}
+
+void hw_write_adc_delta_threshold(int channel, unsigned int delta)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, adc_config, delta, delta & 0xFFFF);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_adc_arm_delta(int channel)
+{
+    WRITE_FIELDS(dsp_regs[channel]->adc_command, .reset_delta = 1);
+}
+
+void hw_read_adc_events(int channel, struct adc_events *result)
+{
+    struct dsp_adc_events events = READL(dsp_regs[channel]->adc_events);
+    result->input_ovf = events.inp_ovf;
+    result->fir_ovf = events.fir_ovf;
+    result->mms_ovf = events.mms_ovf;
+    result->delta_event = events.delta;
+}
+
+void hw_write_adc_taps(int channel, const int taps[])
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_FIELDS(dsp_regs[channel]->adc_command, .write = 1);
+    for (unsigned int i = 0; i < hardware_config.adc_taps; i ++)
+        writel(&dsp_regs[channel]->adc_taps, (uint32_t) taps[i]);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_read_adc_mms(int channel, struct mms_result *result)
+{
+    read_mms(channel, &dsp_regs[channel]->adc_mms, result);
+}
+
+
+/* Bunch registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+void hw_write_bunch_config(
+    int channel, unsigned int bank, const struct bunch_config *config)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_FIELDS(dsp_regs[channel]->bunch_config, .bank = bank & 0x3);
+    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
+        WRITE_FIELDS(dsp_regs[channel]->bunch_bank,
+            .fir_select = (unsigned int) config->fir_select[i] & 0x3,
+            .gain = (unsigned int) config->fir_select[i] & 0x1FFF,
+            .fir_enable = config->fir_enable[i],
+            .nco0_enable = config->nco0_enable[i],
+            .nco1_enable = config->nco1_enable[i]);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_decimation(int channel, unsigned int decimation)
+{
+    /* Compute the required shift corresponding to the given decimation.  We
+     * need  2^shift >= decimation, ie shift >= log2(decimation), and we use CLZ
+     * as a short cut computation of log2. */
+    COMPILE_ASSERT(sizeof(decimation) == 4);    // Need 32-bit integers here
+    unsigned int decimation_shift =
+        decimation == 1 ? 0 : 32 - (unsigned int) __builtin_clz(decimation - 1);
+
+    LOCK(dsp_locks[channel]);
+    dsp_mirror[channel].fir_config.limit = (decimation - 1) & 0x3F;
+    dsp_mirror[channel].fir_config.shift = decimation_shift & 0x7;
+    WRITEL(dsp_regs[channel]->fir_config, dsp_mirror[channel].fir_config);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_bunch_taps(int channel, unsigned int fir, const int taps[])
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, fir_config, bank, fir & 0x3);
+    for (unsigned int i = 0; i < hardware_config.bunch_taps; i ++)
+        writel(&dsp_regs[channel]->fir_taps, (uint32_t) taps[i]);
+    UNLOCK(dsp_locks[channel]);
+}
+
+
+/* DAC registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+void hw_write_dac_delay(int channel, unsigned int delay)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, dac_config, delay, delay & 0x3FF);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_dac_fir_gain(int channel, unsigned int gain)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, dac_config, fir_gain, gain & 0x1F);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_dac_nco0_gain(int channel, unsigned int gain)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, dac_config, nco0_gain, gain & 0xF);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_dac_enables(
+    int channel, bool fir_enable, bool nco0_enable, bool nco1_enable)
+{
+    LOCK(dsp_locks[channel]);
+    dsp_mirror[channel].dac_config.fir_enable = fir_enable;
+    dsp_mirror[channel].dac_config.nco0_enable = nco0_enable;
+    dsp_mirror[channel].dac_config.nco1_enable = nco1_enable;
+    WRITEL(dsp_regs[channel]->dac_config, dsp_mirror[channel].dac_config);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_read_dac_events(int channel, struct dac_events *result)
+{
+    struct dsp_dac_events events = READL(dsp_regs[channel]->dac_events);
+    result->fir_ovf = events.fir_ovf;
+    result->mux_ovf = events.mux_ovf;
+    result->mms_ovf = events.mms_ovf;
+    result->out_ovf = events.out_ovf;
+}
+
+void hw_write_dac_taps(int channel, const int taps[])
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_FIELDS(dsp_regs[channel]->dac_command, .write = 1);
+    for (unsigned int i = 0; i < hardware_config.dac_taps; i ++)
+        writel(&dsp_regs[channel]->dac_taps, (uint32_t) taps[i]);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_read_dac_mms(int channel, struct mms_result *result)
+{
+    read_mms(channel, &dsp_regs[channel]->dac_mms, result);
+}
+
+
+/* Sequencer registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+/* Writes a single sequencer state as a sequence of 8 writes. */
+static void write_sequencer_state(
+    volatile uint32_t *target, const struct seq_entry *entry)
+{
+    writel(target, entry->start_freq);
+    writel(target, entry->delta_freq);
+    writel(target, entry->dwell_time - 1);
+    writel(target,
+        ((entry->capture_count - 1) & 0xFFF) |  // bits 11:0
+        (entry->bunch_bank & 0x3) << 12 |       //      13:12
+        (entry->nco_gain & 0xF) << 14 |         //      17:14
+        (unsigned) entry->enable_window << 18 | //      18
+        (unsigned) entry->write_enable << 19 |  //      19
+        (unsigned) entry->enable_blanking << 20); //      20
+    writel(target, entry->window_rate);
+    writel(target, entry->holdoff & 0xFFFF);
+    writel(target, 0);
+    writel(target, 0);
+}
+
+void hw_read_seq_state(
+    int channel, bool *busy, unsigned int *pc, unsigned int *super_pc)
+{
+    struct dsp_seq_status status = READL(dsp_regs[channel]->seq_status);
+    *busy = status.busy;
+    *pc = status.pc;
+    *super_pc = status.super;
+}
+
+void hw_write_seq_count(int channel, unsigned int pc)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, seq_config, pc, pc & 0x7);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_seq_super_count(int channel, unsigned int super_count)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, seq_config, super_count, super_count & 0x3FF);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_seq_abort(int channel)
+{
+    WRITE_FIELDS(dsp_regs[channel]->seq_command, .abort = 1);
+}
+
+void hw_write_seq_trigger_state(int channel, unsigned int state)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, seq_config, trigger, state & 0x7);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_seq_entries(
+    int channel, unsigned int bank0,
+    const struct seq_entry entries[MAX_SEQUENCER_COUNT])
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
+    WRITE_DSP_MIRROR(channel, seq_config, target, 0);
+    write_sequencer_state(&dsp_regs[channel]->seq_write, &(struct seq_entry) {
+        .bunch_bank = bank0,
+        .nco_gain = 0xF,
+//        .nco_enable = false,
+    });
+    for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
+        write_sequencer_state(&dsp_regs[channel]->seq_write, &entries[i]);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_seq_super_entries(
+    int channel, unsigned int count, const uint32_t offsets[])
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
+    WRITE_DSP_MIRROR(channel, seq_config, target, 2);
+    for (unsigned int i = 0; i < count; i ++)
+        writel(&dsp_regs[channel]->seq_write, offsets[i]);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH])
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
+    WRITE_DSP_MIRROR(channel, seq_config, target, 1);
+    for (unsigned int i = 0; i < DET_WINDOW_LENGTH; i ++)
+        writel(&dsp_regs[channel]->seq_write, (uint32_t) window[i]);
+    UNLOCK(dsp_locks[channel]);
+}
+
+
+/* Detector registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+void hw_write_det_fir_gain(int channel, bool gain)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, det_config, fir_gain, gain);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_det_input_select(int channel, bool fir_adcn)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, det_config, select, fir_adcn);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_det_output_enable(int channel, int det, bool enable)
+{
+    LOCK(dsp_locks[channel]);
+    switch (det)
+    {
+        case 0: dsp_mirror[channel].det_config.enable0 = enable;    break;
+        case 1: dsp_mirror[channel].det_config.enable1 = enable;    break;
+        case 2: dsp_mirror[channel].det_config.enable2 = enable;    break;
+        case 3: dsp_mirror[channel].det_config.enable3 = enable;    break;
+    }
+    WRITEL(dsp_regs[channel]->det_config, dsp_mirror[channel].det_config);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_det_output_gain(int channel, int det, unsigned int gain)
+{
+    LOCK(dsp_locks[channel]);
+    switch (det)
+    {
+        case 0: dsp_mirror[channel].det_config.scale0 = gain & 0x7; break;
+        case 1: dsp_mirror[channel].det_config.scale1 = gain & 0x7; break;
+        case 2: dsp_mirror[channel].det_config.scale2 = gain & 0x7; break;
+        case 3: dsp_mirror[channel].det_config.scale3 = gain & 0x7; break;
+    }
+    WRITEL(dsp_regs[channel]->det_config, dsp_mirror[channel].det_config);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_read_det_events(int channel,
+    bool output_ovf[DETECTOR_COUNT], bool underrun[DETECTOR_COUNT],
+    bool fir_ovf[DETECTOR_COUNT])
+{
+    struct dsp_det_events events = READL(dsp_regs[channel]->det_events);
+    bits_to_bools(DETECTOR_COUNT, events.output_ovfl, output_ovf);
+    bits_to_bools(DETECTOR_COUNT, events.underrun, underrun);
+    bits_to_bools(DETECTOR_COUNT, events.fir_ovfl, fir_ovf);
+}
+
+void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_FIELDS(dsp_regs[channel]->det_command, .write = 1);
+    uint32_t enable_mask = 0;
+    unsigned int i;
+    for (i = 0; i < hardware_config.bunches; i ++)
+    {
+        enable_mask |= (uint32_t) enables[i] << (i & 0x1F);
+        if ((i & 0x1F) == 0x1F)
+        {
+            writel(&dsp_regs[channel]->det_bunch, enable_mask);
+            enable_mask = 0;
+        }
+    }
+    if (i & 0x1F)
+        writel(&dsp_regs[channel]->det_bunch, enable_mask);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_det_start(int channel)
+{
+    WRITE_FIELDS(dsp_regs[channel]->det_command, .reset = 1);
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -79,22 +858,56 @@ static volatile struct dsp *dsp_space[2];
 
 static int reg_device = -1;
 static int ddr1_device = -1;
-static void *config_space;
-static size_t config_space_size;
+static void *config_regs;
+static size_t config_regs_size;
 
 
 
-static error__t map_config_space(void)
+static error__t map_config_regs(void)
 {
-    sys_space    = config_space + SYS_ADDRESS_BASE;
-    ctrl_space   = config_space + CTRL_ADDRESS_BASE;
-    dsp_space[0] = config_space + DSP0_ADDRESS_BASE;
-    dsp_space[1] = config_space + DSP1_ADDRESS_BASE;
+    sys_regs    = config_regs + SYS_ADDRESS_BASE;
+    ctrl_regs   = config_regs + CTRL_ADDRESS_BASE;
+    dsp_regs[0] = config_regs + DSP0_ADDRESS_BASE;
+    dsp_regs[1] = config_regs + DSP1_ADDRESS_BASE;
     return ERROR_OK;
 }
 
 
-error__t initialise_hardware(const char *prefix, const char *config)
+error__t hw_lock_registers(void)
+{
+    return TEST_IO_(ioctl(reg_device, LMBF_REG_LOCK),
+        "Unable to lock LMBF registers");
+}
+
+error__t hw_unlock_registers(void)
+{
+    return TEST_IO_(ioctl(reg_device, LMBF_REG_UNLOCK),
+        "Unable to unlock LMBF registers");
+}
+
+
+static error__t set_hardware_config(unsigned int bunches)
+{
+    hw_write_bunch_count(bunches);
+
+    /* Here we update the "constant" hardware configuration.  This is constant
+     * everywhere except for this one place where we initialise it. */
+    struct sys_info sys_info = sys_regs->info;
+    *CAST_FROM_TO(const struct hardware_config *, struct hardware_config *,
+        &hardware_config) = (struct hardware_config)
+    {
+        .bunches = bunches,
+        .adc_taps = sys_info.adc_taps,
+        .bunch_taps = sys_info.bunch_taps,
+        .dac_taps = sys_info.dac_taps,
+    };
+
+    return ERROR_OK;
+}
+
+
+error__t initialise_hardware(
+    const char *prefix, unsigned int bunches, const char *config)
 {
     printf("initialise_hardware %s %s\n", prefix, config);
 
@@ -112,21 +925,21 @@ error__t initialise_hardware(const char *prefix, const char *config)
         TEST_IO_(ddr1_device = open(ddr1_device_name, O_RDONLY),
             "Unable to find LMBF device with prefix %s", prefix)  ?:
         TEST_IO(reg_device = open(reg_device_name, O_RDWR | O_SYNC))  ?:
-        TEST_IO_(ioctl(reg_device, LMBF_REG_LOCK),
-            "Device cannot be locked")  ?:
+        hw_lock_registers()  ?:
         TEST_IO(
-            config_space_size = (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
-        TEST_IO(config_space = mmap(
-            0, config_space_size, PROT_READ | PROT_WRITE, MAP_SHARED,
+            config_regs_size = (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
+        TEST_IO(config_regs = mmap(
+            0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
             reg_device, 0))  ?:
-        map_config_space();
+        map_config_regs()  ?:
+        set_hardware_config(bunches);
 }
 
 
 void terminate_hardware(void)
 {
-    if (config_space)
-        munmap(config_space, config_space_size);
+    if (config_regs)
+        munmap(config_regs, config_regs_size);
     if (reg_device)
         close(reg_device);
     if (ddr1_device)

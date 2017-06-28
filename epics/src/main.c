@@ -38,6 +38,9 @@ static const char *device_name = NULL;
 /* Device prefix for hardware interface. */
 static const char *device_prefix = NULL;
 
+/* Number of bunches per turn. */
+static unsigned int bunches_per_turn;
+
 /* File to read hardware configuration settings. */
 static const char *hardware_config_file = NULL;
 
@@ -46,35 +49,8 @@ static int max_log_array_length = 10000;
 
 
 
-
-
-
-
-
-
-
-static void at_exit(int sig)
-{
-    /* If the IOC shell is running we have a problem.  Closing stdin
-     * *sometimes* works... */
-    close(0);
-}
-
-/* Set up basic signal handling environment.  We configure four shutdown
- * signals (HUP, INT, QUIT and TERM) to call AtExit(). */
-static error__t initialise_signals(void)
-{
-    struct sigaction action = {
-        .sa_handler = at_exit, .sa_flags = 0 };
-    return
-        /* Block all signals during AtExit() signal processing. */
-        TEST_IO(sigfillset(&action.sa_mask))  ?:
-        /* Catch all the usual culprits: HUP, INT, QUIT and TERM. */
-        TEST_IO(sigaction(SIGHUP,  &action, NULL))  ?:
-        TEST_IO(sigaction(SIGINT,  &action, NULL))  ?:
-        TEST_IO(sigaction(SIGQUIT, &action, NULL))  ?:
-        TEST_IO(sigaction(SIGTERM, &action, NULL));
-}
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Argument handling. */
 
 
 static void usage(void)
@@ -82,6 +58,7 @@ static void usage(void)
     printf(
 "LMBF IOC.  Options:\n"
 "   -s: Specify name of file where persistent state is stored (required)\n"
+"   -b: Specify number of bunches per turn (required)\n"
 "   -i: Specify persistence update interval in seconds\n"
 "   -l: Specify maximum array length written out by pv logging\n"
 "   -p: Specify device prefix used to locate LMBF device (required)\n"
@@ -95,9 +72,12 @@ static error__t process_options(int *argc, char *const *argv[])
 {
     while (true)
     {
-        switch (getopt(*argc, *argv, "+hs:i:l:p:d:H:"))
+        switch (getopt(*argc, *argv, "+hs:b:i:l:p:d:H:"))
         {
             case 'h':   usage();                                exit(1);
+            case 'b':
+                bunches_per_turn = (unsigned int) atoi(optarg);
+                break;
             case 's':   persistence_state_file = optarg;        break;
             case 'i':   persistence_interval = atoi(optarg);    break;
             case 'l':   max_log_array_length = atoi(optarg);    break;
@@ -122,6 +102,7 @@ static error__t validate_options(int argc)
 {
     return
         TEST_OK_(argc == 0, "Unexpected extra arguments")  ?:
+        TEST_OK_(bunches_per_turn > 0, "Must specify bunches per turn")  ?:
         TEST_OK_(persistence_state_file, "Must specify state file")  ?:
         TEST_OK_(device_prefix, "Must specify device prefix")  ?:
         TEST_OK_(hardware_config_file, "Must specify config file")  ?:
@@ -129,9 +110,9 @@ static error__t validate_options(int argc)
 }
 
 
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Core EPICS startup (st.cmd equivalent processing). */
+
 
 /* Configures the IOC prompt to show the EPICS device name. */
 static void set_prompt(void)
@@ -141,12 +122,36 @@ static void set_prompt(void)
     epicsEnvSet("IOCSH_PS1", prompt);
 }
 
+
 static error__t load_database(const char *database)
 {
     database_add_macro("DEVICE", "%s", device_name);
 //     database_add_macro("FIR_LENGTH", "%d", hw_read_fir_length());
     return database_load_file(database);
 }
+
+
+static void call_lock_registers(const iocshArgBuf *args)
+{
+    if (!error_report(hw_lock_registers()))
+        printf("LMBF control registers locked for exclusive access\n");
+}
+
+static void call_unlock_registers(const iocshArgBuf *args)
+{
+    if (!error_report(hw_unlock_registers()))
+        printf("LMBF control registers unlocked\n");
+}
+
+static error__t register_iocsh_commands(void)
+{
+    static iocshFuncDef lock_registers_def   = { "lock_registers",   0, NULL };
+    static iocshFuncDef unlock_registers_def = { "unlock_registers", 0, NULL };
+    iocshRegister(&lock_registers_def,   call_lock_registers);
+    iocshRegister(&unlock_registers_def, call_unlock_registers);
+    return ERROR_OK;
+}
+
 
 static error__t initialise_epics(void)
 {
@@ -157,6 +162,7 @@ static error__t initialise_epics(void)
         TEST_OK(dbLoadDatabase("dbd/lmbf.dbd", NULL, NULL) == 0)  ?:
         TEST_OK(lmbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
         load_database("db/lmbf.db")  ?:
+        register_iocsh_commands()  ?:
         TEST_OK(iocInit() == 0);
 }
 
@@ -195,6 +201,12 @@ static error__t initialise_subsystems(void)
 //     PUBLISH_WRITER(bo, "LOOPBACK", hw_write_loopback_enable);
 //     PUBLISH_WRITER(bo, "COMPENSATE", hw_write_compensate_disable);
 
+    printf("%u bunches, %u ADC taps, %u bunch taps, %u DAC taps\n",
+        hardware_config.bunches,
+        hardware_config.adc_taps,
+        hardware_config.bunch_taps,
+        hardware_config.dac_taps);
+
     return
         initialise_strings()  ?:
 //         initialise_ddr_epics()  ?:
@@ -218,8 +230,8 @@ int main(int argc, char *const argv[])
         process_options(&argc, &argv) ?:
         validate_options(argc)  ?:
 
-        initialise_hardware(device_prefix, hardware_config_file)  ?:
-        initialise_signals()  ?:
+        initialise_hardware(
+            device_prefix, bunches_per_turn, hardware_config_file)  ?:
 
         initialise_epics_device()  ?:
         initialise_subsystems()  ?:
