@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,6 +21,9 @@
 #include "pvlogging.h"
 
 #include "hardware.h"
+#include "common.h"
+#include "mms.h"
+#include "adc.h"
 
 
 
@@ -35,6 +39,9 @@ static int persistence_interval = 120;              // 2 minute update interval
 /* Device name configured on startup. */
 static const char *device_name = NULL;
 
+/* Channel names for the two channels. */
+static const char *channel_names[CHANNEL_COUNT];
+
 /* Device prefix for hardware interface. */
 static const char *device_prefix = NULL;
 
@@ -46,6 +53,9 @@ static const char *hardware_config_file = NULL;
 
 /* Limits length of waveforms logged on output. */
 static int max_log_array_length = 10000;
+
+/* Polling interval for MMS scanning. */
+static unsigned int mms_poll_interval = 100000;
 
 
 
@@ -63,16 +73,32 @@ static void usage(void)
 "   -l: Specify maximum array length written out by pv logging\n"
 "   -p: Specify device prefix used to locate LMBF device (required)\n"
 "   -d: Specify IOC device name (required)\n"
-"   -H: Specifgy hardware configuration file (required)\n"
+"   -H: Specify hardware configuration file (required)\n"
+"   -C: Specify comma separated channel names (required)\n"
+"   -m: Specify MMS poll interval\n"
     );
+}
+
+
+static error__t parse_channel_names(char *names)
+{
+    char *comma = strchr(names, ',');
+    return
+        TEST_OK_(comma, "Must specify two channel names")  ?:
+        DO(
+            *comma = '\0';
+            channel_names[0] = names;
+            channel_names[1] = comma + 1)  ?:
+        TEST_OK_(names[0]  &&  comma[1], "Empty channel names");
 }
 
 
 static error__t process_options(int *argc, char *const *argv[])
 {
-    while (true)
+    error__t error = ERROR_OK;
+    while (!error)
     {
-        switch (getopt(*argc, *argv, "+hs:b:i:l:p:d:H:"))
+        switch (getopt(*argc, *argv, "+hs:b:i:l:p:d:H:C:m:"))
         {
             case 'h':   usage();                                exit(1);
             case 'b':
@@ -84,8 +110,12 @@ static error__t process_options(int *argc, char *const *argv[])
             case 'p':   device_prefix = optarg;                 break;
             case 'd':   device_name = optarg;                   break;
             case 'H':   hardware_config_file = optarg;          break;
+            case 'C':   error = parse_channel_names(optarg);    break;
+            case 'm':
+                mms_poll_interval = (unsigned) atoi(optarg);
+                break;
             default:
-                return FAIL_("Invalid command line option");
+                error = FAIL_("Invalid command line option");
             case -1:
                 /* All options successfully read.  Consume them and return
                  * success. */
@@ -94,7 +124,7 @@ static error__t process_options(int *argc, char *const *argv[])
                 return ERROR_OK;
         }
     }
-    // Never get here!
+    return error;
 }
 
 
@@ -106,7 +136,9 @@ static error__t validate_options(int argc)
         TEST_OK_(persistence_state_file, "Must specify state file")  ?:
         TEST_OK_(device_prefix, "Must specify device prefix")  ?:
         TEST_OK_(hardware_config_file, "Must specify config file")  ?:
-        TEST_OK_(device_name, "Must specify device name");
+        TEST_OK_(device_name, "Must specify device name")  ?:
+        TEST_OK_(channel_names[0]  &&  channel_names[1],
+            "Must specify channel names");
 }
 
 
@@ -126,7 +158,10 @@ static void set_prompt(void)
 static error__t load_database(const char *database)
 {
     database_add_macro("DEVICE", "%s", device_name);
-//     database_add_macro("FIR_LENGTH", "%d", hw_read_fir_length());
+    database_add_macro("CHAN0", "%s", channel_names[0]);
+    database_add_macro("CHAN1", "%s", channel_names[1]);
+    database_add_macro("ADC_TAPS", "%d", hardware_config.adc_taps);
+    database_add_macro("BUNCHES_PER_TURN", "%d", hardware_config.bunches);
     return database_load_file(database);
 }
 
@@ -209,7 +244,7 @@ static error__t initialise_subsystems(void)
 
     return
         initialise_strings()  ?:
-//         initialise_ddr_epics()  ?:
+        initialise_adc()  ?:
 //         initialise_adc_dac()  ?:
 //         initialise_fir()  ?:
 //         initialise_bunch_select()  ?:
@@ -220,6 +255,7 @@ static error__t initialise_subsystems(void)
 //         initialise_tune()  ?:
 //         initialise_tune_peaks()  ?:
 //         initialise_tune_follow();
+        start_mms_handlers(mms_poll_interval)  ?:
         ERROR_OK;
 }
 
@@ -229,6 +265,7 @@ int main(int argc, char *const argv[])
     error__t error =
         process_options(&argc, &argv) ?:
         validate_options(argc)  ?:
+        DO(set_channel_names(channel_names))  ?:
 
         initialise_hardware(
             device_prefix, bunches_per_turn, hardware_config_file)  ?:

@@ -46,13 +46,15 @@ lmbf_DBD += epics_device.dbd
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 lmbf_SRCS += lmbf_registerRecordDeviceDriver.c
 lmbf_SRCS += main.c             # Entry point and initialisation
-# lmbf_SRCS += numeric.c          # Some fast numerical algorithsm
+
+lmbf_SRCS += common.c           # Miscellaneous shared helper functions
 # lmbf_SRCS += config_file.c      # Parse configuration file
 
 lmbf_SRCS += hardware.c         # Interface to FPGA
 
-# # TMBF components
-# lmbf_SRCS += adc_dac.c          # ADC and DAC interface and control
+# LMBF components
+lmbf_SRCS += mms.c              # Min/max/sum common implementation
+lmbf_SRCS += adc.c              # ADC interface and control
 # lmbf_SRCS += ddr_epics.c        # EPICS interface to DDR buffer
 # lmbf_SRCS += fir.c              # FIR filter control
 # lmbf_SRCS += bunch_select.c     # Bunch selection control

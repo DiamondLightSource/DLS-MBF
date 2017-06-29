@@ -196,10 +196,10 @@ struct mms_result {
 
     /* The following must all be set to point to arrays containing bunches
      * fields. */
-    short *minimum;         // Minimum value of bunch
-    short *maximum;         // Maximum value of bunch
-    int *sum;               // Sum of bunch over captured turns
-    long int *sum2;         // Sum of squares of bunch
+    int16_t *minimum;       // Minimum value of bunch
+    int16_t *maximum;       // Maximum value of bunch
+    int32_t *sum;           // Sum of bunch over captured turns
+    uint64_t *sum2;         // Sum of squares of bunch
 };
 
 /* Directly sets the fixed frequency oscillator. */
@@ -342,8 +342,6 @@ void hw_write_seq_trigger_state(int channel, unsigned int state);
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #define DETECTOR_COUNT      4
-
-struct detector_iq { int32_t cos; int32_t sin; };
 
 /* Sets the FIR gain for the detector input. */
 void hw_write_det_fir_gain(int channel, bool gain);

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+SCREEN=${1:-lmbf}
+
+exec edm -x -eolc \
+    -m device=TS-DI-LMBF-02 -m channel=X -m part=ADC \
+    opi/"$SCREEN".edl

@@ -12,10 +12,11 @@
 #include <pthread.h>
 
 #include "error.h"
-#include "epics_device.h"
 
 #include "amc525_lmbf_device.h"
 #include "register_defs.h"
+
+#include "common.h"
 #include "hardware.h"
 
 
@@ -27,8 +28,6 @@ const struct hardware_config hardware_config;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Register access support. */
 
-#define LOCK(mutex)     pthread_mutex_lock(&mutex)
-#define UNLOCK(mutex)   pthread_mutex_unlock(&mutex)
 
 
 /* I'm quite nervous of the compiler doing bad things to our register access, so
@@ -478,7 +477,7 @@ static void read_mms(
 {
     LOCK(dsp_locks[channel]);
 
-    struct mms_count count = mms->count;
+    struct mms_count count = READL(mms->count);
     result->turns = count.turns;
     result->turns_ovfl = count.turns_ovfl;
     result->sum_ovfl = count.sum_ovfl;
@@ -487,14 +486,14 @@ static void read_mms(
     for (unsigned int i = 0; i < hardware_config.bunches; i ++)
     {
         uint32_t readout = readl(&mms->readout);
-        result->minimum[i] = (short) (readout & 0xFFFF);
-        result->maximum[i] = (short) (readout >> 16);
+        result->minimum[i] = (int16_t) (readout & 0xFFFF);
+        result->maximum[i] = (int16_t) (readout >> 16);
 
-        result->sum[i] = (int) readl(&mms->readout);
+        result->sum[i] = (int32_t) readl(&mms->readout);
 
         uint32_t sum2_low = readl(&mms->readout);
         uint32_t sum2_high = readl(&mms->readout) & 0xFFFF;
-        result->sum2[i] = (long int) (sum2_low | (uint64_t) sum2_high << 32);
+        result->sum2[i] = sum2_low | (uint64_t) sum2_high << 32;
     }
 
     UNLOCK(dsp_locks[channel]);
@@ -514,7 +513,7 @@ void hw_write_adc_overflow_threshold(int channel, unsigned int threshold)
 {
     LOCK(dsp_locks[channel]);
     WRITE_DSP_MIRROR(channel, adc_config, threshold, threshold & 0x3FFF);
-    LOCK(dsp_locks[channel]);
+    UNLOCK(dsp_locks[channel]);
 }
 
 void hw_write_adc_delta_threshold(int channel, unsigned int delta)
