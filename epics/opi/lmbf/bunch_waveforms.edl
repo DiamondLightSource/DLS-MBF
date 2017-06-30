@@ -136,7 +136,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):BUN:$(bank):GAINWF_S"
+  0 "$(device):$(channel):BUN:$(bank):GAINWF_S"
 }
 plotUpdateMode {
   0 "y"
@@ -248,7 +248,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):BUN:$(bank):FIRWF_S"
+  0 "$(device):$(channel):BUN:$(bank):FIRWF_S"
 }
 plotUpdateMode {
   0 "y"
@@ -296,7 +296,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):BUN:$(bank):OUTWF_S"
+  0 "$(device):$(channel):BUN:$(bank):OUTWF_S"
 }
 plotUpdateMode {
   0 "y"
@@ -383,7 +383,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) one $(bunch) $(fir) $(out) $(gain)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) one $(bunch) $(fir) $(out) $(gain)"
 }
 endObjectProperties
 
@@ -498,7 +498,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) all $(fir) $(out) $(gain)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) all $(fir) $(out) $(gain)"
 }
 endObjectProperties
 
@@ -512,7 +512,7 @@ x 408
 y 552
 w 224
 h 16
-controlPv "$(device):BUN:$(bank):FIRWF:STA"
+controlPv "$(device):$(channel):BUN:$(bank):FIRWF:STA"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -537,7 +537,7 @@ x 408
 y 576
 w 224
 h 16
-controlPv "$(device):BUN:$(bank):OUTWF:STA"
+controlPv "$(device):$(channel):BUN:$(bank):OUTWF:STA"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -562,7 +562,7 @@ x 408
 y 600
 w 224
 h 16
-controlPv "$(device):BUN:$(bank):GAINWF:STA"
+controlPv "$(device):$(channel):BUN:$(bank):GAINWF:STA"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -811,7 +811,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) fir_one $(bunch) $(fir)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) fir_one $(bunch) $(fir)"
 }
 endObjectProperties
 
@@ -866,7 +866,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) fir_all $(fir)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) fir_all $(fir)"
 }
 endObjectProperties
 
@@ -1116,7 +1116,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) out_one $(bunch) $(out)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) out_one $(bunch) $(out)"
 }
 endObjectProperties
 
@@ -1138,7 +1138,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) out_all $(out)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) out_all $(out)"
 }
 endObjectProperties
 
@@ -1188,7 +1188,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) gain_one $(bunch) $(gain)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) gain_one $(bunch) $(gain)"
 }
 endObjectProperties
 
@@ -1210,7 +1210,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(bank) gain_all $(gain)"
+  0 "run-command 'Set bunch' set_one_bunch $(device) $(channel) $(bank) gain_all $(gain)"
 }
 endObjectProperties
 

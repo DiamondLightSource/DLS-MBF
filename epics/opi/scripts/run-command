@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Runs the given command in a fresh xterm and prompts when done before closing.
+
+sep='||'
+if [[ $1 = -w ]]; then
+    sep=\;
+    shift
+fi
+
+title="$1"
+shift
+
+command="$* $sep read -p 'press return'"
+
+xterm -T "$title" -e "$command"

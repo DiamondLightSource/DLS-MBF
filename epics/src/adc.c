@@ -27,8 +27,8 @@ static struct adc_context {
 static void write_adc_taps(void *context, float array[], size_t *length)
 {
     struct adc_context *adc = context;
-
     *length = hardware_config.adc_taps;
+
     int taps[hardware_config.adc_taps];
     float_array_to_int(hardware_config.adc_taps, array, taps, 32, 0);
 

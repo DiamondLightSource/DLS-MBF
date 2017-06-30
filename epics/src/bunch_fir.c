@@ -11,9 +11,9 @@
 #include <math.h>
 
 #include "error.h"
-#include "hardware.h"
 #include "epics_device.h"
 
+#include "hardware.h"
 #include "common.h"
 
 #include "bunch_fir.h"
@@ -92,13 +92,14 @@ static void copy_taps(const float taps_in[], float taps_out[])
 static void set_fir_taps(void *context, float *taps, size_t *length)
 {
     struct fir_bank *bank = context;
+    *length = hardware_config.bunch_taps;
+
     copy_taps(taps, bank->set_taps);
     if (bank->use_waveform)
     {
         copy_taps(bank->set_taps, bank->current_taps);
         update_taps(bank);
     }
-    *length = hardware_config.bunch_taps;
 }
 
 

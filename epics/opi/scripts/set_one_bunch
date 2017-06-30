@@ -1,0 +1,104 @@
+#!/usr/bin/env dls-python
+
+# Helper script for setting bunch waveforms
+
+from pkg_resources import require
+
+require('cothread')
+
+import sys
+
+import numpy
+from cothread.catools import *
+
+
+tmbf = sys.argv[1]
+channel = sys.argv[2]
+bank = int(sys.argv[3])
+action = sys.argv[4]
+
+def pv(name):
+    return '%s:%s:BUN:%d:%s_S' % (tmbf, channel, bank, name)
+
+fir_wf_pv    = pv('FIRWF')
+output_wf_pv = pv('OUTWF')
+gain_wf_pv   = pv('GAINWF')
+wf_pvs = [fir_wf_pv, output_wf_pv, gain_wf_pv]
+
+
+def check(name, wf, min_val, max_val):
+    assert (min_val <= wf).all() and (wf <= max_val).all(), \
+        'Invalid %s value: %s' % (name, wf)
+
+def check_fir(fir_wf):
+    check('FIR', fir_wf, 0, 3)
+def check_output(output_wf):
+    check('output', output_wf, 0, 7)
+def check_gain(gain_wf):
+    check('gain', gain_wf, -1, 1)
+
+def put_all(fir_wf, output_wf, gain_wf):
+    check_fir(fir_wf)
+    check_output(output_wf)
+    check_gain(gain_wf)
+    caput(wf_pvs, [fir_wf, output_wf, gain_wf])
+
+def zmap(fns, args):
+    return [f(x) for (f, x) in zip(fns, args)]
+
+def action_one(args):
+    bunch, fir, output, gain = zmap([int, int, int, float], args)
+    fir_wf, output_wf, gain_wf = caget(wf_pvs)
+
+    fir_wf[bunch] = fir
+    output_wf[bunch] = output
+    gain_wf[bunch] = gain
+
+    put_all(fir_wf, output_wf, gain_wf)
+
+def action_all(args):
+    fir, output, gain = zmap([int, int, float], args)
+    z = numpy.zeros(BUNCH_COUNT, dtype = int)
+    fir_wf    = z + fir
+    output_wf = z + output
+    gain_wf   = z + gain
+
+    put_all(fir_wf, output_wf, gain_wf)
+
+def make_action_one(wf_pv, check, datatype=int):
+    def action(args):
+        bunch, value = zmap([int, datatype], args)
+        wf = caget(wf_pv)
+        wf[bunch] = value
+        check(wf)
+        caput(wf_pv, wf)
+    return action
+
+def make_action_all(wf_pv, check, datatype=int):
+    def action(args):
+        value, = map(datatype, args)
+        wf = value * numpy.ones(BUNCH_COUNT, dtype = int)
+        check(wf)
+        caput(wf_pv, wf)
+    return action
+
+action_fir_one  = make_action_one(fir_wf_pv,    check_fir)
+action_out_one  = make_action_one(output_wf_pv, check_output)
+action_gain_one = make_action_one(gain_wf_pv,   check_gain, float)
+
+action_fir_all  = make_action_all(fir_wf_pv,    check_fir)
+action_out_all  = make_action_all(output_wf_pv, check_output)
+action_gain_all = make_action_all(gain_wf_pv,   check_gain, float)
+
+
+BUNCH_COUNT = caget('%s:BUNCHES' % tmbf)
+
+try:
+    action_method = globals()['action_%s' % action]
+except:
+    assert False, 'Unknown action: %s' % action
+else:
+    action_method(sys.argv[5:])
+
+
+# vim: set filetype=python:

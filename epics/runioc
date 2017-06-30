@@ -11,8 +11,9 @@ DEV_ADDR=0000:04:00.0
 BUNCHES=936
 CHAN0=X
 CHAN1=Y
+PV_LOG_LENGTH=10
 
 exec $IOC \
     -s "$STATE_FILE" -d "$DEVICE" -C "$CHAN0,$CHAN1" \
-    -H "$HW_CONFIG" \
+    -H "$HW_CONFIG" -l "$PV_LOG_LENGTH" \
     -p /dev/amc525_lmbf/pci-"$DEV_ADDR"/amc525_lmbf -b $BUNCHES "$@"
