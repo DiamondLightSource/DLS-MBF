@@ -133,20 +133,18 @@ static void publish_bank(
     WITH_NAME_PREFIX(prefix)
     {
         /* This is triggered when any coefficient is changed. */
-        PUBLISH(bo, "RELOAD", reload_fir, .context = bank);
+        PUBLISH_C(bo, "RELOAD", reload_fir, bank);
 
         /* Selects whether to use waveform or parameters for FIR taps. */
-        PUBLISH(bo, "USEWF",
-            set_use_waveform, .context = bank, .persist = true);
+        PUBLISH_C_P(bo, "USEWF", set_use_waveform, bank);
 
         /* These writes all forward link to reload_fir above. */
         PUBLISH_WRITE_VAR_P(ulongout, "LENGTH", bank->length);
         PUBLISH_WRITE_VAR_P(ulongout, "CYCLES", bank->cycles);
         PUBLISH_WRITE_VAR_P(ao, "PHASE", bank->phase);
 
-        PUBLISH_WAVEFORM(
-            float, "TAPS_S", hardware_config.bunch_taps, set_fir_taps,
-            .context = bank, .persist = true);
+        PUBLISH_WAVEFORM_C_P(
+            float, "TAPS_S", hardware_config.bunch_taps, set_fir_taps, bank);
         bank->taps_waveform = PUBLISH_WF_READ_VAR_I(
             float, "TAPS", hardware_config.bunch_taps, bank->current_taps);
     }
@@ -176,10 +174,8 @@ error__t initialise_bunch_fir(void)
         struct fir_context *fir = &fir_context[channel];
         fir->channel = channel;
 
-        PUBLISH(mbbo, "GAIN", write_fir_gain,
-            .context = fir, .persist = true);
-        PUBLISH(ulongout, "DECIMATION", write_fir_decimation,
-            .context = fir, .persist = true);
+        PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
+        PUBLISH_C_P(ulongout, "DECIMATION", write_fir_decimation, fir);
 
         for (unsigned int i = 0; i < FIR_BANKS; i ++)
             publish_bank(channel, i, &fir->banks[i]);

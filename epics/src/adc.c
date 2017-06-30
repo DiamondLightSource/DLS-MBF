@@ -78,15 +78,12 @@ error__t initialise_adc(void)
         struct adc_context *adc = &adc_context[channel];
         adc->channel = channel;
 
-        PUBLISH_WAVEFORM(float, "FILTER",
-            hardware_config.adc_taps, write_adc_taps,
-            .context = adc, .persist = true);
+        PUBLISH_WAVEFORM_C_P(float, "FILTER",
+            hardware_config.adc_taps, write_adc_taps, adc);
 
-        PUBLISH(ao, "OVF_LIMIT", set_adc_overflow_threshold,
-            .context = adc, .persist = true);
-        PUBLISH(ao, "EVENT_LIMIT", set_adc_delta_threshold,
-            .context = adc, .persist = true);
-        PUBLISH(bo, "ARM", arm_adc_min_max, .context = adc);
+        PUBLISH_C_P(ao, "OVF_LIMIT", set_adc_overflow_threshold, adc);
+        PUBLISH_C_P(ao, "EVENT_LIMIT", set_adc_delta_threshold, adc);
+        PUBLISH_C(bo, "ARM", arm_adc_min_max, adc);
 
         PUBLISH_READ_VAR(bi, "INPUT_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF",   adc->events.fir_ovf);

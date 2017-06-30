@@ -42,8 +42,8 @@ static void publish_nco_pvs(void)
     {
         struct nco_context *nco = &nco_context[channel];
         nco->channel = channel;
-        PUBLISH(ao, "FREQ", set_nco_frequency, .context = nco, .persist = true);
-        PUBLISH(mbbo, "GAIN", set_nco_gain, .context = nco, .persist = true);
+        PUBLISH_C_P(ao, "FREQ", set_nco_frequency, nco);
+        PUBLISH_C_P(mbbo, "GAIN", set_nco_gain, nco);
     }
 }
 

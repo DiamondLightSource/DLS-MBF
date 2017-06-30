@@ -210,7 +210,7 @@ struct mms_handler *create_mms_handler(
     WITH_NAME_PREFIX("MMS")
     {
         struct mms_epics *epics = &mms->epics;
-        PUBLISH(bo, "SCAN", start_mms_readback, .context = mms);
+        PUBLISH_C(bo, "SCAN", start_mms_readback, mms);
         PUBLISH_WF_READ_VAR(float, "MIN",   bunches, epics->min);
         PUBLISH_WF_READ_VAR(float, "MAX",   bunches, epics->max);
         PUBLISH_WF_READ_VAR(float, "DELTA", bunches, epics->delta);
