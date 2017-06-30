@@ -53,10 +53,10 @@ lmbf_SRCS += common.c           # Miscellaneous shared helper functions
 lmbf_SRCS += hardware.c         # Interface to FPGA
 
 # LMBF components
+lmbf_SRCS += system.c           # System level components
 lmbf_SRCS += mms.c              # Min/max/sum common implementation
 lmbf_SRCS += adc.c              # ADC interface and control
-# lmbf_SRCS += ddr_epics.c        # EPICS interface to DDR buffer
-# lmbf_SRCS += fir.c              # FIR filter control
+lmbf_SRCS += bunch_fir.c        # Bunch buunch FIR filter control
 # lmbf_SRCS += bunch_select.c     # Bunch selection control
 # lmbf_SRCS += sequencer.c        # State sequencer control
 # lmbf_SRCS += triggers.c         # Trigger control and selection

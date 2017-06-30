@@ -39,6 +39,10 @@ void _exit_channel_step(void);
 void float_array_to_int(
     size_t count, float in[], int out[], int bits, int high_bits);
 
+/* Convert fractional tune in cycles per machine revolution to phase advance per
+ * bunch in hardware units. */
+unsigned int tune_to_freq(double tune);
+
 
 /* Mutex locking is common and doesn't need to be so long winded. */
 #define LOCK(mutex)     pthread_mutex_lock(&mutex)

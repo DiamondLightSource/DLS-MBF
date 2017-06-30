@@ -60,3 +60,19 @@ void float_array_to_int(
         in[i] = ldexpf((float) out[i], -fraction_bits);
     }
 }
+
+
+/* Convert fractional tune in cycles per machine revolution to phase advance per
+ * bunch in hardware units. */
+unsigned int tune_to_freq(double tune)
+{
+    /* Convert the incoming tune in cycles per machine revolution into phase
+     * advance per bunch by scaling and reducing to the half open interval
+     * [0, 1). */
+    double integral;
+    double fraction = modf(tune / hardware_config.bunches, &integral);
+    if (fraction < 0.0)
+        fraction += 1.0;
+    /* Can now scale up to hardware units. */
+    return (unsigned int) round(ldexp(fraction, 32));
+}

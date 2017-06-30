@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 782
-y 188
+x 783
+y 189
 w 416
 h 281
 font "helvetica-medium-r-8.0"
@@ -233,5 +233,57 @@ w 120
 h 16
 lineColor index 14
 fillColor index 0
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 96
+y 64
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Control"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/control.edl"
+}
+symbols {
+  0 "channel=$(chan0)"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 96
+y 168
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Control"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/control.edl"
+}
+symbols {
+  0 "channel=$(chan1)"
+}
 endObjectProperties
 

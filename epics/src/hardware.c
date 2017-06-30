@@ -570,7 +570,7 @@ void hw_write_bunch_config(
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_decimation(int channel, unsigned int decimation)
+void hw_write_bunch_decimation(int channel, unsigned int decimation)
 {
     /* Compute the required shift corresponding to the given decimation.  We
      * need  2^shift >= decimation, ie shift >= log2(decimation), and we use CLZ
@@ -586,7 +586,7 @@ void hw_write_decimation(int channel, unsigned int decimation)
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_bunch_taps(int channel, unsigned int fir, const int taps[])
+void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[])
 {
     LOCK(dsp_locks[channel]);
     WRITE_DSP_MIRROR(channel, fir_config, bank, fir & 0x3);
@@ -620,14 +620,24 @@ void hw_write_dac_nco0_gain(int channel, unsigned int gain)
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_dac_enables(
-    int channel, bool fir_enable, bool nco0_enable, bool nco1_enable)
+void hw_write_dac_fir_enable(int channel, bool enable)
 {
     LOCK(dsp_locks[channel]);
-    dsp_mirror[channel].dac_config.fir_enable = fir_enable;
-    dsp_mirror[channel].dac_config.nco0_enable = nco0_enable;
-    dsp_mirror[channel].dac_config.nco1_enable = nco1_enable;
-    WRITEL(dsp_regs[channel]->dac_config, dsp_mirror[channel].dac_config);
+    WRITE_DSP_MIRROR(channel, dac_config, fir_enable, enable);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_dac_nco0_enable(int channel, bool enable)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, dac_config, nco0_enable, enable);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_dac_nco1_enable(int channel, bool enable)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, dac_config, nco1_enable, enable);
     UNLOCK(dsp_locks[channel]);
 }
 

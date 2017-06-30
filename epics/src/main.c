@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
-#include <sys/utsname.h>
 
 #include <epicsThread.h>
 #include <iocsh.h>
@@ -22,14 +21,14 @@
 
 #include "hardware.h"
 #include "common.h"
+#include "system.h"
 #include "mms.h"
 #include "adc.h"
-
+#include "bunch_fir.h"
 
 
 /* External declaration of DBD binding. */
 extern int lmbf_registerRecordDeviceDriver(struct dbBase *pdbbase);
-
 
 
 /* Persistence state management. */
@@ -161,6 +160,8 @@ static error__t load_database(const char *database)
     database_add_macro("CHAN0", "%s", channel_names[0]);
     database_add_macro("CHAN1", "%s", channel_names[1]);
     database_add_macro("ADC_TAPS", "%d", hardware_config.adc_taps);
+    database_add_macro("BUNCH_TAPS", "%d", hardware_config.bunch_taps);
+    database_add_macro("DAC_TAPS", "%d", hardware_config.dac_taps);
     database_add_macro("BUNCHES_PER_TURN", "%d", hardware_config.bunches);
     return database_load_file(database);
 }
@@ -204,49 +205,13 @@ static error__t initialise_epics(void)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/* Driver version. */
-static EPICS_STRING version_string = { LMBF_VERSION };
-static EPICS_STRING fpga_version = { };
-static EPICS_STRING hostname = { };
-static char dram_name[256];
-
-
-static error__t initialise_strings(void)
-{
-    PUBLISH_READ_VAR(stringin, "VERSION", version_string);
-    PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
-    PUBLISH_READ_VAR(stringin, "HOSTNAME", hostname);
-    PUBLISH_WF_READ_VAR(char, "DRAM_NAME", sizeof(dram_name), dram_name);
-
-    sprintf(fpga_version.s, "%08x", hw_read_fpga_version());
-
-    struct utsname utsname;
-    return
-        TEST_IO(uname(&utsname))  ?:
-        DO(strncpy(hostname.s, utsname.nodename, sizeof(hostname.s)))  ?:
-        hw_read_fast_dram_name(dram_name, sizeof(dram_name));
-}
-
-
 /* Initialises the various subsystems. */
 static error__t initialise_subsystems(void)
 {
-
-//     PUBLISH_READER(ulongin, "FPGA_VER", hw_read_version);
-//     PUBLISH_WRITER(bo, "LOOPBACK", hw_write_loopback_enable);
-//     PUBLISH_WRITER(bo, "COMPENSATE", hw_write_compensate_disable);
-
-    printf("%u bunches, %u ADC taps, %u bunch taps, %u DAC taps\n",
-        hardware_config.bunches,
-        hardware_config.adc_taps,
-        hardware_config.bunch_taps,
-        hardware_config.dac_taps);
-
     return
-        initialise_strings()  ?:
+        initialise_system()  ?:
         initialise_adc()  ?:
-//         initialise_adc_dac()  ?:
-//         initialise_fir()  ?:
+        initialise_bunch_fir()  ?:
 //         initialise_bunch_select()  ?:
 //         initialise_sequencer()  ?:
 //         initialise_triggers()  ?:
@@ -255,6 +220,8 @@ static error__t initialise_subsystems(void)
 //         initialise_tune()  ?:
 //         initialise_tune_peaks()  ?:
 //         initialise_tune_follow();
+
+        /* Post initialisation startup. */
         start_mms_handlers(mms_poll_interval)  ?:
         ERROR_OK;
 }
@@ -265,12 +232,12 @@ int main(int argc, char *const argv[])
     error__t error =
         process_options(&argc, &argv) ?:
         validate_options(argc)  ?:
-        DO(set_channel_names(channel_names))  ?:
 
         initialise_hardware(
             device_prefix, bunches_per_turn, hardware_config_file)  ?:
-
         initialise_epics_device()  ?:
+
+        DO(set_channel_names(channel_names))  ?:
         initialise_subsystems()  ?:
 
         load_persistent_state(

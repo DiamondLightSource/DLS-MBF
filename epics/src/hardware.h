@@ -1,6 +1,12 @@
 /* Hardware interfacing to LMBF system. */
 
-#define CHANNEL_COUNT   2
+#define CHANNEL_COUNT       2       // Two independent processing channels
+#define FIR_BANKS           4       // Four bunch-by-bunch selectable FIRs
+#define BUNCH_BANKS         4       // Four selectable bunch configurations
+#define DETECTOR_COUNT      4       // Four independed detectors
+#define MAX_SEQUENCER_COUNT 7       // Steps in sequencer, not counting state 0
+#define SUPER_SEQ_STATES    1024    // Max super sequencer states
+#define DET_WINDOW_LENGTH   1024    // Length of sequencer detector window
 
 
 /* This structure is filled in when initialise_hardware() is called and is
@@ -252,10 +258,10 @@ void hw_write_bunch_config(
     int channel, unsigned int bank, const struct bunch_config *config);
 
 /* Programs bunch decimation factor. */
-void hw_write_decimation(int channel, unsigned int decimation);
+void hw_write_bunch_decimation(int channel, unsigned int decimation);
 
 /* Write taps for bunch by bunch FIR. */
-void hw_write_bunch_taps(int channel, unsigned int fir, const int taps[]);
+void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[]);
 
 
 /* DAC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -277,8 +283,9 @@ void hw_write_dac_fir_gain(int channel, unsigned int gain);
 void hw_write_dac_nco0_gain(int channel, unsigned int gain);
 
 /* Global enables for DAC output, globally disables selected outputs. */
-void hw_write_dac_enables(
-    int channel, bool fir_enable, bool nco0_enable, bool nco1_enable);
+void hw_write_dac_fir_enable(int channel, bool enable);
+void hw_write_dac_nco0_enable(int channel, bool enable);
+void hw_write_dac_nco1_enable(int channel, bool enable);
 
 /* Returns bunch by bunch, accumulator, min/max/sum, DAC FIR overflow events. */
 void hw_read_dac_events(int channel, struct dac_events *events);
@@ -291,10 +298,6 @@ void hw_read_dac_mms(int channel, struct mms_result *result);
 
 
 /* Sequencer configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-#define MAX_SEQUENCER_COUNT 7       // Steps in sequencer, not counting state 0
-#define SUPER_SEQ_STATES    1024    // Max super sequencer states
-#define DET_WINDOW_LENGTH   1024    // Length of sequencer detector window
 
 struct seq_entry {
     unsigned int start_freq;        // NCO start frequency
@@ -340,8 +343,6 @@ void hw_write_seq_trigger_state(int channel, unsigned int state);
 
 
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-#define DETECTOR_COUNT      4
 
 /* Sets the FIR gain for the detector input. */
 void hw_write_det_fir_gain(int channel, bool gain);
