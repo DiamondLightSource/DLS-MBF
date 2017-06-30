@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 53
-y 134
+x 55
+y 136
 w 641
-h 882
+h 553
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -38,7 +38,7 @@ y 40
 w 624
 h 184
 # Appearance
-graphTitle "$(part) Min/Max"
+graphTitle "ADC motion"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -58,22 +58,18 @@ yMax 1
 y2AxisSrc "AutoScale"
 y2Max 1
 # Trace Properties
-numTraces 2
+numTraces 1
 yPv {
-  0 "$(device):$(channel):$(part):MMS:MAX"
-  1 "$(device):$(channel):$(part):MMS:MIN"
+  0 "$(device):$(channel):ADC:MMS:DELTA"
 }
 plotUpdateMode {
   0 "y"
-  1 "y"
 }
 ySigned {
   0 1
-  1 1
 }
 plotColor {
   0 index 27
-  1 index 20
 }
 endObjectProperties
 
@@ -92,7 +88,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel) $(part) Min/Max/Sum Data"
+  "$(device):$(channel) ADC Overview"
 }
 endObjectProperties
 
@@ -102,16 +98,16 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 544
-y 832
+x 568
+y 520
 w 64
 h 24
-fgColor index 25
+fgColor index 46
 bgColor index 3
 topShadowColor index 1
 botShadowColor index 11
 label "EXIT"
-font "helvetica-medium-r-12.0"
+font "helvetica-bold-r-12.0"
 3d
 endObjectProperties
 
@@ -138,71 +134,71 @@ command {
 includeHelpIcon
 endObjectProperties
 
-# (X-Y Graph)
-object xyGraphClass
-beginObjectProperties
-major 4
-minor 8
-release 0
-# Geometry
-x 8
-y 224
-w 624
-h 184
-# Appearance
-graphTitle "$(part) Difference"
-fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "fromUser"
-xMin -10
-xMax 1000
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMax 0.001
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Min 8300
-y2Max 16600
-# Trace Properties
-numTraces 1
-yPv {
-  0 "$(device):$(channel):$(part):MMS:DELTA"
-}
-plotUpdateMode {
-  0 "y"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 27
-}
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
+# (Rectangle)
+object activeRectangleClass
 beginObjectProperties
 major 4
 minor 0
 release 0
-x 488
-y 784
-w 120
-h 24
+x 240
+y 448
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):$(channel):ADC:INPUT_OVF"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 264
+y 448
+w 200
+h 14
+controlPv "$(device):$(channel):ADC:INPUT_OVF.DESC"
+font "helvetica-medium-r-12.0"
 fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 472
+y 488
+w 72
+h 24
+fgColor index 43
 bgColor index 4
-inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):$(part):MMS:SCAN_S.SCAN"
-font "helvetica-medium-r-12.0"
+font "helvetica-bold-r-12.0"
+buttonLabel "MMS"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/minmax.edl"
+}
+symbols {
+  0 "part=ADC"
+}
 endObjectProperties
 
 # (X-Y Graph)
@@ -213,11 +209,11 @@ minor 8
 release 0
 # Geometry
 x 8
-y 408
+y 256
 w 624
 h 184
 # Appearance
-graphTitle "$(part) Mean"
+graphTitle "ADC Compensation Filter"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -227,20 +223,19 @@ nPts 2
 # X axis properties
 showXAxis
 xAxisSrc "fromUser"
-xMin -10
-xMax 1000
+xMin -1
+xMax 8
 # Y axis properties
 showYAxis
 yAxisSrc "AutoScale"
-yMax 0.001
+yMax 1
 # Y2 axis properties
 y2AxisSrc "AutoScale"
-y2Min 8300
-y2Max 16600
+y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):$(part):MMS:MEAN"
+  0 "$(device):$(channel):ADC:FILTER_S"
 }
 plotUpdateMode {
   0 "y"
@@ -253,52 +248,30 @@ plotColor {
 }
 endObjectProperties
 
-# (X-Y Graph)
-object xyGraphClass
+# (Text Control)
+object activeXTextDspClass
 beginObjectProperties
 major 4
-minor 8
+minor 6
 release 0
-# Geometry
-x 8
-y 592
-w 624
-h 184
-# Appearance
-graphTitle "$(part) Standard Deviation"
+x 136
+y 448
+w 80
+h 20
+controlPv "$(device):$(channel):ADC:OVF_LIMIT_S"
+font "helvetica-medium-r-14.0"
 fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "fromUser"
-xMin -10
-xMax 1000
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMax 0.001
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Min 8300
-y2Max 16600
-# Trace Properties
-numTraces 1
-yPv {
-  0 "$(device):$(channel):$(part):MMS:STD"
-}
-plotUpdateMode {
-  0 "y"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 27
-}
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "controls"
+noExecuteClipMask
 endObjectProperties
 
 # (Static Text)
@@ -308,57 +281,34 @@ major 4
 minor 1
 release 1
 x 8
-y 816
-w 34
+y 448
+w 119
 h 14
-font "helvetica-medium-r-12.0"
+font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Turns:"
+  "Overflow threshold:"
 }
 autoSize
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 56
-y 816
-w 104
-h 14
-controlPv "$(device):$(channel):$(part):MMS:TURNS"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
 # (Rectangle)
 object activeRectangleClass
 beginObjectProperties
 major 4
 minor 0
 release 0
-x 192
-y 792
+x 240
+y 520
 w 16
 h 16
 lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):$(part):MMS:TURN_OVF"
+alarmPv "$(device):$(channel):ADC:EVENT"
 endObjectProperties
 
 # (Text Monitor)
@@ -367,11 +317,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 216
-y 792
+x 264
+y 520
 w 200
-h 16
-controlPv "$(device):$(channel):$(part):MMS:TURN_OVF.DESC"
+h 14
+controlPv "$(device):$(channel):ADC:EVENT.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -385,17 +335,80 @@ objType "monitors"
 noExecuteClipMask
 endObjectProperties
 
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 136
+y 520
+w 80
+h 20
+controlPv "$(device):$(channel):ADC:EVENT_LIMIT_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 520
+w 113
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Min/max threshold:"
+}
+autoSize
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 240
+y 472
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):$(channel):ADC:FIR_OVF"
+endObjectProperties
+
 # (Text Monitor)
 object activeXTextDspClass:noedit
 beginObjectProperties
 major 4
 minor 6
 release 0
-x 216
-y 816
+x 264
+y 472
 w 200
 h 14
-controlPv "$(device):$(channel):$(part):MMS:SUM_OVF.DESC"
+controlPv "$(device):$(channel):ADC:FIR_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -415,15 +428,15 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 192
-y 816
+x 240
+y 496
 w 16
 h 16
 lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):$(part):MMS:SUM_OVF"
+alarmPv "$(device):$(channel):ADC:MMS_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -432,11 +445,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 216
-y 840
+x 264
+y 496
 w 200
 h 14
-controlPv "$(device):$(channel):$(part):MMS:SUM2_OVF.DESC"
+controlPv "$(device):$(channel):ADC:MMS_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -450,20 +463,26 @@ objType "monitors"
 noExecuteClipMask
 endObjectProperties
 
-# (Rectangle)
-object activeRectangleClass
+# (Message Button)
+object activeMessageButtonClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 192
-y 840
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):$(channel):$(part):MMS:SUM2_OVF"
+x 472
+y 520
+w 72
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(channel):ADC:ARM_S.PROC"
+pressValue "0"
+onLabel "Arm"
+offLabel "Arm"
+3d
+font "helvetica-bold-r-12.0"
 endObjectProperties
 
