@@ -4,8 +4,8 @@ create_clock -period 2.0 -name ADC_CLK [get_ports {FMC1_LA_P[0]}]
 
 # The following two clocks are derived from CLK125MHZ, but we treat them as
 # fully independent clocks.
-create_generated_clock -name ref_clk [get_pins clocking_inst/pll_inst/CLKOUT0]
-create_generated_clock -name reg_clk [get_pins clocking_inst/pll_inst/CLKOUT1]
+create_generated_clock -name ref_clk [get_pins clocking/pll_inst/CLKOUT0]
+create_generated_clock -name reg_clk [get_pins clocking/pll_inst/CLKOUT1]
 
 set_clock_groups -asynchronous \
     -group [get_clocks -include_generated_clocks ref_clk] \

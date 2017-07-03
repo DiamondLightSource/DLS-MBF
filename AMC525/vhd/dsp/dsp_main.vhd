@@ -97,7 +97,7 @@ architecture arch of dsp_main is
 
 begin
     -- Demultiplex top two bits to our main components
-    register_mux_inst : entity work.register_mux port map (
+    register_mux : entity work.register_mux port map (
         clk_i => dsp_clk_i,
 
         write_strobe_i => write_strobe_i,
@@ -128,7 +128,7 @@ begin
 
 
     -- Register mapping for dsp control top
-    ctrl_register_mux_inst : entity work.register_mux port map (
+    ctrl_register_mux : entity work.register_mux port map (
         clk_i => dsp_clk_i,
 
         write_strobe_i => main_write_strobe(CTRL_REG),
@@ -151,7 +151,7 @@ begin
     );
 
     -- Top level control
-    dsp_control_top_inst : entity work.dsp_control_top port map (
+    dsp_control_top : entity work.dsp_control_top port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -204,7 +204,7 @@ begin
         signal dac_data_out : dac_data_o(c)'SUBTYPE;
 
     begin
-        dsp_register_mux_inst : entity work.register_mux port map (
+        dsp_register_mux : entity work.register_mux port map (
             clk_i => dsp_clk_i,
 
             write_strobe_i => main_write_strobe(DSP0_REG + c),
@@ -226,7 +226,7 @@ begin
             read_ack_i => dsp_read_ack
         );
 
-        dsp_top_inst : entity work.dsp_top port map (
+        dsp_top : entity work.dsp_top port map (
             adc_clk_i => adc_clk_i,
             dsp_clk_i => dsp_clk_i,
 
@@ -247,7 +247,7 @@ begin
         );
 
         -- Loopback enable for internal testing and output control
-        loopback_inst : entity work.dsp_loopback port map (
+        dsp_loopback : entity work.dsp_loopback port map (
             adc_clk_i => adc_clk_i,
 
             loopback_i => loopback(c),

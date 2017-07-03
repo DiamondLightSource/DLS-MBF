@@ -272,7 +272,7 @@ begin
     -- Note that ADC_DCO is not always available, so also adc_clk and dsp_clk
     -- can lose availability.
 
-    clocking_inst : entity work.clocking port map (
+    clocking : entity work.clocking port map (
         nCOLDRST => n_coldrst_in,
         clk125mhz_i => clk125mhz,
         adc_dco_i => adc_dco,
@@ -295,7 +295,7 @@ begin
     );
 
     -- Controllable delay for revolution clock
-    rev_clk_idelay_inst : entity work.idelay_control port map (
+    rev_clk_idelay : entity work.idelay_control port map (
         ref_clk_i => ref_clk,
         signal_i => fast_ext_trigger,
         signal_o => revolution_clock,
@@ -309,7 +309,7 @@ begin
     -- Interconnect: PCIe and DRAM
 
     -- Wire up the interconnect
-    interconnect_inst : entity work.interconnect_wrapper port map (
+    interconnect : entity work.interconnect_wrapper port map (
         nCOLDRST => n_coldrst_in,
 
         -- Interrupt interface
@@ -430,7 +430,7 @@ begin
     -- AXI interfacing
 
     -- Register AXI slave interface
-    axi_lite_slave_inst : entity work.axi_lite_slave port map (
+    axi_lite_slave : entity work.axi_lite_slave port map (
         clk_i => reg_clk,
         rstn_i => reg_clk_ok,
 
@@ -471,7 +471,7 @@ begin
     );
 
     -- AXI burst master for streaming data to DRAM0 DRAM
-    axi_burst_master_inst : entity work.axi_burst_master generic map (
+    axi_burst_master : entity work.axi_burst_master generic map (
         BURST_LENGTH => 32,
         -- Base address: 0x8000_0000_0000 to 0x8000_7FFF_FFFF
         ADDR_PADDING => X"8000" & '0'
@@ -514,7 +514,7 @@ begin
     );
 
     -- AXI master for writing to slow DRAM1
-    axi_lite_master_inst : entity work.axi_lite_master generic map (
+    axi_lite_master : entity work.axi_lite_master generic map (
         -- Base address: 0x8000_8000_0000 to 0x8000_87FF_FFFF
         ADDR_PADDING => X"8000_8" & '0'
     ) port map (
@@ -545,7 +545,7 @@ begin
     -- FMC modules
 
     -- FMC0 Digital I/O
-    fmc_digital_io_inst : entity work.fmc_digital_io port map (
+    fmc_digital_io : entity work.fmc_digital_io port map (
         FMC_LA_P => FMC0_LA_P,
         FMC_LA_N => FMC0_LA_N,
 
@@ -559,7 +559,7 @@ begin
     );
 
     -- FMC1 FMC500M ADC/DAC and clock source
-    fmc500m_top_inst : entity work.fmc500m_top port map (
+    fmc500m_top : entity work.fmc500m_top port map (
         adc_clk_i => adc_clk,
         reg_clk_i => reg_clk,
 
@@ -596,7 +596,7 @@ begin
     --  System      Direct control of hardware
     --  Control     Shared control of DSP elements
     --  DSP{0,1}    Individual control of DSP elements
-    register_top_inst : entity work.register_top port map (
+    register_top : entity work.register_top port map (
         reg_clk_i => reg_clk,
         dsp_clk_i => dsp_clk,
         dsp_clk_ok_i => dsp_clk_ok,
@@ -632,7 +632,7 @@ begin
 
 
     -- System registers for hardware management
-    system_registers_inst : entity work.system_registers port map (
+    system_registers : entity work.system_registers port map (
         reg_clk_i => reg_clk,
         ref_clk_i => ref_clk,
         ref_clk_ok_i => ref_clk_ok,
@@ -672,7 +672,7 @@ begin
     -- DSP
 
     -- Core signal processing
-    dsp_main_inst : entity work.dsp_main port map (
+    dsp_main : entity work.dsp_main port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
 
