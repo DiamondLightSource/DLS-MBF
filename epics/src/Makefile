@@ -56,6 +56,7 @@ lmbf_SRCS += hardware.c         # Interface to FPGA
 lmbf_SRCS += system.c           # System level components
 lmbf_SRCS += mms.c              # Min/max/sum common implementation
 lmbf_SRCS += adc.c              # ADC interface and control
+lmbf_SRCS += dac.c              # DAC interface and control
 lmbf_SRCS += bunch_fir.c        # Bunch buunch FIR filter control
 lmbf_SRCS += bunch_select.c     # Bunch selection control
 # lmbf_SRCS += sequencer.c        # State sequencer control
@@ -76,6 +77,15 @@ hardware.o: register_defs.h
 
 #===========================
 
+
+PROD += test_defs
+
+test_defs_SRCS += test_defs.c
+
+
+
+#===========================
+
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
@@ -87,4 +97,7 @@ EMPTY:
 
 # Build register_defs.h
 register_defs.h: ../make_c_defs $(LMBF_TOP)/AMC525/vhd/register_defs.in
+	PYTHONPATH=$(LMBF_TOP)/python $(PYTHON) $< >$@
+
+test_defs.c: ../make_c_defs_test $(LMBF_TOP)/AMC525/vhd/register_defs.in
 	PYTHONPATH=$(LMBF_TOP)/python $(PYTHON) $< >$@

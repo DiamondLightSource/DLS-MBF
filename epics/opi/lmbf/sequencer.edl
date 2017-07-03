@@ -346,7 +346,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):SEQ:0:BANK_S"
+controlPv "$(device):$(channel):SEQ:0:BANK_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -360,7 +360,7 @@ x 88
 y 520
 w 16
 h 16
-controlPv "$(device):SEQ:PC"
+controlPv "$(device):$(channel):SEQ:PC"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -385,7 +385,7 @@ x 56
 y 520
 w 24
 h 24
-controlPv "$(device):SEQ:PC_S"
+controlPv "$(device):$(channel):SEQ:PC_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -438,7 +438,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):SEQ:RESET_S.PROC"
+controlPv "$(device):$(channel):SEQ:RESET_S.PROC"
 pressValue "0"
 onLabel "Stop"
 offLabel "Stop"
@@ -735,7 +735,7 @@ x 56
 y 544
 w 56
 h 20
-controlPv "$(device):SEQ:SUPER:COUNT_S"
+controlPv "$(device):$(channel):SEQ:SUPER:COUNT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -763,7 +763,7 @@ x 120
 y 544
 w 64
 h 16
-controlPv "$(device):SEQ:SUPER:COUNT"
+controlPv "$(device):$(channel):SEQ:SUPER:COUNT"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -831,7 +831,7 @@ x 304
 y 520
 w 88
 h 16
-controlPv "$(device):SEQ:TOTAL:LENGTH"
+controlPv "$(device):$(channel):SEQ:TOTAL:LENGTH"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -896,7 +896,7 @@ x 288
 y 536
 w 120
 h 16
-controlPv "$(device):SEQ:TOTAL:DURATION:S"
+controlPv "$(device):$(channel):SEQ:TOTAL:DURATION:S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -922,7 +922,7 @@ x 288
 y 552
 w 120
 h 16
-controlPv "$(device):SEQ:SUPER:OFFSET_S"
+controlPv "$(device):$(channel):SEQ:SUPER:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm

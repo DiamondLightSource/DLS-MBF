@@ -17,7 +17,7 @@ Waveform('DRAM_NAME', 256,
     PINI = 'YES', FTVL = 'CHAR', DESC = 'Name of fast memory device')
 
 def channel_pvs():
-    aOut('FREQ', DESC = 'Fixed NCO frequency')
+    aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')
     mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(15, -6) + ['Off'])
 
 for_channels('NCO', channel_pvs)

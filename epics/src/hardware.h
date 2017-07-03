@@ -20,7 +20,7 @@ extern const struct hardware_config {
 
 
 error__t initialise_hardware(
-    const char *prefix, unsigned int bunches, const char *config_file);
+    const char *prefix, unsigned int bunches, bool lock_registers);
 void terminate_hardware(void);
 
 /* Toggles between locked and unlocked access to the control registers. */

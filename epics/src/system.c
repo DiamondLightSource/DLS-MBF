@@ -8,6 +8,8 @@
 #include <string.h>
 #include <sys/utsname.h>
 
+#include <iocsh.h>
+
 #include "error.h"
 #include "epics_device.h"
 
@@ -71,6 +73,28 @@ static error__t initialise_strings(void)
 }
 
 
+static void call_lock_registers(const iocshArgBuf *args)
+{
+    if (!error_report(hw_lock_registers()))
+        printf("LMBF control registers locked for exclusive access\n");
+}
+
+static void call_unlock_registers(const iocshArgBuf *args)
+{
+    if (!error_report(hw_unlock_registers()))
+        printf("LMBF control registers unlocked\n");
+}
+
+static error__t register_iocsh_commands(void)
+{
+    static iocshFuncDef lock_registers_def   = { "lock_registers",   0, NULL };
+    static iocshFuncDef unlock_registers_def = { "unlock_registers", 0, NULL };
+    iocshRegister(&lock_registers_def,   call_lock_registers);
+    iocshRegister(&unlock_registers_def, call_unlock_registers);
+    return ERROR_OK;
+}
+
+
 error__t initialise_system(void)
 {
 //     PUBLISH_READER(ulongin, "FPGA_VER", hw_read_version);
@@ -84,5 +108,7 @@ error__t initialise_system(void)
         hardware_config.dac_taps);
 
     publish_nco_pvs();
-    return initialise_strings();
+    return
+        initialise_strings()  ?:
+        register_iocsh_commands();
 }

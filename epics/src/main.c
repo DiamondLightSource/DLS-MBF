@@ -24,6 +24,7 @@
 #include "system.h"
 #include "mms.h"
 #include "adc.h"
+#include "dac.h"
 #include "bunch_fir.h"
 #include "bunch_select.h"
 
@@ -57,6 +58,12 @@ static int max_log_array_length = 10000;
 /* Polling interval for MMS scanning. */
 static unsigned int mms_poll_interval = 100000;
 
+/* Machine revolution frequency, used for timing calculations in GUI. */
+static double revolution_frequency = 533848;
+
+/* Whether to lock registers on startup.  Only for debug. */
+static bool lock_registers = true;
+
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -76,6 +83,8 @@ static void usage(void)
 "   -H: Specify hardware configuration file (required)\n"
 "   -C: Specify comma separated channel names (required)\n"
 "   -m: Specify MMS poll interval\n"
+"   -f: Specify machine revolution frequency for timing calculations\n"
+"   -u  Startup with hardware registers unlocked (debug only)\n"
     );
 }
 
@@ -98,7 +107,7 @@ static error__t process_options(int *argc, char *const *argv[])
     error__t error = ERROR_OK;
     while (!error)
     {
-        switch (getopt(*argc, *argv, "+hs:b:i:l:p:d:H:C:m:"))
+        switch (getopt(*argc, *argv, "+hs:b:i:l:p:d:H:C:m:f:u"))
         {
             case 'h':   usage();                                exit(1);
             case 'b':
@@ -114,6 +123,8 @@ static error__t process_options(int *argc, char *const *argv[])
             case 'm':
                 mms_poll_interval = (unsigned) atoi(optarg);
                 break;
+            case 'f':   revolution_frequency = atof(optarg);    break;
+            case 'u':   lock_registers = false;                 break;
             default:
                 error = FAIL_("Invalid command line option");
             case -1:
@@ -164,29 +175,8 @@ static error__t load_database(const char *database)
     database_add_macro("BUNCH_TAPS", "%d", hardware_config.bunch_taps);
     database_add_macro("DAC_TAPS", "%d", hardware_config.dac_taps);
     database_add_macro("BUNCHES_PER_TURN", "%d", hardware_config.bunches);
+    database_add_macro("REVOLUTION_FREQUENCY", "%g", revolution_frequency);
     return database_load_file(database);
-}
-
-
-static void call_lock_registers(const iocshArgBuf *args)
-{
-    if (!error_report(hw_lock_registers()))
-        printf("LMBF control registers locked for exclusive access\n");
-}
-
-static void call_unlock_registers(const iocshArgBuf *args)
-{
-    if (!error_report(hw_unlock_registers()))
-        printf("LMBF control registers unlocked\n");
-}
-
-static error__t register_iocsh_commands(void)
-{
-    static iocshFuncDef lock_registers_def   = { "lock_registers",   0, NULL };
-    static iocshFuncDef unlock_registers_def = { "unlock_registers", 0, NULL };
-    iocshRegister(&lock_registers_def,   call_lock_registers);
-    iocshRegister(&unlock_registers_def, call_unlock_registers);
-    return ERROR_OK;
 }
 
 
@@ -199,7 +189,6 @@ static error__t initialise_epics(void)
         TEST_OK(dbLoadDatabase("dbd/lmbf.dbd", NULL, NULL) == 0)  ?:
         TEST_OK(lmbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
         load_database("db/lmbf.db")  ?:
-        register_iocsh_commands()  ?:
         TEST_OK(iocInit() == 0);
 }
 
@@ -212,6 +201,7 @@ static error__t initialise_subsystems(void)
     return
         initialise_system()  ?:
         initialise_adc()  ?:
+        initialise_dac()  ?:
         initialise_bunch_fir()  ?:
         initialise_bunch_select()  ?:
 //         initialise_sequencer()  ?:
@@ -235,7 +225,7 @@ int main(int argc, char *const argv[])
         validate_options(argc)  ?:
 
         initialise_hardware(
-            device_prefix, bunches_per_turn, hardware_config_file)  ?:
+            device_prefix, bunches_per_turn, lock_registers)  ?:
         initialise_epics_device()  ?:
 
         DO(set_channel_names(channel_names))  ?:

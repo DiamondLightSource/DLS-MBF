@@ -21,9 +21,9 @@ void _exit_channel_step(void);
 
 /* This executes a block of code with the given record name prefix and ensures
  * that the prefix is safely popped when done. */
-#define _id_WITH_NAME_PREFIX(temp, prefix) \
-    for (bool temp = (push_record_name_prefix(prefix), true); temp; \
-         pop_record_name_prefix(), temp = false)
+#define _id_WITH_NAME_PREFIX(loop, prefix) \
+    for (bool loop = (push_record_name_prefix(prefix), true); loop; \
+         pop_record_name_prefix(), loop = false)
 #define WITH_NAME_PREFIX(prefix) \
     _id_WITH_NAME_PREFIX(UNIQUE_ID(), prefix)
 

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 15
-y 58
+x 2109
+y 497
 w 648
 h 634
 font "helvetica-medium-r-18.0"
@@ -164,7 +164,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device) Bank $(bank) Bunch Selection"
+  "$(device):$(channel) Bank $(bank) Bunch Selection"
 }
 endObjectProperties
 
@@ -312,7 +312,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -333,6 +332,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -340,7 +340,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -361,6 +360,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -768,7 +768,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -789,6 +788,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -969,7 +969,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -990,6 +989,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -1073,7 +1073,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -1094,6 +1093,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -1145,7 +1145,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -1166,6 +1165,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties

@@ -50,10 +50,8 @@ static uint32_t readl(volatile uint32_t *reg)
  * notions about volatile. */
 #define _id_WRITEL(temp_val, temp_reg, reg, value) \
     do { \
-        ENSURE_TYPE(typeof(reg), (value)); \
-        uint32_t temp_val = CAST_FROM_TO(typeof(value), uint32_t, (value)); \
-        volatile uint32_t *temp_reg = CAST_FROM_TO( \
-            volatile typeof(reg) *, volatile uint32_t *, &(reg)); \
+        uint32_t temp_val = CAST_FROM_TO(typeof(reg), uint32_t, (value)); \
+        volatile uint32_t *temp_reg = CAST_TO(volatile uint32_t *, &(reg)); \
         writel(temp_reg, temp_val); \
     } while(0)
 #define WRITEL(args...) \
@@ -63,10 +61,8 @@ static uint32_t readl(volatile uint32_t *reg)
 /* Similar for reading. */
 #define _id_READL(temp_reg, reg) \
     ( { \
-        volatile uint32_t *temp_reg = CAST_FROM_TO( \
-            volatile typeof(reg) *, volatile uint32_t *, &(reg)); \
-        ENSURE_TYPE(typeof(reg), \
-            CAST_FROM_TO(uint32_t, typeof(reg), readl(temp_reg))); \
+        volatile uint32_t *temp_reg = CAST_TO(volatile uint32_t *, &(reg)); \
+        CAST_TO(typeof(reg), readl(temp_reg)); \
     } )
 #define READL(args...) \
     _id_READL(UNIQUE_ID(), args)
@@ -563,7 +559,7 @@ void hw_write_bunch_config(
     for (unsigned int i = 0; i < hardware_config.bunches; i ++)
         WRITE_FIELDS(dsp_regs[channel]->bunch_bank,
             .fir_select = (unsigned int) config->fir_select[i] & 0x3,
-            .gain = (unsigned int) config->fir_select[i] & 0x1FFF,
+            .gain = (unsigned int) config->gain[i] & 0x1FFF,
             .fir_enable = config->fir_enable[i],
             .nco0_enable = config->nco0_enable[i],
             .nco1_enable = config->nco1_enable[i]);
@@ -916,9 +912,9 @@ static error__t set_hardware_config(unsigned int bunches)
 
 
 error__t initialise_hardware(
-    const char *prefix, unsigned int bunches, const char *config)
+    const char *prefix, unsigned int bunches, bool lock_registers)
 {
-    printf("initialise_hardware %s %s\n", prefix, config);
+    printf("initialise_hardware %s %d\n", prefix, lock_registers);
 
     /* Compute device node names from the prefix. */
     size_t prefix_length = strlen(prefix);
@@ -934,7 +930,7 @@ error__t initialise_hardware(
         TEST_IO_(ddr1_device = open(ddr1_device_name, O_RDONLY),
             "Unable to find LMBF device with prefix %s", prefix)  ?:
         TEST_IO(reg_device = open(reg_device_name, O_RDWR | O_SYNC))  ?:
-        hw_lock_registers()  ?:
+        IF(lock_registers, hw_lock_registers())  ?:
         TEST_IO(
             config_regs_size = (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
         TEST_IO(config_regs = mmap(

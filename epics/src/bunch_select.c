@@ -22,7 +22,7 @@
 
 struct bunch_bank {
     int channel;
-    unsigned int index;
+    unsigned int bank;
 
     struct bunch_config config;
 
@@ -180,7 +180,7 @@ static void write_fir_wf(void *context, char fir_select[], size_t *length)
         bank->config.fir_select[i] = fir_select[i];
     update_fir_status(bank);
 
-    hw_write_bunch_config(bank->channel, bank->index, &bank->config);
+    hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
 }
 
 
@@ -197,7 +197,7 @@ static void write_out_wf(void *context, char out_enable[], size_t *length)
     }
     update_out_status(bank, out_enable);
 
-    hw_write_bunch_config(bank->channel, bank->index, &bank->config);
+    hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
 }
 
 
@@ -210,7 +210,7 @@ static void write_gain_wf(void *context, float gain[], size_t *length)
         hardware_config.bunches, gain, bank->config.gain, GAIN_BITS, 0);
     update_gain_status(bank);
 
-    hw_write_bunch_config(bank->channel, bank->index, &bank->config);
+    hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
 }
 
 
@@ -218,7 +218,7 @@ static void initialise_bank(
     int channel, unsigned int ix, struct bunch_bank *bank)
 {
     bank->channel = channel;
-    bank->index = ix;
+    bank->bank = ix;
 
     unsigned int bunches = hardware_config.bunches;
     bank->config = (struct bunch_config) {

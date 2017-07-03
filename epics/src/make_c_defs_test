@@ -15,7 +15,7 @@ class GenerateMethods(parse.register_defs.WalkParse):
         print
         print '    offset = offsetof(struct %s, %s);' % (
             self.top_name, field_name)
-        print '    printf("offsetof(%s, %s) = %%d   ", offset);' % (
+        print '    printf("offsetof(%s, %s) = %%zd   ", offset);' % (
             self.top_name, field_name)
         print '    test_ok = offset == %d;' % (4 * offset)
         print '    printf("expected %d : %%s\\n", test_ok ? "OK" : "FAIL!");' \
@@ -56,7 +56,7 @@ print '''\
 #include <stddef.h>
 #include <stdio.h>
 
-#include "bitfield.h"
+#include "register_defs.h"
 
 int main(int argc, char *argv[])
 {
