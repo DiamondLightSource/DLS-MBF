@@ -116,8 +116,11 @@ begin
         others => '0'
     );
 
-    loopback_o      <= control_register(CTRL_CONTROL_LOOPBACK_BITS);
-    output_enable_o <= control_register(CTRL_CONTROL_OUTPUT_BITS);
+    -- A little annoyance here: the outputs are indexed by CHANNELS which grows
+    -- up, but these are software interface registers which really ought to grow
+    -- downwards.  To reduce confusion elsewhere we reorder right away.
+    loopback_o      <= reverse(control_register(CTRL_CONTROL_LOOPBACK_BITS));
+    output_enable_o <= reverse(control_register(CTRL_CONTROL_OUTPUT_BITS));
 
 
     -- Channel data multiplexing control
