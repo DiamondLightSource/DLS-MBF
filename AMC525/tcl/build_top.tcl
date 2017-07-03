@@ -38,8 +38,10 @@ add_files -norecurse interconnect/hdl/interconnect_wrapper.vhd
 read_xdc built/top_pins.xdc
 read_xdc $src_dir/constr/clocks.xdc
 read_xdc $src_dir/constr/post_synth.xdc
-# read_xdc $src_dir/constr/pblocks.xdc
 set_property used_in_synthesis false [get_files post_synth.xdc]
+
+read_xdc $src_dir/constr/pblocks.xdc
+set_property used_in_synthesis false [get_files pblocks.xdc]
 
 
 # Configure Vivado build options
