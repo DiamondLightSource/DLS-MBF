@@ -28,6 +28,7 @@
 #include "dac.h"
 #include "bunch_fir.h"
 #include "bunch_select.h"
+#include "sequencer.h"
 
 
 /* External declaration of DBD binding. */
@@ -214,7 +215,7 @@ static error__t initialise_subsystems(void)
         initialise_dac()  ?:
         initialise_bunch_fir()  ?:
         initialise_bunch_select()  ?:
-//         initialise_sequencer()  ?:
+        initialise_sequencer()  ?:
 //         initialise_triggers()  ?:
 //         initialise_sensors()  ?:
 //         initialise_detector()  ?:
