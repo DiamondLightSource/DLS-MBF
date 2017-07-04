@@ -12,6 +12,7 @@
 #include <envDefs.h>
 #include <dbAccess.h>
 #include <iocInit.h>
+#include <dbScan.h>
 
 #include "error.h"
 #include "persistence.h"
@@ -193,6 +194,15 @@ static error__t initialise_epics(void)
 }
 
 
+/* We'd like all EPICS record scanning to stop before we unload the hardware,
+ * but alas it looks like this the best we can do. */
+static void stop_epics(void)
+{
+    scanPause();
+    usleep(100000);     // Give things time to settle
+}
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* Initialises the various subsystems. */
@@ -246,6 +256,8 @@ int main(int argc, char *const argv[])
     }
 
     /* Orderly shutdown. */
+    stop_epics();
+    stop_mms_handlers();
     terminate_hardware();
 
     return ERROR_REPORT(error, "Unable to start IOC") ? 1 : 0;

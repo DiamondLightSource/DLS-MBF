@@ -182,17 +182,17 @@ struct mms_handler *create_mms_handler(
         .bunch_offset = bunch_offset,
         .mutex = PTHREAD_MUTEX_INITIALIZER,
         .accum = {
-            .raw_min  = malloc(bunches * sizeof(int16_t)),
-            .raw_max  = malloc(bunches * sizeof(int16_t)),
-            .raw_sum  = malloc(bunches * sizeof(int64_t)),
-            .raw_sum2 = malloc(bunches * sizeof(uint64_t)),
+            .raw_min  = calloc(bunches, sizeof(int16_t)),
+            .raw_max  = calloc(bunches, sizeof(int16_t)),
+            .raw_sum  = calloc(bunches, sizeof(int64_t)),
+            .raw_sum2 = calloc(bunches, sizeof(uint64_t)),
         },
         .epics = {
-            .min      = malloc(bunches * sizeof(float)),
-            .max      = malloc(bunches * sizeof(float)),
-            .delta    = malloc(bunches * sizeof(float)),
-            .mean     = malloc(bunches * sizeof(float)),
-            .std      = malloc(bunches * sizeof(float)),
+            .min      = calloc(bunches, sizeof(float)),
+            .max      = calloc(bunches, sizeof(float)),
+            .delta    = calloc(bunches, sizeof(float)),
+            .mean     = calloc(bunches, sizeof(float)),
+            .std      = calloc(bunches, sizeof(float)),
         },
     };
 
@@ -216,10 +216,11 @@ struct mms_handler *create_mms_handler(
 
 
 static unsigned int mms_poll_interval;
+static volatile bool running = true;
 
 static void *read_mms_thread(void *context)
 {
-    while (true)
+    while (running)
     {
         usleep(mms_poll_interval);
         for (unsigned int i = 0; i < mms_handlers.count; i ++)
@@ -233,11 +234,23 @@ static void *read_mms_thread(void *context)
 }
 
 
+static pthread_t mms_thread_id;
+
 error__t start_mms_handlers(unsigned int poll_interval)
 {
     mms_poll_interval = poll_interval;
 
-    pthread_t thread_id;
     return TEST_PTHREAD(
-        pthread_create(&thread_id, NULL, read_mms_thread, NULL));
+        pthread_create(&mms_thread_id, NULL, read_mms_thread, NULL));
+}
+
+
+void stop_mms_handlers(void)
+{
+    if (mms_thread_id)
+    {
+        printf("Waiting for MMS thread\n");
+        running = false;
+        pthread_join(mms_thread_id, NULL);
+    }
 }

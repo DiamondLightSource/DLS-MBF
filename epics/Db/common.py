@@ -26,13 +26,17 @@ BUNCHES_PER_TURN = Parameter('BUNCHES_PER_TURN',
     'Bunches per machine revolution')
 
 
-def for_channels(prefix, action):
+def with_name_prefix(prefix, action, *args):
+    push_name_prefix(prefix)
+    result = action(*args)
+    pop_name_prefix()
+    return result
+
+def for_channels(prefix, action, *args):
     for channel in CHANNELS:
-        push_name_prefix(channel)
-        push_name_prefix(prefix)
-        action()
-        pop_name_prefix()
-        pop_name_prefix()
+        with_name_prefix(channel,
+            lambda: with_name_prefix(prefix, action, *args))
+
 
 def dBrange(count, step, start = 0):
     return ['%sdB' % db for db in range(start, start + count*step, step)]
