@@ -72,17 +72,6 @@ static struct mms_handlers {
 };
 
 
-/* This simply loops through the configured bunches. */
-#define FOR_BUNCHES(i) \
-    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
-
-/* This macro also loops through the configured bunches, but the given offset is
- * applied to j, so that i loops from 0 and j from offset. */
-#define FOR_BUNCHES_OFFSET(i, j, offset) \
-    for (unsigned int i = 0, j = offset; i < hardware_config.bunches; \
-         i += 1, j = j + 1 < hardware_config.bunches ? j + 1 : 0)
-
-
 /* This is called at a regular interval to ensure that the MMS waveforms are up
  * to date and have not overflowed. */
 static void read_raw_mms(struct mms_handler *mms)

@@ -479,7 +479,7 @@ static void read_mms(
     result->sum_ovfl = count.sum_ovfl;
     result->sum2_ovfl = count.sum2_ovfl;
 
-    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
+    FOR_BUNCHES(i)
     {
         uint32_t readout = readl(&mms->readout);
         result->minimum[i] = (int16_t) (readout & 0xFFFF);
@@ -556,13 +556,16 @@ void hw_write_bunch_config(
 {
     LOCK(dsp_locks[channel]);
     WRITE_FIELDS(dsp_regs[channel]->bunch_config, .bank = bank & 0x3);
-    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
+    FOR_BUNCHES(i)
+    {
+        int gain = config->gain[i] >> (32 - 13);
         WRITE_FIELDS(dsp_regs[channel]->bunch_bank,
             .fir_select = (unsigned int) config->fir_select[i] & 0x3,
-            .gain = (unsigned int) config->gain[i] & 0x1FFF,
+            .gain = (unsigned int) gain & 0x1FFF,
             .fir_enable = config->fir_enable[i],
             .nco0_enable = config->nco0_enable[i],
             .nco1_enable = config->nco1_enable[i]);
+    }
     UNLOCK(dsp_locks[channel]);
 }
 
@@ -731,8 +734,9 @@ void hw_write_seq_entries(
         .nco_gain = 0xF,
 //        .nco_enable = false,
     });
-    for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
-        write_sequencer_state(&dsp_regs[channel]->seq_write, &entries[i]);
+    if (entries)
+        for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
+            write_sequencer_state(&dsp_regs[channel]->seq_write, &entries[i]);
     UNLOCK(dsp_locks[channel]);
 }
 
@@ -818,8 +822,7 @@ void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
     LOCK(dsp_locks[channel]);
     WRITE_FIELDS(dsp_regs[channel]->det_command, .write = 1);
     uint32_t enable_mask = 0;
-    unsigned int i;
-    for (i = 0; i < hardware_config.bunches; i ++)
+    FOR_BUNCHES(i)
     {
         enable_mask |= (uint32_t) enables[i] << (i & 0x1F);
         if ((i & 0x1F) == 0x1F)
@@ -828,7 +831,7 @@ void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
             enable_mask = 0;
         }
     }
-    if (i & 0x1F)
+    if (hardware_config.bunches & 0x1F)
         writel(&dsp_regs[channel]->det_bunch, enable_mask);
     UNLOCK(dsp_locks[channel]);
 }

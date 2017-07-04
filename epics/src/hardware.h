@@ -313,7 +313,8 @@ struct seq_entry {
     unsigned int holdoff;           // Detector holdoff
 };
 
-/* Rewrites the sequencer table.  All entries must be present. */
+/* Rewrites the sequencer table.  If entries is NULL then only bank0 is updated,
+ * otherwise the entire sequencer table is written. */
 void hw_write_seq_entries(
     int channel, unsigned int bank0,
     const struct seq_entry entries[MAX_SEQUENCER_COUNT]);

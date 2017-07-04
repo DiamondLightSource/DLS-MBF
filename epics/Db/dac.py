@@ -13,7 +13,6 @@ def dac_pvs():
 
     longOut('DELAY', DESC = 'DAC output delay')
     boolOut('FIR_ENABLE',  'Off', 'On', DESC = 'Global FIR output enable')
-    boolOut('NCO0_ENABLE', 'Off', 'On', DESC = 'Global NCO0 output enable')
     boolOut('NCO1_ENABLE', 'Off', 'On', DESC = 'Global NCO1 output enable')
 
     boolOut('ENABLE', 'Off', 'On', DESC = 'DAC output enable')

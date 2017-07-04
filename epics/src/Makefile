@@ -82,6 +82,8 @@ PROD += test_defs
 
 test_defs_SRCS += test_defs.c
 
+test_defs.o: register_defs.h
+
 
 
 #===========================

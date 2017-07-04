@@ -28,6 +28,19 @@ void _exit_channel_step(void);
     _id_WITH_NAME_PREFIX(UNIQUE_ID(), prefix)
 
 
+/* This simply loops through the configured bunches. */
+#define FOR_BUNCHES(i) \
+    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
+
+/* This macro also loops through the configured bunches, but the given offset is
+ * applied to j, so that i loops from 0 to bunches-1 and j=(i+offset)%bunches.
+ * The given offset *must* be in the range 0 to bunches-1, otherwise j will be
+ * computed incorrectly. */
+#define FOR_BUNCHES_OFFSET(i, j, offset) \
+    for (unsigned int i = 0, j = offset; i < hardware_config.bunches; \
+         i += 1, j = j + 1 < hardware_config.bunches ? j + 1 : 0)
+
+
 /* This function converts an array of floats into the corresponding array of
  * integer values by multiplying each value by 2^(bits-high_bits-1).  The
  * floating point values are clipped to the extreme possible values as

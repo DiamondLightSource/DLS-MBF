@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 56
-y 137
+x 904
+y 128
 w 641
 h 628
 font "helvetica-medium-r-18.0"
@@ -454,45 +454,6 @@ value {
   "FIR enable:"
 }
 autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 112
-y 576
-w 80
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "NCO0 enable:"
-}
-autoSize
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 200
-y 568
-w 96
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(channel):DAC:NCO0_ENABLE_S"
-font "helvetica-medium-r-12.0"
 endObjectProperties
 
 # (Static Text)

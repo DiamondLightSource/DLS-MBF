@@ -37,7 +37,11 @@ static struct bunch_context {
 } bunch_context[CHANNEL_COUNT];
 
 
-#define GAIN_BITS       13
+
+/* These offsets will be read from a hardware config file. */
+static unsigned int fir_offset = 0;
+static unsigned int out_offset = 0;
+static unsigned int gain_offset = 0;
 
 
 
@@ -137,19 +141,19 @@ static void out_name(int out, char result[])
 
 static void gain_name(int gain, char result[])
 {
-    sprintf(result, "%.3g", ldexp(gain, -GAIN_BITS+1));
+    sprintf(result, "%.3g", ldexp(gain, -31));
 }
 
 
 /* Quick and dirty helper to convert array of char to array of int. */
 #define CHAR_TO_INT(array_out, array_in) \
     int array_out[hardware_config.bunches]; \
-    for (unsigned int i = 0; i < hardware_config.bunches; i ++) \
+    FOR_BUNCHES(i) \
         array_out[i] = array_in[i]
 
-static void update_fir_status(struct bunch_bank *bank)
+static void update_fir_status(struct bunch_bank *bank, const char fir_select[])
 {
-    CHAR_TO_INT(fir_wf, bank->config.fir_select);
+    CHAR_TO_INT(fir_wf, fir_select);
     update_status_core("FIR", fir_wf, &bank->fir_status, fir_name);
 }
 
@@ -159,10 +163,9 @@ static void update_out_status(struct bunch_bank *bank, const char out_enable[])
     update_status_core("outputs", out_wf, &bank->out_status, out_name);
 }
 
-static void update_gain_status(struct bunch_bank *bank)
+static void update_gain_status(struct bunch_bank *bank, const int gain[])
 {
-    update_status_core(
-        "gains", bank->config.gain, &bank->gain_status, gain_name);
+    update_status_core("gains", gain, &bank->gain_status, gain_name);
 }
 
 
@@ -176,9 +179,10 @@ static void write_fir_wf(void *context, char fir_select[], size_t *length)
     struct bunch_bank *bank = context;
     *length = hardware_config.bunches;
 
-    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
-        bank->config.fir_select[i] = fir_select[i];
-    update_fir_status(bank);
+    update_fir_status(bank, fir_select);
+
+    FOR_BUNCHES_OFFSET(i, j, fir_offset)
+        bank->config.fir_select[i] = fir_select[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
 }
@@ -189,14 +193,14 @@ static void write_out_wf(void *context, char out_enable[], size_t *length)
     struct bunch_bank *bank = context;
     *length = hardware_config.bunches;
 
-    for (unsigned int i = 0; i < hardware_config.bunches; i ++)
-    {
-        bank->config.fir_enable[i] = out_enable[i] & 1;
-        bank->config.nco0_enable[i] = (out_enable[i] >> 1) & 1;
-        bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
-    }
     update_out_status(bank, out_enable);
 
+    FOR_BUNCHES_OFFSET(i, j, out_offset)
+    {
+        bank->config.fir_enable[i] = out_enable[j] & 1;
+        bank->config.nco0_enable[i] = (out_enable[j] >> 1) & 1;
+        bank->config.nco1_enable[i] = (out_enable[j] >> 2) & 1;
+    }
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
 }
 
@@ -206,9 +210,13 @@ static void write_gain_wf(void *context, float gain[], size_t *length)
     struct bunch_bank *bank = context;
     *length = hardware_config.bunches;
 
+    int scaled_gain[hardware_config.bunches];
     float_array_to_int(
-        hardware_config.bunches, gain, bank->config.gain, GAIN_BITS, 0);
-    update_gain_status(bank);
+        hardware_config.bunches, gain, scaled_gain, 32, 0);
+    update_gain_status(bank, scaled_gain);
+
+    FOR_BUNCHES_OFFSET(i, j, gain_offset)
+        bank->config.gain[i] = scaled_gain[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
 }
