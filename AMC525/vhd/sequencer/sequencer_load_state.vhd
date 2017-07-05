@@ -28,21 +28,20 @@ entity sequencer_load_state is
 end;
 
 architecture arch of sequencer_load_state is
-    type seq_program_t is array(0 to 63) of reg_data_t;
-    signal seq_program : seq_program_t := (others => (others => '0'));
-    attribute ram_style : string;
-    attribute ram_style of seq_program : signal is "block";
-
     -- The following state is used to load the parameters for the next state.
     -- This needs to be triggered early as we'll need eight clock cycles to
     -- load the necessary state from the program memory.
     signal loading : std_logic := '0';
+    signal loading_dly : std_logic;
     signal load_ctr : unsigned(2 downto 0) := "000";
+    signal load_ctr_dly : unsigned(2 downto 0);
     signal prog_word : reg_data_t;
 
     -- Loading is delayed to so that seq_state_o remains valid for a few more
     -- ticks after the start of the next state.
     signal start_load : std_logic;
+
+    constant READ_DELAY : natural := 2;
 
 begin
     -- Somewhat arbitrary delay to load, just long enough for us to delay some
@@ -55,27 +54,55 @@ begin
         data_o(0) => start_load
     );
 
+    -- Memory
+    block_memory : entity work.block_memory generic map (
+        ADDR_BITS => 6,
+        DATA_BITS => reg_data_t'LENGTH,
+        READ_DELAY => READ_DELAY
+    ) port map (
+        read_clk_i => dsp_clk_i,
+        read_addr_i => seq_pc_i & load_ctr,
+        read_data_o => prog_word,
+
+        write_clk_i => dsp_clk_i,
+        write_strobe_i => write_strobe_i,
+        write_addr_i => write_addr_i(5 downto 0),
+        write_data_i => write_data_i
+    );
+
+    -- Delay load counter and loading state to match memory delay
+    delay_load_ctr : entity work.dlyline generic map (
+        DLY => READ_DELAY,
+        DW => load_ctr'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => std_logic_vector(load_ctr),
+        unsigned(data_o) => load_ctr_dly
+    );
+
+    delay_loading : entity work.dlyline generic map (
+        DLY => READ_DELAY
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i(0) => loading,
+        data_o(0) => loading_dly
+    );
+
+
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-
-            if write_strobe_i = '1' then
-                seq_program(to_integer(write_addr_i)) <= write_data_i;
-            end if;
-
             -- Loading sequencer program state from PC.  Wait for start_load
             -- trigger then run through all the words that need loading.
-            if loading = '1' then
-                prog_word <= seq_program(to_integer(seq_pc_i & load_ctr));
-                case to_integer(load_ctr) is
+            if loading_dly = '1' then
+                case to_integer(load_ctr_dly) is
                     when 0 =>
-                    when 1 =>
                         seq_state_o.start_freq <= angle_t(prog_word);
-                    when 2 =>
+                    when 1 =>
                         seq_state_o.delta_freq <= angle_t(prog_word);
-                    when 3 =>
+                    when 2 =>
                         seq_state_o.dwell_count <=
                             dwell_count_t(prog_word(15 downto 0));
-                    when 4 =>
+                    when 3 =>
                         seq_state_o.capture_count <=
                             capture_count_t(prog_word(11 downto 0));
                         seq_state_o.bunch_bank <=
@@ -85,14 +112,16 @@ begin
                         seq_state_o.enable_window <= prog_word(18);
                         seq_state_o.enable_write <= prog_word(19);
                         seq_state_o.enable_blanking <= prog_word(20);
-                    when 5 =>
+                    when 4 =>
                         seq_state_o.window_rate <= angle_t(prog_word);
-                    when 6 =>
+                    when 5 =>
                         seq_state_o.holdoff_count <=
                             dwell_count_t(prog_word(15 downto 0));
-                    when 7 =>
                     when others =>
                 end case;
+            end if;
+
+            if loading = '1' then
                 load_ctr <= load_ctr + 1;
                 if load_ctr = 7 then
                     loading <= '0';

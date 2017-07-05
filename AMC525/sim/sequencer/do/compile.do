@@ -11,6 +11,9 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/defines.vhd \
     register_defs.vhd \
     $vhd_dir/util/dlyline.vhd \
+    $vhd_dir/util/dlyreg.vhd \
+    $vhd_dir/util/untimed_reg.vhd \
+    $vhd_dir/util/block_memory.vhd \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
     $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/nco/nco_defs.vhd \
@@ -50,6 +53,6 @@ add wave -group "Sequencer" sim:sequencer/*
 add wave sim:*
 
 
-run 200 ns
+run 500 ns
 
 # vim: set filetype=tcl:

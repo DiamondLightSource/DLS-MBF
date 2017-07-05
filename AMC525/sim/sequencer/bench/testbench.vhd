@@ -22,7 +22,7 @@ architecture arch of testbench is
 
     -- This is pretty well the shortest turn if the sequencer is to have enough
     -- time to load its next state
-    constant TURN_COUNT : natural := 19;
+    constant TURN_COUNT : natural := 29;
 
     signal blanking : std_logic;
     signal write_strobe : std_logic_vector(DSP_SEQ_REGS);
@@ -98,6 +98,18 @@ begin
     begin
         write_strobe <= (others => '0');
         read_strobe <= (others => '0');
+
+        clk_wait(dsp_clk, 10);
+        write_reg(DSP_SEQ_COMMAND_REG_W, X"00000002");  -- start write
+        write_reg(DSP_SEQ_CONFIG_REG,    X"00000000");  -- write to seq memory
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000001");  -- start freq
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000002");  -- delta freq
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000002");  -- dwell time
+        write_reg(DSP_SEQ_WRITE_REG,     X"0003D001");  -- detailed config
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000005");  -- window rate
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000003");  -- holdoff
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000007");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000008");
 
         wait;
     end process;

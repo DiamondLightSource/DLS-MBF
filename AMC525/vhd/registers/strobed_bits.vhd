@@ -9,7 +9,7 @@ use work.support.all;
 
 entity strobed_bits is
     generic (
-        BUFFER_LENGTH : natural := 4
+        BUFFER_LENGTH : natural := 2
     );
     port (
         clk_i : in std_logic;
@@ -25,27 +25,36 @@ entity strobed_bits is
 end;
 
 architecture arch of strobed_bits is
-    signal strobed_bits_out : reg_data_t := (others => '0');
+    signal strobed_bits : reg_data_t := (others => '0');
 
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             if write_strobe_i = '1' then
-                strobed_bits_out <= write_data_i;
+                strobed_bits <= write_data_i;
             else
-                strobed_bits_out <= (others => '0');
+                strobed_bits <= (others => '0');
             end if;
         end if;
     end process;
 
-    delay : entity work.dlyreg generic map (
+    delay_strobe : entity work.dlyreg generic map (
         DLY => BUFFER_LENGTH,
         DW => strobed_bits_o'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => strobed_bits_out,
+        data_i => strobed_bits,
         data_o => strobed_bits_o
     );
 
-    write_ack_o <= '1';
+    -- Delay the ack so that it's synchronous with our delayed strobe.  This
+    -- will avoid problems if the next register write depends on side effects of
+    -- the strobe.
+    delay_ack : entity work.dlyline generic map (
+        DLY => BUFFER_LENGTH + 1
+    ) port map (
+        clk_i => clk_i,
+        data_i(0) => write_strobe_i,
+        data_o(0) => write_ack_o
+    );
 end;
