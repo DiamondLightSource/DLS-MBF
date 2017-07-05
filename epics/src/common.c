@@ -11,22 +11,21 @@
 #include "epics_device.h"
 
 #include "hardware.h"
+#include "configs.h"
 
 #include "common.h"
 
 
-static const char *channel_names[CHANNEL_COUNT];
+static const char *const *channel_names[] = {
+    &system_config.channel0_name,
+    &system_config.channel1_name,
+};
 
-void set_channel_names(const char *names[])
-{
-    for (int i = 0; i < CHANNEL_COUNT; i ++)
-        channel_names[i] = names[i];
-}
 
 
 void _enter_channel_step(int channel, const char *prefix)
 {
-    push_record_name_prefix(channel_names[channel]);
+    push_record_name_prefix(*channel_names[channel]);
     push_record_name_prefix(prefix);
 }
 

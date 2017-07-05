@@ -48,7 +48,8 @@ lmbf_SRCS += lmbf_registerRecordDeviceDriver.c
 lmbf_SRCS += main.c             # Entry point and initialisation
 
 lmbf_SRCS += common.c           # Miscellaneous shared helper functions
-# lmbf_SRCS += config_file.c      # Parse configuration file
+lmbf_SRCS += config_file.c      # Parse configuration file
+lmbf_SRCS += configs.c          # Load configurations
 
 lmbf_SRCS += hardware.c         # Interface to FPGA
 

@@ -12,6 +12,7 @@
 
 #include "hardware.h"
 #include "common.h"
+#include "configs.h"
 #include "mms.h"
 
 #include "dac.h"
@@ -75,8 +76,6 @@ static void scan_events(void)
 
 error__t initialise_dac(void)
 {
-    unsigned int dac_mms_offset = 0;    // To be read from h/w config
-
     FOR_CHANNEL_NAMES(channel, "DAC")
     {
         struct dac_context *dac = &dac_context[channel];
@@ -95,7 +94,8 @@ error__t initialise_dac(void)
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
         PUBLISH_READ_VAR(bi, "MMS_OVF", dac->events.mms_ovf);
 
-        dac->mms = create_mms_handler(channel, hw_read_dac_mms, dac_mms_offset);
+        dac->mms = create_mms_handler(
+            channel, hw_read_dac_mms, hardware_delays.dac_mms_offset);
     }
 
     PUBLISH_ACTION("DAC:EVENTS", scan_events);

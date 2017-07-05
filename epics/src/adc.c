@@ -12,6 +12,7 @@
 
 #include "hardware.h"
 #include "common.h"
+#include "configs.h"
 #include "mms.h"
 
 #include "adc.h"
@@ -71,8 +72,6 @@ static void scan_events(void)
 
 error__t initialise_adc(void)
 {
-    unsigned int adc_mms_offset = 0;    // To be read from h/w config
-
     FOR_CHANNEL_NAMES(channel, "ADC")
     {
         struct adc_context *adc = &adc_context[channel];
@@ -90,7 +89,8 @@ error__t initialise_adc(void)
         PUBLISH_READ_VAR(bi, "MMS_OVF",   adc->events.mms_ovf);
         PUBLISH_READ_VAR(bi, "EVENT",     adc->events.delta_event);
 
-        adc->mms = create_mms_handler(channel, hw_read_adc_mms, adc_mms_offset);
+        adc->mms = create_mms_handler(
+            channel, hw_read_adc_mms, hardware_delays.adc_mms_offset);
     }
 
     PUBLISH_ACTION("ADC:EVENTS", scan_events);

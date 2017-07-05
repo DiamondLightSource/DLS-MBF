@@ -1,0 +1,16 @@
+bunches_per_turn = 936
+epics_name = TS-DI-LMBF-02
+channel0_name = X
+channel1_name = Y
+revolution_frequency = 533848
+
+# Polling interval for min/max/sum in microseconds.  Should be be short enough
+# to ensure <60,000 turns between polling events.
+mms_poll_interval = 100000
+
+# Where the persistence file is stored and how often (in seconds) we update
+persistence_file = state
+persistence_interval = 120
+
+# When logging caput to an array we truncate the array at this length
+pv_log_array_length = 10

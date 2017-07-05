@@ -5,7 +5,7 @@ struct mms_handler;
 
 
 /* Must be called *after* all MMS handlers have been created. */
-error__t start_mms_handlers(unsigned int poll_interval);
+error__t start_mms_handlers(void);
 
 
 /* Creates an MMS handler with associated record support. */

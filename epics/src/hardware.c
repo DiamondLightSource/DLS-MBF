@@ -730,7 +730,9 @@ void hw_write_seq_entries(
     WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
     WRITE_DSP_MIRROR(channel, seq_config, target, 0);
     write_sequencer_state(&dsp_regs[channel]->seq_write, &(struct seq_entry) {
+        .dwell_time = 1,
         .bunch_bank = bank0,
+        .capture_count = 1,
         .nco_gain = 0xF,
 //        .nco_enable = false,
     });
@@ -948,8 +950,8 @@ void terminate_hardware(void)
 {
     if (config_regs)
         munmap(config_regs, config_regs_size);
-    if (reg_device)
+    if (reg_device != -1)
         close(reg_device);
-    if (ddr1_device)
+    if (ddr1_device != -1)
         close(ddr1_device);
 }

@@ -14,6 +14,7 @@
 
 #include "hardware.h"
 #include "common.h"
+#include "configs.h"
 
 #include "mms.h"
 
@@ -215,14 +216,13 @@ struct mms_handler *create_mms_handler(
 }
 
 
-static unsigned int mms_poll_interval;
 static volatile bool running = true;
 
 static void *read_mms_thread(void *context)
 {
     while (running)
     {
-        usleep(mms_poll_interval);
+        usleep(system_config.mms_poll_interval);
         for (unsigned int i = 0; i < mms_handlers.count; i ++)
         {
             LOCK(mms_handlers.handlers[i].mutex);
@@ -236,10 +236,8 @@ static void *read_mms_thread(void *context)
 
 static pthread_t mms_thread_id;
 
-error__t start_mms_handlers(unsigned int poll_interval)
+error__t start_mms_handlers(void)
 {
-    mms_poll_interval = poll_interval;
-
     return TEST_PTHREAD(
         pthread_create(&mms_thread_id, NULL, read_mms_thread, NULL));
 }

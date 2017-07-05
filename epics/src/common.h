@@ -1,8 +1,5 @@
 /* Helper functions and related utilities. */
 
-/* Must be called during initialisation before FOR_CHANNEL_NAMES can be used. */
-void set_channel_names(const char *names[]);
-
 
 /* This macro is a little tricky: it's intended to be used for iterating over
  * the set of channel names together with a prefix thus:

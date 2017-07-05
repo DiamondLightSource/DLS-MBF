@@ -16,6 +16,7 @@
 
 #include "hardware.h"
 #include "common.h"
+#include "configs.h"
 
 #include "bunch_select.h"
 
@@ -35,13 +36,6 @@ static struct bunch_context {
     int channel;
     struct bunch_bank banks[BUNCH_BANKS];
 } bunch_context[CHANNEL_COUNT];
-
-
-
-/* These offsets will be read from a hardware config file. */
-static unsigned int fir_offset = 0;
-static unsigned int out_offset = 0;
-static unsigned int gain_offset = 0;
 
 
 
@@ -181,7 +175,7 @@ static void write_fir_wf(void *context, char fir_select[], size_t *length)
 
     update_fir_status(bank, fir_select);
 
-    FOR_BUNCHES_OFFSET(i, j, fir_offset)
+    FOR_BUNCHES_OFFSET(i, j, hardware_delays.bunch_fir_offset)
         bank->config.fir_select[i] = fir_select[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
@@ -195,7 +189,7 @@ static void write_out_wf(void *context, char out_enable[], size_t *length)
 
     update_out_status(bank, out_enable);
 
-    FOR_BUNCHES_OFFSET(i, j, out_offset)
+    FOR_BUNCHES_OFFSET(i, j, hardware_delays.bunch_out_offset)
     {
         bank->config.fir_enable[i] = out_enable[j] & 1;
         bank->config.nco0_enable[i] = (out_enable[j] >> 1) & 1;
@@ -215,7 +209,7 @@ static void write_gain_wf(void *context, float gain[], size_t *length)
         hardware_config.bunches, gain, scaled_gain, 32, 0);
     update_gain_status(bank, scaled_gain);
 
-    FOR_BUNCHES_OFFSET(i, j, gain_offset)
+    FOR_BUNCHES_OFFSET(i, j, hardware_delays.bunch_gain_offset)
         bank->config.gain[i] = scaled_gain[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
