@@ -27,7 +27,6 @@ struct sequencer_bank {
     /* Some values need conversion from EPICS. */
     double start_freq;
     double delta_freq;
-    double end_freq;
 
     /* These two records need updating during user editing. */
     struct epics_record *delta_freq_rec;
@@ -64,17 +63,46 @@ struct seq_context {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/* The management of the sweep interval is tricky.  The interval is defined by
+ * four numbers: START_FREQ, STEP_FREQ, END_FREQ, COUNT which are interrelated
+ * by the formula:
+ *
+ *  START_FREQ + STEP_FREQ * COUNT = END_FREQ
+ *
+ * Note that this defines a "half open" interval, where START_FREQ is in the
+ * range of swept frequencies, but END_FREQ is never actually reached.
+ *
+ * Another tricky detail is how we want this to behave during editing.  The
+ * basic usability principle is that the interval length (END-START) should stay
+ * fixed when changing START_FREQ or COUNT ... but unfortunately if we have both
+ * END_FREQ and STEP_FREQ changed by two inputs we can't choose a consistent set
+ * of parameters for a safe reload (we don't have control over the order in
+ * which parameter are restored). So, we define the following update
+ * dependencies:
+ *
+ *  when changing       update this
+ *  -------------       -----------
+ *  START_FREQ          END_FREQ
+ *  STEP_FREQ           END_FREQ
+ *  COUNT               END_FREQ
+ *  END_FREQ            STEP_FREQ
+ *
+ * With this set of rules we see that END_FREQ is derived and so should not be
+ * part of the persistent state. */
 
+
+/* This is called when END_FREQ is written, we update STEP_FREQ. */
 static bool write_end_freq(void *context, const double *value)
 {
     struct sequencer_bank *bank = context;
-    bank->end_freq = *value;
     bank->delta_freq = (*value - bank->start_freq) / bank->entry.capture_count;
     WRITE_OUT_RECORD(ao, bank->delta_freq_rec, bank->delta_freq, false);
     return true;
 }
 
 
+/* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
+ * END_FREQ is updated. */
 static bool update_end_freq(void *context, const bool *value)
 {
     struct sequencer_bank *bank = context;
@@ -89,10 +117,7 @@ static bool write_bank_count(void *context, const unsigned int *value)
 {
     struct sequencer_bank *bank = context;
     bank->entry.capture_count = *value;
-    bank->delta_freq =
-        (bank->end_freq - bank->start_freq) / bank->entry.capture_count;
-    WRITE_OUT_RECORD(ao, bank->delta_freq_rec, bank->delta_freq, false);
-    return true;
+    return update_end_freq(context, NULL);
 }
 
 
@@ -116,6 +141,7 @@ static void publish_bank(int channel, int ix, struct sequencer_bank *bank)
         bank->delta_freq_rec =
             PUBLISH_WRITE_VAR_P(ao, "STEP_FREQ", bank->delta_freq);
         bank->end_freq_rec = PUBLISH_C(ao, "END_FREQ", write_end_freq, bank);
+
         PUBLISH_C(bo, "UPDATE_END", update_end_freq, bank);
     }
 }
