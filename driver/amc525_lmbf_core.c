@@ -317,10 +317,12 @@ static int amc525_lmbf_probe(
     /* Allocate state for our board. */
     struct amc525_lmbf *lmbf = kmalloc(sizeof(struct amc525_lmbf), GFP_KERNEL);
     TEST_PTR(lmbf, rc, no_memory, "Unable to allocate memory");
-    lmbf->dev = pdev;
-    lmbf->board = board;
-    lmbf->major = major;
-    lmbf->minor = minor;
+    *lmbf = (struct amc525_lmbf) {
+        .dev = pdev,
+        .board = board,
+        .major = major,
+        .minor = minor,
+    };
     mutex_init(&lmbf->locking.mutex);
 
     rc = enable_board(pdev);
