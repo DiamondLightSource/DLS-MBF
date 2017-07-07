@@ -7,6 +7,8 @@ include $(TOP)/configure/CONFIG
 
 include $(EPICS_DEVICE)/src/Makefile.extra
 
+USR_CFLAGS += -Werror
+
 
 # # Pick up configuration symbols and pass them through to the IOC build
 # include $(TOP)/install_d/CONFIG
@@ -50,6 +52,7 @@ lmbf_SRCS += main.c             # Entry point and initialisation
 lmbf_SRCS += common.c           # Miscellaneous shared helper functions
 lmbf_SRCS += config_file.c      # Parse configuration file
 lmbf_SRCS += configs.c          # Load configurations
+lmbf_SRCS += events.c           # Load configurations
 
 lmbf_SRCS += hardware.c         # Interface to FPGA
 
@@ -61,6 +64,7 @@ lmbf_SRCS += dac.c              # DAC interface and control
 lmbf_SRCS += bunch_fir.c        # Bunch buunch FIR filter control
 lmbf_SRCS += bunch_select.c     # Bunch selection control
 lmbf_SRCS += sequencer.c        # State sequencer control
+lmbf_SRCS += memory.c           # Fast memory readout
 # lmbf_SRCS += triggers.c         # Trigger control and selection
 # lmbf_SRCS += detector.c         # I/Q detector
 # lmbf_SRCS += tune.c             # Tune measurement and high level control

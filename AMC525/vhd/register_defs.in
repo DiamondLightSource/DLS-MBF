@@ -198,7 +198,7 @@
 
         *RW
             # Only valid after STOP has been triggered, returns the write
-            # address at the time of the trigger event
+            # address at the time of the trigger event in multiples of 8 bytes.
             ADDRESS     R
             # Write to this register to trigger the select actions
             COMMAND     WP

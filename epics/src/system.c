@@ -54,22 +54,19 @@ static void publish_nco_pvs(void)
 static EPICS_STRING version_string = { LMBF_VERSION };
 static EPICS_STRING fpga_version = { };
 static EPICS_STRING hostname = { };
-static char dram_name[256];
 
 static error__t initialise_strings(void)
 {
     PUBLISH_READ_VAR(stringin, "VERSION", version_string);
     PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
     PUBLISH_READ_VAR(stringin, "HOSTNAME", hostname);
-    PUBLISH_WF_READ_VAR(char, "DRAM_NAME", sizeof(dram_name), dram_name);
 
     sprintf(fpga_version.s, "%08x", hw_read_fpga_version());
 
     struct utsname utsname;
     return
         TEST_IO(uname(&utsname))  ?:
-        DO(strncpy(hostname.s, utsname.nodename, sizeof(hostname.s)))  ?:
-        hw_read_fast_dram_name(dram_name, sizeof(dram_name));
+        DO(strncpy(hostname.s, utsname.nodename, sizeof(hostname.s)));
 }
 
 

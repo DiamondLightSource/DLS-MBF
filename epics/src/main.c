@@ -24,12 +24,15 @@
 #include "common.h"
 #include "system.h"
 #include "configs.h"
+
 #include "mms.h"
 #include "adc.h"
 #include "dac.h"
 #include "bunch_fir.h"
 #include "bunch_select.h"
 #include "sequencer.h"
+#include "memory.h"
+#include "events.h"
 
 
 /* External declaration of DBD binding. */
@@ -122,8 +125,10 @@ static error__t load_database(const char *database)
     database_add_macro("BUNCH_TAPS", "%d", hardware_config.bunch_taps);
     database_add_macro("DAC_TAPS", "%d", hardware_config.dac_taps);
     database_add_macro("BUNCHES_PER_TURN", "%d", hardware_config.bunches);
-    database_add_macro(
-        "REVOLUTION_FREQUENCY", "%g", system_config.revolution_frequency);
+    database_add_macro("REVOLUTION_FREQUENCY", "%g",
+        system_config.revolution_frequency);
+    database_add_macro("MEMORY_READOUT_LENGTH", "%d",
+        system_config.memory_readout_length);
     return database_load_file(database);
 }
 
@@ -162,6 +167,7 @@ static error__t initialise_subsystems(void)
         initialise_bunch_fir()  ?:
         initialise_bunch_select()  ?:
         initialise_sequencer()  ?:
+        initialise_memory()  ?:
 //         initialise_triggers()  ?:
 //         initialise_sensors()  ?:
 //         initialise_detector()  ?:
@@ -187,6 +193,7 @@ int main(int argc, char *const argv[])
         initialise_epics_device()  ?:
 
         initialise_subsystems()  ?:
+        initialise_events()  ?:
 
         load_persistent_state(
             system_config.persistence_file,
@@ -206,6 +213,8 @@ int main(int argc, char *const argv[])
     /* Orderly shutdown. */
     stop_epics();
     stop_mms_handlers();
+    terminate_memory();
+    terminate_events();
     terminate_hardware();
 
     return ERROR_REPORT(error, "Unable to start IOC") ? 1 : 0;

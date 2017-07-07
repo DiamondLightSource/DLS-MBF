@@ -60,6 +60,7 @@ static const struct config_entry system_config_entries[] = {
     SYSTEM_ENTRY(string, persistence_file),
     SYSTEM_ENTRY(int, persistence_interval),
     SYSTEM_ENTRY(int, pv_log_array_length),
+    SYSTEM_ENTRY(uint, memory_readout_length),
 };
 
 

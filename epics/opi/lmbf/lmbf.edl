@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 3423
-y 830
+x 3371
+y 616
 w 416
-h 345
+h 378
 font "helvetica-medium-r-8.0"
 ctlFont "helvetica-medium-r-8.0"
 btnFont "helvetica-medium-r-8.0"
@@ -346,7 +346,7 @@ major 4
 minor 1
 release 1
 x 8
-y 272
+y 288
 w 48
 h 14
 font "helvetica-bold-r-12.0"
@@ -366,7 +366,7 @@ major 4
 minor 6
 release 0
 x 104
-y 272
+y 288
 w 200
 h 14
 controlPv "$(device):VERSION"
@@ -390,7 +390,7 @@ major 4
 minor 6
 release 0
 x 104
-y 288
+y 304
 w 200
 h 14
 controlPv "$(device):FPGA_VERSION"
@@ -414,7 +414,7 @@ major 4
 minor 1
 release 1
 x 8
-y 288
+y 304
 w 85
 h 14
 font "helvetica-bold-r-12.0"
@@ -434,7 +434,7 @@ major 4
 minor 6
 release 0
 x 104
-y 304
+y 320
 w 200
 h 14
 controlPv "$(device):HOSTNAME"
@@ -458,7 +458,7 @@ major 4
 minor 1
 release 1
 x 8
-y 304
+y 320
 w 64
 h 14
 font "helvetica-bold-r-12.0"
@@ -471,47 +471,26 @@ value {
 autoSize
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
+# (Related Display)
+object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 6
+minor 4
 release 0
-x 104
-y 320
-w 200
-h 14
-controlPv "$(device):DRAM_NAME"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
 x 8
-y 320
-w 83
-h 14
+y 248
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
 font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Fast memory:"
+buttonLabel "Memory"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/memory.edl"
 }
-autoSize
 endObjectProperties
 

@@ -19,6 +19,7 @@ extern const struct system_config {
     const char *persistence_file;
     int persistence_interval;
     int pv_log_array_length;
+    unsigned int memory_readout_length;
 } system_config;
 
 

@@ -474,7 +474,7 @@ static void read_mms(
     LOCK(dsp_locks[channel]);
 
     struct mms_count count = READL(mms->count);
-    result->turns = count.turns;
+    result->turns = count.turns + 1U;
     result->turns_ovfl = count.turns_ovfl;
     result->sum_ovfl = count.sum_ovfl;
     result->sum2_ovfl = count.sum2_ovfl;
@@ -871,6 +871,12 @@ static int ddr1_device = -1;
 static void *config_regs;
 static size_t config_regs_size;
 
+
+error__t hw_read_interrupt_events(unsigned int *events)
+{
+    *events = 0;
+    return TEST_IO(read(reg_device, events, 1));
+}
 
 
 static error__t map_config_regs(void)

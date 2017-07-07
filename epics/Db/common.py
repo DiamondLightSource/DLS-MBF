@@ -41,8 +41,8 @@ def for_channels(prefix, action, *args):
 def dBrange(count, step, start = 0):
     return ['%sdB' % db for db in range(start, start + count*step, step)]
 
-def overflow(name, desc):
-    return boolIn(name, 'Ok', 'Overflow', OSV = 'MAJOR', DESC = desc)
+def overflow(name, desc, **args):
+    return boolIn(name, 'Ok', 'Overflow', OSV = 'MAJOR', DESC = desc, **args)
 
-def event(name, desc):
-    return boolIn(name, 'No', 'Yes', ZSV = 'MINOR', DESC = desc)
+def event(name, desc, **args):
+    return boolIn(name, 'No', 'Yes', ZSV = 'MINOR', DESC = desc, **args)
