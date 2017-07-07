@@ -251,6 +251,7 @@ begin
 
     interrupts <= (
         0 => dram0_capture_enable_o,
+        1 => not dram0_capture_enable_o,
         others => '0'
     );
 end;
