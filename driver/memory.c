@@ -84,6 +84,8 @@ static ssize_t lmbf_dma_read(
     release_dma_memory(context->dma);
 
     *f_pos += read_count;
+    if (*f_pos == context->length)
+        *f_pos = 0;
     if (read_count == 0)
         /* Looks like copy_to_user didn't copy anything. */
         return -EFAULT;
