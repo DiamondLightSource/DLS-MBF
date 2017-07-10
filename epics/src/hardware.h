@@ -8,6 +8,9 @@
 #define SUPER_SEQ_STATES    1024    // Max super sequencer states
 #define DET_WINDOW_LENGTH   1024    // Length of sequencer detector window
 
+#define DRAM0_LENGTH        0x80000000U     // 2GB
+#define DRAM1_LENGTH        0x08000000U     // 128M
+
 
 /* This structure is filled in when initialise_hardware() is called and is
  * available for use throughout the system. */
@@ -95,15 +98,15 @@ void hw_write_dram_runout(unsigned int count);
 /* Returns trigger address from DRAM0. */
 unsigned int hw_read_dram_address(void);
 
-/* Starts free running capture to DRAM0.  If auto_stop is set then capture halts
- * after the configure runout sample time. */
-void hw_write_dram_start_capture(bool auto_stop);
-
-/* This halts capture. */
-void hw_write_dram_stop_capture(void);
+/* Start and stop capture to DRAM. */
+void hw_write_dram_capture_command(bool start, bool stop);
 
 /* Returns true while capture to DRAM in progress. */
 bool hw_read_dram_active(void);
+
+/* Reads the specified number of samples from DRAM0 starting at the given offset
+ * into the given result array, which must be at least samples entries long. */
+void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[]);
 
 
 /* Trigger configuration - - - - - - - - - - - - - - - - - - - - - - - - - - */

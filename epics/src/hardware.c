@@ -25,6 +25,10 @@
 const struct hardware_config hardware_config;
 
 
+static int dram0_device = -1;
+static int dram1_device = -1;
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Register access support. */
 
@@ -114,11 +118,11 @@ static uint32_t write_selected_bit(
 static volatile struct sys *sys_regs;
 
 
-static const char *dram0_device_name;
+static const char *public_dram0_device_name;
 
 error__t hw_read_fast_dram_name(char *name, size_t length)
 {
-    strncpy(name, dram0_device_name, length);
+    strncpy(name, public_dram0_device_name, length);
     return ERROR_OK;
 }
 
@@ -217,22 +221,37 @@ unsigned int hw_read_dram_address(void)
     return readl(&ctrl_regs->mem_address);
 }
 
-void hw_write_dram_start_capture(bool auto_stop)
+void hw_write_dram_capture_command(bool start, bool stop)
 {
     WRITE_FIELDS(ctrl_regs->mem_command,
-        .start = 1,
-        .stop = auto_stop);
-}
-
-void hw_write_dram_stop_capture(void)
-{
-    WRITE_FIELDS(ctrl_regs->mem_command, .stop = 1);
+        .start = start,
+        .stop = stop);
 }
 
 bool hw_read_dram_active(void)
 {
     struct ctrl_mem_status status = READL(ctrl_regs->mem_status);
     return status.enable;
+}
+
+void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[])
+{
+    off_t seek_offset = offset & (DRAM0_LENGTH - 1);
+    error__t error = TEST_IO(lseek(dram0_device, seek_offset, SEEK_SET));
+
+    size_t read_request = samples * sizeof(uint32_t);
+    void *read_result = result;
+    while (!error  &&  read_request > 0)
+    {
+        ssize_t read_size;
+        error = TEST_IO(
+            read_size = read(dram0_device, read_result, read_request));
+        read_result += read_size;
+        read_request -= (size_t) read_size;
+        if (read_size == 0) break;          // Shouldn't happen.
+    }
+
+    ERROR_REPORT(error, "Error reading from DRAM0");
 }
 
 
@@ -867,7 +886,6 @@ void hw_write_det_start(int channel)
 
 
 static int reg_device = -1;
-static int ddr1_device = -1;
 static void *config_regs;
 static size_t config_regs_size;
 
@@ -930,18 +948,20 @@ error__t initialise_hardware(
     /* Compute device node names from the prefix. */
     size_t prefix_length = strlen(prefix);
     char reg_device_name[prefix_length + 8];
-    char ddr0_device_name[prefix_length + 8];
-    char ddr1_device_name[prefix_length + 8];
+    char dram0_device_name[prefix_length + 8];
+    char dram1_device_name[prefix_length + 8];
     sprintf(reg_device_name, "%s.reg", prefix);
-    sprintf(ddr0_device_name, "%s.ddr0", prefix);
-    sprintf(ddr1_device_name, "%s.ddr1", prefix);
+    sprintf(dram0_device_name, "%s.ddr0", prefix);
+    sprintf(dram1_device_name, "%s.ddr1", prefix);
 
-    dram0_device_name = strdup(ddr0_device_name);
+    public_dram0_device_name = strdup(dram0_device_name);
     return
-        TEST_IO_(ddr1_device = open(ddr1_device_name, O_RDONLY),
+        TEST_IO_(reg_device = open(reg_device_name, O_RDWR | O_SYNC),
             "Unable to find LMBF device with prefix %s", prefix)  ?:
-        TEST_IO(reg_device = open(reg_device_name, O_RDWR | O_SYNC))  ?:
-        IF(lock_registers, hw_lock_registers())  ?:
+        TEST_IO(dram0_device = open(dram0_device_name, O_RDONLY))  ?:
+        TEST_IO(dram1_device = open(dram1_device_name, O_RDONLY))  ?:
+        IF(lock_registers,
+            hw_lock_registers())  ?:
         TEST_IO(
             config_regs_size = (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
         TEST_IO(config_regs = mmap(
@@ -958,6 +978,8 @@ void terminate_hardware(void)
         munmap(config_regs, config_regs_size);
     if (reg_device != -1)
         close(reg_device);
-    if (ddr1_device != -1)
-        close(ddr1_device);
+    if (dram0_device != -1)
+        close(dram0_device);
+    if (dram1_device != -1)
+        close(dram1_device);
 }

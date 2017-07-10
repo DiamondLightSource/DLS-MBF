@@ -146,36 +146,45 @@ static struct epics_record *origin_pv;
 
 static bool triggered_capture;
 static unsigned int trigger_origin;
-static unsigned int readout_offset;
-
-static int dram0_handle = -1;
+static int readout_offset;
 
 
 static void readout_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
     uint32_t buffer[readout_length];
-    error__t error =
-        TEST_IO(lseek(dram0_handle, trigger_origin, SEEK_SET))  ?:
-        TEST_IO(read(dram0_handle, buffer, sizeof(buffer)));
 
-    if (!ERROR_REPORT(error, "Error reading from DRAM0"))
+    size_t origin = (size_t) trigger_origin;
+    size_t delta = (size_t) (readout_offset * (int) sizeof(uint32_t));
+    size_t offset = origin + delta;
+    hw_read_dram_memory(offset, readout_length, buffer);
+
+    interlock_wait(memory_readout);
+
+    for (unsigned int i = 0; i < readout_length; i ++)
     {
-        interlock_wait(memory_readout);
-
-        for (unsigned int i = 0; i < readout_length; i ++)
-        {
-            memory_wf0[i] = (int16_t) buffer[i];
-            memory_wf1[i] = (int16_t) (buffer[i] >> 16);
-        }
-
-        interlock_signal(memory_readout, NULL);
+        memory_wf0[i] = (int16_t) buffer[i];
+        memory_wf1[i] = (int16_t) (buffer[i] >> 16);
     }
 
+    interlock_signal(memory_readout, NULL);
 }
 
 
-static void write_readout_offset(unsigned int offset)
+static void write_dram_runout(unsigned int runout)
+{
+    static const unsigned int runout_lookup[] = {
+        0x00000000,         // 0 %
+        0x04000000,         // 25 %
+        0x08000000,         // 50 %
+        0x0C000000,         // 75 %
+        0x0FFFFFFF          // 100 %
+    };
+    hw_write_dram_runout(runout_lookup[runout]);
+}
+
+
+static void write_readout_offset(int offset)
 {
     readout_offset = offset;
     if (check_epics_ready())
@@ -183,16 +192,21 @@ static void write_readout_offset(unsigned int offset)
 }
 
 
-static void enable_capture(void)
+static void start_capture(void)
 {
-    hw_write_dram_start_capture(!triggered_capture);
+    hw_write_dram_capture_command(true, !triggered_capture);
+}
+
+
+static void stop_capture(void)
+{
+    hw_write_dram_capture_command(false, true);
 }
 
 
 static void capture_complete(void)
 {
     trigger_origin = hw_read_dram_address();
-printf("trigger_origin = %08x\n", trigger_origin);
     trigger_record(origin_pv);
     readout_memory();
 }
@@ -228,31 +242,25 @@ error__t initialise_memory(void)
         PUBLISH_WF_READ_VAR(short, "WF0", readout_length, memory_wf0);
         PUBLISH_WF_READ_VAR(short, "WF1", readout_length, memory_wf1);
 
-        PUBLISH_WRITER_P(ulongout, "OFFSET", write_readout_offset);
+        PUBLISH_WRITER_P(longout, "OFFSET", write_readout_offset);
 
         /* Channel readout configuration. */
         memory_select = PUBLISH_WRITER_P(mbbo, "SELECT", write_memory_select);
         chan0_select = PUBLISH_WRITER(mbbo, "SEL0", write_chan0_select);
         chan1_select = PUBLISH_WRITER(mbbo, "SEL1", write_chan1_select);
+        PUBLISH_WRITER_P(mbbo, "FIR_GAIN", hw_write_dram_fir_gain);
 
         /* Capture triggering. */
-        PUBLISH_ACTION("ENABLE", enable_capture);
+        PUBLISH_ACTION("START", start_capture);
+        PUBLISH_ACTION("STOP", stop_capture);
         PUBLISH_WRITE_VAR_P(bo, "TRIGGERED", triggered_capture);
         busy_status = PUBLISH_IN_VALUE_I(bi, "BUSY");
-        PUBLISH_WRITER_P(ulongout, "RUNOUT", hw_write_dram_runout);
+        PUBLISH_WRITER_P(mbbo, "RUNOUT", write_dram_runout);
 
         PUBLISH_WF_READ_VAR(char, "DEVICE", sizeof(device_name), device_name);
         origin_pv = PUBLISH_READ_VAR_I(ulongin, "ORIGIN", trigger_origin);
     }
 
     return
-        hw_read_fast_dram_name(device_name, sizeof(device_name))  ?:
-        TEST_IO(dram0_handle = open(device_name, O_RDONLY));
-}
-
-
-void terminate_memory(void)
-{
-    if (dram0_handle != -1)
-        close(dram0_handle);
+        hw_read_fast_dram_name(device_name, sizeof(device_name));
 }

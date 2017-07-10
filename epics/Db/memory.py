@@ -52,16 +52,20 @@ def memory_pvs():
         DESC = 'Channel 0 capture selection', *select_channel)
     mbbOut('SEL1', PINI = 'NO',
         DESC = 'Channel 1 capture selection', *select_channel)
+    mbbOut('FIR_GAIN', DESC = 'FIR capture gain', *dBrange(16, -6, 48))
 
-    longOut('OFFSET', EGU = 'turns', DESC = 'Offset of readout')
+    longOut('OFFSET', 0, (1 << 29) - 1, EGU = 'samples',
+        DESC = 'Offset of readout')
 
     # Capture control
-    Action('ENABLE', DESC = 'Start capture to memory')
+    Action('START', DESC = 'Start capture to memory')
+    Action('STOP', DESC = 'Stop capture to memory')
     boolOut('TRIGGERED', 'Immediate', 'Triggered',
         DESC = 'Capture configuration')
     boolIn('BUSY', 'Ready', 'Busy',
         OSV = 'MINOR', SCAN = 'I/O Intr', DESC = 'Capture status')
-    longOut('RUNOUT', DESC = 'Post trigger capture count')
+    mbbOut('RUNOUT', '0%', '25%', '50%', '75%', '100%',
+        DESC = 'Post trigger capture count')
 
     # Path to fast DRAM device for direct access (if on same machine) and
     # position of seek origin

@@ -213,7 +213,6 @@ int main(int argc, char *const argv[])
     /* Orderly shutdown. */
     stop_epics();
     stop_mms_handlers();
-    terminate_memory();
     terminate_events();
     terminate_hardware();
 
