@@ -84,10 +84,6 @@ architecture arch of dsp_control_top is
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
 
-    signal interrupts : interrupts_o'SUBTYPE;
-
-    constant INTERRUPT_PIPELINE : natural := 4;
-
 begin
     -- Capture of pulsed bits.
     pulsed_bits_inst : entity work.all_pulsed_bits port map (
@@ -239,19 +235,14 @@ begin
     end generate;
 
 
-    -- Interrupt assignment and pipeline to help with placement.
-    interrupt_delay : entity work.dlyreg generic map (
-        DLY => INTERRUPT_PIPELINE,
-        DW => interrupts'LENGTH
-    ) port map (
-        clk_i => dsp_clk_i,
-        data_i => interrupts,
-        data_o => interrupts_o
-    );
+    -- Generate appropriate interrupt signals
+    interrupts : entity work.dsp_interrupts port map (
+        dsp_clk_i => dsp_clk_i,
 
-    interrupts <= (
-        0 => dram0_capture_enable_o,
-        1 => not dram0_capture_enable_o,
-        others => '0'
+        dram0_capture_enable_i => dram0_capture_enable_o,
+        dram0_trigger_i => dram0_trigger,
+        seq_start_i => seq_start,
+
+        interrupts_o => interrupts_o
     );
 end;
