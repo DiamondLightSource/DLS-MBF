@@ -52,11 +52,11 @@ bool interrupt_events_ready(struct interrupt_control *control)
 
 
 int read_interrupt_events(
-    struct interrupt_control *control, bool no_wait, char *events)
+    struct interrupt_control *control, bool no_wait, uint32_t *events)
 {
     if (no_wait)
     {
-        *events = (char) atomic_xchg(&control->events, 0);
+        *events = (uint32_t) atomic_xchg(&control->events, 0);
         return 0;
     }
     else
@@ -65,7 +65,7 @@ int read_interrupt_events(
          * that we'll never return a non zero value unless no_wait is true. */
         return wait_event_interruptible(
             control->wait_queue,
-            (*events = (char) atomic_xchg(&control->events, 0)));
+            (*events = (uint32_t) atomic_xchg(&control->events, 0)));
 }
 
 

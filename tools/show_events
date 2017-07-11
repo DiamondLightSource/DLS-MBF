@@ -4,6 +4,7 @@
 
 import os
 import select
+import struct
 
 
 # Just using non-blocking as a test of select behaviour in the driver.
@@ -11,4 +12,5 @@ f = os.open('/dev/amc525_lmbf.0.reg', os.O_NONBLOCK)
 
 while True:
     r, w, x = select.select([f], [], [])
-    print ord(os.read(f, 1))
+    mask = struct.unpack('I', os.read(f, 4))
+    print '%08x' % mask

@@ -167,12 +167,16 @@ static ssize_t lmbf_reg_read(
     if (no_wait  &&  !interrupt_events_ready(context->interrupts))
         return -EAGAIN;
 
-    char events;
+    /* Ensure we've asked for at least 4 bytes. */
+    if (count < sizeof(uint32_t))
+        return -EIO;
+
+    uint32_t events;
     int rc = read_interrupt_events(context->interrupts, no_wait, &events);
     if (rc < 0)
         /* Read was interrupted. */
         return rc;
-    else if (copy_to_user(buf, &events, 1) > 0)
+    else if (copy_to_user(buf, &events, sizeof(uint32_t)) > 0)
         /* Invalid buffer specified by user process, couldn't copy. */
         return -EFAULT;
     else if (events == 0)
@@ -180,7 +184,7 @@ static ssize_t lmbf_reg_read(
          * O_NONBLOCK was set. */
         return -EAGAIN;
     else
-        return 1;
+        return sizeof(uint32_t);
 }
 
 

@@ -13,7 +13,7 @@ void terminate_interrupt_control(
 
 /* Blocks until non zero event mask can be returned. */
 int read_interrupt_events(
-    struct interrupt_control *control, bool no_wait, char *events);
+    struct interrupt_control *control, bool no_wait, uint32_t *events);
 
 /* Checks if a non zero event mask is available to read. */
 bool interrupt_events_ready(struct interrupt_control *control);

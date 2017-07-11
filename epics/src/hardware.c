@@ -892,8 +892,7 @@ static size_t config_regs_size;
 
 error__t hw_read_interrupt_events(unsigned int *events)
 {
-    *events = 0;
-    return TEST_IO(read(reg_device, events, 1));
+    return TEST_IO(read(reg_device, events, sizeof(uint32_t)));
 }
 
 
