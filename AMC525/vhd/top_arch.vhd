@@ -17,7 +17,7 @@ architecture arch of top is
     signal clk125mhz : std_logic;
 
     -- Interrupt signals
-    signal INTR : std_logic_vector(7 downto 0);
+    signal INTR : std_logic_vector(30 downto 0);
 
     -- Clocking and reset resources
     signal adc_clk : std_logic;
