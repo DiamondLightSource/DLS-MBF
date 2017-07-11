@@ -198,7 +198,7 @@
 
         *RW
             # Only valid after STOP has been triggered, returns the write
-            # address at the time of the trigger event in multiples of 8 bytes.
+            # address in bytes at the time of the trigger event
             ADDRESS     R
             # Write to this register to trigger the select actions
             COMMAND     WP
@@ -260,6 +260,8 @@
                 # Each bit records a raw trigger event from the corresponding
                 # trigger source
                 .TRIGGERS   7
+                # Set if the blanking input has seen a rising edge
+                .BLANKING
             # Pulsed trigger control events
             CONTROL     WP
                 # Start turn clock synchronisation
@@ -302,7 +304,9 @@
             # Turn clock counter captured by sample
             .SAMPLE     10 @16
 
-        # Trigger event sources.
+        # Trigger event sources.  When a destination is triggered the source of
+        # the trigger is latched into the corresponding source mask below.  The
+        # source mask is reset when the destination is armed.
         SOURCES     R
             # Sequencer 0 trigger source mask
             .SEQ0       7

@@ -89,6 +89,7 @@ begin
 
         soft_trigger_o => soft_trigger,
         triggers_i => triggers,
+        blanking_trigger_i => blanking_trigger,
 
         blanking_interval_o => blanking_interval,
 

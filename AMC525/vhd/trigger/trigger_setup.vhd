@@ -60,10 +60,12 @@ begin
         trigger_o => postmortem_trigger
     );
 
-    blanking_condition_inst : entity work.trigger_condition port map (
+    -- The blanking input is level not edge sensitive, so we just pull the input
+    -- over to the DSP clock.
+    blanking_condition_inst : entity work.sync_bit port map (
         clk_i => dsp_clk_i,
-        trigger_i => blanking_trigger_i,
-        trigger_o => blanking_trigger_o
+        bit_i => blanking_trigger_i,
+        bit_o => blanking_trigger_o
     );
 
     -- Delay the soft trigger so we can strobe arm and trigger together

@@ -29,6 +29,7 @@ entity trigger_registers is
         -- Trigger control
         soft_trigger_o : out std_logic;
         triggers_i : in std_logic_vector(TRIGGER_SET);
+        blanking_trigger_i : in std_logic;
 
         blanking_interval_o : out unsigned_array(CHANNELS);
 
@@ -124,6 +125,7 @@ begin
 
     pulsed_bits <= (
         CTRL_TRG_PULSED_TRIGGERS_BITS => triggers_i,
+        CTRL_TRG_PULSED_BLANKING_BIT => blanking_trigger_i,
         others => '0'
     );
 
