@@ -38,7 +38,7 @@ architecture arch of bunch_fir is
     constant DSP_DATA_DELAY : natural := 3;
     constant DSP_ACCUM_DELAY : natural := 2;
     -- Registers from DSP to memory
-    constant DSP_RAMB_DELAY : natural := 2;
+    constant DSP_RAMB_DELAY : natural := 1;
     -- Registers from memory to DSP
     constant RAMB_DSP_DELAY : natural := 1;
 
