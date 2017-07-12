@@ -6,9 +6,7 @@ def mms_waveform(name, desc):
     return Waveform(name, BUNCHES_PER_TURN, 'FLOAT', DESC = desc)
 
 
-def mms_pvs(source):
-    push_name_prefix('MMS')
-
+def do_mms_pvs(source):
     pvs = [
         mms_waveform('MIN', 'Min %s values per bunch' % source),
         mms_waveform('MAX', 'Max %s values per bunch' % source),
@@ -25,4 +23,6 @@ def mms_pvs(source):
         FLNK = create_fanout('FAN', *pvs),
         DESC = '%s min/max scanning' % source)
 
-    pop_name_prefix()
+
+def mms_pvs(source):
+    with_name_prefix('MMS', do_mms_pvs, source)

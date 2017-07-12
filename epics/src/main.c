@@ -33,6 +33,7 @@
 #include "sequencer.h"
 #include "memory.h"
 #include "events.h"
+#include "triggers.h"
 
 
 /* External declaration of DBD binding. */
@@ -168,7 +169,7 @@ static error__t initialise_subsystems(void)
         initialise_bunch_select()  ?:
         initialise_sequencer()  ?:
         initialise_memory()  ?:
-//         initialise_triggers()  ?:
+        initialise_triggers()  ?:
 //         initialise_sensors()  ?:
 //         initialise_detector()  ?:
 //         initialise_tune()  ?:

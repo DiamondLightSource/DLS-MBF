@@ -11,6 +11,8 @@
 #define DRAM0_LENGTH        0x80000000U     // 2GB
 #define DRAM1_LENGTH        0x08000000U     // 128M
 
+#define TRIGGER_SOURCE_COUNT    7   // Seven distinct possible trigger sources
+
 
 /* This structure is filled in when initialise_hardware() is called and is
  * available for use throughout the system. */
@@ -111,17 +113,6 @@ void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[]);
 
 /* Trigger configuration - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* These are the available sources of trigger events. */
-struct trigger_sources {
-    bool soft;              // Software generated trigger
-    bool external;          // External trigger on DIO input 0
-    bool postmortem;        // Postmortem trigger on DIO input 1
-    bool adc0_motion;       // ADC input motion event
-    bool adc1_motion;
-    bool state0;            // Sequencer state event
-    bool state1;
-};
-
 /* This defines the set of internal trigger destinations. */
 enum trigger_destination {
     TRIGGER_SEQ0,
@@ -152,7 +143,7 @@ void hw_write_turn_clock_sample(void);
 void hw_write_turn_clock_offset(int channel, unsigned int offset);
 
 /* Returns which incoming trigger events have occurred since the last call. */
-void hw_read_trigger_events(struct trigger_sources *sources);
+void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);
 
 /* Simultaneous arming of the selected trigger destinations. */
 void hw_write_trigger_arm(bool arm_seq0, bool arm_seq1, bool arm_dram);
@@ -167,10 +158,10 @@ void hw_write_trigger_soft_trigger(void);
 /* Reads the current trigger status. */
 void hw_read_trigger_status(struct trigger_status *status);
 
-/* Configures which sources are enabled for the selected destination. */
-void hw_write_trigger_sources(
+/* Reads which trigger sources fired the selected destination. */
+void hw_read_trigger_sources(
     enum trigger_destination destination,
-    const struct trigger_sources *sources);
+    bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Program duration of blanking window. */
 void hw_write_trigger_blanking_duration(int channel, unsigned int duration);
@@ -183,12 +174,12 @@ void hw_write_trigger_delay(
  * destination. */
 void hw_write_trigger_enable_mask(
     enum trigger_destination destination,
-    const struct trigger_sources *sources);
+    const bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Configure which trigger sources are blanked for the selected destination. */
 void hw_write_trigger_blanking_mask(
     enum trigger_destination destination,
-    const struct trigger_sources *sources);
+    const bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Configure the turn clock and blanking pulse used for DRAM triggering. */
 void hw_write_trigger_dram_select(

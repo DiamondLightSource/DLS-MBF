@@ -8,5 +8,6 @@ import bunch_select
 import sequencer
 # import detector
 import memory
+import triggers
 
 WriteRecords(sys.argv[1], Disclaimer(__file__))

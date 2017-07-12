@@ -257,22 +257,6 @@ void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[])
 
 /* Trigger registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-STATIC_COMPILE_ASSERT(sizeof(struct trigger_sources) == 7);
-
-static void bits_to_sources(uint32_t bits, struct trigger_sources *sources)
-{
-    bits_to_bools(
-        sizeof(struct trigger_sources), bits,
-        CAST_FROM_TO(struct trigger_sources *, bool *, sources));
-}
-
-static uint32_t sources_to_bits(const struct trigger_sources *sources)
-{
-    return bools_to_bits(
-        sizeof(struct trigger_sources),
-        CAST_FROM_TO(const struct trigger_sources *, const bool *, sources));
-}
-
 
 static void hw_write_bunch_count(unsigned int bunches)
 {
@@ -308,10 +292,11 @@ void hw_write_turn_clock_offset(int channel, unsigned int offset)
     UNLOCK(ctrl_lock);
 }
 
-void hw_read_trigger_events(struct trigger_sources *sources)
+void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking)
 {
     struct ctrl_trg_pulsed events = READL(ctrl_regs->trg_pulsed);
-    bits_to_sources(events.triggers, sources);
+    bits_to_bools(TRIGGER_SOURCE_COUNT, events.triggers, sources);
+    *blanking = events.blanking;
 }
 
 void hw_write_trigger_arm(bool arm_seq0, bool arm_seq1, bool arm_dram)
@@ -352,26 +337,25 @@ void hw_read_trigger_status(struct trigger_status *result)
     result->clock_offset = status.sample;
 }
 
-void hw_write_trigger_sources(
+void hw_read_trigger_sources(
     enum trigger_destination destination,
-    const struct trigger_sources *sources)
+    bool sources[TRIGGER_SOURCE_COUNT])
 {
-    uint32_t source_mask = sources_to_bits(sources);
-    LOCK(ctrl_lock);
+    struct ctrl_trg_sources trg_sources = ctrl_regs->trg_sources;
+    uint32_t source_mask = 0;
     switch (destination)
     {
         case TRIGGER_SEQ0:
-            ctrl_mirror.trg_sources.seq0 = source_mask & 0x7F;
+            source_mask = trg_sources.seq0;
             break;
         case TRIGGER_SEQ1:
-            ctrl_mirror.trg_sources.seq1 = source_mask & 0x7F;
+            source_mask = trg_sources.seq1;
             break;
         case TRIGGER_DRAM:
-            ctrl_mirror.trg_sources.dram0 = source_mask & 0x7F;
+            source_mask = trg_sources.dram0;
             break;
     }
-    WRITEL(ctrl_regs->trg_sources, ctrl_mirror.trg_sources);
-    UNLOCK(ctrl_lock);
+    bits_to_bools(TRIGGER_SOURCE_COUNT, source_mask, sources);
 }
 
 void hw_write_trigger_blanking_duration(int channel, unsigned int duration)
@@ -412,9 +396,9 @@ void hw_write_trigger_delay(
 
 void hw_write_trigger_enable_mask(
     enum trigger_destination destination,
-    const struct trigger_sources *sources)
+    const bool sources[TRIGGER_SOURCE_COUNT])
 {
-    uint32_t source_mask = sources_to_bits(sources);
+    uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
     LOCK(ctrl_lock);
     switch (destination)
     {
@@ -439,9 +423,9 @@ void hw_write_trigger_enable_mask(
 
 void hw_write_trigger_blanking_mask(
     enum trigger_destination destination,
-    const struct trigger_sources *sources)
+    const bool sources[TRIGGER_SOURCE_COUNT])
 {
-    uint32_t source_mask = sources_to_bits(sources);
+    uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
     LOCK(ctrl_lock);
     switch (destination)
     {

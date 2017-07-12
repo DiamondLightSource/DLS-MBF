@@ -5,33 +5,31 @@ from common import *
 
 BUNCH_TAPS = Parameter('BUNCH_TAPS', 'Number of taps in Bunch by Bunch FIR')
 
-# FIR
+
+def bank_pvs():
+    boolOut('USEWF', 'Settings', 'Waveform',
+        DESC = 'Use direct waveform or settings')
+
+    # Direct settings of FIR parameters
+    ForwardLink('RELOAD', 'Reload filter',
+        longOut('LENGTH', 2, BUNCH_TAPS, DESC = 'Length of filter'),
+        longOut('CYCLES', 1, BUNCH_TAPS, DESC = 'Cycles in filter'),
+        aOut('PHASE', -360, 360, DESC = 'FIR phase'))
+
+    # Waveform taps in two forms: TAPS_S is what is set directly as a
+    # waveform write, TAPS is what is current loaded.
+    WaveformOut('TAPS', BUNCH_TAPS, 'FLOAT', address = 'TAPS_S',
+        DESC = 'Set waveform taps')
+    Waveform('TAPS', BUNCH_TAPS, 'FLOAT',
+        SCAN = 'I/O Intr', DESC = 'Current waveform taps')
+
 
 def bunch_fir_pvs():
     # There are four banks of FIR coefficients, each can either be written
     # directly as a waveform or by separately controlling phase and fractional
     # frequency.
     for bank in range(4):
-        push_name_prefix('%d' % bank)
-
-        boolOut('USEWF', 'Settings', 'Waveform',
-            DESC = 'Use direct waveform or settings')
-
-        # Direct settings of FIR parameters
-        ForwardLink('RELOAD', 'Reload filter',
-            longOut('LENGTH', 2, BUNCH_TAPS, DESC = 'Length of filter'),
-            longOut('CYCLES', 1, BUNCH_TAPS, DESC = 'Cycles in filter'),
-            aOut('PHASE', -360, 360, DESC = 'FIR phase'))
-
-        # Waveform taps in two forms: TAPS_S is what is set directly as a
-        # waveform write, TAPS is what is current loaded.
-        WaveformOut('TAPS', BUNCH_TAPS, 'FLOAT', address = 'TAPS_S',
-            DESC = 'Set waveform taps')
-        Waveform('TAPS', BUNCH_TAPS, 'FLOAT',
-            SCAN = 'I/O Intr', DESC = 'Current waveform taps')
-
-        pop_name_prefix()
-
+        with_name_prefix('%d' % bank, bank_pvs)
 
     mbbOut('GAIN',
         DESC = 'FIR gain select', *dBrange(16, -6, 48))
