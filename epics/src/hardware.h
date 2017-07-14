@@ -119,6 +119,7 @@ enum trigger_destination {
     TRIGGER_SEQ1,
     TRIGGER_DRAM,
 };
+#define TRIGGER_DEST_COUNT  3       // Must match enum above!
 
 /* At present this is a direct image of the trigger status register. */
 struct trigger_status {
@@ -146,11 +147,10 @@ void hw_write_turn_clock_offset(int channel, unsigned int offset);
 void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);
 
 /* Simultaneous arming of the selected trigger destinations. */
-void hw_write_trigger_arm(bool arm_seq0, bool arm_seq1, bool arm_dram);
+void hw_write_trigger_arm(const bool arm[TRIGGER_DEST_COUNT]);
 
 /* Simultaneous disarming of the selected trigger destinations. */
-void hw_write_trigger_disarm(
-    bool disarm_seq0, bool disarm_seq1, bool disarm_dram);
+void hw_write_trigger_disarm(const bool disarm[TRIGGER_DEST_COUNT]);
 
 /* Generate soft trigger. */
 void hw_write_trigger_soft_trigger(void);
@@ -223,9 +223,6 @@ void hw_write_adc_overflow_threshold(int channel, unsigned int threshold);
 
 /* Sets the threshold for generating ADC bunch motion event. */
 void hw_write_adc_delta_threshold(int channel, unsigned int delta);
-
-/* Enable new delta triggering event. */
-void hw_write_adc_arm_delta(int channel);
 
 /* Polls the ADC events: input overflow, FIR overflow, min/max/sum overflow,
  * bunch motion event. */

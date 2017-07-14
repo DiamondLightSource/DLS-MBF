@@ -34,6 +34,7 @@
 #include "memory.h"
 #include "events.h"
 #include "triggers.h"
+#include "detector.h"
 
 
 /* External declaration of DBD binding. */
@@ -170,11 +171,11 @@ static error__t initialise_subsystems(void)
         initialise_sequencer()  ?:
         initialise_memory()  ?:
         initialise_triggers()  ?:
-//         initialise_sensors()  ?:
-//         initialise_detector()  ?:
+        initialise_detector()  ?:
 //         initialise_tune()  ?:
 //         initialise_tune_peaks()  ?:
-//         initialise_tune_follow();
+//         initialise_tune_follow() ?:
+//         initialise_sensors()  ?:
 
         /* Post initialisation startup. */
         start_mms_handlers()  ?:

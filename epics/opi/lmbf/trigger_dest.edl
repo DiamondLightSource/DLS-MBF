@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 541
-y 439
+x 542
+y 440
 w 358
 h 336
 font "helvetica-medium-r-18.0"
@@ -706,7 +706,7 @@ major 4
 minor 6
 release 0
 x 0
-y 192
+y 196
 w 72
 h 16
 controlPv "$(device):$(dest):STATUS"

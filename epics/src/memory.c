@@ -221,6 +221,12 @@ static void handle_memory_event(void *context, unsigned int events)
 }
 
 
+void prepare_memory(void)
+{
+    hw_write_dram_capture_command(true, false);
+}
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 static char device_name[256];

@@ -23,8 +23,6 @@ def adc_pvs():
         event('EVENT', 'ADC min/max event'),
     ])
 
-    Action('ARM', DESC = 'Arm ADC min/max event')
-
     mms.mms_pvs('ADC')
 
 

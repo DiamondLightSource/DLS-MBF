@@ -39,7 +39,7 @@ def destination_pvs():
 
     Action('ARM', DESC = 'Arm trigger')
     Action('DISARM', DESC = 'Disarm trigger')
-    mbbOut('MODE', 'One Shot', 'Retrigger', 'Shared', DESC = 'Arming mode')
+    mbbOut('MODE', 'One Shot', 'Rearm', 'Shared', DESC = 'Arming mode')
     mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
         SCAN = 'I/O Intr',
         DESC = 'Trigger destination status')
@@ -50,6 +50,8 @@ def trigger_channel_pvs():
     longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
 
 def trigger_common_pvs():
+    with_name_prefix('MEM', destination_pvs)
+
     events_in = event_set('IN', 'input')
     events_in.append(event('BLNK:IN', 'Blanking event'))
     Action('IN',
@@ -57,7 +59,11 @@ def trigger_common_pvs():
         DESC = 'Scan input events')
     Action('SOFT', DESC = 'Soft trigger')
 
-    with_name_prefix('MEM', destination_pvs)
+    Action('ARM', DESC = 'Arm all shared destinations')
+    Action('DISARM', DESC = 'Disarm all shared destinations')
+
+    # Temporary
+    Action('POLL', SCAN = '.1 second')
 
 
 for_channels('TRG', trigger_channel_pvs)

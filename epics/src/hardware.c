@@ -299,22 +299,21 @@ void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking)
     *blanking = events.blanking;
 }
 
-void hw_write_trigger_arm(bool arm_seq0, bool arm_seq1, bool arm_dram)
+void hw_write_trigger_arm(const bool arm[TRIGGER_DEST_COUNT])
 {
     WRITE_FIELDS(ctrl_regs->trg_control,
-        .seq0_arm = arm_seq0,
-        .seq1_arm = arm_seq1,
-        .dram0_arm = arm_dram
+        .seq0_arm = arm[TRIGGER_SEQ0],
+        .seq1_arm = arm[TRIGGER_SEQ1],
+        .dram0_arm = arm[TRIGGER_DRAM]
     );
 }
 
-void hw_write_trigger_disarm(
-    bool disarm_seq0, bool disarm_seq1, bool disarm_dram)
+void hw_write_trigger_disarm(const bool disarm[TRIGGER_DEST_COUNT])
 {
     WRITE_FIELDS(ctrl_regs->trg_control,
-        .seq0_disarm = disarm_seq0,
-        .seq1_disarm = disarm_seq1,
-        .dram0_disarm = disarm_dram
+        .seq0_disarm = disarm[TRIGGER_SEQ0],
+        .seq1_disarm = disarm[TRIGGER_SEQ1],
+        .dram0_disarm = disarm[TRIGGER_DRAM]
     );
 }
 
@@ -522,11 +521,6 @@ void hw_write_adc_delta_threshold(int channel, unsigned int delta)
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_adc_arm_delta(int channel)
-{
-    WRITE_FIELDS(dsp_regs[channel]->adc_command, .reset_delta = 1);
-}
-
 void hw_read_adc_events(int channel, struct adc_events *result)
 {
     struct dsp_adc_events events = READL(dsp_regs[channel]->adc_events);
@@ -548,6 +542,8 @@ void hw_write_adc_taps(int channel, const int taps[])
 void hw_read_adc_mms(int channel, struct mms_result *result)
 {
     read_mms(channel, &dsp_regs[channel]->adc_mms, result);
+    /* Re-arm delta event after mms readout. */
+    WRITE_FIELDS(dsp_regs[channel]->adc_command, .reset_delta = 1);
 }
 
 
@@ -709,7 +705,8 @@ void hw_write_seq_count(int channel, unsigned int pc)
 void hw_write_seq_super_count(int channel, unsigned int super_count)
 {
     LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, seq_config, super_count, super_count & 0x3FF);
+    WRITE_DSP_MIRROR(
+        channel, seq_config, super_count, (super_count - 1) & 0x3FF);
     UNLOCK(dsp_locks[channel]);
 }
 

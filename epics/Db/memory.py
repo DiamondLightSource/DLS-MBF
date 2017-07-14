@@ -54,7 +54,7 @@ def memory_pvs():
         DESC = 'Channel 1 capture selection', *select_channel)
     mbbOut('FIR_GAIN', DESC = 'FIR capture gain', *dBrange(16, -6, 48))
 
-    longOut('OFFSET', 0, (1 << 29) - 1, EGU = 'samples',
+    longOut('OFFSET', -(1 << 29), (1 << 29) - 1, EGU = 'samples',
         DESC = 'Offset of readout')
 
     # Capture control

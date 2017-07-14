@@ -55,14 +55,6 @@ static bool set_adc_delta_threshold(void *context, const double *value)
 }
 
 
-static bool arm_adc_min_max(void *context, const bool *value)
-{
-    struct adc_context *adc = context;
-    hw_write_adc_arm_delta(adc->channel);
-    return true;
-}
-
-
 static void scan_events(void)
 {
     for (int i = 0; i < CHANNEL_COUNT; i ++)
@@ -82,7 +74,6 @@ error__t initialise_adc(void)
 
         PUBLISH_C_P(ao, "OVF_LIMIT", set_adc_overflow_threshold, adc);
         PUBLISH_C_P(ao, "EVENT_LIMIT", set_adc_delta_threshold, adc);
-        PUBLISH_C(bo, "ARM", arm_adc_min_max, adc);
 
         PUBLISH_READ_VAR(bi, "INPUT_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF",   adc->events.fir_ovf);
