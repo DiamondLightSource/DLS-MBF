@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+# This script initialises the given LMBF target
+
+import sys
+import time
+
+from lmbf.driver import setup_pll, setup_adc, setup_dac
+
+device = sys.argv[1]
+
+print 'Warning: ignoring device argument', device
+
+
+# Hardware initialisation
+setup_pll.setup_pll()
+time.sleep(0.1)         # Give the PLL time to lock
+setup_adc.setup_adc()
+setup_dac.setup_dac()

@@ -95,3 +95,5 @@ class SPI:
 PLL_SPI = SPI(SYSTEM, 0)
 ADC_SPI = SPI(SYSTEM, 1)
 DAC_SPI = SPI(SYSTEM, 2)
+
+__all__ = ['SYSTEM', 'CONTROL', 'DSP0', 'DSP1']
