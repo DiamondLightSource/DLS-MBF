@@ -17,6 +17,7 @@ entity dsp_interrupts is
         dram0_capture_enable_i : in std_logic;
         dram0_trigger_i : in std_logic;
         seq_start_i : in std_logic_vector(CHANNELS);
+        seq_busy_i : in std_logic_vector(CHANNELS);
 
         interrupts_o : out std_logic_vector
     );
@@ -27,7 +28,7 @@ architecture arch of dsp_interrupts is
     signal seq_start : std_logic_vector(CHANNELS);
     signal interrupts : interrupts_o'SUBTYPE;
 
-    constant INTERRUPT_PIPELINE : natural := 8;
+    constant INTERRUPT_PIPELINE : natural := 12;
 
 begin
     -- Stretch each interrupt pulse so it's not missed by the interrupt
@@ -48,11 +49,12 @@ begin
 
     -- Assemble interrupt events mask
     interrupts <= (
-        0 => dram0_capture_enable_i,
-        1 => not dram0_capture_enable_i,
-        2 => dram0_trigger,
-        3 => seq_start(0),
-        4 => seq_start(1),
+        INTERRUPTS_DRAM_BUSY_BIT => dram0_capture_enable_i,
+        INTERRUPTS_DRAM_DONE_BIT => not dram0_capture_enable_i,
+        INTERRUPTS_DRAM_TRIGGER_BIT => dram0_trigger,
+        INTERRUPTS_SEQ_TRIGGER_BITS => reverse(seq_start),
+        INTERRUPTS_SEQ_BUSY_BITS => reverse(seq_busy_i),
+        INTERRUPTS_SEQ_DONE_BITS => reverse(not seq_busy_i),
         others => '0'
     );
 

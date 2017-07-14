@@ -55,6 +55,7 @@ entity sequencer_top is
         -- Event generation on entering selected sequencer state, available as
         -- internal event for event generation elsewhere.
         state_trigger_o : out std_logic; -- Sequencer about to start state
+        seq_busy_o : out std_logic;     -- Set during sequencer operation
 
         seq_start_adc_o : out std_logic;    -- Resets detector at start of dwell
         seq_write_adc_o : out std_logic;    -- End of dwell interval
@@ -94,7 +95,6 @@ architecture arch of sequencer_top is
     signal start_load : std_logic;  -- Command to load next state
     signal seq_pc : seq_pc_t;       -- Current program counter
     signal seq_pc_out : seq_pc_t;   -- Reported program counter
-    signal seq_busy : std_logic;    -- Sequencer now busy
     signal reset_turn : std_logic;  -- Reset counters to abort current state.
     -- Frequency offset from super sequencer
     signal nco_freq_base : angle_t;
@@ -133,7 +133,7 @@ begin
 
         seq_pc_i => seq_pc_out,
         super_count_i => super_count,
-        seq_busy_i => seq_busy,
+        seq_busy_i => seq_busy_o,
 
         mem_write_strobe_o => mem_write_strobe,
         mem_write_addr_o => mem_write_addr,
@@ -167,7 +167,7 @@ begin
 
         start_load_o => start_load,
         seq_pc_o => seq_pc,
-        busy_o => seq_busy,
+        busy_o => seq_busy_o,
         reset_o => reset_turn
     );
 

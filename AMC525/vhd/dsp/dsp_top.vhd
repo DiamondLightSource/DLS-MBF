@@ -210,6 +210,7 @@ begin
         trigger_i => control_to_dsp_i.seq_start,
 
         state_trigger_o => dsp_to_control_o.seq_trigger,
+        seq_busy_o => dsp_to_control_o.seq_busy,
 
         seq_start_adc_o => sequencer_start,
         seq_write_adc_o => sequencer_write,

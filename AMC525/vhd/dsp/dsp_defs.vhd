@@ -36,6 +36,7 @@ package dsp_defs is
         -- Internally generated events
         adc_trigger : std_logic;
         seq_trigger : std_logic;
+        seq_busy : std_logic;
     end record;
 
     type control_to_dsp_t is record

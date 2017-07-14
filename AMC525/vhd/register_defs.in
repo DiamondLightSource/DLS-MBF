@@ -337,15 +337,15 @@
 
             SEQ0        RW
                 # Sequencer 0 trigger delay
-                .DELAY          24
+                .DELAY          16
 
             SEQ1        RW
                 # Sequencer 1 trigger delay
-                .DELAY          24
+                .DELAY          16
 
             DRAM0       RW
                 # DRAM0 trigger delay
-                .DELAY          24
+                .DELAY          16
 
             # Sequencer trigger configuration
             TRIG_SEQ    RW
@@ -576,3 +576,20 @@
         # reset the address by setting ``DSP.DET.COMMAND.WRITE`` and then write
         # 32 enable bits at a time until all bunches have been programmed.
         BUNCH       W
+
+
+# The following interrupt sources are defined
+:INTERRUPTS     R
+    # DRAM0 data capture becomes busy
+    .DRAM_BUSY
+    # DRAM0 data capture completed
+    .DRAM_DONE
+    # DRAM0 data capture trigger.  Capture will complete shortly after this
+    # trigger is seen.
+    .DRAM_TRIGGER
+    # Sequencer start trigger seen
+    .SEQ_TRIGGER    2
+    # Sequencer becomes busy (should occur immediately after trigger)
+    .SEQ_BUSY       2
+    # Sequencer complete, no longer busy
+    .SEQ_DONE       2

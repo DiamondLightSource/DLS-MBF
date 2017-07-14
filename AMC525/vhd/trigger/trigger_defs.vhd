@@ -29,7 +29,7 @@ package trigger_defs is
     type trigger_setup_t is record
         arm : std_logic;                    -- Pulse to arm the trigger
         disarm : std_logic;                 -- Pulse to disarm trigger
-        delay : unsigned(23 downto 0);      -- Turn delay from trigger fire
+        delay : unsigned(15 downto 0);      -- Turn delay from trigger fire
         enables : std_logic_vector(TRIGGER_SET);    -- Enabled triggers
         blanking : std_logic_vector(TRIGGER_SET);   -- Blanking enables
     end record;
