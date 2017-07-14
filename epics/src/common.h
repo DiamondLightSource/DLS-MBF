@@ -54,6 +54,14 @@ void float_array_to_int(
 unsigned int tune_to_freq(double tune);
 
 
+/* A loop for counting down: surprisingly tricksy for something so simple.
+ * Counts i from n-1 downto 0. */
+#define _id_FOR_DOWN_FROM(loop, i, n) \
+    for (unsigned int i = n; ( { bool loop = i > 0; i --; loop; } ); )
+#define FOR_DOWN_FROM(i, n) \
+    _id_FOR_DOWN_FROM(UNIQUE_ID(), i, n)
+
+
 /* Mutex locking is common and doesn't need to be so long winded. */
 #define LOCK(mutex)     pthread_mutex_lock(&mutex)
 #define UNLOCK(mutex)   pthread_mutex_unlock(&mutex)

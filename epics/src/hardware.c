@@ -380,15 +380,15 @@ void hw_write_trigger_delay(
     {
         case TRIGGER_SEQ0:
             WRITE_FIELDS(
-                ctrl_regs->trg_config_seq0, .delay = delay & 0xFFFFFF);
+                ctrl_regs->trg_config_seq0, .delay = delay & 0xFFFF);
             break;
         case TRIGGER_SEQ1:
             WRITE_FIELDS(
-                ctrl_regs->trg_config_seq1, .delay = delay & 0xFFFFFF);
+                ctrl_regs->trg_config_seq1, .delay = delay & 0xFFFF);
             break;
         case TRIGGER_DRAM:
             WRITE_FIELDS(
-                ctrl_regs->trg_config_dram0, .delay = delay & 0xFFFFFF);
+                ctrl_regs->trg_config_dram0, .delay = delay & 0xFFFF);
             break;
     }
 }
@@ -871,9 +871,9 @@ static void *config_regs;
 static size_t config_regs_size;
 
 
-error__t hw_read_interrupt_events(unsigned int *events)
+error__t hw_read_interrupt_events(struct interrupts *interrupts)
 {
-    return TEST_IO(read(reg_device, events, sizeof(uint32_t)));
+    return TEST_IO(read(reg_device, interrupts, sizeof(*interrupts)));
 }
 
 

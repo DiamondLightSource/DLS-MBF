@@ -14,6 +14,10 @@
 #define TRIGGER_SOURCE_COUNT    7   // Seven distinct possible trigger sources
 
 
+/* Defined in register_defs.h. */
+struct interrupts;
+
+
 /* This structure is filled in when initialise_hardware() is called and is
  * available for use throughout the system. */
 extern const struct hardware_config {
@@ -36,7 +40,7 @@ error__t hw_unlock_registers(void);
 error__t hw_read_fast_dram_name(char *name, size_t length);
 
 /* Returns a mask of interrupt events, blocks until an event arrives. */
-error__t hw_read_interrupt_events(unsigned int *events);
+error__t hw_read_interrupt_events(struct interrupts *interrupts);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

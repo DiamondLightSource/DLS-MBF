@@ -10,11 +10,13 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"
 #include "epics_extra.h"
 
+#include "register_defs.h"
 #include "hardware.h"
 #include "common.h"
 #include "configs.h"
@@ -46,8 +48,17 @@ struct destination_config {
     enum trigger_destination destination;
     enum destination_mode mode;
     struct epics_record *update_sources;
+
+    pthread_mutex_t mutex;
     unsigned int status;
     struct epics_record *status_pv;
+
+    /* Our interrupt sources.  We see three events of interest: trigger to
+     * destination, destination becomes busy, destination becomes idle.  The
+     * arming event is delivered separately through software. */
+    struct interrupts trigger_interrupt;
+    struct interrupts busy_interrupt;
+    struct interrupts done_interrupt;
 
     bool sources[TRIGGER_SOURCE_COUNT];
     bool enables[TRIGGER_SOURCE_COUNT];
@@ -57,9 +68,27 @@ struct destination_config {
 
 /* Array of possible destinations. */
 struct destination_config destinations[TRIGGER_DEST_COUNT] = {
-    [TRIGGER_SEQ0] = { .destination = TRIGGER_SEQ0, },
-    [TRIGGER_SEQ1] = { .destination = TRIGGER_SEQ1, },
-    [TRIGGER_DRAM] = { .destination = TRIGGER_DRAM, },
+    [TRIGGER_SEQ0] = {
+        .destination = TRIGGER_SEQ0,
+        .mutex = PTHREAD_MUTEX_INITIALIZER,
+        .trigger_interrupt = { .seq_trigger = 1, },
+        .busy_interrupt    = { .seq_busy = 1, },
+        .done_interrupt    = { .seq_done = 1, },
+    },
+    [TRIGGER_SEQ1] = {
+        .destination = TRIGGER_SEQ1,
+        .mutex = PTHREAD_MUTEX_INITIALIZER,
+        .trigger_interrupt = { .seq_trigger = 2, },
+        .busy_interrupt    = { .seq_busy = 2, },
+        .done_interrupt    = { .seq_done = 2, },
+    },
+    [TRIGGER_DRAM] = {
+        .destination = TRIGGER_DRAM,
+        .mutex = PTHREAD_MUTEX_INITIALIZER,
+        .trigger_interrupt = { .dram_trigger = 1, },
+        .busy_interrupt    = { .dram_busy = 1, },
+        .done_interrupt    = { .dram_done = 1, },
+    },
 };
 
 
@@ -114,20 +143,33 @@ static void read_input_events(void)
 /* Trigger state control. */
 
 
-#if 0
-static void update_destination_status(
-    struct destination_config *config, bool armed, bool busy)
-{
-
-
-}
-#endif
-
-
 static void prepare_seq_destination(int channel)
 {
     prepare_sequencer(channel);
     prepare_detector(channel);
+}
+
+
+static void lock_destinations(const bool arm[TRIGGER_DEST_COUNT])
+{
+    for (unsigned int i = 0; i < TRIGGER_DEST_COUNT; i ++)
+        if (arm[i])
+            LOCK(destinations[i].mutex);
+}
+
+static void unlock_destinations(const bool arm[TRIGGER_DEST_COUNT])
+{
+    /* Unlock in reverse order. */
+    FOR_DOWN_FROM(i, TRIGGER_DEST_COUNT)
+        if (arm[i])
+            UNLOCK(destinations[i].mutex);
+}
+
+
+static void update_trigger_sources(struct destination_config *dest)
+{
+    hw_read_trigger_sources(dest->destination, dest->sources);
+    trigger_record(dest->update_sources);
 }
 
 
@@ -142,40 +184,45 @@ static void arm_destinations(const bool arm[TRIGGER_DEST_COUNT])
     if (arm[TRIGGER_DRAM])
         prepare_memory();
 
+    /* Arming the triggers and updating the status needs to be done
+     * synchronously to ensure that hardware events triggered by arming are
+     * actually seen afterwards. */
+    lock_destinations(arm);
+
     /* Now we can arm the selected destinations. */
     hw_write_trigger_arm(arm);
+
+    /* Update the status to indicate that we're armed. */
+    for (unsigned int i = 0; i < TRIGGER_DEST_COUNT; i ++)
+        if (arm[i])
+        {
+            struct destination_config *dest = &destinations[i];
+            dest->status = STATUS_ARMED;
+            trigger_record(dest->status_pv);
+            update_trigger_sources(dest);
+        }
+
+    unlock_destinations(arm);
 }
 
 
 static bool arm_destination(void *context, const bool *value)
 {
     struct destination_config *config = context;
-    if (config->mode == MODE_SHARED)
-        /* Reject arming of shared destination. */
-        return false;
-    else
-    {
-        bool arm[TRIGGER_DEST_COUNT] = { };
-        arm[config->destination] = true;
-        arm_destinations(arm);
-        return true;
-    }
+    bool arm[TRIGGER_DEST_COUNT] = { };
+    arm[config->destination] = true;
+    arm_destinations(arm);
+    return true;
 }
 
 
 static bool disarm_destination(void *context, const bool *value)
 {
     struct destination_config *config = context;
-    if (config->mode == MODE_SHARED)
-        /* Reject arming of shared destination. */
-        return false;
-    else
-    {
-        bool disarm[TRIGGER_DEST_COUNT] = { };
-        disarm[config->destination] = true;
-        hw_write_trigger_disarm(disarm);
-        return true;
-    }
+    bool disarm[TRIGGER_DEST_COUNT] = { };
+    disarm[config->destination] = true;
+    hw_write_trigger_disarm(disarm);
+    return true;
 }
 
 
@@ -199,6 +246,38 @@ static void disarm_shared_destinations(void)
     bool disarm[TRIGGER_DEST_COUNT];
     read_shared_destinations(disarm);
     hw_write_trigger_disarm(disarm);
+}
+
+
+static void process_destination_events(
+    struct destination_config *dest, bool trigger, bool busy, bool done)
+{
+    LOCK(dest->mutex);
+    unsigned int old_status = dest->status;
+    if (trigger)
+    {
+        dest->status = STATUS_BUSY;
+        update_trigger_sources(dest);
+    }
+    if (done)
+        dest->status = STATUS_IDLE;
+    if (old_status != dest->status)
+        trigger_record(dest->status_pv);
+    UNLOCK(dest->mutex);
+}
+
+
+static void dispatch_destination_events(
+    void *context, struct interrupts interrupts)
+{
+    for (unsigned int i = 0; i < TRIGGER_DEST_COUNT; i ++)
+    {
+        struct destination_config *dest = &destinations[i];
+        bool trigger = test_intersect(interrupts, dest->trigger_interrupt);
+        bool busy    = test_intersect(interrupts, dest->busy_interrupt);
+        bool done    = test_intersect(interrupts, dest->done_interrupt);
+        process_destination_events(dest, trigger, busy, done);
+    }
 }
 
 
@@ -321,6 +400,12 @@ error__t initialise_triggers(void)
         create_destination("SEQ", chan->sequencer);
         PUBLISH_C_P(ulongout, "BLANKING", write_blanking_window, chan);
     }
+
+    register_event_handler(
+        INTERRUPTS(
+            .dram_busy = 1, .dram_done = 1, .dram_trigger = 1,
+            .seq_trigger = 3, .seq_busy = 3, .seq_done = 3),
+        NULL, dispatch_destination_events);
 
     return ERROR_OK;
 }

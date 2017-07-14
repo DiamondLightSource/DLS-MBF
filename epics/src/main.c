@@ -20,6 +20,7 @@
 #include "epics_extra.h"
 #include "pvlogging.h"
 
+#include "register_defs.h"
 #include "hardware.h"
 #include "common.h"
 #include "system.h"

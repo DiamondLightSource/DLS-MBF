@@ -15,6 +15,7 @@
 #include "epics_device.h"
 #include "epics_extra.h"
 
+#include "register_defs.h"
 #include "hardware.h"
 #include "common.h"
 #include "configs.h"
@@ -212,11 +213,11 @@ static void capture_complete(void)
 }
 
 
-static void handle_memory_event(void *context, unsigned int events)
+static void handle_memory_event(void *context, struct interrupts interrupts)
 {
     WRITE_IN_RECORD(bi, busy_status, hw_read_dram_active());
 
-    if (events & EVENT_DRAM0_READY)
+    if (interrupts.dram_done)
         capture_complete();
 }
 
@@ -239,7 +240,7 @@ error__t initialise_memory(void)
     memory_wf1 = calloc(sizeof(int16_t), readout_length);
 
     register_event_handler(
-        EVENT_DRAM0_BUSY | EVENT_DRAM0_READY, NULL, handle_memory_event);
+        INTERRUPTS(.dram_busy = 1, .dram_done = 1), NULL, handle_memory_event);
 
     WITH_NAME_PREFIX("MEM")
     {

@@ -12,6 +12,7 @@
 
 #include "error.h"
 
+#include "register_defs.h"
 #include "hardware.h"
 #include "common.h"
 #include "configs.h"
@@ -23,20 +24,20 @@
 
 
 static struct event_handler {
-    unsigned int mask;
+    struct interrupts interrupts;
     void *context;
-    void (*handler)(void *context, unsigned int events);
+    void (*handler)(void *context, struct interrupts interrupts);
 } event_handlers[MAX_HANDLERS];
 static unsigned int active_handlers = 0;
 
 
 void register_event_handler(
-    unsigned int mask, void *context,
-    void (*handler)(void *context, unsigned int events))
+    struct interrupts interrupts, void *context,
+    void (*handler)(void *context, struct interrupts interrupts))
 {
     ASSERT_OK(active_handlers < MAX_HANDLERS);
     event_handlers[active_handlers] = (struct event_handler) {
-        .mask = mask,
+        .interrupts = interrupts,
         .context = context,
         .handler = handler,
     };
@@ -46,17 +47,17 @@ void register_event_handler(
 
 static void *events_thread(void *context)
 {
-    unsigned int events_mask;
+    struct interrupts interrupts;
     error__t error;
-    while (error = hw_read_interrupt_events(&events_mask),
+    while (error = hw_read_interrupt_events(&interrupts),
            !error)
     {
         for (unsigned int i = 0; i < active_handlers; i ++)
         {
             struct event_handler *handler = &event_handlers[i];
-            unsigned int mask = events_mask & handler->mask;
-            if (mask)
-                handler->handler(handler->context, mask);
+            if (test_intersect(handler->interrupts, interrupts))
+                handler->handler(handler->context,
+                    intersect_interrupts(handler->interrupts, interrupts));
         }
     }
     ERROR_REPORT(error, "Error reading events");

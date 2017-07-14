@@ -35,7 +35,7 @@ def destination_pvs():
             FLNK = write_bl,
             DESC = 'Enable blanking for trigger source')
 
-    longOut('DELAY', 0, 2**24 - 1, DESC = 'Trigger delay')
+    longOut('DELAY', 0, 2**16 - 1, DESC = 'Trigger delay')
 
     Action('ARM', DESC = 'Arm trigger')
     Action('DISARM', DESC = 'Disarm trigger')
