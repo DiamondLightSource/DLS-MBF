@@ -352,30 +352,6 @@ static bool write_blanking_window(void *context, const unsigned int *value)
 }
 
 
-static void poll_events(void)
-{
-//     printf("poll_events\n");
-
-#if 0
-    /* Pick up the bits we're interested in. */
-    struct trigger_status status;
-    hw_read_trigger_status(&status);
-    bool memory_busy = hw_read_dram_active();
-    bool seq_busy[CHANNEL_COUNT];
-    for (int i = 0; i < CHANNEL_COUNT; i ++)
-    {
-        unsigned int pc, super_pc;
-        hw_read_seq_state(i, &seq_busy[i], &pc, &super_pc);
-    }
-
-    /* Compute set of events. */
-    bool seq0_armed = status.seq0_armed;
-    bool seq1_armed = status.seq1_armed;
-    bool dram_armed = status.dram_armed;
-#endif
-}
-
-
 error__t initialise_triggers(void)
 {
     WITH_NAME_PREFIX("TRG")
@@ -389,9 +365,6 @@ error__t initialise_triggers(void)
 
         PUBLISH_ACTION("ARM", arm_shared_destinations);
         PUBLISH_ACTION("DISARM", disarm_shared_destinations);
-
-        // Temporary hack
-        PUBLISH_ACTION("POLL", poll_events);
     }
 
     FOR_CHANNEL_NAMES(channel, "TRG")

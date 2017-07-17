@@ -15,6 +15,8 @@ def adc_pvs():
 
     aOut('OVF_LIMIT', 0, 1, PREC = 4, DESC = 'Overflow limit threshold')
     aOut('EVENT_LIMIT', 0, 1, PREC = 4, DESC = 'ADC min/max event threshold')
+    boolOut('LOOPBACK', 'Off', 'On', OSV = 'MAJOR',
+        DESC = 'Enable DAC -> ADC loopback')
 
     adc_events.extend([
         overflow('INPUT_OVF', 'ADC input overflow'),

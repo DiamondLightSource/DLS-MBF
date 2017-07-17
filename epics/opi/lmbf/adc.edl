@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 56
-y 137
+x 57
+y 138
 w 641
-h 553
+h 514
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -99,7 +99,7 @@ major 4
 minor 1
 release 0
 x 568
-y 520
+y 480
 w 64
 h 24
 fgColor index 46
@@ -140,8 +140,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 240
-y 448
+x 8
+y 416
 w 16
 h 16
 lineColor index 14
@@ -157,8 +157,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
-y 448
+x 32
+y 416
 w 200
 h 14
 controlPv "$(device):$(channel):ADC:INPUT_OVF.DESC"
@@ -181,8 +181,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 472
-y 488
+x 560
+y 416
 w 72
 h 24
 fgColor index 43
@@ -209,7 +209,7 @@ minor 8
 release 0
 # Geometry
 x 8
-y 256
+y 224
 w 624
 h 184
 # Appearance
@@ -254,7 +254,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 136
+x 416
 y 448
 w 80
 h 20
@@ -280,7 +280,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 8
+x 288
 y 448
 w 119
 h 14
@@ -300,8 +300,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 240
-y 520
+x 8
+y 488
 w 16
 h 16
 lineColor index 14
@@ -317,8 +317,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
-y 520
+x 32
+y 488
 w 200
 h 14
 controlPv "$(device):$(channel):ADC:EVENT.DESC"
@@ -341,8 +341,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 136
-y 520
+x 416
+y 472
 w 80
 h 20
 controlPv "$(device):$(channel):ADC:EVENT_LIMIT_S"
@@ -367,8 +367,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 8
-y 520
+x 288
+y 472
 w 113
 h 14
 font "helvetica-bold-r-12.0"
@@ -387,8 +387,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 240
-y 472
+x 8
+y 440
 w 16
 h 16
 lineColor index 14
@@ -404,8 +404,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
-y 472
+x 32
+y 440
 w 200
 h 14
 controlPv "$(device):$(channel):ADC:FIR_OVF.DESC"
@@ -428,8 +428,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 240
-y 496
+x 8
+y 464
 w 16
 h 16
 lineColor index 14
@@ -445,8 +445,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
-y 496
+x 32
+y 464
 w 200
 h 14
 controlPv "$(device):$(channel):ADC:MMS_OVF.DESC"
@@ -461,5 +461,44 @@ useHexPrefix
 newPos
 objType "monitors"
 noExecuteClipMask
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 416
+y 424
+w 96
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(channel):ADC:LOOPBACK_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 288
+y 424
+w 102
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Loopback enable:"
+}
+autoSize
 endObjectProperties
 

@@ -45,20 +45,6 @@ static bool write_dac_delay(void *context, const unsigned int *value)
 }
 
 
-static bool write_dac_fir_enable(void *context, const bool *value)
-{
-    struct dac_context *dac = context;
-    hw_write_dac_fir_enable(dac->channel, *value);
-    return true;
-}
-
-static bool write_dac_nco1_enable(void *context, const bool *value)
-{
-    struct dac_context *dac = context;
-    hw_write_dac_nco1_enable(dac->channel, *value);
-    return true;
-}
-
 static bool write_dac_output_enable(void *context, const bool *value)
 {
     struct dac_context *dac = context;
@@ -85,8 +71,6 @@ error__t initialise_dac(void)
             hardware_config.dac_taps, write_dac_taps, dac);
 
         PUBLISH_C_P(ulongout, "DELAY", write_dac_delay, dac);
-        PUBLISH_C_P(bo, "FIR_ENABLE",  write_dac_fir_enable, dac);
-        PUBLISH_C_P(bo, "NCO1_ENABLE", write_dac_nco1_enable, dac);
         PUBLISH_C_P(bo, "ENABLE",      write_dac_output_enable, dac);
 
         PUBLISH_READ_VAR(bi, "BUN_OVF", dac->events.fir_ovf);

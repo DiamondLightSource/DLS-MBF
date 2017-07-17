@@ -34,7 +34,13 @@ static bool set_nco_gain(void *context, const unsigned int *gain)
 {
     struct nco_context *nco = context;
     hw_write_dac_nco0_gain(nco->channel, *gain);
-    hw_write_dac_nco0_enable(nco->channel, *gain < 15);
+    return true;
+}
+
+static bool set_nco_enable(void *context, const bool *enable)
+{
+    struct nco_context *nco = context;
+    hw_write_dac_nco0_enable(nco->channel, *enable);
     return true;
 }
 
@@ -46,6 +52,7 @@ static void publish_nco_pvs(void)
         nco->channel = channel;
         PUBLISH_C_P(ao, "FREQ", set_nco_frequency, nco);
         PUBLISH_C_P(mbbo, "GAIN", set_nco_gain, nco);
+        PUBLISH_C_P(bo, "ENABLE", set_nco_enable, nco);
     }
 }
 

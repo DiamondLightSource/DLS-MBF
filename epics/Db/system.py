@@ -14,6 +14,7 @@ records.longin('BUNCHES', VAL = BUNCHES_PER_TURN, PINI = 'YES')
 
 def channel_pvs():
     aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')
-    mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(15, -6) + ['Off'])
+    mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(16, -6))
+    boolOut('ENABLE', 'Off', 'On', DESC = 'Enable fixed NCO output')
 
 for_channels('NCO', channel_pvs)

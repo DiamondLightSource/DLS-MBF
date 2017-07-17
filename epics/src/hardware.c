@@ -618,24 +618,10 @@ void hw_write_dac_nco0_gain(int channel, unsigned int gain)
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_dac_fir_enable(int channel, bool enable)
-{
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, fir_enable, enable);
-    UNLOCK(dsp_locks[channel]);
-}
-
 void hw_write_dac_nco0_enable(int channel, bool enable)
 {
     LOCK(dsp_locks[channel]);
     WRITE_DSP_MIRROR(channel, dac_config, nco0_enable, enable);
-    UNLOCK(dsp_locks[channel]);
-}
-
-void hw_write_dac_nco1_enable(int channel, bool enable)
-{
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, nco1_enable, enable);
     UNLOCK(dsp_locks[channel]);
 }
 
@@ -679,7 +665,8 @@ static void write_sequencer_state(
         (entry->nco_gain & 0xF) << 14 |         //      17:14
         (unsigned) entry->enable_window << 18 | //      18
         (unsigned) entry->write_enable << 19 |  //      19
-        (unsigned) entry->enable_blanking << 20); //      20
+        (unsigned) entry->enable_blanking << 20 | //      20
+        (unsigned) entry->nco_enable << 21);
     writel(target, entry->window_rate);
     writel(target, entry->holdoff & 0xFFFF);
     writel(target, 0);
@@ -733,8 +720,6 @@ void hw_write_seq_entries(
         .dwell_time = 1,
         .bunch_bank = bank0,
         .capture_count = 1,
-        .nco_gain = 0xF,
-//        .nco_enable = false,
     });
     if (entries)
         for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)

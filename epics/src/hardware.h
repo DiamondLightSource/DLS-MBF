@@ -277,13 +277,9 @@ void hw_write_dac_delay(int channel, unsigned int delay);
 /* Set output FIR gain. */
 void hw_write_dac_fir_gain(int channel, unsigned int gain);
 
-/* Set output NCO0 gain. */
+/* Set output NCO0 gain and enable. */
 void hw_write_dac_nco0_gain(int channel, unsigned int gain);
-
-/* Global enables for DAC output, globally disables selected outputs. */
-void hw_write_dac_fir_enable(int channel, bool enable);
 void hw_write_dac_nco0_enable(int channel, bool enable);
-void hw_write_dac_nco1_enable(int channel, bool enable);
 
 /* Returns bunch by bunch, accumulator, min/max/sum, DAC FIR overflow events. */
 void hw_read_dac_events(int channel, struct dac_events *events);
@@ -303,8 +299,9 @@ struct seq_entry {
     unsigned int dwell_time;        // Dwell time at each step
     unsigned int capture_count;     // Number of sweep points to capture
     unsigned int bunch_bank;        // Bunch bank selection
-    unsigned int nco_gain;          // HOM output gain
+    unsigned int nco_gain;          // Sweep output gain
     unsigned int window_rate;       // Detector window advance frequency
+    bool nco_enable;                // Enable sweep output
     bool enable_window;             // Enable detector windowing
     bool write_enable;              // Enable data capture of sequence
     bool enable_blanking;           // Observe trigger holdoff control

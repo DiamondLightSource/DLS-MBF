@@ -62,9 +62,6 @@ def trigger_common_pvs():
     Action('ARM', DESC = 'Arm all shared destinations')
     Action('DISARM', DESC = 'Disarm all shared destinations')
 
-    # Temporary
-    Action('POLL', SCAN = '.1 second')
-
 
 for_channels('TRG', trigger_channel_pvs)
 with_name_prefix('TRG', trigger_common_pvs)

@@ -30,7 +30,8 @@ def bank_pvs(update_count):
         FLNK = update_count, DESC = 'Detector holdoff')
     mbbOut('BANK', 'Bank 0', 'Bank 1', 'Bank 2', 'Bank 3',
         DESC = 'Bunch bank selection')
-    mbbOut('GAIN', DESC = 'Sweep NCO gain', *dBrange(14, -6) + ['Off'])
+    mbbOut('GAIN', DESC = 'Sweep NCO gain', *dBrange(16, -6))
+    boolOut('ENABLE', 'Off', 'On', DESC = 'Enable Sweep NCO')
     boolOut('ENWIN', 'Disabled', 'Windowed',
         DESC = 'Enable detector window')
     boolOut('CAPTURE', 'Discard', 'Capture',

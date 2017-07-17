@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 229
-y 205
+x 230
+y 206
 w 545
 h 586
 font "helvetica-medium-r-18.0"
@@ -377,7 +377,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -399,6 +398,7 @@ nullColor index 0
 smartRefresh
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -536,7 +536,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 328
+x 312
 y 72
 w 61
 h 14
@@ -727,7 +727,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -749,6 +748,7 @@ nullColor index 0
 smartRefresh
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 875
-y 268
+x 637
+y 21
 w 544
 h 592
 font "helvetica-medium-r-18.0"
@@ -728,7 +728,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 328
+x 304
 y 64
 w 61
 h 14
@@ -953,7 +953,7 @@ minor 0
 release 0
 x 8
 y 536
-w 368
+w 416
 h 48
 lineColor index 14
 fill
@@ -1003,7 +1003,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -1024,6 +1023,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -1036,8 +1036,8 @@ minor 0
 release 0
 x 272
 y 552
-w 96
-h 22
+w 72
+h 24
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -1127,7 +1127,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -1149,6 +1148,7 @@ nullColor index 0
 smartRefresh
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -1199,7 +1199,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -1221,6 +1220,7 @@ nullColor index 0
 smartRefresh
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -1405,5 +1405,24 @@ value {
   "Freq offset:"
 }
 autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 352
+y 552
+w 56
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(channel):NCO:ENABLE_S"
+font "helvetica-medium-r-12.0"
 endObjectProperties
 

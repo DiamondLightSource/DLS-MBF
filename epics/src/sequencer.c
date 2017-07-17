@@ -132,6 +132,7 @@ static void publish_bank(int channel, int ix, struct sequencer_bank *bank)
         PUBLISH_WRITE_VAR_P(ulongout, "DWELL", bank->entry.dwell_time);
         PUBLISH_WRITE_VAR_P(mbbo, "BANK", bank->entry.bunch_bank);
         PUBLISH_WRITE_VAR_P(mbbo, "GAIN", bank->entry.nco_gain);
+        PUBLISH_WRITE_VAR_P(bo, "ENABLE", bank->entry.nco_enable);
         PUBLISH_WRITE_VAR_P(bo, "ENWIN", bank->entry.enable_window);
         PUBLISH_WRITE_VAR_P(bo, "CAPTURE", bank->entry.write_enable);
         PUBLISH_WRITE_VAR_P(bo, "BLANK", bank->entry.enable_blanking);
