@@ -13,7 +13,7 @@ def dac_pvs():
 
     longOut('DELAY', DESC = 'DAC output delay')
 
-    boolOut('ENABLE', 'Off', 'On', DESC = 'DAC output enable')
+    boolOut('ENABLE', 'Off', 'On', ZSV = 'MAJOR', DESC = 'DAC output enable')
 
     dac_events.extend([
         overflow('BUN_OVF', 'Bunch FIR overflow'),

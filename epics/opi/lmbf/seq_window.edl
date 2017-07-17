@@ -1,0 +1,159 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 97
+y 370
+w 641
+h 289
+font "helvetica-medium-r-18.0"
+ctlFont "helvetica-medium-r-18.0"
+btnFont "helvetica-medium-r-18.0"
+fgColor index 14
+bgColor index 3
+textColor index 14
+ctlFgColor1 index 14
+ctlFgColor2 index 0
+ctlBgColor1 index 0
+ctlBgColor2 index 14
+topShadowColor index 0
+botShadowColor index 14
+title "$(part) data statistics"
+showGrid
+snapToGrid
+gridSize 8
+disableScroll
+endScreenProperties
+
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 8
+y 40
+w 624
+h 208
+# Appearance
+graphTitle "Window"
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+showXAxis
+xAxisSrc "fromUser"
+xMin 0
+xMax 1024
+# Y axis properties
+showYAxis
+yAxisSrc "AutoScale"
+yMax 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 1
+yPv {
+  0 "$(device):$(channel):SEQ:WINDOW_S"
+}
+plotUpdateMode {
+  0 "y"
+}
+ySigned {
+  0 1
+}
+plotColor {
+  0 index 27
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 0
+y 0
+w 648
+h 32
+font "helvetica-medium-r-18.0"
+fontAlign "center"
+fgColor index 14
+bgColor index 73
+value {
+  "$(device):$(channel) Detector Window"
+}
+endObjectProperties
+
+# (Exit Button)
+object activeExitButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 568
+y 256
+w 64
+h 24
+fgColor index 46
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+label "EXIT"
+font "helvetica-bold-r-12.0"
+3d
+endObjectProperties
+
+# (Shell Command)
+object shellCmdClass
+beginObjectProperties
+major 4
+minor 3
+release 0
+x 4
+y 4
+w 24
+h 24
+fgColor index 14
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-14.0"
+buttonLabel "?"
+numCmds 1
+command {
+  0 "diagnostics-help TMBF_DAC"
+}
+includeHelpIcon
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 488
+y 256
+w 72
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(channel):SEQ:RESET_WIN_S.PROC"
+pressValue "0"
+onLabel "Reset"
+offLabel "Reset"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+

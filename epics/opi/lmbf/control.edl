@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 637
-y 21
+x 638
+y 22
 w 544
 h 592
 font "helvetica-medium-r-18.0"
@@ -907,17 +907,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 392
+x 352
 y 152
-w 43
-h 28
+w 82
+h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Steady"
-  "state:"
+  "Steady state:"
 }
 autoSize
 endObjectProperties
@@ -1256,7 +1255,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 304
+x 264
 y 152
 w 88
 h 16
@@ -1281,16 +1280,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 208
+x 200
 y 152
-w 87
+w 50
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Capture count:"
+  "Capture:"
 }
 autoSize
 endObjectProperties
@@ -1301,7 +1300,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 208
+x 200
 y 168
 w 54
 h 14
@@ -1321,7 +1320,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 288
+x 264
 y 168
 w 120
 h 16
@@ -1367,7 +1366,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 288
+x 264
 y 184
 w 120
 h 16
@@ -1393,16 +1392,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 208
+x 200
 y 184
-w 70
+w 43
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Freq offset:"
+  "Offset:"
 }
 autoSize
 endObjectProperties
@@ -1424,5 +1423,28 @@ topShadowColor index 1
 botShadowColor index 11
 controlPv "$(device):$(channel):NCO:ENABLE_S"
 font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 368
+y 176
+w 70
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Window"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/seq_window.edl"
+}
 endObjectProperties
 

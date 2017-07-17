@@ -58,6 +58,10 @@ struct seq_context {
     /* Capture count and duration for user display. */
     unsigned int capture_count;       // Number of IQ points to capture
     unsigned int sequencer_duration;  // Total duration of sequence
+
+    /* Detector window. */
+    bool reset_window;
+    int window[DET_WINDOW_LENGTH];
 } seq_context[CHANNEL_COUNT];
 
 
@@ -249,6 +253,40 @@ static void prepare_seq_entry(
 }
 
 
+static void compute_default_window(float window[])
+{
+    /* Compute a Hamming window as our default window. */
+    float a = 0.54F;
+    float b = 1 - a;
+    float f = 2 * (float) M_PI / (DET_WINDOW_LENGTH - 1);
+    for (int i = 0; i < DET_WINDOW_LENGTH; i ++)
+        window[i] = a - b * cosf(f * (float) i);
+}
+
+
+static void write_detector_window(
+    void *context, float window[], size_t *length)
+{
+    struct seq_context *seq = context;
+    if (seq->reset_window)
+    {
+        compute_default_window(window);
+        seq->reset_window = false;
+    }
+
+    *length = DET_WINDOW_LENGTH;
+    float_array_to_int(DET_WINDOW_LENGTH, window, seq->window, 16, 0);
+}
+
+
+static bool reset_detector_window(void *context, const bool *value)
+{
+    struct seq_context *seq = context;
+    seq->reset_window = true;
+    return true;
+}
+
+
 void prepare_sequencer(int channel)
 {
     struct seq_context *seq = &seq_context[channel];
@@ -259,7 +297,7 @@ void prepare_sequencer(int channel)
     hw_write_seq_entries(channel, seq->bank0, seq_entries);
     hw_write_seq_super_entries(
         channel, seq->super_seq_count, seq->super_offsets);
-// hw_write_seq_window(channel, seq->window);
+    hw_write_seq_window(channel, seq->window);
     hw_write_seq_super_count(channel, seq->super_seq_count);
     hw_write_seq_count(channel, seq->sequencer_pc);
 }
@@ -298,6 +336,11 @@ error__t initialise_sequencer(void)
 
         PUBLISH_READ_VAR(bi, "BUSY", seq->busy);
         PUBLISH_C(bo, "STATUS:READ", read_seq_status, seq);
+
+        seq->reset_window = true;
+        PUBLISH_WAVEFORM_C(
+            float, "WINDOW", DET_WINDOW_LENGTH, write_detector_window, seq);
+        PUBLISH_C(bo, "RESET_WIN", reset_detector_window, seq);
     }
 
     return ERROR_OK;

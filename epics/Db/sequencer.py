@@ -137,6 +137,10 @@ def sequencer_pvs():
                 DESC = 'Current super sequencer count'),
             boolIn('BUSY', 'Idle', 'Busy', OSV = 'MINOR')))
 
+    window = WaveformOut('WINDOW', 1024, 'FLOAT', DESC = 'Detector window')
+    Action('RESET_WIN', FLNK = window,
+        DESC = 'Reset detector window to Hamming')
+
 
 
 for_channels('SEQ', sequencer_pvs)
