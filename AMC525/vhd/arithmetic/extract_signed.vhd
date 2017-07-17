@@ -14,7 +14,8 @@ use work.support.all;
 entity extract_signed is
     generic (
         OFFSET : natural;
-        EXTRA : natural := 0
+        EXTRA : natural := 0;
+        PROCESS_DELAY : natural := 3
     );
     port (
         clk_i : in std_logic;
@@ -37,6 +38,10 @@ architecture arch of extract_signed is
     signal overflow : std_logic := '0';
 
 begin
+    -- Process delay check when needed by caller
+    --  data_i => rounded => truncated,overflow => data_out = data_o
+    assert PROCESS_DELAY = 3 severity failure;
+
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Round the incoming value

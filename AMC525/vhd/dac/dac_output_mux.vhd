@@ -17,7 +17,6 @@ entity dac_output_mux is
         bunch_config_i : in bunch_config_t;
 
         -- Input signals with individual enable controls
-        fir_enable_i : in std_logic;
         fir_data_i : in signed;
         fir_overflow_i : in std_logic;
         nco_0_enable_i : in std_logic;
@@ -83,7 +82,7 @@ architecture arch of dac_output_mux is
     end;
 
 begin
-    fir_enable   <= fir_enable_i   and bunch_config_i.fir_enable;
+    fir_enable   <= bunch_config_i.fir_enable;
     nco_0_enable <= nco_0_enable_i and bunch_config_i.nco_0_enable;
     nco_1_enable <= nco_1_enable_i and bunch_config_i.nco_1_enable;
 

@@ -58,6 +58,7 @@ architecture arch of dsp_top is
     signal nco_1_phase_advance : angle_t;
     signal nco_1_cos_sin : cos_sin_18_t;
     signal nco_1_gain : unsigned(3 downto 0);
+    signal nco_1_enable : std_logic;
 
     -- Data flow
     signal fir_data : signed(FIR_DATA_WIDTH-1 downto 0);
@@ -177,6 +178,7 @@ begin
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
         nco_1_gain_i => nco_1_gain,
+        nco_1_enable_i => nco_1_enable,
 
         data_store_o => dsp_to_control_o.dac_data,
         data_o => dac_data_o,
@@ -217,6 +219,7 @@ begin
 
         hom_freq_o => nco_1_phase_advance,
         hom_gain_o => nco_1_gain,
+        hom_enable_o => nco_1_enable,
         hom_window_o => detector_window,
         bunch_bank_o => dsp_to_control_o.bank_select
     );

@@ -9,7 +9,8 @@ use work.support.all;
 entity gain_control is
     generic (
         INTERVAL : natural := 1;        -- Shift interval in bits
-        EXTRA_SHIFT : natural := 0      -- Low order bits to discard
+        EXTRA_SHIFT : natural := 0;     -- Low order bits to discard
+        GAIN_DELAY : natural := 4
     );
     port (
         clk_i : in std_logic;
@@ -37,7 +38,14 @@ architecture arch of gain_control is
     signal data_in : signed(WIDTH_IN_MAX downto 0);
     signal data_sel : signed(WIDTH_IN_MAX downto 0) := (others => '0');
 
+    -- Delay: data_in =(3)=> data_o
+    constant EXTRACT_DELAY : natural := 3;
+
 begin
+    -- Checking gain processing delay:
+    --  gain_sel_i => data_sel =(EXTRACT_DELAY)=> data_o
+    assert GAIN_DELAY = EXTRACT_DELAY + 1 severity failure;
+
     -- Zero pad data in for uniform rounding.
     data_in <= resize(data_i, WIDTH_IN_MAX) & '0';
     gain <= to_integer(gain_sel_i);
@@ -51,7 +59,8 @@ begin
     -- Truncation, rounding and overflow detection of result
     extract : entity work.extract_signed generic map (
         OFFSET => 1,
-        EXTRA => 1
+        EXTRA => 1,
+        PROCESS_DELAY => EXTRACT_DELAY
     ) port map (
         clk_i => clk_i,
         data_i => data_sel,

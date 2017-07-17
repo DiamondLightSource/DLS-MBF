@@ -4,6 +4,9 @@
 -- control outputs we need to add some delays to the bank output, the window
 -- control and the detector start stop events.
 
+-- NOTE: This code has not been updated since porting from TMBF and is out of
+-- date!!!
+
 library ieee;
 
 use ieee.std_logic_1164.all;
@@ -24,6 +27,7 @@ entity sequencer_delays is
 
         seq_pc_o : out seq_pc_t := (others => '0');
         hom_gain_o : out unsigned(3 downto 0) := (others => '0');
+        hom_enable_o : out std_logic;
         bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );
 end;
@@ -55,6 +59,7 @@ begin
 
             if load_hom_gain = '1' then
                 hom_gain_o <= seq_state_i.hom_gain;
+                hom_enable_o <= seq_state_i.hom_enable;
             end if;
         end if;
     end process;

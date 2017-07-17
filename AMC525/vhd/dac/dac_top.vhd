@@ -29,6 +29,7 @@ entity dac_top is
         nco_0_data_i : in signed;
         nco_1_data_i : in signed;
         nco_1_gain_i : in unsigned;
+        nco_1_enable_i : in std_logic;
 
         -- Outputs and overflow detection
         data_store_o : out signed;          -- Data from intermediate processing
@@ -50,7 +51,6 @@ architecture arch of dac_top is
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(4 downto 0);
     signal nco_0_gain : unsigned(3 downto 0);
-    signal fir_enable : std_logic;
     signal nco_0_enable : std_logic;
     signal nco_1_enable : std_logic;
 
@@ -75,6 +75,9 @@ architecture arch of dac_top is
     signal filtered_data : data_o'SUBTYPE;
     signal filtered_data_pl : data_o'SUBTYPE;
     signal delayed_data_out : data_o'SUBTYPE;
+
+    -- Delay from gain control to data change
+    constant NCO1_GAIN_DELAY : natural := 4;
 
 begin
     -- Register mapping
@@ -109,9 +112,7 @@ begin
     dac_delay  <= unsigned(config_register(DSP_DAC_CONFIG_DELAY_BITS));
     fir_gain   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
     nco_0_gain <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
-    fir_enable   <= config_register(DSP_DAC_CONFIG_FIR_ENABLE_BIT);
     nco_0_enable <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
-    nco_1_enable <= config_register(DSP_DAC_CONFIG_NCO1_ENABLE_BIT);
 
     write_start <= command_bits(DSP_DAC_COMMAND_WRITE_BIT);
 
@@ -146,7 +147,8 @@ begin
     );
 
     nco_1_gain_inst : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2
+        EXTRA_SHIFT => 2,
+        GAIN_DELAY => NCO1_GAIN_DELAY
     ) port map (
         clk_i => adc_clk_i,
         gain_sel_i => nco_1_gain_i,
@@ -155,6 +157,16 @@ begin
         overflow_o => open
     );
 
+    -- Align NCO 1 enable with gain control
+    nco_1_enable_inst : entity work.dlyline generic map (
+        DLY => NCO1_GAIN_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => nco_1_enable_i,
+        data_o(0) => nco_1_enable
+    );
+
+
     -- Output multiplexer
     dac_output_mux : entity work.dac_output_mux port map (
         adc_clk_i => adc_clk_i,
@@ -162,7 +174,6 @@ begin
 
         bunch_config_i => bunch_config_i,
 
-        fir_enable_i => fir_enable,
         fir_data_i => fir_data,
         fir_overflow_i => fir_overflow_in,
         nco_0_enable_i => nco_0_enable,

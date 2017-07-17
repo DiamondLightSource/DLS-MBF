@@ -62,6 +62,7 @@ entity sequencer_top is
 
         hom_freq_o : out angle_t;       -- NCO frequency
         hom_gain_o : out unsigned(3 downto 0);  -- NCO gain
+        hom_enable_o : out std_logic;   -- Enable NCO out
         hom_window_o : out hom_win_t;   -- Detector input window
         bunch_bank_o : out unsigned(1 downto 0) -- Bunch bank selection
     );
@@ -83,6 +84,7 @@ architecture arch of sequencer_top is
 
     signal turn_clock : std_logic;
     signal hom_gain : hom_gain_o'SUBTYPE;
+    signal hom_enable : std_logic;
     signal hom_window : hom_window_o'SUBTYPE;
     signal bunch_bank : bunch_bank_o'SUBTYPE;
 
@@ -243,6 +245,7 @@ begin
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
         hom_gain_o => hom_gain,
+        hom_enable_o => hom_enable,
         bunch_bank_o => bunch_bank
     );
 
@@ -261,7 +264,9 @@ begin
         seq_write_adc_o => seq_write_adc_o,
 
         hom_gain_dsp_i => hom_gain,
+        hom_enable_dsp_i => hom_enable,
         hom_gain_adc_o => hom_gain_o,
+        hom_enable_adc_o => hom_enable_o,
 
         hom_window_dsp_i => hom_window,
         hom_window_adc_o => hom_window_o,

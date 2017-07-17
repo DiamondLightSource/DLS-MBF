@@ -57,8 +57,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/dsp_to_adc.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
     $vhd_dir/dac/dac_top.vhd \
+    $vhd_dir/bunch_fir/bunch_fir_dsp.vhd \
     $vhd_dir/bunch_fir/bunch_fir_taps.vhd \
-    $vhd_dir/bunch_fir/bunch_fir_counter.vhd \
     $vhd_dir/bunch_fir/bunch_fir_delay.vhd \
     $vhd_dir/bunch_fir/bunch_fir_decimate.vhd \
     $vhd_dir/bunch_fir/bunch_fir_interpolate.vhd \

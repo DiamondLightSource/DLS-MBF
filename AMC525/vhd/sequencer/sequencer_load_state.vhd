@@ -112,6 +112,7 @@ begin
                         seq_state_o.enable_window <= prog_word(18);
                         seq_state_o.enable_write <= prog_word(19);
                         seq_state_o.enable_blanking <= prog_word(20);
+                        seq_state_o.hom_enable <= prog_word(21);
                     when 4 =>
                         seq_state_o.window_rate <= angle_t(prog_word);
                     when 5 =>

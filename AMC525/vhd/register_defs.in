@@ -460,12 +460,8 @@
             .FIR_GAIN       5
             # Gain for NCO0 output (NCO1 gain is under sequencer control)
             .NCO0_GAIN      4
-            # Global control for FIR enable
-            .FIR_ENABLE
             # Global control for NCO0 enable
             .NCO0_ENABLE
-            # Global control for NCO1 enable
-            .NCO1_ENABLE
         *RW
             EVENTS      R
                 # Set when overflow in FIR data detected in DAC output

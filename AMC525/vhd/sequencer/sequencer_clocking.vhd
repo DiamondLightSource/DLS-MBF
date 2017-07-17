@@ -23,7 +23,9 @@ entity sequencer_clocking is
         seq_write_adc_o : out std_logic;
 
         hom_gain_dsp_i : in unsigned;
+        hom_enable_dsp_i : in std_logic;
         hom_gain_adc_o : out unsigned;
+        hom_enable_adc_o : out std_logic;
 
         hom_window_dsp_i : in signed;
         hom_window_adc_o : out signed;
@@ -71,6 +73,7 @@ begin
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             hom_gain_adc_o <= hom_gain_dsp_i;
+            hom_enable_adc_o <= hom_enable_dsp_i;
             hom_window_adc_o <= hom_window_dsp_i;
             bunch_bank_o <= bunch_bank;
         end if;
