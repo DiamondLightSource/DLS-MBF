@@ -52,6 +52,20 @@ static bool write_dac_output_enable(void *context, const bool *value)
     return true;
 }
 
+static bool write_dac_mms_source(void *context, const bool *value)
+{
+    struct dac_context *dac = context;
+    hw_write_dac_mms_source(dac->channel, *value);
+    return true;
+}
+
+static bool write_dac_dram_source(void *context, const bool *value)
+{
+    struct dac_context *dac = context;
+    hw_write_dac_dram_source(dac->channel, *value);
+    return true;
+}
+
 
 static void scan_events(void)
 {
@@ -72,6 +86,8 @@ error__t initialise_dac(void)
 
         PUBLISH_C_P(ulongout, "DELAY", write_dac_delay, dac);
         PUBLISH_C_P(bo, "ENABLE",      write_dac_output_enable, dac);
+        PUBLISH_C_P(bo, "MMS_SOURCE",  write_dac_mms_source, dac);
+        PUBLISH_C_P(bo, "DRAM_SOURCE", write_dac_dram_source, dac);
 
         PUBLISH_READ_VAR(bi, "BUN_OVF", dac->events.fir_ovf);
         PUBLISH_READ_VAR(bi, "MUX_OVF", dac->events.mux_ovf);

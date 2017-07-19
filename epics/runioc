@@ -9,13 +9,15 @@ SYS_CONFIG=system_config
 DEV_ADDR=0000:04:00.0
 DEBUG=
 
-while getopts 'vh-' option; do
+while getopts 'vlh-' option; do
     case "$option" in
         v)  DEBUG=valgrind ;;
+        l)  [[ $DEBUG ]]  &&  DEBUG="$DEBUG --leak-check=full" ;;
         h)  cat <<EOF
 Usage: runioc [options]
 Starts LMBF IOC with configured options.
     -v      Run with valgrind memory checker enabled
+    -l      Add leak check to valgrind
     --      Pass further options on to IOC
 EOF
             exit 0;;

@@ -14,6 +14,10 @@ def dac_pvs():
     longOut('DELAY', DESC = 'DAC output delay')
 
     boolOut('ENABLE', 'Off', 'On', ZSV = 'MAJOR', DESC = 'DAC output enable')
+    boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
+        DESC = 'Source of min/max/sum data')
+    boolOut('DRAM_SOURCE', 'Before FIR', 'After FIR',
+        DESC = 'Source of memory data')
 
     dac_events.extend([
         overflow('BUN_OVF', 'Bunch FIR overflow'),

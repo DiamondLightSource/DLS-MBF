@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 67
-y 10
+x 114
+y 306
 w 641
 h 730
 font "helvetica-medium-r-18.0"
@@ -38,6 +38,7 @@ y 40
 w 624
 h 184
 # Appearance
+autoScaleBothDirections
 graphTitle "Channel 0"
 fgColor index 14
 bgColor index 3
@@ -145,6 +146,7 @@ y 224
 w 624
 h 184
 # Appearance
+autoScaleBothDirections
 graphTitle "Channel 1"
 fgColor index 14
 bgColor index 3

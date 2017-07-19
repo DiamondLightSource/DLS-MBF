@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 58
-y 139
+x 59
+y 140
 w 641
 h 514
 font "helvetica-medium-r-18.0"
@@ -38,6 +38,7 @@ y 40
 w 624
 h 184
 # Appearance
+autoScaleBothDirections
 graphTitle "ADC motion"
 fgColor index 14
 bgColor index 3
@@ -213,6 +214,7 @@ y 224
 w 624
 h 184
 # Appearance
+autoScaleBothDirections
 graphTitle "ADC Compensation Filter"
 fgColor index 14
 bgColor index 3

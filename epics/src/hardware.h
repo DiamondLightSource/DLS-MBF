@@ -281,6 +281,10 @@ void hw_write_dac_fir_gain(int channel, unsigned int gain);
 void hw_write_dac_nco0_gain(int channel, unsigned int gain);
 void hw_write_dac_nco0_enable(int channel, bool enable);
 
+/* Set output source for DAC memory and MMS. */
+void hw_write_dac_mms_source(int channel, bool before_fir);
+void hw_write_dac_dram_source(int channel, bool before_fir);
+
 /* Returns bunch by bunch, accumulator, min/max/sum, DAC FIR overflow events. */
 void hw_read_dac_events(int channel, struct dac_events *events);
 

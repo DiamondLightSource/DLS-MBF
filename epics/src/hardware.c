@@ -625,6 +625,19 @@ void hw_write_dac_nco0_enable(int channel, bool enable)
     UNLOCK(dsp_locks[channel]);
 }
 
+void hw_write_dac_mms_source(int channel, bool before_fir)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, dac_config, mms_source, before_fir);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_dac_dram_source(int channel, bool before_fir)
+{
+    WRITE_DSP_MIRROR(channel, dac_config, dram_source, before_fir);
+}
+
+
 void hw_read_dac_events(int channel, struct dac_events *result)
 {
     struct dsp_dac_events events = READL(dsp_regs[channel]->dac_events);
