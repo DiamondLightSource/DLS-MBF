@@ -35,6 +35,9 @@ entity detector_core is
 end;
 
 architecture arch of detector_core is
+    signal bunch_enable_cos : std_logic;
+    signal bunch_enable_sin : std_logic;
+
     signal iq_out : iq_o'SUBTYPE;
     signal cos_overflow : std_logic;
     signal sin_overflow : std_logic;
@@ -46,11 +49,27 @@ architecture arch of detector_core is
     signal write_in : std_logic;
 
 begin
+    bunch_delay_cos : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => clk_i,
+        data_i(0) => bunch_enable_i,
+        data_o(0) => bunch_enable_cos
+    );
+    bunch_delay_sin : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => clk_i,
+        data_i(0) => bunch_enable_i,
+        data_o(0) => bunch_enable_sin
+    );
+
+
     cos_detect : entity work.detector_dsp96 port map (
         clk_i => clk_i,
         data_i => data_i,
         mul_i => iq_i.cos,
-        enable_i => bunch_enable_i,
+        enable_i => bunch_enable_cos,
         start_i => start_i,
         overflow_mask_i => overflow_mask_i,
         preload_i => preload_i,
@@ -62,7 +81,7 @@ begin
         clk_i => clk_i,
         data_i => data_i,
         mul_i => iq_i.sin,
-        enable_i => bunch_enable_i,
+        enable_i => bunch_enable_sin,
         start_i => start_i,
         overflow_mask_i => overflow_mask_i,
         preload_i => preload_i,

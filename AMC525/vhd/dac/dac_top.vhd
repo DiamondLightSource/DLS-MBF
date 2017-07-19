@@ -53,6 +53,8 @@ architecture arch of dac_top is
     signal nco_0_gain : unsigned(3 downto 0);
     signal nco_0_enable : std_logic;
     signal nco_1_enable : std_logic;
+    signal mms_source : std_logic;
+    signal store_source : std_logic;
 
     signal command_bits : reg_data_t;
     signal write_start : std_logic;
@@ -73,8 +75,7 @@ architecture arch of dac_top is
     signal nco_1_data : data_o'SUBTYPE;
     signal data_out : data_o'SUBTYPE;
     signal filtered_data : data_o'SUBTYPE;
-    signal filtered_data_pl : data_o'SUBTYPE;
-    signal delayed_data_out : data_o'SUBTYPE;
+    signal mms_data_in : data_o'SUBTYPE;
 
     -- Delay from gain control to data change
     constant NCO1_GAIN_DELAY : natural := 4;
@@ -113,6 +114,8 @@ begin
     fir_gain   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
     nco_0_gain <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
     nco_0_enable <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
+    mms_source   <= config_register(DSP_DAC_CONFIG_MMS_SOURCE_BIT);
+    store_source <= config_register(DSP_DAC_CONFIG_DRAM_SOURCE_BIT);
 
     write_start <= command_bits(DSP_DAC_COMMAND_WRITE_BIT);
 
@@ -186,7 +189,20 @@ begin
         mux_overflow_o => mux_overflow
     );
 
-    data_store_o <= data_out;
+
+    -- Select sources for stored and MMS data
+    source_mux : entity work.dac_data_source port map (
+        adc_clk_i => adc_clk_i,
+
+        mux_data_i => data_out,
+        filtered_data_i => filtered_data,
+
+        mms_source_i => mms_source,
+        mms_data_o => mms_data_in,
+
+        dram_source_i => store_source,
+        dram_data_o => data_store_o
+    );
 
 
     -- -------------------------------------------------------------------------
@@ -198,7 +214,7 @@ begin
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_i,
 
-        data_i => data_out,
+        data_i => mms_data_in,
         delta_o => open,
         overflow_o => mms_overflow,
 
@@ -228,15 +244,6 @@ begin
     read_data_o(DSP_DAC_TAPS_REG) <= (others => '0');
     read_ack_o(DSP_DAC_TAPS_REG) <= '1';
 
-    -- Pipeline to help with timing
-    filter_dly : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => filtered_data'LENGTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_logic_vector(filtered_data),
-        signed(data_o) => filtered_data_pl
-    );
 
     -- Programmable long delay
     dac_delay_inst : entity work.long_delay generic map (
@@ -244,18 +251,7 @@ begin
     ) port map (
         clk_i => adc_clk_i,
         delay_i => dac_delay,
-        data_i => std_logic_vector(filtered_data_pl),
-        signed(data_o) => delayed_data_out
-    );
-
-    -- Pipeline to help with final output
-    dlyreg_inst : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => data_o'LENGTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_logic_vector(delayed_data_out),
+        data_i => std_logic_vector(filtered_data),
         signed(data_o) => data_o
     );
-
 end;

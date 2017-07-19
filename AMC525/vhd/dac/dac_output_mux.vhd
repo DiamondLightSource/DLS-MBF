@@ -9,6 +9,9 @@ use work.defines.all;
 use work.bunch_defs.all;
 
 entity dac_output_mux is
+    generic (
+        PIPELINE_OUT : natural := 4
+    );
     port (
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
@@ -69,6 +72,7 @@ architecture arch of dac_output_mux is
 
     signal fir_overflow : std_logic := '0';
     signal mux_overflow : std_logic;
+    signal data_out : data_o'SUBTYPE;
 
     -- If enable, widens data to required width, otherwise returns 0.
     function prepare(data : signed; enable : std_logic) return signed
@@ -139,8 +143,18 @@ begin
     ) port map (
         clk_i => adc_clk_i,
         data_i => full_dac_out,
-        data_o => data_o,
+        data_o => data_out,
         overflow_o => mux_overflow
+    );
+
+    -- Pipeline data out
+    output_delay : entity work.dlyreg generic map (
+        DLY => PIPELINE_OUT,
+        DW => data_o'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_out),
+        signed(data_o) => data_o
     );
 
 

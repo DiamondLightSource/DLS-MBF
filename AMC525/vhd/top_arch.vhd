@@ -742,7 +742,6 @@ begin
 
     status_data <= (
         SYS_STATUS_DSP_OK_BIT       => dsp_clk_ok,
-        SYS_STATUS_DRAM0_ENABLE_BIT => DRAM0_capture_enable,
         SYS_STATUS_VCXO_OK_BIT      => fmc500_inputs.vcxo_pwr_good,
         SYS_STATUS_ADC_OK_BIT       => fmc500_inputs.adc_pwr_good,
         SYS_STATUS_DAC_OK_BIT       => fmc500_inputs.dac_pwr_good,

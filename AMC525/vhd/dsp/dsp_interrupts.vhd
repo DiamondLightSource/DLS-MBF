@@ -28,7 +28,7 @@ architecture arch of dsp_interrupts is
     signal seq_start : std_logic_vector(CHANNELS);
     signal interrupts : interrupts_o'SUBTYPE;
 
-    constant INTERRUPT_PIPELINE : natural := 12;
+    constant INTERRUPT_PIPELINE : natural := 8;
 
 begin
     -- Stretch each interrupt pulse so it's not missed by the interrupt

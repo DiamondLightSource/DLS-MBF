@@ -112,17 +112,17 @@ begin
         -- Simple test, small ring: just pass NCO0 through to DSP
 
         -- Set a sensible NCO frequency
-        write_reg(1,  X"01000000");
+        write_reg(DSP_NCO0_FREQ_REG,  X"01000000");
 
         -- Configure bunch control
-        write_reg(6,  X"00000000");
+        write_reg(DSP_BUNCH_CONFIG_REG,  X"00000000");
         for n in 1 to TURN_COUNT loop
             -- .FIR_SELECT = 0
             -- .GAIN = 0x0FFF
             -- .FIR_ENABLE = 0
             -- .NCO0_ENABLE = 1
             -- .NCO1_ENABLE = 0
-            write_reg(7, X"00013FFC");  -- Enable NCO0 at full gain
+            write_reg(DSP_BUNCH_BANK_REG, X"00013FFC");
         end loop;
 
         -- Enable output
@@ -132,11 +132,11 @@ begin
         -- .FIR_ENABLE = 0
         -- .NCO0_ENABLE = 1
         -- .NCO1_ENABLE = 0
-        write_reg(10, X"00100000");
+        write_reg(DSP_DAC_CONFIG_REG, X"00080000");
 
         -- Initialise DAC FIR
-        write_reg(0,  X"00000001");
-        write_reg(11, X"7FFFFFFF");
+        write_reg(DSP_DAC_COMMAND_REG_W,  X"00000001");
+        write_reg(DSP_DAC_TAPS_REG, X"7FFFFFFF");
 
         wait;
     end process;

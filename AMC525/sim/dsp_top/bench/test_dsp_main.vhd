@@ -50,7 +50,7 @@ architecture arch of testbench is
     signal postmortem_trigger : std_logic := '0';
     signal blanking_trigger : std_logic := '0';
     signal dsp_events : std_logic_vector(CHANNELS);
-    signal interrupts : std_logic_vector(7 downto 0);
+    signal interrupts : std_logic_vector(30 downto 0);
 
     signal dram1_ready_delay : natural := 5;
 

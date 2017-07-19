@@ -67,8 +67,7 @@
     STATUS      R
         # Set if ADC clock is currently good
         .DSP_OK
-        # Set during capture to DDR0
-        .DRAM0_ENABLE
+        -
         # Set if FMC500 VCXO power ok
         .VCXO_OK
         # Set if FMC500 ADC power ok
@@ -462,6 +461,11 @@
             .NCO0_GAIN      4
             # Global control for NCO0 enable
             .NCO0_ENABLE
+            # Select MMS source: before or after output FIR.  If 0 we select the
+            # output before the filter
+            .MMS_SOURCE
+            # Select stored data source, before or after output FIR.
+            .DRAM_SOURCE
         *RW
             EVENTS      R
                 # Set when overflow in FIR data detected in DAC output
@@ -474,7 +478,7 @@
                 .OUT_OVF
             # Writing to this register generates a pulse on the selected bits
             COMMAND      WP
-                # Starts block write to ADC and DAC fast FIR taps
+                # Starts block write to DAC fast FIR taps
                 .WRITE
         # After triggering write start, input compensation taps are written to
         # this register in sequence.

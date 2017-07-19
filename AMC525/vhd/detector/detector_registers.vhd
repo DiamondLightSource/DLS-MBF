@@ -11,9 +11,6 @@ use work.detector_defs.all;
 use work.register_defs.all;
 
 entity detector_registers is
-    generic (
-        COMMAND_BUFFER_LENGTH : natural
-    );
     port (
         dsp_clk_i : in std_logic;
 

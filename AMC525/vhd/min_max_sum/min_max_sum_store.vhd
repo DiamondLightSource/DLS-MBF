@@ -57,7 +57,8 @@ architecture arch of min_max_sum_store is
     signal write_bank_std : std_logic;
 
     -- Delay read_addr => read_data
-    constant READ_DELAY : natural := 3;
+    constant READ_DELAY : natural := 4;
+
     -- Skew from update read to write address:
     --  update_addr_i => update_write_addr and update_data_i must match:
     --  update_addr_i
@@ -66,6 +67,13 @@ architecture arch of min_max_sum_store is
     --      => update_data_o
     --      =(UPDATE_DELAY)=> update_data_i
     constant WRITE_DELAY : natural := READ_DELAY + UPDATE_DELAY + 2;
+
+    -- Delay from readout_{strobe,addr}_i => readout_{data,ack}_o
+    --  readout_strobe_i, readout_addr_i
+    --      => read_addr(1-read_addr_bank)
+    --      =(READ_DELAY)=> read_data(1-read_data_bank)
+    --      => readout_data_o
+    constant READOUT_DELAY : natural := READ_DELAY + 2;
 
 begin
     -- Memory interface
@@ -178,7 +186,7 @@ begin
     -- readout bank, ra[B] = read_addr(B), rd[B] = read_data(B),
     -- rd_o = readout_data_o, ra_o = readout_ack_o
     dly_readout_ack_inst : entity work.dlyline generic map (
-        DLY => 5
+        DLY => READOUT_DELAY
     ) port map (
         clk_i => clk_i,
         data_i(0) => readout_strobe_i,

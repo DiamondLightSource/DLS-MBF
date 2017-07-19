@@ -9,7 +9,9 @@ use work.defines.all;
 
 entity fast_fir_top is
     generic (
-        TAP_COUNT : natural
+        TAP_COUNT : natural;
+        PIPELINE_IN : natural := 4;
+        PIPELINE_OUT : natural := 4
     );
     port (
         adc_clk_i : in std_logic;
@@ -29,6 +31,8 @@ entity fast_fir_top is
 end;
 
 architecture arch of fast_fir_top is
+    signal data_in : data_i'SUBTYPE;
+    signal data_out : data_o'SUBTYPE;
     signal taps_in : reg_data_array_t(0 to TAP_COUNT-1);
     signal taps : reg_data_array_t(0 to TAP_COUNT-1);
     signal fir_overflow : std_logic;
@@ -58,15 +62,38 @@ begin
         );
     end generate;
 
+
+    -- Pipeline the input data
+    delay_input : entity work.dlyreg generic map (
+        DLY => PIPELINE_IN,
+        DW => data_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_i),
+        signed(data_o) => data_in
+    );
+
+
     -- The compensation filter itself
     fast_fir_inst : entity work.fast_fir generic map (
         TAP_COUNT => TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
         taps_i => taps,
-        data_i => data_i,
-        data_o => data_o,
+        data_i => data_in,
+        data_o => data_out,
         overflow_o => fir_overflow
+    );
+
+
+    -- Pipeline the output data
+    delay_output : entity work.dlyreg generic map (
+        DLY => PIPELINE_OUT,
+        DW => data_o'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(data_out),
+        signed(data_o) => data_o
     );
 
     -- Bring any overflow pulse to the DSP clock domain

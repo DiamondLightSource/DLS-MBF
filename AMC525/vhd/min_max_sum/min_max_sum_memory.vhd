@@ -38,6 +38,7 @@ architecture arch of min_max_sum_memory is
     constant LANE_ROW_BITS : natural := MMS_ROW_BITS;
     subtype bram_row_t is std_logic_vector(LANE_ROW_BITS-1 downto 0);
 
+    signal read_addr : read_addr_i'SUBTYPE;
     signal read_row : bram_row_t;
 
     signal write_strobe : std_logic;
@@ -47,9 +48,10 @@ architecture arch of min_max_sum_memory is
 begin
     -- Delay from read_addr_i to read_data_o
     --  read_addr_i
+    --      => read_addr
     --      =(2)=> read_row (block_memory)
     --      => read_data_o
-    assert READ_DELAY = 3 severity failure;
+    assert READ_DELAY = 4 severity failure;
 
     bram : entity work.block_memory generic map (
         ADDR_BITS => ADDR_BITS,
@@ -57,7 +59,7 @@ begin
         READ_DELAY => 2
     ) port map (
         read_clk_i => clk_i,
-        read_addr_i => read_addr_i,
+        read_addr_i => read_addr,
         read_data_o => read_row,
         write_clk_i => clk_i,
         write_strobe_i => write_strobe,
@@ -67,6 +69,7 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
+            read_addr <= read_addr_i;
             read_data_o <= bits_to_mms_row(read_row);
 
             write_strobe <= write_strobe_i;
