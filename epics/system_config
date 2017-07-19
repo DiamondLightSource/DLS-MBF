@@ -17,3 +17,6 @@ pv_log_array_length = 10
 
 # Number of samples in a single fast memory readout buffer
 memory_readout_length = 16384
+
+# Number of samples in a detector readout buffer
+detector_length = 8192

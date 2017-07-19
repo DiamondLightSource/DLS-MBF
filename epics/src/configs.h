@@ -3,7 +3,8 @@
 
 extern const struct hardware_delays {
     unsigned int adc_mms_offset;
-    unsigned int dac_mms_offset;
+    unsigned int dac_pre_fir_mms_offset;
+    unsigned int dac_post_fir_mms_offset;
     unsigned int bunch_fir_offset;
     unsigned int bunch_out_offset;
     unsigned int bunch_gain_offset;
@@ -20,6 +21,7 @@ extern const struct system_config {
     int persistence_interval;
     int pv_log_array_length;
     unsigned int memory_readout_length;
+    unsigned int detector_length;
 } system_config;
 
 

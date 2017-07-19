@@ -128,10 +128,11 @@ static error__t load_database(const char *database)
     database_add_macro("BUNCH_TAPS", "%d", hardware_config.bunch_taps);
     database_add_macro("DAC_TAPS", "%d", hardware_config.dac_taps);
     database_add_macro("BUNCHES_PER_TURN", "%d", hardware_config.bunches);
-    database_add_macro("REVOLUTION_FREQUENCY", "%g",
-        system_config.revolution_frequency);
-    database_add_macro("MEMORY_READOUT_LENGTH", "%d",
-        system_config.memory_readout_length);
+    database_add_macro(
+        "REVOLUTION_FREQUENCY", "%g", system_config.revolution_frequency);
+    database_add_macro(
+        "MEMORY_READOUT_LENGTH", "%d", system_config.memory_readout_length);
+    database_add_macro("DETECTOR_LENGTH", "%d", system_config.detector_length);
     return database_load_file(database);
 }
 
@@ -145,7 +146,8 @@ static error__t initialise_epics(void)
         TEST_OK(dbLoadDatabase("dbd/lmbf.dbd", NULL, NULL) == 0)  ?:
         TEST_OK(lmbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
         load_database("db/lmbf.db")  ?:
-        TEST_OK(iocInit() == 0);
+        TEST_OK(iocInit() == 0)  ?:
+        TEST_OK(check_unused_record_bindings(true) == 0);
 }
 
 

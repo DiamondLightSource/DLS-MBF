@@ -216,6 +216,12 @@ struct mms_handler *create_mms_handler(
 }
 
 
+void set_mms_offset(struct mms_handler *mms, unsigned int bunch_offset)
+{
+    mms->bunch_offset = bunch_offset;
+}
+
+
 static volatile bool running = true;
 
 static void *read_mms_thread(void *context)

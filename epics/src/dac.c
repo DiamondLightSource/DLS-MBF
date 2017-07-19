@@ -56,6 +56,9 @@ static bool write_dac_mms_source(void *context, const bool *value)
 {
     struct dac_context *dac = context;
     hw_write_dac_mms_source(dac->channel, *value);
+    set_mms_offset(dac->mms, *value ?
+        hardware_delays.dac_pre_fir_mms_offset :
+        hardware_delays.dac_post_fir_mms_offset);
     return true;
 }
 
@@ -94,8 +97,8 @@ error__t initialise_dac(void)
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
         PUBLISH_READ_VAR(bi, "MMS_OVF", dac->events.mms_ovf);
 
-        dac->mms = create_mms_handler(
-            channel, hw_read_dac_mms, hardware_delays.dac_mms_offset);
+        /* Note: the true MMS offset is setup up a little bit later. */
+        dac->mms = create_mms_handler(channel, hw_read_dac_mms, 0);
     }
 
     PUBLISH_ACTION("DAC:EVENTS", scan_events);

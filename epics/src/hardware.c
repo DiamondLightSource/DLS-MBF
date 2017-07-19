@@ -765,44 +765,24 @@ void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH])
 /* Detector registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-void hw_write_det_fir_gain(int channel, bool gain)
+void hw_write_det_config(
+    int channel, bool fir_gain, bool input_select,
+    const bool enable[DETECTOR_COUNT],
+    const unsigned int scaling[DETECTOR_COUNT])
 {
     LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, det_config, fir_gain, gain);
-    UNLOCK(dsp_locks[channel]);
-}
-
-void hw_write_det_input_select(int channel, bool fir_adcn)
-{
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, det_config, select, fir_adcn);
-    UNLOCK(dsp_locks[channel]);
-}
-
-void hw_write_det_output_enable(int channel, int det, bool enable)
-{
-    LOCK(dsp_locks[channel]);
-    switch (det)
-    {
-        case 0: dsp_mirror[channel].det_config.enable0 = enable;    break;
-        case 1: dsp_mirror[channel].det_config.enable1 = enable;    break;
-        case 2: dsp_mirror[channel].det_config.enable2 = enable;    break;
-        case 3: dsp_mirror[channel].det_config.enable3 = enable;    break;
-    }
-    WRITEL(dsp_regs[channel]->det_config, dsp_mirror[channel].det_config);
-    UNLOCK(dsp_locks[channel]);
-}
-
-void hw_write_det_output_gain(int channel, int det, unsigned int gain)
-{
-    LOCK(dsp_locks[channel]);
-    switch (det)
-    {
-        case 0: dsp_mirror[channel].det_config.scale0 = gain & 0x7; break;
-        case 1: dsp_mirror[channel].det_config.scale1 = gain & 0x7; break;
-        case 2: dsp_mirror[channel].det_config.scale2 = gain & 0x7; break;
-        case 3: dsp_mirror[channel].det_config.scale3 = gain & 0x7; break;
-    }
+    dsp_mirror[channel].det_config = (struct dsp_det_config) {
+        .fir_gain = fir_gain,
+        .select = input_select,
+        .scale0 = scaling[0] & 0x7,
+        .enable0 = enable[0],
+        .scale1 = scaling[1] & 0x7,
+        .enable1 = enable[1],
+        .scale2 = scaling[2] & 0x7,
+        .enable2 = enable[2],
+        .scale3 = scaling[3] & 0x7,
+        .enable3 = enable[3],
+    };
     WRITEL(dsp_regs[channel]->det_config, dsp_mirror[channel].det_config);
     UNLOCK(dsp_locks[channel]);
 }
@@ -820,7 +800,14 @@ void hw_read_det_events(int channel,
 void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
 {
     LOCK(dsp_locks[channel]);
+
+    /* For this one we don't need to update the mirror, just keep it! */
+    struct dsp_det_config config = dsp_mirror[channel].det_config;
+    config.bank = (unsigned int) det & 0x3;
+    WRITEL(dsp_regs[channel]->det_config, config);
+    /* Also reset the bunch write pointer. */
     WRITE_FIELDS(dsp_regs[channel]->det_command, .write = 1);
+
     uint32_t enable_mask = 0;
     FOR_BUNCHES(i)
     {
@@ -935,7 +922,7 @@ error__t initialise_hardware(
     public_dram0_device_name = strdup(dram0_device_name);
     return
         TEST_IO_(reg_device = open(reg_device_name, O_RDWR | O_SYNC),
-            "Unable to find LMBF device with prefix %s", prefix)  ?:
+            "Unable to open LMBF device with prefix %s", prefix)  ?:
         TEST_IO(dram0_device = open(dram0_device_name, O_RDONLY))  ?:
         TEST_IO(dram1_device = open(dram1_device_name, O_RDONLY))  ?:
         IF(lock_registers,

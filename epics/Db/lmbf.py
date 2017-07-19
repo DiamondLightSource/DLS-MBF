@@ -6,7 +6,7 @@ import dac
 import bunch_fir
 import bunch_select
 import sequencer
-# import detector
+import detector
 import memory
 import triggers
 

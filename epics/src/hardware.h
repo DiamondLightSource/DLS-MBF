@@ -344,17 +344,11 @@ void hw_write_seq_trigger_state(int channel, unsigned int state);
 
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Sets the FIR gain for the detector input. */
-void hw_write_det_fir_gain(int channel, bool gain);
-
-/* Choose between FIR and ADC input. */
-void hw_write_det_input_select(int channel, bool fir_adcn);
-
-/* Determine whether selected detector is used for data capture. */
-void hw_write_det_output_enable(int channel, int det, bool enable);
-
-/* Determine output scaling for selected detector. */
-void hw_write_det_output_gain(int channel, int det, unsigned int gain);
+/* Writes the complete detector configuration. */
+void hw_write_det_config(
+    int channel, bool fir_gain, bool input_select,
+    const bool enable[DETECTOR_COUNT],
+    const unsigned int scaling[DETECTOR_COUNT]);
 
 /* Reads events from the detector. */
 void hw_read_det_events(int channel,

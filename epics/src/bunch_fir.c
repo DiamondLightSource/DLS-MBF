@@ -154,7 +154,7 @@ static void publish_bank(
 static bool write_fir_gain(void *context, const unsigned int *value)
 {
     struct fir_context *fir = context;
-    hw_write_dac_fir_gain(fir->channel, *value);
+    hw_write_dac_fir_gain(fir->channel, *value + 8);
     return true;
 }
 

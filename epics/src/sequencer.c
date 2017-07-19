@@ -126,7 +126,7 @@ static bool write_bank_count(void *context, const unsigned int *value)
 }
 
 
-static void publish_bank(int channel, int ix, struct sequencer_bank *bank)
+static void publish_bank(int ix, struct sequencer_bank *bank)
 {
     char prefix[4];
     sprintf(prefix, "%d", ix + 1);
@@ -312,7 +312,7 @@ error__t initialise_sequencer(void)
 
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
-            publish_bank(channel, i, &seq->banks[i]);
+            publish_bank(i, &seq->banks[i]);
 
         PUBLISH_C(bo, "UPDATE_COUNT", update_capture_count, seq);
 

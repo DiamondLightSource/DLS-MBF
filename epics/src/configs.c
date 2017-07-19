@@ -36,7 +36,8 @@ const struct system_config system_config;
 
 static const struct config_entry hardware_delays_entries[] = {
     DELAY_ENTRY(adc_mms_offset),
-    DELAY_ENTRY(dac_mms_offset),
+    DELAY_ENTRY(dac_pre_fir_mms_offset),
+    DELAY_ENTRY(dac_post_fir_mms_offset),
     DELAY_ENTRY(bunch_fir_offset),
     DELAY_ENTRY(bunch_out_offset),
     DELAY_ENTRY(bunch_gain_offset),
@@ -61,6 +62,7 @@ static const struct config_entry system_config_entries[] = {
     SYSTEM_ENTRY(int, persistence_interval),
     SYSTEM_ENTRY(int, pv_log_array_length),
     SYSTEM_ENTRY(uint, memory_readout_length),
+    SYSTEM_ENTRY(uint, detector_length),
 };
 
 
