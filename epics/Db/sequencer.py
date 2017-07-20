@@ -142,5 +142,4 @@ def sequencer_pvs():
         DESC = 'Reset detector window to Hamming')
 
 
-
 for_channels('SEQ', sequencer_pvs)

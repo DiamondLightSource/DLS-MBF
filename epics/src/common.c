@@ -75,3 +75,9 @@ unsigned int tune_to_freq(double tune)
     /* Can now scale up to hardware units. */
     return (unsigned int) round(ldexp(fraction, 32));
 }
+
+
+double freq_to_tune(unsigned int freq)
+{
+    return ldexp(freq, -32) * hardware_config.bunches;
+}

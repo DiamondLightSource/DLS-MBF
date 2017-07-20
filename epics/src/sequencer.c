@@ -14,6 +14,7 @@
 #include "epics_extra.h"
 
 #include "common.h"
+#include "configs.h"
 #include "hardware.h"
 
 #include "sequencer.h"
@@ -62,6 +63,9 @@ struct seq_context {
     /* Detector window. */
     bool reset_window;
     int window[DET_WINDOW_LENGTH];
+
+    /* Resulting scale info. */
+    struct scale_info scale_info;
 } seq_context[CHANNEL_COUNT];
 
 
@@ -287,6 +291,55 @@ static bool reset_detector_window(void *context, const bool *value)
 }
 
 
+/* Computes frequency and timebase scales from detector configuration. */
+static void update_scale_info(
+    struct seq_context *seq, const struct seq_entry entries[])
+{
+    unsigned int detector_length = system_config.detector_length;
+    struct scale_info *scale = &seq->scale_info;
+
+    /* Iterate through super sequencer. */
+    unsigned int ix = 0;            // Index into generated vectors
+    unsigned int total_time = 0;    // Accumulates time base
+    unsigned int gap_time = 0;      // For non-captured states
+    unsigned int f0 = 0;            // Accumulates current frequency
+    for (unsigned int super = 0; super < seq->super_seq_count; super ++)
+        for (unsigned int state = seq->sequencer_pc; state > 0; state --)
+        {
+            const struct seq_entry *entry = &entries[state - 1];
+            unsigned int dwell_time = entry->dwell_time + entry->holdoff;
+            if (entry->write_enable)
+            {
+                f0 = entry->start_freq + seq->super_offsets[super];
+                total_time += gap_time;
+                gap_time = 0;
+                for (unsigned int i = 0; i < entry->capture_count; i ++)
+                {
+                    if (ix < detector_length)
+                    {
+                        scale->tune_scale[ix] = freq_to_tune(f0);
+                        scale->timebase[ix] = (int) total_time;
+                    }
+                    f0 += entry->delta_freq;
+                    total_time += dwell_time;
+                    ix += 1;
+                }
+            }
+            else
+                gap_time += dwell_time * entry->capture_count;
+        }
+
+    /* Fill in the rest of the waveforms. */
+    double final_f = freq_to_tune(f0);
+    for (unsigned int i = ix; i < detector_length; i ++)
+    {
+        scale->tune_scale[i] = final_f;
+        scale->timebase[i] = (int) total_time;
+    }
+    scale->samples = ix;
+}
+
+
 void prepare_sequencer(int channel)
 {
     struct seq_context *seq = &seq_context[channel];
@@ -294,21 +347,34 @@ void prepare_sequencer(int channel)
     struct seq_entry seq_entries[MAX_SEQUENCER_COUNT];
     for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
         prepare_seq_entry(&seq->banks[i], &seq_entries[i]);
+
     hw_write_seq_entries(channel, seq->bank0, seq_entries);
     hw_write_seq_super_entries(
         channel, seq->super_seq_count, seq->super_offsets);
     hw_write_seq_window(channel, seq->window);
     hw_write_seq_super_count(channel, seq->super_seq_count);
     hw_write_seq_count(channel, seq->sequencer_pc);
+
+    update_scale_info(seq, seq_entries);
+}
+
+
+const struct scale_info *read_detector_scale_info(int channel)
+{
+    return &seq_context[channel].scale_info;
 }
 
 
 error__t initialise_sequencer(void)
 {
+    unsigned int detector_length = system_config.detector_length;
     FOR_CHANNEL_NAMES(channel, "SEQ")
     {
         struct seq_context *seq = &seq_context[channel];
         seq->channel = channel;
+
+        seq->scale_info.tune_scale = calloc(sizeof(double), detector_length);
+        seq->scale_info.timebase = calloc(sizeof(int), detector_length);
 
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)

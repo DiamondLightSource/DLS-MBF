@@ -17,7 +17,9 @@
 #include "hardware.h"
 #include "common.h"
 #include "configs.h"
+
 #include "events.h"
+#include "sequencer.h"
 
 #include "detector.h"
 
@@ -25,7 +27,7 @@
 struct detector_context {
     int channel;
 
-    struct epics_record *update;
+    struct epics_interlock *update;
 
     /* Shared detector configuration. */
     bool fir_gain;
@@ -50,31 +52,36 @@ struct detector_context {
 } detector_context[CHANNEL_COUNT];
 
 
-static void read_detector_memory(struct detector_context *det)
+static void read_detector_memory(
+    struct detector_context *det, unsigned int samples)
 {
-    unsigned int readout_length = system_config.detector_length;
+    unsigned int detector_length = system_config.detector_length;
+    samples = MIN(samples, detector_length);    // Clip to available length
     hw_read_det_memory(
-        det->channel, readout_length * det->active_channels, det->read_buffer);
+        det->channel, samples * det->active_channels, det->read_buffer);
+
+    /* First zero fill all the target buffers. */
+    for (int i = 0; i < DETECTOR_COUNT; i ++)
+    {
+        memset(det->wf_i[i], 0, detector_length * sizeof(float));
+        memset(det->wf_q[i], 0, detector_length * sizeof(float));
+        memset(det->wf_power[i], 0, detector_length * sizeof(float));
+    }
 
     /* Transpose the readout into the corresponding output waveforms. */
     struct detector_result *result = det->read_buffer;
-    for (unsigned int i = 0; i < readout_length; i ++)
+    for (unsigned int i = 0; i < samples; i ++)
     {
         for (int j = 0; j < DETECTOR_COUNT; j ++)
             if (det->capture_enable[j])
             {
                 float iq_i = (float) result->i;
                 float iq_q = (float) result->q;
+                result += 1;
+
                 det->wf_i[j][i] = iq_i;
                 det->wf_q[j][i] = iq_q;
                 det->wf_power[j][i] = iq_i * iq_i + iq_q * iq_q;
-                result += 1;
-            }
-            else
-            {
-                det->wf_i[j][i] = 0.0;
-                det->wf_q[j][i] = 0.0;
-                det->wf_power[j][i] = 0.0;
             }
     }
 }
@@ -84,12 +91,16 @@ static void detector_readout_event(void *context, struct interrupts interrupts)
 {
     struct detector_context *det = context;
 printf("Detector readout %d\n", det->channel);
+
+    interlock_wait(det->update);
+
     hw_read_det_events(
         det->channel, det->output_ovf, det->underrun, det->fir_ovf);
 
-    read_detector_memory(det);
+    const struct scale_info *info = read_detector_scale_info(det->channel);
+    read_detector_memory(det, info->samples);
 
-    trigger_record(det->update);
+    interlock_signal(det->update, NULL);
 }
 
 
@@ -146,14 +157,14 @@ void prepare_detector(int channel)
 
 error__t initialise_detector(void)
 {
+    unsigned int detector_length = system_config.detector_length;
     FOR_CHANNEL_NAMES(channel, "DET")
     {
         struct detector_context *det = &detector_context[channel];
         det->channel = channel;
 
         det->read_buffer = calloc(
-            DETECTOR_COUNT * sizeof(struct detector_result),
-            system_config.detector_length);
+            DETECTOR_COUNT * sizeof(struct detector_result), detector_length);
 
         for (int i = 0; i < DETECTOR_COUNT; i ++)
             publish_detector(det, i);
@@ -161,8 +172,13 @@ error__t initialise_detector(void)
         PUBLISH_WRITE_VAR_P(bo, "FIR_GAIN", det->fir_gain);
         PUBLISH_WRITE_VAR_P(bo, "SELECT", det->input_select);
 
-        det->update = PUBLISH_TRIGGER("UPDATE");
+        const struct scale_info *info = read_detector_scale_info(det->channel);
+        PUBLISH_WF_READ_VAR(double, "SCALE", detector_length, info->tune_scale);
+        PUBLISH_WF_READ_VAR(int, "TIMEBASE", detector_length, info->timebase);
+
+        det->update = create_interlock("UPDATE", false);
         register_event_handler(
+            INTERRUPT_HANDLER_DETECTOR_0 + channel,
             INTERRUPTS(.seq_done = (1U << channel) & 0x3),
             det, detector_readout_event);
     }

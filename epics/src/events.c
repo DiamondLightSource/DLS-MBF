@@ -28,20 +28,22 @@ static struct event_handler {
     void *context;
     void (*handler)(void *context, struct interrupts interrupts);
 } event_handlers[MAX_HANDLERS];
-static unsigned int active_handlers = 0;
 
 
 void register_event_handler(
+    enum interrupt_handler_index index,
     struct interrupts interrupts, void *context,
     void (*handler)(void *context, struct interrupts interrupts))
 {
-    ASSERT_OK(active_handlers < MAX_HANDLERS);
-    event_handlers[active_handlers] = (struct event_handler) {
+    ASSERT_OK(index < MAX_HANDLERS);
+    /* Check handler not already assigned. */
+    ASSERT_OK(!test_interrupts(event_handlers[index].interrupts));
+
+    event_handlers[index] = (struct event_handler) {
         .interrupts = interrupts,
         .context = context,
         .handler = handler,
     };
-    active_handlers += 1;
 }
 
 
@@ -52,7 +54,7 @@ static void *events_thread(void *context)
     while (error = hw_read_interrupt_events(&interrupts),
            !error)
     {
-        for (unsigned int i = 0; i < active_handlers; i ++)
+        for (unsigned int i = 0; i < MAX_HANDLERS; i ++)
         {
             struct event_handler *handler = &event_handlers[i];
             if (test_intersect(handler->interrupts, interrupts))
@@ -61,6 +63,7 @@ static void *events_thread(void *context)
         }
     }
     ERROR_REPORT(error, "Error reading events");
+    ASSERT_FAIL();                      // We're in trouble!
     return NULL;
 }
 

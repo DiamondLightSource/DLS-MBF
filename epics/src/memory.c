@@ -241,7 +241,9 @@ error__t initialise_memory(void)
     memory_wf1 = calloc(sizeof(int16_t), readout_length);
 
     register_event_handler(
-        INTERRUPTS(.dram_busy = 1, .dram_done = 1), NULL, handle_memory_event);
+        INTERRUPT_HANDLER_MEMORY,
+        INTERRUPTS(.dram_busy = 1, .dram_done = 1),
+        NULL, handle_memory_event);
 
     WITH_NAME_PREFIX("MEM")
     {

@@ -31,17 +31,20 @@ def detector_bank_pvs(updates):
 
 
 def detector_pvs():
-    updates = []
+    updates = [
+        Waveform('SCALE', DETECTOR_LENGTH, 'DOUBLE',
+            DESC = 'Scale for frequency sweep'),
+        Waveform('TIMEBASE', DETECTOR_LENGTH, 'LONG',
+            DESC = 'Timebase for frequency sweep'),
+    ]
+
     for det in range(4):
         with_name_prefix('%d' % det, detector_bank_pvs, updates)
 
     boolOut('FIR_GAIN', 'High', 'Low', DESC = 'Select FIR gain')
     boolOut('SELECT', 'ADC', 'FIR', DESC = 'Select detector source')
 
-    boolIn('UPDATE',
-        FLNK = create_fanout('UPDATE:FAN', *updates),
-        SCAN = 'I/O Intr',
-        DESC = 'Update detector PVs on scan completion')
+    Trigger('UPDATE', *updates)
 
 
 for_channels('DET', detector_pvs)

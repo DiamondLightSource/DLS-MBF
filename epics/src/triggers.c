@@ -317,14 +317,12 @@ static void create_destination(
     {
         for (unsigned int i = 0; i < TRIGGER_SOURCE_COUNT; i ++)
         {
-            const char *source = source_names[i];
-            char name[20];
-#define FORMAT(suffix) \
-    ( { sprintf(name, "%s:%s", source, suffix); name; } )
-            PUBLISH_READ_VAR(bi, FORMAT("HIT"), config->sources[i]);
-            PUBLISH_WRITE_VAR_P(bo, FORMAT("EN"), config->enables[i]);
-            PUBLISH_WRITE_VAR_P(bo, FORMAT("BL"), config->blanking[i]);
-#undef FORMAT
+            WITH_NAME_PREFIX(source_names[i])
+            {
+                PUBLISH_READ_VAR(bi, "HIT", config->sources[i]);
+                PUBLISH_WRITE_VAR_P(bo, "EN", config->enables[i]);
+                PUBLISH_WRITE_VAR_P(bo, "BL", config->blanking[i]);
+            }
         }
 
         PUBLISH_C(bo, "EN", write_enables, config);
@@ -375,6 +373,7 @@ error__t initialise_triggers(void)
     }
 
     register_event_handler(
+        INTERRUPT_HANDLER_TRIGGER,
         INTERRUPTS(
             .dram_busy = 1, .dram_done = 1, .dram_trigger = 1,
             .seq_trigger = 3, .seq_busy = 3, .seq_done = 3),

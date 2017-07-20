@@ -51,7 +51,10 @@ void float_array_to_int(
 
 /* Convert fractional tune in cycles per machine revolution to phase advance per
  * bunch in hardware units. */
-unsigned int tune_to_freq(double tune);
+unsigned int _pure tune_to_freq(double tune);
+
+/* Reverse computation: hardware units to tune frequency. */
+double _pure freq_to_tune(unsigned int freq);
 
 
 /* A loop for counting down: surprisingly tricksy for something so simple.

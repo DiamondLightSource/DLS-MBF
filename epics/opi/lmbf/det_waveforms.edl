@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 265
-y 159
+x 619
+y 198
 w 641
 h 866
 font "helvetica-medium-r-18.0"
@@ -48,7 +48,7 @@ font "helvetica-medium-r-12.0"
 nPts 2
 # X axis properties
 showXAxis
-xAxisSrc "fromUser"
+xAxisSrc "AutoScale"
 xMin -10
 xMax 1000
 # Y axis properties
@@ -60,6 +60,10 @@ y2AxisSrc "AutoScale"
 y2Max 1
 # Trace Properties
 numTraces 2
+xPv {
+  0 "$(device):$(channel):DET:$(x_axis)"
+  1 "$(device):$(channel):DET:$(x_axis)"
+}
 yPv {
   0 "$(device):$(channel):DET:$(det):I"
   1 "$(device):$(channel):DET:$(det):Q"
@@ -161,7 +165,7 @@ font "helvetica-medium-r-12.0"
 nPts 2
 # X axis properties
 showXAxis
-xAxisSrc "fromUser"
+xAxisSrc "AutoScale"
 xMin -10
 xMax 1000
 # Y axis properties
@@ -173,6 +177,9 @@ y2AxisSrc "AutoScale"
 y2Max 1
 # Trace Properties
 numTraces 1
+xPv {
+  0 "$(device):$(channel):DET:$(x_axis)"
+}
 yPv {
   0 "$(device):$(channel):DET:$(det):POWER"
 }
@@ -231,6 +238,36 @@ ySigned {
 }
 plotColor {
   0 index 27
+}
+endObjectProperties
+
+# (Menu Mux)
+object menuMuxClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 488
+y 416
+w 112
+h 24
+fgColor index 14
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-medium-r-12.0"
+numItems 2
+symbolTag {
+  0 "Frequency"
+  1 "Timebase"
+}
+symbol0 {
+  0 "x_axis"
+  1 "x_axis"
+}
+value0 {
+  0 "SCALE"
+  1 "TIMEBASE"
 }
 endObjectProperties
 

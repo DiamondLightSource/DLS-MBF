@@ -4,7 +4,19 @@ struct interrupts;
 
 error__t initialise_events(void);
 
+
+/* Because the order in which interrupt events are dispatched can matter, we
+ * explicitly define the order of interrupt handlers here. */
+enum interrupt_handler_index {
+    INTERRUPT_HANDLER_TRIGGER,
+    INTERRUPT_HANDLER_MEMORY,
+    INTERRUPT_HANDLER_DETECTOR_0,   // Channel specific handlers
+    INTERRUPT_HANDLER_DETECTOR_1,
+};
+
+
 void register_event_handler(
+    enum interrupt_handler_index index,
     struct interrupts interrupts, void *context,
     void (*handler)(void *context, struct interrupts interrupts));
 
