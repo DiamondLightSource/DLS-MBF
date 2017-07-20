@@ -1,5 +1,5 @@
 bunches_per_turn = 936
-epics_name = TS-DI-LMBF-02
+epics_name = TS-DI-LMBF-01
 channel0_name = X
 channel1_name = Y
 revolution_frequency = 533848
@@ -20,3 +20,5 @@ memory_readout_length = 16384
 
 # Number of samples in a detector readout buffer
 detector_length = 8192
+
+# vim: set filetype=conf:

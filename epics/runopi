@@ -2,7 +2,11 @@
 
 cd "$(dirname "$0")"/opi
 
+DEVICE=TS-DI-LMBF-01
+CHAN0=X
+CHAN1=Y
+
 PATH="scripts/:$PATH"
 exec edm -x -eolc \
-    -m device=TS-DI-LMBF-02 -m chan0=X -m chan1=Y \
+    -m device=$DEVICE -m chan0=$CHAN0 -m chan1=$CHAN1 \
     lmbf/lmbf.edl
