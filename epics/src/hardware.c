@@ -27,6 +27,10 @@ const struct hardware_config hardware_config;
 
 static int dram0_device = -1;
 static int dram1_device = -1;
+/* We share the dram1 device between two channels under a lock, as there is
+ * absolutely no benefit in running two copies of this file handle -- there's
+ * only one underly DMA device anyway. */
+static pthread_mutex_t dram1_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -110,6 +114,23 @@ static uint32_t write_selected_bit(
     return (bits & ~(1U << bit)) | ((uint32_t) value << bit);
 }
 
+
+/* Seeks to the given offset and reads the requested number of bytes from the
+ * given device, returning an error if anything fails. */
+static error__t read_dma_memory(
+    int device, off_t seek_offset, size_t read_request, void *result)
+{
+    error__t error = TEST_IO(lseek(device, seek_offset, SEEK_SET));
+    while (!error  &&  read_request > 0)
+    {
+        ssize_t read_size;
+        error = TEST_IO(read_size = read(device, result, read_request));
+        result += read_size;
+        read_request -= (size_t) read_size;
+        if (read_size == 0) break;          // Shouldn't happen.
+    }
+    return error;
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -236,21 +257,9 @@ bool hw_read_dram_active(void)
 
 void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[])
 {
-    off_t seek_offset = offset & (DRAM0_LENGTH - 1);
-    error__t error = TEST_IO(lseek(dram0_device, seek_offset, SEEK_SET));
-
-    size_t read_request = samples * sizeof(uint32_t);
-    void *read_result = result;
-    while (!error  &&  read_request > 0)
-    {
-        ssize_t read_size;
-        error = TEST_IO(
-            read_size = read(dram0_device, read_result, read_request));
-        read_result += read_size;
-        read_request -= (size_t) read_size;
-        if (read_size == 0) break;          // Shouldn't happen.
-    }
-
+    error__t error = read_dma_memory(
+        dram0_device, offset & (DRAM0_LENGTH - 1),
+        samples * sizeof(uint32_t), result);
     ERROR_REPORT(error, "Error reading from DRAM0");
 }
 
@@ -826,6 +835,18 @@ void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
 void hw_write_det_start(int channel)
 {
     WRITE_FIELDS(dsp_regs[channel]->det_command, .reset = 1);
+}
+
+
+void hw_read_det_memory(
+    int channel, unsigned int result_count, struct detector_result result[])
+{
+    LOCK(dram1_mutex);
+    error__t error = read_dma_memory(
+        dram1_device, (unsigned int) channel * (DRAM1_LENGTH / 2),
+        result_count * sizeof(struct detector_result), result);
+    UNLOCK(dram1_mutex);
+    ERROR_REPORT(error, "Error reading from DRAM1");
 }
 
 

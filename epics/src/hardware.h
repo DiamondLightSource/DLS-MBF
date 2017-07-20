@@ -344,6 +344,11 @@ void hw_write_seq_trigger_state(int channel, unsigned int state);
 
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+struct detector_result {
+    int32_t i;
+    int32_t q;
+};
+
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
     int channel, bool fir_gain, bool input_select,
@@ -360,3 +365,7 @@ void hw_write_det_bunch_enable(int channel, int det, const bool enables[]);
 
 /* Resets detector capture address. */
 void hw_write_det_start(int channel);
+
+/* Reads detector result in raw format. */
+void hw_read_det_memory(
+    int channel, unsigned int result_count, struct detector_result result[]);

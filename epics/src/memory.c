@@ -138,6 +138,7 @@ static void write_chan1_select(unsigned int value)
 
 static struct epics_interlock *memory_readout;
 
+static uint32_t *memory_buffer;
 static int16_t *memory_wf0;
 static int16_t *memory_wf1;
 
@@ -153,19 +154,18 @@ static int readout_offset;
 static void readout_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
-    uint32_t buffer[readout_length];
 
     size_t origin = (size_t) trigger_origin;
     size_t delta = (size_t) (readout_offset * (int) sizeof(uint32_t));
     size_t offset = origin + delta;
-    hw_read_dram_memory(offset, readout_length, buffer);
+    hw_read_dram_memory(offset, readout_length, memory_buffer);
 
     interlock_wait(memory_readout);
 
     for (unsigned int i = 0; i < readout_length; i ++)
     {
-        memory_wf0[i] = (int16_t) buffer[i];
-        memory_wf1[i] = (int16_t) (buffer[i] >> 16);
+        memory_wf0[i] = (int16_t) memory_buffer[i];
+        memory_wf1[i] = (int16_t) (memory_buffer[i] >> 16);
     }
 
     interlock_signal(memory_readout, NULL);
@@ -236,6 +236,7 @@ static char device_name[256];
 error__t initialise_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
+    memory_buffer = calloc(sizeof(int32_t), readout_length);
     memory_wf0 = calloc(sizeof(int16_t), readout_length);
     memory_wf1 = calloc(sizeof(int16_t), readout_length);
 
