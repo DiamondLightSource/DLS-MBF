@@ -96,7 +96,7 @@ void hw_write_output_enable(int channel, bool enable);
 void hw_write_dram_mux(unsigned int mux);
 
 /* Configure FIR gain when capturing FIR data to DRAM0. */
-void hw_write_dram_fir_gain(unsigned int gain);
+void hw_write_dram_fir_gain(bool gain);
 
 /* Configures length of DRAM0 runout after trigger event. */
 void hw_write_dram_runout(unsigned int count);
@@ -349,14 +349,13 @@ struct detector_result {
 
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
-    int channel, bool fir_gain, bool input_select,
+    int channel, bool input_select,
     const bool enable[DETECTOR_COUNT],
     const unsigned int scaling[DETECTOR_COUNT]);
 
 /* Reads events from the detector. */
 void hw_read_det_events(int channel,
-    bool output_ovf[DETECTOR_COUNT], bool underrun[DETECTOR_COUNT],
-    bool fir_ovf[DETECTOR_COUNT]);
+    bool output_ovf[DETECTOR_COUNT], bool underrun[DETECTOR_COUNT]);
 
 /* Configures bunch enables for selected detector. */
 void hw_write_det_bunch_enable(int channel, int det, const bool enables[]);

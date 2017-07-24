@@ -30,7 +30,6 @@ struct detector_context {
     struct epics_interlock *update;
 
     /* Shared detector configuration. */
-    bool fir_gain;
     bool input_select;
 
     /* Detector specific configuration. */
@@ -41,7 +40,6 @@ struct detector_context {
     /* Detector events. */
     bool output_ovf[DETECTOR_COUNT];
     bool underrun[DETECTOR_COUNT];
-    bool fir_ovf[DETECTOR_COUNT];
 
     /* Detector waveforms. */
     unsigned int active_channels;       // Updated when preparing detector
@@ -93,8 +91,7 @@ static void detector_readout_event(void *context, struct interrupts interrupts)
 
     interlock_wait(det->update);
 
-    hw_read_det_events(
-        det->channel, det->output_ovf, det->underrun, det->fir_ovf);
+    hw_read_det_events(det->channel, det->output_ovf, det->underrun);
 
     const struct scale_info *info = read_detector_scale_info(det->channel);
     read_detector_memory(det, info->samples);
@@ -124,7 +121,6 @@ static void publish_detector(struct detector_context *det, int i)
         PUBLISH_WF_WRITE_VAR_P(
             char, "BUNCHES", system_config.bunches_per_turn, bunch_enables);
 
-        PUBLISH_READ_VAR(bi, "FIR_OVF", det->fir_ovf[i]);
         PUBLISH_READ_VAR(bi, "OUT_OVF", det->output_ovf[i]);
         PUBLISH_READ_VAR(bi, "UNDERRUN", det->underrun[i]);
 
@@ -141,8 +137,7 @@ void prepare_detector(int channel)
     printf("prepare_detector %d\n", channel);
     struct detector_context *det = &detector_context[channel];
     hw_write_det_config(channel,
-        det->fir_gain, det->input_select,
-        det->capture_enable, det->scaling);
+        det->input_select, det->capture_enable, det->scaling);
     det->active_channels = 0;
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
@@ -168,7 +163,6 @@ error__t initialise_detector(void)
         for (int i = 0; i < DETECTOR_COUNT; i ++)
             publish_detector(det, i);
 
-        PUBLISH_WRITE_VAR_P(bo, "FIR_GAIN", det->fir_gain);
         PUBLISH_WRITE_VAR_P(bo, "SELECT", det->input_select);
 
         const struct scale_info *info = read_detector_scale_info(det->channel);

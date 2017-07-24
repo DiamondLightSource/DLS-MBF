@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 117
-y 1017
+x 118
+y 1018
 w 660
 h 119
 font "helvetica-medium-r-18.0"
@@ -94,74 +94,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 200
-y 16
-w 144
-h 14
-controlPv "$(device):$(channel):DET:$(det):FIR_OVF.DESC"
-font "helvetica-bold-r-12.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 352
-y 16
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):$(channel):DET:$(det):FIR_OVF"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 376
-y 16
-w 128
-h 14
-controlPv "$(device):$(channel):DET:$(det):FIR_OVF"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 200
-y 40
+x 192
+y 8
 w 144
 h 14
 controlPv "$(device):$(channel):DET:$(det):OUT_OVF.DESC"
@@ -185,8 +119,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 352
-y 40
+x 344
+y 8
 w 16
 h 16
 lineColor index 14
@@ -202,8 +136,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 376
-y 40
+x 368
+y 8
 w 128
 h 14
 controlPv "$(device):$(channel):DET:$(det):OUT_OVF"
@@ -226,8 +160,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 200
-y 64
+x 192
+y 32
 w 144
 h 14
 controlPv "$(device):$(channel):DET:$(det):UNDERRUN.DESC"
@@ -251,8 +185,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 352
-y 64
+x 344
+y 32
 w 16
 h 16
 lineColor index 14
@@ -268,8 +202,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 376
-y 64
+x 368
+y 32
 w 128
 h 14
 controlPv "$(device):$(channel):DET:$(det):UNDERRUN"

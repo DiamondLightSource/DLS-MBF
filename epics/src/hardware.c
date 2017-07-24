@@ -224,10 +224,10 @@ void hw_write_dram_mux(unsigned int mux)
     UNLOCK(ctrl_lock);
 }
 
-void hw_write_dram_fir_gain(unsigned int gain)
+void hw_write_dram_fir_gain(bool gain)
 {
     LOCK(ctrl_lock);
-    ctrl_mirror.mem_config.fir_gain = gain & 0xF;
+    ctrl_mirror.mem_config.fir_gain = gain;
     WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
     UNLOCK(ctrl_lock);
 }
@@ -616,7 +616,7 @@ void hw_write_dac_delay(int channel, unsigned int delay)
 void hw_write_dac_fir_gain(int channel, unsigned int gain)
 {
     LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, fir_gain, gain & 0x1F);
+    WRITE_DSP_MIRROR(channel, dac_config, fir_gain, gain & 0xF);
     UNLOCK(dsp_locks[channel]);
 }
 
@@ -773,13 +773,12 @@ void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH])
 
 
 void hw_write_det_config(
-    int channel, bool fir_gain, bool input_select,
+    int channel, bool input_select,
     const bool enable[DETECTOR_COUNT],
     const unsigned int scaling[DETECTOR_COUNT])
 {
     LOCK(dsp_locks[channel]);
     dsp_mirror[channel].det_config = (struct dsp_det_config) {
-        .fir_gain = fir_gain,
         .select = input_select,
         .scale0 = scaling[0] & 0x7,
         .enable0 = enable[0],
@@ -795,13 +794,11 @@ void hw_write_det_config(
 }
 
 void hw_read_det_events(int channel,
-    bool output_ovf[DETECTOR_COUNT], bool underrun[DETECTOR_COUNT],
-    bool fir_ovf[DETECTOR_COUNT])
+    bool output_ovf[DETECTOR_COUNT], bool underrun[DETECTOR_COUNT])
 {
     struct dsp_det_events events = READL(dsp_regs[channel]->det_events);
     bits_to_bools(DETECTOR_COUNT, events.output_ovfl, output_ovf);
     bits_to_bools(DETECTOR_COUNT, events.underrun, underrun);
-    bits_to_bools(DETECTOR_COUNT, events.fir_ovfl, fir_ovf);
 }
 
 void hw_write_det_bunch_enable(int channel, int det, const bool enables[])

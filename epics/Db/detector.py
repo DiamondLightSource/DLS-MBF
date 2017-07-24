@@ -15,7 +15,6 @@ def detector_bank_pvs(updates):
         *['2^-%d' % (8 * n) for n in range(8)])
 
     updates.extend([
-        overflow('FIR_OVF', 'FIR input overflow'),
         overflow('OUT_OVF', 'Output overflow'),
         boolIn('UNDERRUN', 'Ok', 'Underrun', OSV = 'MAJOR',
             DESC = 'Data output underrun')])
@@ -41,7 +40,6 @@ def detector_pvs():
     for det in range(4):
         with_name_prefix('%d' % det, detector_bank_pvs, updates)
 
-    boolOut('FIR_GAIN', 'High', 'Low', DESC = 'Select FIR gain')
     boolOut('SELECT', 'ADC', 'FIR', DESC = 'Select detector source')
 
     Trigger('UPDATE', *updates)

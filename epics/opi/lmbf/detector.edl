@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 207
-y 35
+x 208
+y 36
 w 641
 h 730
 font "helvetica-medium-r-18.0"
@@ -85,45 +85,6 @@ command {
   0 "diagnostics-help TMBF_ADC"
 }
 includeHelpIcon
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 40
-w 52
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR gain:"
-}
-autoSize
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 80
-y 40
-w 104
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(channel):DET:FIR_GAIN_S"
-font "helvetica-medium-r-12.0"
 endObjectProperties
 
 # (Static Text)

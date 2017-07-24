@@ -258,7 +258,7 @@ error__t initialise_memory(void)
         memory_select = PUBLISH_WRITER_P(mbbo, "SELECT", write_memory_select);
         chan0_select = PUBLISH_WRITER(mbbo, "SEL0", write_chan0_select);
         chan1_select = PUBLISH_WRITER(mbbo, "SEL1", write_chan1_select);
-        PUBLISH_WRITER_P(mbbo, "FIR_GAIN", hw_write_dram_fir_gain);
+        PUBLISH_WRITER_P(bo, "FIR_GAIN", hw_write_dram_fir_gain);
 
         /* Capture triggering. */
         PUBLISH_ACTION("START", start_capture);
