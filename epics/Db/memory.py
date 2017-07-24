@@ -52,8 +52,21 @@ def memory_pvs():
         DESC = 'Channel 0 capture selection', *select_channel)
     mbbOut('SEL1', PINI = 'NO',
         DESC = 'Channel 1 capture selection', *select_channel)
-    boolOut('FIR_GAIN', 'High gain', 'Normal gain',
-        DESC = 'FIR capture gain')
+
+    # FIR gain control
+    write_gain = Action('WRITE_GAIN', DESC = 'Write FIR gain')
+    boolOut('FIR0_GAIN', 'High gain', 'Low gain',
+        FLNK = write_gain,
+        DESC = 'FIR 0 capture gain')
+    boolOut('FIR1_GAIN', 'High gain', 'Low gain',
+        FLNK = write_gain,
+        DESC = 'FIR 1 capture gain')
+    Action('READ_OVF',
+        SCAN = '.2 second',
+        FLNK = create_fanout('READ:FAN',
+            overflow('FIR0_OVF', 'FIR 0 capture will overflow'),
+            overflow('FIR1_OVF', 'FIR 1 capture will overflow')),
+        DESC = 'Poll overflow events')
 
     longOut('OFFSET', -(1 << 29), (1 << 29) - 1, EGU = 'samples',
         DESC = 'Offset of readout')

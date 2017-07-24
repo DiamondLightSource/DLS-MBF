@@ -96,7 +96,7 @@ void hw_write_output_enable(int channel, bool enable);
 void hw_write_dram_mux(unsigned int mux);
 
 /* Configure FIR gain when capturing FIR data to DRAM0. */
-void hw_write_dram_fir_gain(bool gain);
+void hw_write_dram_fir_gains(bool gains[CHANNEL_COUNT]);
 
 /* Configures length of DRAM0 runout after trigger event. */
 void hw_write_dram_runout(unsigned int count);
@@ -109,6 +109,9 @@ void hw_write_dram_capture_command(bool start, bool stop);
 
 /* Returns true while capture to DRAM in progress. */
 bool hw_read_dram_active(void);
+
+/* Reads memory events. */
+void hw_read_dram_status(bool fir_overflow[CHANNEL_COUNT]);
 
 /* Reads the specified number of samples from DRAM0 starting at the given offset
  * into the given result array, which must be at least samples entries long. */

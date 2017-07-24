@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 114
-y 306
+x 2034
+y 70
 w 641
-h 730
+h 752
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -25,6 +25,36 @@ snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 424
+w 344
+h 72
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 512
+w 344
+h 72
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
 
 # (X-Y Graph)
 object xyGraphClass
@@ -188,7 +218,7 @@ major 4
 minor 6
 release 0
 x 152
-y 664
+y 696
 w 360
 h 16
 controlPv "$(device):MEM:DEVICE"
@@ -212,7 +242,7 @@ major 4
 minor 1
 release 1
 x 56
-y 664
+y 696
 w 83
 h 14
 font "helvetica-bold-r-12.0"
@@ -225,34 +255,14 @@ value {
 autoSize
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 416
-w 50
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Capture:"
-}
-autoSize
-endObjectProperties
-
 # (Menu Button)
 object activeMenuButtonClass
 beginObjectProperties
 major 4
 minor 0
 release 0
-x 80
-y 416
+x 184
+y 448
 w 104
 h 24
 fgColor index 14
@@ -318,29 +328,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 64
-y 448
+x 88
+y 464
 w 72
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):MEM:SEL0_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 144
-y 448
-w 72
-h 24
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -356,8 +347,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 88
-y 512
+x 400
+y 520
 w 72
 h 24
 fgColor index 25
@@ -379,8 +370,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 192
-y 512
+x 480
+y 520
 w 104
 h 24
 fgColor index 14
@@ -398,8 +389,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 120
-y 584
+x 304
+y 648
 w 144
 h 16
 controlPv "$(device):MEM:BUSY.DESC"
@@ -423,8 +414,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 272
-y 584
+x 456
+y 648
 w 16
 h 16
 lineColor index 14
@@ -440,8 +431,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 296
-y 584
+x 480
+y 648
 w 128
 h 16
 controlPv "$(device):MEM:BUSY"
@@ -465,7 +456,7 @@ major 4
 minor 6
 release 0
 x 152
-y 688
+y 720
 w 152
 h 16
 controlPv "$(device):MEM:ORIGIN"
@@ -491,7 +482,7 @@ major 4
 minor 1
 release 1
 x 56
-y 688
+y 720
 w 86
 h 14
 font "helvetica-bold-r-12.0"
@@ -524,53 +515,14 @@ value {
 autoSize
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 80
-y 480
-w 104
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):MEM:FIR_GAIN_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 480
-w 52
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR gain:"
-}
-autoSize
-endObjectProperties
-
 # (Message Button)
 object activeMessageButtonClass
 beginObjectProperties
 major 4
 minor 1
 release 0
-x 88
-y 544
+x 400
+y 552
 w 72
 h 24
 fgColor index 25
@@ -603,5 +555,290 @@ topShadowColor index 1
 botShadowColor index 11
 controlPv "$(device):MEM:RUNOUT_S"
 font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 248
+y 528
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):MEM:FIR0_OVF"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 272
+y 528
+w 72
+h 16
+controlPv "$(device):MEM:FIR0_OVF"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 248
+y 552
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):MEM:FIR1_OVF"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 272
+y 552
+w 72
+h 16
+controlPv "$(device):MEM:FIR1_OVF"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 504
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "FIR gain"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 504
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 528
+w 112
+h 16
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Channel $(chan0):"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 552
+w 108
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Channel $(chan1):"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 136
+y 552
+w 104
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):MEM:FIR1_GAIN_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 136
+y 528
+w 104
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):MEM:FIR0_GAIN_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 416
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Selection"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 416
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 440
+w 61
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Channel 0:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 88
+y 440
+w 72
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):MEM:SEL0_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 464
+w 61
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Channel 1:"
+}
+autoSize
 endObjectProperties
 
