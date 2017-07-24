@@ -23,7 +23,6 @@ entity detector_registers is
         read_ack_o : out std_logic_vector(DSP_DET_REGS);
 
         -- Controls
-        fir_gain_o : out unsigned(0 downto 0);
         data_select_o : out std_logic;
         start_write_o : out std_logic;
         bunch_write_o : out std_logic_vector(DETECTOR_RANGE);
@@ -32,7 +31,6 @@ entity detector_registers is
         input_enable_o : out std_logic_vector(DETECTOR_RANGE);
 
         -- Error event inputs
-        fir_overflow_i : in std_logic_vector(DETECTOR_RANGE);
         detector_overflow_i : in std_logic_vector(DETECTOR_RANGE);
         output_underrun_i : in std_logic_vector(DETECTOR_RANGE)
     );
@@ -91,7 +89,6 @@ begin
     event_bits <= (
         DSP_DET_EVENTS_OUTPUT_OVFL_BITS => detector_overflow_i,
         DSP_DET_EVENTS_UNDERRUN_BITS => output_underrun_i,
-        DSP_DET_EVENTS_FIR_OVFL_BITS => fir_overflow_i,
         others => '0'
     );
 
@@ -100,7 +97,6 @@ begin
     address_reset_o <= command_bits(DSP_DET_COMMAND_RESET_BIT);
 
     -- Control fields
-    fir_gain_o <= unsigned(register_file(DSP_DET_CONFIG_FIR_GAIN_BITS));
     data_select_o <= register_file(DSP_DET_CONFIG_SELECT_BIT);
     output_scaling_o(0) <= unsigned(register_file(DSP_DET_CONFIG_SCALE0_BITS));
     input_enable_o(0) <= register_file(DSP_DET_CONFIG_ENABLE0_BIT);

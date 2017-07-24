@@ -19,8 +19,6 @@ entity detector_core is
         iq_i : in cos_sin_18_t;
         bunch_enable_i : in std_logic;
 
-        data_overflow_i : in std_logic;
-        data_overflow_o : out std_logic := '0';
         detector_overflow_o : out std_logic;
 
         overflow_mask_i : in signed(95 downto 0);
@@ -99,8 +97,6 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            data_overflow_o <= data_overflow_i and bunch_enable_i;
-
             write_o <= write_in;
             if write_in = '1' then
                 iq_o <= iq_out;

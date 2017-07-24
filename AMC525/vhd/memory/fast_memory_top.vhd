@@ -49,7 +49,7 @@ architecture arch of fast_memory_top is
     -- Configuration
     constant COUNT_BITS : natural := 28;
     signal mux_select : std_logic_vector(3 downto 0);
-    signal fir_gain : unsigned(3 downto 0);
+    signal fir_gain : unsigned(0 downto 0);
     signal count : unsigned(COUNT_BITS-1 downto 0);
 
     -- Command

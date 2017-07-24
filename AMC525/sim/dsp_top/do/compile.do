@@ -94,7 +94,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
     $vhd_dir/dsp/adc_overflow.vhd \
-    $vhd_dir/dsp/adc_to_dsp.vhd \
     $vhd_dir/dsp/adc_top.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 

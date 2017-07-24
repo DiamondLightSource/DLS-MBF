@@ -52,7 +52,6 @@ end;
 
 architecture arch of detector_top is
     -- Register control settings
-    signal fir_gain : unsigned(0 downto 0);
     signal data_select : std_logic;
     signal start_write : std_logic;
     signal bunch_write : std_logic_vector(DETECTOR_RANGE);
@@ -60,13 +59,11 @@ architecture arch of detector_top is
     signal address_reset : std_logic;
     signal input_enable : std_logic_vector(DETECTOR_RANGE);
     -- Event feedbacks (all on DSP clock)
-    signal fir_overflow : std_logic_vector(DETECTOR_RANGE);
     signal detector_overflow : std_logic_vector(DETECTOR_RANGE);
     signal output_underrun : std_logic_vector(DETECTOR_RANGE);
 
     -- Internal paths
     signal data_in : signed(24 downto 0);
-    signal fir_overflow_in : std_logic;
 
     -- Output data streams
     signal output_valid : std_logic_vector(DETECTOR_RANGE);
@@ -85,7 +82,6 @@ begin
         read_data_o => read_data_o,
         read_ack_o => read_ack_o,
 
-        fir_gain_o => fir_gain,
         data_select_o => data_select,
         start_write_o => start_write,
         bunch_write_o => bunch_write,
@@ -93,7 +89,6 @@ begin
         address_reset_o => address_reset,
         input_enable_o => input_enable,
 
-        fir_overflow_i => fir_overflow,
         detector_overflow_i => detector_overflow,
         output_underrun_i => output_underrun
     );
@@ -105,15 +100,13 @@ begin
     ) port map (
         clk_i => adc_clk_i,
 
-        fir_gain_i => fir_gain,
         data_select_i => data_select,
 
         adc_data_i => adc_data_i,
         fir_data_i => fir_data_i,
         window_i => window_i,
 
-        data_o => data_in,
-        fir_overflow_o => fir_overflow_in
+        data_o => data_in
     );
 
 
@@ -177,9 +170,7 @@ begin
             iq_i => nco_iq_in,
             start_i => start,
             write_i => write,
-            data_overflow_i => fir_overflow_in,
 
-            data_overflow_o => fir_overflow(d),
             detector_overflow_o => detector_overflow(d),
             output_underrun_o => output_underrun(d),
 

@@ -17,11 +17,11 @@ architecture arch of testbench is
     signal adc_clk : std_logic := '1';
     signal dsp_clk : std_logic := '0';
 
-    constant TURN_COUNT : natural := 19;
+    constant TURN_COUNT : natural := 64;
     signal turn_clock : std_logic;
 
-    signal adc_data : signed(ADC_INP_WIDTH-1 downto 0) := (others => '0');
-    signal dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
+    signal adc_data : signed(13 downto 0) := (others => '0');
+    signal dac_data : signed(15 downto 0);
 
     signal write_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
     signal write_data : reg_data_t := (others => '0');
@@ -41,9 +41,8 @@ begin
     -- Simple ADC data simulation: we just generate a ramp.
     process (adc_clk) begin
         if rising_edge(adc_clk) then
-            for c in CHANNELS loop
-                adc_data <= adc_data + 1;
-            end loop;
+            adc_data <= dac_data(15 downto 2);  -- Loopback
+--             adc_data <= adc_data + 1;
         end if;
     end process;
 
@@ -112,7 +111,20 @@ begin
         -- Simple test, small ring: just pass NCO0 through to DSP
 
         -- Set a sensible NCO frequency
-        write_reg(DSP_NCO0_FREQ_REG,  X"01000000");
+        write_reg(DSP_NCO0_FREQ_REG,  X"08000000");
+
+        -- Enable output of NCO0
+        -- .DELAY = 1
+        -- .FIR_GAIN = 0
+        -- .NCO0_GAIN = 0
+        -- .FIR_ENABLE = 0
+        -- .NCO0_ENABLE = 1
+        -- .NCO1_ENABLE = 0
+        write_reg(DSP_DAC_CONFIG_REG, X"00040001");
+
+        -- Initialise DAC FIR
+        write_reg(DSP_DAC_COMMAND_REG_W,  X"00000001");
+        write_reg(DSP_DAC_TAPS_REG, X"7FFFFFFF");
 
         -- Configure bunch control
         write_reg(DSP_BUNCH_CONFIG_REG,  X"00000000");
@@ -125,18 +137,20 @@ begin
             write_reg(DSP_BUNCH_BANK_REG, X"00013FFC");
         end loop;
 
-        -- Enable output
-        -- .DELAY = 0
-        -- .FIR_GAIN = 0
-        -- .NCO0_GAIN = 0
-        -- .FIR_ENABLE = 0
-        -- .NCO0_ENABLE = 1
-        -- .NCO1_ENABLE = 0
-        write_reg(DSP_DAC_CONFIG_REG, X"00080000");
+        -- Write FIR 0 taps
+        write_reg(DSP_FIR_CONFIG_REG, X"00000000");
+        write_reg(DSP_FIR_TAPS_REG,   X"5a827980");
+--         write_reg(DSP_FIR_TAPS_REG,   X"5a827980");
+        write_reg(DSP_FIR_TAPS_REG,   X"a57d8680");
+--         write_reg(DSP_FIR_TAPS_REG,   X"a57d8680");
 
-        -- Initialise DAC FIR
-        write_reg(DSP_DAC_COMMAND_REG_W,  X"00000001");
-        write_reg(DSP_DAC_TAPS_REG, X"7FFFFFFF");
+        -- Initialise ADC FIR
+        write_reg(DSP_ADC_COMMAND_REG_W,  X"00000001");
+        write_reg(DSP_ADC_TAPS_REG, X"7FFFFFFF");
+
+        wait for 2 us;
+
+        write_reg(DSP_NCO0_FREQ_REG,  X"08000010");
 
         wait;
     end process;

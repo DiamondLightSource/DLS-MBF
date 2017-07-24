@@ -26,10 +26,8 @@ entity detector_body is
         iq_i : in cos_sin_18_t;
         start_i : in std_logic;
         write_i : in std_logic;
-        data_overflow_i : in std_logic;
 
         -- Error events, all on DSP clock
-        data_overflow_o : out std_logic;
         detector_overflow_o : out std_logic;
         output_underrun_o : out std_logic;
 
@@ -46,7 +44,6 @@ end;
 architecture arch of detector_body is
     signal bunch_enable : std_logic;
 
-    signal data_overflow : std_logic;
     signal detector_overflow : std_logic;
     signal det_write : std_logic;
     signal det_iq : cos_sin_96_t;
@@ -91,8 +88,6 @@ begin
         data_i => data_i,
         iq_i => iq_i,
         bunch_enable_i => bunch_enable,
-        data_overflow_i => data_overflow_i,
-        data_overflow_o => data_overflow,
         detector_overflow_o => detector_overflow,
 
         overflow_mask_i => overflow_mask,
@@ -126,13 +121,6 @@ begin
 
 
     -- Bring overflows over to DSP clock
-    data_to_dsp : entity work.pulse_adc_to_dsp port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-
-        pulse_i => data_overflow,
-        pulse_o => data_overflow_o
-    );
     detector_to_dsp : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,

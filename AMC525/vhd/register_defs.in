@@ -188,8 +188,9 @@
             # 15      0                    0
             # ======= ==================== ====================
             .MUX_SELECT     4
-            # Gain selection for FIR capture to DRAM
-            .FIR_GAIN       4
+            # Gain selection for FIR capture to DRAM.  Either bottom 16 bits or
+            # top 16 bits of 24 bit FIR input.
+            .FIR_GAIN       1
 
         COUNT       RW
             # Number of words to capture to memory after STOP event
@@ -456,7 +457,7 @@
             # Output delay for final DAC output
             .DELAY          10
             # Gain for FIR output
-            .FIR_GAIN       5
+            .FIR_GAIN       4
             # Gain for NCO0 output (NCO1 gain is under sequencer control)
             .NCO0_GAIN      4
             # Global control for NCO0 enable
@@ -528,13 +529,9 @@
     !DET
         # Configures global behaviour of the four detectors
         CONFIG      RW
-            # Select FIR gain: 0 selects low order bits from FIR, 1 selects
-            # high order bits
-            .FIR_GAIN   1
             # Select data input source: 0 selects ADC data, 1 selects scaled
             # FIR data
             .SELECT
-            -           6
             # Output scaling for detector 0
             .SCALE0     3
             # Output enable for detector 0
@@ -561,11 +558,9 @@
                 # transmitting detector result
                 .OUTPUT_OVFL    4
                 # For each detector, set if data was lost.  This can happen if
-                # detector data is written to rapidly
+                # detector data is written too rapidly, but should not happen
+                # during normal operation.
                 .UNDERRUN       4
-                # For each detector, set if FIR overflow was detected on data
-                # used in the detector.
-                .FIR_OVFL       4
             COMMAND     WP
                 # Triggers start of write to detector bunch enable memory.
                 .WRITE

@@ -179,7 +179,7 @@ begin
 
     -- DDR data from ADC input
     adc_data_inst : entity work.iddr_array generic map (
-        COUNT => ADC_INP_WIDTH
+        COUNT => adc_data'LENGTH
     ) port map (
         clk_i => adc_clk_i,
         d_i => adc_data,
@@ -189,7 +189,7 @@ begin
 
     -- DDR data to DAC output
     dac_data_inst : entity work.oddr_array generic map (
-        COUNT => DAC_OUT_WIDTH
+        COUNT => dac_data'LENGTH
     ) port map (
         clk_i => adc_clk_i,
         d1_i => std_logic_vector(dac_data_a_i),

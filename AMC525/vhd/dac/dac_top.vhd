@@ -49,7 +49,7 @@ architecture arch of dac_top is
     -- Configuration settings from register
     signal config_register : reg_data_t;
     signal dac_delay : bunch_count_t;
-    signal fir_gain : unsigned(4 downto 0);
+    signal fir_gain : unsigned(3 downto 0);
     signal nco_0_gain : unsigned(3 downto 0);
     signal nco_0_enable : std_logic;
     signal nco_1_enable : std_logic;

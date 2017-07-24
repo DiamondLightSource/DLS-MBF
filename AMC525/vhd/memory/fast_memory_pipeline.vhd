@@ -26,13 +26,14 @@ architecture arch of fast_memory_pipeline is
 begin
     channel_gen : for c in CHANNELS generate
         -- Because of a bug in Questa Sim we can't assign directly to output!
-        signal adc : signed(15 downto 0);
-        signal dac : signed(15 downto 0);
-        signal fir : signed(FIR_DATA_RANGE);
+        signal adc : adc_o(c)'SUBTYPE;
+        signal dac : dac_o(c)'SUBTYPE;
+        signal fir : fir_o(c)'SUBTYPE;
+
     begin
         adc_dly : entity work.dlyreg generic map (
             DLY => DELAY,
-            DW => 16
+            DW => adc_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
             data_i => std_logic_vector(dsp_to_control_i(c).adc_data),
@@ -42,7 +43,7 @@ begin
 
         dac_dly : entity work.dlyreg generic map (
             DLY => DELAY,
-            DW => 16
+            DW => dac_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
             data_i => std_logic_vector(dsp_to_control_i(c).dac_data),
@@ -52,7 +53,7 @@ begin
 
         fir_dly : entity work.dlyreg generic map (
             DLY => DELAY,
-            DW => FIR_DATA_WIDTH
+            DW => fir_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
             data_i => std_logic_vector(dsp_to_control_i(c).fir_data),

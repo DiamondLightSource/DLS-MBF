@@ -10,16 +10,18 @@ use work.defines.all;
 use work.nco_defs.all;
 
 package dsp_defs is
-    subtype DRAM1_ADDR_RANGE is natural range 22 downto 0;
-    subtype ADC_DATA_RANGE is natural range 15 downto 0;
-    subtype NCO_DATA_RANGE is natural range 17 downto 0;
+    subtype DRAM1_ADDR_RANGE is natural range 22 downto 0;  -- 23 bits
+    subtype ADC_DATA_RANGE is natural range 15 downto 0;    -- 16 bits
+    subtype NCO_DATA_RANGE is natural range 17 downto 0;    -- 18 bits
+    subtype FIR_DATA_RANGE is natural range 23 downto 0;    -- 24 bits
+    subtype DAC_DATA_RANGE is natural range 15 downto 0;    -- 16 bits
 
     type dsp_to_control_t is record
         -- Data streams.  adc_data for capture and for multiplexing to FIR
         -- input stage, fir_data and dac_data for capture.
         adc_data : signed(ADC_DATA_RANGE);
         fir_data : signed(FIR_DATA_RANGE);
-        dac_data : signed(DAC_OUT_WIDTH-1 downto 0);
+        dac_data : signed(DAC_DATA_RANGE);
 
         -- Bank selection from sequencer
         bank_select : unsigned(1 downto 0);

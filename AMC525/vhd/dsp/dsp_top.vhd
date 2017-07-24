@@ -61,7 +61,7 @@ architecture arch of dsp_top is
     signal nco_1_enable : std_logic;
 
     -- Data flow
-    signal fir_data : signed(FIR_DATA_WIDTH-1 downto 0);
+    signal fir_data : signed(FIR_DATA_RANGE);
 
 begin
     -- -------------------------------------------------------------------------

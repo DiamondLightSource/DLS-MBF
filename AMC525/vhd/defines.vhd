@@ -24,18 +24,6 @@ package defines is
     -- Number of selectable FIR coefficient sets
     constant FIR_BANK_BITS : natural := 2;
 
-    constant FIR_DATA_WIDTH : natural := 36;
-    subtype FIR_DATA_RANGE is natural range FIR_DATA_WIDTH-1 downto 0;
-
-    -- External interface constants
-    constant ADC_INP_WIDTH : natural := 14;     -- ADC input data width
-    constant DAC_OUT_WIDTH : natural := 16;     -- DAC output data width
-
-    -- All our DSP processing is done at half ADC clock rate, so we have two
-    -- data processing lanes.
-    constant LANE_COUNT : natural := 2;
-    subtype LANES is natural range 0 to LANE_COUNT-1;
-
     constant CHANNEL_COUNT : natural := 2;
     subtype CHANNELS is natural range 0 to CHANNEL_COUNT-1;
 

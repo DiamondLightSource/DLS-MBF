@@ -35,8 +35,7 @@ architecture arch of min_max_sum_memory is
     constant ADDR_BITS : natural := read_addr_i'LENGTH;
 
     -- Declare block ram
-    constant LANE_ROW_BITS : natural := MMS_ROW_BITS;
-    subtype bram_row_t is std_logic_vector(LANE_ROW_BITS-1 downto 0);
+    subtype bram_row_t is std_logic_vector(MMS_ROW_BITS-1 downto 0);
 
     signal read_addr : read_addr_i'SUBTYPE;
     signal read_row : bram_row_t;
@@ -55,7 +54,7 @@ begin
 
     bram : entity work.block_memory generic map (
         ADDR_BITS => ADDR_BITS,
-        DATA_BITS => LANE_ROW_BITS,
+        DATA_BITS => MMS_ROW_BITS,
         READ_DELAY => 2
     ) port map (
         read_clk_i => clk_i,

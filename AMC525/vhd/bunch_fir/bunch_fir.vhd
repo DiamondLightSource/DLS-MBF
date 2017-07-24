@@ -22,7 +22,7 @@ end;
 architecture arch of bunch_fir is
     -- The delay line between taps is limited to 36 bits to fit into BRAM, and
     -- for simplicity we assume that we'll have to clip to fit into the delay.
-    constant DELAY_WIDTH : natural := 36;
+    constant DELAY_WIDTH : natural := data_o'LENGTH;
 
     constant TAP_COUNT : natural := taps_i'LENGTH;
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
