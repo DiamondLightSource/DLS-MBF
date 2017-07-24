@@ -118,6 +118,7 @@ begin
         signal data_delay : data_in'SUBTYPE;
         signal start : std_logic;
         signal write : std_logic;
+        signal turn_clock : std_logic;
 
         signal valid : std_logic;
         signal ready : std_logic;
@@ -156,11 +157,19 @@ begin
             data_o(0) => start,     data_o(1) => write
         );
 
+        turn_clock_delay : entity work.dlyreg generic map (
+            DLY => CONTROL_BUFFER_LENGTH
+        ) port map (
+            clk_i => adc_clk_i,
+            data_i(0) => turn_clock_i,
+            data_o(0) => turn_clock
+        );
+
         -- Detector
         detector_body : entity work.detector_body port map (
             adc_clk_i => adc_clk_i,
             dsp_clk_i => dsp_clk_i,
-            turn_clock_i => turn_clock_i,
+            turn_clock_i => turn_clock,
 
             start_write_i => start_write,
             bunch_write_i => bunch_write(d),
