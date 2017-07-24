@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 638
-y 22
+x 639
+y 23
 w 544
 h 592
 font "helvetica-medium-r-18.0"
@@ -952,7 +952,7 @@ minor 0
 release 0
 x 8
 y 536
-w 416
+w 320
 h 48
 lineColor index 14
 fill
@@ -967,14 +967,14 @@ minor 1
 release 1
 x 16
 y 552
-w 59
+w 30
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "NCO freq:"
+  "Freq:"
 }
 autoSize
 endObjectProperties
@@ -985,16 +985,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 200
+x 152
 y 552
-w 59
-h 14
+w 32
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "NCO gain:"
+  "Gain:"
 }
 autoSize
 endObjectProperties
@@ -1005,10 +1005,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 88
+x 56
 y 552
-w 96
-h 20
+w 88
+h 24
 controlPv "$(device):$(channel):NCO:FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1033,10 +1033,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 272
+x 192
 y 552
-w 72
-h 24
+w 70
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -1412,10 +1412,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 352
+x 264
 y 552
 w 56
-h 24
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -1446,5 +1446,53 @@ numDsps 1
 displayFileName {
   0 "lmbf/seq_window.edl"
 }
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 496
+y 528
+w 40
+h 24
+controlPv "$(device):$(channel):FIR:DECIMATION_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 416
+y 528
+w 70
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Decimation:"
+}
+autoSize
 endObjectProperties
 

@@ -352,7 +352,6 @@ void prepare_sequencer(int channel)
     hw_write_seq_super_entries(
         channel, seq->super_seq_count, seq->super_offsets);
     hw_write_seq_window(channel, seq->window);
-    hw_write_seq_super_count(channel, seq->super_seq_count);
     hw_write_seq_count(channel, seq->sequencer_pc);
 
     update_scale_info(seq, seq_entries);

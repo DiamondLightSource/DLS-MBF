@@ -320,16 +320,14 @@ void hw_write_seq_entries(
 
 /* Configures super sequencer: writes array of sweep frequency offsets. */
 void hw_write_seq_super_entries(
-    int channel, unsigned int count, const uint32_t offsets[SUPER_SEQ_STATES]);
+    int channel, unsigned int super_count,
+    const uint32_t offsets[SUPER_SEQ_STATES]);
 
 /* Writes detector window. */
 void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH]);
 
 /* Programs sequencer program counter. */
 void hw_write_seq_count(int channel, unsigned int sequencer_pc);
-
-/* Programs number of super sequencer states. */
-void hw_write_seq_super_count(int channel, unsigned int super_count);
 
 /* Returns current sequencer state. */
 void hw_read_seq_state(

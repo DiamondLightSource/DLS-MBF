@@ -711,14 +711,6 @@ void hw_write_seq_count(int channel, unsigned int pc)
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_seq_super_count(int channel, unsigned int super_count)
-{
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(
-        channel, seq_config, super_count, (super_count - 1) & 0x3FF);
-    UNLOCK(dsp_locks[channel]);
-}
-
 void hw_write_seq_abort(int channel)
 {
     WRITE_FIELDS(dsp_regs[channel]->seq_command, .abort = 1);
@@ -750,13 +742,19 @@ void hw_write_seq_entries(
 }
 
 void hw_write_seq_super_entries(
-    int channel, unsigned int count, const uint32_t offsets[])
+    int channel, unsigned int super_count, const uint32_t offsets[])
 {
     LOCK(dsp_locks[channel]);
     WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
-    WRITE_DSP_MIRROR(channel, seq_config, target, 2);
-    for (unsigned int i = 0; i < count; i ++)
-        writel(&dsp_regs[channel]->seq_write, offsets[i]);
+    dsp_mirror[channel].seq_config.target = 2;
+    dsp_mirror[channel].seq_config.super_count = (super_count - 1) & 0x3FF;
+    WRITEL(dsp_regs[channel]->seq_config, dsp_mirror[channel].seq_config);
+
+    /* When writing the offsets memory we have to write in reverse order to
+     * match the fact that states will be read from count down to 0, and we
+     * only need to write the states that will actually be used. */
+    for (unsigned int i = 0; i < super_count; i ++)
+        writel(&dsp_regs[channel]->seq_write, offsets[super_count - 1 - i]);
     UNLOCK(dsp_locks[channel]);
 }
 
@@ -814,9 +812,11 @@ void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
     struct dsp_det_config config = dsp_mirror[channel].det_config;
     config.bank = (unsigned int) det & 0x3;
     WRITEL(dsp_regs[channel]->det_config, config);
+
     /* Also reset the bunch write pointer. */
     WRITE_FIELDS(dsp_regs[channel]->det_command, .write = 1);
 
+    /* Convert array of bits into an array of 32-bit words. */
     uint32_t enable_mask = 0;
     FOR_BUNCHES(i)
     {
@@ -829,6 +829,7 @@ void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
     }
     if (hardware_config.bunches & 0x1F)
         writel(&dsp_regs[channel]->det_bunch, enable_mask);
+
     UNLOCK(dsp_locks[channel]);
 }
 

@@ -90,7 +90,6 @@ static void read_detector_memory(
 static void detector_readout_event(void *context, struct interrupts interrupts)
 {
     struct detector_context *det = context;
-printf("Detector readout %d\n", det->channel);
 
     interlock_wait(det->update);
 
