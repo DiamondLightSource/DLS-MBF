@@ -188,18 +188,26 @@
             # 15      0                    0
             # ======= ==================== ====================
             .MUX_SELECT     4
-            # Gain selection for FIR capture to DRAM.  Either bottom 16 bits or
-            # top 16 bits of 24 bit FIR input.
-            .FIR_GAIN       1
+            # Gain selection for FIR channel 0 capture to DRAM.  Either bottom
+            # 16 bits or top 16 bits of 24 bit FIR input.
+            .FIR0_GAIN       1
+            # Gain selection for FIR channel 1 capture to DRAM.
+            .FIR1_GAIN       1
 
         COUNT       RW
             # Number of words to capture to memory after STOP event
             .COUNT          28
 
+        # Only valid after STOP has been triggered, returns the write address in
+        # bytes at the time of the trigger event
+        ADDRESS     R
+
         *RW
-            # Only valid after STOP has been triggered, returns the write
-            # address in bytes at the time of the trigger event
-            ADDRESS     R
+            # Captures single pulse events, reset on each read
+            PULSED      R
+                # Set if overflow occurs through the FIR -> DRAM scaling.
+                .FIR_OVF    2
+
             # Write to this register to trigger the select actions
             COMMAND     WP
                 # Starts capture to memory

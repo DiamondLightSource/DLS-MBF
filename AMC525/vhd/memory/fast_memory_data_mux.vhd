@@ -15,11 +15,12 @@ entity fast_memory_data_mux is
 
         -- Input control
         mux_select_i : in std_logic_vector(3 downto 0);
-        fir_gain_i : in unsigned(0 downto 0);
+        fir_gain_i : in unsigned_array(CHANNELS)(0 downto 0);
 
         dsp_to_control_i : in dsp_to_control_array_t;
         extra_i : in std_logic_vector(63 downto 0);
 
+        fir_overflow_o : out std_logic_vector(CHANNELS);
         data_o : out std_logic_vector(63 downto 0) := (others => '0')
     );
 end;
@@ -64,14 +65,24 @@ begin
 
     -- Gain control on FIR data
     chans_gen : for c in CHANNELS generate
+        signal fir_overflow : std_logic;
+
+    begin
         fir_gain_inst : entity work.gain_control generic map (
             INTERVAL => 8
         ) port map (
             clk_i => adc_clk_i,
-            gain_sel_i => fir_gain_i,
+            gain_sel_i => fir_gain_i(c),
             data_i => fir_in(c),
             data_o => fir(c),
-            overflow_o => open
+            overflow_o => fir_overflow
+        );
+
+        pulse_to_dsp : entity work.pulse_adc_to_dsp port map (
+            adc_clk_i => adc_clk_i,
+            dsp_clk_i => dsp_clk_i,
+            pulse_i => fir_overflow,
+            pulse_o => fir_overflow_o(c)
         );
     end generate;
 
