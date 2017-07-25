@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 118
-y 1018
-w 660
-h 119
+x 500
+y 1023
+w 610
+h 161
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -32,20 +32,20 @@ beginObjectProperties
 major 4
 minor 0
 release 1
-x 16
-y 96
+x 8
+y 51
 w 568
 h 0
 lineColor index 9
 fillColor index 0
 numPoints 2
 xPoints {
-  0 16
-  1 584
+  0 8
+  1 576
 }
 yPoints {
-  0 98
-  1 98
+  0 51
+  1 51
 }
 endObjectProperties
 
@@ -55,10 +55,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 72
-y 8
-w 104
-h 24
+x 56
+y 0
+w 88
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -68,58 +68,13 @@ controlPv "$(device):$(channel):DET:$(det):ENABLE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 8
-w 43
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Enable:"
-}
-autoSize
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 192
-y 8
-w 144
-h 14
-controlPv "$(device):$(channel):DET:$(det):OUT_OVF.DESC"
-font "helvetica-bold-r-12.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
 # (Rectangle)
 object activeRectangleClass
 beginObjectProperties
 major 4
 minor 0
 release 0
-x 344
+x 328
 y 8
 w 16
 h 16
@@ -136,77 +91,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 368
+x 352
 y 8
-w 128
-h 14
-controlPv "$(device):$(channel):DET:$(det):OUT_OVF"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 192
-y 32
-w 144
-h 14
-controlPv "$(device):$(channel):DET:$(det):UNDERRUN.DESC"
-font "helvetica-bold-r-12.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 344
-y 32
-w 16
+w 72
 h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):$(channel):DET:$(det):UNDERRUN"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 368
-y 32
-w 128
-h 14
-controlPv "$(device):$(channel):DET:$(det):UNDERRUN"
+controlPv "$(device):$(channel):DET:$(det):OUT_OVF"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -226,10 +115,10 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 16
-y 72
+x 152
+y 24
 w 72
-h 24
+h 22
 fgColor index 43
 bgColor index 4
 topShadowColor index 1
@@ -249,10 +138,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 72
-y 40
-w 104
-h 24
+x 152
+y 0
+w 72
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -262,36 +151,16 @@ controlPv "$(device):$(channel):DET:$(det):SCALING_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 40
-w 47
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Scaling:"
-}
-autoSize
-endObjectProperties
-
 # (Related Display)
 object relatedDisplayClass
 beginObjectProperties
 major 4
 minor 4
 release 0
-x 96
-y 72
-w 80
-h 24
+x 56
+y 24
+w 88
+h 22
 fgColor index 43
 bgColor index 4
 topShadowColor index 1
@@ -303,5 +172,96 @@ numDsps 1
 displayFileName {
   0 "lmbf/det_waveforms.edl"
 }
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 232
+y 28
+w 32
+h 16
+controlPv "$(device):$(channel):DET:$(det):COUNT"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 272
+y 8
+w 56
+h 16
+controlPv "$(device):$(channel):DET:$(det):MAX_POWER"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+showUnits
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 232
+y 8
+w 29
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Max:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 0
+y 16
+w 56
+h 16
+font "helvetica-bold-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "DET $(det)"
+}
+autoSize
 endObjectProperties
 

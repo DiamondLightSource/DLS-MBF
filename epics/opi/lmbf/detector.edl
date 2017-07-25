@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 208
-y 36
-w 641
-h 730
+x 21
+y 199
+w 447
+h 409
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -26,6 +26,69 @@ gridSize 8
 disableScroll
 endScreenProperties
 
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 304
+w 256
+h 96
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 48
+w 432
+h 240
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 40
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Detectors"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 40
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -34,7 +97,7 @@ minor 1
 release 1
 x 0
 y 0
-w 648
+w 448
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -51,8 +114,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 568
-y 696
+x 376
+y 376
 w 64
 h 24
 fgColor index 46
@@ -93,8 +156,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 8
-y 72
+x 16
+y 320
 w 46
 h 14
 font "helvetica-bold-r-12.0"
@@ -114,7 +177,7 @@ major 4
 minor 0
 release 0
 x 80
-y 72
+y 320
 w 104
 h 24
 fgColor index 14
@@ -132,10 +195,10 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 48
-y 152
-w 512
-h 112
+x 16
+y 64
+w 416
+h 56
 fgColor index 14
 bgColor index 3
 topShadowColor index 0
@@ -160,10 +223,10 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 48
-y 272
-w 512
-h 112
+x 16
+y 120
+w 416
+h 56
 fgColor index 14
 bgColor index 3
 topShadowColor index 0
@@ -188,10 +251,10 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 48
-y 392
-w 512
-h 112
+x 16
+y 176
+w 416
+h 56
 fgColor index 14
 bgColor index 3
 topShadowColor index 0
@@ -216,10 +279,10 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 48
-y 512
-w 512
-h 112
+x 16
+y 232
+w 416
+h 48
 fgColor index 14
 bgColor index 3
 topShadowColor index 0
@@ -236,5 +299,144 @@ symbols {
   0 "det=3"
 }
 noScroll
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 112
+y 376
+w 128
+h 14
+controlPv "$(device):$(channel):DET:UNDERRUN"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 88
+y 376
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):$(channel):DET:UNDERRUN"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 88
+y 352
+w 88
+h 16
+controlPv "$(device):$(channel):DET:SAMPLES"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 352
+w 57
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Captured:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 296
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Setup"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 296
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 376
+w 58
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Underrun:"
+}
+autoSize
 endObjectProperties
 

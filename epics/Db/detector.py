@@ -16,13 +16,17 @@ def detector_bank_pvs(updates):
 
     updates.append(overflow('OUT_OVF', 'Output overflow'))
 
+    bunch_count = longIn('COUNT', DESC = 'Number of enabled bunches')
     WaveformOut('BUNCHES', BUNCHES_PER_TURN, 'CHAR',
+        FLNK = bunch_count,
         DESC = 'Enable bunches for detector')
 
     updates.extend([
         detector_wf('I', 'Detector I'),
         detector_wf('Q', 'Detector Q'),
         detector_wf('POWER', 'Detector Power'),
+        aIn('MAX_POWER', EGU = 'dB',
+            DESC = 'Percentage full scale of maximum power'),
     ])
 
 

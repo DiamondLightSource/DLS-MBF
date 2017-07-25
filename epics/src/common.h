@@ -68,3 +68,8 @@ double _pure freq_to_tune(unsigned int freq);
 /* Mutex locking is common and doesn't need to be so long winded. */
 #define LOCK(mutex)     pthread_mutex_lock(&mutex)
 #define UNLOCK(mutex)   pthread_mutex_unlock(&mutex)
+
+
+/* Generic squaring function. */
+#define _id_SQR(temp, x)    ( { typeof(x) temp = (x); temp * temp; } )
+#define SQR(x)  _id_SQR(UNIQUE_ID(), x)
