@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "Trigger Configuration"
+title "$(device) Trigger Configuration"
 showGrid
 snapToGrid
 gridSize 8
@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device) Triggers"
+  "$(device) Trigger Configuration"
 }
 endObjectProperties
 
@@ -82,7 +82,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "diagnostics-help TMBF_triggers"
+  0 "diagnostics-help LMBF_triggers"
 }
 includeHelpIcon
 endObjectProperties

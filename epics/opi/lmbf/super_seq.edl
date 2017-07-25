@@ -19,7 +19,7 @@ ctlBgColor1 index 3
 ctlBgColor2 index 14
 topShadowColor index 1
 botShadowColor index 11
-title "Diagnostics Waveform View"
+title "$(device) Super Sequencer"
 showGrid
 snapToGrid
 gridSize 8
@@ -82,7 +82,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "diagnostics-help TMBF_super_sequencer"
+  0 "diagnostics-help LMBF_super_sequencer"
 }
 includeHelpIcon
 endObjectProperties

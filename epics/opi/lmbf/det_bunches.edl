@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "ADC data statistics"
+title "$(device):$(channel):DET:$(det) Bunch Enables"
 showGrid
 snapToGrid
 gridSize 8
@@ -115,7 +115,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "diagnostics-help TMBF_bunch_waveforms"
+  0 "diagnostics-help LMBF_bunch_enable"
 }
 includeHelpIcon
 endObjectProperties
