@@ -30,12 +30,12 @@ struct detector_context {
     struct epics_interlock *update;
 
     /* Shared detector configuration. */
-    struct detector_config config;
-    bool *bunch_enables[DETECTOR_COUNT];
+    bool input_select;
+    struct detector_config config[DETECTOR_COUNT];
 
     /* Detector events. */
     bool output_ovf[DETECTOR_COUNT];
-    bool underrun[DETECTOR_COUNT];
+    bool underrun;
 
     /* Detector waveforms. */
     unsigned int active_channels;       // Updated when preparing detector
@@ -67,7 +67,7 @@ static void read_detector_memory(
     for (unsigned int i = 0; i < samples; i ++)
     {
         for (int j = 0; j < DETECTOR_COUNT; j ++)
-            if (det->config.enable[j])
+            if (det->config[j].enable)
             {
                 float iq_i = (float) result->i;
                 float iq_q = (float) result->q;
@@ -87,7 +87,7 @@ static void detector_readout_event(void *context, struct interrupts interrupts)
 
     interlock_wait(det->update);
 
-    hw_read_det_events(det->channel, det->output_ovf, det->underrun);
+    hw_read_det_events(det->channel, det->output_ovf, &det->underrun);
 
     const struct scale_info *info = read_detector_scale_info(det->channel);
     read_detector_memory(det, info->samples);
@@ -103,7 +103,7 @@ static void publish_detector(struct detector_context *det, int i)
     unsigned int detector_length = system_config.detector_length;
     char *bunch_enables = calloc(1, system_config.bunches_per_turn);
 
-    det->bunch_enables[i] = (bool *) bunch_enables;
+    det->config[i].bunch_enables = (bool *) bunch_enables;
     det->wf_i[i] = calloc(sizeof(float), detector_length);
     det->wf_q[i] = calloc(sizeof(float), detector_length);
     det->wf_power[i] = calloc(sizeof(float), detector_length);
@@ -112,8 +112,8 @@ static void publish_detector(struct detector_context *det, int i)
     sprintf(prefix, "%d", i);
     WITH_NAME_PREFIX(prefix)
     {
-        PUBLISH_WRITE_VAR_P(bo, "ENABLE", det->config.enable[i]);
-        PUBLISH_WRITE_VAR_P(mbbo, "SCALING", det->config.scaling[i]);
+        PUBLISH_WRITE_VAR_P(bo, "ENABLE", det->config[i].enable);
+        PUBLISH_WRITE_VAR_P(mbbo, "SCALING", det->config[i].scaling);
         PUBLISH_WF_WRITE_VAR_P(
             char, "BUNCHES", system_config.bunches_per_turn, bunch_enables);
 
@@ -132,15 +132,16 @@ void prepare_detector(int channel)
 {
     printf("prepare_detector %d\n", channel);
     struct detector_context *det = &detector_context[channel];
-    hw_write_det_config(channel, &det->config);
+    hw_write_det_config(channel, det->input_select, det->config);
+    hw_write_det_start(channel);
+
+    /* Count the number of active channels, needed for readout. */
     det->active_channels = 0;
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
-        hw_write_det_bunch_enable(channel, i, det->bunch_enables[i]);
-        if (det->config.enable[i])
+        if (det->config[i].enable)
             det->active_channels += 1;
     }
-    hw_write_det_start(channel);
 }
 
 
@@ -158,11 +159,13 @@ error__t initialise_detector(void)
         for (int i = 0; i < DETECTOR_COUNT; i ++)
             publish_detector(det, i);
 
-        PUBLISH_WRITE_VAR_P(bo, "SELECT", det->config.input_select);
+        PUBLISH_WRITE_VAR_P(bo, "SELECT", det->input_select);
 
         const struct scale_info *info = read_detector_scale_info(det->channel);
         PUBLISH_WF_READ_VAR(double, "SCALE", detector_length, info->tune_scale);
         PUBLISH_WF_READ_VAR(int, "TIMEBASE", detector_length, info->timebase);
+        PUBLISH_READ_VAR(ulongin, "SAMPLES", info->samples);
+        PUBLISH_READ_VAR(bi, "UNDERRUN", det->underrun);
 
         det->update = create_interlock("UPDATE", false);
         register_event_handler(

@@ -779,40 +779,13 @@ void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH])
 /* Detector registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-void hw_write_det_config(int channel, const struct detector_config *config)
+static void write_det_bunch_enable(
+    int channel, struct dsp_det_config det_config,
+    int det, const bool enables[])
 {
-    LOCK(dsp_locks[channel]);
-    dsp_mirror[channel].det_config = (struct dsp_det_config) {
-        .select  = config->input_select,
-        .scale0  = config->scaling[0] & 0x3,
-        .enable0 = config->enable[0],
-        .scale1  = config->scaling[1] & 0x3,
-        .enable1 = config->enable[1],
-        .scale2  = config->scaling[2] & 0x3,
-        .enable2 = config->enable[2],
-        .scale3  = config->scaling[3] & 0x3,
-        .enable3 = config->enable[3],
-    };
-    WRITEL(dsp_regs[channel]->det_config, dsp_mirror[channel].det_config);
-    UNLOCK(dsp_locks[channel]);
-}
-
-void hw_read_det_events(int channel,
-    bool output_ovf[DETECTOR_COUNT], bool underrun[DETECTOR_COUNT])
-{
-    struct dsp_det_events events = READL(dsp_regs[channel]->det_events);
-    bits_to_bools(DETECTOR_COUNT, events.output_ovfl, output_ovf);
-    bits_to_bools(DETECTOR_COUNT, events.underrun, underrun);
-}
-
-void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
-{
-    LOCK(dsp_locks[channel]);
-
-    /* For this one we don't need to update the mirror, just keep it! */
-    struct dsp_det_config config = dsp_mirror[channel].det_config;
-    config.bank = (unsigned int) det & 0x3;
-    WRITEL(dsp_regs[channel]->det_config, config);
+    /* Select the requested bank. */
+    det_config.bank = (unsigned int) det & 0x3;
+    WRITEL(dsp_regs[channel]->det_config, det_config);
 
     /* Also reset the bunch write pointer. */
     WRITE_FIELDS(dsp_regs[channel]->det_command, .write = 1);
@@ -830,13 +803,43 @@ void hw_write_det_bunch_enable(int channel, int det, const bool enables[])
     }
     if (hardware_config.bunches & 0x1F)
         writel(&dsp_regs[channel]->det_bunch, enable_mask);
+}
 
+void hw_write_det_config(
+    int channel, bool input_select,
+    const struct detector_config config[DETECTOR_COUNT])
+{
+    struct dsp_det_config det_config = {
+        .select  = input_select,
+        .scale0  = config[0].scaling & 0x3,
+        .enable0 = config[0].enable,
+        .scale1  = config[1].scaling & 0x3,
+        .enable1 = config[1].enable,
+        .scale2  = config[2].scaling & 0x3,
+        .enable2 = config[2].enable,
+        .scale3  = config[3].scaling & 0x3,
+        .enable3 = config[3].enable,
+    };
+
+    LOCK(dsp_locks[channel]);
+    for (int i = 0; i < DETECTOR_COUNT; i ++)
+        write_det_bunch_enable(channel, det_config, i, config[i].bunch_enables);
     UNLOCK(dsp_locks[channel]);
 }
 
 void hw_write_det_start(int channel)
 {
     WRITE_FIELDS(dsp_regs[channel]->det_command, .reset = 1);
+}
+
+void hw_read_det_events(int channel,
+    bool output_ovf[DETECTOR_COUNT], bool *underrun)
+{
+    struct dsp_det_events events = READL(dsp_regs[channel]->det_events);
+    bits_to_bools(DETECTOR_COUNT, events.output_ovfl, output_ovf);
+    /* For underrun don't pick out the individual channels, just report any
+     * underrun event.  This will mean major trouble. */
+    *underrun = events.underrun;
 }
 
 

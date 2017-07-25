@@ -345,10 +345,11 @@ void hw_write_seq_trigger_state(int channel, unsigned int state);
 
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+/* Configuration for a single detector. */
 struct detector_config {
-    bool input_select;              // ADC or FIR input
-    bool enable[DETECTOR_COUNT];    // Individual detector enables
-    unsigned int scaling[DETECTOR_COUNT];   // Detector readout scaling
+    bool enable;                // Individual detector enables
+    unsigned int scaling;       // Detector readout scaling
+    bool *bunch_enables;        // Array of bunch enables
 };
 
 struct detector_result {
@@ -357,17 +358,16 @@ struct detector_result {
 };
 
 /* Writes the complete detector configuration. */
-void hw_write_det_config(int channel, const struct detector_config *config);
-
-/* Reads events from the detector. */
-void hw_read_det_events(int channel,
-    bool output_ovf[DETECTOR_COUNT], bool underrun[DETECTOR_COUNT]);
-
-/* Configures bunch enables for selected detector. */
-void hw_write_det_bunch_enable(int channel, int det, const bool enables[]);
+void hw_write_det_config(
+    int channel, bool input_select,
+    const struct detector_config config[DETECTOR_COUNT]);
 
 /* Resets detector capture address. */
 void hw_write_det_start(int channel);
+
+/* Reads events from the detector. */
+void hw_read_det_events(int channel,
+    bool output_ovf[DETECTOR_COUNT], bool *underrun);
 
 /* Reads detector result in raw format. */
 void hw_read_det_memory(

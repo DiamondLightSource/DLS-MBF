@@ -14,10 +14,7 @@ def detector_bank_pvs(updates):
     mbbOut('SCALING', DESC = 'Readout scaling',
         *['2^-%d' % (8 * n) for n in range(4)])
 
-    updates.extend([
-        overflow('OUT_OVF', 'Output overflow'),
-        boolIn('UNDERRUN', 'Ok', 'Underrun', OSV = 'MAJOR',
-            DESC = 'Data output underrun')])
+    updates.append(overflow('OUT_OVF', 'Output overflow'))
 
     WaveformOut('BUNCHES', BUNCHES_PER_TURN, 'CHAR',
         DESC = 'Enable bunches for detector')
@@ -35,6 +32,9 @@ def detector_pvs():
             DESC = 'Scale for frequency sweep'),
         Waveform('TIMEBASE', DETECTOR_LENGTH, 'LONG',
             DESC = 'Timebase for frequency sweep'),
+        longIn('SAMPLES', DESC = 'Number of captured samples'),
+        boolIn('UNDERRUN', 'Ok', 'Underrun', OSV = 'MAJOR',
+            DESC = 'Data output underrun'),
     ]
 
     for det in range(4):
