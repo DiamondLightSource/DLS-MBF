@@ -30,11 +30,7 @@ struct detector_context {
     struct epics_interlock *update;
 
     /* Shared detector configuration. */
-    bool input_select;
-
-    /* Detector specific configuration. */
-    bool capture_enable[DETECTOR_COUNT];
-    unsigned int scaling[DETECTOR_COUNT];
+    struct detector_config config;
     bool *bunch_enables[DETECTOR_COUNT];
 
     /* Detector events. */
@@ -71,7 +67,7 @@ static void read_detector_memory(
     for (unsigned int i = 0; i < samples; i ++)
     {
         for (int j = 0; j < DETECTOR_COUNT; j ++)
-            if (det->capture_enable[j])
+            if (det->config.enable[j])
             {
                 float iq_i = (float) result->i;
                 float iq_q = (float) result->q;
@@ -116,8 +112,8 @@ static void publish_detector(struct detector_context *det, int i)
     sprintf(prefix, "%d", i);
     WITH_NAME_PREFIX(prefix)
     {
-        PUBLISH_WRITE_VAR_P(bo, "ENABLE", det->capture_enable[i]);
-        PUBLISH_WRITE_VAR_P(mbbo, "SCALING", det->scaling[i]);
+        PUBLISH_WRITE_VAR_P(bo, "ENABLE", det->config.enable[i]);
+        PUBLISH_WRITE_VAR_P(mbbo, "SCALING", det->config.scaling[i]);
         PUBLISH_WF_WRITE_VAR_P(
             char, "BUNCHES", system_config.bunches_per_turn, bunch_enables);
 
@@ -136,13 +132,12 @@ void prepare_detector(int channel)
 {
     printf("prepare_detector %d\n", channel);
     struct detector_context *det = &detector_context[channel];
-    hw_write_det_config(channel,
-        det->input_select, det->capture_enable, det->scaling);
+    hw_write_det_config(channel, &det->config);
     det->active_channels = 0;
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
         hw_write_det_bunch_enable(channel, i, det->bunch_enables[i]);
-        if (det->capture_enable[i])
+        if (det->config.enable[i])
             det->active_channels += 1;
     }
     hw_write_det_start(channel);
@@ -163,7 +158,7 @@ error__t initialise_detector(void)
         for (int i = 0; i < DETECTOR_COUNT; i ++)
             publish_detector(det, i);
 
-        PUBLISH_WRITE_VAR_P(bo, "SELECT", det->input_select);
+        PUBLISH_WRITE_VAR_P(bo, "SELECT", det->config.input_select);
 
         const struct scale_info *info = read_detector_scale_info(det->channel);
         PUBLISH_WF_READ_VAR(double, "SCALE", detector_length, info->tune_scale);

@@ -32,7 +32,7 @@ entity detector_body is
         output_underrun_o : out std_logic;
 
         -- Output scaling control on DSP clock
-        output_scaling_i : in unsigned(2 downto 0);
+        output_scaling_i : in unsigned(1 downto 0);
 
         -- Detector data out, all on ADC clock, with AXI style handshake
         valid_o : out std_logic;
@@ -53,7 +53,6 @@ architecture arch of detector_body is
     signal shift : integer;
     signal base_mask : unsigned(95 downto 0) := (others => '1');
     signal overflow_mask : signed(95 downto 0);
-    signal preload_extra : signed(96 downto 0);
     signal preload : signed(95 downto 0);
 
     signal det_write_dsp : std_logic;
@@ -75,10 +74,12 @@ begin
 
 
     -- Compute preload and overflow detection mask for output shift.
-    shift <= 8 * to_integer(output_scaling_i);
-    preload_extra <= shift_left(97X"0_0000_0000_0000_0000_0000_0001", shift);
-    preload <= preload_extra(96 downto 1);
-    overflow_mask <= signed(shift_right(base_mask, shift));
+    shift <= 8 * to_integer(output_scaling_i) + 24;
+    preload <= shift_left(96X"0_0000_0000_0000_0000_0000_0001", shift - 1);
+    -- The overflow mask determines which bits will be used for overflow
+    -- detection: we need to include all discarded bits plus our generated sign
+    -- bit, hence the base shift of 65 = 96 - 32 - 1.
+    overflow_mask <= signed(shift_right(base_mask, 65 - shift));
 
 
     -- IQ Detector

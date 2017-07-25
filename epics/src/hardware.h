@@ -345,16 +345,19 @@ void hw_write_seq_trigger_state(int channel, unsigned int state);
 
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+struct detector_config {
+    bool input_select;              // ADC or FIR input
+    bool enable[DETECTOR_COUNT];    // Individual detector enables
+    unsigned int scaling[DETECTOR_COUNT];   // Detector readout scaling
+};
+
 struct detector_result {
     int32_t i;
     int32_t q;
 };
 
 /* Writes the complete detector configuration. */
-void hw_write_det_config(
-    int channel, bool input_select,
-    const bool enable[DETECTOR_COUNT],
-    const unsigned int scaling[DETECTOR_COUNT]);
+void hw_write_det_config(int channel, const struct detector_config *config);
 
 /* Reads events from the detector. */
 void hw_read_det_events(int channel,

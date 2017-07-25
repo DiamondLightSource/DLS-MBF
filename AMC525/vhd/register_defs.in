@@ -541,19 +541,19 @@
             # FIR data
             .SELECT
             # Output scaling for detector 0
-            .SCALE0     3
+            .SCALE0     2
             # Output enable for detector 0
             .ENABLE0
             # Output scaling for detector 1
-            .SCALE1     3
+            .SCALE1     2
             # Output enable for detector 1
             .ENABLE1
             # Output scaling for detector 2
-            .SCALE2     3
+            .SCALE2     2
             # Output enable for detector 2
             .ENABLE2
             # Output scaling for detector 3
-            .SCALE3     3
+            .SCALE3     2
             # Output enable for detector 3
             .ENABLE3
             # Select which bunch bank is written to when writing to the detector

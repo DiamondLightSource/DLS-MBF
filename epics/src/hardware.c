@@ -779,22 +779,19 @@ void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH])
 /* Detector registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-void hw_write_det_config(
-    int channel, bool input_select,
-    const bool enable[DETECTOR_COUNT],
-    const unsigned int scaling[DETECTOR_COUNT])
+void hw_write_det_config(int channel, const struct detector_config *config)
 {
     LOCK(dsp_locks[channel]);
     dsp_mirror[channel].det_config = (struct dsp_det_config) {
-        .select = input_select,
-        .scale0 = scaling[0] & 0x7,
-        .enable0 = enable[0],
-        .scale1 = scaling[1] & 0x7,
-        .enable1 = enable[1],
-        .scale2 = scaling[2] & 0x7,
-        .enable2 = enable[2],
-        .scale3 = scaling[3] & 0x7,
-        .enable3 = enable[3],
+        .select  = config->input_select,
+        .scale0  = config->scaling[0] & 0x3,
+        .enable0 = config->enable[0],
+        .scale1  = config->scaling[1] & 0x3,
+        .enable1 = config->enable[1],
+        .scale2  = config->scaling[2] & 0x3,
+        .enable2 = config->enable[2],
+        .scale3  = config->scaling[3] & 0x3,
+        .enable3 = config->enable[3],
     };
     WRITEL(dsp_regs[channel]->det_config, dsp_mirror[channel].det_config);
     UNLOCK(dsp_locks[channel]);

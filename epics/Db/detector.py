@@ -12,7 +12,7 @@ def detector_bank_pvs(updates):
     boolOut('ENABLE', 'Disabled', 'Enabled',
         DESC = 'Enable use of this detector')
     mbbOut('SCALING', DESC = 'Readout scaling',
-        *['2^-%d' % (8 * n) for n in range(8)])
+        *['2^-%d' % (8 * n) for n in range(4)])
 
     updates.extend([
         overflow('OUT_OVF', 'Output overflow'),
