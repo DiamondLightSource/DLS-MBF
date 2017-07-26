@@ -6,6 +6,8 @@ use ieee.numeric_std.all;
 
 use work.support.all;
 use work.defines.all;
+
+use work.register_defs.all;
 use work.min_max_sum_defs.all;
 
 entity min_max_sum_readout is
@@ -78,14 +80,21 @@ begin
 
             -- Register the appropriate output word
             case phase is
-                when 0 => read_data_o <=
-                    std_logic_vector(data_i.max) & std_logic_vector(data_i.min);
-                when 1 => read_data_o <=
-                    std_logic_vector(data_i.sum);
-                when 2 => read_data_o <=
-                    std_logic_vector(data_i.sum2(31 downto 0));
-                when 3 => read_data_o <=
-                    X"0000" & std_logic_vector(data_i.sum2(47 downto 32));
+                when MMS_READOUT_MIN_MAX_OVL =>
+                    read_data_o <= (
+                        MMS_READOUT_MIN_MAX_MIN_BITS =>
+                            std_logic_vector(data_i.max),
+                        MMS_READOUT_MIN_MAX_MAX_BITS =>
+                            std_logic_vector(data_i.min));
+                when MMS_READOUT_SUM_OVL =>
+                    read_data_o <= std_logic_vector(data_i.sum);
+                when MMS_READOUT_SUM2_LOW_OVL =>
+                    read_data_o <= std_logic_vector(data_i.sum2(31 downto 0));
+                when MMS_READOUT_SUM2_HIGH_OVL =>
+                    read_data_o <= (
+                        MMS_READOUT_SUM2_HIGH_SUM2_BITS =>
+                            std_logic_vector(data_i.sum2(47 downto 32)),
+                        others => '0');
             end case;
         end if;
     end process;

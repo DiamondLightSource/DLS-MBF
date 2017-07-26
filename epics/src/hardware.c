@@ -499,14 +499,14 @@ static void read_mms(
 
     FOR_BUNCHES(i)
     {
-        uint32_t readout = readl(&mms->readout);
-        result->minimum[i] = (int16_t) (readout & 0xFFFF);
-        result->maximum[i] = (int16_t) (readout >> 16);
+        struct mms_readout_min_max min_max = READL(mms->readout.min_max);
+        result->minimum[i] = (int16_t) min_max.min;
+        result->maximum[i] = (int16_t) min_max.max;
 
-        result->sum[i] = (int32_t) readl(&mms->readout);
+        result->sum[i] = (int32_t) readl(&mms->readout.sum);
 
-        uint32_t sum2_low = readl(&mms->readout);
-        uint32_t sum2_high = readl(&mms->readout) & 0xFFFF;
+        uint32_t sum2_low = readl(&mms->readout.sum2_low);
+        uint32_t sum2_high = READL(mms->readout.sum2_high).sum2;
         result->sum2[i] = sum2_low | (uint64_t) sum2_high << 32;
     }
 
