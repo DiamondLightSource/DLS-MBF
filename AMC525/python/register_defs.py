@@ -71,6 +71,11 @@ class Generate(parse.register_defs.WalkParse):
         for reg in overlay.registers:
             self.walk_register(prefix + [overlay.name], reg, suffix = 'OVL')
 
+    def walk_union(self, prefix, union):
+        if union.name:
+            emit_constant(prefix, union.name, union.range[0], 'REG')
+        self.walk_subgroups(prefix, union)
+
 
 def generate_list(walk, values):
     for value in values:

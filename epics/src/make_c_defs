@@ -68,6 +68,11 @@ class GenerateMethods(parse.register_defs.WalkParse):
                 context, register, indent = '        ', name_context = [])
         print '    } %s;' % name
 
+    def walk_union(self, context, union):
+        print '    union {'
+        self.walk_subgroups(context, union)
+        print '    };'
+
     def walk_group(self, context, group):
         if group.definition:
             name = make_name(context, group.name)

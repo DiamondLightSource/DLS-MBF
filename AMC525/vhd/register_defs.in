@@ -33,18 +33,19 @@
 
     # Read four times for each bunch, returning the following data for each
     # bunch:
-    #
-    # ======= ======= =====================================
-    # Word    Bits    Value
-    # ======= ======= =====================================
-    # 0       15:0    Minimum value during capture period
-    # 0       31:16   Maximum value during capture period
-    # 1       31:0    Sum of all values during capture
-    #                 period
-    # 3:2     47:0    Sum of squares of values during
-    #                 capture period
-    # ======= ======= =====================================
-    READOUT     R
+    *OVERLAY    READOUT     R
+        MIN_MAX
+            # Minimum value during capture period
+            .MIN        16
+            # Maximum value during capture period
+            .MAX        16
+        # Sum of all values during capture period
+        SUM
+        # Sum of squares of all values during capture period (low order bits)
+        SUM2_LOW
+        SUM2_HIGH
+            # High order bits of sum of squares
+            .SUM2       16
 
 
 # These occupy addresses 0x0000..0x1FFF
@@ -521,52 +522,64 @@
             # Identifies which memory block is written when writing to the WRITE
             # register:
             #
-            # ======= ====================================
-            # Value   Target
-            # ======= ====================================
-            # 0       sequencer program memory
-            # 1       detector window memory
-            # 2       super sequencer memory
-            # ======= ====================================
+            # ===== =================== ====================================
+            # \     Name                Target
+            # ===== =================== ====================================
+            # 0     ``STATE``           sequencer program memory
+            # 1     ``DET_WINDOW``      detector window memory
+            # 2     ``SUPER_STATE``     super sequencer memory
+            # ===== =================== ====================================
             .TARGET         2
 
-        # Writing to this register updates the selected internal sequencer
-        # memory bank.  For the sequencer state a sequence of 8 writes is
-        # required to write a complete state, and so a sequence of 64 writes
-        # updates the sequencer program memory.
-        *OVERLAY    WRITE       W
-            # Starting frequency for this sweep
-            START_FREQ
-            # Frequency step for this sweep
-            DELTA_FREQ
-            DWELL_TIME
-                # Number of turns to capture for one detector cycle
-                .DWELL          16
-            CONFIG
-                # Total number of samples in this sweep
-                .CAPTURE        12
-                # Bunch bank select for this sequencer state
-                .BANK           2
-                # Select sweep NCO gain
-                .NCO_GAIN       4
-                # If set the sweep window is enabled
-                .ENA_WINDOW
-                # Whether to store this output from the sequencer
-                .ENA_WRITE
-                # Whether to respect the blanking input
-                .ENA_BLANK
-                # Sweep output enable
-                .ENA_NCO
-            # Detector window advance.
-            WINDOW_RATE
-            HOLDOFF
-                # Number of turns to wait after changing frequency and before
-                # starting detector capture
-                .HOLDOFF        16
+        # Three separate functions are overlaid over the STATE, DET_WINDOW, and
+        # SUPER_STATE register which occupy the same address.  Which register is
+        # used is determined by the value written to CONFIG.TARGET above.
+        *UNION      WRITE
+            # Writing to this register updates the selected internal sequencer
+            # memory bank.  For the sequencer state a sequence of 8 writes is
+            # required to write a complete state, and so a sequence of 64 writes
+            # updates the sequencer program memory.
+            *OVERLAY    STATE       W
+                # Starting frequency for this sweep
+                START_FREQ
+                # Frequency step for this sweep
+                DELTA_FREQ
+                DWELL_TIME
+                    # Number of turns to capture for one detector cycle
+                    .DWELL          16
+                CONFIG
+                    # Total number of samples in this sweep
+                    .CAPTURE        12
+                    # Bunch bank select for this sequencer state
+                    .BANK           2
+                    # Select sweep NCO gain
+                    .NCO_GAIN       4
+                    # If set the sweep window is enabled
+                    .ENA_WINDOW
+                    # Whether to store this output from the sequencer
+                    .ENA_WRITE
+                    # Whether to respect the blanking input
+                    .ENA_BLANK
+                    # Sweep output enable
+                    .ENA_NCO
+                # Detector window advance.
+                WINDOW_RATE
+                HOLDOFF
+                    # Number of turns to wait after changing frequency and
+                    # before starting detector capture
+                    .HOLDOFF        16
 
-            # This is not part of the sequencer overlay above, but is a
-            # workaround for writing other values.
-            WORD
+                # Two extra writes are required to pad the state setup to 8
+                # words.
+                PADDING
+
+            # Writing to this register updates the detector window.  A sequence
+            # of 1024 writes is needed to fill this memory
+            DET_WINDOW      W
+
+            # Writing to this register updates the super sequencer offset
+            # memory, up to 1024 states can be written
+            SUPER_STATE     W
 
     # Detector control
     !DET

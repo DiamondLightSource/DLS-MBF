@@ -18,6 +18,7 @@
 #   reg_array = name count rw
 #
 #   reg_overlay = "*OVERLAY" name rw { reg_def }
+#   reg_union = "*UNION" { group_entry }
 #
 #   shared_reg_def = ":"reg_def
 #   shared_group_def = ":"group_def
@@ -61,9 +62,12 @@ RegisterArray = namedtuple('RegisterArray',
     ['name', 'range', 'rw', 'doc'])
 Field = namedtuple('Field',
     ['name', 'range', 'is_bit', 'rw', 'doc'])
-RwPair = namedtuple('RwPair', ['registers'])
+RwPair = namedtuple('RwPair',
+    ['registers'])
 Overlay = namedtuple('Overlay',
     ['name', 'offset', 'rw', 'registers', 'doc'])
+Union = namedtuple('Union',
+    ['name', 'range', 'content', 'doc'])
 
 Parse = namedtuple('Parse', ['group_defs', 'register_defs', 'groups'])
 
@@ -82,6 +86,7 @@ class WalkParse:
         def walk_register(self, context, reg):
         def walk_rw_pair(self, context, rw_pair):
         def walk_overlay(self, context, overlay):
+        def walk_union(self, context, union):
 
     '''
 
@@ -96,6 +101,8 @@ class WalkParse:
             return self.walk_rw_pair(context, entry)
         elif isinstance(entry, Overlay):
             return self.walk_overlay(context, entry)
+        elif isinstance(entry, Union):
+            return self.walk_union(context, entry)
         else:
             assert False
 
@@ -169,6 +176,11 @@ class PrintMethods(WalkParse):
         print
         for reg in overlay.registers:
             self.walk_register(n + 1, reg)
+
+    def walk_union(self, n, union):
+        self.__do_print(n, 'U', union, union.range)
+        print
+        self.walk_subgroups(n + 1, union)
 
 
 def print_parse(parse):
@@ -330,14 +342,6 @@ def parse_reg_pair(offset, parse):
         parse_reg_def(offset, body[1], expect = ['W', 'WP'])]), 1)
 
 
-def parse_register_list(offset, body, rw):
-    registers = []
-    for parse in body:
-        registers.append(parse_reg_def(offset, parse, rw = rw))
-        offset += 1
-    return registers
-
-
 # reg_overlay = "*OVERLAY" name rw { reg_def }
 def parse_reg_overlay(offset, parse):
     line, body, doc, line_no = parse
@@ -347,8 +351,29 @@ def parse_reg_overlay(offset, parse):
     check_name(name, line_no)
     rw = line[2]
     check_rw(rw, line_no)
-    registers = parse_register_list(0, body, rw)
+
+    registers = []
+    reg_offset = 0
+    for parse in body:
+        registers.append(parse_reg_def(reg_offset, parse, rw = rw))
+        reg_offset += 1
     return (Overlay(name, offset, rw, registers, doc), 1)
+
+
+# reg_union = "*UNION" { group_entry }
+def parse_reg_union(offset, parse):
+    line, body, doc, line_no = parse
+    line = line.split()
+    check_args(line, 1, 2, line_no)
+    name = line[1] if line[1:] else ''
+
+    size = 0
+    content = []
+    for parse in body:
+        result, count = parse_group_entry(offset, parse, {})
+        content.append(result)
+        if count > size: size = count
+    return (Union(name, (offset, size), content, doc), size)
 
 
 # reg_pair or reg_overlay
@@ -359,8 +384,10 @@ def parse_special(offset, parse):
         return parse_reg_pair(offset, parse)
     elif line[0] == '*OVERLAY':
         return parse_reg_overlay(offset, parse)
+    elif line[0] == '*UNION':
+        return parse_reg_union(offset, parse)
     else:
-        fail_parse('Unexpected special register here', line_no)
+        fail_parse('Unexpected special directive', line_no)
 
 
 # shared_name = ":"saved_name new_name
@@ -530,6 +557,12 @@ class FlattenMethods(WalkParse):
 
     def walk_overlay(self, offset, overlay):
         return overlay._replace(offset = overlay.offset + offset)
+
+    def walk_union(self, offset, union):
+        base, length = union.range
+        content = self.walk_subgroups(offset, union)
+        return union._replace(
+            range = (base + offset, length), content = content)
 
 
 # Eliminates definitions from a parse by replacing all group and register

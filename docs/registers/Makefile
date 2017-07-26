@@ -5,10 +5,12 @@ DEPENDS += register_docs.py
 
 default: registers.pdf
 
-%.pdf: %.rst $(DEPENDS)
+registers.pdf: $(DEPENDS)
+
+%.pdf: %.rst
 	rst2pdf -e register_docs.py -o $@ $<
 
-%.html: %.rst $(DEPENDS)
+%.html: %.rst
 	./rst2html $< >$@
 
 clean:

@@ -18,38 +18,49 @@ def format_name(entity, prefix = ''):
         name = entity.name
     return ['``%s``' % name]
 
+def format_range(range, bits = False):
+    start, length = range
+    if length > 1:
+        if bits:
+            return '%d:%d' % (start + length - 1, start)
+        else:
+            return '%d-%d' % (start, start + length - 1)
+    else:
+        return '%d' % start
+
 
 class GenerateMethods(lmbf.parse.register_defs.WalkParse):
     def __init__(self, table):
         self.table = table
 
     def walk_field(self, context, field):
-        start, length = field.range
-        if length == 1:
-            limits = '%d' % start
-        else:
-            limits = '%d:%d' % (start + length - 1, start)
         self.table.add_row(
-            [[limits], format_name(field), trim_text(field.doc)])
+            [[format_range(field.range, True)],
+             format_name(field), trim_text(field.doc)])
 
     def walk_register_array(self, context, array):
-        start, length = array.range
         self.table.add_row(
-            [['%d-%d' % (start, start + length - 1)],
+            [[format_range(array.range)],
              [array.rw], format_name(array, context)],
             more_cols = [0, 0, 2], more_rows = [1, 1, 0])
         self.table.add_row([trim_text(array.doc)], more_cols = [2])
 
-    def walk_register(self, context, register):
+    def walk_register(self, context, register, overlay = False):
         row_count = len(register.fields)
         if register.doc:
             row_count += 1
 
-        self.table.add_row(
-            [['%d' % register.offset],
-             [register.rw], format_name(register, context)],
-            more_cols = [0, 0, 2],
-            more_rows = [row_count, row_count, 0])
+        if overlay:
+            self.table.add_row(
+                [[], ['%d' % register.offset], format_name(register)],
+                more_cols = [0, 0, 2],
+                more_rows = [row_count, row_count, 0])
+        else:
+            self.table.add_row(
+                [['%d' % register.offset],
+                 [register.rw], format_name(register, context)],
+                more_cols = [0, 0, 2],
+                more_rows = [row_count, row_count, 0])
         if register.doc:
             self.table.add_row(
                 [trim_text(register.doc)], more_cols = [2])
@@ -57,9 +68,8 @@ class GenerateMethods(lmbf.parse.register_defs.WalkParse):
 
     def walk_group(self, context, group):
         if group.doc and context:
-            start, length = group.range
             self.table.add_row(
-                [['%d-%d' % (start, start + length - 1)],
+                [[format_range(group.range)],
                  trim_text(group.doc)],
                 more_cols = [0, 3])
         self.walk_subgroups(context + [group.name], group)
@@ -69,7 +79,23 @@ class GenerateMethods(lmbf.parse.register_defs.WalkParse):
             self.walk_register(context, register)
 
     def walk_overlay(self, context, overlay):
-        print 'skipping', context, overlay.name
+        self.table.add_row(
+            [['%d' % overlay.offset], [overlay.rw],
+             format_name(overlay, context)],
+            more_cols = [0, 0, 2],
+            more_rows = [1, 1, 0])
+        self.table.add_row([trim_text(overlay.doc)], more_cols = [2])
+        for register in overlay.registers:
+            self.walk_register(context, register, overlay = True)
+
+    def walk_union(self, context, union):
+        if union.doc:
+            start, length = union.range
+            self.table.add_row(
+                [[format_range(union.range)],
+                 trim_text(union.doc)],
+                more_cols = [0, 3])
+        self.walk_subgroups(context, union)
 
 
 

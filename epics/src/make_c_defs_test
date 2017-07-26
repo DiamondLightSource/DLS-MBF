@@ -39,6 +39,9 @@ class GenerateMethods(parse.register_defs.WalkParse):
     def walk_overlay(self, context, overlay):
         print >>sys.stderr, 'Omitting overlay', context, overlay.name
 
+    def walk_union(self, context, union):
+        print >>sys.stderr, 'Omitting union', context, union.name
+
     def walk_group(self, context, group):
         if group.definition:
             name = make_name(context, group.name)

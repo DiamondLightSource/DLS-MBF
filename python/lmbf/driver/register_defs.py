@@ -231,6 +231,9 @@ class GenerateMethods(lmbf.parse.register_defs.WalkParse):
         print 'Warning! Omitting overlay registers', context, overlay.name
         return []
 
+    def walk_union(self, context, union):
+        return self.walk_subgroups(context, union)
+
     def walk_top(self, group):
         return make_top(group, self.walk_subgroups(None, group))
 
