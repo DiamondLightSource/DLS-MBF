@@ -53,10 +53,7 @@ class Generate(parse.register_defs.WalkParse):
         else:
             emit_range(prefix, field.name, field.range, 'BITS', 'downto')
 
-    def walk_register(self, prefix, register, overlay = False):
-        suffix = 'REG'
-        if overlay:
-            suffix += '_' + register.rw[:1]
+    def walk_register(self, prefix, register, suffix = 'REG'):
         emit_constant(prefix, register.name, register.offset, suffix)
         self.walk_fields(prefix + [register.name], register)
 
@@ -65,9 +62,14 @@ class Generate(parse.register_defs.WalkParse):
         emit_range(prefix, group.name, group.range, suffix, 'to')
         self.walk_subgroups(prefix + [group.name], group)
 
+    def walk_rw_pair(self, prefix, rw_pair):
+        for reg in rw_pair.registers:
+            self.walk_register(prefix, reg, suffix = 'REG_' + reg.rw[:1])
+
     def walk_overlay(self, prefix, overlay):
+        emit_constant(prefix, overlay.name, overlay.offset, 'REG')
         for reg in overlay.registers:
-            self.walk_register(prefix, reg, overlay = True)
+            self.walk_register(prefix + [overlay.name], reg, suffix = 'OVL')
 
 
 def generate_list(walk, values):

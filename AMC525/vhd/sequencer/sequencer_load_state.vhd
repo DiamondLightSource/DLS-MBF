@@ -10,6 +10,7 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 
+use work.register_defs.all;
 use work.nco_defs.all;
 use work.sequencer_defs.all;
 
@@ -95,29 +96,33 @@ begin
             -- trigger then run through all the words that need loading.
             if loading_dly = '1' then
                 case to_integer(load_ctr_dly) is
-                    when 0 =>
+                    when DSP_SEQ_WRITE_START_FREQ_OVL =>
                         seq_state_o.start_freq <= angle_t(prog_word);
-                    when 1 =>
+                    when DSP_SEQ_WRITE_DELTA_FREQ_OVL =>
                         seq_state_o.delta_freq <= angle_t(prog_word);
-                    when 2 =>
-                        seq_state_o.dwell_count <=
-                            dwell_count_t(prog_word(15 downto 0));
-                    when 3 =>
-                        seq_state_o.capture_count <=
-                            capture_count_t(prog_word(11 downto 0));
-                        seq_state_o.bunch_bank <=
-                            unsigned(prog_word(13 downto 12));
-                        seq_state_o.hom_gain <=
-                            unsigned(prog_word(17 downto 14));
-                        seq_state_o.enable_window <= prog_word(18);
-                        seq_state_o.enable_write <= prog_word(19);
-                        seq_state_o.enable_blanking <= prog_word(20);
-                        seq_state_o.hom_enable <= prog_word(21);
-                    when 4 =>
+                    when DSP_SEQ_WRITE_DWELL_TIME_OVL =>
+                        seq_state_o.dwell_count <= dwell_count_t(
+                            prog_word(DSP_SEQ_WRITE_DWELL_TIME_DWELL_BITS));
+                    when DSP_SEQ_WRITE_CONFIG_OVL =>
+                        seq_state_o.capture_count <= capture_count_t(
+                            prog_word(DSP_SEQ_WRITE_CONFIG_CAPTURE_BITS));
+                        seq_state_o.bunch_bank <= unsigned(
+                            prog_word(DSP_SEQ_WRITE_CONFIG_BANK_BITS));
+                        seq_state_o.hom_gain <= unsigned(
+                            prog_word(DSP_SEQ_WRITE_CONFIG_NCO_GAIN_BITS));
+                        seq_state_o.enable_window <=
+                            prog_word(DSP_SEQ_WRITE_CONFIG_ENA_WINDOW_BIT);
+                        seq_state_o.enable_write <=
+                            prog_word(DSP_SEQ_WRITE_CONFIG_ENA_WRITE_BIT);
+                        seq_state_o.enable_blanking <=
+                            prog_word(DSP_SEQ_WRITE_CONFIG_ENA_BLANK_BIT);
+                        seq_state_o.hom_enable <=
+                            prog_word(DSP_SEQ_WRITE_CONFIG_ENA_NCO_BIT);
+                    when DSP_SEQ_WRITE_WINDOW_RATE_OVL =>
                         seq_state_o.window_rate <= angle_t(prog_word);
-                    when 5 =>
-                        seq_state_o.holdoff_count <=
-                            dwell_count_t(prog_word(15 downto 0));
+                    when DSP_SEQ_WRITE_HOLDOFF_OVL =>
+                        seq_state_o.holdoff_count <= dwell_count_t(
+                            prog_word(DSP_SEQ_WRITE_HOLDOFF_HOLDOFF_BITS));
                     when others =>
                 end case;
             end if;

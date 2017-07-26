@@ -2,6 +2,7 @@
 
 # Generates C file using generated definitions
 
+import sys
 from lmbf.defs_path import DEFS
 
 from lmbf import parse
@@ -31,9 +32,12 @@ class GenerateMethods(parse.register_defs.WalkParse):
         name = make_name(context, register.name)
         self.check_offset(name, register.offset)
 
-    def walk_overlay(self, context, overlay):
-        for register in overlay.registers:
+    def walk_rw_pair(self, context, rw_pair):
+        for register in rw_pair.registers:
             self.walk_register(context, register)
+
+    def walk_overlay(self, context, overlay):
+        print >>sys.stderr, 'Omitting overlay', context, overlay.name
 
     def walk_group(self, context, group):
         if group.definition:

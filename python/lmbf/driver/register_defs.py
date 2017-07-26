@@ -222,10 +222,14 @@ class GenerateMethods(lmbf.parse.register_defs.WalkParse):
     def walk_group(self, context, group):
         return make_group(group, self.walk_subgroups(context, group))
 
-    def walk_overlay(self, context, overlay):
+    def walk_rw_pair(self, context, rw_pair):
         return [
             self.walk_register(context, register)
-            for register in overlay.registers]
+            for register in rw_pair.registers]
+
+    def walk_overlay(self, context, overlay):
+        print 'Warning! Omitting overlay registers', context, overlay.name
+        return []
 
     def walk_top(self, group):
         return make_top(group, self.walk_subgroups(None, group))

@@ -64,9 +64,12 @@ class GenerateMethods(lmbf.parse.register_defs.WalkParse):
                 more_cols = [0, 3])
         self.walk_subgroups(context + [group.name], group)
 
-    def walk_overlay(self, context, overlay):
-        for register in overlay.registers:
+    def walk_rw_pair(self, context, rw_pair):
+        for register in rw_pair.registers:
             self.walk_register(context, register)
+
+    def walk_overlay(self, context, overlay):
+        print 'skipping', context, overlay.name
 
 
 

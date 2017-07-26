@@ -683,23 +683,25 @@ void hw_read_dac_mms(int channel, struct mms_result *result)
 
 /* Writes a single sequencer state as a sequence of 8 writes. */
 static void write_sequencer_state(
-    volatile uint32_t *target, const struct seq_entry *entry)
+    volatile union dsp_seq_write *target, const struct seq_entry *entry)
 {
-    writel(target, entry->start_freq);
-    writel(target, entry->delta_freq);
-    writel(target, entry->dwell_time - 1);
-    writel(target,
-        ((entry->capture_count - 1) & 0xFFF) |  // bits 11:0
-        (entry->bunch_bank & 0x3) << 12 |       //      13:12
-        (entry->nco_gain & 0xF) << 14 |         //      17:14
-        (unsigned) entry->enable_window << 18 | //      18
-        (unsigned) entry->write_enable << 19 |  //      19
-        (unsigned) entry->enable_blanking << 20 | //      20
-        (unsigned) entry->nco_enable << 21);
-    writel(target, entry->window_rate);
-    writel(target, entry->holdoff & 0xFFFF);
-    writel(target, 0);
-    writel(target, 0);
+    writel(&target->start_freq, entry->start_freq);
+    writel(&target->delta_freq, entry->delta_freq);
+    WRITE_FIELDS(target->dwell_time,
+        .dwell = (entry->dwell_time - 1) & 0xFFFF);
+    WRITE_FIELDS(target->config,
+        .capture = (entry->capture_count - 1) & 0xFFF,
+        .bank = entry->bunch_bank & 0x3,
+        .nco_gain = entry->nco_gain & 0xF,
+        .ena_window = entry->enable_window,
+        .ena_write = entry->write_enable,
+        .ena_blank = entry->enable_blanking,
+        .ena_nco = entry->nco_enable);
+    writel(&target->window_rate, entry->window_rate);
+    WRITE_FIELDS(target->holdoff,
+        .holdoff = entry->holdoff & 0xFFFF);
+    writel(&target->word, 0);
+    writel(&target->word, 0);
 }
 
 void hw_read_seq_state(
@@ -761,7 +763,8 @@ void hw_write_seq_super_entries(
      * match the fact that states will be read from count down to 0, and we
      * only need to write the states that will actually be used. */
     for (unsigned int i = 0; i < super_count; i ++)
-        writel(&dsp_regs[channel]->seq_write, offsets[super_count - 1 - i]);
+        writel(&dsp_regs[channel]->seq_write.word,
+            offsets[super_count - 1 - i]);
     UNLOCK(dsp_locks[channel]);
 }
 
@@ -771,7 +774,7 @@ void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH])
     WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
     WRITE_DSP_MIRROR(channel, seq_config, target, 1);
     for (unsigned int i = 0; i < DET_WINDOW_LENGTH; i ++)
-        writel(&dsp_regs[channel]->seq_write, (uint32_t) window[i]);
+        writel(&dsp_regs[channel]->seq_write.word, (uint32_t) window[i]);
     UNLOCK(dsp_locks[channel]);
 }
 

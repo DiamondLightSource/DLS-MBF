@@ -7,7 +7,8 @@
 #   shared_def = shared_reg_def | shared_group_def
 #
 #   group_def = "!"name { group_entry }*
-#   group_entry = group_def | reg_def | reg_pair | reg_array | shared_name
+#   group_entry =
+#       group_def | reg_def | reg_pair | reg_array | shared_name | reg_overlay
 #
 #   reg_def = name rw { field_def | field_skip }*
 #   field_def = "."name [ width ] [ "@"offset ] [ rw ]
@@ -15,6 +16,8 @@
 #
 #   reg_pair = "*RW" { reg_def }2
 #   reg_array = name count rw
+#
+#   reg_overlay = "*OVERLAY" name rw { reg_def }
 #
 #   shared_reg_def = ":"reg_def
 #   shared_group_def = ":"group_def
@@ -58,7 +61,9 @@ RegisterArray = namedtuple('RegisterArray',
     ['name', 'range', 'rw', 'doc'])
 Field = namedtuple('Field',
     ['name', 'range', 'is_bit', 'rw', 'doc'])
-Overlay = namedtuple('Overlay', ['registers'])
+RwPair = namedtuple('RwPair', ['registers'])
+Overlay = namedtuple('Overlay',
+    ['name', 'offset', 'rw', 'registers', 'doc'])
 
 Parse = namedtuple('Parse', ['group_defs', 'register_defs', 'groups'])
 
@@ -75,6 +80,7 @@ class WalkParse:
         def walk_field(self, context, field):
         def walk_group(self, context, group):
         def walk_register(self, context, reg):
+        def walk_rw_pair(self, context, rw_pair):
         def walk_overlay(self, context, overlay):
 
     '''
@@ -86,6 +92,8 @@ class WalkParse:
             return self.walk_register(context, entry)
         elif isinstance(entry, RegisterArray):
             return self.walk_register_array(context, entry)
+        elif isinstance(entry, RwPair):
+            return self.walk_rw_pair(context, entry)
         elif isinstance(entry, Overlay):
             return self.walk_overlay(context, entry)
         else:
@@ -150,8 +158,14 @@ class PrintMethods(WalkParse):
         print
         self.walk_fields(n + 1, reg)
 
+    def walk_rw_pair(self, n, rw_pair):
+        self.__print_prefix(n, 'P')
+        print
+        for reg in rw_pair.registers:
+            self.walk_register(n + 1, reg)
+
     def walk_overlay(self, n, overlay):
-        self.__print_prefix(n, 'O')
+        self.__do_print(n, 'O', overlay, overlay.offset, overlay.rw)
         print
         for reg in overlay.registers:
             self.walk_register(n + 1, reg)
@@ -269,13 +283,14 @@ def parse_field_defs(field_list):
 
 
 # reg_def = name rw { field_def | field_skip }*
-def parse_reg_def(offset, parse, expect = []):
+def parse_reg_def(offset, parse, expect = [], rw = None):
     line, body, doc, line_no = parse
     line = line.split()
-    check_args(line, 2, 2, line_no)
+    check_args(line, 1, 2, line_no)
     name = line[0]
     check_name(name, line_no)
-    rw = line[1]
+    if line[1:]:
+        rw = line[1]
     check_rw(rw, line_no)
     if expect and rw not in expect:
         fail_parse('Expected %s field' % expect, line_no)
@@ -306,13 +321,46 @@ def parse_reg_array(offset, parse):
 # reg_pair = "*RW" { reg_def }2
 def parse_reg_pair(offset, parse):
     line, body, _, line_no = parse
-    if line != '*RW':
-        fail_parse('Expected *RW here', line_no)
+    line = line.split()
+    check_args(line, 1, 1, line_no)
     if len(body) != 2:
         fail_parse('Must have two registers', line_no)
-    return (Overlay([
+    return (RwPair([
         parse_reg_def(offset, body[0], expect = ['R']),
         parse_reg_def(offset, body[1], expect = ['W', 'WP'])]), 1)
+
+
+def parse_register_list(offset, body, rw):
+    registers = []
+    for parse in body:
+        registers.append(parse_reg_def(offset, parse, rw = rw))
+        offset += 1
+    return registers
+
+
+# reg_overlay = "*OVERLAY" name rw { reg_def }
+def parse_reg_overlay(offset, parse):
+    line, body, doc, line_no = parse
+    line = line.split()
+    check_args(line, 3, 3, line_no)
+    name = line[1]
+    check_name(name, line_no)
+    rw = line[2]
+    check_rw(rw, line_no)
+    registers = parse_register_list(0, body, rw)
+    return (Overlay(name, offset, rw, registers, doc), 1)
+
+
+# reg_pair or reg_overlay
+def parse_special(offset, parse):
+    line, _, _, line_no = parse
+    line = line.split()
+    if line[0] == '*RW':
+        return parse_reg_pair(offset, parse)
+    elif line[0] == '*OVERLAY':
+        return parse_reg_overlay(offset, parse)
+    else:
+        fail_parse('Unexpected special register here', line_no)
 
 
 # shared_name = ":"saved_name new_name
@@ -353,7 +401,7 @@ def parse_group_entry(offset, parse, defines):
         return parse_shared_name(
             offset, parse._replace(line = line[1:]), defines)
     elif line[0] == '*':
-        return parse_reg_pair(offset, parse)
+        return parse_special(offset, parse)
     elif line[0] == '!':
         # Not a register definition, must be a group
         return parse_group_def(offset, parse, defines)
@@ -474,11 +522,14 @@ class FlattenMethods(WalkParse):
         else:
             return reg._replace(offset = reg.offset + offset)
 
-    def walk_overlay(self, offset, overlay):
+    def walk_rw_pair(self, offset, rw_pair):
         registers = [
             self.walk_register(offset, reg)
-            for reg in overlay.registers]
-        return overlay._replace(registers = registers)
+            for reg in rw_pair.registers]
+        return rw_pair._replace(registers = registers)
+
+    def walk_overlay(self, offset, overlay):
+        return overlay._replace(offset = overlay.offset + offset)
 
 
 # Eliminates definitions from a parse by replacing all group and register

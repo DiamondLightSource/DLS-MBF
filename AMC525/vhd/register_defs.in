@@ -529,9 +529,44 @@
             # 2       super sequencer memory
             # ======= ====================================
             .TARGET         2
+
         # Writing to this register updates the selected internal sequencer
-        # memory bank.
-        WRITE       W
+        # memory bank.  For the sequencer state a sequence of 8 writes is
+        # required to write a complete state, and so a sequence of 64 writes
+        # updates the sequencer program memory.
+        *OVERLAY    WRITE       W
+            # Starting frequency for this sweep
+            START_FREQ
+            # Frequency step for this sweep
+            DELTA_FREQ
+            DWELL_TIME
+                # Number of turns to capture for one detector cycle
+                .DWELL          16
+            CONFIG
+                # Total number of samples in this sweep
+                .CAPTURE        12
+                # Bunch bank select for this sequencer state
+                .BANK           2
+                # Select sweep NCO gain
+                .NCO_GAIN       4
+                # If set the sweep window is enabled
+                .ENA_WINDOW
+                # Whether to store this output from the sequencer
+                .ENA_WRITE
+                # Whether to respect the blanking input
+                .ENA_BLANK
+                # Sweep output enable
+                .ENA_NCO
+            # Detector window advance.
+            WINDOW_RATE
+            HOLDOFF
+                # Number of turns to wait after changing frequency and before
+                # starting detector capture
+                .HOLDOFF        16
+
+            # This is not part of the sequencer overlay above, but is a
+            # workaround for writing other values.
+            WORD
 
     # Detector control
     !DET
