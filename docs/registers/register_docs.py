@@ -166,20 +166,27 @@ class register_docs_file(rst.Directive):
     def run(self):
         filename = self.options['file']
 
-        global register_groups
-        register_groups = self.load_groups(filename)
+        global register_groups, group_defs, register_defs
+        register_groups, group_defs, register_defs = \
+            self.load_groups(filename)
 
         return []
+
+    def list_to_dict(self, list):
+        result = {}
+        for l in list:
+            result[l.name] = l
+        return result
 
     def load_groups(self, filename):
         full_filename = os.path.join(lmbf.TOP, filename)
         defs = lmbf.parse.register_defs.parse(
             lmbf.parse.indent.parse_file(file(full_filename)))
-        defs = lmbf.parse.register_defs.flatten(defs)
-        groups = {}
-        for group in defs.groups:
-            groups[group.name] = group
-        return groups
+#         defs = lmbf.parse.register_defs.flatten(defs)
+        groups = self.list_to_dict(defs.groups)
+        group_defs = self.list_to_dict(defs.group_defs)
+        register_defs = self.list_to_dict(defs.register_defs)
+        return groups, group_defs, register_defs
 
 register_groups = {}
 
@@ -187,19 +194,32 @@ register_groups = {}
 class register_docs(rst.Directive):
     option_spec = {
         'section' : str,
+        'group' : str,
+        'register' : str,
     }
 
-    def run(self):
-        section = self.options['section']
-        group = register_groups[section]
 
-        header = self.doc_text(group)
+    def lookup_option(self):
+        if 'section' in self.options:
+            return (register_groups[self.options['section']], True)
+        elif 'group' in self.options:
+            return (group_defs[self.options['group']], True)
+        elif 'register' in self.options:
+            return (register_defs[self.options['register']], False)
+
+    def run(self):
+        definition, is_group = self.lookup_option()
+
+        header = self.doc_text(definition)
 
         table = Table(self, [11, 9, 11, 25, 80])
         table.add_header(
             [['Reg'], [], ['Field'], ['Name'], ['Description']])
         methods = GenerateMethods(table)
-        methods.walk_group([], group)
+        if is_group:
+            methods.walk_group([], definition)
+        else:
+            methods.walk_register([], definition)
 
         return header + [table.table]
 

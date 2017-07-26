@@ -17,6 +17,12 @@
     # Increment if 1, decrement if 0
     .INC_DECN           W
 
+
+# Min/Max/Sum.  This functional block computes the minimum, maximum, sum, and
+# sum of squares of each bunch for an extended period of time.  A sampling
+# period is ended by reading the the .COUNT register, and then the individual
+# bunches can be read out.  Overflow can happen after 65536 turns, so readout
+# should occur at least this frequently.
 :!MMS
     # Reading this register swaps MMS banks and returns the number of turns
     # recorded in the now current readout bank.  Read the READOUT register
@@ -420,7 +426,8 @@
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W
-        # Bunch by bunch motion for ADC input data, after compensation filter
+        # Bunch by bunch motion for ADC input data, after compensation filter,
+        # see MMS_.
         :MMS
 
     # Shared bunch by bunch configuration
@@ -638,9 +645,10 @@
     # DRAM0 data capture trigger.  Capture will complete shortly after this
     # trigger is seen.
     .DRAM_TRIGGER
-    # Sequencer start trigger seen
+    # Sequencer start trigger seen, one bit for each channel.
     .SEQ_TRIGGER    2
-    # Sequencer becomes busy (should occur immediately after trigger)
+    # Sequencer becomes busy (should occur immediately after trigger), one bit
+    # for each channel.
     .SEQ_BUSY       2
-    # Sequencer complete, no longer busy
+    # Sequencer complete, no longer busy, one bit for each channel.
     .SEQ_DONE       2

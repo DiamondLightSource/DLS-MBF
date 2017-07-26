@@ -48,3 +48,17 @@ DSP Registers
 
 ..  register_docs::
     :section:   DSP
+
+..  _MMS:
+
+MMS Registers
+~~~~~~~~~~~~~
+
+..  register_docs::
+    :group:     MMS
+
+Interrupt definitions
+~~~~~~~~~~~~~~~~~~~~~
+
+..  register_docs::
+    :register:  INTERRUPTS
