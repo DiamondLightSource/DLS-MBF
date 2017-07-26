@@ -2,89 +2,108 @@
 
 # Script to compute C definitions from register_defs
 
+import sys
 from lmbf.defs_path import DEFS
 
 from lmbf import parse
 
 
-def make_name(context, name):
-    return '_'.join(context + [name]).lower()
-
-
-def make_field(indent, base, field):
+def make_field(context, base, field):
     offset, length = field.range
     assert offset >= base, 'Overlapping or disordered fields'
     if offset > base:
-        print indent + '    uint32_t : %d;' % (offset - base)
-    print indent + '    uint32_t %s : %d;' % (field.name.lower(), length)
+        context.do_print('uint32_t : %d;' % (offset - base))
+    context.do_print('uint32_t %s : %d;' % (field.name.lower(), length))
     return offset + length
 
 
-def make_register_struct(indent, struct_name, fields, reg_name = '', rw = ''):
-    print indent + 'struct %s {' % struct_name
+def make_register_struct(context, struct_name, fields, reg_name = '', rw = ''):
+    context.do_print('struct %s {' % struct_name)
     base = 0
     for field in fields:
-        base = make_field(indent, base, field)
+        base = make_field(context.extend('', 1), base, field)
     if reg_name:
-        print indent + '} %s;    // %s' % (reg_name, rw)
+        context.do_print('} %s;    // %s' % (reg_name, rw))
     else:
-        print indent + '};'
+        context.do_print('};')
+
+
+# The context captures both the name prefix and the required extra indent
+class Context:
+    def __init__(self, top_name, prefix = [], indent = 0):
+        self.top_name = top_name
+        self.prefix = prefix
+        self.indent = indent
+
+    def extend(self, suffix, indent = 0):
+        new_prefix = self.prefix + [suffix] if suffix else self.prefix
+        return Context(self.top_name, new_prefix, self.indent + indent)
+
+    def reset(self):
+        return Context(self.top_name)
+
+    def do_print(self, string):
+        print self.indent * '    ' + string
+
+    def make_name(self, name):
+        return '_'.join(self.prefix + [name]).lower()
+
+    def make_reg_name(self, name):
+        return '_'.join([self.top_name] + self.prefix + [name]).lower()
 
 
 class GenerateMethods(parse.register_defs.WalkParse):
     def walk_register_array(self, context, array):
-        name = make_name(context, array.name)
-        print '    uint32_t %s[%d];' % (name, array.range[1])
+        name = context.make_name(array.name)
+        context.do_print('uint32_t %s[%d];' % (name, array.range[1]))
 
-    def walk_register(self,
-            context, register, indent = '    ', name_context = None):
+    def walk_register(self, context, register, name_context = None):
         if name_context is None:
             name_context = context
-        name = make_name(name_context, register.name)
+        name = name_context.make_name(register.name)
         if register.definition:
-            print indent + 'struct %s %s;    // %s' % (
-                register.definition.name.lower(), name, register.rw)
+            context.do_print('struct %s %s;    // %s' % (
+                register.definition.name.lower(), name, register.rw))
         elif register.fields:
-            struct_name = make_name(
-                [self.top_name] + context, register.name)
+            struct_name = context.make_reg_name(register.name)
             make_register_struct(
-                indent, struct_name, register.fields, name, register.rw)
+                context, struct_name, register.fields, name, register.rw)
         else:
-            print indent + 'uint32_t %s;    // %s' % (name, register.rw)
+            context.do_print('uint32_t %s;    // %s' % (name, register.rw))
 
     def walk_rw_pair(self, context, rw_pair):
-        print '    union {'
+        context.do_print('union {')
         for register in rw_pair.registers:
-            self.walk_register(context, register, indent = '        ')
-        print '    };'
+            self.walk_register(context.extend('', 1), register)
+        context.do_print('};')
 
     def walk_overlay(self, context, overlay):
-        union_name = make_name([self.top_name] + context, overlay.name)
-        name = make_name(context, overlay.name)
-        print '    union %s {' % union_name
-        context = context + [overlay.name]
+        union_name = context.make_reg_name(overlay.name)
+        name = context.make_name(overlay.name)
+        context.do_print('union %s {' % union_name)
+        sub_context = context.extend(overlay.name, 1)
         for register in overlay.registers:
             self.walk_register(
-                context, register, indent = '        ', name_context = [])
-        print '    } %s;' % name
+                sub_context, register, name_context = context.reset())
+        context.do_print('} %s;' % name)
 
     def walk_union(self, context, union):
-        print '    union {'
-        self.walk_subgroups(context, union)
-        print '    };'
+        context.do_print('union {')
+        self.walk_subgroups(context.extend('', 1), union)
+        context.do_print('};')
 
     def walk_group(self, context, group):
         if group.definition:
-            name = make_name(context, group.name)
-            print '    struct %s %s;' % (
-                group.definition.name.lower(), name)
+            name = context.make_name(group.name)
+            context.do_print('struct %s %s;' % (
+                group.definition.name.lower(), name))
         else:
-            self.walk_subgroups(context + [group.name], group)
+            self.walk_subgroups(context.extend(group.name), group)
 
     def walk_top(self, group):
-        self.top_name = group.name.lower()
-        print 'struct %s {' % group.name.lower()
-        self.walk_subgroups([], group)
+        top_name = group.name.lower()
+        print 'struct %s {' % top_name
+        self.walk_subgroups(Context(top_name, indent = 1), group)
         print '};'
 
 
@@ -115,9 +134,10 @@ for group in defs.group_defs:
     generate.walk_top(group)
     print
 
+top_context = Context('')
 for register in defs.register_defs:
     print_doc('', register.doc)
-    make_register_struct('', register.name.lower(), register.fields)
+    make_register_struct(top_context, register.name.lower(), register.fields)
     print
 
 print
