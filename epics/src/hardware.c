@@ -315,7 +315,7 @@ void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking)
     *blanking = events.blanking;
 }
 
-void hw_write_trigger_arm(const bool arm[TRIGGER_DEST_COUNT])
+void hw_write_trigger_arm(const bool arm[TRIGGER_TARGET_COUNT])
 {
     WRITE_FIELDS(ctrl_regs->trg_control,
         .seq0_arm = arm[TRIGGER_SEQ0],
@@ -324,7 +324,7 @@ void hw_write_trigger_arm(const bool arm[TRIGGER_DEST_COUNT])
     );
 }
 
-void hw_write_trigger_disarm(const bool disarm[TRIGGER_DEST_COUNT])
+void hw_write_trigger_disarm(const bool disarm[TRIGGER_TARGET_COUNT])
 {
     WRITE_FIELDS(ctrl_regs->trg_control,
         .seq0_disarm = disarm[TRIGGER_SEQ0],
@@ -353,12 +353,12 @@ void hw_read_trigger_status(struct trigger_status *result)
 }
 
 void hw_read_trigger_sources(
-    enum trigger_destination destination,
+    enum trigger_target target,
     bool sources[TRIGGER_SOURCE_COUNT])
 {
     struct ctrl_trg_sources trg_sources = ctrl_regs->trg_sources;
     uint32_t source_mask = 0;
-    switch (destination)
+    switch (target)
     {
         case TRIGGER_SEQ0:
             source_mask = trg_sources.seq0;
@@ -390,9 +390,9 @@ void hw_write_trigger_blanking_duration(int channel, unsigned int duration)
 }
 
 void hw_write_trigger_delay(
-    enum trigger_destination destination, unsigned int delay)
+    enum trigger_target target, unsigned int delay)
 {
-    switch (destination)
+    switch (target)
     {
         case TRIGGER_SEQ0:
             WRITE_FIELDS(
@@ -410,12 +410,12 @@ void hw_write_trigger_delay(
 }
 
 void hw_write_trigger_enable_mask(
-    enum trigger_destination destination,
+    enum trigger_target target,
     const bool sources[TRIGGER_SOURCE_COUNT])
 {
     uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
     LOCK(ctrl_lock);
-    switch (destination)
+    switch (target)
     {
         case TRIGGER_SEQ0:
             ctrl_mirror.trg_config_trig_seq.enable0 = source_mask & 0x7F;
@@ -437,12 +437,12 @@ void hw_write_trigger_enable_mask(
 }
 
 void hw_write_trigger_blanking_mask(
-    enum trigger_destination destination,
+    enum trigger_target target,
     const bool sources[TRIGGER_SOURCE_COUNT])
 {
     uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
     LOCK(ctrl_lock);
-    switch (destination)
+    switch (target)
     {
         case TRIGGER_SEQ0:
             ctrl_mirror.trg_config_trig_seq.blanking0 = source_mask & 0x7F;

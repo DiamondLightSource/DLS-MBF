@@ -120,13 +120,13 @@ void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[]);
 
 /* Trigger configuration - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* This defines the set of internal trigger destinations. */
-enum trigger_destination {
+/* This defines the set of internal trigger targets. */
+enum trigger_target {
     TRIGGER_SEQ0,
     TRIGGER_SEQ1,
     TRIGGER_DRAM,
 };
-#define TRIGGER_DEST_COUNT  3       // Must match enum above!
+#define TRIGGER_TARGET_COUNT  3       // Must match enum above!
 
 /* At present this is a direct image of the trigger status register. */
 struct trigger_status {
@@ -153,11 +153,11 @@ void hw_write_turn_clock_offset(int channel, unsigned int offset);
 /* Returns which incoming trigger events have occurred since the last call. */
 void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);
 
-/* Simultaneous arming of the selected trigger destinations. */
-void hw_write_trigger_arm(const bool arm[TRIGGER_DEST_COUNT]);
+/* Simultaneous arming of the selected trigger targets. */
+void hw_write_trigger_arm(const bool arm[TRIGGER_TARGET_COUNT]);
 
-/* Simultaneous disarming of the selected trigger destinations. */
-void hw_write_trigger_disarm(const bool disarm[TRIGGER_DEST_COUNT]);
+/* Simultaneous disarming of the selected trigger targets. */
+void hw_write_trigger_disarm(const bool disarm[TRIGGER_TARGET_COUNT]);
 
 /* Generate soft trigger. */
 void hw_write_trigger_soft_trigger(void);
@@ -165,9 +165,9 @@ void hw_write_trigger_soft_trigger(void);
 /* Reads the current trigger status. */
 void hw_read_trigger_status(struct trigger_status *status);
 
-/* Reads which trigger sources fired the selected destination. */
+/* Reads which trigger sources fired the selected target. */
 void hw_read_trigger_sources(
-    enum trigger_destination destination,
+    enum trigger_target target,
     bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Program duration of blanking window. */
@@ -175,17 +175,17 @@ void hw_write_trigger_blanking_duration(int channel, unsigned int duration);
 
 /* Programs the delay in turns from internal firing of trigger to delivery. */
 void hw_write_trigger_delay(
-    enum trigger_destination destination, unsigned int delay);
+    enum trigger_target target, unsigned int delay);
 
 /* Configure which trigger sources will be used to trigger the selected
- * destination. */
+ * target. */
 void hw_write_trigger_enable_mask(
-    enum trigger_destination destination,
+    enum trigger_target target,
     const bool sources[TRIGGER_SOURCE_COUNT]);
 
-/* Configure which trigger sources are blanked for the selected destination. */
+/* Configure which trigger sources are blanked for the selected target. */
 void hw_write_trigger_blanking_mask(
-    enum trigger_destination destination,
+    enum trigger_target target,
     const bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Configure the turn clock and blanking pulse used for DRAM triggering. */
