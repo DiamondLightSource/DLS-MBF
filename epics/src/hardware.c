@@ -682,11 +682,11 @@ void hw_read_dac_mms(int channel, struct mms_result *result)
 
 /* Sequencer registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 /* Writes a single sequencer state as a sequence of 8 writes. */
-static void write_sequencer_state(
-    volatile union dsp_seq_state *target, const struct seq_entry *entry)
+static void write_sequencer_state(int channel, const struct seq_entry *entry)
 {
+    volatile union dsp_seq_state *target = &dsp_regs[channel]->seq_state;
+
     writel(&target->start_freq, entry->start_freq);
     writel(&target->delta_freq, entry->delta_freq);
     WRITE_FIELDS(target->dwell_time,
@@ -706,56 +706,36 @@ static void write_sequencer_state(
     writel(&target->padding, 0);
 }
 
-void hw_read_seq_state(
-    int channel, bool *busy, unsigned int *pc, unsigned int *super_pc)
-{
-    struct dsp_seq_status status = READL(dsp_regs[channel]->seq_status);
-    *busy = status.busy;
-    *pc = status.pc;
-    *super_pc = status.super;
-}
-
-void hw_write_seq_count(int channel, unsigned int pc)
-{
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, seq_config, pc, pc & 0x7);
-    UNLOCK(dsp_locks[channel]);
-}
-
-void hw_write_seq_abort(int channel)
-{
-    WRITE_FIELDS(dsp_regs[channel]->seq_command, .abort = 1);
-}
-
-void hw_write_seq_trigger_state(int channel, unsigned int state)
-{
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, seq_config, trigger, state & 0x7);
-    UNLOCK(dsp_locks[channel]);
-}
-
-void hw_write_seq_entries(
+/* Writes the complete sequencer memory. */
+static void write_sequencer_entries(
     int channel, unsigned int bank0,
     const struct seq_entry entries[MAX_SEQUENCER_COUNT])
 {
-    LOCK(dsp_locks[channel]);
     WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
     WRITE_DSP_MIRROR(channel, seq_config, target, 0);
-    write_sequencer_state(&dsp_regs[channel]->seq_state, &(struct seq_entry) {
+    write_sequencer_state(channel, &(struct seq_entry) {
         .dwell_time = 1,
         .bunch_bank = bank0,
         .capture_count = 1,
     });
     if (entries)
         for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
-            write_sequencer_state(&dsp_regs[channel]->seq_state, &entries[i]);
-    UNLOCK(dsp_locks[channel]);
+            write_sequencer_state(channel, &entries[i]);
 }
 
-void hw_write_seq_super_entries(
+/* Writes the sequencer detector window. */
+static void write_sequencer_window(int channel, const int window[])
+{
+    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
+    WRITE_DSP_MIRROR(channel, seq_config, target, 1);
+    for (unsigned int i = 0; i < DET_WINDOW_LENGTH; i ++)
+        writel(&dsp_regs[channel]->seq_det_window, (uint32_t) window[i]);
+}
+
+/* Writes the super sequencer entries. */
+static void write_sequencer_super_entries(
     int channel, unsigned int super_count, const uint32_t offsets[])
 {
-    LOCK(dsp_locks[channel]);
     WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
     dsp_mirror[channel].seq_config.target = 2;
     dsp_mirror[channel].seq_config.super_count = (super_count - 1) & 0x3FF;
@@ -767,17 +747,45 @@ void hw_write_seq_super_entries(
     for (unsigned int i = 0; i < super_count; i ++)
         writel(&dsp_regs[channel]->seq_super_state,
             offsets[super_count - 1 - i]);
+}
+
+
+void hw_write_seq_config(int channel, const struct seq_config *config)
+{
+    LOCK(dsp_locks[channel]);
+    write_sequencer_entries(channel, config->bank0, config->entries);
+    write_sequencer_window(channel, config->window);
+    write_sequencer_super_entries(
+        channel, config->super_seq_count, config->super_offsets);
+    WRITE_DSP_MIRROR(channel, seq_config, pc, config->sequencer_pc & 0x7);
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH])
+void hw_write_seq_bank0(int channel, unsigned int bank0)
 {
     LOCK(dsp_locks[channel]);
-    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
-    WRITE_DSP_MIRROR(channel, seq_config, target, 1);
-    for (unsigned int i = 0; i < DET_WINDOW_LENGTH; i ++)
-        writel(&dsp_regs[channel]->seq_det_window, (uint32_t) window[i]);
+    write_sequencer_entries(channel, bank0, NULL);
     UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_seq_trigger_state(int channel, unsigned int state)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, seq_config, trigger, state & 0x7);
+    UNLOCK(dsp_locks[channel]);
+}
+
+void hw_write_seq_abort(int channel)
+{
+    WRITE_FIELDS(dsp_regs[channel]->seq_command, .abort = 1);
+}
+
+void hw_read_seq_state(int channel, struct seq_state *state)
+{
+    struct dsp_seq_status status = READL(dsp_regs[channel]->seq_status);
+    state->busy = status.busy;
+    state->pc = status.pc;
+    state->super_pc = status.super;
 }
 
 

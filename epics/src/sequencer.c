@@ -25,7 +25,7 @@
  * is not handled in this array. */
 struct sequencer_bank {
     /* Much of our state is as written to hardware. */
-    struct seq_entry entry;
+    struct seq_entry *entry;
 
     /* These two records need updating during user editing. */
     struct epics_record *delta_freq_rec;
@@ -36,33 +36,18 @@ struct sequencer_bank {
 struct seq_context {
     int channel;
 
-    /* Sequencer state as currently seen through EPICS. */
-    struct sequencer_bank banks[MAX_SEQUENCER_COUNT];
-    unsigned int bank0;
+    struct seq_config seq_config;   // Hardware configuration
+    struct sequencer_bank banks[MAX_SEQUENCER_COUNT];   // EPICS management
 
-    /* Sequencer program counter. */
-    unsigned int sequencer_pc;
+    struct seq_state seq_state;     // Current state as read from hardware
 
-    /* Super sequencer state. */
-    unsigned int super_seq_count;
-    uint32_t super_offsets[SUPER_SEQ_STATES];
-    bool reset_offsets;
+    unsigned int capture_count;     // Number of IQ points to capture
+    unsigned int sequencer_duration; // Total duration of sequence
 
-    /* Current state as read from hardware. */
-    bool busy;
-    unsigned int current_pc;
-    unsigned int current_super_pc;
+    bool reset_offsets;             // Reset super sequencer offsets
+    bool reset_window;              // Reset detector window
 
-    /* Capture count and duration for user display. */
-    unsigned int capture_count;       // Number of IQ points to capture
-    unsigned int sequencer_duration;  // Total duration of sequence
-
-    /* Detector window. */
-    bool reset_window;
-    int window[DET_WINDOW_LENGTH];
-
-    /* Resulting scale info. */
-    struct scale_info scale_info;
+    struct scale_info scale_info;   // Computed frequency scale
 } seq_context[CHANNEL_COUNT];
 
 
@@ -104,27 +89,29 @@ struct seq_context {
 static bool write_start_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
-    bank->entry.start_freq = tune_to_freq(*value);
-    *value = freq_to_tune(bank->entry.start_freq);
+    struct seq_entry *entry = bank->entry;
+    entry->start_freq = tune_to_freq(*value);
+    *value = freq_to_tune(entry->start_freq);
     return true;
 }
 
 static bool write_step_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
-    bank->entry.delta_freq = tune_to_freq(*value);
-    *value = freq_to_tune_signed(bank->entry.delta_freq);
+    struct seq_entry *entry = bank->entry;
+    entry->delta_freq = tune_to_freq(*value);
+    *value = freq_to_tune_signed(entry->delta_freq);
     return true;
 }
 
 static bool write_end_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
+    struct seq_entry *entry = bank->entry;
     double target_delta_freq =
-        (*value - freq_to_tune(bank->entry.start_freq)) /
-        bank->entry.capture_count;
-    bank->entry.delta_freq = tune_to_freq(target_delta_freq);
-    double actual_delta_freq = freq_to_tune_signed(bank->entry.delta_freq);
+        (*value - freq_to_tune(entry->start_freq)) / entry->capture_count;
+    entry->delta_freq = tune_to_freq(target_delta_freq);
+    double actual_delta_freq = freq_to_tune_signed(entry->delta_freq);
     WRITE_OUT_RECORD(ao, bank->delta_freq_rec, actual_delta_freq, false);
     return true;
 }
@@ -135,9 +122,9 @@ static bool write_end_freq(void *context, double *value)
 static bool update_end_freq(void *context, bool *value)
 {
     struct sequencer_bank *bank = context;
+    struct seq_entry *entry = bank->entry;
     unsigned int end_freq =
-        bank->entry.start_freq +
-        bank->entry.capture_count * bank->entry.delta_freq;
+        entry->start_freq + entry->capture_count * entry->delta_freq;
     WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
     return true;
 }
@@ -146,8 +133,25 @@ static bool update_end_freq(void *context, bool *value)
 static bool write_bank_count(void *context, unsigned int *value)
 {
     struct sequencer_bank *bank = context;
-    bank->entry.capture_count = *value;
+    struct seq_entry *entry = bank->entry;
+    entry->capture_count = *value;
     return update_end_freq(context, NULL);
+}
+
+
+static bool write_dwell_time(void *context, unsigned int *value)
+{
+    struct sequencer_bank *bank = context;
+    struct seq_entry *entry = bank->entry;
+
+    entry->dwell_time = *value;
+    /* The window_rate calculation is a little tricky.  We want the window
+     * to advance from 0 to 2^32 in dwell_time turns ... but it advances one
+     * tick (one window_rate value) every two bunches. */
+    entry->window_rate = (unsigned int) lround(
+        ldexp(1, 33) / (hardware_config.bunches * entry->dwell_time));
+
+    return true;
 }
 
 
@@ -157,14 +161,16 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
     sprintf(prefix, "%d", ix + 1);
     WITH_NAME_PREFIX(prefix)
     {
-        PUBLISH_WRITE_VAR_P(ulongout, "DWELL", bank->entry.dwell_time);
-        PUBLISH_WRITE_VAR_P(mbbo, "BANK", bank->entry.bunch_bank);
-        PUBLISH_WRITE_VAR_P(mbbo, "GAIN", bank->entry.nco_gain);
-        PUBLISH_WRITE_VAR_P(bo, "ENABLE", bank->entry.nco_enable);
-        PUBLISH_WRITE_VAR_P(bo, "ENWIN", bank->entry.enable_window);
-        PUBLISH_WRITE_VAR_P(bo, "CAPTURE", bank->entry.write_enable);
-        PUBLISH_WRITE_VAR_P(bo, "BLANK", bank->entry.enable_blanking);
-        PUBLISH_WRITE_VAR_P(ulongout, "HOLDOFF", bank->entry.holdoff);
+        struct seq_entry *entry = bank->entry;
+        PUBLISH_WRITE_VAR_P(mbbo, "BANK", entry->bunch_bank);
+        PUBLISH_WRITE_VAR_P(mbbo, "GAIN", entry->nco_gain);
+        PUBLISH_WRITE_VAR_P(bo, "ENABLE", entry->nco_enable);
+        PUBLISH_WRITE_VAR_P(bo, "ENWIN", entry->enable_window);
+        PUBLISH_WRITE_VAR_P(bo, "CAPTURE", entry->write_enable);
+        PUBLISH_WRITE_VAR_P(bo, "BLANK", entry->enable_blanking);
+        PUBLISH_WRITE_VAR_P(ulongout, "HOLDOFF", entry->holdoff);
+
+        PUBLISH_C_P(ulongout, "DWELL", write_dwell_time, bank);
 
         PUBLISH_C_P(ulongout, "COUNT", write_bank_count, bank);
 
@@ -184,8 +190,8 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
 static bool set_state0_bunch_bank(void *context, unsigned int *bank)
 {
     struct seq_context *seq = context;
-    seq->bank0 = *bank;
-    hw_write_seq_entries(seq->channel, seq->bank0, NULL);
+    seq->seq_config.bank0 = *bank;
+    hw_write_seq_bank0(seq->channel, *bank);
     return true;
 }
 
@@ -195,14 +201,14 @@ static bool update_capture_count(void *context, bool *value)
     struct seq_context *seq = context;
     seq->capture_count = 0;
     seq->sequencer_duration = 0;
-    for (unsigned int i = 0; i < seq->sequencer_pc; i ++)
+    for (unsigned int i = 0; i < seq->seq_config.sequencer_pc; i ++)
     {
         struct sequencer_bank *bank = &seq->banks[i];
-        if (bank->entry.write_enable)
-            seq->capture_count += bank->entry.capture_count;
+        if (bank->entry->write_enable)
+            seq->capture_count += bank->entry->capture_count;
         seq->sequencer_duration +=
-            bank->entry.capture_count *
-            (bank->entry.dwell_time + bank->entry.holdoff);
+            bank->entry->capture_count *
+            (bank->entry->dwell_time + bank->entry->holdoff);
     }
     return true;
 }
@@ -227,8 +233,7 @@ static bool write_seq_trig_state(void *context, unsigned int *value)
 static bool read_seq_status(void *context, bool *value)
 {
     struct seq_context *seq = context;
-    hw_read_seq_state(
-        seq->channel, &seq->busy, &seq->current_pc, &seq->current_super_pc);
+    hw_read_seq_state(seq->channel, &seq->seq_state);
     return true;
 }
 
@@ -249,7 +254,7 @@ static void write_super_offsets(void *context, double offsets[], size_t *length)
     }
 
     for (int i = 0; i < SUPER_SEQ_STATES; i ++)
-        seq->super_offsets[i] = tune_to_freq(offsets[i]);
+        seq->seq_config.super_offsets[i] = tune_to_freq(offsets[i]);
 }
 
 static bool reset_super_offsets(void *context, bool *value)
@@ -261,19 +266,6 @@ static bool reset_super_offsets(void *context, bool *value)
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-/* Prepare a single sequencer bank entry ready for writing to hardware. */
-static void prepare_seq_entry(
-    const struct sequencer_bank *bank, struct seq_entry *entry)
-{
-    *entry = bank->entry;
-    /* The window_rate calculation is a little tricky.  We want the window to
-     * advance from 0 to 2^32 in dwell_time turns ... but it advances one tick
-     * (one window_rate value) every two bunches. */
-    entry->window_rate = (unsigned int) lround(
-        pow(2, 31) / (hardware_config.bunches * bank->entry.dwell_time));
-}
 
 
 static void compute_default_window(float window[])
@@ -298,7 +290,8 @@ static void write_detector_window(
     }
 
     *length = DET_WINDOW_LENGTH;
-    float_array_to_int(DET_WINDOW_LENGTH, window, seq->window, 16, 0);
+    float_array_to_int(
+        DET_WINDOW_LENGTH, window, seq->seq_config.window, 16, 0);
 }
 
 
@@ -311,25 +304,26 @@ static bool reset_detector_window(void *context, bool *value)
 
 
 /* Computes frequency and timebase scales from detector configuration. */
-static void update_scale_info(
-    struct seq_context *seq, const struct seq_entry entries[])
+static void update_scale_info(struct seq_context *seq)
 {
     unsigned int detector_length = system_config.detector_length;
     struct scale_info *scale = &seq->scale_info;
+    unsigned int super_count = seq->seq_config.super_seq_count;
+    unsigned int seq_count = seq->seq_config.sequencer_pc;
 
     /* Iterate through super sequencer. */
     unsigned int ix = 0;            // Index into generated vectors
     unsigned int total_time = 0;    // Accumulates time base
     unsigned int gap_time = 0;      // For non-captured states
     unsigned int f0 = 0;            // Accumulates current frequency
-    for (unsigned int super = 0; super < seq->super_seq_count; super ++)
-        for (unsigned int state = seq->sequencer_pc; state > 0; state --)
+    for (unsigned int super = 0; super < super_count; super ++)
+        for (unsigned int state = seq_count; state > 0; state --)
         {
-            const struct seq_entry *entry = &entries[state - 1];
+            const struct seq_entry *entry = &seq->seq_config.entries[state - 1];
             unsigned int dwell_time = entry->dwell_time + entry->holdoff;
             if (entry->write_enable)
             {
-                f0 = entry->start_freq + seq->super_offsets[super];
+                f0 = entry->start_freq + seq->seq_config.super_offsets[super];
                 total_time += gap_time;
                 gap_time = 0;
                 for (unsigned int i = 0; i < entry->capture_count; i ++)
@@ -362,18 +356,8 @@ static void update_scale_info(
 void prepare_sequencer(int channel)
 {
     struct seq_context *seq = &seq_context[channel];
-
-    struct seq_entry seq_entries[MAX_SEQUENCER_COUNT];
-    for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
-        prepare_seq_entry(&seq->banks[i], &seq_entries[i]);
-
-    hw_write_seq_entries(channel, seq->bank0, seq_entries);
-    hw_write_seq_super_entries(
-        channel, seq->super_seq_count, seq->super_offsets);
-    hw_write_seq_window(channel, seq->window);
-    hw_write_seq_count(channel, seq->sequencer_pc);
-
-    update_scale_info(seq, seq_entries);
+    hw_write_seq_config(seq->channel, &seq->seq_config);
+    update_scale_info(seq);
 }
 
 
@@ -396,12 +380,15 @@ error__t initialise_sequencer(void)
 
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
+        {
+            seq->banks[i].entry = &seq->seq_config.entries[i];
             publish_bank(i, &seq->banks[i]);
+        }
 
         PUBLISH_C(bo, "UPDATE_COUNT", update_capture_count, seq);
 
-        PUBLISH_WRITE_VAR_P(ulongout, "PC", seq->sequencer_pc);
-        PUBLISH_READ_VAR(ulongin, "PC", seq->current_pc);
+        PUBLISH_WRITE_VAR_P(ulongout, "PC", seq->seq_config.sequencer_pc);
+        PUBLISH_READ_VAR(ulongin, "PC", seq->seq_state.pc);
         PUBLISH_C(bo, "RESET", write_seq_reset, seq);
         PUBLISH_C_P(ulongout, "TRIGGER", write_seq_trig_state, seq);
 
@@ -411,14 +398,15 @@ error__t initialise_sequencer(void)
         /* Super sequencer control and readback. */
         WITH_NAME_PREFIX("SUPER")
         {
-            PUBLISH_READ_VAR(ulongin, "COUNT", seq->current_super_pc);
-            PUBLISH_WRITE_VAR_P(ulongout, "COUNT", seq->super_seq_count);
+            PUBLISH_READ_VAR(ulongin, "COUNT", seq->seq_state.super_pc);
+            PUBLISH_WRITE_VAR_P(
+                ulongout, "COUNT", seq->seq_config.super_seq_count);
             PUBLISH_WAVEFORM_C_P(
                 double, "OFFSET", SUPER_SEQ_STATES, write_super_offsets, seq);
             PUBLISH_C(bo, "RESET", reset_super_offsets, seq);
         }
 
-        PUBLISH_READ_VAR(bi, "BUSY", seq->busy);
+        PUBLISH_READ_VAR(bi, "BUSY", seq->seq_state.busy);
         PUBLISH_C(bo, "STATUS:READ", read_seq_status, seq);
 
         seq->reset_window = true;

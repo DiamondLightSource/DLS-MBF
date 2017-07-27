@@ -315,32 +315,37 @@ struct seq_entry {
     unsigned int holdoff;           // Detector holdoff
 };
 
-/* Rewrites the sequencer table.  If entries is NULL then only bank0 is updated,
- * otherwise the entire sequencer table is written. */
-void hw_write_seq_entries(
-    int channel, unsigned int bank0,
-    const struct seq_entry entries[MAX_SEQUENCER_COUNT]);
+struct seq_config {
+    unsigned int bank0;
+    unsigned int sequencer_pc;
+    unsigned int super_seq_count;
+    struct seq_entry entries[MAX_SEQUENCER_COUNT];
+    int32_t window[DET_WINDOW_LENGTH];
+    uint32_t super_offsets[SUPER_SEQ_STATES];
+};
 
-/* Configures super sequencer: writes array of sweep frequency offsets. */
-void hw_write_seq_super_entries(
-    int channel, unsigned int super_count,
-    const uint32_t offsets[SUPER_SEQ_STATES]);
+struct seq_state {
+    bool busy;
+    unsigned int pc;
+    unsigned int super_pc;
+};
 
-/* Writes detector window. */
-void hw_write_seq_window(int channel, const int window[DET_WINDOW_LENGTH]);
 
-/* Programs sequencer program counter. */
-void hw_write_seq_count(int channel, unsigned int sequencer_pc);
+/* Writes complete active sequencer configuration in preparation for triggered
+ * operation. */
+void hw_write_seq_config(int channel, const struct seq_config *config);
 
-/* Returns current sequencer state. */
-void hw_read_seq_state(
-    int channel, bool *busy, unsigned int *pc, unsigned int *super_pc);
+/* Updates the choice of bank0. */
+void hw_write_seq_bank0(int channel, unsigned int bank0);
+
+/* Configure state used to generate trigger event. */
+void hw_write_seq_trigger_state(int channel, unsigned int state);
 
 /* Resets sequencer. */
 void hw_write_seq_abort(int channel);
 
-/* Configure state used to generate trigger event. */
-void hw_write_seq_trigger_state(int channel, unsigned int state);
+/* Returns current sequencer state. */
+void hw_read_seq_state(int channel, struct seq_state *state);
 
 
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
