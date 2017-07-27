@@ -153,7 +153,7 @@ static void process_mms_waveforms(struct mms_handler *mms)
 }
 
 
-static bool start_mms_readback(void *context, const bool *value)
+static bool start_mms_readback(void *context, bool *value)
 {
     struct mms_handler *mms = context;
 

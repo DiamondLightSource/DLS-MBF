@@ -23,21 +23,21 @@ static struct nco_context {
     int channel;
 } nco_context[CHANNEL_COUNT];
 
-static bool set_nco_frequency(void *context, const double *freq)
+static bool set_nco_frequency(void *context, double *freq)
 {
     struct nco_context *nco = context;
     hw_write_nco0_frequency(nco->channel, tune_to_freq(*freq));
     return true;
 }
 
-static bool set_nco_gain(void *context, const unsigned int *gain)
+static bool set_nco_gain(void *context, unsigned int *gain)
 {
     struct nco_context *nco = context;
     hw_write_dac_nco0_gain(nco->channel, *gain);
     return true;
 }
 
-static bool set_nco_enable(void *context, const bool *enable)
+static bool set_nco_enable(void *context, bool *enable)
 {
     struct nco_context *nco = context;
     hw_write_dac_nco0_enable(nco->channel, *enable);

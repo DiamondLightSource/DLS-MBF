@@ -8,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"

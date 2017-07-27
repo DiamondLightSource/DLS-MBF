@@ -70,7 +70,7 @@ static void update_taps(struct fir_bank *bank)
 /* This is called any time any of the FIR control parameters have changed.
  * Recompute and reload the FIR taps as appropriate.  No effect if not in
  * use_waveform mode. */
-static bool reload_fir(void *context, const bool *value)
+static bool reload_fir(void *context, bool *value)
 {
     struct fir_bank *bank = context;
     if (!bank->use_waveform)
@@ -104,7 +104,7 @@ static void set_fir_taps(void *context, float *taps, size_t *length)
 
 
 /* Called to switch between waveform and settings mode. */
-static bool set_use_waveform(void *context, const bool *use_waveform)
+static bool set_use_waveform(void *context, bool *use_waveform)
 {
     struct fir_bank *bank = context;
     if (*use_waveform != bank->use_waveform)
@@ -151,7 +151,7 @@ static void publish_bank(
 };
 
 
-static bool write_fir_gain(void *context, const unsigned int *value)
+static bool write_fir_gain(void *context, unsigned int *value)
 {
     struct fir_context *fir = context;
     hw_write_dac_fir_gain(fir->channel, *value);
@@ -159,7 +159,7 @@ static bool write_fir_gain(void *context, const unsigned int *value)
 }
 
 
-static bool write_fir_decimation(void *context, const unsigned int *value)
+static bool write_fir_decimation(void *context, unsigned int *value)
 {
     struct fir_context *fir = context;
     hw_write_bunch_decimation(fir->channel, *value);

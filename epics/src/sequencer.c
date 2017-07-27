@@ -8,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"
@@ -101,7 +102,7 @@ struct seq_context {
 
 
 /* This is called when END_FREQ is written, we update STEP_FREQ. */
-static bool write_end_freq(void *context, const double *value)
+static bool write_end_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
     bank->delta_freq = (*value - bank->start_freq) / bank->entry.capture_count;
@@ -112,7 +113,7 @@ static bool write_end_freq(void *context, const double *value)
 
 /* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
  * END_FREQ is updated. */
-static bool update_end_freq(void *context, const bool *value)
+static bool update_end_freq(void *context, bool *value)
 {
     struct sequencer_bank *bank = context;
     double end_freq =
@@ -122,7 +123,7 @@ static bool update_end_freq(void *context, const bool *value)
 }
 
 
-static bool write_bank_count(void *context, const unsigned int *value)
+static bool write_bank_count(void *context, unsigned int *value)
 {
     struct sequencer_bank *bank = context;
     bank->entry.capture_count = *value;
@@ -160,7 +161,7 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-static bool set_state0_bunch_bank(void *context, const unsigned int *bank)
+static bool set_state0_bunch_bank(void *context, unsigned int *bank)
 {
     struct seq_context *seq = context;
     seq->bank0 = *bank;
@@ -169,7 +170,7 @@ static bool set_state0_bunch_bank(void *context, const unsigned int *bank)
 }
 
 
-static bool update_capture_count(void *context, const bool *value)
+static bool update_capture_count(void *context, bool *value)
 {
     struct seq_context *seq = context;
     seq->capture_count = 0;
@@ -187,7 +188,7 @@ static bool update_capture_count(void *context, const bool *value)
 }
 
 
-static bool write_seq_reset(void *context, const bool *value)
+static bool write_seq_reset(void *context, bool *value)
 {
     struct seq_context *seq = context;
     hw_write_seq_abort(seq->channel);
@@ -195,7 +196,7 @@ static bool write_seq_reset(void *context, const bool *value)
 }
 
 
-static bool write_seq_trig_state(void *context, const unsigned int *value)
+static bool write_seq_trig_state(void *context, unsigned int *value)
 {
     struct seq_context *seq = context;
     hw_write_seq_trigger_state(seq->channel, *value);
@@ -203,7 +204,7 @@ static bool write_seq_trig_state(void *context, const unsigned int *value)
 }
 
 
-static bool read_seq_status(void *context, const bool *value)
+static bool read_seq_status(void *context, bool *value)
 {
     struct seq_context *seq = context;
     hw_read_seq_state(
@@ -231,7 +232,7 @@ static void write_super_offsets(void *context, double offsets[], size_t *length)
         seq->super_offsets[i] = tune_to_freq(offsets[i]);
 }
 
-static bool reset_super_offsets(void *context, const bool *value)
+static bool reset_super_offsets(void *context, bool *value)
 {
     struct seq_context *seq = context;
     seq->reset_offsets = true;
@@ -283,7 +284,7 @@ static void write_detector_window(
 }
 
 
-static bool reset_detector_window(void *context, const bool *value)
+static bool reset_detector_window(void *context, bool *value)
 {
     struct seq_context *seq = context;
     seq->reset_window = true;

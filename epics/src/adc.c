@@ -37,7 +37,7 @@ static void write_adc_taps(void *context, float array[], size_t *length)
 }
 
 
-static bool set_adc_overflow_threshold(void *context, const double *value)
+static bool set_adc_overflow_threshold(void *context, double *value)
 {
     struct adc_context *adc = context;
     hw_write_adc_overflow_threshold(
@@ -46,7 +46,7 @@ static bool set_adc_overflow_threshold(void *context, const double *value)
 }
 
 
-static bool set_adc_delta_threshold(void *context, const double *value)
+static bool set_adc_delta_threshold(void *context, double *value)
 {
     struct adc_context *adc = context;
     hw_write_adc_delta_threshold(
@@ -55,7 +55,7 @@ static bool set_adc_delta_threshold(void *context, const double *value)
 }
 
 
-static bool set_adc_loopback(void *context, const bool *value)
+static bool set_adc_loopback(void *context, bool *value)
 {
     struct adc_context *adc = context;
     hw_write_loopback_enable(adc->channel, *value);

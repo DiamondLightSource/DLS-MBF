@@ -206,7 +206,7 @@ static void arm_destinations(const bool arm[TRIGGER_DEST_COUNT])
 }
 
 
-static bool arm_destination(void *context, const bool *value)
+static bool arm_destination(void *context, bool *value)
 {
     struct destination_config *config = context;
     bool arm[TRIGGER_DEST_COUNT] = { };
@@ -216,7 +216,7 @@ static bool arm_destination(void *context, const bool *value)
 }
 
 
-static bool disarm_destination(void *context, const bool *value)
+static bool disarm_destination(void *context, bool *value)
 {
     struct destination_config *config = context;
     bool disarm[TRIGGER_DEST_COUNT] = { };
@@ -286,7 +286,7 @@ static void dispatch_destination_events(
 /* Trigger destinations */
 
 
-static bool write_enables(void *context, const bool *value)
+static bool write_enables(void *context, bool *value)
 {
     struct destination_config *config = context;
     hw_write_trigger_enable_mask(config->destination, config->enables);
@@ -294,7 +294,7 @@ static bool write_enables(void *context, const bool *value)
 }
 
 
-static bool write_blanking(void *context, const bool *value)
+static bool write_blanking(void *context, bool *value)
 {
     struct destination_config *config = context;
     hw_write_trigger_blanking_mask(config->destination, config->blanking);
@@ -302,7 +302,7 @@ static bool write_blanking(void *context, const bool *value)
 }
 
 
-static bool write_trigger_delay(void *context, const unsigned int *value)
+static bool write_trigger_delay(void *context, unsigned int *value)
 {
     struct destination_config *config = context;
     hw_write_trigger_delay(config->destination, *value);
@@ -342,7 +342,7 @@ static void create_destination(
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-static bool write_blanking_window(void *context, const unsigned int *value)
+static bool write_blanking_window(void *context, unsigned int *value)
 {
     struct channel_context *chan = context;
     hw_write_trigger_blanking_duration(chan->channel, *value);

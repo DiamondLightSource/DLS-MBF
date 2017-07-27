@@ -37,7 +37,7 @@ static void write_dac_taps(void *context, float array[], size_t *length)
 }
 
 
-static bool write_dac_delay(void *context, const unsigned int *value)
+static bool write_dac_delay(void *context, unsigned int *value)
 {
     struct dac_context *dac = context;
     hw_write_dac_delay(dac->channel, *value);
@@ -45,14 +45,14 @@ static bool write_dac_delay(void *context, const unsigned int *value)
 }
 
 
-static bool write_dac_output_enable(void *context, const bool *value)
+static bool write_dac_output_enable(void *context, bool *value)
 {
     struct dac_context *dac = context;
     hw_write_output_enable(dac->channel, *value);
     return true;
 }
 
-static bool write_dac_mms_source(void *context, const bool *value)
+static bool write_dac_mms_source(void *context, bool *value)
 {
     struct dac_context *dac = context;
     hw_write_dac_mms_source(dac->channel, *value);
@@ -62,7 +62,7 @@ static bool write_dac_mms_source(void *context, const bool *value)
     return true;
 }
 
-static bool write_dac_dram_source(void *context, const bool *value)
+static bool write_dac_dram_source(void *context, bool *value)
 {
     struct dac_context *dac = context;
     hw_write_dac_dram_source(dac->channel, *value);
