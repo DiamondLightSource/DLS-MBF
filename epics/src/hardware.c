@@ -650,7 +650,9 @@ void hw_write_dac_mms_source(int channel, bool before_fir)
 
 void hw_write_dac_dram_source(int channel, bool before_fir)
 {
+    LOCK(dsp_locks[channel]);
     WRITE_DSP_MIRROR(channel, dac_config, dram_source, before_fir);
+    UNLOCK(dsp_locks[channel]);
 }
 
 
