@@ -56,6 +56,9 @@ unsigned int _pure tune_to_freq(double tune);
 /* Reverse computation: hardware units to tune frequency. */
 double _pure freq_to_tune(unsigned int freq);
 
+/* As for freq_to_tune, but treats freq as a signed number. */
+double _pure freq_to_tune_signed(unsigned int freq);
+
 
 /* A loop for counting down: surprisingly tricksy for something so simple.
  * Counts i from n-1 downto 0. */

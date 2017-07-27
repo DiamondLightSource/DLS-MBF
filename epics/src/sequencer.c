@@ -27,10 +27,6 @@ struct sequencer_bank {
     /* Much of our state is as written to hardware. */
     struct seq_entry entry;
 
-    /* Some values need conversion from EPICS. */
-    double start_freq;
-    double delta_freq;
-
     /* These two records need updating during user editing. */
     struct epics_record *delta_freq_rec;
     struct epics_record *end_freq_rec;
@@ -98,15 +94,38 @@ struct seq_context {
  *  END_FREQ            STEP_FREQ
  *
  * With this set of rules we see that END_FREQ is derived and so should not be
- * part of the persistent state. */
+ * part of the persistent state.
+ *
+ * A final tricky detail is that the underlying value for STEP_FREQ is a 32-bit
+ * integer, and the formula above defining END_FREQ needs to be calculated as
+ * 32-bit numbers -- so both STEP_FREQ and END_FREQ may end up as values
+ * different from what the user has written! */
 
+static bool write_start_freq(void *context, double *value)
+{
+    struct sequencer_bank *bank = context;
+    bank->entry.start_freq = tune_to_freq(*value);
+    *value = freq_to_tune(bank->entry.start_freq);
+    return true;
+}
 
-/* This is called when END_FREQ is written, we update STEP_FREQ. */
+static bool write_step_freq(void *context, double *value)
+{
+    struct sequencer_bank *bank = context;
+    bank->entry.delta_freq = tune_to_freq(*value);
+    *value = freq_to_tune_signed(bank->entry.delta_freq);
+    return true;
+}
+
 static bool write_end_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
-    bank->delta_freq = (*value - bank->start_freq) / bank->entry.capture_count;
-    WRITE_OUT_RECORD(ao, bank->delta_freq_rec, bank->delta_freq, false);
+    double target_delta_freq =
+        (*value - freq_to_tune(bank->entry.start_freq)) /
+        bank->entry.capture_count;
+    bank->entry.delta_freq = tune_to_freq(target_delta_freq);
+    double actual_delta_freq = freq_to_tune_signed(bank->entry.delta_freq);
+    WRITE_OUT_RECORD(ao, bank->delta_freq_rec, actual_delta_freq, false);
     return true;
 }
 
@@ -116,9 +135,10 @@ static bool write_end_freq(void *context, double *value)
 static bool update_end_freq(void *context, bool *value)
 {
     struct sequencer_bank *bank = context;
-    double end_freq =
-        bank->start_freq + bank->entry.capture_count * bank->delta_freq;
-    WRITE_OUT_RECORD(ao, bank->end_freq_rec, end_freq, false);
+    unsigned int end_freq =
+        bank->entry.start_freq +
+        bank->entry.capture_count * bank->entry.delta_freq;
+    WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
     return true;
 }
 
@@ -137,7 +157,6 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
     sprintf(prefix, "%d", ix + 1);
     WITH_NAME_PREFIX(prefix)
     {
-        PUBLISH_WRITE_VAR_P(ao, "START_FREQ", bank->start_freq);
         PUBLISH_WRITE_VAR_P(ulongout, "DWELL", bank->entry.dwell_time);
         PUBLISH_WRITE_VAR_P(mbbo, "BANK", bank->entry.bunch_bank);
         PUBLISH_WRITE_VAR_P(mbbo, "GAIN", bank->entry.nco_gain);
@@ -149,8 +168,9 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
 
         PUBLISH_C_P(ulongout, "COUNT", write_bank_count, bank);
 
+        PUBLISH_C_P(ao, "START_FREQ", write_start_freq, bank);
         bank->delta_freq_rec =
-            PUBLISH_WRITE_VAR_P(ao, "STEP_FREQ", bank->delta_freq);
+            PUBLISH_C_P(ao, "STEP_FREQ", write_step_freq, bank);
         bank->end_freq_rec = PUBLISH_C(ao, "END_FREQ", write_end_freq, bank);
 
         PUBLISH_C(bo, "UPDATE_END", update_end_freq, bank);
@@ -248,8 +268,6 @@ static void prepare_seq_entry(
     const struct sequencer_bank *bank, struct seq_entry *entry)
 {
     *entry = bank->entry;
-    entry->start_freq = tune_to_freq(bank->start_freq);
-    entry->delta_freq = tune_to_freq(bank->delta_freq);
     /* The window_rate calculation is a little tricky.  We want the window to
      * advance from 0 to 2^32 in dwell_time turns ... but it advances one tick
      * (one window_rate value) every two bunches. */

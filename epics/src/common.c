@@ -76,8 +76,13 @@ unsigned int tune_to_freq(double tune)
     return (unsigned int) round(ldexp(fraction, 32));
 }
 
-
 double freq_to_tune(unsigned int freq)
 {
     return ldexp(freq, -32) * hardware_config.bunches;
+}
+
+double freq_to_tune_signed(unsigned int freq)
+{
+    int sfreq = (int) freq;
+    return ldexp(sfreq, -32) * hardware_config.bunches;
 }
