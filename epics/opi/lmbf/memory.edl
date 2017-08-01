@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2034
-y 70
+x 2036
+y 72
 w 641
-h 752
+h 641
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -111,7 +111,7 @@ minor 1
 release 1
 x 0
 y 0
-w 648
+w 640
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -129,7 +129,7 @@ major 4
 minor 1
 release 0
 x 568
-y 696
+y 608
 w 64
 h 24
 fgColor index 46
@@ -217,8 +217,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 152
-y 696
+x 104
+y 592
 w 360
 h 16
 controlPv "$(device):MEM:DEVICE"
@@ -241,8 +241,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 56
-y 696
+x 8
+y 592
 w 83
 h 14
 font "helvetica-bold-r-12.0"
@@ -356,31 +356,12 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):MEM:START_S.PROC"
+controlPv "$(device):MEM:CAPTURE_S.PROC"
 pressValue "0"
-onLabel "Start"
-offLabel "Start"
+onLabel "Capture"
+offLabel "Capture"
 3d
 font "helvetica-bold-r-12.0"
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 480
-y 520
-w 104
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):MEM:TRIGGERED_S"
-font "helvetica-medium-r-12.0"
 endObjectProperties
 
 # (Text Monitor)
@@ -389,9 +370,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 304
-y 648
-w 144
+x 368
+y 560
+w 96
 h 16
 controlPv "$(device):MEM:BUSY.DESC"
 font "helvetica-bold-r-12.0"
@@ -414,8 +395,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 456
-y 648
+x 472
+y 560
 w 16
 h 16
 lineColor index 14
@@ -431,8 +412,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 480
-y 648
+x 496
+y 560
 w 128
 h 16
 controlPv "$(device):MEM:BUSY"
@@ -455,8 +436,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 152
-y 720
+x 104
+y 616
 w 152
 h 16
 controlPv "$(device):MEM:ORIGIN"
@@ -481,8 +462,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 56
-y 720
+x 8
+y 616
 w 86
 h 14
 font "helvetica-bold-r-12.0"
@@ -513,29 +494,6 @@ value {
   "Runout:"
 }
 autoSize
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 400
-y 552
-w 72
-h 24
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):MEM:STOP_S.PROC"
-pressValue "0"
-onLabel "Stop"
-offLabel "Stop"
-3d
-font "helvetica-bold-r-12.0"
 endObjectProperties
 
 # (Menu Button)
@@ -680,8 +638,8 @@ minor 1
 release 1
 x 16
 y 528
-w 112
-h 16
+w 108
+h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0

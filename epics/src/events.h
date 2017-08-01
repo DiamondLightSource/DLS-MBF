@@ -48,6 +48,5 @@ static inline bool test_interrupts(struct interrupts a)
 static inline bool test_intersect(
     struct interrupts a, struct interrupts b)
 {
-    return CAST_TO(uint32_t, a) & CAST_TO(uint32_t, b);
+    return test_interrupts(intersect_interrupts(a, b));
 }
-

@@ -72,10 +72,7 @@ def memory_pvs():
         DESC = 'Offset of readout')
 
     # Capture control
-    Action('START', DESC = 'Start capture to memory')
-    Action('STOP', DESC = 'Stop capture to memory')
-    boolOut('TRIGGERED', 'Immediate', 'Triggered',
-        DESC = 'Capture configuration')
+    Action('CAPTURE', DESC = 'Untriggered immediate capture')
     boolIn('BUSY', 'Ready', 'Busy',
         OSV = 'MINOR', SCAN = 'I/O Intr', DESC = 'Capture status')
     mbbOut('RUNOUT', '0%', '25%', '50%', '75%', '100%',

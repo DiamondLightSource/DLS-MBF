@@ -146,7 +146,6 @@ static struct in_epics_record_bi *busy_status;
 
 static struct epics_record *origin_pv;
 
-static bool triggered_capture;
 static unsigned int trigger_origin;
 static int readout_offset;
 
@@ -193,15 +192,9 @@ static void write_readout_offset(int offset)
 }
 
 
-static void start_capture(void)
+static void immediate_capture(void)
 {
-    hw_write_dram_capture_command(true, !triggered_capture);
-}
-
-
-static void stop_capture(void)
-{
-    hw_write_dram_capture_command(false, true);
+    hw_write_dram_capture_command(true, true);
 }
 
 
@@ -283,9 +276,7 @@ error__t initialise_memory(void)
         PUBLISH_READ_VAR(bi, "FIR1_OVF", fir_overflow[1]);
 
         /* Capture triggering. */
-        PUBLISH_ACTION("START", start_capture);
-        PUBLISH_ACTION("STOP", stop_capture);
-        PUBLISH_WRITE_VAR_P(bo, "TRIGGERED", triggered_capture);
+        PUBLISH_ACTION("CAPTURE", immediate_capture);
         busy_status = PUBLISH_IN_VALUE_I(bi, "BUSY");
         PUBLISH_WRITER_P(mbbo, "RUNOUT", write_dram_runout);
 
