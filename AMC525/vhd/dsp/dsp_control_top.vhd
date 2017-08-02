@@ -66,8 +66,8 @@ architecture arch of dsp_control_top is
     signal nco_1_mux : std_logic;
     signal bank_mux : std_logic;
     signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
-    signal mux_nco_0_out : signed_array(CHANNELS)(NCO_DATA_RANGE);
-    signal mux_nco_1_out : signed_array(CHANNELS)(NCO_DATA_RANGE);
+    signal mux_nco_0_out : dsp_nco_from_mux_array_t;
+    signal mux_nco_1_out : dsp_nco_from_mux_array_t;
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
     -- DRAM1 interface

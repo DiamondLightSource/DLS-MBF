@@ -16,6 +16,19 @@ package dsp_defs is
     subtype FIR_DATA_RANGE is natural range 23 downto 0;    -- 24 bits
     subtype DAC_DATA_RANGE is natural range 15 downto 0;    -- 16 bits
 
+    -- Gather the entire NCO state into a single record
+    type dsp_nco_to_mux_t is record
+        nco : cos_sin_18_t;
+        gain : unsigned(3 downto 0);
+        enable : std_logic;
+    end record;
+
+    type dsp_nco_from_mux_t is record
+        nco : signed(NCO_DATA_RANGE);
+        gain : unsigned(3 downto 0);
+        enable : std_logic;
+    end record;
+
     type dsp_to_control_t is record
         -- Data streams.  adc_data for capture and for multiplexing to FIR
         -- input stage, fir_data and dac_data for capture.
@@ -27,8 +40,8 @@ package dsp_defs is
         bank_select : unsigned(1 downto 0);
 
         -- NCO signals
-        nco_0_data : cos_sin_18_t;
-        nco_1_data : cos_sin_18_t;
+        nco_0_data : dsp_nco_to_mux_t;
+        nco_1_data : dsp_nco_to_mux_t;
 
         -- Data out to DRAM1
         dram1_valid : std_logic;
@@ -44,8 +57,8 @@ package dsp_defs is
     type control_to_dsp_t is record
         -- Data streams after multiplexing.
         adc_data   : signed(ADC_DATA_RANGE);
-        nco_0_data : signed(NCO_DATA_RANGE);
-        nco_1_data : signed(NCO_DATA_RANGE);
+        nco_0_data : dsp_nco_from_mux_t;
+        nco_1_data : dsp_nco_from_mux_t;
 
         -- Bank selection
         bank_select : unsigned(1 downto 0);
@@ -62,8 +75,8 @@ package dsp_defs is
     -- Convenient reset value for simulation
     constant control_to_dsp_reset : control_to_dsp_t := (
         adc_data   => (others => '0'),
-        nco_0_data => (others => '0'),
-        nco_1_data => (others => '0'),
+        nco_0_data => (nco => (others => '0'), gain => X"0", enable => '0'),
+        nco_1_data => (nco => (others => '0'), gain => X"0", enable => '0'),
         bank_select => (others => '0'),
         dram1_ready => '0',
         blanking => '0',
@@ -73,4 +86,5 @@ package dsp_defs is
 
     type dsp_to_control_array_t is array(CHANNELS) of dsp_to_control_t;
     type control_to_dsp_array_t is array(CHANNELS) of control_to_dsp_t;
+    type dsp_nco_from_mux_array_t is array(CHANNELS) of dsp_nco_from_mux_t;
 end;

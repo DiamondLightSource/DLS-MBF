@@ -57,8 +57,6 @@ architecture arch of dsp_top is
     signal nco_0_cos_sin : cos_sin_18_t;
     signal nco_1_phase_advance : angle_t;
     signal nco_1_cos_sin : cos_sin_18_t;
-    signal nco_1_gain : unsigned(3 downto 0);
-    signal nco_1_enable : std_logic;
 
     -- Data flow
     signal fir_data : signed(FIR_DATA_RANGE);
@@ -107,14 +105,14 @@ begin
         phase_advance_i => nco_0_phase_advance,
         cos_sin_o => nco_0_cos_sin
     );
-    dsp_to_control_o.nco_0_data <= nco_0_cos_sin;
+    dsp_to_control_o.nco_0_data.nco <= nco_0_cos_sin;
 
     nco_1 : entity work.nco port map (
         clk_i => adc_clk_i,
         phase_advance_i => nco_1_phase_advance,
         cos_sin_o => nco_1_cos_sin
     );
-    dsp_to_control_o.nco_1_data <= nco_1_cos_sin;
+    dsp_to_control_o.nco_1_data.nco <= nco_1_cos_sin;
 
 
     -- -------------------------------------------------------------------------
@@ -177,8 +175,9 @@ begin
         fir_data_i => fir_data,
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
-        nco_1_gain_i => nco_1_gain,
-        nco_1_enable_i => nco_1_enable,
+
+        nco_0_gain_o => dsp_to_control_o.nco_0_data.gain,
+        nco_0_enable_o => dsp_to_control_o.nco_0_data.enable,
 
         data_store_o => dsp_to_control_o.dac_data,
         data_o => dac_data_o,
@@ -218,8 +217,8 @@ begin
         seq_write_adc_o => sequencer_write,
 
         hom_freq_o => nco_1_phase_advance,
-        hom_gain_o => nco_1_gain,
-        hom_enable_o => nco_1_enable,
+        hom_gain_o => dsp_to_control_o.nco_1_data.gain,
+        hom_enable_o => dsp_to_control_o.nco_1_data.enable,
         hom_window_o => detector_window,
         bunch_bank_o => dsp_to_control_o.bank_select
     );

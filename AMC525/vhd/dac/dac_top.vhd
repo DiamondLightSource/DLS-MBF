@@ -12,6 +12,7 @@ use work.defines.all;
 
 use work.register_defs.all;
 use work.bunch_defs.all;
+use work.dsp_defs.all;
 
 entity dac_top is
     generic (
@@ -26,10 +27,12 @@ entity dac_top is
         -- Data inputs
         bunch_config_i : in bunch_config_t;
         fir_data_i : in signed;
-        nco_0_data_i : in signed;
-        nco_1_data_i : in signed;
-        nco_1_gain_i : in unsigned;
-        nco_1_enable_i : in std_logic;
+        nco_0_data_i : in dsp_nco_from_mux_t;
+        nco_1_data_i : in dsp_nco_from_mux_t;
+
+        -- Gain controls to multiplexer
+        nco_0_gain_o : out unsigned;
+        nco_0_enable_o : out std_logic;
 
         -- Outputs and overflow detection
         data_store_o : out signed;          -- Data from intermediate processing
@@ -112,8 +115,8 @@ begin
 
     dac_delay  <= unsigned(config_register(DSP_DAC_CONFIG_DELAY_BITS));
     fir_gain   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
-    nco_0_gain <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
-    nco_0_enable <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
+    nco_0_gain_o <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
+    nco_0_enable_o <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
     mms_source   <= config_register(DSP_DAC_CONFIG_MMS_SOURCE_BIT);
     store_source <= config_register(DSP_DAC_CONFIG_DRAM_SOURCE_BIT);
 
@@ -143,19 +146,20 @@ begin
         EXTRA_SHIFT => 2
     ) port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_0_gain,
-        data_i => nco_0_data_i,
+        gain_sel_i => nco_0_data_i.gain,
+        data_i => nco_0_data_i.nco,
         data_o => nco_0_data,
         overflow_o => open
     );
+    nco_0_enable <= nco_0_data_i.enable;
 
     nco_1_gain_inst : entity work.gain_control generic map (
         EXTRA_SHIFT => 2,
         GAIN_DELAY => NCO1_GAIN_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_1_gain_i,
-        data_i => nco_1_data_i,
+        gain_sel_i => nco_1_data_i.gain,
+        data_i => nco_1_data_i.nco,
         data_o => nco_1_data,
         overflow_o => open
     );
@@ -165,7 +169,7 @@ begin
         DLY => NCO1_GAIN_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        data_i(0) => nco_1_enable_i,
+        data_i(0) => nco_1_data_i.enable,
         data_o(0) => nco_1_enable
     );
 

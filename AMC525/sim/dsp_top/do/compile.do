@@ -55,6 +55,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/nco/nco_delay.vhd \
     $vhd_dir/nco/nco.vhd \
     $vhd_dir/dsp/dsp_to_adc.vhd \
+    $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
     $vhd_dir/dac/dac_data_source.vhd \
     $vhd_dir/dac/dac_top.vhd \
@@ -91,7 +92,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_input.vhd \
     $vhd_dir/detector/detector_dram_output.vhd \
     $vhd_dir/detector/detector_top.vhd \
-    $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
     $vhd_dir/dsp/adc_overflow.vhd \
     $vhd_dir/dsp/adc_top.vhd \
