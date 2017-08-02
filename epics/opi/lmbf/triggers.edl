@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2042
-y 96
+x 2077
+y 41
 w 928
-h 402
+h 385
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -50,7 +50,7 @@ release 0
 x 400
 y 304
 w 256
-h 88
+h 72
 lineColor index 14
 fill
 fillColor index 4
@@ -65,7 +65,7 @@ release 0
 x 664
 y 304
 w 256
-h 88
+h 72
 lineColor index 14
 fill
 fillColor index 4
@@ -80,7 +80,7 @@ release 0
 x 136
 y 304
 w 256
-h 88
+h 72
 lineColor index 14
 fill
 fillColor index 4
@@ -112,7 +112,7 @@ major 4
 minor 1
 release 0
 x 8
-y 368
+y 352
 w 64
 h 24
 fgColor index 46
@@ -815,10 +815,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 864
-y 320
+x 80
+y 256
 w 32
-h 14
+h 16
 controlPv "$(device):TRG:BLNK:IN"
 font "helvetica-medium-r-12.0"
 fgColor index 14
@@ -840,8 +840,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 840
-y 320
+x 56
+y 256
 w 16
 h 16
 lineColor index 14
@@ -857,10 +857,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 800
-y 320
-w 34
-h 14
+x 16
+y 256
+w 32
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -920,7 +920,7 @@ major 4
 minor 6
 release 0
 x 768
-y 344
+y 320
 w 96
 h 20
 controlPv "$(device):$(chan0):TRG:BLANKING_S"
@@ -948,7 +948,7 @@ major 4
 minor 1
 release 1
 x 672
-y 344
+y 320
 w 112
 h 14
 font "helvetica-bold-r-12.0"
@@ -968,7 +968,7 @@ major 4
 minor 6
 release 0
 x 768
-y 368
+y 344
 w 96
 h 20
 controlPv "$(device):$(chan1):TRG:BLANKING_S"
@@ -996,7 +996,7 @@ major 4
 minor 1
 release 1
 x 672
-y 368
+y 344
 w 112
 h 14
 font "helvetica-bold-r-12.0"

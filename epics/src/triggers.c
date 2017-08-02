@@ -44,23 +44,30 @@ enum target_state {
 
 /* Configuration for a single trigger target. */
 struct target_config {
-    enum trigger_target target;
     enum target_mode mode;
-    struct epics_record *update_sources;
+    bool dont_rearm;            // Temporary suppression of auto-rearm
 
-    unsigned int state;
-    struct epics_record *status_pv;
+    unsigned int state;         // enum target_state
+    struct epics_record *state_pv;
 
-    bool sources[TRIGGER_SOURCE_COUNT];
-    bool enables[TRIGGER_SOURCE_COUNT];
-    bool blanking[TRIGGER_SOURCE_COUNT];
+    struct epics_record *update_sources;    // Used to read sources[]
+    bool sources[TRIGGER_SOURCE_COUNT];     // Interrupt sources seen on trigger
 
+    bool enables[TRIGGER_SOURCE_COUNT];     // Which sources are enabled
+    bool blanking[TRIGGER_SOURCE_COUNT];    // Which sources respect blanking
+
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    /* Fixed target identification and behaviour definitions. */
+
+    /* Target identity. */
+    const enum trigger_target target;
+    const int channel;          // Not valid for DRAM target
 
     /* Target specific methods and variables. */
     void (*const prepare_target)(struct target_config *target);
     void (*const stop_target)(struct target_config *target);
     const enum target_state disarmed_state;
-    const int channel;
 
     /* Our interrupt sources.  We see two events of interest: trigger to target,
      * and target becomes idle.  The arming event is delivered separately
@@ -101,30 +108,30 @@ static void stop_mem_target(struct target_config *target)
 struct target_config targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_SEQ0] = {
         .target = TRIGGER_SEQ0,
+        .channel = 0,
         .prepare_target = prepare_seq_target,
         .stop_target = stop_seq_target,
         .disarmed_state = STATE_IDLE,
-        .channel = 0,
         .trigger_interrupt = { .seq_trigger = 1, },
-        .complete_interrupt    = { .seq_done = 1, },
+        .complete_interrupt = { .seq_done = 1, },
     },
     [TRIGGER_SEQ1] = {
         .target = TRIGGER_SEQ1,
+        .channel = 1,
         .prepare_target = prepare_seq_target,
         .stop_target = stop_seq_target,
         .disarmed_state = STATE_IDLE,
-        .channel = 1,
         .trigger_interrupt = { .seq_trigger = 2, },
-        .complete_interrupt    = { .seq_done = 2, },
+        .complete_interrupt = { .seq_done = 2, },
     },
     [TRIGGER_DRAM] = {
         .target = TRIGGER_DRAM,
+        .channel = -1,          // Not valid for this target
         .prepare_target = prepare_mem_target,
         .stop_target = stop_mem_target,
         .disarmed_state = STATE_BUSY,
-        .channel = -1,          // Not valid for this target
         .trigger_interrupt = { .dram_trigger = 1, },
-        .complete_interrupt    = { .dram_done = 1, },
+        .complete_interrupt = { .dram_done = 1, },
     },
 };
 
@@ -154,8 +161,9 @@ static bool sources_in[TRIGGER_SOURCE_COUNT];
 static bool blanking_in;
 
 /* Used for shared record aggregate status. */
-static bool retrigger_mode;
-static unsigned int trigger_status;
+static bool retrigger_mode = false;
+static bool dont_rearm = false;     // One shot suppression of rearm on disarm
+static unsigned int trigger_state;
 static struct epics_record *trigger_status_pv;
 
 
@@ -172,6 +180,7 @@ static struct epics_record *trigger_status_pv;
     FOR_ALL_TARGETS(target) \
         if (target->mode != MODE_SHARED) ; else
 
+
 /* Recursive loop between arm_shared_targets() and update_global_state(). */
 static void arm_shared_targets(void);
 
@@ -183,7 +192,7 @@ static void set_target_state(
     if (target->state != state)
     {
         target->state = state;
-        trigger_record(target->status_pv);
+        trigger_record(target->state_pv);
     }
 }
 
@@ -194,6 +203,7 @@ static void do_arm_target(struct target_config *target, bool arm_mask[])
 {
     if (target->state == STATE_IDLE)
     {
+        target->dont_rearm = false;
         arm_mask[target->target] = true;
         target->prepare_target(target);
         set_target_state(target, STATE_ARMED);
@@ -205,6 +215,7 @@ static void do_arm_target(struct target_config *target, bool arm_mask[])
  * disarm flag, and switching into the target specific state. */
 static void do_disarm_target(struct target_config *target, bool disarm_mask[])
 {
+    target->dont_rearm = target->state != STATE_IDLE;
     if (target->state == STATE_ARMED)
     {
         disarm_mask[target->target] = true;
@@ -228,14 +239,14 @@ static void update_global_state(void)
             new_state = STATE_ARMED;
 
     /* Update the new state. */
-    if (new_state != trigger_status)
+    if (new_state != trigger_state)
     {
-        trigger_status = new_state;
+        trigger_state = new_state;
         trigger_record(trigger_status_pv);
 
         /* On entering idle state force a retrigger if this mode is requested;
          * in this case we'll need to recompute the trigger status! */
-        if (new_state == STATE_IDLE  &&  retrigger_mode)
+        if (new_state == STATE_IDLE  &&  retrigger_mode  &&  !dont_rearm)
             arm_shared_targets();
     }
 }
@@ -285,6 +296,7 @@ static bool disarm_target(void *context, bool *value)
 /* Called with mutex locked to arm all shared targets. */
 static void arm_shared_targets(void)
 {
+    dont_rearm = false;
     bool arm_mask[TRIGGER_TARGET_COUNT] = { };
     FOR_SHARED_TARGETS(target)
         do_arm_target(target, arm_mask);
@@ -296,6 +308,7 @@ static void arm_shared_targets(void)
 /* Called with mutex locked to disarm all shared targets. */
 static void disarm_shared_targets(void)
 {
+    dont_rearm = trigger_state != STATE_IDLE;
     bool disarm_mask[TRIGGER_TARGET_COUNT] = { };
     FOR_SHARED_TARGETS(target)
         do_disarm_target(target, disarm_mask);
@@ -327,12 +340,31 @@ static void process_target_complete(struct target_config *target)
     if (target->state == STATE_BUSY)
     {
         set_target_state(target, STATE_IDLE);
-        if (target->mode == MODE_REARM)
+        if (target->mode == MODE_REARM  &&  !target->dont_rearm)
             /* Automatically re-arm where requested. */
             arm_target(target, NULL);
     }
     else
         printf("Unexpected complete %u %u\n", target->target, target->state);
+}
+
+
+/* Called in response to hardware interrupt events signalling trigger and target
+ * complete events. */
+static void dispatch_target_events(void *context, struct interrupts interrupts)
+{
+    LOCK(mutex);
+    FOR_ALL_TARGETS(target)
+    {
+        /* If we get both trigger and complete simultaneously we can process
+         * them in sequence. */
+        if (test_intersect(interrupts, target->trigger_interrupt))
+            process_target_trigger(target);
+        if (test_intersect(interrupts, target->complete_interrupt))
+            process_target_complete(target);
+    }
+    update_global_state();
+    UNLOCK(mutex);
 }
 
 
@@ -418,7 +450,7 @@ static void create_target(const char *prefix, struct target_config *target)
         PUBLISH_C(bo, "DISARM", disarm_target, target, .mutex = &mutex);
 
         target->update_sources = PUBLISH_TRIGGER("HIT");
-        target->status_pv = PUBLISH_READ_VAR_I(mbbi, "STATUS", target->state);
+        target->state_pv = PUBLISH_READ_VAR_I(mbbi, "STATUS", target->state);
     }
 }
 
@@ -454,25 +486,6 @@ static bool write_blanking_window(void *context, unsigned int *value)
 }
 
 
-/* Called in response to hardware interrupt events signalling trigger and target
- * complete events. */
-static void dispatch_target_events(void *context, struct interrupts interrupts)
-{
-    LOCK(mutex);
-    FOR_ALL_TARGETS(target)
-    {
-        /* If we get both trigger and complete simultaneously we can process
-         * them in sequence. */
-        if (test_intersect(interrupts, target->trigger_interrupt))
-            process_target_trigger(target);
-        if (test_intersect(interrupts, target->complete_interrupt))
-            process_target_complete(target);
-    }
-    update_global_state();
-    UNLOCK(mutex);
-}
-
-
 error__t initialise_triggers(void)
 {
     WITH_NAME_PREFIX("TRG")
@@ -488,7 +501,7 @@ error__t initialise_triggers(void)
         PUBLISH_ACTION("DISARM", disarm_shared_targets, .mutex = &mutex);
 
         PUBLISH_WRITE_VAR_P(bo, "MODE", retrigger_mode, .mutex = &mutex);
-        trigger_status_pv = PUBLISH_READ_VAR_I(mbbi, "STATUS", trigger_status);
+        trigger_status_pv = PUBLISH_READ_VAR_I(mbbi, "STATUS", trigger_state);
     }
 
     FOR_CHANNEL_NAMES(channel, "TRG")
