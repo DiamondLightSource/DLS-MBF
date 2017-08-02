@@ -20,6 +20,7 @@
 #include "common.h"
 #include "configs.h"
 #include "events.h"
+#include "triggers.h"
 
 #include "memory.h"
 
@@ -192,12 +193,6 @@ static void write_readout_offset(int offset)
 }
 
 
-static void immediate_capture(void)
-{
-    hw_write_dram_capture_command(true, true);
-}
-
-
 static void capture_complete(void)
 {
     trigger_origin = hw_read_dram_address();
@@ -276,7 +271,7 @@ error__t initialise_memory(void)
         PUBLISH_READ_VAR(bi, "FIR1_OVF", fir_overflow[1]);
 
         /* Capture triggering. */
-        PUBLISH_ACTION("CAPTURE", immediate_capture);
+        PUBLISH_ACTION("CAPTURE", immediate_memory_capture);
         busy_status = PUBLISH_IN_VALUE_I(bi, "BUSY");
         PUBLISH_WRITER_P(mbbo, "RUNOUT", write_dram_runout);
 
@@ -284,6 +279,5 @@ error__t initialise_memory(void)
         origin_pv = PUBLISH_READ_VAR_I(ulongin, "ORIGIN", trigger_origin);
     }
 
-    return
-        hw_read_fast_dram_name(device_name, sizeof(device_name));
+    return hw_read_fast_dram_name(device_name, sizeof(device_name));
 }

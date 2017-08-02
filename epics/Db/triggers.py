@@ -18,7 +18,7 @@ def event_set(suffix, suffix_desc):
         for source, desc in trigger_sources]
 
 
-def destination_pvs():
+def target_pvs():
     source_events = event_set('HIT', 'source')
     boolIn('HIT',
         FLNK = create_fanout('HIT:FAN', *source_events),
@@ -42,15 +42,16 @@ def destination_pvs():
     mbbOut('MODE', 'One Shot', 'Rearm', 'Shared', DESC = 'Arming mode')
     mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
         SCAN = 'I/O Intr',
-        DESC = 'Trigger destination status')
+        DESC = 'Trigger target status')
 
 
 def trigger_channel_pvs():
-    with_name_prefix('SEQ', destination_pvs)
+    with_name_prefix('SEQ', target_pvs)
     longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
 
+
 def trigger_common_pvs():
-    with_name_prefix('MEM', destination_pvs)
+    with_name_prefix('MEM', target_pvs)
 
     events_in = event_set('IN', 'input')
     events_in.append(event('BLNK:IN', 'Blanking event'))
@@ -59,8 +60,13 @@ def trigger_common_pvs():
         DESC = 'Scan input events')
     Action('SOFT', DESC = 'Soft trigger')
 
-    Action('ARM', DESC = 'Arm all shared destinations')
-    Action('DISARM', DESC = 'Disarm all shared destinations')
+    Action('ARM', DESC = 'Arm all shared targets')
+    Action('DISARM', DESC = 'Disarm all shared targets')
+
+    boolOut('MODE', 'One Shot', 'Rearm', DESC = 'Shared trigger mode')
+    mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
+        SCAN = 'I/O Intr',
+        DESC = 'Trigger target status')
 
 
 for_channels('TRG', trigger_channel_pvs)
