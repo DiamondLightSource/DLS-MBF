@@ -89,12 +89,34 @@ static void call_unlock_registers(const iocshArgBuf *args)
         printf("LMBF control registers unlocked\n");
 }
 
+static void call_set_lmbf_mode(const iocshArgBuf *args)
+{
+    hw_write_channel_config(&(struct channel_config) {
+        .adc_mux = true,  .bank_mux = true,
+        .nco0_mux = true, .nco1_mux = true,
+    });
+    printf("Running in LMBF mode with I/Q channels\n");
+}
+
+static void call_set_tmbf_mode(const iocshArgBuf *args)
+{
+    hw_write_channel_config(&(struct channel_config) {
+        .adc_mux = false,  .bank_mux = false,
+        .nco0_mux = false, .nco1_mux = false,
+    });
+    printf("Running in TMBF mode with X/Y channels\n");
+}
+
 static error__t register_iocsh_commands(void)
 {
     static iocshFuncDef lock_registers_def   = { "lock_registers",   0, NULL };
     static iocshFuncDef unlock_registers_def = { "unlock_registers", 0, NULL };
+    static iocshFuncDef set_lmbf_mode_def    = { "set_lmbf_mode", 0, NULL };
+    static iocshFuncDef set_tmbf_mode_def    = { "set_tmbf_mode", 0, NULL };
     iocshRegister(&lock_registers_def,   call_lock_registers);
     iocshRegister(&unlock_registers_def, call_unlock_registers);
+    iocshRegister(&set_lmbf_mode_def,    call_set_lmbf_mode);
+    iocshRegister(&set_tmbf_mode_def,    call_set_tmbf_mode);
     return ERROR_OK;
 }
 
