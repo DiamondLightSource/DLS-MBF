@@ -20,14 +20,12 @@
 #include "events.h"
 
 
-#define MAX_HANDLERS    4
-
 
 static struct event_handler {
     struct interrupts interrupts;
     void *context;
     void (*handler)(void *context, struct interrupts interrupts);
-} event_handlers[MAX_HANDLERS];
+} event_handlers[MAX_EVENT_HANDLERS];
 
 
 void register_event_handler(
@@ -35,7 +33,7 @@ void register_event_handler(
     struct interrupts interrupts, void *context,
     void (*handler)(void *context, struct interrupts interrupts))
 {
-    ASSERT_OK(index < MAX_HANDLERS);
+    ASSERT_OK(index < MAX_EVENT_HANDLERS);
     /* Check handler not already assigned. */
     ASSERT_OK(!test_interrupts(event_handlers[index].interrupts));
 
@@ -54,7 +52,7 @@ static void *events_thread(void *context)
     while (error = hw_read_interrupt_events(&interrupts),
            !error)
     {
-        for (unsigned int i = 0; i < MAX_HANDLERS; i ++)
+        for (unsigned int i = 0; i < MAX_EVENT_HANDLERS; i ++)
         {
             struct event_handler *handler = &event_handlers[i];
             if (test_intersect(handler->interrupts, interrupts))

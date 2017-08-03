@@ -8,11 +8,17 @@ error__t initialise_events(void);
 /* Because the order in which interrupt events are dispatched can matter, we
  * explicitly define the order of interrupt handlers here. */
 enum interrupt_handler_index {
-    INTERRUPT_HANDLER_TRIGGER,
     INTERRUPT_HANDLER_MEMORY,
-    INTERRUPT_HANDLER_DETECTOR_0,   // Channel specific handlers
-    INTERRUPT_HANDLER_DETECTOR_1,
+    INTERRUPT_HANDLER_DETECTOR,
+
+    /* The trigger handler must go last!  This is so that any rearming (which
+     * does occur in this handler) happens after the complete events have been
+     * processed by the concerned components above. */
+    INTERRUPT_HANDLER_TRIGGER,
 };
+
+/* This must be no less than the number of handlers above. */
+#define MAX_EVENT_HANDLERS    4
 
 
 void register_event_handler(

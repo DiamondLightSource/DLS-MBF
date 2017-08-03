@@ -16,5 +16,6 @@ struct scale_info {
     unsigned int samples;
 };
 
-/* Reads the current scale info: this remains valid between arming events. */
+/* Reads the current scale info.  This is valid for the current acquisition
+ * after prepare_sequencer() has been called. */
 const struct scale_info *read_detector_scale_info(int channel);
