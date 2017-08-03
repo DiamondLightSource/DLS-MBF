@@ -83,9 +83,9 @@ begin
                 when MMS_READOUT_MIN_MAX_OVL =>
                     read_data_o <= (
                         MMS_READOUT_MIN_MAX_MIN_BITS =>
-                            std_logic_vector(data_i.max),
+                            std_logic_vector(data_i.min),
                         MMS_READOUT_MIN_MAX_MAX_BITS =>
-                            std_logic_vector(data_i.min));
+                            std_logic_vector(data_i.max));
                 when MMS_READOUT_SUM_OVL =>
                     read_data_o <= std_logic_vector(data_i.sum);
                 when MMS_READOUT_SUM2_LOW_OVL =>
