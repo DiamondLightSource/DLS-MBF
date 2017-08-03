@@ -86,8 +86,16 @@ begin
     process (adc_clk) begin
         if rising_edge(adc_clk) then
             control_to_dsp.adc_data   <= dsp_to_control.adc_data;
-            control_to_dsp.nco_0_data <= dsp_to_control.nco_0_data.cos;
-            control_to_dsp.nco_1_data <= dsp_to_control.nco_1_data.cos;
+            control_to_dsp.nco_0_data <= (
+                nco => dsp_to_control.nco_0_data.nco.cos,
+                gain => dsp_to_control.nco_0_data.gain,
+                enable => dsp_to_control.nco_0_data.enable
+            );
+            control_to_dsp.nco_1_data <= (
+                nco => dsp_to_control.nco_1_data.nco.cos,
+                gain => dsp_to_control.nco_1_data.gain,
+                enable => dsp_to_control.nco_1_data.enable
+            );
             control_to_dsp.turn_clock <= turn_clock;
         end if;
     end process;

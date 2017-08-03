@@ -68,6 +68,11 @@ architecture arch of dac_top is
     signal mms_overflow : std_logic;
     signal preemph_overflow : std_logic;
 
+    -- Pipelined input
+    signal fir_data_in : fir_data_i'SUBTYPE;
+    signal nco_0_data_in : nco_0_data_i'SUBTYPE;
+    signal nco_1_data_in : nco_1_data_i'SUBTYPE;
+
     -- Overflow detection
     signal fir_overflow_in : std_logic;
 
@@ -82,6 +87,9 @@ architecture arch of dac_top is
 
     -- Delay from gain control to data change
     constant NCO1_GAIN_DELAY : natural := 4;
+
+    -- Input delays
+    constant INPUT_PIPELINE_DELAY : natural := 4;
 
 begin
     -- Register mapping
@@ -132,12 +140,41 @@ begin
 
 
     -- -------------------------------------------------------------------------
+    -- Data input pipelines
+
+    fir_delay : entity work.dlyreg generic map (
+        DLY => INPUT_PIPELINE_DELAY,
+        DW => fir_data_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(fir_data_i),
+        signed(data_o) => fir_data_in
+    );
+
+    nco0_delay : entity work.dac_nco_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => nco_0_data_i,
+        data_o => nco_0_data_in
+    );
+
+    nco1_delay : entity work.dac_nco_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => nco_1_data_i,
+        data_o => nco_1_data_in
+    );
+
+
+    -- -------------------------------------------------------------------------
     -- Output preparation
 
     fir_gain_inst : entity work.gain_control port map (
         clk_i => adc_clk_i,
         gain_sel_i => fir_gain,
-        data_i => fir_data_i,
+        data_i => fir_data_in,
         data_o => fir_data,
         overflow_o => fir_overflow_in
     );
@@ -146,20 +183,20 @@ begin
         EXTRA_SHIFT => 2
     ) port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_0_data_i.gain,
-        data_i => nco_0_data_i.nco,
+        gain_sel_i => nco_0_data_in.gain,
+        data_i => nco_0_data_in.nco,
         data_o => nco_0_data,
         overflow_o => open
     );
-    nco_0_enable <= nco_0_data_i.enable;
+    nco_0_enable <= nco_0_data_in.enable;
 
     nco_1_gain_inst : entity work.gain_control generic map (
         EXTRA_SHIFT => 2,
         GAIN_DELAY => NCO1_GAIN_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_1_data_i.gain,
-        data_i => nco_1_data_i.nco,
+        gain_sel_i => nco_1_data_in.gain,
+        data_i => nco_1_data_in.nco,
         data_o => nco_1_data,
         overflow_o => open
     );
@@ -169,7 +206,7 @@ begin
         DLY => NCO1_GAIN_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        data_i(0) => nco_1_data_i.enable,
+        data_i(0) => nco_1_data_in.enable,
         data_o(0) => nco_1_enable
     );
 
