@@ -5,8 +5,6 @@
 
 from common import *
 
-MEMORY_READOUT_LENGTH = \
-    Parameter('MEMORY_READOUT_LENGTH', 'Length of memory readout waveforms')
 
 def memory_wf(name, desc):
     return Waveform(name, MEMORY_READOUT_LENGTH, 'SHORT', DESC = desc)

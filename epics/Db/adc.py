@@ -5,9 +5,6 @@ from common import *
 import mms
 
 
-ADC_TAPS = Parameter('ADC_TAPS', 'Number of taps in ADC filter')
-
-
 adc_events = []
 def adc_pvs():
     WaveformOut('FILTER', ADC_TAPS, 'FLOAT',
@@ -15,7 +12,7 @@ def adc_pvs():
 
     aOut('OVF_LIMIT', 0, 1, PREC = 4, DESC = 'Overflow limit threshold')
     aOut('EVENT_LIMIT', 0, 1, PREC = 4, DESC = 'ADC min/max event threshold')
-    boolOut('LOOPBACK', 'Off', 'On', OSV = 'MAJOR',
+    boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
         DESC = 'Enable DAC -> ADC loopback')
 
     adc_events.extend([

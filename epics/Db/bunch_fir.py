@@ -3,9 +3,6 @@
 from common import *
 
 
-BUNCH_TAPS = Parameter('BUNCH_TAPS', 'Number of taps in Bunch by Bunch FIR')
-
-
 def bank_pvs():
     boolOut('USEWF', 'Settings', 'Waveform',
         DESC = 'Use direct waveform or settings')

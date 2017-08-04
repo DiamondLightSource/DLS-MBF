@@ -4,7 +4,6 @@ from common import *
 
 import mms
 
-DAC_TAPS = Parameter('DAC_TAPS', 'Number of taps in DAC filter')
 
 dac_events = []
 def dac_pvs():

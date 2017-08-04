@@ -10,7 +10,20 @@ stringIn('VERSION', PINI = 'YES', DESC = 'LMBF version')
 stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'LMBF version')
 stringIn('HOSTNAME', PINI = 'YES', DESC = 'Host name of LMBF IOC')
 
+# A variety of constants
 records.longin('BUNCHES', VAL = BUNCHES_PER_TURN, PINI = 'YES')
+records.longin('ADC_TAPS', VAL = ADC_TAPS, PINI = 'YES')
+records.longin('DAC_TAPS', VAL = DAC_TAPS, PINI = 'YES')
+records.longin('BUNCH_TAPS', VAL = BUNCH_TAPS, PINI = 'YES')
+
+# Names of the two axes
+records.stringin('AXIS0', VAL = CHANNEL0, PINI = 'YES')
+records.stringin('AXIS1', VAL = CHANNEL1, PINI = 'YES')
+
+boolOut('COMPENSATE', 'Normal', 'Disabled',
+    OSV = 'MAJOR', VAL = 0,
+    DESC = 'Disable internal delay compensation')
+
 
 def channel_pvs():
     aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')

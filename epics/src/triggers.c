@@ -374,6 +374,7 @@ void immediate_memory_capture(void)
     LOCK(mutex);
     hw_write_dram_capture_command(true, true);
     set_target_state(target, STATE_BUSY);
+    target->dont_rearm = true;      // Ensure this is a one-shot capture!
     update_global_state();
     UNLOCK(mutex);
 }

@@ -2,7 +2,6 @@
 
 from common import *
 
-DETECTOR_LENGTH = Parameter('DETECTOR_LENGTH', 'Detector readout length')
 
 def detector_wf(name, desc):
     return Waveform(name, DETECTOR_LENGTH, 'FLOAT', DESC = desc)

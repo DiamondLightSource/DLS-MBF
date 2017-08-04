@@ -22,8 +22,18 @@ CHANNEL0 = Parameter('CHAN0', 'Prefix for channel 0')
 CHANNEL1 = Parameter('CHAN1', 'Prefix for channel 1')
 CHANNELS = [CHANNEL0, CHANNEL1]
 
-BUNCHES_PER_TURN = Parameter('BUNCHES_PER_TURN',
-    'Bunches per machine revolution')
+BUNCHES_PER_TURN = \
+    Parameter('BUNCHES_PER_TURN', 'Bunches per machine revolution')
+DETECTOR_LENGTH = Parameter('DETECTOR_LENGTH', 'Detector readout length')
+MEMORY_READOUT_LENGTH = \
+    Parameter('MEMORY_READOUT_LENGTH', 'Length of memory readout waveforms')
+
+ADC_TAPS = Parameter('ADC_TAPS', 'Number of taps in ADC filter')
+DAC_TAPS = Parameter('DAC_TAPS', 'Number of taps in DAC filter')
+BUNCH_TAPS = Parameter('BUNCH_TAPS', 'Number of taps in Bunch by Bunch FIR')
+
+REVOLUTION_FREQUENCY = \
+    Parameter('REVOLUTION_FREQUENCY', 'Machine revolution frequency in Hz')
 
 
 def with_name_prefix(prefix, action, *args):

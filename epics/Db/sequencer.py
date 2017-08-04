@@ -6,9 +6,6 @@ from common import *
 SUPER_SEQ_STATES = 1024
 
 
-# Used for converting turns into duration.
-REVOLUTION_FREQUENCY = \
-    Parameter('REVOLUTION_FREQUENCY', 'Machine revolution frequency in Hz')
 
 
 def bank_pvs(update_count):

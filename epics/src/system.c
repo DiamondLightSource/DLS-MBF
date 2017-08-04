@@ -121,11 +121,17 @@ static error__t register_iocsh_commands(void)
 }
 
 
+static void write_compensate_disable(bool disable)
+{
+    printf("Compensation not implemented yet\n");
+}
+
+
 error__t initialise_system(void)
 {
 //     PUBLISH_READER(ulongin, "FPGA_VER", hw_read_version);
-//     PUBLISH_WRITER(bo, "LOOPBACK", hw_write_loopback_enable);
-//     PUBLISH_WRITER(bo, "COMPENSATE", hw_write_compensate_disable);
+
+    PUBLISH_WRITER(bo, "COMPENSATE", write_compensate_disable);
 
     printf("%u bunches, %u ADC taps, %u bunch taps, %u DAC taps\n",
         hardware_config.bunches,
