@@ -13,7 +13,7 @@ package dsp_defs is
     subtype DRAM1_ADDR_RANGE is natural range 22 downto 0;  -- 23 bits
     subtype ADC_DATA_RANGE is natural range 15 downto 0;    -- 16 bits
     subtype NCO_DATA_RANGE is natural range 17 downto 0;    -- 18 bits
-    subtype FIR_DATA_RANGE is natural range 23 downto 0;    -- 24 bits
+    subtype FIR_DATA_RANGE is natural range 24 downto 0;    -- 25 bits
     subtype DAC_DATA_RANGE is natural range 15 downto 0;    -- 16 bits
 
     -- Gather the entire NCO state into a single record

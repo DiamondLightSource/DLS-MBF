@@ -31,7 +31,10 @@ architecture arch of testbench is
     signal bunch_config : bunch_config_t;
 
     signal data_in : signed(15 downto 0) := X"0000";
-    signal data_out : signed(35 downto 0);
+    signal data_out : signed(23 downto 0);
+
+    constant TAP_COUNT : natural := 16;
+    constant HEADROOM_OFFSET : natural := 2;
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -65,7 +68,8 @@ begin
     );
 
     bunch_fir_top : entity work.bunch_fir_top generic map (
-        TAP_COUNT => 3
+        TAP_COUNT => TAP_COUNT,
+        HEADROOM_OFFSET => HEADROOM_OFFSET
     ) port map (
         dsp_clk_i => dsp_clk,
         adc_clk_i => adc_clk,

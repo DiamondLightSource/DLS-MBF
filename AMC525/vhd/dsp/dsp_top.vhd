@@ -142,7 +142,8 @@ begin
 
     -- FIR processing
     bunch_fir_top : entity work.bunch_fir_top generic map (
-        TAP_COUNT => BUNCH_FIR_TAP_COUNT
+        TAP_COUNT => BUNCH_FIR_TAP_COUNT,
+        HEADROOM_OFFSET => 2
     ) port map (
         dsp_clk_i => dsp_clk_i,
         adc_clk_i => adc_clk_i,

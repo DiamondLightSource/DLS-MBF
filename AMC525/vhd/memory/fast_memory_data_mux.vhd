@@ -66,10 +66,13 @@ begin
     -- Gain control on FIR data
     chans_gen : for c in CHANNELS generate
         signal fir_overflow : std_logic;
+        -- There is only one gain shift available, so make the gain control
+        -- interval enough to span the data input.
+        constant GAIN_SHIFT : natural := fir_in(c)'LENGTH - fir(c)'LENGTH;
 
     begin
         fir_gain_inst : entity work.gain_control generic map (
-            INTERVAL => 8
+            INTERVAL => GAIN_SHIFT
         ) port map (
             clk_i => adc_clk_i,
             gain_sel_i => fir_gain_i(c),

@@ -13,7 +13,8 @@ use work.bunch_defs.all;
 entity bunch_fir_top is
     generic (
         TAP_WIDTH : natural := 25;
-        TAP_COUNT : natural
+        TAP_COUNT : natural;
+        HEADROOM_OFFSET : natural
     );
     port (
         dsp_clk_i : in std_logic;
@@ -127,7 +128,9 @@ begin
     );
 
     -- The filter
-    bunch_fir : entity work.bunch_fir port map (
+    bunch_fir : entity work.bunch_fir generic map (
+        HEADROOM_OFFSET => HEADROOM_OFFSET
+    ) port map (
         clk_i => adc_clk_i,
         turn_clock_i => turn_clock,
         taps_i => taps,

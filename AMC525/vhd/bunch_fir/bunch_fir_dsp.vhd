@@ -9,6 +9,14 @@ use work.support.all;
 entity bunch_fir_dsp is
     generic (
         TAP_COUNT : natural;
+        -- Nominally the headroom allows for enough room to accumulate the most
+        -- extreme input and taps, but the result can be excessively
+        -- conservative.  Taking bits away here can result in silent overflow,
+        -- so needs to be done with care.
+        HEADROOM_OFFSET : natural;
+
+        -- The following parameters are for delay validation when closing the
+        -- turn to turn delay loop.
         DATA_DELAY : natural;       -- Delay data_i => accum_o
         ACCUM_DELAY : natural       -- Delay accum_i => accum_o
     );
@@ -33,7 +41,7 @@ architecture arch of bunch_fir_dsp is
     -- product (the maximum possible) allows for up to 63 taps (HEADROOM = 5),
     -- and the number of taps can be increased by reducing the input size
     -- accordingly.
-    constant HEADROOM : natural := bits(TAP_COUNT) - 1;
+    constant HEADROOM : natural := bits(TAP_COUNT) - 1 - HEADROOM_OFFSET;
     constant PRODUCT_WIDTH : natural := DATA_IN_WIDTH + TAP_WIDTH;
     constant ACCUM_WIDTH : natural := PRODUCT_WIDTH + HEADROOM;
 

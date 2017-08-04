@@ -43,6 +43,7 @@ architecture arch of bunch_fir_taps is
     signal taps_table : signed_array_array(BANKS_RANGE)(TAPS_RANGE)(TAP_RANGE)
         := (others => (others => (others => '0')));
     signal tap_index : unsigned(bits(TAP_COUNT-1)-1 downto 0);
+    signal taps_out : taps_o'SUBTYPE := (others => (others => '0'));
 
 begin
     -- Readout of individual taps
@@ -62,10 +63,11 @@ begin
 
         process (adc_clk_i) begin
             if rising_edge(adc_clk_i) then
-                taps_o(tap) <= taps_table(to_integer(fir_select))(tap);
+                taps_out(tap) <= taps_table(to_integer(fir_select))(tap);
             end if;
         end process;
     end generate;
+    taps_o <= taps_out;
 
 
     -- Writing of individual taps

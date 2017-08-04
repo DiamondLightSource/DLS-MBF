@@ -40,6 +40,7 @@ add wave -group "Bunch" bunch_select/*
 add wave -group "FIR Taps" bunch_fir_top/bunch_fir_taps/*
 add wave -group "FIR Decimate" bunch_fir_top/decimate/*
 add wave -group "FIR Interp" bunch_fir_top/interpolate/*
+add wave -group "FIR DSP(0)" bunch_fir_top/bunch_fir/taps_gen(0)/dsp/*
 add wave -group "FIR" bunch_fir_top/bunch_fir/*
 add wave -group "FIR Top" bunch_fir_top/*
 add wave sim:*

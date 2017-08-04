@@ -7,6 +7,9 @@ use ieee.numeric_std.all;
 use work.support.all;
 
 entity bunch_fir is
+    generic (
+        HEADROOM_OFFSET : natural
+    );
     port (
         clk_i : in std_logic;
         turn_clock_i : in std_logic;
@@ -23,12 +26,13 @@ architecture arch of bunch_fir is
     -- The delay line between taps is limited to 36 bits to fit into BRAM, and
     -- for simplicity we assume that we'll have to clip to fit into the delay.
     constant DELAY_WIDTH : natural := data_o'LENGTH;
+    subtype DELAY_RANGE is natural range DELAY_WIDTH-1 downto 0;
 
     constant TAP_COUNT : natural := taps_i'LENGTH;
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
-    signal accum_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0)
+    signal accum_out : signed_array(TAPS_RANGE)(DELAY_RANGE)
         := (others => (others => '0'));
-    signal delay_out : signed_array(TAPS_RANGE)(DELAY_WIDTH-1 downto 0)
+    signal delay_out : signed_array(TAPS_RANGE)(DELAY_RANGE)
         := (others => (others => '0'));
 
     -- Delay on input to allow data to get to each tap
@@ -74,6 +78,7 @@ begin
 
         dsp : entity work.bunch_fir_dsp generic map (
             TAP_COUNT => TAP_COUNT,
+            HEADROOM_OFFSET => HEADROOM_OFFSET,
             DATA_DELAY => DSP_DATA_DELAY,
             ACCUM_DELAY => DSP_ACCUM_DELAY
         ) port map (
@@ -106,9 +111,9 @@ begin
 
     -- Delay lines between each bunch
     delay_gen : for t in 1 to TAP_COUNT-1 generate
-        signal delay_in_reg : signed(DELAY_WIDTH-1 downto 0);
+        signal delay_in_reg : signed(DELAY_RANGE);
         signal delay_in_valid : std_logic;
-        signal delay_out_reg : signed(DELAY_WIDTH-1 downto 0);
+        signal delay_out_reg : signed(DELAY_RANGE);
 
     begin
         pipeline_in : entity work.dlyreg generic map (
