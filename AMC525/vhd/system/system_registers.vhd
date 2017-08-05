@@ -47,10 +47,7 @@ entity system_registers is
         fmc500m_spi_write_ack_i : in std_logic;
         fmc500m_spi_read_strobe_o : out std_logic;
         fmc500m_spi_read_data_i : in reg_data_t;
-        fmc500m_spi_read_ack_i : in std_logic;
-
-        -- DAC test pattern
-        dac_test_pattern_o : out reg_data_array_t(0 to 1)
+        fmc500m_spi_read_ack_i : in std_logic
     );
 end;
 
@@ -145,16 +142,4 @@ begin
     fmc500m_spi_read_strobe_o <= read_strobe_i(SYS_FMC_SPI_REG);
     read_data_o(SYS_FMC_SPI_REG) <= fmc500m_spi_read_data_i;
     read_ack_o(SYS_FMC_SPI_REG) <= fmc500m_spi_read_ack_i;
-
-    -- DAC test pattern
-    dac_test_pattern_inst : entity work.register_file port map (
-        clk_i => reg_clk_i,
-        write_strobe_i => write_strobe_i(SYS_DAC_TEST_REGS),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(SYS_DAC_TEST_REGS),
-        register_data_o(SYS_DAC_TEST_REGS) => dac_test_pattern_o
-    );
-    read_data_o(SYS_DAC_TEST_REGS) <= dac_test_pattern_o;
-    read_ack_o(SYS_DAC_TEST_REGS) <= (others => '1');
-
 end;

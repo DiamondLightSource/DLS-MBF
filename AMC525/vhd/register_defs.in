@@ -103,8 +103,6 @@
         .ADC_PDWN
         # DAC reset (leave at 0 for normal operation)
         .DAC_RSTN
-        # Enable DAC test data generation
-        .DAC_TESTMODE
 
     # ADC DCO IDELAY control
     :IDELAY     ADC_IDELAY
@@ -129,9 +127,6 @@
         # Set to 1 to trigger a read cycle on the selected SPI address, follow
         # up by reading from this register to read the result
         .RW_N       @31     W
-
-    # DAC test data pattern
-    DAC_TEST    2 RW
 
     # Revolution clock IDELAY control
     :IDELAY     REV_IDELAY

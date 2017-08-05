@@ -131,8 +131,6 @@ architecture arch of top is
     signal adc_dco : std_logic;
     signal dsp_adc_data : signed_array(CHANNELS)(13 downto 0);
     signal dsp_dac_data : signed_array(CHANNELS)(15 downto 0);
-    signal dac_data : signed_array(CHANNELS)(15 downto 0);
-    signal dac_frame : std_logic;
     signal fast_ext_trigger : std_logic;
     signal fmc500_outputs : fmc500_outputs_t;
     signal fmc500_inputs : fmc500_inputs_t;
@@ -188,10 +186,6 @@ architecture arch of top is
     signal postmortem_trigger : std_logic;
     signal blanking_trigger : std_logic;
     signal dsp_events : std_logic_vector(CHANNELS);
-
-    -- DAC test
-    signal dac_test_pattern : reg_data_array_t(0 to 1);
-    signal dac_test_mode : std_logic;
 
 begin
 
@@ -579,9 +573,9 @@ begin
         adc_data_a_o => dsp_adc_data(0),
         adc_data_b_o => dsp_adc_data(1),
 
-        dac_data_a_i => dac_data(0),
-        dac_data_b_i => dac_data(1),
-        dac_frame_i => dac_frame,
+        dac_data_a_i => dsp_dac_data(0),
+        dac_data_b_i => dsp_dac_data(1),
+        dac_frame_i => '0',
 
         ext_trig_o => fast_ext_trigger,
         misc_outputs_i => fmc500_outputs,
@@ -662,9 +656,7 @@ begin
         fmc500m_spi_write_ack_i => fmc500m_spi_write_ack,
         fmc500m_spi_read_strobe_o => fmc500m_spi_read_strobe,
         fmc500m_spi_read_data_i => fmc500m_spi_read_data,
-        fmc500m_spi_read_ack_i => fmc500m_spi_read_ack,
-
-        dac_test_pattern_o => dac_test_pattern
+        fmc500m_spi_read_ack_i => fmc500m_spi_read_ack
     );
 
 
@@ -712,16 +704,6 @@ begin
         interrupts_o => INTR
     );
 
-    -- Generate DAC test data if necessary
-    dac_test_pattern_inst : entity work.dac_test_pattern port map (
-        adc_clk_i => adc_clk,
-        test_mode_i => dac_test_mode,
-        test_pattern_i => dac_test_pattern,
-        dac_data_i => dsp_dac_data,
-        dac_data_o => dac_data,
-        dac_frame_o => dac_frame
-    );
-
 
     -- -------------------------------------------------------------------------
     -- Control register mapping.
@@ -757,7 +739,6 @@ begin
     fmc500_outputs.pll_sync <= control_data(SYS_CONTROL_PLL_SYNC_BIT);
     fmc500_outputs.adc_pdwn <= control_data(SYS_CONTROL_ADC_PDWN_BIT);
     fmc500_outputs.dac_rstn <= not control_data(SYS_CONTROL_DAC_RSTN_BIT);
-    dac_test_mode <= control_data(SYS_CONTROL_DAC_TESTMODE_BIT);
 
     -- External events
     event_trigger      <= dio_inputs(0);

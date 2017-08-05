@@ -6,7 +6,8 @@ use ieee.numeric_std.all;
 
 entity long_delay is
     generic (
-        WIDTH : natural
+        WIDTH : natural;
+        PIPELINE_DELAY : natural := 0
     );
     port (
         clk_i : in std_logic;
@@ -21,10 +22,20 @@ architecture arch of long_delay is
     constant ADDR_BITS : natural := delay_i'LENGTH;
     subtype address_t is unsigned(ADDR_BITS-1 downto 0);
 
+    signal data_in : data_i'SUBTYPE;
     signal write_addr : address_t := (others => '0');
     signal read_addr : address_t := (others => '0');
 
 begin
+    data_delay : entity work.dlyreg generic map (
+        DLY => PIPELINE_DELAY,
+        DW => data_i'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => data_i,
+        data_o => data_in
+    );
+
     memory_inst : entity work.block_memory generic map (
         ADDR_BITS => ADDR_BITS,
         DATA_BITS => WIDTH
@@ -35,7 +46,7 @@ begin
         write_clk_i => clk_i,
         write_strobe_i => '1',
         write_addr_i => write_addr,
-        write_data_i => data_i
+        write_data_i => data_in
     );
 
     process (clk_i) begin

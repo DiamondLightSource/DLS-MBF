@@ -288,7 +288,8 @@ begin
 
     -- Programmable long delay
     dac_delay_inst : entity work.long_delay generic map (
-        WIDTH => data_o'LENGTH
+        WIDTH => data_o'LENGTH,
+        PIPELINE_DELAY => 4
     ) port map (
         clk_i => adc_clk_i,
         delay_i => dac_delay,

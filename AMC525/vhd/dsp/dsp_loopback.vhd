@@ -7,7 +7,8 @@ use ieee.numeric_std.all;
 entity dsp_loopback is
     generic (
         PIPELINE_IN : natural := 4;
-        PIPELINE_OUT : natural := 4
+        PIPELINE_ADC_OUT : natural := 2;
+        PIPELINE_DAC_OUT : natural := 8
     );
     port (
         adc_clk_i : in std_logic;
@@ -67,7 +68,7 @@ begin
 
 
     adc_out_delay : entity work.dlyreg generic map (
-        DLY => PIPELINE_OUT,
+        DLY => PIPELINE_ADC_OUT,
         DW => adc_data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
@@ -76,7 +77,7 @@ begin
     );
 
     dac_out_delay : entity work.dlyreg generic map (
-        DLY => PIPELINE_OUT,
+        DLY => PIPELINE_DAC_OUT,
         DW => dac_data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
