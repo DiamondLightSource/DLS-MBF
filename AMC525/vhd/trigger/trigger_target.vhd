@@ -1,4 +1,4 @@
--- Trigger source mask
+-- Trigger target handler
 --
 -- Generates a trigger handler associated with a set of trigger sources together
 -- with control and status bits for each trigger source.
@@ -9,7 +9,7 @@ use ieee.numeric_std.all;
 
 use work.support.all;
 
-entity trigger_sources is
+entity trigger_target is
     port (
         dsp_clk_i : in std_logic;
         turn_clock_i : in std_logic;
@@ -30,7 +30,7 @@ entity trigger_sources is
     );
 end;
 
-architecture arch of trigger_sources is
+architecture arch of trigger_target is
     -- Trigger detect and report.  enables_i selects a mask of possible
     -- trigger sources and blanking_i selects which of these are to be ignored
     -- during the blanking pulse.  When a trigger is detected we latch the

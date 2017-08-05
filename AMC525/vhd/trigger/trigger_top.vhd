@@ -167,7 +167,7 @@ begin
             pulse_o => turn_clock_dsp(c)
         );
 
-        seq_trigger : entity work.trigger_sources port map (
+        seq_trigger : entity work.trigger_target port map (
             dsp_clk_i => dsp_clk_i,
             turn_clock_i => turn_clock_dsp(c),
 
@@ -194,7 +194,7 @@ begin
         vector_or(blanking_window_o and dram0_blanking_select);
 
     -- Memory capture trigger
-    dram0_trigger : entity work.trigger_sources port map (
+    dram0_trigger : entity work.trigger_target port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => dram0_turn_clock,
 

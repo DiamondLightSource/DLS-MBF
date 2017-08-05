@@ -104,18 +104,18 @@ begin
         clk_wait(dsp_clk);
 
         -- max_bunch = 6 (7 ticks per turn)
-        write_reg(CTRL_TRG_CONFIG_TURN_SETUP_REG,   X"0000_0806");
+        write_reg(CTRL_TRG_CONFIG_TURN_REG,         X"0000_0806");
         write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0001");
 
         read_reg(CTRL_TRG_PULSED_REG_R);
-        read_reg(CTRL_TRG_READBACK_STATUS_REG);
-        read_reg(CTRL_TRG_READBACK_SOURCES_REG);
+        read_reg(CTRL_TRG_STATUS_REG);
+        read_reg(CTRL_TRG_SOURCES_REG);
 
         -- Blanking 3 for channel 0, 5 for channel 1
         write_reg(CTRL_TRG_CONFIG_BLANKING_REG,     X"0005_0003");
-        write_reg(CTRL_TRG_CONFIG_DELAY_SEQ_0_REG,  X"0000_0010");
-        write_reg(CTRL_TRG_CONFIG_DELAY_SEQ_1_REG,  X"0000_0000");
-        write_reg(CTRL_TRG_CONFIG_DELAY_DRAM_REG,   X"0000_0005");
+        write_reg(CTRL_TRG_CONFIG_SEQ0_REG,         X"0000_0010");
+        write_reg(CTRL_TRG_CONFIG_SEQ1_REG,         X"0000_0000");
+        write_reg(CTRL_TRG_CONFIG_DRAM0_REG,        X"0000_0005");
         write_reg(CTRL_TRG_CONFIG_TRIG_SEQ_REG,     X"00FF_FFFF");
         write_reg(CTRL_TRG_CONFIG_TRIG_DRAM_REG,    X"0000_00FF");
 

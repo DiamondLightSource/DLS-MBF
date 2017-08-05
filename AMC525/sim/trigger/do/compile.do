@@ -14,6 +14,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/sync_bit.vhd \
     $vhd_dir/util/edge_detect.vhd \
+    $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/system/adc_dsp_phase.vhd \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
@@ -26,7 +27,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/trigger/trigger_turn_clock.vhd \
     $vhd_dir/trigger/trigger_blanking.vhd \
     $vhd_dir/trigger/trigger_handler.vhd \
-    $vhd_dir/trigger/trigger_sources.vhd \
+    $vhd_dir/trigger/trigger_target.vhd \
     $vhd_dir/trigger/trigger_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
