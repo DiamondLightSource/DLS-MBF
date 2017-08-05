@@ -18,7 +18,8 @@ entity bunch_fir is
         data_valid_i : in std_logic;
         data_i : in signed;
         data_valid_o : out std_logic := '0';
-        data_o : out signed
+        data_o : out signed;
+        overflow_o : out std_logic
     );
 end;
 
@@ -34,6 +35,7 @@ architecture arch of bunch_fir is
         := (others => (others => '0'));
     signal delay_out : signed_array(TAPS_RANGE)(DELAY_RANGE)
         := (others => (others => '0'));
+    signal overflows : std_logic_vector(TAPS_RANGE);
 
     -- Delay on input to allow data to get to each tap
     constant DISTRIBUTION_DELAY : natural := 4;
@@ -65,6 +67,7 @@ begin
     -- Core processing DSP chain
     taps_gen : for t in TAPS_RANGE generate
         signal data_in : signed(data_i'RANGE);
+        signal dsp_overflow : std_logic;
     begin
         -- Data distribution delays.
         delay_data : entity work.dlyreg generic map (
@@ -86,7 +89,16 @@ begin
             data_i => data_in,
             tap_i => taps_i(TAP_COUNT-1 - t),     -- Taps in reverse order
             accum_i => delay_out(t),
-            accum_o => accum_out(t)
+            accum_o => accum_out(t),
+            overflow_o => dsp_overflow
+        );
+
+        overflow_delay : entity work.dlyreg generic map (
+            DLY => 4
+        ) port map (
+            clk_i => clk_i,
+            data_i(0) => dsp_overflow,
+            data_o(0) => overflows(t)
         );
     end generate;
 
@@ -95,6 +107,7 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             delay_out(0) <= (others => '0');
+            overflow_o <= vector_or(overflows);
         end if;
     end process;
     data_o <= accum_out(TAP_COUNT-1);

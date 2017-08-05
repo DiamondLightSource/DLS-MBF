@@ -114,22 +114,22 @@ begin
         clk_wait(10);
 
         -- Now write some taps
-        write_reg(DSP_FIR_CONFIG_REG, X"00000000");  -- Bank 0
+        write_reg(DSP_FIR_CONFIG_REG_W, X"00000000");  -- Bank 0
         write_reg(DSP_FIR_TAPS_REG, X"7FF00000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF10000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF20000");
 
-        write_reg(DSP_FIR_CONFIG_REG, X"00000001");  -- Bank 1
+        write_reg(DSP_FIR_CONFIG_REG_W, X"00000001");  -- Bank 1
         write_reg(DSP_FIR_TAPS_REG, X"7FF01000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF11000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF21000");
 
-        write_reg(DSP_FIR_CONFIG_REG, X"00000002");  -- Bank 2
+        write_reg(DSP_FIR_CONFIG_REG_W, X"00000002");  -- Bank 2
         write_reg(DSP_FIR_TAPS_REG, X"7FF02000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF12000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF22000");
 
-        write_reg(DSP_FIR_CONFIG_REG, X"0000040F");  -- Bank 3, 16 decimation
+        write_reg(DSP_FIR_CONFIG_REG_W, X"0000040F");  -- Bank 3, 16 decimation
         write_reg(DSP_FIR_TAPS_REG, X"7FF03000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF13000");
         write_reg(DSP_FIR_TAPS_REG, X"7FF23000");

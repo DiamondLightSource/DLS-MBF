@@ -45,6 +45,10 @@ architecture arch of bunch_fir_top is
     signal decimation_shift : unsigned(2 downto 0);
     signal write_start : std_logic;
 
+    -- Overflow detection
+    signal pulsed_bits : reg_data_t;
+    signal overflow : std_logic;
+
     -- Data types
     subtype TAP_RANGE  is natural range TAP_WIDTH-1 downto 0;
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
@@ -61,20 +65,31 @@ architecture arch of bunch_fir_top is
 begin
     register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_FIR_CONFIG_REG),
+        write_strobe_i(0) => write_strobe_i(DSP_FIR_CONFIG_REG_W),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_FIR_CONFIG_REG),
+        write_ack_o(0) => write_ack_o(DSP_FIR_CONFIG_REG_W),
         register_data_o(0) => config_register
     );
-    read_data_o(DSP_FIR_CONFIG_REG) <= config_register;
-    read_ack_o(DSP_FIR_CONFIG_REG) <= '1';
+
+    all_pulsed_bits : entity work.all_pulsed_bits port map (
+        clk_i => dsp_clk_i,
+        read_strobe_i => read_strobe_i(DSP_FIR_EVENTS_REG_R),
+        read_data_o => read_data_o(DSP_FIR_EVENTS_REG_R),
+        read_ack_o => read_ack_o(DSP_FIR_EVENTS_REG_R),
+        pulsed_bits_i => pulsed_bits
+    );
 
     -- Use write to config register to trigger start of taps write
-    write_start <= write_strobe_i(DSP_FIR_CONFIG_REG);
+    write_start <= write_strobe_i(DSP_FIR_CONFIG_REG_W);
 
     write_fir        <= unsigned(config_register(DSP_FIR_CONFIG_BANK_BITS));
     decimation_limit <= unsigned(config_register(DSP_FIR_CONFIG_LIMIT_BITS));
     decimation_shift <= unsigned(config_register(DSP_FIR_CONFIG_SHIFT_BITS));
+
+    pulsed_bits <= (
+        DSP_FIR_EVENTS_OVERFLOW_BIT => overflow,
+        others => '0'
+    );
 
 
     -- Taps for FIR
@@ -138,7 +153,8 @@ begin
         data_valid_i => decimated_valid,
         data_i => decimated_data,
         data_valid_o => filtered_valid,
-        data_o => filtered_data
+        data_o => filtered_data,
+        overflow_o => overflow
     );
 
     -- Interpolate the reduced data back to full speed

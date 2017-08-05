@@ -26,7 +26,9 @@ entity bunch_fir_dsp is
         tap_i : in signed;
         data_i : in signed;
         accum_i : in signed;
-        accum_o : out signed        -- accum_o <= accum_i + tap_i * data_i
+
+        accum_o : out signed;       -- accum_o <= accum_i + tap_i * data_i
+        overflow_o : out std_logic := '0'
     );
 end;
 
@@ -41,20 +43,25 @@ architecture arch of bunch_fir_dsp is
     -- product (the maximum possible) allows for up to 63 taps (HEADROOM = 5),
     -- and the number of taps can be increased by reducing the input size
     -- accordingly.
-    constant HEADROOM : natural := bits(TAP_COUNT) - 1 - HEADROOM_OFFSET;
+    constant HEADROOM : natural := bits(TAP_COUNT) - 1;
     constant PRODUCT_WIDTH : natural := DATA_IN_WIDTH + TAP_WIDTH;
     constant ACCUM_WIDTH : natural := PRODUCT_WIDTH + HEADROOM;
 
     -- The accumulator input is assembled from three parts of widths as shown:
-    --
-    --     DATA_OUT_WIDTH     1    ACCUM_WIDTH-DATA_OUT_WIDTH-1     (widths)
-    --  +-------------------+---+----------------------------+
-    --  |  accum_i          | 1 |  0...0                     |
-    --  +-------------------+---+----------------------------+
-    --     DATA_OUT_RANGE ROUND_OFFSET       PADDING_RANGE          (ranges)
-    constant ROUND_OFFSET : natural := ACCUM_WIDTH - DATA_OUT_WIDTH - 1;
-    subtype DATA_OUT_RANGE is natural range ACCUM_WIDTH-1 downto ROUND_OFFSET+1;
+    -- HEADROOM_OFFSET
+    --          DATA_OUT_WIDTH     1    ACCUM_WIDTH-DATA_OUT_WIDTH-1  (widths)
+    --  +----+-------------------+---+----------------------------+
+    --  |    |  accum_i          | 1 |  0...0                     |
+    --  +----+-------------------+---+----------------------------+
+    --          DATA_OUT_RANGE ROUND_OFFSET       PADDING_RANGE       (ranges)
+    constant ROUND_OFFSET : natural :=
+        ACCUM_WIDTH - HEADROOM_OFFSET - DATA_OUT_WIDTH - 1;
+    subtype DATA_OUT_RANGE is
+        natural range ROUND_OFFSET + DATA_OUT_WIDTH downto ROUND_OFFSET + 1;
+    subtype DATA_IN_RANGE is natural range ACCUM_WIDTH-1 downto ROUND_OFFSET+1;
     subtype PADDING_RANGE is natural range ROUND_OFFSET-1 downto 0;
+    subtype OVERFLOW_RANGE is
+        natural range ACCUM_WIDTH-1 downto ACCUM_WIDTH - HEADROOM_OFFSET - 1;
 
     -- All these signals are DSP internal registers
     signal tap_in : tap_i'SUBTYPE := (others => '0');
@@ -87,7 +94,8 @@ begin
 
 
     -- Assemble input accumulator from its components
-    accum_in(DATA_OUT_RANGE) <= accum_i;
+    accum_in(DATA_IN_RANGE) <=
+        resize(accum_i, DATA_OUT_WIDTH + HEADROOM_OFFSET);
     accum_in(ROUND_OFFSET) <= '1';
     accum_in(PADDING_RANGE) <= (others => '0');
 
@@ -101,6 +109,7 @@ begin
             accum <= accum_in;
 
             accum_out <= accum + product;
+            overflow_o <= overflow_detect(accum_out(OVERFLOW_RANGE));
         end if;
     end process;
 

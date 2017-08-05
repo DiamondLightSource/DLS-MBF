@@ -452,16 +452,19 @@
 
     # Bunch by bunch filter
     !FIR
-        CONFIG      RW
-            # Configures which group of taps will be written when writing to the
-            # TAPS register.
-            .BANK       2
-            # Determines decimation count: set this to target decimation count
-            # less 1.
-            .LIMIT      7
-            # Scaling factor for decimated data, needs to be set up correctly to
-            # avoid silent overflow.
-            .SHIFT      3
+        *RW
+            EVENTS      R
+                .OVERFLOW
+            CONFIG      W
+                # Configures which group of taps will be written when writing to
+                # the TAPS register.
+                .BANK       2
+                # Determines decimation count: set this to target decimation
+                # count less 1.
+                .LIMIT      7
+                # Scaling factor for decimated data, needs to be set up
+                # correctly to avoid silent overflow.
+                .SHIFT      3
         # Writing to this register programs the FIR taps for the selected bank.
         # The tap write counter is reset by any write to the config register.
         TAPS        W

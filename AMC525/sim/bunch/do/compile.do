@@ -15,6 +15,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/registers/register_file.vhd \
+    $vhd_dir/registers/all_pulsed_bits.vhd \
     $vhd_dir/bunch/bunch_defs.vhd \
     $vhd_dir/bunch/bunch_counter.vhd \
     $vhd_dir/bunch/bunch_store.vhd \
