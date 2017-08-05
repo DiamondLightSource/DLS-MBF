@@ -173,16 +173,9 @@ begin
 
             triggers_i => triggers,
             blanking_window_i => blanking_window_o(c),
+            setup_i => seq_setup(c),
 
-            arm_i => seq_setup(c).arm,
-            disarm_i => seq_setup(c).disarm,
-            delay_i => seq_setup(c).delay,
-            enables_i => seq_setup(c).enables,
-            blanking_i => seq_setup(c).blanking,
-
-            armed_o => seq_readback(c).armed,
-            source_o => seq_readback(c).source,
-
+            readback_o => seq_readback(c),
             trigger_o => seq_start_o(c)
         );
     end generate;
@@ -200,16 +193,9 @@ begin
 
         triggers_i => triggers,
         blanking_window_i => dram0_blanking_window,
+        setup_i => dram0_setup,
 
-        arm_i => dram0_setup.arm,
-        disarm_i => dram0_setup.disarm,
-        delay_i => dram0_setup.delay,
-        enables_i => dram0_setup.enables,
-        blanking_i => dram0_setup.blanking,
-
-        armed_o => dram0_readback.armed,
-        source_o => dram0_readback.source,
-
+        readback_o => dram0_readback,
         trigger_o => dram0_trigger_o
     );
 end;
