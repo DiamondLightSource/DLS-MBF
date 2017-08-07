@@ -84,11 +84,11 @@ begin
             end if;
 
             -- Bank selection
-            bank_select_o(0) <= d2c1.bank_select;
+            bank_select_o(0) <= d2c0.bank_select;
             if bank_mux_i = '1' then
-                bank_select_o(1) <= d2c1.bank_select;
-            else
                 bank_select_o(1) <= d2c0.bank_select;
+            else
+                bank_select_o(1) <= d2c1.bank_select;
             end if;
         end if;
     end process;
