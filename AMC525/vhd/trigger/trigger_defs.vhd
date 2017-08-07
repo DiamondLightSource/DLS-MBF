@@ -28,6 +28,7 @@ package trigger_defs is
     -- Programmable trigger configuration
     type trigger_setup_t is record
         arm : std_logic;                    -- Pulse to arm the trigger
+        fire : std_logic;                   -- Pulse to fire trigger
         disarm : std_logic;                 -- Pulse to disarm trigger
         delay : unsigned(15 downto 0);      -- Turn delay from trigger fire
         enables : std_logic_vector(TRIGGER_SET);    -- Enabled triggers

@@ -278,18 +278,24 @@
                 .SYNC_TURN
                 # Request turn clock sample
                 .SAMPLE_TURN
-                # Arm sequencer 0 trigger
+
+                # Sequencer 0: arm, fire, disarm.  ARM enables triggering on
+                # any of the selected input triggers, FIRE bypasses input
+                # triggering and arming to generate an output trigger, while
+                # DISARM reverses the effect of ARM so long as no trigger has
+                # yet been seen.
                 .SEQ0_ARM
-                # Disarm sequencer 0 trigger
+                .SEQ0_FIRE
                 .SEQ0_DISARM
-                # Arm sequencer 1 trigger
+                # Sequencer 1: arm, fire, disarm, as for seq 0.
                 .SEQ1_ARM
-                # Disarm sequencer 1 trigger
+                .SEQ1_FIRE
                 .SEQ1_DISARM
-                # Arm DRAM0 trigger
+                # DRAM: arm, fire, disarm, as for sequencers.
                 .DRAM0_ARM
-                # Disarm DRAM0 trigger
+                .DRAM0_FIRE
                 .DRAM0_DISARM
+
                 # Generate soft trigger event
                 .TRIGGER
 

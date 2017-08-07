@@ -14,6 +14,7 @@ entity trigger_handler is
         turn_clock_i : in std_logic;    -- Machine revolution clock
 
         arm_i : in std_logic;
+        fire_i : in std_logic;
         disarm_i : in std_logic;
         delay_i : in unsigned;
 
@@ -35,12 +36,15 @@ begin
         if rising_edge(dsp_clk_i) then
             case trig_state is
                 when TRIGGER_IDLE =>
-                    if arm_i = '1' then
+                    if fire_i = '1' then
+                        trig_state <= TRIGGER_TRIGGERED;
+                        counter <= delay_i;
+                    elsif arm_i = '1' then
                         trig_state <= TRIGGER_ARMED;
                     end if;
 
                 when TRIGGER_ARMED =>
-                    if trigger_i = '1' then
+                    if trigger_i = '1' or fire_i = '1' then
                         trig_state <= TRIGGER_TRIGGERED;
                         counter <= delay_i;
                     elsif disarm_i = '1' then

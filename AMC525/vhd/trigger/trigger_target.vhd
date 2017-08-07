@@ -51,6 +51,7 @@ begin
         turn_clock_i => turn_clock_i,
         trigger_i => trigger_in,
         arm_i => setup_i.arm,
+        fire_i => setup_i.fire,
         disarm_i => setup_i.disarm,
         delay_i => setup_i.delay,
         trigger_o => trigger_o,

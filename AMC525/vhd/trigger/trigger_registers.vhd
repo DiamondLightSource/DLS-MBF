@@ -117,10 +117,13 @@ begin
     turn_setup_o.start_sample <= strobed_bits(CTRL_TRG_CONTROL_SAMPLE_TURN_BIT);
     seq_setup_o(0).arm       <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_ARM_BIT);
     seq_setup_o(0).disarm    <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_DISARM_BIT);
+    seq_setup_o(0).fire      <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_FIRE_BIT);
     seq_setup_o(1).arm       <= strobed_bits(CTRL_TRG_CONTROL_SEQ1_ARM_BIT);
     seq_setup_o(1).disarm    <= strobed_bits(CTRL_TRG_CONTROL_SEQ1_DISARM_BIT);
+    seq_setup_o(1).fire      <= strobed_bits(CTRL_TRG_CONTROL_SEQ1_FIRE_BIT);
     dram0_setup_o.arm        <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_ARM_BIT);
     dram0_setup_o.disarm     <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_DISARM_BIT);
+    dram0_setup_o.fire       <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_FIRE_BIT);
     soft_trigger_o           <= strobed_bits(CTRL_TRG_CONTROL_TRIGGER_BIT);
 
     pulsed_bits <= (
@@ -164,12 +167,12 @@ begin
 
     seq_setup_o(0).delay <=
         unsigned(config_delay_seq_0(CTRL_TRG_CONFIG_SEQ0_DELAY_BITS));
-    seq_setup_o(1).delay <=
-        unsigned(config_delay_seq_1(CTRL_TRG_CONFIG_SEQ1_DELAY_BITS));
     seq_setup_o(0).enables <=
         config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE0_BITS);
     seq_setup_o(0).blanking <=
         config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_BLANKING0_BITS);
+    seq_setup_o(1).delay <=
+        unsigned(config_delay_seq_1(CTRL_TRG_CONFIG_SEQ1_DELAY_BITS));
     seq_setup_o(1).enables <=
         config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE1_BITS);
     seq_setup_o(1).blanking <=
