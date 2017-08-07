@@ -22,10 +22,10 @@ select_options = [
     'DAC0/ADC1',
     'DAC0/FIR1',
     'DAC0/DAC1',
-    'DAC0/ADC0',
+    'ADC0/DAC0',
     'ADC1/FIR1',
     'FIR1/DAC1',
-    'DAC1/ADC1',
+    'ADC1/DAC1',
 ]
 
 # Selector for single channel

@@ -183,10 +183,10 @@
             # 8       DAC0                 ADC1
             # 9       DAC0                 FIR1
             # 10      DAC0                 DAC1
-            # 11      DAC0                 ADC0
+            # 11      ADC0                 DAC0
             # 12      ADC1                 FIR1
             # 13      FIR1                 DAC1
-            # 14      DAC1                 ADC1
+            # 14      ADC1                 DAC1
             # 15      0                    0
             # ======= ==================== ====================
             .MUX_SELECT     4

@@ -54,10 +54,10 @@ static const struct map_entry select_map[15] = {
     { DAC0, ADC1 },
     { DAC0, FIR1 },
     { DAC0, DAC1 },     // 10 DAC
-    { DAC0, ADC0 },
+    { ADC0, DAC0 },
     { ADC1, FIR1 },
     { FIR1, DAC1 },
-    { DAC1, ADC1 },
+    { ADC1, DAC1 },
 };
 
 /* When considering a repeated selection we only inspect the true pairs. */

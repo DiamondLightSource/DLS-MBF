@@ -108,10 +108,10 @@ begin
                 -- When one channel is 11 we use both outputs for the other
                 when "0011" => data(0) <= adc(0); data(1) <= fir(0);
                 when "0111" => data(0) <= fir(0); data(1) <= dac(0);
-                when "1011" => data(0) <= dac(0); data(1) <= adc(0);
+                when "1011" => data(0) <= adc(0); data(1) <= dac(0);
                 when "1100" => data(0) <= adc(1); data(1) <= fir(1);
                 when "1101" => data(0) <= fir(1); data(1) <= dac(1);
-                when "1110" => data(0) <= dac(1); data(1) <= adc(1);
+                when "1110" => data(0) <= adc(1); data(1) <= dac(1);
                 -- Finally, we have a reserved output option
                 when "1111" => data <= extra;
                 when others =>
