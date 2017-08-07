@@ -371,9 +371,11 @@ static void dispatch_target_events(void *context, struct interrupts interrupts)
 void immediate_memory_capture(void)
 {
     struct target_config *target = &targets[TRIGGER_DRAM];
+    bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
     LOCK(mutex);
-    hw_write_dram_capture_command(true, true);
-    set_target_state(target, STATE_BUSY);
+    hw_write_dram_capture_command(true, false);
+    hw_write_trigger_fire(fire);
+    set_target_state(target, STATE_ARMED);
     target->dont_rearm = true;      // Ensure this is a one-shot capture!
     update_global_state();
     UNLOCK(mutex);

@@ -156,6 +156,9 @@ void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);
 /* Simultaneous arming of the selected trigger targets. */
 void hw_write_trigger_arm(const bool arm[TRIGGER_TARGET_COUNT]);
 
+/* Simultaneous firing of the selected trigger targets. */
+void hw_write_trigger_fire(const bool fire[TRIGGER_TARGET_COUNT]);
+
 /* Simultaneous disarming of the selected trigger targets. */
 void hw_write_trigger_disarm(const bool disarm[TRIGGER_TARGET_COUNT]);
 

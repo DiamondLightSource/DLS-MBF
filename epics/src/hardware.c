@@ -324,6 +324,15 @@ void hw_write_trigger_arm(const bool arm[TRIGGER_TARGET_COUNT])
     );
 }
 
+void hw_write_trigger_fire(const bool fire[TRIGGER_TARGET_COUNT])
+{
+    WRITE_FIELDS(ctrl_regs->trg_control,
+        .seq0_fire = fire[TRIGGER_SEQ0],
+        .seq1_fire = fire[TRIGGER_SEQ1],
+        .dram0_fire = fire[TRIGGER_DRAM]
+    );
+}
+
 void hw_write_trigger_disarm(const bool disarm[TRIGGER_TARGET_COUNT])
 {
     WRITE_FIELDS(ctrl_regs->trg_control,
