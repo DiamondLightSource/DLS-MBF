@@ -1,0 +1,383 @@
+#!/usr/bin/env dls-python
+
+from pkg_resources import require
+require('cothread')
+
+import sys
+import time
+import numpy
+
+import cothread
+from cothread.catools import *
+
+from configure import LMBF, DRAM
+
+
+# Common support code.
+
+
+class DAC_OUT:
+    # Any combination of the values below is valid for a DAC output selection
+    OFF = 0
+    FIR = 1
+    NCO = 2
+    SWEEP = 4
+
+# We will work with two predefined FIR settings
+FIR_UNIT = 0
+FIR_ZERO = 1
+
+
+
+# ------------------------------------------------------------------------------
+# Basic LMBF setup support
+
+
+def unit_fir(length):
+    fir = numpy.zeros(length)
+    fir[0] = 1
+    return fir
+
+
+# Configure FIR with given taps waveform
+@LMBF.method
+def fir_wf(lmbf, fir, filter):
+    lmbf.set('FIR:%d:TAPS_S' % fir, filter)
+    lmbf.set('FIR:%d:USEWF_S' % fir, 'Waveform')
+
+
+
+# Configures basic set up for timing test: we use loopback with internal delay
+# compensation turned off and a standard DAC preemphasis.  This establishes a
+# setup that can be assumed by all other tests.
+@LMBF.method
+def configure_timing_test(lmbf, compensate = False):
+    print 'Setting initial configuration'
+
+    # Turn DAC output in case there's something connected
+    lmbf.set_channels('DAC:ENABLE_S', 'Off')
+
+    # Ensure nothing is running: disarm all triggers, stop all active targets
+    lmbf.set_channels('TRG:SEQ:DISARM_S', 0)
+    lmbf.set_channels('SEQ:RESET_S', 0)
+    lmbf.set_shared('TRG:MEM:DISARM_S', 0)
+
+    # For the rest we'll work with channel 0
+
+
+    # We'll be using soft triggering.  Ensure it's in one shot state
+    lmbf.set('TRG:SEQ:MODE_S', 'One Shot')
+    lmbf.set_shared('TRG:MEM:MODE_S', 'One Shot')
+    lmbf.set_trigger_inputs('SEQ', 0, 'SOFT')
+    lmbf.set_trigger_inputs('MEM', None, 'SOFT')
+
+    lmbf.set_shared('MEM:RUNOUT_S', '25%')
+
+
+    # Disable delay compensation so we meaure raw delays and use loopback data
+    lmbf.set_shared('COMPENSATE_S', 'Normal' if compensate else 'Disabled')
+    lmbf.set('ADC:LOOPBACK_S', 'Loopback')
+
+    # Configure ADC and DAC filters with identity filters.
+    lmbf.set('ADC:FILTER_S', unit_fir(lmbf.adc_taps))
+    lmbf.set('DAC:FILTER_S', unit_fir(lmbf.dac_taps))
+
+
+    # For a sensible starting state, disable the sequencer and select bank 0.
+    # Each test will need to configure the bank setup it needs.
+    lmbf.state0(0)
+
+    # Disable FIR decimation
+    lmbf.set('FIR:DECIMATION_S', 1)
+
+    # Configure FIR 0 to default pass-through mode and FIR 1 to zero
+    lmbf.fir_wf(FIR_UNIT, unit_fir(lmbf.bunch_taps))
+    lmbf.fir_wf(FIR_ZERO, numpy.zeros(lmbf.bunch_taps))
+
+    # Configure NCO for DC output at maximum gain: this makes a useful pulse
+    # source when routed into a single bunch.
+    lmbf.set('NCO:FREQ_S', 0)
+    lmbf.set('NCO:GAIN_S', '0dB')
+
+    # Reset detector window in case it's been messed with
+    lmbf.set('SEQ:RESET_WIN_S.PROC', 0)
+
+    # When we use the sequencer it's always for a single state
+    lmbf.set('SEQ:PC_S', 1)
+    lmbf.set('SEQ:SUPER:COUNT_S', 1)
+
+
+
+# We'll gather final configuration parameters for printout at the end.
+class Results:
+    def __init__(self, lmbf):
+        self.__dict__['bunches'] = lmbf.bunches
+        self.__dict__['items'] = []
+
+    def set(self, name, value):
+        self.items.append(name)
+        self.__dict__[name] = value
+
+    def __setattr__(self, name, value):
+        self.set(name, value)
+
+    def print_results(self, output = sys.stdout):
+        for item in self.items:
+            print >>output, item, '=', getattr(self, item)
+
+
+# ------------------------------------------------------------------------------
+# Data shaping and analysis
+
+# Returns a waveform with one bunch set to value, all other bunches set to
+# other.  Used for single bunch control.
+@LMBF.method
+def one_bunch(lmbf, value, other, bunch = 0):
+    result = numpy.empty(lmbf.bunches, dtype = int)
+    result[:] = other
+    result[bunch] = value
+    return result
+
+
+# Most of the delays we're correcting are small, however we can only measure
+# delays in the range 0..lmbf.bunches-1.  On this assumption, convert large
+# delays into negative values.
+@LMBF.method
+def fixup_delay(lmbf, value):
+    if value >= lmbf.bunches/2:
+        return value - lmbf.bunches
+    else:
+        return value
+
+
+# Searches for one non-zero value in waveform
+@LMBF.method
+def find_one_peak(lmbf, value):
+    hits = numpy.nonzero(value)[0]
+    assert len(hits) == 1, 'Unexpected data: %s' % value
+    return lmbf.fixup_delay(hits[0])
+
+
+# Searches for second highest value in waveform
+def find_second_peak(value):
+    return numpy.argsort(value)[-2]
+
+
+@LMBF.method
+def find_mms_peak(lmbf, mms):
+    return lmbf.find_one_peak(mms.get_new(0.25))
+
+
+# ------------------------------------------------------------------------------
+# Configuration functions
+
+
+# Configure bank for single pulse output from NCO
+@LMBF.method
+def configure_dac_single_pulse(lmbf):
+    lmbf.bank_wf(0, 1, FIR_UNIT, lmbf.one_bunch(DAC_OUT.NCO, DAC_OUT.OFF))
+
+
+# Configure for closed loop delay measurement: pass all data except reference
+# bunch through identity FIR.
+@LMBF.method
+def configure_dac_measure_loop(lmbf):
+    lmbf.set('DAC:DELAY_S', 0)
+    lmbf.set('FIR:GAIN_S', '0dB')
+    lmbf.bank_wf(0, 1, FIR_UNIT, lmbf.one_bunch(DAC_OUT.NCO, DAC_OUT.FIR))
+
+
+# Fetch DRAM buffer
+@LMBF.method
+def get_dram_peaks(lmbf, wf0, wf1, sources, length):
+    lmbf.set('MEM:SELECT_S', sources)
+    lmbf.set('MEM:CAPTURE_S.PROC', 0)
+    a = wf0.get()[lmbf.bunches:][:length]
+    b = wf1.get()[lmbf.bunches:][:length]
+    return find_one_peak(lmbf, a), find_one_peak(lmbf, b)
+
+
+# Classical binary search.  test(a,b) should return true iff the target is in
+# the half open range [a,b), and the test range is [start,end).
+def binary_search(start, end, test):
+    assert test(start, end), 'Nothing present to search for!'
+    while end - start > 1:
+        middle = (start + end) / 2
+        if test(start, middle):
+            end = middle
+        else:
+            start = middle
+    return start
+
+
+# Performs binary search to discover which bunch is detected for bunch zero
+@LMBF.method
+def search_det_bunch(lmbf, det_power, source):
+    # Configure source
+    lmbf.set('DET:SELECT_S', source)
+
+    def test(start, end):
+        outwf = numpy.empty(lmbf.bunches, dtype = int)
+        outwf[:start] = 0
+        outwf[start:end] = 1
+        outwf[end:] = 0
+        lmbf.set('DET:0:BUNCHES_S', outwf)
+
+        # Fire a capture
+        lmbf.set('TRG:SEQ:ARM_S', 0)
+        lmbf.set_shared('TRG:SOFT_S', 0)
+
+        power = det_power.get()
+        return numpy.isfinite(power)
+
+    return lmbf.fixup_delay(binary_search(0, lmbf.bunches, test))
+
+
+# ------------------------------------------------------------------------------
+# Measurement functions
+
+
+# This must be done first before all other measurements
+def measure_loop(lmbf, results):
+    print >>sys.stderr, 'Measuring closed loop delay'
+
+    lmbf.configure_dac_single_pulse()
+
+    # Monitor MMS and configure for rapid update rate
+    maxdac = lmbf.PV('DAC:MMS:MAX')
+    lmbf.set('DAC:MMS:SCAN_S.SCAN', '.1 second')
+    lmbf.set('DAC:MMS_SOURCE_S', 'Before FIR')
+
+    # Take DAC output mux select bunch zero as the reference bunch
+    # and measure delays to DAC max.  This allows us to measure the closed
+    # loop delay and close the loop for all remaining measurements.
+    dac_minmax_delay = lmbf.find_mms_peak(maxdac)
+    results.MMS_DAC_DELAY = dac_minmax_delay
+
+    # Measure loop delay
+    lmbf.configure_dac_measure_loop()
+    loop_delay = find_second_peak(maxdac.get_new(0.25)) - dac_minmax_delay
+    print 'Closed loop delay:', loop_delay
+
+    # Close the loop for future measurements.
+    lmbf.set('DAC:DELAY_S', lmbf.bunches - loop_delay)
+
+    maxdac.close()
+
+    return dac_minmax_delay
+
+
+# Perform measurements to DAC MMS.  The loop delay has already been measured and
+# closed.  Here we can measure the offset of the gain control and the extra
+# delay for measuring MMS after the preemphasis FIR.
+#
+# We shouldn't need to measure skew between the three enables as they are
+# engineered to be synchronous.
+def measure_dac_mms(lmbf, results):
+    print >>sys.stderr, 'Measuring DAC MMS'
+
+    lmbf.configure_dac_single_pulse()
+    maxdac = lmbf.PV('DAC:MMS:MAX')
+    maxadc = lmbf.PV('ADC:MMS:MAX')
+
+    # Measure the MMS ADC skew now we've closed the loop
+    results.MMS_ADC_DELAY = lmbf.find_mms_peak(maxadc)
+
+    # Measure gain skew: configure NCO on all bunches, but unit gain only on
+    # bunch zer0, zero gain elsewhere.
+    lmbf.bank_wf(0, lmbf.one_bunch(1, 0), FIR_UNIT, DAC_OUT.NCO)
+    results.BUNCH_GAIN_OFFSET = lmbf.find_mms_peak(maxdac) - dac_minmax_delay
+
+    # Now capture the extra FIR delay
+    lmbf.configure_dac_single_pulse()
+    lmbf.set('DAC:MMS_SOURCE_S', 'After FIR')
+    results.MMS_DAC_FIR_DELAY = find_mms_peak(lmbf, maxdac)
+
+    maxdac.close()
+    maxadc.close()
+
+
+def measure_dram(lmbf, results):
+    print >>sys.stderr, 'Measuring DRAM delays'
+
+    dram = DRAM(lmbf)
+
+    # First get the baseline ADC and DAC delay.
+    lmbf.configure_dac_single_pulse()
+    lmbf.set('DAC:DRAM_SOURCE_S', 'Before FIR')
+    base_adc_delay, base_dac_delay = dram.get_peaks('ADC0/DAC0')
+    results.DRAM_ADC_DELAY = base_adc_delay
+    results.DRAM_DAC_DELAY = base_dac_delay
+
+    # Now get the FIR delay and the DAC after FIR skew
+    lmbf.set('DAC:DRAM_SOURCE_S', 'After FIR')
+    base_fir_delay, extra_dac_delay = dram.get_peaks('FIR0/DAC0')
+    results.DRAM_FIR_DELAY = base_fir_delay
+    results.DRAM_DAC_FIR_DELAY = extra_dac_delay
+
+    # Now work out the FIR select skew.  Output NCO0 on all bunches, only set
+    # bunch zero to non zero FIR.
+    lmbf.bank_wf(0, 1, lmbf.one_bunch(FIR_UNIT, FIR_ZERO), DAC_OUT.NCO)
+    _, fir = dram.get('ADC0/FIR0')
+    results.BUNCH_FIR_OFFSET = lmbf.find_one_peak(fir) - base_dac_delay
+
+
+def measure_det_bunch(lmbf, results):
+    print >>sys.stderr, 'Measuring Detector Bunch Offsets'
+
+    # Set up sequencer to do a small short sweep.  We only sweep bunch 0
+    lmbf.state(1, 1.31, 1e-5, 20, '0dB')
+    lmbf.bank_wf(0, 0, 0, DAC_OUT.OFF)
+    lmbf.bank_wf(1, 1, 0, lmbf.one_bunch(DAC_OUT.SWEEP, DAC_OUT.OFF))
+
+    power = lmbf.PV('DET:0:MAX_POWER')
+
+    results.DET_ADC_OFFSET = lmbf.search_det_bunch(power, 'ADC')
+    results.DET_FIR_OFFSET = lmbf.search_det_bunch(power, 'FIR')
+
+    power.close()
+
+
+
+
+# ------------------------------------------------------------------------------
+
+actions = [
+    'dac_mms',
+    'dram',
+    'det_bunch',
+]
+
+
+import argparse
+parser = argparse.ArgumentParser(description = 'Measure internal LMBF delays')
+parser.add_argument('-t', '--test', action = 'store_true',
+    help = 'Verify current delays')
+parser.add_argument('lmbf', nargs = '?', default = 'TS-DI-LMBF-01',
+    help = 'LMBF machine name to test')
+parser.add_argument('-m', '--measure', action = 'append',
+    help = 'Specify measurements to perform, any of: ' + ', '.join(actions))
+parser.add_argument('-o', '--output',
+    help = 'Specify output file')
+args = parser.parse_args()
+
+
+lmbf = LMBF(args.lmbf)
+results = Results(lmbf)
+
+lmbf.configure_timing_test(args.test)
+
+dac_minmax_delay = measure_loop(lmbf, results)
+
+if args.measure:
+    actions = args.measure
+for action in actions:
+    globals()['measure_' + action](lmbf, results)
+
+results.print_results()
+if args.output:
+    with open(args.output, 'w') as output:
+        print >>output, '# Automatically generated FPGA delays'
+        results.print_results(output)
+
+# vim: set filetype=python:
