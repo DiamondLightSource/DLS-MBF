@@ -54,6 +54,9 @@ static const char *system_config_file;
 /* Whether to lock registers on startup.  Only for debug. */
 static bool lock_registers = true;
 
+/* Can be reset for quiet operation. */
+static bool enable_pv_logging = true;
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Argument handling. */
@@ -67,6 +70,7 @@ static void usage(void)
 "   -H: Specify hardware configuration file (required)\n"
 "   -S: Specify system configuration file (required)\n"
 "   -u  Startup with hardware registers unlocked (debug only)\n"
+"   -q  Disable PV logging\n"
     );
 }
 
@@ -75,13 +79,14 @@ static error__t process_options(int *argc, char *const *argv[])
 {
     while (true)
     {
-        switch (getopt(*argc, *argv, "+hp:H:S:u"))
+        switch (getopt(*argc, *argv, "+hp:H:S:uq"))
         {
             case 'h':   usage();                                exit(1);
             case 'p':   device_prefix = optarg;                 break;
             case 'H':   hardware_config_file = optarg;          break;
             case 'S':   system_config_file = optarg;            break;
             case 'u':   lock_registers = false;                 break;
+            case 'q':   enable_pv_logging = false;              break;
             default:
                 return FAIL_("Invalid command line option");
             case -1:
@@ -142,7 +147,9 @@ static error__t initialise_epics(void)
     set_prompt();
     return
         start_caRepeater()  ?:
-        hook_pv_logging("db/access.acf", system_config.pv_log_array_length)  ?:
+        IF(enable_pv_logging,
+            hook_pv_logging(
+                "db/access.acf", system_config.pv_log_array_length))  ?:
         TEST_OK(dbLoadDatabase("dbd/lmbf.dbd", NULL, NULL) == 0)  ?:
         TEST_OK(lmbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
         load_database("db/lmbf.db")  ?:
@@ -175,10 +182,6 @@ static error__t initialise_subsystems(void)
         initialise_memory()  ?:
         initialise_triggers()  ?:
         initialise_detector()  ?:
-//         initialise_tune()  ?:
-//         initialise_tune_peaks()  ?:
-//         initialise_tune_follow() ?:
-//         initialise_sensors()  ?:
 
         /* Post initialisation startup. */
         start_mms_handlers()  ?:

@@ -27,3 +27,6 @@ extern const struct system_config {
 
 error__t load_configs(
     const char *hardware_config_file, const char *system_config_file);
+
+/* Dynamically resets or reloads the hardware_delays structure. */
+void write_compensate_disable(bool disable);

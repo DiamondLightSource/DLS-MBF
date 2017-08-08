@@ -66,6 +66,12 @@ static const struct config_entry system_config_entries[] = {
 };
 
 
+void write_compensate_disable(bool disable)
+{
+    printf("Compensation not implemented yet\n");
+}
+
+
 error__t load_configs(
     const char *hardware_config_file, const char *system_config_file)
 {

@@ -31,5 +31,11 @@ def setup_dac():
     DAC_SPI[0x1D] = 0x01
     DAC_SPI[0x1E] = 0x01
 
+    # Set output gains to maximum levels
+    DAC_SPI[0x40] = 0xFF
+    DAC_SPI[0x41] = 0x03
+    DAC_SPI[0x44] = 0xFF
+    DAC_SPI[0x45] = 0x03
+
 if __name__ == '__main__':
     setup_dac()

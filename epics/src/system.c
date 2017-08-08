@@ -16,6 +16,7 @@
 #include "hardware.h"
 
 #include "common.h"
+#include "configs.h"
 #include "system.h"
 
 
@@ -118,12 +119,6 @@ static error__t register_iocsh_commands(void)
     iocshRegister(&set_lmbf_mode_def,    call_set_lmbf_mode);
     iocshRegister(&set_tmbf_mode_def,    call_set_tmbf_mode);
     return ERROR_OK;
-}
-
-
-static void write_compensate_disable(bool disable)
-{
-    printf("Compensation not implemented yet\n");
 }
 
 
