@@ -82,7 +82,7 @@ error__t initialise_adc(void)
 
         PUBLISH_C_P(ao, "OVF_LIMIT", set_adc_overflow_threshold, adc);
         PUBLISH_C_P(ao, "EVENT_LIMIT", set_adc_delta_threshold, adc);
-        PUBLISH_C_P(bo, "LOOPBACK", set_adc_loopback, adc);
+        PUBLISH_C(bo, "LOOPBACK", set_adc_loopback, adc);
 
         PUBLISH_READ_VAR(bi, "INPUT_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF",   adc->events.fir_ovf);

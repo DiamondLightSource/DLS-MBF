@@ -53,10 +53,10 @@ def memory_pvs():
 
     # FIR gain control
     write_gain = Action('WRITE_GAIN', DESC = 'Write FIR gain')
-    boolOut('FIR0_GAIN', 'High gain', 'Low gain',
+    boolOut('FIR0_GAIN', '+54dB', '0dB',
         FLNK = write_gain,
         DESC = 'FIR 0 capture gain')
-    boolOut('FIR1_GAIN', 'High gain', 'Low gain',
+    boolOut('FIR1_GAIN', '+54dB', '0dB',
         FLNK = write_gain,
         DESC = 'FIR 1 capture gain')
     Action('READ_OVF',
@@ -66,7 +66,7 @@ def memory_pvs():
             overflow('FIR1_OVF', 'FIR 1 capture will overflow')),
         DESC = 'Poll overflow events')
 
-    longOut('OFFSET', -(1 << 29), (1 << 29) - 1, EGU = 'samples',
+    longOut('OFFSET', -(1 << 29), (1 << 29) - 1, EGU = 'turns',
         DESC = 'Offset of readout')
 
     # Capture control

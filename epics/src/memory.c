@@ -154,9 +154,11 @@ static int readout_offset;
 static void readout_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
+    int bunches_per_turn = (int) system_config.bunches_per_turn;
 
     size_t origin = (size_t) trigger_origin;
-    size_t delta = (size_t) (readout_offset * (int) sizeof(uint32_t));
+    size_t delta = (size_t) (
+        readout_offset * bunches_per_turn * (int) sizeof(uint32_t));
     size_t offset = origin + delta;
     hw_read_dram_memory(offset, readout_length, memory_buffer);
 

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2062
-y 294
+x 1970
+y 507
 w 641
 h 641
 font "helvetica-medium-r-18.0"
@@ -808,14 +808,14 @@ minor 1
 release 1
 x 568
 y 424
-w 54
+w 33
 h 16
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "samples"
+  "turns"
 }
 autoSize
 endObjectProperties
