@@ -321,7 +321,7 @@ def measure_dram(lmbf, results):
     # bunch zero to non zero FIR.
     lmbf.bank_wf(0, 1, lmbf.one_bunch(FIR_UNIT, FIR_ZERO), DAC_OUT.NCO)
     _, fir = dram.get('ADC0/FIR0')
-    results.BUNCH_FIR_OFFSET = lmbf.find_one_peak(fir) - base_dac_delay
+    results.BUNCH_FIR_OFFSET = lmbf.find_one_peak(fir) - base_fir_delay
 
 
 def measure_det_bunch(lmbf, results):
