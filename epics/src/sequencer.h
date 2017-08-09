@@ -18,4 +18,5 @@ struct scale_info {
 
 /* Reads the current scale info.  This is valid for the current acquisition
  * after prepare_sequencer() has been called. */
-const struct scale_info *read_detector_scale_info(int channel);
+void read_detector_scale_info(
+    int channel, unsigned int length, struct scale_info *info);

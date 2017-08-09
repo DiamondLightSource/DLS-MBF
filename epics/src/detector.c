@@ -58,7 +58,7 @@ struct detector_context {
     struct detector_result *read_buffer;
 
     /* Scale information for detector readout copied from sequencer. */
-    struct scale_info info;
+    struct scale_info scale_info;
 } detector_context[CHANNEL_COUNT];
 
 
@@ -132,21 +132,6 @@ static void read_detector_memory(
 }
 
 
-/* We need to take a complete copy of the detector scale info structure at this
- * point.  Although it is fully valid right now, it might not stay valid for
- * very long if this readout is immedately followed by a rearm with different
- * detector parameters. */
-static void update_scale_info(struct detector_context *det)
-{
-    const struct scale_info *seq_info = read_detector_scale_info(det->channel);
-    struct scale_info *info = &det->info;
-    unsigned int det_length = system_config.detector_length;
-    memcpy(info->tune_scale, seq_info->tune_scale, sizeof(double) * det_length);
-    memcpy(info->timebase, seq_info->timebase, sizeof(int) * det_length);
-    info->samples = seq_info->samples;
-}
-
-
 static void detector_readout_event(struct detector_context *det)
 {
     interlock_wait(det->update);
@@ -162,9 +147,10 @@ static void detector_readout_event(struct detector_context *det)
         printf("Unexpected detector readout underrun\n");
     det->underrun |= underrun;
 
-    update_scale_info(det);
+    read_detector_scale_info(
+        det->channel, system_config.detector_length, &det->scale_info);
 
-    read_detector_memory(det, det->info.samples);
+    read_detector_memory(det, det->scale_info.samples);
 
     interlock_signal(det->update, NULL);
 }
@@ -274,8 +260,8 @@ error__t initialise_detector(void)
 
         PUBLISH_READ_VAR(bi, "UNDERRUN", det->underrun);
 
-        /* Initialise our own copy of the sequencer scale info. */
-        struct scale_info *info = &det->info;
+        /* Initialise our own copy of the sequencer scale scale_info. */
+        struct scale_info *info = &det->scale_info;
         info->tune_scale = calloc(sizeof(double), detector_length);
         info->timebase = calloc(sizeof(int), detector_length);
         PUBLISH_WF_READ_VAR(double, "SCALE", detector_length, info->tune_scale);

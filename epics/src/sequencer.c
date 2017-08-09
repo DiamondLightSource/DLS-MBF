@@ -36,8 +36,9 @@ struct sequencer_bank {
 struct seq_context {
     int channel;
 
-    struct seq_config seq_config;   // Hardware configuration
+    struct seq_config seq_config;   // Hardware configuration set by EPICS
     struct sequencer_bank banks[MAX_SEQUENCER_COUNT];   // EPICS management
+    struct seq_config seq_hw_config;    // Configuration written to hardware
 
     struct seq_state seq_state;     // Current state as read from hardware
 
@@ -46,8 +47,6 @@ struct seq_context {
 
     bool reset_offsets;             // Reset super sequencer offsets
     bool reset_window;              // Reset detector window
-
-    struct scale_info scale_info;   // Computed frequency scale
 } seq_context[CHANNEL_COUNT];
 
 
@@ -304,12 +303,12 @@ static bool reset_detector_window(void *context, bool *value)
 
 
 /* Computes frequency and timebase scales from detector configuration. */
-static void update_scale_info(struct seq_context *seq)
+static void update_scale_info(
+    const struct seq_config *seq_config, unsigned int length,
+    struct scale_info *scale_info)
 {
-    unsigned int detector_length = system_config.detector_length;
-    struct scale_info *scale = &seq->scale_info;
-    unsigned int super_count = seq->seq_config.super_seq_count;
-    unsigned int seq_count = seq->seq_config.sequencer_pc;
+    unsigned int super_count = seq_config->super_seq_count;
+    unsigned int seq_count = seq_config->sequencer_pc;
 
     /* Iterate through super sequencer. */
     unsigned int ix = 0;            // Index into generated vectors
@@ -319,19 +318,19 @@ static void update_scale_info(struct seq_context *seq)
     for (unsigned int super = 0; super < super_count; super ++)
         for (unsigned int state = seq_count; state > 0; state --)
         {
-            const struct seq_entry *entry = &seq->seq_config.entries[state - 1];
+            const struct seq_entry *entry = &seq_config->entries[state - 1];
             unsigned int dwell_time = entry->dwell_time + entry->holdoff;
             if (entry->write_enable)
             {
-                f0 = entry->start_freq + seq->seq_config.super_offsets[super];
+                f0 = entry->start_freq + seq_config->super_offsets[super];
                 total_time += gap_time;
                 gap_time = 0;
                 for (unsigned int i = 0; i < entry->capture_count; i ++)
                 {
-                    if (ix < detector_length)
+                    if (ix < length)
                     {
-                        scale->tune_scale[ix] = freq_to_tune(f0);
-                        scale->timebase[ix] = (int) total_time;
+                        scale_info->tune_scale[ix] = freq_to_tune(f0);
+                        scale_info->timebase[ix] = (int) total_time;
                     }
                     f0 += entry->delta_freq;
                     total_time += dwell_time;
@@ -344,39 +343,43 @@ static void update_scale_info(struct seq_context *seq)
 
     /* Fill in the rest of the waveforms. */
     double final_f = freq_to_tune(f0);
-    for (unsigned int i = ix; i < detector_length; i ++)
+    for (unsigned int i = ix; i < length; i ++)
     {
-        scale->tune_scale[i] = final_f;
-        scale->timebase[i] = (int) total_time;
+        scale_info->tune_scale[i] = final_f;
+        scale_info->timebase[i] = (int) total_time;
     }
-    scale->samples = ix;
+    scale_info->samples = ix;
 }
 
 
+/* This is called before arming the sequencer.  We remember a copy of the
+ * sequencer state and write this to hardware.  The copy is remembered so that
+ * when a subsequent request is made for the scale info we will return a
+ * truthful version. */
 void prepare_sequencer(int channel)
 {
     struct seq_context *seq = &seq_context[channel];
-    hw_write_seq_config(seq->channel, &seq->seq_config);
-    update_scale_info(seq);
+    seq->seq_hw_config = seq->seq_config;
+    hw_write_seq_config(seq->channel, &seq->seq_hw_config);
 }
 
 
-const struct scale_info *read_detector_scale_info(int channel)
+/* This is called as part of detector readout, at which point we want to present
+ * the user with an accurate view of the detector scaling. */
+void read_detector_scale_info(
+    int channel, unsigned int length, struct scale_info *info)
 {
-    return &seq_context[channel].scale_info;
+    const struct seq_context *seq = &seq_context[channel];
+    update_scale_info(&seq->seq_hw_config, length, info);
 }
 
 
 error__t initialise_sequencer(void)
 {
-    unsigned int detector_length = system_config.detector_length;
     FOR_CHANNEL_NAMES(channel, "SEQ")
     {
         struct seq_context *seq = &seq_context[channel];
         seq->channel = channel;
-
-        seq->scale_info.tune_scale = calloc(sizeof(double), detector_length);
-        seq->scale_info.timebase = calloc(sizeof(int), detector_length);
 
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
