@@ -124,10 +124,6 @@ static error__t register_iocsh_commands(void)
 
 error__t initialise_system(void)
 {
-//     PUBLISH_READER(ulongin, "FPGA_VER", hw_read_version);
-
-    PUBLISH_WRITER(bo, "COMPENSATE", write_compensate_disable);
-
     printf("%u bunches, %u ADC taps, %u bunch taps, %u DAC taps\n",
         hardware_config.bunches,
         hardware_config.adc_taps,

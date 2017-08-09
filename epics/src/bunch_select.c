@@ -175,7 +175,7 @@ static void write_fir_wf(void *context, char fir_select[], size_t *length)
 
     update_fir_status(bank, fir_select);
 
-    FOR_BUNCHES_OFFSET(i, j, hardware_delays.bunch_fir_offset)
+    FOR_BUNCHES_OFFSET(i, j, hardware_delays.BUNCH_FIR_OFFSET)
         bank->config.fir_select[i] = fir_select[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
@@ -189,11 +189,13 @@ static void write_out_wf(void *context, char out_enable[], size_t *length)
 
     update_out_status(bank, out_enable);
 
-    FOR_BUNCHES_OFFSET(i, j, hardware_delays.bunch_out_offset)
+    /* The output enables are the reference bunches, and the three outputs are
+     * synchronous, so no offset conversion is required here. */
+    FOR_BUNCHES(i)
     {
-        bank->config.fir_enable[i] = out_enable[j] & 1;
-        bank->config.nco0_enable[i] = (out_enable[j] >> 1) & 1;
-        bank->config.nco1_enable[i] = (out_enable[j] >> 2) & 1;
+        bank->config.fir_enable[i] = out_enable[i] & 1;
+        bank->config.nco0_enable[i] = (out_enable[i] >> 1) & 1;
+        bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
     }
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
 }
@@ -209,7 +211,7 @@ static void write_gain_wf(void *context, float gain[], size_t *length)
         hardware_config.bunches, gain, scaled_gain, 32, 0);
     update_gain_status(bank, scaled_gain);
 
-    FOR_BUNCHES_OFFSET(i, j, hardware_delays.bunch_gain_offset)
+    FOR_BUNCHES_OFFSET(i, j, hardware_delays.BUNCH_GAIN_OFFSET)
         bank->config.gain[i] = scaled_gain[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);

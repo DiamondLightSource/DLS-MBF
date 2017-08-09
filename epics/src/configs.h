@@ -2,12 +2,20 @@
  * delays, the other defines basic system configuration settings. */
 
 extern const struct hardware_delays {
-    unsigned int adc_mms_offset;
-    unsigned int dac_pre_fir_mms_offset;
-    unsigned int dac_post_fir_mms_offset;
-    unsigned int bunch_fir_offset;
-    unsigned int bunch_out_offset;
-    unsigned int bunch_gain_offset;
+    unsigned int MMS_DAC_DELAY;
+    unsigned int MMS_ADC_DELAY;
+    unsigned int MMS_DAC_FIR_DELAY;
+
+    unsigned int DRAM_ADC_DELAY;
+    unsigned int DRAM_DAC_DELAY;
+    unsigned int DRAM_FIR_DELAY;
+    unsigned int DRAM_DAC_FIR_DELAY;
+
+    unsigned int BUNCH_GAIN_OFFSET;
+    unsigned int BUNCH_FIR_OFFSET;
+
+    unsigned int DET_ADC_OFFSET;
+    unsigned int DET_FIR_OFFSET;
 } hardware_delays;
 
 extern const struct system_config {
@@ -27,6 +35,3 @@ extern const struct system_config {
 
 error__t load_configs(
     const char *hardware_config_file, const char *system_config_file);
-
-/* Dynamically resets or reloads the hardware_delays structure. */
-void write_compensate_disable(bool disable);

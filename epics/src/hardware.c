@@ -650,17 +650,17 @@ void hw_write_dac_nco0_enable(int channel, bool enable)
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_dac_mms_source(int channel, bool before_fir)
+void hw_write_dac_mms_source(int channel, bool after_fir)
 {
     LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, mms_source, before_fir);
+    WRITE_DSP_MIRROR(channel, dac_config, mms_source, after_fir);
     UNLOCK(dsp_locks[channel]);
 }
 
-void hw_write_dac_dram_source(int channel, bool before_fir)
+void hw_write_dac_dram_source(int channel, bool after_fir)
 {
     LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, dram_source, before_fir);
+    WRITE_DSP_MIRROR(channel, dac_config, dram_source, after_fir);
     UNLOCK(dsp_locks[channel]);
 }
 
@@ -803,7 +803,7 @@ void hw_read_seq_state(int channel, struct seq_state *state)
 
 static void write_det_bunch_enable(
     int channel, struct dsp_det_config det_config,
-    int det, const bool enables[])
+    int det, unsigned int delay, const bool enables[])
 {
     /* Select the requested bank. */
     det_config.bank = (unsigned int) det & 0x3;
@@ -814,9 +814,9 @@ static void write_det_bunch_enable(
 
     /* Convert array of bits into an array of 32-bit words. */
     uint32_t enable_mask = 0;
-    FOR_BUNCHES(i)
+    FOR_BUNCHES_OFFSET(i, j, delay)
     {
-        enable_mask |= (uint32_t) enables[i] << (i & 0x1F);
+        enable_mask |= (uint32_t) enables[j] << (i & 0x1F);
         if ((i & 0x1F) == 0x1F)
         {
             writel(&dsp_regs[channel]->det_bunch, enable_mask);
@@ -828,7 +828,7 @@ static void write_det_bunch_enable(
 }
 
 void hw_write_det_config(
-    int channel, bool input_select,
+    int channel, bool input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT])
 {
     struct dsp_det_config det_config = {
@@ -845,7 +845,8 @@ void hw_write_det_config(
 
     LOCK(dsp_locks[channel]);
     for (int i = 0; i < DETECTOR_COUNT; i ++)
-        write_det_bunch_enable(channel, det_config, i, config[i].bunch_enables);
+        write_det_bunch_enable(
+            channel, det_config, i, delay, config[i].bunch_enables);
     UNLOCK(dsp_locks[channel]);
 }
 

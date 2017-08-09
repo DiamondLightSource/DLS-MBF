@@ -14,6 +14,7 @@
 #include "common.h"
 #include "configs.h"
 #include "mms.h"
+#include "memory.h"
 
 #include "dac.h"
 
@@ -52,20 +53,23 @@ static bool write_dac_output_enable(void *context, bool *value)
     return true;
 }
 
-static bool write_dac_mms_source(void *context, bool *value)
+static bool write_dac_mms_source(void *context, bool *after_fir)
 {
     struct dac_context *dac = context;
-    hw_write_dac_mms_source(dac->channel, *value);
-    set_mms_offset(dac->mms, *value ?
-        hardware_delays.dac_pre_fir_mms_offset :
-        hardware_delays.dac_post_fir_mms_offset);
+    hw_write_dac_mms_source(dac->channel, *after_fir);
+    set_mms_offset(dac->mms, *after_fir ?
+        hardware_delays.MMS_DAC_FIR_DELAY :
+        hardware_delays.MMS_DAC_DELAY);
     return true;
 }
 
-static bool write_dac_dram_source(void *context, bool *value)
+static bool write_dac_dram_source(void *context, bool *after_fir)
 {
     struct dac_context *dac = context;
-    hw_write_dac_dram_source(dac->channel, *value);
+    hw_write_dac_dram_source(dac->channel, *after_fir);
+    set_memory_dac_offset(dac->channel, *after_fir ?
+        hardware_delays.DRAM_DAC_FIR_DELAY :
+        hardware_delays.DRAM_DAC_DELAY);
     return true;
 }
 

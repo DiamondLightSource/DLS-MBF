@@ -288,8 +288,8 @@ void hw_write_dac_nco0_gain(int channel, unsigned int gain);
 void hw_write_dac_nco0_enable(int channel, bool enable);
 
 /* Set output source for DAC memory and MMS. */
-void hw_write_dac_mms_source(int channel, bool before_fir);
-void hw_write_dac_dram_source(int channel, bool before_fir);
+void hw_write_dac_mms_source(int channel, bool after_fir);
+void hw_write_dac_dram_source(int channel, bool after_fir);
 
 /* Returns bunch by bunch, accumulator, min/max/sum, DAC FIR overflow events. */
 void hw_read_dac_events(int channel, struct dac_events *events);
@@ -367,7 +367,7 @@ struct detector_result {
 
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
-    int channel, bool input_select,
+    int channel, bool input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT]);
 
 /* Resets detector capture address. */

@@ -90,7 +90,7 @@ error__t initialise_adc(void)
         PUBLISH_READ_VAR(bi, "EVENT",     adc->events.delta_event);
 
         adc->mms = create_mms_handler(
-            channel, hw_read_adc_mms, hardware_delays.adc_mms_offset);
+            channel, hw_read_adc_mms, hardware_delays.MMS_ADC_DELAY);
     }
 
     PUBLISH_ACTION("ADC:EVENTS", scan_events);

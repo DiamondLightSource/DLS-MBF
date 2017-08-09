@@ -27,20 +27,34 @@ const struct system_config system_config;
 #pragma GCC diagnostic ignored "-Wcast-qual"
 
 
+static struct hardware_delays hardware_delays_in;
+
+
+/* We're rather tricksy about the hardware delays.  We read them as int into an
+ * unsigned int, and then later perform some conversions to ensure they are true
+ * unsigned ints.  Ick. */
 #define DELAY_ENTRY(entry) \
     { \
-        .entry_type = CONFIG_uint, \
+        .entry_type = CONFIG_int, \
         .name = #entry, \
-        .address = (void *) &hardware_delays.entry, \
+        .address = (void *) &hardware_delays_in.entry, \
     }
 
 static const struct config_entry hardware_delays_entries[] = {
-    DELAY_ENTRY(adc_mms_offset),
-    DELAY_ENTRY(dac_pre_fir_mms_offset),
-    DELAY_ENTRY(dac_post_fir_mms_offset),
-    DELAY_ENTRY(bunch_fir_offset),
-    DELAY_ENTRY(bunch_out_offset),
-    DELAY_ENTRY(bunch_gain_offset),
+    DELAY_ENTRY(MMS_DAC_DELAY),
+    DELAY_ENTRY(MMS_ADC_DELAY),
+    DELAY_ENTRY(MMS_DAC_FIR_DELAY),
+
+    DELAY_ENTRY(DRAM_ADC_DELAY),
+    DELAY_ENTRY(DRAM_DAC_DELAY),
+    DELAY_ENTRY(DRAM_FIR_DELAY),
+    DELAY_ENTRY(DRAM_DAC_FIR_DELAY),
+
+    DELAY_ENTRY(BUNCH_GAIN_OFFSET),
+    DELAY_ENTRY(BUNCH_FIR_OFFSET),
+
+    DELAY_ENTRY(DET_ADC_OFFSET),
+    DELAY_ENTRY(DET_FIR_OFFSET),
 };
 
 
@@ -66,9 +80,36 @@ static const struct config_entry system_config_entries[] = {
 };
 
 
-void write_compensate_disable(bool disable)
+static unsigned int convert_field(unsigned int value)
 {
-    printf("Compensation not implemented yet\n");
+    int result = (int) value;
+    if (result < 0)
+        result += (int) system_config.bunches_per_turn;
+    ASSERT_OK(0 <= result  &&  result < (int) system_config.bunches_per_turn);
+    return (unsigned int) result;
+}
+
+
+#define CONVERT_FIELD(name) \
+    *CAST_TO(unsigned int *, &hardware_delays.name) = \
+        convert_field(hardware_delays_in.name)
+
+static void convert_hardware_config(void)
+{
+    CONVERT_FIELD(MMS_DAC_DELAY);
+    CONVERT_FIELD(MMS_ADC_DELAY);
+    CONVERT_FIELD(MMS_DAC_FIR_DELAY);
+
+    CONVERT_FIELD(DRAM_ADC_DELAY);
+    CONVERT_FIELD(DRAM_DAC_DELAY);
+    CONVERT_FIELD(DRAM_FIR_DELAY);
+    CONVERT_FIELD(DRAM_DAC_FIR_DELAY);
+
+    CONVERT_FIELD(BUNCH_GAIN_OFFSET);
+    CONVERT_FIELD(BUNCH_FIR_OFFSET);
+
+    CONVERT_FIELD(DET_ADC_OFFSET);
+    CONVERT_FIELD(DET_FIR_OFFSET);
 }
 
 
@@ -77,9 +118,11 @@ error__t load_configs(
 {
     return
         load_config_file(
-            hardware_config_file, hardware_delays_entries,
-            ARRAY_SIZE(hardware_delays_entries))  ?:
-        load_config_file(
             system_config_file, system_config_entries,
-            ARRAY_SIZE(system_config_entries));
+            ARRAY_SIZE(system_config_entries))  ?:
+        IF(hardware_config_file,
+            load_config_file(
+                hardware_config_file, hardware_delays_entries,
+                ARRAY_SIZE(hardware_delays_entries))  ?:
+            DO(convert_hardware_config()));
 }

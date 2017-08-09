@@ -92,7 +92,7 @@ static void read_raw_mms(struct mms_handler *mms)
 
     /* Accumulate result into the accumulator. */
     struct mms_accum *accum = &mms->accum;
-    FOR_BUNCHES_OFFSET(i, j, mms->bunch_offset)
+    FOR_BUNCHES_OFFSET(j, i, mms->bunch_offset)
     {
         accum->raw_min[j] = MIN(accum->raw_min[j], minimum[i]);
         accum->raw_max[j] = MAX(accum->raw_max[j], maximum[i]);

@@ -57,6 +57,9 @@ static bool lock_registers = true;
 /* Can be reset for quiet operation. */
 static bool enable_pv_logging = true;
 
+/* Whether to enable delay compensation. */
+static bool delay_compensation = true;
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Argument handling. */
@@ -71,6 +74,7 @@ static void usage(void)
 "   -S: Specify system configuration file (required)\n"
 "   -u  Startup with hardware registers unlocked (debug only)\n"
 "   -q  Disable PV logging\n"
+"   -z  Disable delay compensation\n"
     );
 }
 
@@ -79,7 +83,7 @@ static error__t process_options(int *argc, char *const *argv[])
 {
     while (true)
     {
-        switch (getopt(*argc, *argv, "+hp:H:S:uq"))
+        switch (getopt(*argc, *argv, "+hp:H:S:uqz"))
         {
             case 'h':   usage();                                exit(1);
             case 'p':   device_prefix = optarg;                 break;
@@ -87,6 +91,7 @@ static error__t process_options(int *argc, char *const *argv[])
             case 'S':   system_config_file = optarg;            break;
             case 'u':   lock_registers = false;                 break;
             case 'q':   enable_pv_logging = false;              break;
+            case 'z':   delay_compensation = false;             break;
             default:
                 return FAIL_("Invalid command line option");
             case -1:
@@ -195,7 +200,9 @@ int main(int argc, char *const argv[])
         process_options(&argc, &argv) ?:
         validate_options(argc)  ?:
 
-        load_configs(hardware_config_file, system_config_file)  ?:
+        load_configs(
+            delay_compensation ? hardware_config_file : NULL,
+            system_config_file)  ?:
         initialise_hardware(
             device_prefix, system_config.bunches_per_turn, lock_registers)  ?:
         initialise_epics_device()  ?:

@@ -34,10 +34,14 @@ static struct epics_record *memory_select;
 static struct epics_record *chan0_select;
 static struct epics_record *chan1_select;
 
+/* Current channel selection. */
+enum chan_select { ADC0, FIR0, DAC0, ADC1, FIR1, DAC1 };
+static enum chan_select chan_selection[CHANNEL_COUNT];
+
+
 
 /* We map the global memory selection into individual channel selections via the
  * map below. */
-enum chan_select { ADC0, FIR0, DAC0, ADC1, FIR1, DAC1 };
 struct map_entry {
     enum chan_select ch0;
     enum chan_select ch1;
@@ -106,29 +110,25 @@ static enum chan_select find_selection(
 }
 
 
-static enum chan_select chan0_selection;
-static enum chan_select chan1_selection;
-
-
 static void write_memory_select(unsigned int mux)
 {
     struct map_entry entry = select_map[mux];
-    chan0_selection = entry.ch0;
-    WRITE_OUT_RECORD(mbbo, chan0_select, chan0_selection, false);
-    chan1_selection = entry.ch1;
-    WRITE_OUT_RECORD(mbbo, chan1_select, chan1_selection, false);
+    chan_selection[0] = entry.ch0;
+    WRITE_OUT_RECORD(mbbo, chan0_select, chan_selection[0], false);
+    chan_selection[1] = entry.ch1;
+    WRITE_OUT_RECORD(mbbo, chan1_select, chan_selection[1], false);
     hw_write_dram_mux(mux);
 }
 
 static void write_chan0_select(unsigned int value)
 {
-    enum chan_select selection = find_selection(value, chan1_selection);
+    enum chan_select selection = find_selection(value, chan_selection[1]);
     WRITE_OUT_RECORD(mbbo, memory_select, selection, true);
 }
 
 static void write_chan1_select(unsigned int value)
 {
-    enum chan_select selection = find_selection(chan0_selection, value);
+    enum chan_select selection = find_selection(chan_selection[0], value);
     WRITE_OUT_RECORD(mbbo, memory_select, selection, true);
 }
 
@@ -150,24 +150,62 @@ static struct epics_record *origin_pv;
 static unsigned int trigger_origin;
 static int readout_offset;
 
+/* dac_delays[] is written by the DAC control, as this delay is a bit dynamic.
+ * channel_delays[] is written when capture is complete, so that we don't see
+ * changes while working with the runout. */
+static unsigned int dac_delays[CHANNEL_COUNT];
+static unsigned int channel_delays[CHANNEL_COUNT];
+
+
+void set_memory_dac_offset(int channel, unsigned int delay)
+{
+    dac_delays[channel] = delay;
+}
+
+
+/* We record the channel delays current at the time capture to memory is
+ * completed.  This is as good a time as any to take a snapshot. */
+static void update_channel_delays(void)
+{
+    for (int channel = 0; channel < CHANNEL_COUNT; channel ++)
+        switch (chan_selection[channel])
+        {
+            case ADC0: case ADC1:
+                channel_delays[channel] = hardware_delays.DRAM_ADC_DELAY;
+                break;
+            case FIR0: case FIR1:
+                channel_delays[channel] = hardware_delays.DRAM_FIR_DELAY;
+                break;
+            case DAC0:
+                channel_delays[channel] = dac_delays[0];
+                break;
+            case DAC1:
+                channel_delays[channel] = dac_delays[1];
+                break;
+        }
+}
+
 
 static void readout_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
-    int bunches_per_turn = (int) system_config.bunches_per_turn;
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
 
     size_t origin = (size_t) trigger_origin;
     size_t delta = (size_t) (
-        readout_offset * bunches_per_turn * (int) sizeof(uint32_t));
+        readout_offset * (int) bunches_per_turn * (int) sizeof(uint32_t));
     size_t offset = origin + delta;
-    hw_read_dram_memory(offset, readout_length, memory_buffer);
+    hw_read_dram_memory(
+        offset, readout_length + bunches_per_turn, memory_buffer);
 
     interlock_wait(memory_readout);
 
+    unsigned int d0 = channel_delays[0];
+    unsigned int d1 = channel_delays[1];
     for (unsigned int i = 0; i < readout_length; i ++)
     {
-        memory_wf0[i] = (int16_t) memory_buffer[i];
-        memory_wf1[i] = (int16_t) (memory_buffer[i] >> 16);
+        memory_wf0[i] = (int16_t) memory_buffer[i + d0];
+        memory_wf1[i] = (int16_t) (memory_buffer[i + d1] >> 16);
     }
 
     interlock_signal(memory_readout, NULL);
@@ -208,7 +246,10 @@ static void handle_memory_event(void *context, struct interrupts interrupts)
     WRITE_IN_RECORD(bi, busy_status, hw_read_dram_active());
 
     if (interrupts.dram_done)
+    {
+        update_channel_delays();
         capture_complete();
+    }
 }
 
 
@@ -241,7 +282,10 @@ static void read_dram_status(void)
 error__t initialise_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
-    memory_buffer = calloc(sizeof(int32_t), readout_length);
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+
+    /* Allocate one extra turn for the memory readout buffer. */
+    memory_buffer = calloc(sizeof(int32_t), readout_length + bunches_per_turn);
     memory_wf0 = calloc(sizeof(int16_t), readout_length);
     memory_wf1 = calloc(sizeof(int16_t), readout_length);
 

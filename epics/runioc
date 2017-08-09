@@ -33,7 +33,7 @@ DEV_PREFIX=/dev/amc525_lmbf/pci-"$DEV_ADDR"/amc525_lmbf
 
 # Initialise the hardware.  This sets up the clock PLL, ADC and DAC.  The rest
 # of the system will be initialised by the IOC proper.
-../python/setup_lmbf $DEV_PREFIX.reg
+../python/setup_lmbf $DEV_PREFIX.reg  &&
 
 exec $DEBUG $IOC \
     -H "$HW_CONFIG" -S "$SYS_CONFIG" -p "$DEV_PREFIX" "$@"

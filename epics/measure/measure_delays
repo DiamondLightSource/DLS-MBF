@@ -73,9 +73,7 @@ def configure_timing_test(lmbf, compensate = False):
 
     lmbf.set_shared('MEM:RUNOUT_S', '25%')
 
-
     # Disable delay compensation so we meaure raw delays and use loopback data
-    lmbf.set_shared('COMPENSATE_S', 'Normal' if compensate else 'Disabled')
     lmbf.set('ADC:LOOPBACK_S', 'Loopback')
 
     # Configure ADC and DAC filters with identity filters.
@@ -144,7 +142,9 @@ def one_bunch(lmbf, value, other, bunch = 0):
 # delays into negative values.
 @LMBF.method
 def fixup_delay(lmbf, value):
-    if value >= lmbf.bunches/2:
+    if value < 0:
+        return value + lmbf.bunches
+    elif value >= lmbf.bunches / 2:
         return value - lmbf.bunches
     else:
         return value
@@ -230,7 +230,9 @@ def search_det_bunch(lmbf, det_power, source):
         power = det_power.get()
         return numpy.isfinite(power)
 
-    return lmbf.fixup_delay(binary_search(0, lmbf.bunches, test))
+    # Note that we have to negate the returned delay so that hardware.c can do
+    # the compensation in the most straightforward way.
+    return lmbf.fixup_delay(-binary_search(0, lmbf.bunches, test))
 
 
 # ------------------------------------------------------------------------------
@@ -326,9 +328,8 @@ def measure_det_bunch(lmbf, results):
     print >>sys.stderr, 'Measuring Detector Bunch Offsets'
 
     # Set up sequencer to do a small short sweep.  We only sweep bunch 0
-    lmbf.state(1, 1.31, 1e-5, 20, '0dB')
-    lmbf.bank_wf(0, 0, 0, DAC_OUT.OFF)
-    lmbf.bank_wf(1, 1, 0, lmbf.one_bunch(DAC_OUT.SWEEP, DAC_OUT.OFF))
+    lmbf.state(1, bank = 0)
+    lmbf.bank_wf(0, 1, 0, lmbf.one_bunch(DAC_OUT.NCO, DAC_OUT.OFF))
 
     power = lmbf.PV('DET:0:MAX_POWER')
 
@@ -351,8 +352,6 @@ actions = [
 
 import argparse
 parser = argparse.ArgumentParser(description = 'Measure internal LMBF delays')
-parser.add_argument('-t', '--test', action = 'store_true',
-    help = 'Verify current delays')
 parser.add_argument('lmbf', nargs = '?', default = 'TS-DI-LMBF-01',
     help = 'LMBF machine name to test')
 parser.add_argument('-m', '--measure', action = 'append',
@@ -365,7 +364,7 @@ args = parser.parse_args()
 lmbf = LMBF(args.lmbf)
 results = Results(lmbf)
 
-lmbf.configure_timing_test(args.test)
+lmbf.configure_timing_test()
 
 dac_minmax_delay = measure_loop(lmbf, results)
 

@@ -240,7 +240,10 @@ void prepare_detector(int channel)
     struct detector_config config[DETECTOR_COUNT];
     for (int i = 0; i < DETECTOR_COUNT; i ++)
         config[i] = det->banks[i].config;
-    hw_write_det_config(channel, det->input_select, config);
+    unsigned int delay = det->input_select ?
+        hardware_delays.DET_FIR_OFFSET :
+        hardware_delays.DET_ADC_OFFSET;
+    hw_write_det_config(channel, det->input_select, delay, config);
     hw_write_det_start(channel);
 
     /* Count the number of active channels, needed for readout. */
