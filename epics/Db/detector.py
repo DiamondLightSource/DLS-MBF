@@ -10,7 +10,7 @@ def detector_wf(name, desc):
 def detector_bank_pvs(updates):
     boolOut('ENABLE', 'Disabled', 'Enabled',
         DESC = 'Enable use of this detector')
-    mbbOut('SCALING', DESC = 'Readout scaling', *dBrange(4, -8*6))
+    mbbOut('SCALING', DESC = 'Readout scaling', *dBrange(2, -8*6))
 
     updates.append(overflow('OUT_OVF', 'Output overflow'))
 

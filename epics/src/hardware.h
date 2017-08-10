@@ -131,21 +131,17 @@ enum trigger_target {
 /* At present this is a direct image of the trigger status register. */
 struct trigger_status {
     bool sync_busy;
-    bool sync_phase;
-    bool sync_error;
-    bool sample_busy;
-    bool sample_phase;
     bool seq0_armed;
     bool seq1_armed;
     bool dram_armed;
-    unsigned int clock_offset;
 };
 
 /* Triggers synchronisation of turn clock to external trigger. */
 void hw_write_turn_clock_sync(void);
 
 /* Requests sample of turn clock offset. */
-void hw_write_turn_clock_sample(void);
+void hw_read_turn_clock_counts(
+    unsigned int *turn_count, unsigned int *error_count);
 
 /* Delay from external turn clock to internal turn clock. */
 void hw_write_turn_clock_offset(int channel, unsigned int offset);

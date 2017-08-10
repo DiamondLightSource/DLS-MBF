@@ -21,9 +21,9 @@ def bank_pvs(update_count):
         FLNK = update_end, DESC = 'Sweep NCO step frequency')
     longOut('DWELL', 1, 1<<16,
         FLNK = update_count, EGU = 'turns', DESC = 'Sweep dwell time')
-    longOut('COUNT', 1, 1<<12,
+    longOut('COUNT', 1, 1<<16,
         FLNK = update_count, DESC = 'Sweep count')
-    longOut('HOLDOFF', 0, 65535,
+    longOut('HOLDOFF', 0, (1<<16) - 1,
         FLNK = update_count, DESC = 'Detector holdoff')
     mbbOut('BANK', 'Bank 0', 'Bank 1', 'Bank 2', 'Bank 3',
         DESC = 'Bunch bank selection')

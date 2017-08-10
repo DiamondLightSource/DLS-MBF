@@ -287,9 +287,12 @@ void hw_write_turn_clock_sync(void)
     WRITE_FIELDS(ctrl_regs->trg_control, .sync_turn = 1);
 }
 
-void hw_write_turn_clock_sample(void)
+void hw_read_turn_clock_counts(
+    unsigned int *turn_count, unsigned int *error_count)
 {
-    WRITE_FIELDS(ctrl_regs->trg_control, .sample_turn = 1);
+    WRITE_FIELDS(ctrl_regs->trg_control, .read_sync = 1);
+    *turn_count = ctrl_regs->trg_turn_count.count;
+    *error_count = ctrl_regs->trg_error_count.count;
 }
 
 void hw_write_turn_clock_offset(int channel, unsigned int offset)
@@ -351,14 +354,9 @@ void hw_read_trigger_status(struct trigger_status *result)
 {
     struct ctrl_trg_status status = READL(ctrl_regs->trg_status);
     result->sync_busy = status.sync_busy;
-    result->sync_phase = status.sync_phase;
-    result->sync_error = status.sync_error;
-    result->sample_busy = status.sample_busy;
-    result->sample_phase = status.sample_phase;
     result->seq0_armed = status.seq0_armed;
     result->seq1_armed = status.seq1_armed;
     result->dram_armed = status.dram0_armed;
-    result->clock_offset = status.sample;
 }
 
 void hw_read_trigger_sources(
@@ -698,10 +696,10 @@ static void write_sequencer_state(int channel, const struct seq_entry *entry)
 
     writel(&target->start_freq, entry->start_freq);
     writel(&target->delta_freq, entry->delta_freq);
-    WRITE_FIELDS(target->dwell_time,
-        .dwell = (entry->dwell_time - 1) & 0xFFFF);
+    WRITE_FIELDS(target->time,
+        .dwell = (entry->dwell_time - 1) & 0xFFFF,
+        .capture = (entry->capture_count - 1) & 0xFFFF);
     WRITE_FIELDS(target->config,
-        .capture = (entry->capture_count - 1) & 0xFFF,
         .bank = entry->bunch_bank & 0x3,
         .nco_gain = entry->nco_gain & 0xF,
         .ena_window = entry->enable_window,
@@ -833,13 +831,13 @@ void hw_write_det_config(
 {
     struct dsp_det_config det_config = {
         .select  = input_select,
-        .scale0  = config[0].scaling & 0x3,
+        .scale0  = config[0].scaling & 0x1,
         .enable0 = config[0].enable,
-        .scale1  = config[1].scaling & 0x3,
+        .scale1  = config[1].scaling & 0x1,
         .enable1 = config[1].enable,
-        .scale2  = config[2].scaling & 0x3,
+        .scale2  = config[2].scaling & 0x1,
         .enable2 = config[2].enable,
-        .scale3  = config[3].scaling & 0x3,
+        .scale3  = config[3].scaling & 0x1,
         .enable3 = config[3].enable,
     };
 
