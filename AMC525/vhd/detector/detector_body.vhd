@@ -32,7 +32,7 @@ entity detector_body is
         output_underrun_o : out std_logic;
 
         -- Output scaling control on DSP clock
-        output_scaling_i : in unsigned(1 downto 0);
+        output_scaling_i : in unsigned;
 
         -- Detector data out, all on ADC clock, with AXI style handshake
         valid_o : out std_logic;

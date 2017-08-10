@@ -100,12 +100,12 @@ begin
                         seq_state_o.start_freq <= angle_t(prog_word);
                     when DSP_SEQ_STATE_DELTA_FREQ_OVL =>
                         seq_state_o.delta_freq <= angle_t(prog_word);
-                    when DSP_SEQ_STATE_DWELL_TIME_OVL =>
+                    when DSP_SEQ_STATE_TIME_OVL =>
                         seq_state_o.dwell_count <= dwell_count_t(
-                            prog_word(DSP_SEQ_STATE_DWELL_TIME_DWELL_BITS));
-                    when DSP_SEQ_STATE_CONFIG_OVL =>
+                            prog_word(DSP_SEQ_STATE_TIME_DWELL_BITS));
                         seq_state_o.capture_count <= capture_count_t(
-                            prog_word(DSP_SEQ_STATE_CONFIG_CAPTURE_BITS));
+                            prog_word(DSP_SEQ_STATE_TIME_CAPTURE_BITS));
+                    when DSP_SEQ_STATE_CONFIG_OVL =>
                         seq_state_o.bunch_bank <= unsigned(
                             prog_word(DSP_SEQ_STATE_CONFIG_BANK_BITS));
                         seq_state_o.hom_gain <= unsigned(

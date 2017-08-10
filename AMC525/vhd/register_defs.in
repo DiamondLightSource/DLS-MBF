@@ -74,7 +74,6 @@
     STATUS      R
         # Set if ADC clock is currently good
         .DSP_OK
-        -
         # Set if FMC500 VCXO power ok
         .VCXO_OK
         # Set if FMC500 ADC power ok
@@ -92,7 +91,6 @@
 
     # Control register
     CONTROL     RW
-        -           3
         # FMC500 PLL clkin sel0
         .PLL_SEL0
         # FMC500 PLL clkin sel1
@@ -555,12 +553,12 @@
                 START_FREQ
                 # Frequency step for this sweep
                 DELTA_FREQ
-                DWELL_TIME
+                TIME
                     # Number of turns to capture for one detector cycle
                     .DWELL          16
-                CONFIG
                     # Total number of samples in this sweep
-                    .CAPTURE        12
+                    .CAPTURE        16
+                CONFIG
                     # Bunch bank select for this sequencer state
                     .BANK           2
                     # Select sweep NCO gain
@@ -600,19 +598,19 @@
             # FIR data
             .SELECT
             # Output scaling for detector 0
-            .SCALE0     2
+            .SCALE0     1
             # Output enable for detector 0
             .ENABLE0
             # Output scaling for detector 1
-            .SCALE1     2
+            .SCALE1     1
             # Output enable for detector 1
             .ENABLE1
             # Output scaling for detector 2
-            .SCALE2     2
+            .SCALE2     1
             # Output enable for detector 2
             .ENABLE2
             # Output scaling for detector 3
-            .SCALE3     2
+            .SCALE3     1
             # Output enable for detector 3
             .ENABLE3
             # Select which bunch bank is written to when writing to the detector

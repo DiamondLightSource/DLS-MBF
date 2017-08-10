@@ -26,7 +26,7 @@ entity detector_registers is
         data_select_o : out std_logic;
         start_write_o : out std_logic;
         bunch_write_o : out std_logic_vector(DETECTOR_RANGE);
-        output_scaling_o : out unsigned_array(DETECTOR_RANGE)(1 downto 0);
+        output_scaling_o : out unsigned_array(DETECTOR_RANGE)(0 downto 0);
         address_reset_o : out std_logic;
         input_enable_o : out std_logic_vector(DETECTOR_RANGE);
 

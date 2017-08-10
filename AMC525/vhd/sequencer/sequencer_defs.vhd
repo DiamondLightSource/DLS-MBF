@@ -10,7 +10,7 @@ use work.nco_defs.all;
 package sequencer_defs is
 
     subtype dwell_count_t is unsigned(15 downto 0);
-    subtype capture_count_t is unsigned(11 downto 0);
+    subtype capture_count_t is unsigned(15 downto 0);
 
     type seq_state_t is record
         start_freq : angle_t;           -- Sweep start frequency

@@ -146,7 +146,7 @@ begin
         end loop;
 
         -- Write FIR 0 taps
-        write_reg(DSP_FIR_CONFIG_REG, X"00000000");
+        write_reg(DSP_FIR_CONFIG_REG_W, X"00000000");
         write_reg(DSP_FIR_TAPS_REG,   X"5a827980");
 --         write_reg(DSP_FIR_TAPS_REG,   X"5a827980");
         write_reg(DSP_FIR_TAPS_REG,   X"a57d8680");

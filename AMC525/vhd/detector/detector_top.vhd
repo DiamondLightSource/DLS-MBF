@@ -55,7 +55,7 @@ architecture arch of detector_top is
     signal data_select : std_logic;
     signal start_write : std_logic;
     signal bunch_write : std_logic_vector(DETECTOR_RANGE);
-    signal output_scaling : unsigned_array(DETECTOR_RANGE)(1 downto 0);
+    signal output_scaling : unsigned_array(DETECTOR_RANGE)(0 downto 0);
     signal address_reset : std_logic;
     signal input_enable : std_logic_vector(DETECTOR_RANGE);
     -- Event feedbacks (all on DSP clock)
