@@ -10,25 +10,17 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.trigger_defs.all;
+
 entity trigger_turn_clock is
     port (
         -- Clocking
         adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
 
-        -- Control interface
-        start_sync_i : in std_logic;    -- Resynchronise request
-        start_sample_i : in std_logic;
-        max_bunch_i : in bunch_count_t; -- Ring size
-        clock_offsets_i : in unsigned_array(CHANNELS)(bunch_count_t'RANGE);
-
-        -- Status readbacks
-        sync_busy_o : out std_logic;
-        sync_phase_o : out std_logic;
-        sync_error_o : out std_logic;
-        sample_busy_o : out std_logic;
-        sample_phase_o : out std_logic;
-        sample_count_o : out bunch_count_t;
+        -- Control and readback
+        setup_i : in turn_clock_setup_t;
+        readback_o : out turn_clock_readback_t;
 
         -- Input clock
         revolution_clock_i : in std_logic;
@@ -38,116 +30,103 @@ entity trigger_turn_clock is
 end;
 
 architecture arch of trigger_turn_clock is
-    signal adc_phase : std_logic;
-
-    signal max_bunch : bunch_count_t := (others => '0');
-    signal clock_offsets : clock_offsets_i'SUBTYPE;
+    signal start_sync : std_logic;
+    signal read_sync : std_logic;
+    signal zero_detect : boolean;
     signal bunch_counter : bunch_count_t := (others => '0');
-
-    -- Synchronisation and sample state
+    signal revolution_clock : std_logic := '0';
     signal sync_request : boolean := false;
-    signal sync_holdoff : boolean := false;
-    signal sync_phase : std_logic;
-    signal sync_ok : boolean := true;
-    signal sync_error : boolean := false;
-    signal sample_request : boolean := false;
-    signal sample_phase : std_logic;
-    signal sample_count : bunch_count_t;
-
+    signal bunch_counter_delay : bunch_count_t := (others => '0');
+    signal zero_detect_delay : boolean := false;
+    signal revolution_clock_delay : boolean := false;
     signal turn_clock : std_logic_vector(CHANNELS) := (others => '0');
 
-begin
-    -- -------------------------------------------------------------------------
-    -- Revolution clock at ADC clock rate
+    signal turn_counter : readback_o.turn_counter'SUBTYPE := (others => '0');
+    signal turn_counter_out : readback_o.turn_counter'SUBTYPE;
+    signal error_counter : readback_o.error_counter'SUBTYPE := (others => '0');
+    signal error_counter_out : readback_o.error_counter'SUBTYPE;
 
-    phase : entity work.adc_dsp_phase port map (
+begin
+
+    -- Convert the sync and read requests on DSP clock to ADC clock
+    convert_sync : entity work.pulse_dsp_to_adc port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        adc_phase_o => adc_phase
+        pulse_i => setup_i.start_sync,
+        pulse_o => start_sync
     );
+
+    convert_read : entity work.pulse_dsp_to_adc port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => setup_i.read_sync,
+        pulse_o => read_sync
+    );
+
+    zero_detect <= bunch_counter = 0;
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            -- Transfer control counters to ADC clock
-            max_bunch <= max_bunch_i;
-            clock_offsets <= clock_offsets_i;
+            revolution_clock <= revolution_clock_i;
 
-            -- Synchronise or else advance base bunch counter
-            if revolution_clock_i = '1' and sync_request then
-                bunch_counter <= max_bunch;
-                sync_phase <= adc_phase;
-                sync_holdoff <= true;
-            elsif bunch_counter = 0 then
-                bunch_counter <= max_bunch;
-                sync_holdoff <= false;
-            else
-                bunch_counter <= bunch_counter - 1;
-            end if;
-            -- Synchronisation request.
-            if start_sync_i = '1' and adc_phase = '1' then
+            -- Sync request state machine
+            if start_sync then
                 sync_request <= true;
-            elsif revolution_clock_i = '1' then
+            elsif revolution_clock then
                 sync_request <= false;
             end if;
 
-
-            -- Check synchronisation
-            if revolution_clock_i = '1' then
-                sync_ok <= bunch_counter = 0;
+            -- Bunch counter
+            if zero_detect or (sync_request and revolution_clock = '1') then
+                bunch_counter <= setup_i.max_bunch;
             else
-                sync_ok <= true;
+                bunch_counter <= bunch_counter - 1;
             end if;
-            if sync_request or sync_holdoff then
-                sync_error <= false;
-            else
-                sync_error <= sync_error or not sync_ok;
-            end if;
+            bunch_counter_delay <= bunch_counter;
 
-
-            -- Sample request.
-            if revolution_clock_i = '1' and sample_request then
-                sample_count <= bunch_counter;
-                sample_phase <= adc_phase;
-            end if;
-            if start_sample_i = '1' and adc_phase = '1' then
-                sample_request <= true;
-            elsif revolution_clock_i = '1' then
-                sample_request <= false;
-            end if;
-
+            -- Clock phase check
+            zero_detect_delay <= zero_detect;
+            revolution_clock_delay <= revolution_clock = '1';
 
             -- Output of channel specific turn clocks
             for c in CHANNELS loop
-                if sync_request or sync_holdoff then
-                    turn_clock(c) <= '0';
-                else
-                    turn_clock(c) <=
-                        to_std_logic(bunch_counter = clock_offsets(c));
-                end if;
+                turn_clock(c) <= to_std_logic(
+                    bunch_counter_delay = setup_i.clock_offsets(c));
             end loop;
+
+            -- Now count some turn statistics
+            if read_sync then
+                turn_counter_out <= turn_counter;
+                error_counter_out <= error_counter;
+                turn_counter <= (others => '0');
+                error_counter <= (others => '0');
+            elsif zero_detect_delay then
+                turn_counter <= turn_counter + 1;
+                if revolution_clock_delay /= zero_detect_delay then
+                    error_counter <= error_counter + 1;
+                end if;
+            end if;
         end if;
     end process;
 
-    -- Delay line for the ADC turn clock
+
+    -- Bring register readbacks onto DSP clock
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            readback_o.sync_busy <= to_std_logic(sync_request);
+            readback_o.turn_counter <= turn_counter_out;
+            readback_o.error_counter <= error_counter_out;
+        end if;
+    end process;
+
+
+    -- Delay line for the turn clock to help with timing
     turn_clock_delay : entity work.dlyreg generic map (
-        DLY => 2,
+        DLY => 4,
         DW => CHANNEL_COUNT
     ) port map (
         clk_i => adc_clk_i,
         data_i => turn_clock,
         data_o => turn_clock_o
     );
-
-
-    -- Pull all our DSP output across to the DSP clock
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            sync_busy_o <= to_std_logic(sync_request or sync_holdoff);
-            sync_phase_o <= sync_phase;
-            sync_error_o <= to_std_logic(sync_error);
-            sample_busy_o <= to_std_logic(sample_request);
-            sample_phase_o <= sample_phase;
-            sample_count_o <= sample_count;
-        end if;
-    end process;
 end;

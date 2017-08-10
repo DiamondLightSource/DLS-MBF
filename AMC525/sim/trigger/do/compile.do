@@ -17,6 +17,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/system/adc_dsp_phase.vhd \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
+    $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/all_pulsed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \

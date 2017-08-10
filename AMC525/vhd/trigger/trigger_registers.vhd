@@ -110,11 +110,29 @@ begin
     read_ack_o(CTRL_TRG_CONFIG_REGS) <= (others => '1');
 
 
+    read_data_o(CTRL_TRG_TURN_COUNT_REG) <= (
+        CTRL_TRG_TURN_COUNT_COUNT_BITS =>
+            std_logic_vector(turn_readback_i.turn_counter),
+        others => '0'
+    );
+    read_ack_o(CTRL_TRG_TURN_COUNT_REG) <= '1';
+    write_ack_o(CTRL_TRG_TURN_COUNT_REG) <= '1';
+
+    read_data_o(CTRL_TRG_ERROR_COUNT_REG) <= (
+        CTRL_TRG_ERROR_COUNT_COUNT_BITS =>
+            std_logic_vector(turn_readback_i.error_counter),
+        others => '0'
+    );
+    read_ack_o(CTRL_TRG_ERROR_COUNT_REG) <= '1';
+    write_ack_o(CTRL_TRG_ERROR_COUNT_REG) <= '1';
+
+
+
     -- -------------------------------------------------------------------------
     -- Register mappings
 
     turn_setup_o.start_sync  <= strobed_bits(CTRL_TRG_CONTROL_SYNC_TURN_BIT);
-    turn_setup_o.start_sample <= strobed_bits(CTRL_TRG_CONTROL_SAMPLE_TURN_BIT);
+    turn_setup_o.read_sync   <= strobed_bits(CTRL_TRG_CONTROL_READ_SYNC_BIT);
     seq_setup_o(0).arm       <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_ARM_BIT);
     seq_setup_o(0).disarm    <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_DISARM_BIT);
     seq_setup_o(0).fire      <= strobed_bits(CTRL_TRG_CONTROL_SEQ0_FIRE_BIT);
@@ -135,15 +153,9 @@ begin
     readback_status <= (
         -- Revolution clock readbacks
         CTRL_TRG_STATUS_SYNC_BUSY_BIT    => turn_readback_i.sync_busy,
-        CTRL_TRG_STATUS_SYNC_PHASE_BIT   => turn_readback_i.sync_phase,
-        CTRL_TRG_STATUS_SYNC_ERROR_BIT   => turn_readback_i.sync_error,
-        CTRL_TRG_STATUS_SAMPLE_BUSY_BIT  => turn_readback_i.sample_busy,
-        CTRL_TRG_STATUS_SAMPLE_PHASE_BIT => turn_readback_i.sample_phase,
         CTRL_TRG_STATUS_SEQ0_ARMED_BIT   => seq_readback_i(0).armed,
         CTRL_TRG_STATUS_SEQ1_ARMED_BIT   => seq_readback_i(1).armed,
         CTRL_TRG_STATUS_DRAM0_ARMED_BIT  => dram0_readback_i.armed,
-        CTRL_TRG_STATUS_SAMPLE_BITS =>
-            std_logic_vector(turn_readback_i.sample_count),
         others => '0'
     );
 

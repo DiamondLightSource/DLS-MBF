@@ -128,17 +128,8 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        start_sync_i => turn_setup.start_sync,
-        start_sample_i => turn_setup.start_sample,
-        max_bunch_i => turn_setup.max_bunch,
-        clock_offsets_i => turn_setup.clock_offsets,
-
-        sync_busy_o => turn_readback.sync_busy,
-        sync_phase_o => turn_readback.sync_phase,
-        sync_error_o => turn_readback.sync_error,
-        sample_busy_o => turn_readback.sample_busy,
-        sample_phase_o => turn_readback.sample_phase,
-        sample_count_o => turn_readback.sample_count,
+        setup_i => turn_setup,
+        readback_o => turn_readback,
 
         revolution_clock_i => revolution_clock,
         turn_clock_o => turn_clock_adc_o

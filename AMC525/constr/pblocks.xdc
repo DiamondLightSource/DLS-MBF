@@ -13,14 +13,14 @@ resize_pblock [get_pblocks pblock_x1y1] -add {RAMB18_X7Y20:RAMB18_X14Y39}
 resize_pblock [get_pblocks pblock_x1y1] -add {RAMB36_X7Y10:RAMB36_X14Y19}
 
 # Put the two detectors in tile X0Y1
-create_pblock pblock_x0y0
-add_cells_to_pblock [get_pblocks pblock_x0y0] [get_cells -quiet [list \
+create_pblock pblock_x0y1
+add_cells_to_pblock [get_pblocks pblock_x0y1] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/detector} \
     {dsp_main/dsp_gen[1].dsp_top/detector}]]
 
-resize_pblock [get_pblocks pblock_x0y0] -add {DSP48_X0Y20:DSP48_X6Y39}
-resize_pblock [get_pblocks pblock_x0y0] -add {RAMB18_X0Y20:RAMB18_X6Y39}
-resize_pblock [get_pblocks pblock_x0y0] -add {RAMB36_X0Y10:RAMB36_X6Y19}
+resize_pblock [get_pblocks pblock_x0y1] -add {DSP48_X0Y20:DSP48_X6Y39}
+resize_pblock [get_pblocks pblock_x0y1] -add {RAMB18_X0Y20:RAMB18_X6Y39}
+resize_pblock [get_pblocks pblock_x0y1] -add {RAMB36_X0Y10:RAMB36_X6Y19}
 
 # Let's force the MMS blocks into tile X1Y2
 create_pblock pblock_x1y2

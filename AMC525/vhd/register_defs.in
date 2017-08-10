@@ -275,7 +275,7 @@
                 # Start turn clock synchronisation
                 .SYNC_TURN
                 # Request turn clock sample
-                .SAMPLE_TURN
+                .READ_SYNC
 
                 # Sequencer 0: arm, fire, disarm.  ARM enables triggering on
                 # any of the selected input triggers, FIRE bypasses input
@@ -301,22 +301,21 @@
         STATUS      R
             # Start clock synchronisation busy
             .SYNC_BUSY
-            # ADC clock phase after turn synchronisation
-            .SYNC_PHASE
-            # Synchronisation error detected
-            .SYNC_ERROR
-            # Waiting for turn clock sample
-            .SAMPLE_BUSY
-            # ADC clock phase after sample
-            .SAMPLE_PHASE
             # Sequencer 0 trigger armed
             .SEQ0_ARMED
             # Sequencer 1 trigger armed
             .SEQ1_ARMED
             # DRAM0 trigger armed
             .DRAM0_ARMED
-            # Turn clock counter captured by sample
-            .SAMPLE     10 @16
+
+        # Returns number of turns seen between the last two strobes of
+        # CONTROL.READ_SYNC
+        TURN_COUNT  R
+            .COUNT      20
+        # Returns number of turns out of sync with the input revolution clock
+        # over same period as TURN_COUNT
+        ERROR_COUNT R
+            .COUNT      20
 
         # Trigger event sources.  When a target is triggered the source of the
         # trigger is latched into the corresponding source mask below.  The

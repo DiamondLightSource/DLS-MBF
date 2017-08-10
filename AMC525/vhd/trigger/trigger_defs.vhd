@@ -8,18 +8,15 @@ use work.defines.all;
 package trigger_defs is
     type turn_clock_setup_t is record
         start_sync : std_logic;             -- Start clock resynchronisation
-        start_sample : std_logic;           -- Sample clock count and phase
+        read_sync : std_logic;              -- Sample clock and error count
         max_bunch : bunch_count_t;          -- Maximum expected bunch count
         clock_offsets : unsigned_array(CHANNELS)(BUNCH_NUM_BITS-1 downto 0);
     end record;
 
     type turn_clock_readback_t is record
-        sync_busy : std_logic;          -- Set during synchronisation
-        sync_phase : std_logic;         -- ADC clock phase at synchronisation
-        sync_error : std_logic;         -- Set if synchronisation mismatch seen
-        sample_busy : std_logic;        -- Set during sampling
-        sample_phase : std_logic;       -- ADC clock phase at sample
-        sample_count : bunch_count_t;   -- Sample count at sample
+        sync_busy : std_logic;              -- Set during synchronisation
+        turn_counter : unsigned(19 downto 0);   -- Turns since last read
+        error_counter : unsigned(19 downto 0);  -- Sync errors since last read
     end record;
 
 
