@@ -219,9 +219,11 @@ begin
 
     -- Simple capture control
     fast_memory_control : entity work.fast_memory_control port map (
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         start_i => start,
-        stop_i => stop or memory_trigger_i,
+        stop_i => stop,
+        trigger_i => memory_trigger_i,
         count_i => count,
         capture_enable_o => capture_enable_out,
         capture_address_i => capture_address_in,

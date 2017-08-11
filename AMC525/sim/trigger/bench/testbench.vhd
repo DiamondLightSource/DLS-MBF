@@ -32,7 +32,7 @@ architecture arch of testbench is
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
     signal blanking_window : std_logic_vector(CHANNELS);
-    signal turn_clock_adc : std_logic_vector(CHANNELS);
+    signal turn_clock : std_logic_vector(CHANNELS);
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
 
@@ -40,7 +40,8 @@ begin
     adc_clk <= not adc_clk after 1 ns;
     dsp_clk <= not dsp_clk after 2 ns;
 
-    revolution_clock <= not revolution_clock after 17.3 ns;
+--     revolution_clock <= not revolution_clock after 17.3 ns;
+    revolution_clock <= not revolution_clock after 17 ns;
 
     postmortem_trigger <= '0';
     blanking_trigger <= '0';
@@ -67,7 +68,7 @@ begin
         seq_trigger_i => seq_trigger,
 
         blanking_window_o => blanking_window,
-        turn_clock_adc_o => turn_clock_adc,
+        turn_clock_o => turn_clock,
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger
     );
@@ -104,12 +105,16 @@ begin
         clk_wait(dsp_clk);
 
         -- max_bunch = 6 (7 ticks per turn)
-        write_reg(CTRL_TRG_CONFIG_TURN_REG,         X"0000_0806");
+        write_reg(CTRL_TRG_CONFIG_TURN_REG,         X"0000_0810");
         write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0001");
 
         read_reg(CTRL_TRG_PULSED_REG_R);
         read_reg(CTRL_TRG_STATUS_REG);
         read_reg(CTRL_TRG_SOURCES_REG);
+
+        -- Arm SEQ and DRAM0
+        write_reg(CTRL_TRG_CONFIG_TRIG_DRAM_REG,    X"0000_00FF");
+        write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0124");
 
         -- Blanking 3 for channel 0, 5 for channel 1
         write_reg(CTRL_TRG_CONFIG_BLANKING_REG,     X"0005_0003");
@@ -117,10 +122,6 @@ begin
         write_reg(CTRL_TRG_CONFIG_SEQ1_REG,         X"0000_0000");
         write_reg(CTRL_TRG_CONFIG_DRAM0_REG,        X"0000_0005");
         write_reg(CTRL_TRG_CONFIG_TRIG_SEQ_REG,     X"00FF_FFFF");
-        write_reg(CTRL_TRG_CONFIG_TRIG_DRAM_REG,    X"0000_00FF");
-
-        -- Arm SEQ and DRAM0
-        write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0054");
 
         -- Sample phase of clock
         write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0002");

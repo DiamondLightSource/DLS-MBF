@@ -221,7 +221,7 @@ begin
         seq_trigger_i => seq_trigger,
 
         blanking_window_o => blanking_window,
-        turn_clock_adc_o => turn_clock,
+        turn_clock_o => turn_clock,
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger
     );

@@ -36,7 +36,7 @@ entity trigger_top is
 
         -- Trigger outputs
         blanking_window_o : out std_logic_vector(CHANNELS);
-        turn_clock_adc_o : out std_logic_vector(CHANNELS);
+        turn_clock_o : out std_logic_vector(CHANNELS);
         seq_start_o : out std_logic_vector(CHANNELS);
         dram0_trigger_o : out std_logic
     );
@@ -68,9 +68,12 @@ architecture arch of trigger_top is
     signal dram0_readback : trigger_readback_t;
 
     signal dram0_turn_select : unsigned(0 downto 0);
+    signal dram0_turn_clock_dsp : std_logic;
     signal dram0_turn_clock : std_logic;
     signal dram0_blanking_select : std_logic_vector(CHANNELS);
     signal dram0_blanking_window : std_logic;
+    signal dram0_trigger_dsp : std_logic;
+    signal dram0_trigger_out : std_logic;
 
 begin
     -- Register control interface
@@ -132,7 +135,7 @@ begin
         readback_o => turn_readback,
 
         revolution_clock_i => revolution_clock,
-        turn_clock_o => turn_clock_adc_o
+        turn_clock_o => turn_clock_o
     );
 
 
@@ -149,12 +152,15 @@ begin
 
     -- Sequence triggers
     gen : for c in CHANNELS generate
+        signal seq_start : std_logic;
+
+    begin
         -- We need a DSP clocked version of the turn clock for the rest of our
         -- trigger processing
         turn_clock : entity work.pulse_adc_to_dsp port map (
             adc_clk_i => adc_clk_i,
             dsp_clk_i => dsp_clk_i,
-            pulse_i => turn_clock_adc_o(c),
+            pulse_i => turn_clock_o(c),
             pulse_o => turn_clock_dsp(c)
         );
 
@@ -167,26 +173,51 @@ begin
             setup_i => seq_setup(c),
 
             readback_o => seq_readback(c),
-            trigger_o => seq_start_o(c)
+            trigger_o => seq_start
+        );
+
+        seq_delay : entity work.dlyreg generic map (
+            DLY => 4
+        ) port map (
+            clk_i => dsp_clk_i,
+            data_i(0) => seq_start,
+            data_o(0) => seq_start_o(c)
         );
     end generate;
 
 
     -- For the DRAM0 trigger we need a choice of turn clock and blanking
-    dram0_turn_clock <= turn_clock_dsp(to_integer(dram0_turn_select));
+    dram0_turn_clock_dsp <= turn_clock_dsp(to_integer(dram0_turn_select));
+    dram0_turn_clock <= turn_clock_o(to_integer(dram0_turn_select));
     dram0_blanking_window <=
         vector_or(blanking_window_o and dram0_blanking_select);
 
     -- Memory capture trigger
     dram0_trigger : entity work.trigger_target port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => dram0_turn_clock,
+        turn_clock_i => dram0_turn_clock_dsp,
 
         triggers_i => triggers,
         blanking_window_i => dram0_blanking_window,
         setup_i => dram0_setup,
 
         readback_o => dram0_readback,
-        trigger_o => dram0_trigger_o
+        trigger_o => dram0_trigger_dsp
+    );
+
+    -- Convert trigger into an ADC synchronous version of the turn clock
+    sync_dram_trigger : entity work.trigger_resync port map (
+        adc_clk_i => adc_clk_i,
+        turn_clock_i => dram0_turn_clock,
+        trigger_i => dram0_trigger_dsp,
+        trigger_o => dram0_trigger_out
+    );
+
+    dram_delay : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => dram0_trigger_out,
+        data_o(0) => dram0_trigger_o
     );
 end;

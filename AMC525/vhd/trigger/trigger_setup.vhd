@@ -40,6 +40,10 @@ architecture arch of trigger_setup is
     -- Delayed soft trigger
     signal soft_trigger_delay : std_logic;
 
+    -- Pipelined internal triggers
+    signal adc_trigger_in : adc_trigger_i'SUBTYPE;
+    signal seq_trigger_in : seq_trigger_i'SUBTYPE;
+
 begin
     -- Note the revolution clock is synchronised to the ADC clock
     revolution_condition_inst : entity work.trigger_condition port map (
@@ -75,14 +79,33 @@ begin
         data_o(0) => soft_trigger_delay
     );
 
+    -- Pipeline the internally generated triggers.  These are all DSP clock.
+    adc_delay : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => CHANNEL_COUNT
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => adc_trigger_i,
+        data_o => adc_trigger_in
+    );
+
+    seq_delay : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => CHANNEL_COUNT
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => seq_trigger_i,
+        data_o => seq_trigger_in
+    );
+
     -- Gather all the triggers into a single trigger source set
     trigger_set_o <= (
         0 => soft_trigger_delay,
         1 => event_trigger,
         2 => postmortem_trigger,
-        3 => adc_trigger_i(0),
-        4 => adc_trigger_i(1),
-        5 => seq_trigger_i(0),
-        6 => seq_trigger_i(1)
+        3 => adc_trigger_in(0),
+        4 => adc_trigger_in(1),
+        5 => seq_trigger_in(0),
+        6 => seq_trigger_in(1)
     );
 end;

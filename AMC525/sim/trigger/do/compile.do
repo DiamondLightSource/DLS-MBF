@@ -29,6 +29,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/trigger/trigger_blanking.vhd \
     $vhd_dir/trigger/trigger_handler.vhd \
     $vhd_dir/trigger/trigger_target.vhd \
+    $vhd_dir/trigger/trigger_resync.vhd \
     $vhd_dir/trigger/trigger_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -43,6 +44,10 @@ view wave
 add wave -group "Registers" sim:/testbench/triggers/registers/*
 add wave -group "Turn Clock" sim:/testbench/triggers/turn_clock/*
 add wave -group "Blanking" sim:/testbench/triggers/blanking/*
+add wave -group "DRAM0 Handler" \
+    sim:/testbench/triggers/dram0_trigger/trigger_handler/*
+add wave -group "DRAM0" sim:/testbench/triggers/dram0_trigger/*
+add wave -group "DRAM0 Sync" sim:/testbench/triggers/sync_dram_trigger/*
 add wave -group "Triggers" sim:/testbench/triggers/*
 add wave sim:*
 

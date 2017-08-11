@@ -68,7 +68,7 @@ begin
             if trigger_seen = '1' then
                 readback_o.source <= trigger_sources;
             elsif setup_i.arm = '1' then
-                readback_o.source <= (readback_o.source'RANGE => '0');
+                readback_o.source <= (others => '0');
             end if;
         end if;
     end process;
