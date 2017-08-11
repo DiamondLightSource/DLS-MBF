@@ -20,9 +20,6 @@ def setup_dac():
     DAC_SPI[0x08] = 0x2F        # DACCLK differential crossing correction
     DAC_SPI[0x0A] = 0x40        # PLL clock multiplier disabled
 
-    # FIFO synchronisation
-
-
     # Datapath control, defaults are to disable everything, which is fine
     DAC_SPI[0x1B] = 0xA4        # Enable sinc inverse filter
 
@@ -36,6 +33,24 @@ def setup_dac():
     DAC_SPI[0x41] = 0x03
     DAC_SPI[0x44] = 0xFF
     DAC_SPI[0x45] = 0x03
+
+    # FIFO synchronisation
+    # This is the relative FIFO reset process documented on p34 of the AD9122
+    # manual (Rev. B).  Depending on our clocks this may still leave an
+    # uncertainty of one clock tick, to be investigated...
+    print 'Setting DAC FIFO synchronisation'
+    DAC_SPI[0x17] = 0x05            # Set nominal FIFO phase offset to 5
+    status = DAC_SPI[0X18]
+    DAC_SPI[0x18] = status | 2      # Set soft alignment request bit
+    status = DAC_SPI[0X18]
+    assert status & 0x04            # Validate FIFO acknowlege
+    DAC_SPI[0x18] = status & ~2     # Reset soft alignment bit
+    status = DAC_SPI[0X18]
+    assert not (status & 0x04)      # Validate FIFO acknowlege
+    spacing = DAC_SPI[0X19]
+    print 'spacing: %02x' % spacing
+    assert spacing in [0x07, 0x0F]  # Validate programmed spacing
+
 
 if __name__ == '__main__':
     setup_dac()
