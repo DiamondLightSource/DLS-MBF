@@ -21,6 +21,9 @@
 
 static struct dac_context {
     int channel;
+    bool mms_after_fir;
+    bool dram_after_fir;
+    unsigned int filter_delay;
     struct dac_events events;
     struct mms_handler *mms;
 } dac_context[CHANNEL_COUNT];
@@ -53,23 +56,40 @@ static bool write_dac_output_enable(void *context, bool *value)
     return true;
 }
 
+
+static void update_delays(struct dac_context *dac)
+{
+    set_mms_offset(dac->mms, dac->mms_after_fir ?
+        hardware_delays.MMS_DAC_FIR_DELAY + dac->filter_delay :
+        hardware_delays.MMS_DAC_DELAY);
+    set_memory_dac_offset(dac->channel, dac->dram_after_fir ?
+        hardware_delays.DRAM_DAC_FIR_DELAY + dac->filter_delay :
+        hardware_delays.DRAM_DAC_DELAY);
+}
+
 static bool write_dac_mms_source(void *context, bool *after_fir)
 {
     struct dac_context *dac = context;
+    dac->mms_after_fir = *after_fir;
     hw_write_dac_mms_source(dac->channel, *after_fir);
-    set_mms_offset(dac->mms, *after_fir ?
-        hardware_delays.MMS_DAC_FIR_DELAY :
-        hardware_delays.MMS_DAC_DELAY);
+    update_delays(dac);
     return true;
 }
 
 static bool write_dac_dram_source(void *context, bool *after_fir)
 {
     struct dac_context *dac = context;
+    dac->dram_after_fir = *after_fir;
     hw_write_dac_dram_source(dac->channel, *after_fir);
-    set_memory_dac_offset(dac->channel, *after_fir ?
-        hardware_delays.DRAM_DAC_FIR_DELAY :
-        hardware_delays.DRAM_DAC_DELAY);
+    update_delays(dac);
+    return true;
+}
+
+static bool write_filter_delay(void *context, unsigned int *delay)
+{
+    struct dac_context *dac = context;
+    dac->filter_delay = *delay;
+    update_delays(dac);
     return true;
 }
 
@@ -90,6 +110,7 @@ error__t initialise_dac(void)
 
         PUBLISH_WAVEFORM_C_P(float, "FILTER",
             hardware_config.dac_taps, write_dac_taps, dac);
+        PUBLISH_C_P(ulongout, "FILTER:DELAY", write_filter_delay, dac);
 
         PUBLISH_C_P(ulongout, "DELAY", write_dac_delay, dac);
         PUBLISH_C(bo, "ENABLE",      write_dac_output_enable, dac);
