@@ -93,7 +93,7 @@ architecture arch of dac_top is
 
 begin
     -- Register mapping
-    register_file_inst : entity work.register_file port map (
+    register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG),
         write_data_i => write_data_i,
@@ -171,7 +171,7 @@ begin
     -- -------------------------------------------------------------------------
     -- Output preparation
 
-    fir_gain_inst : entity work.gain_control port map (
+    fir_gain_control : entity work.gain_control port map (
         clk_i => adc_clk_i,
         gain_sel_i => fir_gain,
         data_i => fir_data_in,
@@ -179,7 +179,7 @@ begin
         overflow_o => fir_overflow_in
     );
 
-    nco_0_gain_inst : entity work.gain_control generic map (
+    nco_0_gain_control : entity work.gain_control generic map (
         EXTRA_SHIFT => 2
     ) port map (
         clk_i => adc_clk_i,
@@ -190,7 +190,7 @@ begin
     );
     nco_0_enable <= nco_0_data_in.enable;
 
-    nco_1_gain_inst : entity work.gain_control generic map (
+    nco_1_gain_control : entity work.gain_control generic map (
         EXTRA_SHIFT => 2,
         GAIN_DELAY => NCO1_GAIN_DELAY
     ) port map (
@@ -202,7 +202,7 @@ begin
     );
 
     -- Align NCO 1 enable with gain control
-    nco_1_enable_inst : entity work.dlyline generic map (
+    nco_1_enable_delay : entity work.dlyline generic map (
         DLY => NCO1_GAIN_DELAY
     ) port map (
         clk_i => adc_clk_i,
@@ -250,7 +250,7 @@ begin
     -- Finalisation of output
 
     -- Min/Max/Sum
-    min_max_sum_inst : entity work.min_max_sum port map (
+    min_max_sum : entity work.min_max_sum port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_i,
@@ -267,7 +267,7 @@ begin
 
 
     -- Compensation filter
-    fast_fir_inst : entity work.fast_fir_top generic map (
+    fast_fir : entity work.fast_fir_top generic map (
         TAP_COUNT => TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
@@ -287,7 +287,7 @@ begin
 
 
     -- Programmable long delay
-    dac_delay_inst : entity work.long_delay generic map (
+    long_delay : entity work.long_delay generic map (
         WIDTH => data_o'LENGTH,
         PIPELINE_DELAY => 4
     ) port map (

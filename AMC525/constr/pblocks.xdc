@@ -25,10 +25,10 @@ resize_pblock [get_pblocks pblock_x0y1] -add {RAMB36_X0Y10:RAMB36_X6Y19}
 # Let's force the MMS blocks into tile X1Y2
 create_pblock pblock_x1y2
 add_cells_to_pblock [get_pblocks pblock_x1y2] [get_cells -quiet [list \
-    {dsp_main/dsp_gen[0].dsp_top/adc_top/min_max_sum_inst} \
-    {dsp_main/dsp_gen[0].dsp_top/dac_top/min_max_sum_inst} \
-    {dsp_main/dsp_gen[1].dsp_top/adc_top/min_max_sum_inst} \
-    {dsp_main/dsp_gen[1].dsp_top/dac_top/min_max_sum_inst}]]
+    {dsp_main/dsp_gen[0].dsp_top/adc_top/min_max_sum} \
+    {dsp_main/dsp_gen[0].dsp_top/dac_top/min_max_sum} \
+    {dsp_main/dsp_gen[1].dsp_top/adc_top/min_max_sum} \
+    {dsp_main/dsp_gen[1].dsp_top/dac_top/min_max_sum}]]
 
 resize_pblock [get_pblocks pblock_x1y2] -add {DSP48_X7Y40:DSP48_X17Y59}
 resize_pblock [get_pblocks pblock_x1y2] -add {RAMB18_X7Y40:RAMB18_X14Y59}

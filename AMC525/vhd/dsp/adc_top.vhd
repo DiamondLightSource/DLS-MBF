@@ -45,7 +45,7 @@ architecture arch of adc_top is
     signal config_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
-    signal data_delay : unsigned(0 downto 0);
+    signal mms_source : std_logic;
 
     signal command_bits : reg_data_t;
     signal write_start : std_logic;
@@ -58,7 +58,7 @@ architecture arch of adc_top is
 
     signal filtered_data : data_o'SUBTYPE;
     signal data_in : data_i'SUBTYPE;
-    signal delayed_data : data_i'SUBTYPE;
+    signal mms_data : data_o'SUBTYPE;
     signal mms_delta : unsigned(data_o'RANGE);
 
 begin
@@ -92,7 +92,7 @@ begin
     );
 
     input_limit <= unsigned(config_register(DSP_ADC_CONFIG_THRESHOLD_BITS));
-    data_delay  <= unsigned(config_register(DSP_ADC_CONFIG_DELAY_BITS));
+    mms_source  <= config_register(DSP_ADC_CONFIG_MMS_SOURCE_BIT);
     delta_limit <= unsigned(config_register(DSP_ADC_CONFIG_DELTA_BITS));
 
     write_start <= command_bits(DSP_ADC_COMMAND_WRITE_BIT);
@@ -118,30 +118,19 @@ begin
     );
 
 
-    -- One bit data skew to allow for clock shift
-    adc_delay_inst : entity work.short_delay generic map (
-        WIDTH => data_i'LENGTH
-    ) port map (
-        clk_i => adc_clk_i,
-        delay_i => data_delay,
-        data_i => std_logic_vector(data_in),
-        signed(data_o) => delayed_data
-    );
-
-
     -- Input overflow check
-    adc_overflow_inst : entity work.adc_overflow port map (
+    adc_overflow : entity work.adc_overflow port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        data_i => delayed_data,
+        data_i => data_in,
         limit_i => input_limit,
         overflow_o => input_overflow
     );
 
 
     -- Compensation filter
-    fast_fir_inst : entity work.fast_fir_top generic map (
+    fast_fir : entity work.fast_fir_top generic map (
         TAP_COUNT => TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
@@ -152,7 +141,7 @@ begin
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_ADC_TAPS_REG),
 
-        data_i => delayed_data,
+        data_i => data_in,
         data_o => filtered_data,
         overflow_o => fir_overflow
     );
@@ -160,13 +149,23 @@ begin
     read_ack_o(DSP_ADC_TAPS_REG) <= '1';
 
 
+    adc_mms_source : entity work.adc_mms_source port map (
+        adc_clk_i => adc_clk_i,
+
+        raw_data_i => data_in,
+        filtered_data_i => filtered_data,
+
+        mms_source_i => mms_source,
+        mms_data_o => mms_data
+    );
+
     -- Min/Max/Sum
-    min_max_sum_inst : entity work.min_max_sum port map (
+    min_max_sum : entity work.min_max_sum port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_i,
 
-        data_i => filtered_data,
+        data_i => mms_data,
         delta_o => mms_delta,
         overflow_o => mms_overflow,
 
@@ -177,7 +176,7 @@ begin
     write_ack_o(DSP_ADC_MMS_REGS) <= (others => '1');
 
     -- Bunch movement detection
-    min_max_limit_inst : entity work.min_max_limit port map (
+    min_max_limit : entity work.min_max_limit port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -187,6 +186,7 @@ begin
 
         limit_event_o => delta_event_o
     );
+
 
     -- Output for further processing
     output_delay : entity work.dlyreg generic map (

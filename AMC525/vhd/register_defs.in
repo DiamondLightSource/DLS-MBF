@@ -401,8 +401,8 @@
         CONFIG       W
             # Input threshold for reporting input overflow
             .THRESHOLD  14
-            # Optional 1 clock delay on ADC input.  Probably not useful.
-            .DELAY      1
+            # Choose source of MMS data: before or after FIR
+            .MMS_SOURCE
             # Limit threshold for min/max/sum bunch motion event detector
             .DELTA      16
         *RW
