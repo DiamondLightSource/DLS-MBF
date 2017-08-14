@@ -26,8 +26,9 @@ entity adc_top is
         turn_clock_i : in std_logic;    -- start of machine revolution
 
         -- Data flow
-        data_i : in signed;                 -- at ADC data rate
-        data_o : out signed;          -- paired at DSP data rate
+        data_i : in signed;
+        data_o : out signed;
+        data_store_o : out signed;      -- Data to be stored to memory
 
         -- General register interface
         write_strobe_i : in std_logic_vector(DSP_ADC_REGS);
@@ -46,6 +47,7 @@ architecture arch of adc_top is
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
     signal mms_source : std_logic;
+    signal dram_source : std_logic;
 
     signal command_bits : reg_data_t;
     signal write_start : std_logic;
@@ -93,6 +95,7 @@ begin
 
     input_limit <= unsigned(config_register(DSP_ADC_CONFIG_THRESHOLD_BITS));
     mms_source  <= config_register(DSP_ADC_CONFIG_MMS_SOURCE_BIT);
+    dram_source  <= config_register(DSP_ADC_CONFIG_DRAM_SOURCE_BIT);
     delta_limit <= unsigned(config_register(DSP_ADC_CONFIG_DELTA_BITS));
 
     write_start <= command_bits(DSP_ADC_COMMAND_WRITE_BIT);
@@ -149,15 +152,21 @@ begin
     read_ack_o(DSP_ADC_TAPS_REG) <= '1';
 
 
-    adc_mms_source : entity work.adc_mms_source port map (
+    -- Select sources for stored and MMS data
+    source_mux : entity work.mms_dram_data_source port map (
         adc_clk_i => adc_clk_i,
 
-        raw_data_i => data_in,
+        unfiltered_data_i(15 downto 0) => data_in & "00",
         filtered_data_i => filtered_data,
 
         mms_source_i => mms_source,
-        mms_data_o => mms_data
+        mms_data_o => mms_data,
+
+        dram_source_i => dram_source,
+        dram_data_o => data_store_o
     );
+
+
 
     -- Min/Max/Sum
     min_max_sum : entity work.min_max_sum port map (

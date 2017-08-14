@@ -403,6 +403,8 @@
             .THRESHOLD  14
             # Choose source of MMS data: before or after FIR
             .MMS_SOURCE
+            # Choose source of DRAM0 data: before or after FIR
+            .DRAM_SOURCE
             # Limit threshold for min/max/sum bunch motion event detector
             .DELTA      16
         *RW

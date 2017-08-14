@@ -128,6 +128,7 @@ begin
 
         data_i => adc_data_i,
         data_o => dsp_to_control_o.adc_data,
+        data_store_o => dsp_to_control_o.store_adc_data,
 
         write_strobe_i => write_strobe_i(DSP_ADC_REGS),
         write_data_i => write_data_i,

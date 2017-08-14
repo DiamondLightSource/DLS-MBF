@@ -17,6 +17,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/trigger/trigger_blanking.vhd \
     $vhd_dir/trigger/trigger_handler.vhd \
     $vhd_dir/trigger/trigger_target.vhd \
+    $vhd_dir/trigger/trigger_resync.vhd \
     $vhd_dir/trigger/trigger_top.vhd \
     $vhd_dir/util/stretch_pulse.vhd \
     $vhd_dir/dsp/dsp_control_mux.vhd \

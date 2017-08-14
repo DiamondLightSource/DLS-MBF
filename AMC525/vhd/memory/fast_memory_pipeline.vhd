@@ -36,7 +36,7 @@ begin
             DW => adc_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_logic_vector(dsp_to_control_i(c).adc_data),
+            data_i => std_logic_vector(dsp_to_control_i(c).store_adc_data),
             signed(data_o) => adc
         );
         adc_o(c) <= adc;

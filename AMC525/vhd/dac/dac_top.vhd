@@ -232,10 +232,10 @@ begin
 
 
     -- Select sources for stored and MMS data
-    source_mux : entity work.dac_data_source port map (
+    source_mux : entity work.mms_dram_data_source port map (
         adc_clk_i => adc_clk_i,
 
-        mux_data_i => data_out,
+        unfiltered_data_i => data_out,
         filtered_data_i => filtered_data,
 
         mms_source_i => mms_source,

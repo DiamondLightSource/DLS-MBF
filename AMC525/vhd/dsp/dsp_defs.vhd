@@ -33,6 +33,7 @@ package dsp_defs is
         -- Data streams.  adc_data for capture and for multiplexing to FIR
         -- input stage, fir_data and dac_data for capture.
         adc_data : signed(ADC_DATA_RANGE);
+        store_adc_data : signed(ADC_DATA_RANGE);
         fir_data : signed(FIR_DATA_RANGE);
         dac_data : signed(DAC_DATA_RANGE);
 
