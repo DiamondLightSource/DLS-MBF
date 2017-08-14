@@ -238,6 +238,9 @@ void hw_read_adc_events(int channel, struct adc_events *events);
  * FPGA configuration. */
 void hw_write_adc_taps(int channel, const int taps[]);
 
+/* Set output source for ADC MMS. */
+void hw_write_adc_mms_source(int channel, bool after_fir);
+
 /* Reads min/max/sum for ADC. */
 void hw_read_adc_mms(int channel, struct mms_result *result);
 

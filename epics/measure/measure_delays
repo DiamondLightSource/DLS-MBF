@@ -78,7 +78,9 @@ def configure_timing_test(lmbf, compensate = False):
 
     # Configure ADC and DAC filters with identity filters.
     lmbf.set('ADC:FILTER_S', unit_fir(lmbf.adc_taps))
+    lmbf.set('ADC:FILTER:DELAY_S', 0)
     lmbf.set('DAC:FILTER_S', unit_fir(lmbf.dac_taps))
+    lmbf.set('DAC:FILTER:DELAY_S', 0)
 
 
     # For a sensible starting state, disable the sequencer and select bank 0.
@@ -290,7 +292,10 @@ def measure_dac_mms(lmbf, results):
     maxadc = lmbf.PV('ADC:MMS:MAX')
 
     # Measure the MMS ADC skew now we've closed the loop
+    lmbf.set('ADC:MMS_SOURCE_S', 'Before FIR')
     results.MMS_ADC_DELAY = lmbf.find_mms_peak(maxadc)
+    lmbf.set('ADC:MMS_SOURCE_S', 'After FIR')
+    results.MMS_ADC_FIR_DELAY = lmbf.find_mms_peak(maxadc)
 
     # Measure gain skew: configure NCO on all bunches, but unit gain only on
     # bunch zer0, zero gain elsewhere.

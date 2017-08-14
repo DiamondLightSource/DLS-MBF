@@ -20,6 +20,8 @@
 
 static struct adc_context {
     int channel;
+    bool mms_after_fir;
+    unsigned int filter_delay;
     struct adc_events events;
     struct mms_handler *mms;
 } adc_context[CHANNEL_COUNT];
@@ -63,6 +65,32 @@ static bool set_adc_loopback(void *context, bool *value)
 }
 
 
+static void update_delays(struct adc_context *adc)
+{
+    set_mms_offset(adc->mms, adc->mms_after_fir ?
+        hardware_delays.MMS_ADC_FIR_DELAY :
+        hardware_delays.MMS_ADC_DELAY - adc->filter_delay);
+}
+
+static bool write_adc_mms_source(void *context, bool *after_fir)
+{
+    struct adc_context *adc = context;
+    adc->mms_after_fir = *after_fir;
+    hw_write_adc_mms_source(adc->channel, *after_fir);
+    update_delays(adc);
+    return true;
+}
+
+static bool write_filter_delay(void *context, unsigned int *delay)
+{
+    struct adc_context *adc = context;
+    adc->filter_delay = *delay;
+    update_delays(adc);
+    return true;
+}
+
+
+
 static void scan_events(void)
 {
     for (int i = 0; i < CHANNEL_COUNT; i ++)
@@ -79,18 +107,19 @@ error__t initialise_adc(void)
 
         PUBLISH_WAVEFORM_C_P(float, "FILTER",
             hardware_config.adc_taps, write_adc_taps, adc);
+        PUBLISH_C_P(ulongout, "FILTER:DELAY", write_filter_delay, adc);
 
         PUBLISH_C_P(ao, "OVF_LIMIT", set_adc_overflow_threshold, adc);
         PUBLISH_C_P(ao, "EVENT_LIMIT", set_adc_delta_threshold, adc);
         PUBLISH_C(bo, "LOOPBACK", set_adc_loopback, adc);
+        PUBLISH_C_P(bo, "MMS_SOURCE",  write_adc_mms_source, adc);
 
         PUBLISH_READ_VAR(bi, "INPUT_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF",   adc->events.fir_ovf);
         PUBLISH_READ_VAR(bi, "MMS_OVF",   adc->events.mms_ovf);
         PUBLISH_READ_VAR(bi, "EVENT",     adc->events.delta_event);
 
-        adc->mms = create_mms_handler(
-            channel, hw_read_adc_mms, hardware_delays.MMS_ADC_DELAY);
+        adc->mms = create_mms_handler(channel, hw_read_adc_mms);
     }
 
     PUBLISH_ACTION("ADC:EVENTS", scan_events);

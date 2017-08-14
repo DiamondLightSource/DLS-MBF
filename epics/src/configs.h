@@ -2,8 +2,9 @@
  * delays, the other defines basic system configuration settings. */
 
 extern const struct hardware_delays {
-    unsigned int MMS_DAC_DELAY;
     unsigned int MMS_ADC_DELAY;
+    unsigned int MMS_ADC_FIR_DELAY;
+    unsigned int MMS_DAC_DELAY;
     unsigned int MMS_DAC_FIR_DELAY;
 
     unsigned int DRAM_ADC_DELAY;

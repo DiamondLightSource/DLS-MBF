@@ -9,6 +9,7 @@ adc_events = []
 def adc_pvs():
     WaveformOut('FILTER', ADC_TAPS, 'FLOAT',
         DESC = 'Input compensation filter')
+    longOut('FILTER:DELAY', 0, 7, DESC = 'Compensation filter group delay')
 
     aOut('OVF_LIMIT', 0, 1, PREC = 4, DESC = 'Overflow limit threshold')
     aOut('EVENT_LIMIT', 0, 1, PREC = 4, DESC = 'ADC min/max event threshold')
@@ -22,6 +23,8 @@ def adc_pvs():
         event('EVENT', 'ADC min/max event'),
     ])
 
+    boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
+        DESC = 'Source of min/max/sum data')
     mms.mms_pvs('ADC')
 
 

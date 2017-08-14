@@ -170,8 +170,7 @@ static bool start_mms_readback(void *context, bool *value)
 
 
 struct mms_handler *create_mms_handler(
-    int channel, void (*read_mms)(int, struct mms_result*),
-    unsigned int bunch_offset)
+    int channel, void (*read_mms)(int, struct mms_result*))
 {
     struct mms_handler *mms = &mms_handlers.handlers[mms_handlers.count];
     mms_handlers.count += 1;
@@ -180,7 +179,7 @@ struct mms_handler *create_mms_handler(
     *mms = (struct mms_handler) {
         .channel = channel,
         .read_mms = read_mms,
-        .bunch_offset = bunch_offset,
+        .bunch_offset = 0,          // Will be set separately
         .mutex = PTHREAD_MUTEX_INITIALIZER,
         .accum = {
             .raw_min  = calloc(bunches, sizeof(int16_t)),

@@ -41,8 +41,9 @@ static struct hardware_delays hardware_delays_in;
     }
 
 static const struct config_entry hardware_delays_entries[] = {
-    DELAY_ENTRY(MMS_DAC_DELAY),
     DELAY_ENTRY(MMS_ADC_DELAY),
+    DELAY_ENTRY(MMS_ADC_FIR_DELAY),
+    DELAY_ENTRY(MMS_DAC_DELAY),
     DELAY_ENTRY(MMS_DAC_FIR_DELAY),
 
     DELAY_ENTRY(DRAM_ADC_DELAY),
@@ -96,8 +97,9 @@ static unsigned int convert_field(unsigned int value)
 
 static void convert_hardware_config(void)
 {
-    CONVERT_FIELD(MMS_DAC_DELAY);
     CONVERT_FIELD(MMS_ADC_DELAY);
+    CONVERT_FIELD(MMS_ADC_FIR_DELAY);
+    CONVERT_FIELD(MMS_DAC_DELAY);
     CONVERT_FIELD(MMS_DAC_FIR_DELAY);
 
     CONVERT_FIELD(DRAM_ADC_DELAY);
