@@ -14,6 +14,7 @@
 #include "common.h"
 #include "configs.h"
 #include "mms.h"
+#include "memory.h"
 
 #include "adc.h"
 
@@ -21,6 +22,7 @@
 static struct adc_context {
     int channel;
     bool mms_after_fir;
+    bool dram_after_fir;
     unsigned int filter_delay;
     struct adc_events events;
     struct mms_handler *mms;
@@ -70,6 +72,9 @@ static void update_delays(struct adc_context *adc)
     set_mms_offset(adc->mms, adc->mms_after_fir ?
         hardware_delays.MMS_ADC_FIR_DELAY :
         hardware_delays.MMS_ADC_DELAY - adc->filter_delay);
+    set_memory_adc_offset(adc->channel, adc->dram_after_fir ?
+        hardware_delays.DRAM_ADC_FIR_DELAY :
+        hardware_delays.DRAM_ADC_DELAY - adc->filter_delay);
 }
 
 static bool write_adc_mms_source(void *context, bool *after_fir)
@@ -77,6 +82,15 @@ static bool write_adc_mms_source(void *context, bool *after_fir)
     struct adc_context *adc = context;
     adc->mms_after_fir = *after_fir;
     hw_write_adc_mms_source(adc->channel, *after_fir);
+    update_delays(adc);
+    return true;
+}
+
+static bool write_adc_dram_source(void *context, bool *after_fir)
+{
+    struct adc_context *adc = context;
+    adc->dram_after_fir = *after_fir;
+    hw_write_adc_dram_source(adc->channel, *after_fir);
     update_delays(adc);
     return true;
 }
@@ -113,6 +127,7 @@ error__t initialise_adc(void)
         PUBLISH_C_P(ao, "EVENT_LIMIT", set_adc_delta_threshold, adc);
         PUBLISH_C(bo, "LOOPBACK", set_adc_loopback, adc);
         PUBLISH_C_P(bo, "MMS_SOURCE",  write_adc_mms_source, adc);
+        PUBLISH_C_P(bo, "DRAM_SOURCE", write_adc_dram_source, adc);
 
         PUBLISH_READ_VAR(bi, "INPUT_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF",   adc->events.fir_ovf);

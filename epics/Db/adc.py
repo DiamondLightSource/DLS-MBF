@@ -16,6 +16,11 @@ def adc_pvs():
     boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
         DESC = 'Enable DAC -> ADC loopback')
 
+    boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
+        DESC = 'Source of min/max/sum data')
+    boolOut('DRAM_SOURCE', 'Before FIR', 'After FIR',
+        DESC = 'Source of memory data')
+
     adc_events.extend([
         overflow('INPUT_OVF', 'ADC input overflow'),
         overflow('FIR_OVF', 'ADC FIR overflow'),
@@ -23,8 +28,6 @@ def adc_pvs():
         event('EVENT', 'ADC min/max event'),
     ])
 
-    boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
-        DESC = 'Source of min/max/sum data')
     mms.mms_pvs('ADC')
 
 

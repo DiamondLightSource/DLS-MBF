@@ -316,18 +316,22 @@ def measure_dram(lmbf, results):
 
     dram = DRAM(lmbf)
 
-    # First get the baseline ADC and DAC delay.
     lmbf.configure_dac_single_pulse()
-    lmbf.set('DAC:DRAM_SOURCE_S', 'Before FIR')
-    base_adc_delay, base_dac_delay = dram.get_peaks('ADC0/DAC0')
-    results.DRAM_ADC_DELAY = base_adc_delay
-    results.DRAM_DAC_DELAY = base_dac_delay
 
-    # Now get the FIR delay and the DAC after FIR skew
+    # First get the baseline ADC and DAC delay.
+    lmbf.set('DAC:DRAM_SOURCE_S', 'Before FIR')
+    lmbf.set('ADC:DRAM_SOURCE_S', 'Before FIR')
+    results.DRAM_ADC_DELAY, results.DRAM_DAC_DELAY = dram.get_peaks('ADC0/DAC0')
+
+    # Same, but after FIR
     lmbf.set('DAC:DRAM_SOURCE_S', 'After FIR')
-    base_fir_delay, extra_dac_delay = dram.get_peaks('FIR0/DAC0')
+    lmbf.set('ADC:DRAM_SOURCE_S', 'After FIR')
+    results.DRAM_ADC_FIR_DELAY, results.DRAM_DAC_FIR_DELAY = \
+        dram.get_peaks('ADC0/DAC0')
+
+    # Now get the FIR delay
+    base_fir_delay, _ = dram.get_peaks('FIR0/DAC0')
     results.DRAM_FIR_DELAY = base_fir_delay
-    results.DRAM_DAC_FIR_DELAY = extra_dac_delay
 
     # Now work out the FIR select skew.  Output NCO0 on all bunches, only set
     # bunch zero to non zero FIR.

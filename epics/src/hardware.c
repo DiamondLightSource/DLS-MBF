@@ -569,6 +569,13 @@ void hw_write_adc_mms_source(int channel, bool after_fir)
     UNLOCK(dsp_locks[channel]);
 }
 
+void hw_write_adc_dram_source(int channel, bool after_fir)
+{
+    LOCK(dsp_locks[channel]);
+    WRITE_DSP_MIRROR(channel, adc_config, dram_source, after_fir);
+    UNLOCK(dsp_locks[channel]);
+}
+
 void hw_read_adc_mms(int channel, struct mms_result *result)
 {
     read_mms(channel, &dsp_regs[channel]->adc_mms, result);

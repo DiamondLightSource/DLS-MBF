@@ -122,7 +122,6 @@ error__t initialise_dac(void)
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
         PUBLISH_READ_VAR(bi, "MMS_OVF", dac->events.mms_ovf);
 
-        /* Note: the true MMS offset is setup up a little bit later. */
         dac->mms = create_mms_handler(channel, hw_read_dac_mms);
     }
 

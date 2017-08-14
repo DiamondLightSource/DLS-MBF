@@ -154,12 +154,18 @@ static int readout_offset;
  * channel_delays[] is written when capture is complete, so that we don't see
  * changes while working with the runout. */
 static unsigned int dac_delays[CHANNEL_COUNT];
+static unsigned int adc_delays[CHANNEL_COUNT];
 static unsigned int channel_delays[CHANNEL_COUNT];
 
 
 void set_memory_dac_offset(int channel, unsigned int delay)
 {
     dac_delays[channel] = delay;
+}
+
+void set_memory_adc_offset(int channel, unsigned int delay)
+{
+    adc_delays[channel] = delay;
 }
 
 
@@ -170,8 +176,11 @@ static void update_channel_delays(void)
     for (int channel = 0; channel < CHANNEL_COUNT; channel ++)
         switch (chan_selection[channel])
         {
-            case ADC0: case ADC1:
-                channel_delays[channel] = hardware_delays.DRAM_ADC_DELAY;
+            case ADC0:
+                channel_delays[channel] = adc_delays[0];
+                break;
+            case ADC1:
+                channel_delays[channel] = adc_delays[1];
                 break;
             case FIR0: case FIR1:
                 channel_delays[channel] = hardware_delays.DRAM_FIR_DELAY;
