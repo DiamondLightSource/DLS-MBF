@@ -13,10 +13,8 @@ USR_CFLAGS += -Werror
 # # Pick up configuration symbols and pass them through to the IOC build
 # include $(TOP)/install_d/CONFIG
 LMBF_VERSION = testing testing
-BUNCHES_PER_TURN = 936
 
 USR_CFLAGS += -DLMBF_VERSION='"$(LMBF_VERSION)"'
-USR_CFLAGS += -DBUNCHES_PER_TURN=$(BUNCHES_PER_TURN)
 
 # Compute a sensible format of build date
 USR_CFLAGS += -DBUILD_DATE_TIME='"$(shell date '+%Y-%m-%d %H:%M')"'

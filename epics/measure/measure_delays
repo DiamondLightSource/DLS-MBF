@@ -96,9 +96,16 @@ def configure_timing_test(lmbf, compensate = False):
     # source when routed into a single bunch.
     lmbf.set('NCO:FREQ_S', 0)
     lmbf.set('NCO:GAIN_S', '0dB')
+    lmbf.set('NCO:ENABLE_S', 'On')
 
     # Reset detector window in case it's been messed with
     lmbf.set('SEQ:RESET_WIN_S.PROC', 0)
+
+    # Enable DET0, disable the rest
+    lmbf.set('DET:0:ENABLE_S', 'Enabled')
+    lmbf.set('DET:1:ENABLE_S', 'Disabled')
+    lmbf.set('DET:2:ENABLE_S', 'Disabled')
+    lmbf.set('DET:3:ENABLE_S', 'Disabled')
 
     # When we use the sequencer it's always for a single state
     lmbf.set('SEQ:PC_S', 1)

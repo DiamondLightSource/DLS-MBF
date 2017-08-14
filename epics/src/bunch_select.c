@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <time.h>
@@ -44,10 +45,11 @@ static struct bunch_context {
 
 /* Helper routine: counts number of instances of given value, not all set,
  * returns index of last non-equal value. */
-static int count_value(const int wf[], int value, unsigned int *diff_ix)
+static unsigned int count_value(
+    const int wf[], int value, unsigned int *diff_ix)
 {
-    int count = 0;
-    for (unsigned int i = 0; i < BUNCHES_PER_TURN; i ++)
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < system_config.bunches_per_turn; i ++)
         if (wf[i] == value)
             count += 1;
         else
@@ -64,27 +66,30 @@ enum complexity { ALL_SAME, ALL_BUT_ONE, COMPLICATED };
 static enum complexity assess_complexity(
     const int wf[], int *value, int *other, unsigned int *other_ix)
 {
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
     *value = wf[0];
     *other_ix = 0;
     *other = 0;
-    switch (count_value(wf, *value, other_ix))
+    unsigned int count = count_value(wf, *value, other_ix);
+    if (count == bunches_per_turn)
+        return ALL_SAME;
+    else if (count == bunches_per_turn - 1)
     {
-        case BUNCHES_PER_TURN:
-            return ALL_SAME;
-        case 1:
-            /* Need to check whether all rest are the same. */
-            *value = wf[1];
-            *other = wf[0];
-            if (count_value(wf, *value, other_ix) == BUNCHES_PER_TURN-1)
-                return ALL_BUT_ONE;
-            else
-                return COMPLICATED;
-        case BUNCHES_PER_TURN-1:
-            *other = wf[*other_ix];
+        *other = wf[*other_ix];
+        return ALL_BUT_ONE;
+    }
+    else if (count == 1)
+    {
+        /* Need to check whether all rest are the same. */
+        *value = wf[1];
+        *other = wf[0];
+        if (count_value(wf, *value, other_ix) == bunches_per_turn - 1)
             return ALL_BUT_ONE;
-        default:
+        else
             return COMPLICATED;
     }
+    else
+        return COMPLICATED;
 }
 
 
@@ -226,11 +231,11 @@ static void initialise_bank(
 
     unsigned int bunches = hardware_config.bunches;
     bank->config = (struct bunch_config) {
-        .fir_select  = malloc(bunches * sizeof(char)),
-        .gain        = malloc(bunches * sizeof(int)),
-        .fir_enable  = malloc(bunches * sizeof(char)),
-        .nco0_enable = malloc(bunches * sizeof(char)),
-        .nco1_enable = malloc(bunches * sizeof(char)),
+        .fir_select  = calloc(bunches, sizeof(char)),
+        .gain        = calloc(bunches, sizeof(int)),
+        .fir_enable  = calloc(bunches, sizeof(char)),
+        .nco0_enable = calloc(bunches, sizeof(char)),
+        .nco1_enable = calloc(bunches, sizeof(char)),
     };
 }
 
