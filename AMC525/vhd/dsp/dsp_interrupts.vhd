@@ -11,6 +11,7 @@ use work.register_defs.all;
 
 entity dsp_interrupts is
     port (
+        adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
 
         -- Interrupt sources
@@ -34,7 +35,7 @@ begin
     -- Stretch each interrupt pulse so it's not missed by the interrupt
     -- receiver.
     stretch_dram0 : entity work.stretch_pulse port map (
-        clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
         pulse_i(0) => dram0_trigger_i,
         pulse_o(0) => dram0_trigger
     );

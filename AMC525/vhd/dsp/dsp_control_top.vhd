@@ -239,6 +239,7 @@ begin
 
     -- Generate appropriate interrupt signals
     interrupts : entity work.dsp_interrupts port map (
+        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
         dram0_capture_enable_i => dram0_capture_enable_o,
