@@ -287,6 +287,11 @@ void hw_write_turn_clock_sync(void)
     WRITE_FIELDS(ctrl_regs->trg_control, .sync_turn = 1);
 }
 
+void hw_write_turn_clock_idelay(unsigned int delay)
+{
+    WRITE_FIELDS(sys_regs->rev_idelay, .value = delay & 0x1F, .write = 1);
+}
+
 void hw_read_turn_clock_counts(
     unsigned int *turn_count, unsigned int *error_count)
 {

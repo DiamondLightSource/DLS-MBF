@@ -49,6 +49,29 @@ def trigger_channel_pvs():
     with_name_prefix('SEQ', target_pvs)
     longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
 
+    longOut('TURN:OFFSET', DESC = 'Turn clock offset')
+
+
+def turn_pvs():
+    Action('SYNC', DESC = 'Synchronise turn clock')
+    longOut('DELAY', 0, 31, DESC = 'Turn clock input delay')
+    turn_count = longIn('TURNS', DESC = 'Turns sampled')
+    error_count = longIn('ERRORS',
+        HIGH = 1, HSV = 'MINOR', DESC = 'Turn clock errors')
+    turn_events = [
+        mbbIn('STATUS', 'Unsynced', 'Armed', 'Synced',
+            DESC = 'Turn clock synchronisation status'),
+        turn_count,
+        error_count,
+        records.calc('RATE',
+            CALC = '100*A/B', INPA = MS(error_count), INPB = turn_count,
+            PREC = 3, EGU = '%',
+            DESC = 'Clock error rate'),
+    ]
+    Action('POLL',
+        SCAN = '.2 second', FLNK = create_fanout('FAN', *turn_events),
+        DESC = 'Update turn status')
+
 
 def trigger_common_pvs():
     with_name_prefix('MEM', target_pvs)
@@ -67,6 +90,8 @@ def trigger_common_pvs():
     mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
         SCAN = 'I/O Intr',
         DESC = 'Trigger target status')
+
+    with_name_prefix('TURN', turn_pvs)
 
 
 for_channels('TRG', trigger_channel_pvs)

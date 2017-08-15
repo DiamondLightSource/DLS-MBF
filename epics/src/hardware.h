@@ -139,6 +139,9 @@ struct trigger_status {
 /* Triggers synchronisation of turn clock to external trigger. */
 void hw_write_turn_clock_sync(void);
 
+/* Writes delay for revolution clock. */
+void hw_write_turn_clock_idelay(unsigned int delay);
+
 /* Requests sample of turn clock offset. */
 void hw_read_turn_clock_counts(
     unsigned int *turn_count, unsigned int *error_count);

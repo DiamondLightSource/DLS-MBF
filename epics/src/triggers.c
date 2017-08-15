@@ -489,6 +489,46 @@ static bool write_blanking_window(void *context, unsigned int *value)
 }
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Turn clock control. */
+
+static pthread_mutex_t turn_clock_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+enum turn_clock_status {
+    TURN_CLOCK_UNSYNC,
+    TURN_CLOCK_ARMED,
+    TURN_CLOCK_SYNCED
+};
+static unsigned int turn_clock_status = TURN_CLOCK_UNSYNC;
+static unsigned int turn_clock_turns;
+static unsigned int turn_clock_errors;
+
+static void start_turn_sync(void)
+{
+    hw_write_turn_clock_sync();
+    turn_clock_status = TURN_CLOCK_ARMED;
+}
+
+static void poll_turn_state(void)
+{
+    hw_read_turn_clock_counts(&turn_clock_turns, &turn_clock_errors);
+    struct trigger_status status;
+    hw_read_trigger_status(&status);
+    if (turn_clock_status == TURN_CLOCK_ARMED  &&  !status.sync_busy)
+        turn_clock_status = TURN_CLOCK_SYNCED;
+}
+
+
+static bool write_turn_offset(void *context, unsigned int *offset)
+{
+    struct channel_context *chan = context;
+    hw_write_turn_clock_offset(chan->channel, *offset);
+    return true;
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 error__t initialise_triggers(void)
 {
     WITH_NAME_PREFIX("TRG")
@@ -505,6 +545,16 @@ error__t initialise_triggers(void)
 
         PUBLISH_WRITE_VAR_P(bo, "MODE", retrigger_mode, .mutex = &mutex);
         trigger_status_pv = PUBLISH_READ_VAR_I(mbbi, "STATUS", trigger_state);
+
+        WITH_NAME_PREFIX("TURN")
+        {
+            PUBLISH_ACTION("SYNC", start_turn_sync, .mutex = &turn_clock_mutex);
+            PUBLISH_ACTION("POLL", poll_turn_state, .mutex = &turn_clock_mutex);
+            PUBLISH_WRITER_P(ulongout, "DELAY", hw_write_turn_clock_idelay);
+            PUBLISH_READ_VAR(mbbi, "STATUS", turn_clock_status);
+            PUBLISH_READ_VAR(ulongin, "TURNS", turn_clock_turns);
+            PUBLISH_READ_VAR(ulongin, "ERRORS", turn_clock_errors);
+        }
     }
 
     FOR_CHANNEL_NAMES(channel, "TRG")
@@ -512,6 +562,7 @@ error__t initialise_triggers(void)
         struct channel_context *chan = &channel_contexts[channel];
         create_target("SEQ", chan->sequencer);
         PUBLISH_C_P(ulongout, "BLANKING", write_blanking_window, chan);
+        PUBLISH_C_P(ulongout, "TURN:OFFSET", write_turn_offset, chan);
     }
 
     /* We're interested in the trigger and complete events for each trigger
