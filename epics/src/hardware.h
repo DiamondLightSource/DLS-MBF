@@ -64,8 +64,8 @@ uint32_t hw_read_fpga_version(void);
 /* Reads system status registers. */
 void hw_read_system_status(struct system_status *status);
 
-/* Allows fine control over revolution clock input delay. */
-void hw_write_rev_clk_idelay(unsigned int delay);
+/* Writes delay for revolution clock. */
+void hw_write_turn_clock_idelay(unsigned int delay);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -131,9 +131,6 @@ struct trigger_status {
 
 /* Triggers synchronisation of turn clock to external trigger. */
 void hw_write_turn_clock_sync(void);
-
-/* Writes delay for revolution clock. */
-void hw_write_turn_clock_idelay(unsigned int delay);
 
 /* Requests sample of turn clock offset. */
 void hw_read_turn_clock_counts(

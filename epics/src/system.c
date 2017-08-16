@@ -58,6 +58,25 @@ static void publish_nco_pvs(void)
 }
 
 
+static struct system_status system_status;
+
+static void read_system_status(void)
+{
+    hw_read_system_status(&system_status);
+}
+
+static void publish_status_pvs(void)
+{
+    WITH_NAME_PREFIX("STA")
+    {
+        PUBLISH_ACTION("POLL", read_system_status);
+        PUBLISH_READ_VAR(bi, "CLOCK", system_status.dsp_ok);
+        PUBLISH_READ_VAR(bi, "VCO",   system_status.vco_locked);
+        PUBLISH_READ_VAR(bi, "VCXO",  system_status.vcxo_locked);
+    }
+}
+
+
 /* Some published strings for system identification etc. */
 static EPICS_STRING version_string = { LMBF_VERSION };
 static EPICS_STRING fpga_version = { };
@@ -126,6 +145,7 @@ error__t initialise_system(void)
         hardware_config.dac_taps);
 
     publish_nco_pvs();
+    publish_status_pvs();
     return
         initialise_constants()  ?:
         register_iocsh_commands();

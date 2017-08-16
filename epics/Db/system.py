@@ -28,4 +28,18 @@ def channel_pvs():
     mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(16, -6))
     boolOut('ENABLE', 'Off', 'On', DESC = 'Enable fixed NCO output')
 
+
+def clock_status(name, desc):
+    return boolIn(name, 'Unlocked', 'Locked', ZSV = 'MAJOR', DESC = desc)
+
+def status_pvs():
+    Action('POLL',
+        SCAN = '.2 second', FLNK = create_fanout('FAN',
+            clock_status('CLOCK', 'ADC clock status'),
+            clock_status('VCO', 'VCO clock status'),
+            clock_status('VCXO', 'VCXO clock status')))
+
+
 for_channels('NCO', channel_pvs)
+
+with_name_prefix('STA', status_pvs)

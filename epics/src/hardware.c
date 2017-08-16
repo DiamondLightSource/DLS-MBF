@@ -37,7 +37,6 @@ static pthread_mutex_t dram1_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* Register access support. */
 
 
-
 /* I'm quite nervous of the compiler doing bad things to our register access, so
  * we force all register IO to go through these two helper functions. */
 static void writel(volatile uint32_t *reg, uint32_t value)
@@ -165,12 +164,9 @@ void hw_read_system_status(struct system_status *result)
     result->temp_alert = status.temp_alert;
 }
 
-void hw_write_rev_clk_idelay(unsigned int delay)
+void hw_write_turn_clock_idelay(unsigned int delay)
 {
-    WRITE_FIELDS(sys_regs->rev_idelay,
-        .value = delay & 0x1F,
-        .write = 1,
-    );
+    WRITE_FIELDS(sys_regs->rev_idelay, .value = delay & 0x1F, .write = 1);
 }
 
 
@@ -285,11 +281,6 @@ static void hw_write_bunch_count(unsigned int bunches)
 void hw_write_turn_clock_sync(void)
 {
     WRITE_FIELDS(ctrl_regs->trg_control, .sync_turn = 1);
-}
-
-void hw_write_turn_clock_idelay(unsigned int delay)
-{
-    WRITE_FIELDS(sys_regs->rev_idelay, .value = delay & 0x1F, .write = 1);
 }
 
 void hw_read_turn_clock_counts(
@@ -951,20 +942,23 @@ error__t hw_unlock_registers(void)
 }
 
 
-static error__t set_hardware_config(unsigned int bunches)
+static error__t set_hardware_config(unsigned int bunches, bool lmbf_mode)
 {
     hw_write_bunch_count(bunches);
+    hw_write_lmbf_mode(lmbf_mode);
 
     /* Here we update the "constant" hardware configuration.  This is constant
      * everywhere except for this one place where we initialise it. */
+    struct hardware_config *p_hardware_config =
+        CAST_TO(struct hardware_config *, &hardware_config);
+
     struct sys_info sys_info = sys_regs->info;
-    *CAST_FROM_TO(const struct hardware_config *, struct hardware_config *,
-        &hardware_config) = (struct hardware_config)
+    *p_hardware_config = (struct hardware_config)
     {
         .bunches = bunches,
-        .adc_taps = sys_info.adc_taps,
+        .adc_taps   = sys_info.adc_taps,
         .bunch_taps = sys_info.bunch_taps,
-        .dac_taps = sys_info.dac_taps,
+        .dac_taps   = sys_info.dac_taps,
     };
 
     return ERROR_OK;
@@ -1000,9 +994,7 @@ error__t initialise_hardware(
             0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
             reg_device, 0))  ?:
         map_config_regs()  ?:
-
-        set_hardware_config(bunches)  ?:
-        DO(hw_write_lmbf_mode(lmbf_mode));
+        set_hardware_config(bunches, lmbf_mode);
 }
 
 
