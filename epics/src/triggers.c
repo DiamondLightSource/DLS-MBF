@@ -521,9 +521,16 @@ static void poll_turn_state(void)
 
 static bool write_turn_offset(void *context, unsigned int *offset)
 {
-    struct channel_context *chan = context;
-    hw_write_turn_clock_offset(chan->channel, *offset);
-    return true;
+    if (*offset < system_config.bunches_per_turn)
+    {
+        struct channel_context *chan = context;
+        hw_write_turn_clock_offset(chan->channel, *offset);
+        return true;
+    }
+    else
+        /* Can't do this.  Actually, *really* can't do this, we'll freeze the
+         * system if we try! */
+        return false;
 }
 
 

@@ -180,9 +180,8 @@ void hw_write_trigger_blanking_mask(
     enum trigger_target target,
     const bool sources[TRIGGER_SOURCE_COUNT]);
 
-/* Configure the turn clock and blanking pulse used for DRAM triggering. */
-void hw_write_trigger_dram_select(
-    int turn_channel, const bool blanking[CHANNEL_COUNT]);
+/* Configure the blanking pulse(s) used for DRAM triggering. */
+void hw_write_trigger_dram_blanking(const bool blanking[CHANNEL_COUNT]);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

@@ -293,6 +293,10 @@ void hw_read_turn_clock_counts(
 
 void hw_write_turn_clock_offset(int channel, unsigned int offset)
 {
+    /* Note!  If offset >= bunches_per_turn then turn clocks will stop being
+     * generated.  Unfortunately this will then cause reading mms.count to hang
+     * which will then freeze the system.  So don't. */
+    ASSERT_OK(offset < hardware_config.bunches);
     LOCK(ctrl_lock);
     switch (channel)
     {
@@ -466,12 +470,10 @@ void hw_write_trigger_blanking_mask(
     UNLOCK(ctrl_lock);
 }
 
-void hw_write_trigger_dram_select(
-    int turn_channel, const bool blanking[CHANNEL_COUNT])
+void hw_write_trigger_dram_blanking(const bool blanking[CHANNEL_COUNT])
 {
     uint32_t blanking_mask = bools_to_bits(CHANNEL_COUNT, blanking);
     LOCK(ctrl_lock);
-    ctrl_mirror.trg_config_trig_dram.turn_sel = (unsigned) turn_channel & 1;
     ctrl_mirror.trg_config_trig_dram.blanking_sel = blanking_mask & 0x3;
     WRITEL(ctrl_regs->trg_config_trig_dram, ctrl_mirror.trg_config_trig_dram);
     UNLOCK(ctrl_lock);
