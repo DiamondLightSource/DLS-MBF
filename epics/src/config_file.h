@@ -7,6 +7,7 @@ enum config_entry_type {
     CONFIG_uint,
     CONFIG_double,
     CONFIG_string,
+    CONFIG_bool,
 };
 
 

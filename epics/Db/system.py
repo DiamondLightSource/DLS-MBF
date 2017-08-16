@@ -10,6 +10,8 @@ stringIn('VERSION', PINI = 'YES', DESC = 'LMBF version')
 stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'LMBF version')
 stringIn('HOSTNAME', PINI = 'YES', DESC = 'Host name of LMBF IOC')
 
+boolIn('MODE', 'TMBF', 'LMBF', PINI = 'YES', DESC = 'Operational mode')
+
 # A variety of constants
 records.longin('BUNCHES', VAL = BUNCHES_PER_TURN, PINI = 'YES')
 records.longin('ADC_TAPS', VAL = ADC_TAPS, PINI = 'YES')

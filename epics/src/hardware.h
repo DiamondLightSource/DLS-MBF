@@ -29,7 +29,8 @@ extern const struct hardware_config {
 
 
 error__t initialise_hardware(
-    const char *prefix, unsigned int bunches, bool lock_registers);
+    const char *prefix, unsigned int bunches,
+    bool lock_registers, bool lmbf_mode);
 void terminate_hardware(void);
 
 /* Toggles between locked and unlocked access to the control registers. */
@@ -70,18 +71,10 @@ void hw_write_rev_clk_idelay(unsigned int delay);
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Shared Control interface. */
 
-/* This structure is used to define the interaction between the two channels. */
-struct channel_config {
-    bool adc_mux;           // If set copy ADC1 to FIR0 input
-    bool nco0_mux;          // If set copy NCO0 sin to channel 1
-    bool nco1_mux;          // If set copy NCO1 sin to channel 1
-    bool bank_mux;          // If set copy channel 1 bank selection to channel 0
-};
-
 /* Configure interaction between the two channels.  For TMBF operations the two
  * channels are independent, for LMBF operation the two channels are identical
  * with a 90 degree phase shift between them. */
-void hw_write_channel_config(const struct channel_config *config);
+void hw_write_lmbf_mode(bool lmbf_mode);
 
 /* Configure loopback for the selected channel. */
 void hw_write_loopback_enable(int channel, bool loopback);

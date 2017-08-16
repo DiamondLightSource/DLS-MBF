@@ -1,7 +1,8 @@
 bunches_per_turn = 936
 epics_name = TS-DI-LMBF-01
-channel0_name = X
-channel1_name = Y
+channel0_name = I
+channel1_name = Q
+lmbf_mode = 1
 revolution_frequency = 533848
 
 # Polling interval for min/max/sum in microseconds.  Should be be short enough
@@ -9,7 +10,7 @@ revolution_frequency = 533848
 mms_poll_interval = 50000
 
 # Where the persistence file is stored and how often (in seconds) we update
-persistence_file = state
+persistence_file = state.lmbf
 persistence_interval = 120
 
 # When logging caput to an array we truncate the array at this length

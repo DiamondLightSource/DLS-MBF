@@ -204,7 +204,8 @@ int main(int argc, char *const argv[])
             delay_compensation ? hardware_config_file : NULL,
             system_config_file)  ?:
         initialise_hardware(
-            device_prefix, system_config.bunches_per_turn, lock_registers)  ?:
+            device_prefix, system_config.bunches_per_turn,
+            lock_registers, system_config.lmbf_mode)  ?:
         initialise_epics_device()  ?:
 
         initialise_subsystems()  ?:

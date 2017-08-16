@@ -182,13 +182,13 @@ static pthread_mutex_t ctrl_lock = PTHREAD_MUTEX_INITIALIZER;
 static struct ctrl ctrl_mirror;
 
 
-void hw_write_channel_config(const struct channel_config *config)
+void hw_write_lmbf_mode(bool lmbf_mode)
 {
     LOCK(ctrl_lock);
-    ctrl_mirror.control.adc_mux = config->adc_mux;
-    ctrl_mirror.control.nco0_mux = config->nco0_mux;
-    ctrl_mirror.control.nco1_mux = config->nco1_mux;
-    ctrl_mirror.control.bank_mux = config->bank_mux;
+    ctrl_mirror.control.adc_mux  = lmbf_mode;
+    ctrl_mirror.control.nco0_mux = lmbf_mode;
+    ctrl_mirror.control.nco1_mux = lmbf_mode;
+    ctrl_mirror.control.bank_mux = lmbf_mode;
     WRITEL(ctrl_regs->control, ctrl_mirror.control);
     UNLOCK(ctrl_lock);
 }
@@ -972,7 +972,8 @@ static error__t set_hardware_config(unsigned int bunches)
 
 
 error__t initialise_hardware(
-    const char *prefix, unsigned int bunches, bool lock_registers)
+    const char *prefix, unsigned int bunches,
+    bool lock_registers, bool lmbf_mode)
 {
     printf("initialise_hardware %s %d\n", prefix, lock_registers);
 
@@ -999,7 +1000,9 @@ error__t initialise_hardware(
             0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
             reg_device, 0))  ?:
         map_config_regs()  ?:
-        set_hardware_config(bunches);
+
+        set_hardware_config(bunches)  ?:
+        DO(hw_write_lmbf_mode(lmbf_mode));
 }
 
 

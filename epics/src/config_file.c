@@ -88,6 +88,15 @@ static error__t parse_string(const char **string, char **result)
 }
 
 
+static error__t parse_bool(const char **string, bool *result)
+{
+    unsigned int value;
+    return
+        parse_uint(string, &value)  ?:
+        DO(*result = value);
+}
+
+
 static error__t parse_name(const char **string, char *name, size_t length)
 {
     error__t error =
@@ -132,6 +141,8 @@ static error__t parse_value(
             return parse_string(string, config_table->address);
         case CONFIG_double:
             return parse_double(string, config_table->address);
+        case CONFIG_bool:
+            return parse_bool(string, config_table->address);
         default:
             return FAIL_("Invalid config entry");
     }

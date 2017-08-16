@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"/opi
 
-DEVICE=TS-DI-LMBF-01
+DEVICE=TS-DI-TMBF-02
 CHAN0=X
 CHAN1=Y
 

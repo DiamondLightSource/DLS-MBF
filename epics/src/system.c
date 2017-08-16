@@ -63,11 +63,12 @@ static EPICS_STRING version_string = { LMBF_VERSION };
 static EPICS_STRING fpga_version = { };
 static EPICS_STRING hostname = { };
 
-static error__t initialise_strings(void)
+static error__t initialise_constants(void)
 {
     PUBLISH_READ_VAR(stringin, "VERSION", version_string);
     PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
     PUBLISH_READ_VAR(stringin, "HOSTNAME", hostname);
+    PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
 
     sprintf(fpga_version.s, "%08x", hw_read_fpga_version());
 
@@ -92,19 +93,13 @@ static void call_unlock_registers(const iocshArgBuf *args)
 
 static void call_set_lmbf_mode(const iocshArgBuf *args)
 {
-    hw_write_channel_config(&(struct channel_config) {
-        .adc_mux = true,  .bank_mux = true,
-        .nco0_mux = true, .nco1_mux = true,
-    });
+    hw_write_lmbf_mode(true);
     printf("Running in LMBF mode with I/Q channels\n");
 }
 
 static void call_set_tmbf_mode(const iocshArgBuf *args)
 {
-    hw_write_channel_config(&(struct channel_config) {
-        .adc_mux = false,  .bank_mux = false,
-        .nco0_mux = false, .nco1_mux = false,
-    });
+    hw_write_lmbf_mode(false);
     printf("Running in TMBF mode with X/Y channels\n");
 }
 
@@ -132,6 +127,6 @@ error__t initialise_system(void)
 
     publish_nco_pvs();
     return
-        initialise_strings()  ?:
+        initialise_constants()  ?:
         register_iocsh_commands();
 }
