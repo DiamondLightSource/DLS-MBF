@@ -139,6 +139,7 @@ struct target_config targets[TRIGGER_TARGET_COUNT] = {
 struct channel_context {
     int channel;
     struct target_config *sequencer;
+    unsigned int turn_clock_offset;
 } channel_contexts[CHANNEL_COUNT] = {
     [0] = {
         .channel = 0,
@@ -524,7 +525,14 @@ static bool write_turn_offset(void *context, unsigned int *offset)
     if (*offset < system_config.bunches_per_turn)
     {
         struct channel_context *chan = context;
+        chan->turn_clock_offset = *offset;
         hw_write_turn_clock_offset(chan->channel, *offset);
+
+        unsigned int offsets[CHANNEL_COUNT] = {
+            [0] = channel_contexts[0].turn_clock_offset,
+            [1] = channel_contexts[1].turn_clock_offset,
+        };
+        set_memory_turn_clock_offsets(offsets);
         return true;
     }
     else

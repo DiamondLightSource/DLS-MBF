@@ -156,6 +156,7 @@ static int readout_offset;
 static unsigned int dac_delays[CHANNEL_COUNT];
 static unsigned int adc_delays[CHANNEL_COUNT];
 static unsigned int channel_delays[CHANNEL_COUNT];
+static unsigned int channel_skew;
 
 
 void set_memory_dac_offset(int channel, unsigned int delay)
@@ -168,30 +169,43 @@ void set_memory_adc_offset(int channel, unsigned int delay)
     adc_delays[channel] = delay;
 }
 
+void set_memory_turn_clock_offsets(unsigned int offsets[CHANNEL_COUNT])
+{
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    channel_skew =
+        (bunches_per_turn + offsets[0] - offsets[1]) % bunches_per_turn;
+}
+
 
 /* We record the channel delays current at the time capture to memory is
  * completed.  This is as good a time as any to take a snapshot. */
 static void update_channel_delays(void)
 {
     for (int channel = 0; channel < CHANNEL_COUNT; channel ++)
+    {
+        unsigned int delay = 0;
         switch (chan_selection[channel])
         {
-            case ADC0:
-                channel_delays[channel] = adc_delays[0];
-                break;
-            case ADC1:
-                channel_delays[channel] = adc_delays[1];
-                break;
+            case ADC0: delay = adc_delays[0]; break;
+            case ADC1: delay = adc_delays[1]; break;
             case FIR0: case FIR1:
-                channel_delays[channel] = hardware_delays.DRAM_FIR_DELAY;
+                delay = hardware_delays.DRAM_FIR_DELAY;
                 break;
-            case DAC0:
-                channel_delays[channel] = dac_delays[0];
+            case DAC0: delay = dac_delays[0]; break;
+            case DAC1: delay = dac_delays[1]; break;
+        }
+
+        switch (chan_selection[channel])
+        {
+            case ADC0: case FIR0: case DAC0:
+                channel_delays[channel] = delay;
                 break;
-            case DAC1:
-                channel_delays[channel] = dac_delays[1];
+            case ADC1: case FIR1: case DAC1:
+                channel_delays[channel] =
+                    (delay + channel_skew) % hardware_config.bunches;
                 break;
         }
+    }
 }
 
 
