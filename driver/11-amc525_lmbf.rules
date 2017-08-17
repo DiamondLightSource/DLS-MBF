@@ -3,9 +3,8 @@
 
 # Copy this file to /etc/udev/rules.d
 
-# Start by giving full device access to dcs group.  This will need to be
-# adjusted as appropriate
-SUBSYSTEM=="amc525_lmbf", GROUP="dcs", MODE="0660"
+# Start by giving full device access to dcs group.
+SUBSYSTEM=="amc525_lmbf", GROUP="500", MODE="0660"
 
 # Now create geographical addresses.  We have to be bit tricky here to get the
 # right device names, as we don't want the rather arbitrary sequence number
