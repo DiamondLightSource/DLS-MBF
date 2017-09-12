@@ -1,0 +1,95 @@
+\documentclass[a4paper]{jacow}
+
+\usepackage{graphicx}       % Extended support for \includegraphics
+\usepackage{tikz}           % Powerful drawing package, part of pgf
+
+\usepackage{mathptmx}       % Mathematical PostScript fonts
+\usepackage{amsmath}        % General mathematical symbols
+\usepackage{textcomp}       % Text companion fonts
+
+\usepackage{url}            % \url command for decent line breaks in urls
+\usepackage{enumitem}       % For more control over list parameters.
+
+
+\hyphenpenalty 4000         % Tone down hyphenation
+
+
+\begin{document}
+\title{A NEW TRANSVERSE AND LONGITUDINAL BUNCH BY BUNCH FEEDBACK PROCESSOR}
+\author{M.G.~Abbott, G.~Rehm, I.S.~Uzun, Diamond Light Source, Oxfordshire, UK}
+\maketitle
+
+\begin{abstract}
+
+We describe the development of firmware to support Longitudinal Bunch by Bunch
+Feedback at Diamond Light source.  As well as feedback, the system supports
+complex experiments and the capture of detailed diagnostics.  In this paper we
+describe the firmware development and some details of the processing chain.  We
+focus on some of the challenges of FPGA development from the perspective of a
+software engineer.  Another interesting challenge was posed by the decision to
+develop the entire signal processing chain to run at 500 MHz.  This does work
+well enough, but presents numerous challenges; it would probably have been
+simpler to run at half the clock speed!
+
+\end{abstract}
+
+
+\section{Introduction}
+
+Humm\dots
+
+
+\begin{thebibliography}{99}
+
+\bibitem{icalepcs2015}
+M.G.~Abbott, G.~Rehm, I.S.~Uzun,
+\emph{Architecture of Transverse Multi-Bunch Feedback Processor at Diamond},
+ICALEPCS 2015
+
+\bibitem{libera}
+Instrumentation Technologies, \emph{Libera Bunch-by-Bunch},
+\url{http://www.i-tech.si}.
+
+\bibitem{dipac2007}
+A.F.D.~Morgan, G.~Rehm, I.~Uzun, \emph{First Tests of the Transverse Multibunch
+Feedback at Diamond}, DIPAC~2007.
+
+\bibitem{epac2008}
+A.F.D.~Morgan, G.~Rehm, I.~Uzun, \emph{Performance and Features of the Diamond
+TMBF System}, EPAC~2008.
+
+\bibitem{biw2010}
+G.~Rehm, M.G.~Abbott, A.F.D.~Morgan, J.~Rowland, I.~Uzun, \emph{Measurement of
+Lattice Parameters Without Visible Disturbance to User Beam at Diamond Light
+Source}, BIW~2010.
+
+\bibitem{icalepcs2011}
+I.~Uzun, M.G.~Abbott, M.T.~Heron, A.F.D.~Morgan, G.~Rehm, \emph{Operational
+Status of the Transverse Multibunch Feedback System at Diamond}, ICALEPCS~2011.
+
+\bibitem{epac2006}
+E.~Plouviez, P.~Arnoux, F.~Epaud, J.~Jacob, J.M.~Koch, N.~Michel, G.A.~Naylor,
+J.\mbox{-}L.~Revol, V.~Serriere, D.~Vial, \emph{Broadband Bunch by Bunch
+Feedback for the ESRF using a Single High Resolution and Fast Sampling FPGA
+DSP}, EPAC~2006.
+
+\bibitem{ibic2013}
+M.G.~Abbott, G.~Rehm, I.S.~Uzun, \emph{Capability Upgrade of the Diamond
+Transverse Multibunch Feedback}, IBIC~2013.
+
+\bibitem{ibic2014}
+G.~Rehm, M.G.~Abbott, A.F.D~Morgan, \emph{New Features and Measurements using
+the Upgraded Transverse Multibunch Feedback at Diamond}, IBIC~2014.
+
+\bibitem{ibic2015}
+A.~Olmos, U.~Iriso, J.~Moldes, F.~P\'erez, M.~Abbott, G.~Rehm, I.~Uzun,
+\emph{Integration of the Diamond Transverse Multibunch Feedback System at ALBA},
+IBIC~2015.
+
+% This is sometimes needed to work around a bug in the bibliography
+\vspace{0pt}
+
+\end{thebibliography}
+
+
+\end{document}
