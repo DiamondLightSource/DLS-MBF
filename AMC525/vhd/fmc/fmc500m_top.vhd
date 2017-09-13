@@ -138,6 +138,8 @@ begin
         dac_irqn_o => dac_irqn,
 
         -- Miscellaneous
+        adc_pwr_en_i => '1',
+        dac_pwr_en_i => '1',
         adc_pwr_good_o => adc_pwr_good,
         dac_pwr_good_o => dac_pwr_good,
         vcxo_pwr_good_o => vcxo_pwr_good,

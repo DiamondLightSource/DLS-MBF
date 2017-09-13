@@ -65,6 +65,8 @@ entity fmc500m_io is
 
         -- Misc ----------------------------------------------------------------
         -- Power management
+        adc_pwr_en_i : in std_logic;
+        dac_pwr_en_i : in std_logic;
         adc_pwr_good_o : out std_logic;
         dac_pwr_good_o : out std_logic;
         vcxo_pwr_good_o : out std_logic;
@@ -102,6 +104,7 @@ begin
     FMC_LA_P(23) <= 'Z';    -- n/c
     FMC_LA_N(23) <= 'Z';    -- n/c
     FMC_LA_N(27) <= 'Z';    -- n/c
+    FMC_LA_P(30) <= 'Z';    -- FCXO_PWR_EN, leave unconnected
 
 
     -- -------------------------------------------------------------------------
@@ -310,11 +313,19 @@ begin
         o_o(0) => vcxo_pwr_good_o
     );
 
+    adc_pwr_en_inst : entity work.obuf_array port map (
+        i_i(0) => adc_pwr_en_i,
+        o_o(0) => FMC_LA_P(26)
+    );
     adc_pwr_good_inst : entity work.ibuf_array port map (
         i_i(0) => FMC_LA_N(26),
         o_o(0) => adc_pwr_good_o
     );
 
+    dac_pwr_en_inst : entity work.obuf_array port map (
+        i_i(0) => dac_pwr_en_i,
+        o_o(0) => FMC_LA_P(32)
+    );
     dac_pwr_good_inst : entity work.ibuf_array port map (
         i_i(0) => FMC_LA_N(32),
         o_o(0) => dac_pwr_good_o
