@@ -1,4 +1,10 @@
-\documentclass[a4paper]{jacow}
+\documentclass[
+    a4paper,
+    keeplastbox,            % Prevents problems with last line in references
+    hyphens,                % Allow hyphenation in \url
+%     nospread,               % Suppress whitespace fill for column balancing
+    boxit,                  % Show margins (debug only)
+]{jacow}
 
 \usepackage{graphicx}       % Extended support for \includegraphics
 \usepackage{tikz}           % Powerful drawing package, part of pgf
@@ -6,17 +12,23 @@
 \usepackage{mathptmx}       % Mathematical PostScript fonts
 \usepackage{amsmath}        % General mathematical symbols
 \usepackage{textcomp}       % Text companion fonts
+% \usepackage[euler]{textgreek}      % text greek letters
 
-\usepackage{url}            % \url command for decent line breaks in urls
 \usepackage{enumitem}       % For more control over list parameters.
+% Consider using Itemize, Enumerate, Description
+
+\input{THPHA115f0.tikz}       % Common PGF & TikZ configuration
+
+\newcommand\smallbox[2][small box]{\tikz [inline text] \node [#1] {#2};}
 
 
 \hyphenpenalty 4000         % Tone down hyphenation
 
 
 \begin{document}
-\title{A NEW TRANSVERSE AND LONGITUDINAL BUNCH BY BUNCH FEEDBACK PROCESSOR}
-\author{M.G.~Abbott, G.~Rehm, I.S.~Uzun, Diamond Light Source, Oxfordshire, UK}
+\title{A New Transverse and Longitudinal Bunch by Bunch Feedback Processor}
+\author{
+    M.G.~Abbott, G.~Rehm, Diamond Light Source, UK; I.S.~Uzun, STFC, UK}
 \maketitle
 
 \begin{abstract}
@@ -27,7 +39,7 @@ complex experiments and the capture of detailed diagnostics.  In this paper we
 describe the firmware development and some details of the processing chain.  We
 focus on some of the challenges of FPGA development from the perspective of a
 software engineer.  Another interesting challenge was posed by the decision to
-develop the entire signal processing chain to run at 500 MHz.  This does work
+develop the entire signal processing chain to run at 500\,MHz.  This does work
 well enough, but presents numerous challenges; it would probably have been
 simpler to run at half the clock speed!
 
@@ -36,7 +48,115 @@ simpler to run at half the clock speed!
 
 \section{Introduction}
 
-Humm\dots
+At Diamond Light Source (DLS) we have been working on multi-bunch feedback for
+more than a decade~\cite{dipac2007, epac2008, biw2010, icalepcs2011, ibic2013,
+ibic2014, icalepcs2015}, this work being originally based on developments at the
+ESRF~\cite{epac2006}.  Up to now our work has been based on the Libera platform
+\cite{libera}, which is now obsolete and has limited capacity for further
+developments --- at the time of writing the Virtex-II Pro FPGA at the heart of
+the Libera processor is 15 years old.  Up to now we have focused on stabilising
+and measuring only transverse instabilities.
+
+More recently we have been asked to provide support for measurement and
+stabilisation of longitudinal multi-bunch instabilities as part of an ongoing
+project to install normally conducting RF cavities~\cite{ipac2017rf}.  It is
+anticipated that these may introduce extra resonances and instabilities which
+will need special treatment.
+
+We have therefore been working on a project to upgrade our TMBF (Transverse
+Multi-Bunch Feedback) system to run on more modern hardware and to add
+longitudinal capabilities to the system, so creating an LMBF (Longitudinal
+Multi-Bunch Feedback) processor.  We have already reported~\cite{ibic2016} on
+our preliminary work on the new system and on the choice of hardware; we'll
+discuss this further below.
+
+In this paper we will describe the architecture of the new LMBF (Longitudinal
+Multi-Bunch Feedback) processor based on our chosen hardware, and discuss some
+of the lessons learned during this development.  From a software engineering
+perspective, development of a complex FPGA system presents some remarkable
+challenges, which we'll also discuss.
+
+
+\section{Hardware Platform}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{fmc500.png}
+\caption{Photo of assembly of FMC-500 and Digital IO FMC on the AMC525 carrer.}
+\label{fmc500}
+\end{figure}
+
+\begin{figure*}[!t]
+\begin{centering}
+\input{overview.tikz}
+\end{centering}
+\caption{Overview of LMBF signal processing chain.  Key: \smallbox{OVF} ADC
+input overflow detection; \smallbox{FIR} I/O compensation filter; \smallbox{MMS}
+bunch position and motion measurement; \smallbox{$\div$N} decimation;
+\smallbox{BB FIR} bunch by bunch filter; \smallbox{$\times$N} interpolation;
+\smallbox{G} gain control; \smallbox{DLY}~output alignment delay; \smallbox[mul,
+inner sep=2pt]{$\sim$} controllable oscillator.}
+\end{figure*}
+
+
+
+As noted above, the development of our new LMBF processor was driven by two
+motivations: to ensure that we are ready for any new longitudinal instabilities,
+and to increase the capabilities of our existing system~\cite{ipac2017rf,
+ibic2016}.  We also wanted to improve our knowledge and understanding of high
+speed processing hardware relevant to synchrotron diagnostics.
+
+We started with an investigation to determine the appropriate hardware platform
+for this kind of development.  Early on it was decided that we would need a
+powerful FPGA with FMC (FPGA Mezzanine Card) support.  Initially we looked at
+self contained FPGA platforms, and even briefly considered creating our own, but
+in the end we converged on MicroTCA~\cite{mtca}.  This platform provides us with
+a wide choice of crates and AMC (ATCA Mezzanine Card) processing modules with
+high speed interconnect, and turns out to be compatible with a concurrent
+development at DLS to develop Low Level RF with ALBA~\cite{ipac2017llrf}.
+
+Having selected MicroTCA as our platform we then selected the following
+hardware:
+
+\begin{description}
+\item[FMC-500M]
+    (HPC) High Pin Count FMC providing dual channel 500\,MS/s 14-bit ADC and
+    dual channel 1230\,MS/s 16-bit DAC~\cite{fmc500}.  This will support
+    bunch-by-bunch operation at our machine RF frequency of 500\,MHz, and can be
+    driven by our machine clock.
+\item[FmcDIO5chTTLa]
+    Five port digital IO FMC~\cite{fmcdio}.  This is used for miscellaneous
+    triggering and other signals.
+\item[AMC525]
+    Double width AMC card with two HPC FMC slots, 2\,GB of fast on board DRAM,
+    connected to a Virtex-7 690 FPGA, supporting an 8 lane gen3 PCIe connection
+    over the MicroTCA backplane~\cite{amc525}.  This is our workhorse where all
+    the FPGA firmware will run, and the fast backplane connection will allow us
+    to do a lot of data processing in the associated CPU.
+\item[AMC720]
+    This is an AMC card with an Intex Xeon processor with ample memory and
+    sufficient local storage.  We install Red Hat Enterprise Linux 7 on this,
+    and run our control system and any associated signal processing.
+\item[VT814]
+    This is a 2U MicroTCA chassis with 6 AMC slots and dual redundant power
+    supplies.
+\end{description}
+
+Fig \ref{fmc500} shows the digital processing hardware assembled ready for
+insertion in the MicroTCA crate.
+
+
+\section{System Design}
+
+Fig \ref{overview} shows the signal processing chain as implemented in the
+current design.  This is not so very different from figure 3 of our
+ICALEPCS~2015 paper~\cite{icalepcs2015}.  The main enhancements are the improved
+bunch by bunch motion measurement, longer FIR filters throughout, and rate
+change to support longitudinal processing.
+
+\subsection{Longitudinal vs Transverse Processing}
+
+
+
 
 
 \begin{thebibliography}{99}
@@ -45,10 +165,6 @@ Humm\dots
 M.G.~Abbott, G.~Rehm, I.S.~Uzun,
 \emph{Architecture of Transverse Multi-Bunch Feedback Processor at Diamond},
 ICALEPCS 2015
-
-\bibitem{libera}
-Instrumentation Technologies, \emph{Libera Bunch-by-Bunch},
-\url{http://www.i-tech.si}.
 
 \bibitem{dipac2007}
 A.F.D.~Morgan, G.~Rehm, I.~Uzun, \emph{First Tests of the Transverse Multibunch
@@ -67,12 +183,6 @@ Source}, BIW~2010.
 I.~Uzun, M.G.~Abbott, M.T.~Heron, A.F.D.~Morgan, G.~Rehm, \emph{Operational
 Status of the Transverse Multibunch Feedback System at Diamond}, ICALEPCS~2011.
 
-\bibitem{epac2006}
-E.~Plouviez, P.~Arnoux, F.~Epaud, J.~Jacob, J.M.~Koch, N.~Michel, G.A.~Naylor,
-J.\mbox{-}L.~Revol, V.~Serriere, D.~Vial, \emph{Broadband Bunch by Bunch
-Feedback for the ESRF using a Single High Resolution and Fast Sampling FPGA
-DSP}, EPAC~2006.
-
 \bibitem{ibic2013}
 M.G.~Abbott, G.~Rehm, I.S.~Uzun, \emph{Capability Upgrade of the Diamond
 Transverse Multibunch Feedback}, IBIC~2013.
@@ -81,13 +191,44 @@ Transverse Multibunch Feedback}, IBIC~2013.
 G.~Rehm, M.G.~Abbott, A.F.D~Morgan, \emph{New Features and Measurements using
 the Upgraded Transverse Multibunch Feedback at Diamond}, IBIC~2014.
 
-\bibitem{ibic2015}
-A.~Olmos, U.~Iriso, J.~Moldes, F.~P\'erez, M.~Abbott, G.~Rehm, I.~Uzun,
-\emph{Integration of the Diamond Transverse Multibunch Feedback System at ALBA},
-IBIC~2015.
+\bibitem{epac2006}
+E.~Plouviez, P.~Arnoux, F.~Epaud, J.~Jacob, J.M.~Koch, N.~Michel, G.A.~Naylor,
+J.\mbox{-}L.~Revol, V.~Serriere, D.~Vial, \emph{Broadband Bunch by Bunch
+Feedback for the ESRF using a Single High Resolution and Fast Sampling FPGA
+DSP}, EPAC~2006.
 
-% This is sometimes needed to work around a bug in the bibliography
-\vspace{0pt}
+\bibitem{libera}
+Instrumentation Technologies, \emph{Libera Bunch-by-Bunch},
+\url{http://www.i-tech.si}.
+
+\bibitem{ipac2017rf}
+C.~Christou et al., \emph{Progress with the Diamond Light Source RF Upgrade},
+IPAC~2017
+
+\bibitem{ibic2016}
+G.~Rehm, M.G.~Abbott, A.F.D.~Morgan, \emph{Measurements of Longitudinal Coupled
+Bunch Instabilities and Status of New Feedback System}, IBIC~2016.
+
+\bibitem{mtca}
+MicroTCA Overview, PICMG, \url{https://www.picmg.org/openstandards/microtca/}
+
+\bibitem{fmc500}
+Innovative Integration, \emph{FMC-500, FMC Module with 2x 500 MSPS 14-bit A/D,
+2x 1230 MSPS 16-bit DACs with PLL and Timing Controls},
+\url{https://www.innovative-dsp.com/products.php?product=FMC-500}
+
+\bibitem{fmcdio}
+CERN Open Hardware Repository, \emph{FMC DIO 5ch TTL a},
+\url{https://www.ohwr.org/projects/fmc-dio-5chttla}
+
+\bibitem{amc525}
+Vadatech, \emph{AMC525, dual FMC carrier, 2 FMC, 690T FPGA, FFG-1761 package,
+FPGA Mezzanine Card}, \url{http://vadatech.com/product.php?product=393}.
+
+\bibitem{ipac2017llrf}
+P.~Gu et al., \emph{Digital Low Level RF Systems for Diamond Light Source},
+IPAC~2017
+
 
 \end{thebibliography}
 
