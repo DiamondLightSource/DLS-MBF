@@ -23,7 +23,7 @@ entity bunch_fir_taps is
 
         write_strobe_i : in std_logic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_logic := '0';
 
         -- Taps output
         fir_select_i : in unsigned;

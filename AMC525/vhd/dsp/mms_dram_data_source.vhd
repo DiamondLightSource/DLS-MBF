@@ -28,6 +28,7 @@ end;
 architecture arch of mms_dram_data_source is
     signal unfiltered_data_in : unfiltered_data_i'SUBTYPE;
     signal filtered_data_in : filtered_data_i'SUBTYPE;
+    signal dram_data_out : dram_data_o'SUBTYPE := (others => '0');
 
 begin
     unfiltered_data_delay : entity work.dlyreg generic map (
@@ -58,10 +59,12 @@ begin
             end if;
 
             if dram_source_i = '0' then
-                dram_data_o <= unfiltered_data_in;
+                dram_data_out <= unfiltered_data_in;
             else
-                dram_data_o <= filtered_data_in;
+                dram_data_out <= filtered_data_in;
             end if;
         end if;
     end process;
+
+    dram_data_o <= dram_data_out;
 end;

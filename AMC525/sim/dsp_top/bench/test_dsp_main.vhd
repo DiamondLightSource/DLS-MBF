@@ -7,6 +7,7 @@ use work.defines.all;
 use work.dsp_defs.all;
 
 use work.sim_support.all;
+use work.register_defs.all;
 
 entity testbench is
 end testbench;
@@ -183,7 +184,7 @@ begin
         end;
 
         -- Writes to both DSP units simultaneously
-        procedure write_dsp(reg : natural; value : reg_data_t) is
+        procedure write_dsps(reg : natural; value : reg_data_t) is
         begin
             write_reg(16#1000# + reg, value);
             write_reg(16#1800# + reg, value);
@@ -205,23 +206,15 @@ begin
         write_reg(16#000A#, X"00010004");
         -- Enable DRAM0 triggers
         write_reg(16#000F#, X"0000007F");
-        -- Arm DRAM0 trigger
-        write_reg(16#0006#, X"00000140");
         -- Read the trigger events
         read_reg(16#0006#);
         -- Rearm DRAM0 without soft trigger
         write_reg(16#0006#, X"00000040");
 
-        -- Configure decimation factor
-        write_dsp(7, X"0000000C");
-
-        -- Start DRAM1 memory transfer
-        write_reg(16#1006#, X"20000008");   -- Start DSP0 DRAM1
-        write_reg(16#1806#, X"20000008");   -- Start DSP1 DRAM1
 
         -- Initiate DRAM0 memory transfer
-        write_reg(3, X"00000010");
-        write_reg(4, X"00000003");
+        write_reg(CTRL_MEM_COUNT_REG,           X"00000010");
+        write_reg(CTRL_MEM_COMMAND_REG_W,       X"00000003");
 
         read_reg(5);
         read_reg(4);

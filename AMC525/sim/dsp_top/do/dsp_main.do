@@ -41,6 +41,7 @@ set dsp1_top $dsp_main/dsp_gen(1)/dsp_top
 add wave -group "DSP Main" $dsp_main/*
 add wave -group "Ctrl Top" $ctrl_top/*
 add wave -group "Fast Mem Top" $ctrl_top/fast_memory_top/*
+add wave -group "Fast Mem Mux" $ctrl_top/fast_memory_top/fast_memory_mux/*
 add wave -group "Fast Mem Ctrl" $ctrl_top/fast_memory_top/fast_memory_control/*
 # add wave -group "Trigger Top" $ctrl_top/trigger_inst/*
 # add wave -group "Trigger Registers" \
