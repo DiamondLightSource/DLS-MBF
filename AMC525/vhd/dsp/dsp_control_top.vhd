@@ -84,6 +84,7 @@ architecture arch of dsp_control_top is
     signal seq_start : std_logic_vector(CHANNELS);
     signal seq_busy : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
+    signal dram0_phase : std_logic;
 
 begin
     -- Capture of pulsed bits.
@@ -162,6 +163,7 @@ begin
 
         dsp_to_control_i => dsp_to_control_i,
         memory_trigger_i => dram0_trigger,
+        memory_phase_i => dram0_phase,
 
         capture_enable_o => dram0_capture_enable_o,
         data_ready_i => dram0_data_ready_i,
@@ -223,7 +225,8 @@ begin
         blanking_window_o => blanking_window,
         turn_clock_o => turn_clock,
         seq_start_o => seq_start,
-        dram0_trigger_o => dram0_trigger
+        dram0_trigger_o => dram0_trigger,
+        dram0_phase_o => dram0_phase
     );
 
     -- Map events to individual DSP units
@@ -239,7 +242,6 @@ begin
 
     -- Generate appropriate interrupt signals
     interrupts : entity work.dsp_interrupts port map (
-        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
         dram0_capture_enable_i => dram0_capture_enable_o,

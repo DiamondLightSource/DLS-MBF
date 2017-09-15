@@ -27,6 +27,7 @@ entity fast_memory_top is
         dsp_to_control_i : in dsp_to_control_array_t;
         -- Capture control
         memory_trigger_i : in std_logic;
+        memory_phase_i : in std_logic;
 
         -- DRAM0 capture control: connected directly to AXI burst master
         capture_enable_o : out std_logic;
@@ -219,12 +220,12 @@ begin
 
     -- Simple capture control
     fast_memory_control : entity work.fast_memory_control port map (
-        adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         start_i => start,
         stop_i => stop,
-        trigger_i => memory_trigger_i,
         count_i => count,
+        trigger_i => memory_trigger_i,
+        trigger_phase_i => memory_phase_i,
         capture_enable_o => capture_enable_out,
         capture_address_i => capture_address_in,
         capture_address_o => capture_address

@@ -9,14 +9,14 @@ use work.defines.all;
 
 entity fast_memory_control is
     port (
-        adc_clk_i : in std_logic;
         dsp_clk_i : in std_logic;
 
         start_i : in std_logic;
         stop_i : in std_logic;
         count_i : in unsigned;
 
-        trigger_i : in std_logic;   -- On ADC clock, we need the phase
+        trigger_i : in std_logic;
+        trigger_phase_i : in std_logic;
 
         capture_enable_o : out std_logic := '0';
         capture_address_i : in std_logic_vector;
@@ -25,10 +25,7 @@ entity fast_memory_control is
 end;
 
 architecture arch of fast_memory_control is
-    signal adc_phase : std_logic;
-    signal trigger_in : std_logic := '0';
     signal trigger : std_logic := '0';
-    signal capture_phase_in : std_logic := '0';
     signal capture_phase : std_logic := '0';
 
     signal counter : count_i'SUBTYPE;
@@ -50,29 +47,11 @@ architecture arch of fast_memory_control is
     end;
 
 begin
-    adc_dsp_phase : entity work.adc_dsp_phase port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-        adc_phase_o => adc_phase
-    );
-
-    -- Bring trigger_i over to DSP clock and capture clock phase
-    process (adc_clk_i) begin
-        if rising_edge(adc_clk_i) then
-            if trigger_i then
-                trigger_in <= '1';
-                capture_phase_in <= adc_phase;
-            elsif trigger then
-                trigger_in <= '0';
-            end if;
-        end if;
-    end process;
-
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            trigger <= trigger_in;
-            capture_phase <= capture_phase_in;
+            trigger <= trigger_i;
+            capture_phase <= trigger_phase_i;
 
             case state is
                 when IDLE =>

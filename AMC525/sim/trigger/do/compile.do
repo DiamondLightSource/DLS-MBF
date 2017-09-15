@@ -29,7 +29,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/trigger/trigger_blanking.vhd \
     $vhd_dir/trigger/trigger_handler.vhd \
     $vhd_dir/trigger/trigger_target.vhd \
-    $vhd_dir/trigger/trigger_resync.vhd \
+    $vhd_dir/trigger/trigger_phase.vhd \
     $vhd_dir/trigger/trigger_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -41,17 +41,20 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "Registers" sim:/testbench/triggers/registers/*
-add wave -group "Turn Clock" sim:/testbench/triggers/turn_clock/*
-add wave -group "Blanking" sim:/testbench/triggers/blanking/*
-add wave -group "DRAM0 Handler" \
-    sim:/testbench/triggers/dram0_trigger/trigger_handler/*
-add wave -group "DRAM0" sim:/testbench/triggers/dram0_trigger/*
-add wave -group "DRAM0 Sync" sim:/testbench/triggers/sync_dram_trigger/*
-add wave -group "Triggers" sim:/testbench/triggers/*
+add wave -group "Registers" /triggers/registers/*
+add wave -group "Turn Clock" /triggers/turn_clock/*
+add wave -group "Blanking" /triggers/blanking/*
+add wave -group "SEQ0 Handler" /triggers/gen(0)/seq_trigger/trigger_handler/*
+add wave -group "SEQ0" /triggers/gen(0)/seq_trigger/*
+add wave -group "SEQ1 Handler" /triggers/gen(1)/seq_trigger/trigger_handler/*
+add wave -group "SEQ1" /triggers/gen(1)/seq_trigger/*
+add wave -group "DRAM0 Handler" /triggers/dram_trigger/trigger_handler/*
+add wave -group "DRAM0" /triggers/dram_trigger/*
+add wave -group "DRAM0 Phase" /triggers/dram_phase/*
+add wave -group "Triggers" /triggers/*
 add wave sim:*
 
 
-run 200 ns
+run 1000 ns
 
 # vim: set filetype=tcl:

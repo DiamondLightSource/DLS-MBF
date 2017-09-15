@@ -38,7 +38,8 @@ entity trigger_top is
         blanking_window_o : out std_logic_vector(CHANNELS);
         turn_clock_o : out std_logic_vector(CHANNELS);
         seq_start_o : out std_logic_vector(CHANNELS);
-        dram0_trigger_o : out std_logic
+        dram0_trigger_o : out std_logic;
+        dram0_phase_o : out std_logic
     );
 end;
 
@@ -72,8 +73,7 @@ architecture arch of trigger_top is
     signal dram0_turn_clock : std_logic;
     signal dram0_blanking_select : std_logic_vector(CHANNELS);
     signal dram0_blanking_window : std_logic;
-    signal dram0_trigger_dsp : std_logic;
-    signal dram0_trigger_out : std_logic;
+    signal dram0_trigger : std_logic;
 
 begin
     -- Register control interface
@@ -193,7 +193,7 @@ begin
         vector_or(blanking_window_o and dram0_blanking_select);
 
     -- Memory capture trigger
-    dram0_trigger : entity work.trigger_target port map (
+    dram_trigger : entity work.trigger_target port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => dram0_turn_clock_dsp,
 
@@ -202,22 +202,23 @@ begin
         setup_i => dram0_setup,
 
         readback_o => dram0_readback,
-        trigger_o => dram0_trigger_dsp
+        trigger_o => dram0_trigger
     );
 
     -- Convert trigger into an ADC synchronous version of the turn clock
-    sync_dram_trigger : entity work.trigger_resync port map (
+    dram_phase : entity work.trigger_phase port map (
         adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
         turn_clock_i => dram0_turn_clock,
-        trigger_i => dram0_trigger_dsp,
-        trigger_o => dram0_trigger_out
+        trigger_i => dram0_trigger,
+        phase_o => dram0_phase_o
     );
 
     dram_delay : entity work.dlyreg generic map (
         DLY => 4
     ) port map (
-        clk_i => adc_clk_i,
-        data_i(0) => dram0_trigger_out,
+        clk_i => dsp_clk_i,
+        data_i(0) => dram0_trigger,
         data_o(0) => dram0_trigger_o
     );
 end;

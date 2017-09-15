@@ -26,7 +26,7 @@ architecture arch of testbench is
     signal read_data : reg_data_array_t(CTRL_TRG_REGS);
     signal read_ack : std_logic_vector(CTRL_TRG_REGS);
     signal revolution_clock : std_logic := '0';
-    signal event_trigger : std_logic;
+    signal event_trigger : std_logic := '0';
     signal postmortem_trigger : std_logic;
     signal blanking_trigger : std_logic;
     signal adc_trigger : std_logic_vector(CHANNELS);
@@ -35,6 +35,7 @@ architecture arch of testbench is
     signal turn_clock : std_logic_vector(CHANNELS);
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
+    signal dram0_phase : std_logic;
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -42,6 +43,7 @@ begin
 
 --     revolution_clock <= not revolution_clock after 17.3 ns;
     revolution_clock <= not revolution_clock after 17 ns;
+    event_trigger <= not event_trigger after 40 ns;
 
     postmortem_trigger <= '0';
     blanking_trigger <= '0';
@@ -70,19 +72,9 @@ begin
         blanking_window_o => blanking_window,
         turn_clock_o => turn_clock,
         seq_start_o => seq_start,
-        dram0_trigger_o => dram0_trigger
+        dram0_trigger_o => dram0_trigger,
+        dram0_phase_o => dram0_phase
     );
-
-
-    -- Event generation
-    process begin
-        event_trigger <= '0';
-
-        wait for 111 ns;
-        event_trigger <= '1';
-
-        wait;
-    end process;
 
 
     -- Register control interface
@@ -96,6 +88,17 @@ begin
         procedure read_reg(reg : natural) is
         begin
             read_reg(dsp_clk, read_data, read_strobe, read_ack, reg);
+        end;
+
+        procedure arm(seq0 : std_logic; seq1 : std_logic; dram : std_logic) is
+            variable command : reg_data_t;
+        begin
+            command := (
+                CTRL_TRG_CONTROL_SEQ0_ARM_BIT => seq0,
+                CTRL_TRG_CONTROL_SEQ1_ARM_BIT => seq1,
+                CTRL_TRG_CONTROL_DRAM0_ARM_BIT => dram,
+                others => '0');
+            write_reg(CTRL_TRG_CONTROL_REG_W, command);
         end;
 
     begin
@@ -112,19 +115,26 @@ begin
         read_reg(CTRL_TRG_STATUS_REG);
         read_reg(CTRL_TRG_SOURCES_REG);
 
-        -- Arm SEQ and DRAM0
+        -- Enable all trigger sources for SEQ and DRAM and arm
+        write_reg(CTRL_TRG_CONFIG_TRIG_SEQ_REG,     X"00FF_00FF");
         write_reg(CTRL_TRG_CONFIG_TRIG_DRAM_REG,    X"0000_00FF");
-        write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0124");
+        arm('1', '1', '1');
 
         -- Blanking 3 for channel 0, 5 for channel 1
         write_reg(CTRL_TRG_CONFIG_BLANKING_REG,     X"0005_0003");
         write_reg(CTRL_TRG_CONFIG_SEQ0_REG,         X"0000_0010");
         write_reg(CTRL_TRG_CONFIG_SEQ1_REG,         X"0000_0000");
-        write_reg(CTRL_TRG_CONFIG_DRAM0_REG,        X"0000_0005");
+        write_reg(CTRL_TRG_CONFIG_DRAM0_REG,        X"0000_0000");
         write_reg(CTRL_TRG_CONFIG_TRIG_SEQ_REG,     X"00FF_FFFF");
 
         -- Sample phase of clock
         write_reg(CTRL_TRG_CONTROL_REG_W,           X"0000_0002");
+
+        read_reg(CTRL_TRG_PULSED_REG_R);
+
+        loop
+            arm('1', '1', '1');
+        end loop;
 
         wait;
     end process;
