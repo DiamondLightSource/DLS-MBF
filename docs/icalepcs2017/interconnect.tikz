@@ -1,0 +1,58 @@
+Dataflows through the interconnect
+
+\begin{tikzpicture}[
+    baseline,
+    x=20mm, y=5mm,
+    every path/.style={draw, ->}]
+
+    \path [draw=none]
+        (0,0) node (PCIe in) {PCIe}
+        +(2,0) node (DSP out) {DSP}
+        +(2,1) node (int out) {int}
+        +(2,-1) node (DMA out) {DMA}
+        ++(0,-2) node (DSP in) {DSP}
+        +(2,0) node (DRAM out) {DRAM}
+        ++(0,-1) node (DRAM in) {DRAM}
+        +(1,0) node (DMA) {DMA}
+        +(2,0) node (PCIe out) {PCIe};
+
+    \path (PCIe in) -- (DSP out);
+    \path (PCIe in) -- +(1,0) |- (int out);
+    \path (PCIe in) -- +(1,0) |- (DMA out);
+    \path (DSP in) -- (DRAM out);
+    \path (DRAM in) -- (DMA);
+    \path (DMA) -- (PCIe out);
+\end{tikzpicture}
+
+\medskip
+Schematic interconnect implementation
+\smallskip
+
+\begin{tikzpicture}[
+    x=24mm, y=14mm]
+
+    \path
+        (-0.8,0) node (MGT) {MGT}
+        (0,0) node [box] (PCIe) {PCIe}
+        (1,1) node [small box] (axi lite) {$\varprod$}
+        (2,1) node (DSP out) {DSP}
+        (1,0) node [small box, inner sep=1ex] (DMA) {DMA}
+        (2,0) node [small box] (intr) {interrupt\\control}
+        (1,-1) node [small box] (axi) {$\varprod$}
+        (2,-1) node [box] (DRAM) {DRAM}
+        (-0.8,-1.5) node (DSP in) {DSP};
+
+    \path [bus, <->] (MGT) -- (PCIe);
+    \path [bus] (PCIe) |-
+        node[below, anchor=north east, font=\scriptsize]
+            {register\\interface} (axi lite);
+    \path [bus] (axi lite.-120) -- (DMA.north west-|axi lite.-120);
+    \path [bus] (axi lite) -- (DSP out);
+    \path [bus] (axi lite.-60) |- ($(intr)+(0,0.6)$) -- (intr);
+    \path [bus] (DMA) -- (axi);
+    \path [bus] (axi) -- (DRAM);
+    \path [bus] (axi) -| (PCIe);
+    \path [bus] (DSP in) -| (axi);
+\end{tikzpicture}
+
+% vim: filetype=tex:

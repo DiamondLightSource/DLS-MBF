@@ -12,7 +12,7 @@
     \path [background fill] (2.9,1.8)
         node [area label] {bunch fir} rectangle ++(3.1,-3.3);
     \path [background fill] (6.5,1.8) rectangle ++(4.9,-3.3)
-        ++(0,3.1) node [area label, anchor=north east] {dac};
+        ++(0,3.3) node [area label, anchor=north east] {dac};
 
     \path
         (-0.2,0) node [adc-dac=180, label={ADC}] (adc in) {}
@@ -35,9 +35,9 @@
         ++(1.1,0) node [small box] (delay) {DLY}
         ++(1.2,0) node [adc-dac, label={DAC}] (dac out) {};
 
-    \node [box] at (1.2,-4.0) (sequencer) {sequencer};
+    \node [box] at (1.2,-3.8) (sequencer) {sequencer};
     \path (bb fir) ++(-0.5,-2.5) node [box] (bunch) {bunch\\select};
-    \node [box, minimum height=15mm] at (8,-4.0) (detector) {detector};
+    \node [box, minimum height=15mm] at (8,-3.8) (detector) {detector};
     \path (nco1 gain) ++(-1.5,-2.2)
         node [mul,
             label={[inner sep=1pt]above:NCO\textsubscript{1}}] (nco1) {$\sim$};

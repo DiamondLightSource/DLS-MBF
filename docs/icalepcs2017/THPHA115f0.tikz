@@ -32,7 +32,7 @@
     highlight fill/.style={fill=normal colour},
     accent fill/.style={fill=accent colour},
     % Next some lines
-    bus/.style={color=data colour, text=black, line width=0.6mm, ->},
+    bus/.style={draw, color=data colour, text=black, line width=0.6mm, ->},
     control/.style={color=control colour, text=black, very thick, ->},
 %
     % Used for creating an exact fit to an existing list of objects
