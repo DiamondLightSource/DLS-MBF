@@ -7,12 +7,14 @@ LATEX = pdflatex
 
 DOCUMENT = THPHA115
 
+DEPENDS += jacow-2_1.cls
+DEPENDS += $(wildcard *.png)
 DEPENDS += $(wildcard *.tikz)
 
 POSTER_DEPENDS += figures.pdf
 POSTER_DEPENDS += diamond_logo.eps diamond-background.png
 
-TARGETS = $(DOCUMENT).pdf $(DOCUMENT)_poster.pdf
+TARGETS = $(DOCUMENT).pdf # $(DOCUMENT)_poster.pdf
 
 
 default: $(TARGETS)

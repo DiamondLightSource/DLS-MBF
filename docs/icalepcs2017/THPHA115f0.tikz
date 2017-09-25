@@ -129,6 +129,9 @@
 \pgfsetlayers{background,main}
 
 
+% Useful for inline boxes
+\newcommand\smallbox[2][small box]{\tikz [inline text] \node [#1] {#2};}
+
 
 % ------------------------------------------------------------------------------
 % This frightening looking code is used to compute an anchor that rotates with
