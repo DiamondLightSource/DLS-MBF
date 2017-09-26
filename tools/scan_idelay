@@ -5,13 +5,6 @@ import numpy
 
 CAPTURE_COUNT = 1024*1024
 
-# Configure the ADC FIR for passthrough mode
-def reset_dsp(dsp):
-    dsp.MISC.STROBE.WRITE = 1
-    dsp.ADC.TAPS = 0x7FFFFFFF
-    for i in range(7):
-        dsp.ADC.TAPS = 0
-
 def set_idelay(delay):
     SYSTEM.ADC_IDELAY._write_fields_wo(VALUE = delay, WRITE = 1)
 
@@ -20,7 +13,7 @@ def capture(count):
     bytes = 8 * count
     CONTROL.MEM.COUNT = count + 32
     CONTROL.MEM.COMMAND._write_fields_wo(START = 1, STOP = 1)
-    while SYSTEM.STATUS.DRAM0_ENABLE:
+    while CONTROL.MEM.STATUS.ENABLE:
         pass
     with open(DDR0_NAME) as ddr0:
         buf = numpy.frombuffer(ddr0.read(bytes), dtype = numpy.uint16)
@@ -37,9 +30,10 @@ def assess(c):
 idelay = SYSTEM.ADC_IDELAY.VALUE
 ADC_SPI[0x550] = 4
 
-# Ensure we're in ADC passthrough mode by setting ADC FIR to straighthrough
-reset_dsp(DSP0)
-reset_dsp(DSP1)
+# Configure DRAM capture using unprocessed ADC channels
+DSP0.ADC.CONFIG.DRAM_SOURCE = 1
+DSP1.ADC.CONFIG.DRAM_SOURCE = 1
+CONTROL.MEM.CONFIG.MUX_SELECT = 0
 
 
 # The IDELAY step size is 1/(32 * 2 * f_REF) with f_REF = 200 MHz, which comes
