@@ -16,7 +16,7 @@
 % perhaps not altogether necessary, but I like the result.
 \newcommand{\squarecaption}[2][1]{\caption[#1]{#2\unskip\parfillskip 0pt}}
 
-\hyphenpenalty 2000         % Tone down hyphenation
+\hyphenpenalty 4000         % Tone down hyphenation
 
 
 \begin{document}
@@ -197,34 +197,94 @@ full data rate capture, configured as a 2\,GB circular buffer, and
 MEM\textsubscript1 used for detector capture, configured as two separate 64\,MB
 blocks.
 
+As both the ADC and DAC on the FMC-500 are dual channel, one FPGA image supports
+two channels of operation.  In transverse mode of operation the two channels
+operate independently on X and Y.
 
-\subsection{Longitudinal vs Transverse Processing}
+
+\subsection{Bunch-by-Bunch Min/Max/Sum}
+
+In the earlier design the motion of each bunch is captured by capturing the
+minimum and maximum position of each bunch over a 200\,ms interval and
+displaying the difference as the beam motion.  In the current design this data
+has been extended by accumulating both sum and sum of squares for each bunch
+over the sampling interval.
+
+After processing in the control system, this now allows us to display the mean
+bunch position and the standard deviation of beam motion.  This provides a more
+sensitive view of bunch behaviour.
+
+
+\subsection{Longitudinal Processing Features}
 
 There is not too much difference in the processing required for longitudinal vs
 transverse bunch by bunch feedback --- the biggest differences is in the output
 drive chain after the DAC, as described in~\cite{ibic2016}.  However, there are
-a few differences that are important to our system.
+three signal processing differences that are important to our system.
 
+
+\subsubsection{Operating on beam phase.}
+
+The input signal to LMBF comes from the sum signal from a set of electron beam
+position monitor (EBPM) buttons, processed by a front end to generate two
+signals with 90\textdegree{} phase separation, processed as channels $I$ and $Q$
+of input.  The front end phase will be controlled to drive the overall signal
+level of $Q$ as close to zero as possible.
+
+After this preparation, the signal $I$ should measure the fill pattern, and
+$Q$ will measure the phase relative to RF of each bunch (scaled by signal level,
+but that's a feature common to all bunch-by-bunch processors).  Longitudinal
+feedback is performed on the $Q$ signal alone.
+
+
+\subsubsection{Generating single side-band IQ.}
+
+In longitudinal mode the output signal will be used to drive a mixer.  To
+reduce out of band power demands we will operate with an IQ mixer and will
+generate a single side-band feedback signal.
+
+This is done by duplicating the $Q$ input signal onto both processing chains
+immediately before bunch-by-bunch FIR processing, and programming the FIRs in
+the two channels to generate phase shifts of the synchrotron tune separated by
+90\textdegree{}.  The resulting two DAC outputs will drive the IQ mixer.
+
+
+\subsubsection{Bunch-by-bunch frequency shift.}
+
+The synchrotron tune (longitudinal oscillation frequency) is a low fraction of
+the machine revolution frequency, in our case typically around 0.004.  This will
+require a substantial frequency shift, which is done by decimation and
+interpolation.
+
+Each bunch is averaged for a programmable number of turns before being fed to
+the bunch-by-bunch FIR.  The output from the filter is then held stationary for
+the same number of turns to generate the up sampled output.
+
+
+\subsection{Longitudinal vs Transverse Processing}
+
+It is helpful to be able to use the same firmware and software for both
+longitudinal and transverse processing.  Switching between these two modes is
+done by configuring the decimation and configuring inter-channel operation.
+
+The bunch-by-bunch FIR decimation and interpolation stage is disabled by setting
+the decimation count to 1.
+
+There are three inter-channel cross-bars, configured for straight-through
+operation in transverse mode, and with the following special settings for
+longitudinal operation:
 \begin{Itemize}
 \item
-    Operation is on beam phase.  We operate on a phase adjusted intensity signal
-    as a proxy for phase.  We will take two channels $I$ and $Q$ of input at
-    90\textdegree{} phase separation, but the overall phase will be controlled
-    to drive one channel, $Q$, as close to zero as possible, and this will be
-    taken as our input signal.
+    The second ADC input channel $Q$ is duplicated onto both processing channels
+    immediately before FIR processing.  This allows capture of ADC for $I$, but
+    supports operation on the beam phase.
 \item
-    Output will be used to drive a mixer, and for efficiency we will want to use
-    an IQ mixer driven with signals separated by 90\textdegree{}.
+    Only one sequencer is active and is configured to control both channels
+    simultaneously.
 \item
-    The synchrotron tune (longitudinal oscillation frequency) is a low fraction
-    of the machine revolution frequency, in our case typically around 0.004.
-    This will require a substantial frequency shift (by down and up sampling).
+    The NCO outputs are configured to drive the same signal with 90\textdegree{}
+    phase shift into the two outputs, and again only once set of NCOs is active.
 \end{Itemize}
-
-Despite these differences, we are able to write the same software and firmware
-to implement both longitudinal and transverse multi-bunch processing.  The only
-extra firmware support required beyond the down/up sample support is some data
-cross-bars between parts of the two data channels.
 
 
 \section{Implementation}
@@ -237,7 +297,9 @@ cross-bars between parts of the two data channels.
 \input{THPHA115f3.tikz}
 \end{centering}
 \squarecaption{Interconnect between PCI Express core (PCIe), memory (DRAM), and
-the LMBF data processor (DSP).}
+the LMBF data processor (DSP).  \smallbox{$\varprod$}~indicates an AXI crossbar,
+arrows point from master to slave.  Data flows are shown at the top of the
+figure.}
 \label{interconnect}
 \end{figure}
 
@@ -271,8 +333,9 @@ control processor.
 
 The kernel driver presents three device nodes to userspace, one for mapping
 registers into memory and receiving interrupt events, and two for memory readout
-(the AMC525 provides two banks of DRAM).  The design and implementation of this
-driver has remained unchanged since the start of the project.
+from the two banks of DRAM provided by the AMC525.  The design and
+implementation of this driver has remained unchanged since the start of the
+project.
 
 
 \subsection{Top Level System Design}
@@ -294,7 +357,7 @@ of registers provide control over:
 A custom software tool is used to manage the list of register assignments.  From
 a central list of registers and fields, VHDL definitions, C \texttt{struct}
 definitions, and documentation are automatically generated.  This makes it
-straightforward to add remove or rearrange registers, which is otherwise
+straightforward to add, remove, or rearrange registers, which is otherwise
 laborious and error prone.
 
 
@@ -339,6 +402,26 @@ The most important changes to the original design include the following:
 \end{Itemize}
 
 
+\subsection{Pipelines and Delay Compensation}
+
+For any complex FPGA design it is necessary to pay a lot of attention to
+pipelines in the data flow.  Inevitably these introduce delays, and unless
+compensated for, there can be data skews between different parts of the system.
+In our firmware we have handled these delays and skews by a process of
+automated measurement and software compensation.
+
+The skews of interest are those that affect which bunch appears as ``bunch
+zero'' in the various readouts and controls, such as the various min/max/sum
+waveforms, capture to DRAM, bunch-by-bunch configuration control, and detector
+configuration.
+
+We have created a Python script which works through all the relevant
+configuration options and automatically measures all the skews.  At the time of
+writing the delays cover a range of over 100 RF clock ticks!  The EPICS driver
+then uses these measurements to compensate all the waveforms it delivers to
+users.
+
+
 \subsection{EPICS Driver}
 
 The control system runs on the dedicated processor card and provides an EPICS
@@ -380,8 +463,8 @@ times, and debugging.
 For source control it is important to separate built from edited files, and it
 is desirable to store source files in a format which is friendly to diff.
 Although this can be done with the Xilinx Vivado development tool, this process
-goes against the grain of the tool.  The tool does support scripted development,
-but the process is surprisingly fragile.
+goes against the grain of the tool.  Scripted development is supported, but the
+process is surprisingly fragile.
 
 The build process is extraordinarily slow, particularly in comparison with
 compiling a software language.  The process is certainly more complex, and in
@@ -436,72 +519,71 @@ other improvements to be determined.
 \begin{thebibliography}{99}
 
 \bibitem{icalepcs2015}
-M.G.~Abbott, G.~Rehm, I.S.~Uzun,
-``Architecture of Transverse Multi-Bunch Feedback Processor at Diamond'',
-ICALEPCS 2015
+M.G.~Abbott, G.~Rehm, I.S.~Uzun, \enquote{Architecture of Transverse Multi-Bunch
+Feedback Processor at Diamond}, ICALEPCS 2015
 
 \bibitem{dipac2007}
-A.F.D.~Morgan, G.~Rehm, I.~Uzun, ``First Tests of the Transverse Multibunch
-Feedback at Diamond'', DIPAC~2007.
+A.F.D.~Morgan, G.~Rehm, I.~Uzun, \enquote{First Tests of the Transverse
+Multibunch Feedback at Diamond}, DIPAC~2007.
 
 \bibitem{epac2008}
-A.F.D.~Morgan, G.~Rehm, I.~Uzun, ``Performance and Features of the Diamond
-TMBF System'', EPAC~2008.
+A.F.D.~Morgan, G.~Rehm, I.~Uzun, \enquote{Performance and Features of the
+Diamond TMBF System}, EPAC~2008.
 
 \bibitem{biw2010}
-G.~Rehm, M.G.~Abbott, A.F.D.~Morgan, J.~Rowland, I.~Uzun, ``Measurement of
-Lattice Parameters Without Visible Disturbance to User Beam at Diamond Light
-Source'', BIW~2010.
+G.~Rehm, M.G.~Abbott, A.F.D.~Morgan, J.~Rowland, I.~Uzun, \enquote{Measurement
+of Lattice Parameters Without Visible Disturbance to User Beam at Diamond Light
+Source}, BIW~2010.
 
 \bibitem{icalepcs2011}
-I.~Uzun, M.G.~Abbott, M.T.~Heron, A.F.D.~Morgan, G.~Rehm, ``Operational
-Status of the Transverse Multibunch Feedback System at Diamond'', ICALEPCS~2011.
+I.~Uzun, M.G.~Abbott, M.T.~Heron, A.F.D.~Morgan, G.~Rehm, \enquote{Operational
+Status of the Transverse Multibunch Feedback System at Diamond}, ICALEPCS~2011.
 
 \bibitem{ibic2013}
-M.G.~Abbott, G.~Rehm, I.S.~Uzun, ``Capability Upgrade of the Diamond
-Transverse Multibunch Feedback'', IBIC~2013.
+M.G.~Abbott, G.~Rehm, I.S.~Uzun, \enquote{Capability Upgrade of the Diamond
+Transverse Multibunch Feedback}, IBIC~2013.
 
 \bibitem{ibic2014}
-G.~Rehm, M.G.~Abbott, A.F.D~Morgan, ``New Features and Measurements using
-the Upgraded Transverse Multibunch Feedback at Diamond'', IBIC~2014.
+G.~Rehm, M.G.~Abbott, A.F.D~Morgan, \enquote{New Features and Measurements using
+the Upgraded Transverse Multibunch Feedback at Diamond}, IBIC~2014.
 
 \bibitem{epac2006}
 E.~Plouviez, P.~Arnoux, F.~Epaud, J.~Jacob, J.M.~Koch, N.~Michel, G.A.~Naylor,
-J.\mbox{-}L.~Revol, V.~Serriere, D.~Vial, ``Broadband Bunch by Bunch
+J.\mbox{-}L.~Revol, V.~Serriere, D.~Vial, \enquote{Broadband Bunch by Bunch
 Feedback for the ESRF using a Single High Resolution and Fast Sampling FPGA
-DSP'', EPAC~2006.
+DSP}, EPAC~2006.
 
 \bibitem{libera}
-Instrumentation Technologies, ``Libera Bunch-by-Bunch'',
+Instrumentation Technologies, \enquote{Libera Bunch-by-Bunch},
 \url{http://www.i-tech.si}.
 
 \bibitem{ipac2017rf}
-C.~Christou et al., ``Progress with the Diamond Light Source RF Upgrade'',
+C.~Christou et al., \enquote{Progress with the Diamond Light Source RF Upgrade},
 IPAC~2017
 
 \bibitem{ibic2016}
-G.~Rehm, M.G.~Abbott, A.F.D.~Morgan, ``Measurements of Longitudinal Coupled
-Bunch Instabilities and Status of New Feedback System'', IBIC~2016.
+G.~Rehm, M.G.~Abbott, A.F.D.~Morgan, \enquote{Measurements of Longitudinal
+Coupled Bunch Instabilities and Status of New Feedback System}, IBIC~2016.
 
 \bibitem{mtca}
 MicroTCA Overview, PICMG, \url{https://www.picmg.org/openstandards/microtca/}
 
 \bibitem{ipac2017llrf}
-P.~Gu et al., ``Digital Low Level RF Systems for Diamond Light Source'',
+P.~Gu et al., \enquote{Digital Low Level RF Systems for Diamond Light Source},
 IPAC~2017
 
 \bibitem{fmc500}
-Innovative Integration, ``FMC-500, FMC Module with 2x 500 MSPS 14-bit A/D,
-2x 1230 MSPS 16-bit DACs with PLL and Timing Controls'',
+Innovative Integration, \enquote{FMC-500, FMC Module with 2x 500 MSPS 14-bit
+A/D, 2x 1230 MSPS 16-bit DACs with PLL and Timing Controls},
 \url{https://www.innovative-dsp.com/products.php?product=FMC-500}
 
 \bibitem{fmcdio}
-CERN Open Hardware Repository, ``FMC DIO 5ch TTL a'',
+CERN Open Hardware Repository, \enquote{FMC DIO 5ch TTL a},
 \url{https://www.ohwr.org/projects/fmc-dio-5chttla}
 
 \bibitem{amc525}
-Vadatech, ``AMC525, dual FMC carrier, 2 FMC, 690T FPGA, FFG-1761 package,
-FPGA Mezzanine Card'', \url{http://vadatech.com/product.php?product=393}.
+Vadatech, \enquote{AMC525, dual FMC carrier, 2 FMC, 690T FPGA, FFG-1761 package,
+FPGA Mezzanine Card}, \url{http://vadatech.com/product.php?product=393}.
 
 
 \end{thebibliography}
