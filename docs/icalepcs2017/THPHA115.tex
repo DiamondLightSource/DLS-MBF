@@ -2,7 +2,7 @@
     a4paper,
     keeplastbox,            % Prevents problems with last line in references
     hyphens,                % Allow hyphenation in \url
-    nospread,               % Suppress whitespace fill for column balancing
+%     nospread,               % Suppress whitespace fill for column balancing
 %     biblatex,
 %     boxit,                  % Show margins (debug only)
 ]{jacow-2_1}
@@ -51,7 +51,7 @@ we have focused on stabilising and measuring only transverse instabilities.
 
 More recently we have been asked to provide support for measurement and
 stabilisation of longitudinal multi-bunch instabilities as part of an ongoing
-project to install normally conducting RF cavities~\cite{ipac2017rf}.  It is
+project to install normal conducting RF cavities~\cite{ipac2017rf}.  It is
 anticipated that these may introduce longitudinal resonances and instabilities
 which will need to be managed.
 
@@ -364,9 +364,9 @@ laborious and error prone.
 \subsection{FMC-500 Configuration}
 
 An initial challenge to getting the FMC-500 up and running was that the
-documentation for the card~\cite{fmc500} was lacking in important detail; I
+documentation for the card~\cite{fmc500} was lacking in important detail; we
 understand that the normal application for this component is as part of a vendor
-supplied system.  However, the manufacturer was very helpful in answering my
+supplied system.  However, the manufacturer was very helpful in answering our
 questions and providing the missing pieces.
 
 The FMC-500 is built from three key devices, a PLL clock controller (LMK04828),
@@ -391,11 +391,10 @@ The most important changes to the original design include the following:
     deviation of motion.
 \item
     Bunch by bunch down and up sampling is now part of the bunch-by-bunch FIR.
-    This is needed for LMBF support to support the very low synchrotron tune
-    number.
+    This is needed for LMBF to support the very low synchrotron tune number.
 \item
-    There are now multiple detectors with individual bunch enables on each
-    detector.
+    There are now multiple tune measurement detectors with individual bunch
+    enables on each detector.
 \item
     Cross-bars are provided at key points in the signal processing chain to
     support IQ processing for LMBF feedback and excitation.
@@ -482,9 +481,9 @@ development process.
 
 In the previous TMBF design we operated with 4 lanes of digital processing with
 an FPGA clock of 125\,MHz.  Implementing this makes for some clumsy
-complications in the firmware, so when I discovered that the our new FPGA
-supports 500\,MHz operation I was tempted, and reworked the design for single
-lane operation.  This might have been unwise.
+complications in the firmware, so when we discovered that the our new FPGA
+supports 500\,MHz operation it was very tempting to simplify the code by
+reworking the design for single lane operation.  This might have been unwise.
 
 According to Xilinx documentation, any 7-series FPGA of speed grade 2 supports
 500\,MHz operation of the key components, block memory, and DSP units.  However,
@@ -508,8 +507,11 @@ device.
 
 Development of the new TMBF and LMBF system has been very instructive, and will
 provide DLS and other projects with enhanced bunch-by-bunch feedback and
-diagnostics capabilities.  We are looking to share this development with other
-facilities, and have seen interest from BESSY~II and from ESRF.
+diagnostics capabilities.  We are looking to share this development, and are
+actively exploring collaborations with a number of laboratories.
+
+Work is in progess in progress to sort out licensing issues so that we can share
+our work freely with other facilities.
 
 We will be extending the diagnostic capabilities of the system described here
 with further filtering, with more excitation and detection options, and with
