@@ -191,10 +191,10 @@ begin
     adc_pll_inst : PLLE2_BASE generic map (
         -- Parameters from Clocking Wizard
         CLKIN1_PERIOD => 2.0,   -- 2ns period for 500 MHz input clock
-        CLKFBOUT_MULT => 4,     -- PLL runs at 1000 MHz
-        DIVCLK_DIVIDE => 2,
-        CLKOUT0_DIVIDE => 2,    -- ADC clock at 500 MHz
-        CLKOUT1_DIVIDE => 4     -- DSP clock at 250 MHz
+        CLKFBOUT_MULT => 6,     -- PLL runs at 1500 MHz
+        DIVCLK_DIVIDE => 2,     -- Ensure PFD frequency not above 500 MHz
+        CLKOUT0_DIVIDE => 3,    -- ADC clock at 500 MHz
+        CLKOUT1_DIVIDE => 6     -- DSP clock at 250 MHz
     ) port map (
         -- Inputs
         CLKIN1  => adc_dco_delay,
