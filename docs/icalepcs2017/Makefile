@@ -8,13 +8,13 @@ LATEX = pdflatex
 DOCUMENT = THPHA115
 
 DEPENDS += jacow-2_1.cls
-DEPENDS += $(wildcard *.png)
+DEPENDS += THPHA115f1.png
 DEPENDS += $(wildcard *.tikz)
 
 POSTER_DEPENDS += figures.pdf
 POSTER_DEPENDS += diamond_logo.eps diamond-background.png
 
-TARGETS = $(DOCUMENT).pdf # $(DOCUMENT)_poster.pdf
+TARGETS = $(DOCUMENT).pdf $(DOCUMENT)_poster.pdf
 
 
 default: $(TARGETS)
@@ -41,6 +41,19 @@ clean-all: clean
 $(DOCUMENT).pdf: $(DEPENDS)
 
 figures.pdf: $(DEPENDS)
+
+
+# There is a rather odd bug in the poster generation code.  If we use the page
+# extraction feature of \includegraphics then acroread is unable to load one of
+# our images, so instead we use ghostscript to do the extraction.
+POSTER_DEPENDS += figures-1.pdf
+POSTER_DEPENDS += figures-2.pdf
+POSTER_DEPENDS += figures-3.pdf
+POSTER_DEPENDS += figures-4.pdf
+POSTER_DEPENDS += figures-5.pdf
+
+figures-%.pdf: figures.pdf
+	gs -sDEVICE=pdfwrite -dSAFER -o $@ -dFirstPage=$* -dLastPage=$* $<
 
 $(DOCUMENT)_poster.pdf: $(POSTER_DEPENDS)
 
