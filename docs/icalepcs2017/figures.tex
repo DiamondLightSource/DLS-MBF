@@ -1,0 +1,27 @@
+% Document for converting all the TikZ figures into individual pages.
+\documentclass{article}
+
+\usepackage[a4paper, left=0pt, right=0pt, top=0pt, bottom=0pt]{geometry}
+
+\usepackage{tikz}           % Powerful drawing package, part of pgf
+\usepackage{mathptmx}       % Mathematical PostScript fonts
+\usepackage{amsmath}        % General mathematical symbols
+\usepackage{textcomp}       % Text companion fonts
+\usepackage{pxfonts}        % Special mathematical fonts
+
+\input{THPHA115f0.tikz}     % PGF & TikZ configuration
+
+% \newcommand{\textsubscript}[1]{$_{\text{#1}}$}
+
+
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+
+\begin{document}
+
+\input{THPHA115f2.tikz}
+\input{THPHA115f3.tikz}
+\input{top.tikz}
+\input{dsp_top.tikz}
+
+\end{document}

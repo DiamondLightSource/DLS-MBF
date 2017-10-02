@@ -1,0 +1,224 @@
+\newcommand{\drawpin}[2]{
+    \draw [thick]
+        (#2) -- (#2|-#1.south)
+        node [draw, circle, fill=white, inner sep=2.2pt] (circle) {};}
+
+\begin{tikzpicture}
+
+    % Nodes:
+    %   interconnect
+    %   axi burst master
+    %   axi lite slave
+    \path
+        node [box, minimum width=6cm] (interconnect) {interconnect}
+        ++(0,-2.5) node [box] (axi burst master) {axi burst\\master}
+        +(-3.5,0) node [box] (axi lite slave) {axi lite\\slave};
+
+    % Interconnect end points
+    \northcoord{interconnect}{PCIe out}{0.15};
+    \northcoord{interconnect}{DRAM0 out}{0.5};
+    \northcoord{interconnect}{DRAM1 out}{0.85};
+    \southcoord{interconnect}{lite slave}{0.15};
+    \southcoord{interconnect}{burst master}{0.5};
+    \southcoord{interconnect}{lite master}{0.85};
+
+    % Nodes:
+    %   axi lite master
+    %   register top
+    %   system registers
+    %   clocking
+    %   dsp main
+    \path (interconnect-|interconnect lite master)
+        +(0,-2.5) node [box] (axi lite master) {axi lite\\master};
+    \path (axi lite slave)
+        ++(0,-1.7) node [box] (register top) {register\\top}
+        ++(-3.5,0) node [box] (system registers) {system\\registers}
+        ++(0,-2.3) node [box, minimum height=2cm] (clocking) {clocking};
+    \path (axi burst master)
+        ++(1,-3) node [box, minimum width=5cm, minimum height=3.5cm]
+            (dsp main) {dsp main};
+
+    % --------------------------------------------------------------------------
+    % FMC 500M
+    \path (interconnect)
+        ++(-4.5,-10) node [
+            background fill, minimum width=6cm, minimum height=3cm,
+        ] (fmc500m) {};
+    \node [below right, background fill] at (fmc500m.north west) {fmc500m};
+
+    \path (fmc500m)
+        ++(0,-0.4) node [component] (PLL) {PLL}
+        +(-1.8,0) node [component] (ADC) {ADC}
+        +(1.8,0) node [component] (DAC) {DAC};
+
+    % Paths to ADC
+    \drawpin{fmc500m}{ADC.-125}
+    \node [anchor=north west, yshift=-3pt, xshift=-2mm, font=\small]
+        at (circle) {ADC\textsubscript{in}};
+    \drawpin{fmc500m}{ADC.-55}
+    % Paths to DAC
+    \drawpin{fmc500m}{DAC.-125}
+    \node [anchor=north west, yshift=-3pt, xshift=-4mm, font=\small]
+        at (circle) {DAC\textsubscript{out}};
+    \drawpin{fmc500m}{DAC.-55}
+    % Paths to PLL
+    \drawpin{fmc500m}{PLL}
+    \draw [trigger] ([yshift=2mm]circle) -- (PLL);
+    \node [anchor=north, yshift=-3pt, font=\small]
+        at (circle) {f\textsubscript{RF}};
+    \draw [trigger] (PLL) -- (ADC);
+    \draw [trigger] (PLL) -- (DAC);
+    % Fast trigger
+    \draw [thick, ->]
+        ([xshift=-4mm]fmc500m.south east) coordinate (circle)
+        node [draw, circle, fill=white, inner sep=2.2pt] {}
+        node [anchor=north, yshift=-3pt, xshift=1mm, font=\small]
+            at (circle) {f\textsubscript{REV}}
+        -- +(0,3.5) -| (dsp main.-120);
+    % Place idelay
+    \node [small box, yshift=35mm, xshift=10mm]
+        at (circle) {idelay};
+
+    \draw [trigger]
+        (ADC) -- +(-2,0) |- ($(clocking.west)+(0,-0.55)$);
+    \draw [trigger]
+        ($(clocking.west)+(0,0.55)$)
+        +(-1,0) node [anchor=south, font=\scriptsize, black] {125\,MHz}
+        -- ($(clocking.west)+(0,0.55)$);
+
+
+    % --------------------------------------------------------------------------
+    % FMC digital IO
+    \path (interconnect)
+        ++(4,-10) node [
+            background fill, minimum width=5cm, minimum height=3cm,
+        ] (fmc digital io) {};
+    % Buffers
+    \draw (fmc digital io)
+        ++(-1.8,-0.5) node [buffer] (buf1) {}
+        ++(0.9,0) node [buffer] (buf2) {}
+        ++(0.9,0) node [buffer] (buf3) {}
+        ++(0.9,1.5mm) node [buffer, rotate=180] (buf4) {}
+        ++(0.9,0) node [buffer, rotate=180] (buf5) {};
+    \drawpin{fmc digital io}{buf1}
+    \node [anchor=north, yshift=-3pt, font=\small] at (circle) {TRG};
+    \drawpin{fmc digital io}{buf2}
+    \node [anchor=north, yshift=-3pt, font=\small] at (circle) {PM};
+    \drawpin{fmc digital io}{buf3}
+    \node [anchor=north, yshift=-3pt, font=\small] at (circle) {BLK};
+    \drawpin{fmc digital io}{buf4}
+    \node [anchor=north, yshift=-3pt, font=\small]
+        at (circle) {SEQ\textsubscript0};
+    \drawpin{fmc digital io}{buf5}
+    \node [anchor=north, yshift=-3pt, font=\small]
+        at (circle) {SEQ\textsubscript1};
+    \node [below right] at (fmc digital io.north west) {fmc digital io};
+
+    \draw [thick, ->] (buf1) -- +(0,1) -| (fmc digital io.80);
+    \draw [thick] (buf2) -- +(0,1);
+    \draw [thick] (buf3) -- +(0,1);
+    \draw [thick, <-] (buf4) -- +(0,1) -| (fmc digital io.50);
+    \draw [thick, <-] (buf5) -- +(0,1) -| (fmc digital io.50);
+
+
+    % --------------------------------------------------------------------------
+    % Clocking links
+
+    % REF clock
+    \draw [trigger] ($(clocking.east)+(0,0.8)$)
+        node [above right, font=\scriptsize, black] {REF\_CLK}
+        -- ++(1,0)
+        coordinate (REF CLK);
+
+    % REG clock
+    \draw [trigger line] ($(clocking.east)+(0,0.3)$)
+        node [above right, font=\scriptsize, black] {REG\_CLK}
+        -- ++(1.4,0) -- ++(0,1.7)
+        node [trigger dot] {}
+        coordinate (REG CLK);
+    \draw [trigger] (REG CLK) -- (REG CLK-|system registers.east);
+    \draw [trigger] (REG CLK) -- (REG CLK-|register top.west);
+    \draw [trigger] (REG CLK) -- (REG CLK|-axi lite slave)
+        node [trigger dot] {} -- (axi lite slave);
+    \draw [trigger] (REG CLK)
+        -- ++(0,3.3) -| ([xshift=-2mm]interconnect lite slave);
+
+    % DSP clock
+    \draw [trigger line] ($(clocking.east)+(0,-0.3)$)
+        node [below right, font=\scriptsize, black] {DSP\_CLK}
+        -- ++(1.8,0) -- ++(0,1.3) -- ++(2.3,0) -- ++(0,1)
+        node [trigger dot] (DSP CLK) {};
+    \draw [trigger] (DSP CLK) -- (DSP CLK-|register top.east);
+    \draw [trigger] (DSP CLK) -- (DSP CLK-|dsp main.west);
+    \draw [trigger line] (DSP CLK)
+        -- ++(0,2.3) -- ++(0.8,0) -- ++(0,1)
+        -- ([xshift=-2mm]\lastcoord-|interconnect burst master)
+        node [trigger dot] (DSP CLK) {};
+    \draw [trigger]
+        (DSP CLK) -- ([xshift=-2mm]interconnect burst master);
+    \draw [trigger]
+        (DSP CLK) -- ([xshift=-2mm]axi burst master.north);
+    \draw [trigger line]
+        (DSP CLK) -- ([xshift=-2mm]DSP CLK-|interconnect lite master)
+        node [trigger dot] (DSP CLK) {};
+    \draw [trigger]
+        (DSP CLK) -- ([xshift=-2mm]interconnect lite master);
+    \draw [trigger]
+        (DSP CLK) -- ([xshift=-2mm]axi lite master.north);
+
+    % ADC clock
+    \draw [trigger] ($(clocking.east)+(0,-0.8)$)
+        node [below right, font=\scriptsize, black] {ADC\_CLK}
+        -- ++(2.2,0) |- (dsp main.-175);
+
+
+    % --------------------------------------------------------------------------
+
+    % Interconnect pathing to outside world
+    \draw [bus, <-] (interconnect PCIe out) -- +(0,8mm)
+        node [anchor=south] {PCIe};
+    \draw [bus] (interconnect DRAM0 out) -- +(0,8mm)
+        node [anchor=south] {DRAM0\\2\,GB};
+    \multipath [bus] {
+        \draw (interconnect DRAM1 out) -- +(0,8mm)
+        node [anchor=south] {DRAM1\\128\,MB};}
+    \draw [trigger] (interconnect PCIe out)
+        ++(-2mm,8mm) -- +(0,-8mm)
+        node [midway, left, font=\scriptsize, black] {100\,MHz};
+
+    % Pathing
+    \draw [bus, <-] (axi lite slave) -- +(0,1) -| (interconnect lite slave);
+    \multipath [bus] {\draw (axi burst master) -- (interconnect burst master);}
+    \draw [bus] (axi lite master) -- (interconnect lite master);
+    \draw [bus] (axi lite slave) -- (register top);
+    \multipath [bus] {\draw (register top) -- (system registers);}
+    \draw [bus] (system registers) -- (clocking);
+    \draw [bus] (system registers.160) -- ++(-0.5,0)
+        node [anchor=east, font=\small, align=right] {fmc500m};
+    \draw [bus] (system registers.-160) -- ++(-0.5,0)
+        node [anchor=east, font=\small, align=right] {idelay};
+
+    % dsp main connections
+    \draw [bus] (dsp main.north-|axi lite master) -- (axi lite master);
+    \draw [bus] (dsp main.north-|axi burst master) -- (axi burst master);
+    \multipath [bus] {\draw (register top) -- (register top-|dsp main.west);}
+    \draw [trigger line, ->] (dsp main.25)
+        node [anchor=east, font=\small, black] {interrupts}
+        -- ++(0.5,0) |- (interconnect);
+
+    % DSP main to FMC 500
+    \draw [bus, <-] (dsp main.-165)
+        node [anchor=west, font=\small] {ADC ($\times2$)}
+        -| (fmc500m.60) |- ($(ADC)+(0,1)$) -- (ADC);
+    \draw [bus] (dsp main.-155)
+        node [anchor=west, font=\small] {DAC ($\times2$)} -| (DAC);
+    \draw [bus, <-] (dsp main.-25)
+        node [anchor=east, font=\small] {TRG/PM/BLK}
+        -| (fmc digital io.80);
+    \draw [bus] (dsp main.-15)
+        node [anchor=east, font=\small] {SEQ\textsubscript{0/1}}
+        -| (fmc digital io.50);
+
+\end{tikzpicture}
+
+% vim: filetype=tex:

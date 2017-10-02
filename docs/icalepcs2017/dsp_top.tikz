@@ -1,0 +1,112 @@
+\begin{tikzpicture}[
+    control/.style={
+        draw, rectangle, very thick, accent fill,
+        font=\tiny\strut,},
+    nco box/.style={
+        draw, rectangle, very thick, highlight fill,
+        inner sep=0.75em},
+    ]
+
+    % Basic skeleton
+    \path
+        (0,0) node [box] (adc) {adc}
+        +(0,-37mm) node [box, minimum height=18mm] (sequencer) {sequencer}
+        +(2cm,0)  node [control] (adc mux) {ADC}
+        ++(4cm,0) node [box] (fir) {bunch\\fir}
+        +(15mm,7mm) node [control] (fir out) {FIR}
+        +(2cm,2cm) node [box] (bunch) {bunch\\select}
+        +(0,2cm) node [control] (bunch mux) {BNCH}
+        ++(0,-12mm) node [nco box] (nco0) {nco\textsubscript{0}}
+        +(15mm,0) node [control] (nco0 mux) {NCO\textsubscript{0}}
+        ++(0,-9mm) node [nco box] (nco1) {nco\textsubscript{1}}
+        +(15mm,0) node [control] (nco1 mux) {NCO\textsubscript{1}}
+        (fir)
+        ++(4cm,0) node [box] (dac) {dac}
+        +(12mm,-12mm) node [control] (dac out) {DAC}
+        ++(0,-37mm) node [box, minimum height=18mm] (detector) {detector};
+
+    \draw [bus, <-]
+        (adc) -- +(-15mm,0) coordinate (inputs)
+        node [anchor=east] {ADC\textsubscript{in}};
+    \draw [bus]
+        (dac) -- +(20mm,0) coordinate (outputs)
+        node [anchor=west] {DAC\textsubscript{out}};
+    \draw [bus] (dac.-20) -| (dac out);
+
+    \draw [trigger line, ->]
+        (adc.-25) -- ++(15mm,0) -- ++(0,-44mm) -- (\lastcoord-|outputs)
+        node [anchor=west] {\strut adc event};
+
+    \multipath [thick, ->] {\draw
+        (sequencer.20) -- ++(10mm,0) -- ++(0,7mm)
+        -| ($(detector.north west)+(-3mm,10mm)$)
+        -| ($(dac.south west)+(4mm,0)$)
+        node [pos=0.75, anchor=west, font=\scriptsize]
+            {nco\textsubscript{1}\\gain};}
+
+    \draw [bus] (bunch) -- ++(0,-8mm) -| (fir);
+    \draw [bus] (bunch) -- ++(0,-8mm) -| (dac);
+    \draw [thick, ->] (bunch mux) -- (bunch);
+
+    \multipath [bus] {
+        \draw (fir) -| (fir out);
+        \draw (fir) -- +(23mm,0) |- (dac.160);
+        \draw (fir) -- +(23mm,0) |- (detector.140);}
+
+    \draw [bus] (nco0) -- (nco0 mux);
+    \multipath [bus] {\draw (nco0 mux) -- +(10mm,0) |- (dac);}
+    \multipath [bus] {\draw (nco1 mux) -- +(12mm,0) |- (dac.-160);}
+    \multipath [bus] {
+        \draw (nco1) -- (nco1 mux);
+        \draw (nco1) -- +(8mm,0) |- (detector.155);}
+
+    \draw [trigger line, <-] (sequencer.160) -- (inputs|-sequencer.160)
+        node [anchor=east] {trigger};
+    \draw [trigger line, <-] (sequencer.-160) -- (inputs|-sequencer.-160)
+        node [anchor=east] {blanking};
+    \multipath [thick, ->] {\draw (sequencer.40) -- +(3mm,0) |- (bunch mux);}
+    \multipath [bus] {\draw (sequencer.30) -- +(6mm,0) |- (nco1);}
+    \multipath [bus] {\draw
+        (sequencer.-20) -- (\lastcoord-|detector.west)
+        node [pos=0, anchor=south west, font=\scriptsize] {window};}
+    \multipath [thick, ->] {\draw
+        (sequencer.-30) -- (\lastcoord-|detector.west)
+        node [pos=0.5, anchor=north west, font=\scriptsize] {start/write};}
+    \draw [trigger line, ->] (sequencer.-40)
+        -- ++(10mm,0) -- ++(0,-8mm) -- (\lastcoord-|outputs)
+        node [anchor=west] {\strut SEQ};
+
+    \draw [bus] (detector) -- (detector-|outputs)
+        node [anchor=west] {DRAM\textsubscript{1}};
+
+    \multipath [bus] {
+        \draw (adc) -- (adc mux);
+        \draw (adc mux) -- (fir);
+        \draw (adc mux) -- +(7mm,0) |- (detector.175);}
+
+    \draw [trigger]
+        (inputs) ++(0,15mm)
+        node [anchor=east] {turn clock}
+        -- ++(6mm,0) node [anchor=west] at +(6pt,0) {T};
+    \draw [bus]
+        (inputs) ++(0,20mm)
+        node [anchor=east] {registers}
+        -- ++(6mm+6pt,0) node [anchor=west] {R};
+    \draw [bus, <-] (nco0) -- +(-10mm,0)
+        node [anchor=south west, font=\scriptsize,
+            inner xsep=0, inner ysep=2pt, line width=0pt] {R};
+    \foreach \x in {adc, fir, dac, bunch, sequencer, detector} {
+        \draw [trigger] (\x.north west)
+            ++(2mm,4mm)
+            node [anchor=north east, font=\scriptsize,
+                inner xsep=1pt, inner ysep=0pt] {T}
+            -- +(0,-4mm);
+        \draw [bus, <-] (\x.north east)
+            ++(-2mm,0) -- +(0,4mm)
+            node [thin, anchor=north east, font=\scriptsize,
+                inner xsep=1.5pt, inner ysep=0pt] {R};
+    };
+
+\end{tikzpicture}
+
+% vim: filetype=tex:
