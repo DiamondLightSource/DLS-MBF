@@ -182,7 +182,7 @@ class register_docs_file(rst.Directive):
         full_filename = os.path.join(lmbf.TOP, filename)
         defs = lmbf.parse.register_defs.parse(
             lmbf.parse.indent.parse_file(file(full_filename)))
-#         defs = lmbf.parse.register_defs.flatten(defs)
+        defs = lmbf.parse.register_defs.flatten(defs)
         groups = self.list_to_dict(defs.groups)
         group_defs = self.list_to_dict(defs.group_defs)
         register_defs = self.list_to_dict(defs.register_defs)

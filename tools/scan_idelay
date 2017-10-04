@@ -1,9 +1,25 @@
 #!/usr/bin/env python
 
+import argparse
+import math
+
 from lmbf.driver.driver import SYSTEM, CONTROL, DSP0, DSP1, ADC_SPI, DDR0_NAME
 import numpy
 
-CAPTURE_COUNT = 1024*1024
+
+parser = argparse.ArgumentParser(description = 'Scan for best IDELAY setting')
+parser.add_argument('-f', dest = 'f_rf', default = 500, type = float)
+parser.add_argument('-s', dest = 'idelay', type = lambda s: int(s, 0))
+parser.add_argument(
+    '-n', dest = 'capture_count', default = 1024 * 1024, type = int)
+args = parser.parse_args()
+
+# The IDELAY step size is 1/(32 * 2 * f_REF) with f_REF = 200 MHz, which comes
+# to 78.125 ps, so 25 steps covers the 2ns input clock
+idelay_step = 78.125
+N = int(math.ceil(1e6 / args.f_rf / idelay_step))
+assert N < 32, 'RF frequency too low'
+
 
 def set_idelay(delay):
     SYSTEM.ADC_IDELAY._write_fields_wo(VALUE = delay, WRITE = 1)
@@ -26,26 +42,29 @@ def assess(c):
     v = c.std(0).mean()
     return v == 0 and (numpy.diff(c.mean(0)) == 0).all()
 
+
 # Configure checkerboard ADC capture
-idelay = SYSTEM.ADC_IDELAY.VALUE
+if args.idelay is None:
+    idelay = SYSTEM.ADC_IDELAY.VALUE
+else:
+    idelay = args.idelay
 ADC_SPI[0x550] = 4
 
 # Configure DRAM capture using unprocessed ADC channels
-DSP0.ADC.CONFIG.DRAM_SOURCE = 1
-DSP1.ADC.CONFIG.DRAM_SOURCE = 1
+DSP0.ADC.CONFIG.DRAM_SOURCE = 0
+DSP1.ADC.CONFIG.DRAM_SOURCE = 0
 CONTROL.MEM.CONFIG.MUX_SELECT = 0
 
 
-# The IDELAY step size is 1/(32 * 2 * f_REF) with f_REF = 200 MHz, which comes
-# to 78.125 ps, so 25 steps covers the 2ns input clock
-N = 26
+
+
 good = numpy.zeros(N, dtype = bool)
 for delay in range(N):
     set_idelay(delay)
-    c = capture(CAPTURE_COUNT)
+    c = capture(args.capture_count)
     m = c.std(0).mean()
     good[delay] = assess(c)
-    print '%02x' % delay, m, show(c.mean(0)), good[delay]
+    print '%02x' % delay, show(c.mean(0)), m == 0.0, good[delay]
 
 # Restore previous state
 ADC_SPI[0x550] = 0

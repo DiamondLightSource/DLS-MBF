@@ -228,8 +228,13 @@ class GenerateMethods(lmbf.parse.register_defs.WalkParse):
             for register in rw_pair.registers]
 
     def walk_overlay(self, context, overlay):
-        print 'Warning! Omitting overlay registers', context, overlay.name
-        return []
+        # Overlay registers are a bit tricky: the register number is the overlay
+        # index, not the register offset, so fix this as we walk each register
+        registers = [
+            self.walk_register(
+                context, register._replace(offset = overlay.offset))
+            for register in overlay.registers]
+        return make_group(overlay, registers)
 
     def walk_union(self, context, union):
         return self.walk_subgroups(context, union)
