@@ -4,16 +4,23 @@
 
 import sys
 import time
+import argparse
 
-from lmbf.driver import setup_pll, setup_adc, setup_dac
+from lmbf.driver import driver, setup_pll, setup_adc, setup_dac
 
-device = sys.argv[1]
 
-print 'Warning: ignoring device argument', device
+parser = argparse.ArgumentParser(description = 'Scan for best IDELAY setting')
+parser.add_argument(
+    'addr', default = 0,
+    help = 'Set physical address of card.  If not specified then use card 0')
+args = parser.parse_args()
+
+
+regs = driver.Registers(args.addr)
 
 
 # Hardware initialisation
-setup_pll.setup_pll()
+setup_pll.setup_pll(regs)
 time.sleep(0.1)         # Give the PLL time to lock
-setup_adc.setup_adc()
-setup_dac.setup_dac()
+setup_adc.setup_adc(regs)
+setup_dac.setup_dac(regs)

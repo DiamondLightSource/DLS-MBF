@@ -5,7 +5,6 @@
 
 from config_pll import SettingsBase
 
-from driver import PLL_SPI as PLL
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -209,8 +208,8 @@ class Settings(SettingsBase):
 #     out12_13.DCLK_DIV = 1
 
 
-def setup_pll():
-    s = Settings(PLL)
+def setup_pll(regs):
+    s = Settings(regs.PLL_SPI)
     s.write_config()
 
 

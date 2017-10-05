@@ -3,15 +3,24 @@
 import argparse
 import math
 
-from lmbf.driver.driver import SYSTEM, CONTROL, DSP0, DSP1, ADC_SPI, DDR0_NAME
 import numpy
+
+from lmbf.driver import driver
 
 
 parser = argparse.ArgumentParser(description = 'Scan for best IDELAY setting')
-parser.add_argument('-f', dest = 'f_rf', default = 500, type = float)
-parser.add_argument('-s', dest = 'idelay', type = lambda s: int(s, 0))
 parser.add_argument(
-    '-n', dest = 'capture_count', default = 1024 * 1024, type = int)
+    '-a', dest = 'addr', default = 0,
+    help = 'Set physical address of card.  If not specified then use card 0')
+parser.add_argument(
+    '-f', dest = 'f_rf', default = 500, type = float,
+    help = 'RF frequency, used to calculate number of samples')
+parser.add_argument(
+    '-s', dest = 'idelay', type = lambda s: int(s, 0),
+    help = 'If set, set IDELAY to this after test')
+parser.add_argument(
+    '-n', dest = 'capture_count', default = 1024 * 1024, type = int,
+    help = 'Number of data points captured for each sample')
 args = parser.parse_args()
 
 # The IDELAY step size is 1/(32 * 2 * f_REF) with f_REF = 200 MHz, which comes
@@ -21,17 +30,20 @@ N = int(math.ceil(1e6 / args.f_rf / idelay_step))
 assert N < 32, 'RF frequency too low'
 
 
+regs = driver.Registers(args.addr)
+
+
 def set_idelay(delay):
-    SYSTEM.ADC_IDELAY._write_fields_wo(VALUE = delay, WRITE = 1)
+    regs.SYS.ADC_IDELAY._write_fields_wo(VALUE = delay, WRITE = 1)
 
 def capture(count):
     # Each counted capture corresponds to 8 captured bytes
     bytes = 8 * count
-    CONTROL.MEM.COUNT = count + 32
-    CONTROL.MEM.COMMAND._write_fields_wo(START = 1, STOP = 1)
-    while CONTROL.MEM.STATUS.ENABLE:
+    regs.CTRL.MEM.COUNT = count + 32
+    regs.CTRL.MEM.COMMAND._write_fields_wo(START = 1, STOP = 1)
+    while regs.CTRL.MEM.STATUS.ENABLE:
         pass
-    with open(DDR0_NAME) as ddr0:
+    with open(regs.DDR0_NAME) as ddr0:
         buf = numpy.frombuffer(ddr0.read(bytes), dtype = numpy.uint16)
     return buf.reshape((-1, 2, 2))
 
@@ -45,17 +57,15 @@ def assess(c):
 
 # Configure checkerboard ADC capture
 if args.idelay is None:
-    idelay = SYSTEM.ADC_IDELAY.VALUE
+    idelay = regs.SYS.ADC_IDELAY.VALUE
 else:
     idelay = args.idelay
-ADC_SPI[0x550] = 4
+regs.ADC_SPI[0x550] = 4
 
 # Configure DRAM capture using unprocessed ADC channels
-DSP0.ADC.CONFIG.DRAM_SOURCE = 0
-DSP1.ADC.CONFIG.DRAM_SOURCE = 0
-CONTROL.MEM.CONFIG.MUX_SELECT = 0
-
-
+regs.DSP0.ADC.CONFIG.DRAM_SOURCE = 0
+regs.DSP1.ADC.CONFIG.DRAM_SOURCE = 0
+regs.CTRL.MEM.CONFIG.MUX_SELECT = 0
 
 
 good = numpy.zeros(N, dtype = bool)
@@ -67,5 +77,5 @@ for delay in range(N):
     print '%02x' % delay, show(c.mean(0)), m == 0.0, good[delay]
 
 # Restore previous state
-ADC_SPI[0x550] = 0
+regs.ADC_SPI[0x550] = 0
 set_idelay(idelay)

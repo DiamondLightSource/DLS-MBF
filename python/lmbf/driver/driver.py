@@ -7,26 +7,32 @@ import numpy
 from register_defs import register_groups
 
 
-# Driver device names
-DDR0_NAME = '/dev/amc525_lmbf.0.ddr0'
-DDR1_NAME = '/dev/amc525_lmbf.0.ddr1'
-REGS_NAME = '/dev/amc525_lmbf.0.reg'
-
 # Register area size ioctl code
 LMBF_MAP_SIZE = ord('L') << 8           # _IO('L', 0)
 LMBF_BUF_SIZE = (ord('L') << 8) | 1     # _IO('L', 1)
 
 
 
-# Interrogate DMA buffer size
-ddr0_file = os.open(DDR0_NAME, os.O_RDONLY)
-DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, LMBF_BUF_SIZE)
-os.close(ddr0_file)
+# We want to support two ways to specify the device name: by sequence number, or
+# by PCI address (which encodes the backplane port).
+def device_name(part, prefix = 0):
+    if isinstance(prefix, int):
+        # Assume the prefix is just a device number identification
+        return '/dev/amc525_lmbf.%d.%s' % (prefix, part)
+    else:
+        # All string prefixes are PCI addresses.  In this case we'll allow a
+        # full form (starting 'pci-') and a short form (nn).
+        if not prefix.startswith('pci-'):
+            prefix = 'pci-0000:%s:00.0' % prefix
+        return '/dev/amc525_lmbf/%s/amc525_lmbf.%s' % (prefix, part)
 
 
 
 class RawRegisters:
-    def __init__(self, regs_device):
+    def __init__(self, prefix):
+        regs_device = device_name('reg', prefix)
+        print regs_device
+
         # Open register file and map into memory.
         self.reg_file = os.open(regs_device, os.O_RDWR | os.O_SYNC)
         reg_size = fcntl.ioctl(self.reg_file, LMBF_MAP_SIZE)
@@ -58,16 +64,8 @@ class RegisterMap:
         self.registers[offset] = value
 
 
-raw_registers = RawRegisters(REGS_NAME)
-
 def make_register(name, map):
     return register_groups[name](RegisterMap(map, name))
-
-
-SYSTEM  = make_register('SYS',  raw_registers.reg_system)
-CONTROL = make_register('CTRL', raw_registers.reg_dsp_ctrl)
-DSP0    = make_register('DSP',  raw_registers.reg_dsp[0])
-DSP1    = make_register('DSP',  raw_registers.reg_dsp[1])
 
 
 class SPI:
@@ -92,8 +90,34 @@ class SPI:
     __setitem__ = write
 
 
-PLL_SPI = SPI(SYSTEM, 0)
-ADC_SPI = SPI(SYSTEM, 1)
-DAC_SPI = SPI(SYSTEM, 2)
 
-__all__ = ['SYSTEM', 'CONTROL', 'DSP0', 'DSP1']
+class Registers:
+    def __init__(self, prefix):
+        self.DDR0_NAME = device_name('ddr0', prefix)
+        self.DDR1_NAME = device_name('ddr1', prefix)
+
+        self.raw_registers = RawRegisters(prefix)
+
+        self.SYS  = make_register('SYS',  self.raw_registers.reg_system)
+        self.CTRL = make_register('CTRL', self.raw_registers.reg_dsp_ctrl)
+        self.DSP0 = make_register('DSP',  self.raw_registers.reg_dsp[0])
+        self.DSP1 = make_register('DSP',  self.raw_registers.reg_dsp[1])
+
+        self.PLL_SPI = SPI(self.SYS, 0)
+        self.ADC_SPI = SPI(self.SYS, 1)
+        self.DAC_SPI = SPI(self.SYS, 2)
+
+        self._DDR0_BUF_LEN = None
+
+    def SPI(self, dev):
+        return SPI(self.SYS, dev)
+
+    @property
+    def DDR_BUF_LEN(self):
+        if self._DDR0_BUF_LEN is None:
+            with os.open(self.DDR0_NAME, os.O_RDONLY) as ddr0:
+                self.DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, LMBF_BUF_SIZE)
+        return self._DDR0_BUF_LEN
+
+
+__all__ = ['Registers']

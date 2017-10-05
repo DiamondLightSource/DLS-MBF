@@ -1,20 +1,44 @@
 #!/usr/bin/env python
 
 import sys
+import argparse
 
-from lmbf.driver.driver import raw_registers
+from lmbf.driver import driver
 
+def to_int(s):
+    return int(s, 0)
+
+parser = argparse.ArgumentParser(description = 'Read/write raw registers')
+parser.add_argument(
+    '-a', dest = 'addr', default = 0,
+    help = 'Set physical address of card.  If not specified then card 0')
+parser.add_argument(
+    'bank', type = int,
+    help = '''\
+Register bank to access according to mapping:
+    0   SYS     - System control registers;
+    1   CTRL    - Shared DSP management registers;
+    2   DSP0    - First DSP channel control;
+    3   DSP1    - Second DSP channel control''')
+parser.add_argument(
+    'reg', type = to_int, nargs = '?',
+    help = 'Register to read or write.  If not specified, entire bank is read')
+parser.add_argument(
+    'value', type = to_int, nargs = '?',
+    help = 'Value to write to register if specifed')
+args = parser.parse_args()
+
+
+regs = driver.RawRegisters(args.addr)
 REGS = [
-    raw_registers.reg_system,
-    raw_registers.reg_dsp_ctrl,
-    raw_registers.reg_dsp[0],
-    raw_registers.reg_dsp[1]]
+    regs.reg_system,
+    regs.reg_dsp_ctrl,
+    regs.reg_dsp[0],
+    regs.reg_dsp[1],
+]
+bank = REGS[args.bank]
 
-
-args = [int(arg, 0) for arg in sys.argv[1:]]
-
-bank = REGS[args[0]]
-if len(args) == 1:
+if args.reg is None:
     # Read block
     for n, val in enumerate(bank):
         if n % 8 == 0:
@@ -22,12 +46,10 @@ if len(args) == 1:
         print '%08x' % val,
         if n % 8 == 7:
             print
-elif len(args) == 2:
+elif args.value is None:
     # Read one register
-    val = bank[args[1]]
-    print '%d:%d => %08X (%d)' % (args[0], args[1], val, val)
-elif len(args) == 3:
-    # Write one register
-    bank[args[1]] = args[2]
+    val = bank[args.reg]
+    print '%d:%d => %08X (%d)' % (args.bank, args.reg, val, val)
 else:
-    assert False, 'Invalid number of arguments'
+    # Write one register
+    bank[args.reg] = args.value

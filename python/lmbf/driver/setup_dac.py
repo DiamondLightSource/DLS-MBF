@@ -2,9 +2,9 @@
 
 import time
 
-from driver import DAC_SPI
+def setup_dac(regs):
+    DAC_SPI = regs.DAC_SPI
 
-def setup_dac():
     # Apply a reset, give it time to respond.
     DAC_SPI[0x00] = 0x20
     time.sleep(0.01)
@@ -50,7 +50,3 @@ def setup_dac():
     spacing = DAC_SPI[0X19]
     print 'spacing: %02x' % spacing
     assert spacing in [0x07, 0x0F]  # Validate programmed spacing
-
-
-if __name__ == '__main__':
-    setup_dac()
