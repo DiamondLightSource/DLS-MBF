@@ -9,9 +9,11 @@ include $(TOP)/Makefile.common
 # Command to run vivado
 RUN_VIVADO = source $(VIVADO) && vivado
 
-AMC525_IP = 192.168.40.200
-AMC525_IP = 192.168.40.199
+# List of local addresses (on 192.168.40.0/24 backplane) which will be loaded
+IPS = 199 200
+# Server to connect to for loading FPGA image
 AMC525_SERVER = ts-di-lmbf-01
+
 
 SRCDIR = $(TOP)/AMC525
 TCLDIR = $(SRCDIR)/tcl
@@ -99,9 +101,14 @@ fpga_built: $(BUILT_FILES)
 # ------------------------------------------------------------------------------
 # Upload image to target
 
+define load_target
+ssh $(AMC525_SERVER) scp /tmp/amc525_lmbf.bit root@$1:/tmp
+ssh $(AMC525_SERVER) ssh root@$1 \
+    amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
+
+endef
+
 load_fpga:
 	scp amc525_lmbf.bit $(AMC525_SERVER):/tmp
-	ssh $(AMC525_SERVER) scp /tmp/amc525_lmbf.bit root@$(AMC525_IP):/tmp
-	ssh $(AMC525_SERVER) ssh root@$(AMC525_IP) \
-            amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
+	$(foreach IP,$(IPS),$(call load_target,192.168.40.$(IP)))
 .PHONY: load_fpga
