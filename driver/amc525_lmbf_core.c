@@ -11,6 +11,7 @@
 #include <linux/delay.h>
 
 #include "error.h"
+#include "amc525_lmbf_core.h"
 #include "amc525_lmbf_device.h"
 #include "dma_control.h"
 #include "interrupts.h"
@@ -79,6 +80,11 @@ struct amc525_lmbf {
     int major;              // Major device number
     int minor;              // Associated minor number
 
+    /* Reference counting and completion to cope with lifetime management during
+     * FPGA reload events. */
+    atomic_t refcount;              // Number of file handles open (+1)
+    struct completion completion;   // Used to handshake final device close
+
     /* BAR2 memory mapped region, used for driver control. */
     void __iomem *ctrl_memory;
 
@@ -112,6 +118,16 @@ static struct {
 #define MINOR_DDR1      2
 
 
+/* This must be called whenever any LMBF file handle is released. */
+void amc525_lmbf_release(struct inode *inode)
+{
+    struct cdev *cdev = inode->i_cdev;
+    struct amc525_lmbf *lmbf = container_of(cdev, struct amc525_lmbf, cdev);
+    if (atomic_dec_and_test(&lmbf->refcount))
+        complete(&lmbf->completion);
+}
+
+
 static int amc525_lmbf_open(struct inode *inode, struct file *file)
 {
     /* Recover our private data: the i_cdev lives inside our private structure,
@@ -119,24 +135,32 @@ static int amc525_lmbf_open(struct inode *inode, struct file *file)
     struct cdev *cdev = inode->i_cdev;
     struct amc525_lmbf *lmbf = container_of(cdev, struct amc525_lmbf, cdev);
 
+    /* Check that the file handle is still live. */
+    if (!atomic_inc_not_zero(&lmbf->refcount))
+        return -ENXIO;
+
     /* Replace the file's f_ops with our own and perform any device specific
      * initialisation. */
     int minor_index = iminor(inode) - lmbf->minor;
     file->f_op = fops_info[minor_index].fops;
+    int rc = -EINVAL;
     switch (minor_index)
     {
         case MINOR_REG:
-            return lmbf_reg_open(
+            rc = lmbf_reg_open(
                 file, lmbf->dev, lmbf->interrupts, &lmbf->locking);
+            break;
         case MINOR_DDR0:
-            return lmbf_dma_open(file, lmbf->dma, DDR0_BASE, DDR0_LENGTH);
+            rc = lmbf_dma_open(file, lmbf->dma, DDR0_BASE, DDR0_LENGTH);
+            break;
         case MINOR_DDR1:
-            return lmbf_dma_open(file, lmbf->dma, DDR1_BASE, DDR1_LENGTH);
-        default:
-            /* No idea how this could happen, to be honest. */
-            return -EINVAL;
+            rc = lmbf_dma_open(file, lmbf->dma, DDR1_BASE, DDR1_LENGTH);
+            break;
     }
-    return 0;
+
+    if (rc < 0)
+        amc525_lmbf_release(inode);
+    return rc;
 }
 
 
@@ -324,6 +348,8 @@ static int amc525_lmbf_probe(
         .minor = minor,
     };
     mutex_init(&lmbf->locking.mutex);
+    atomic_set(&lmbf->refcount, 1);
+    init_completion(&lmbf->completion);
 
     rc = enable_board(pdev);
     if (rc < 0)     goto no_enable;
@@ -351,15 +377,28 @@ no_board:
 }
 
 
+/* Waits for all open file handles to be released so that we can safely release
+ * the hardware resources. */
+static void wait_for_clients(struct amc525_lmbf *lmbf)
+{
+    if (atomic_dec_and_test(&lmbf->refcount))
+        complete(&lmbf->completion);
+    wait_for_completion(&lmbf->completion);
+}
+
+
 static void amc525_lmbf_remove(struct pci_dev *pdev)
 {
     printk(KERN_INFO "Removing AMC525 device\n");
     struct amc525_lmbf *lmbf = pci_get_drvdata(pdev);
 
     destroy_device_nodes(lmbf, device_class);
+    wait_for_clients(lmbf);
+
     terminate_board(pdev);
     disable_board(pdev);
     release_board(lmbf->board);
+
     kfree(lmbf);
 }
 
