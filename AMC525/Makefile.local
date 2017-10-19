@@ -108,7 +108,10 @@ ssh $(AMC525_SERVER) ssh root@$1 \
 
 endef
 
+# Note that we make sure that nobody is using our device before reloading the
+# FPGA.  This avoids trouble during reset, as hot-plug is a bit fragile...
 load_fpga:
 	scp amc525_lmbf.bit $(AMC525_SERVER):/tmp
+	-ssh $(AMC525_SERVER) 'kill -9 $$(lsof -t /dev/amc525_lmbf.*)'
 	$(foreach IP,$(IPS),$(call load_target,192.168.40.$(IP)))
 .PHONY: load_fpga

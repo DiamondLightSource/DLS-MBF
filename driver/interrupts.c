@@ -164,4 +164,5 @@ void terminate_interrupt_control(
     struct axi_interrupt_controller *intc = control->intc;
     writel(0, &intc->mer);              // Disable controller
     free_irq(pdev->irq, control);
+    kfree(control);
 }

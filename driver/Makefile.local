@@ -62,6 +62,7 @@ udev:
 
 # We need to go via /tmp before invoking insmod at DLS due to our configuration.
 insmod: $(DRIVER_KO)
+	if lsmod | grep -q '^$(DRIVER_NAME)'; then sudo rmmod $(DRIVER_NAME); fi
 	cp $^ /tmp
 	sudo insmod /tmp/$(DRIVER_NAME).ko
 
