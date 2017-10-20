@@ -8,8 +8,10 @@ from register_defs import register_groups
 
 
 # Register area size ioctl code
-LMBF_MAP_SIZE = ord('L') << 8           # _IO('L', 0)
-LMBF_BUF_SIZE = (ord('L') << 8) | 1     # _IO('L', 1)
+def LMBF_IOCTL(n):
+    return (1 << 30) | (ord('L') << 8) | n
+LMBF_MAP_SIZE = LMBF_IOCTL(0)
+LMBF_BUF_SIZE = LMBF_IOCTL(1)
 
 
 
