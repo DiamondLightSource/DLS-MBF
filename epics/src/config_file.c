@@ -151,7 +151,8 @@ static error__t parse_value(
 
 static error__t do_parse_line(
     const char *file_name, int line_number, const char *line_buffer,
-    const struct config_entry config_table[], size_t config_size, bool *seen)
+    const struct config_entry config_table[], size_t config_size, bool *seen,
+    bool ignore_unknown)
 {
     const char *string = line_buffer;
     skip_whitespace(&string);
@@ -166,13 +167,23 @@ static error__t do_parse_line(
      * The optional whitespace which our parser doesn't support makes the parse
      * a lot more long winded than it otherwise ought to be. */
     char name[NAME_LENGTH];
-    size_t ix = 0;
     error__t error =
         parse_name(&string, name, NAME_LENGTH)  ?:
         DO(skip_whitespace(&string))  ?:
         parse_char(&string, '=')  ?:
-        DO(skip_whitespace(&string))  ?:
-        lookup_name(name, config_table, config_size, &ix)  ?:
+        DO(skip_whitespace(&string));
+
+    /* We need to treat name lookup specially.  If this fails but we're ignoring
+     * unknown keys then we need bail out but return success! */
+    size_t ix = 0;
+    if (!error)
+    {
+        error = lookup_name(name, config_table, config_size, &ix);
+        if (ignore_unknown  &&  error_discard(error))
+            return ERROR_OK;
+    }
+
+    error = error  ?:
         parse_value(&string, &config_table[ix])  ?:
         DO(skip_whitespace(&string))  ?:
         parse_eos(&string);
@@ -254,7 +265,8 @@ static error__t read_line(
 
 error__t load_config_file(
     const char *file_name,
-    const struct config_entry config_table[], size_t config_size)
+    const struct config_entry config_table[], size_t config_size,
+    bool ignore_unknown)
 {
     FILE *input = fopen(file_name, "r");
     error__t error =
@@ -278,7 +290,7 @@ error__t load_config_file(
                 input, line_buffer, sizeof(line_buffer), &line_number, &eof)  ?:
             do_parse_line(
                 file_name, line_number, line_buffer,
-                config_table, config_size, seen);
+                config_table, config_size, seen, ignore_unknown);
     }
     fclose(input);
 

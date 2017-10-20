@@ -124,10 +124,12 @@ error__t load_configs(
     return
         load_config_file(
             system_config_file, system_config_entries,
-            ARRAY_SIZE(system_config_entries))  ?:
-        IF(hardware_config_file,
+            ARRAY_SIZE(system_config_entries), true)  ?:
+        IF_ELSE(hardware_config_file,
             load_config_file(
                 hardware_config_file, hardware_delays_entries,
-                ARRAY_SIZE(hardware_delays_entries))  ?:
-            DO(convert_hardware_config()));
+                ARRAY_SIZE(hardware_delays_entries), false)  ?:
+            DO(convert_hardware_config()),
+        // else
+            DO(printf("Disabling delay compensation\n")));
 }

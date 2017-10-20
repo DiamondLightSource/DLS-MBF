@@ -20,6 +20,8 @@ struct config_entry
 };
 
 
+/* Reads configuration from named file according to rules defined in
+ * config_table[].  If ignore_unknown is set then undefined keys are ignored. */
 error__t load_config_file(
     const char *file_name, const struct config_entry config_table[],
-    size_t config_size);
+    size_t config_size, bool ignore_unknown);
