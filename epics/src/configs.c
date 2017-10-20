@@ -68,6 +68,7 @@ static const struct config_entry hardware_delays_entries[] = {
     }
 
 static const struct config_entry system_config_entries[] = {
+    SYSTEM_ENTRY(string, device_address),
     SYSTEM_ENTRY(string, epics_name),
     SYSTEM_ENTRY(string, channel0_name),
     SYSTEM_ENTRY(string, channel1_name),

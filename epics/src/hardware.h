@@ -29,7 +29,7 @@ extern const struct hardware_config {
 
 
 error__t initialise_hardware(
-    const char *prefix, unsigned int bunches,
+    const char *device_address, unsigned int bunches,
     bool lock_registers, bool lmbf_mode);
 void terminate_hardware(void);
 

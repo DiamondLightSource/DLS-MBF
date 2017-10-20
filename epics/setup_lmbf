@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+# This script initialises the given LMBF target
+
+import sys
+import os
+import re
+import time
+
+
+# Load the given configuration file
+config_lines = open(sys.argv[1]).readlines()
+rule_expr = re.compile(r'^(?!#)([^= ]+) *= *(.*)\n')
+config = dict([
+    m.groups()
+    for m in filter(None, map(rule_expr.match, config_lines))])
+
+
+# Load the driver
+HERE = os.path.dirname(__file__)
+sys.path.append(os.path.join(HERE, '../python'))
+
+from lmbf.driver import driver, setup_pll, setup_adc, setup_dac
+
+
+regs = driver.Registers(config['device_address'])
+
+
+# Hardware initialisation
+setup_pll.setup_pll(regs)
+time.sleep(0.1)         # Give the PLL time to lock
+setup_adc.setup_adc(regs)
+setup_dac.setup_dac(regs)

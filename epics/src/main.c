@@ -42,8 +42,8 @@
 extern int lmbf_registerRecordDeviceDriver(struct dbBase *pdbbase);
 
 
-/* Device prefix for hardware interface. */
-static const char *device_prefix = NULL;
+/* Device prefix for EPICS files. */
+static const char *path_prefix = ".";
 
 /* File to read hardware configuration settings. */
 static const char *hardware_config_file = NULL;
@@ -57,9 +57,6 @@ static bool lock_registers = true;
 /* Can be reset for quiet operation. */
 static bool enable_pv_logging = true;
 
-/* Whether to enable delay compensation. */
-static bool delay_compensation = true;
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Argument handling. */
@@ -69,12 +66,9 @@ static void usage(void)
 {
     printf(
 "LMBF IOC.  Options:\n"
-"   -p: Specify device prefix used to locate LMBF device (required)\n"
-"   -H: Specify hardware configuration file (required)\n"
-"   -S: Specify system configuration file (required)\n"
+"   -C: Specify directory where EPICS files are found\n"
 "   -u  Startup with hardware registers unlocked (debug only)\n"
 "   -q  Disable PV logging\n"
-"   -z  Disable delay compensation\n"
     );
 }
 
@@ -83,15 +77,12 @@ static error__t process_options(int *argc, char *const *argv[])
 {
     while (true)
     {
-        switch (getopt(*argc, *argv, "+hp:H:S:uqz"))
+        switch (getopt(*argc, *argv, "+hC:uq"))
         {
             case 'h':   usage();                                exit(1);
-            case 'p':   device_prefix = optarg;                 break;
-            case 'H':   hardware_config_file = optarg;          break;
-            case 'S':   system_config_file = optarg;            break;
+            case 'C':   path_prefix = optarg;                   break;
             case 'u':   lock_registers = false;                 break;
             case 'q':   enable_pv_logging = false;              break;
-            case 'z':   delay_compensation = false;             break;
             default:
                 return FAIL_("Invalid command line option");
             case -1:
@@ -106,13 +97,35 @@ static error__t process_options(int *argc, char *const *argv[])
 }
 
 
-static error__t validate_options(int argc)
+static error__t process_arg(
+    int *argc, char *const *argv[],
+    const char **result, const char *description)
+{
+    if (*argc <= 0)
+    {
+        if (description)
+            /* Mandatory argument, just fail. */
+            return FAIL_("Missing argument: %s", description);
+        else
+            /* Missing optional argument. */
+            return ERROR_OK;
+    }
+    else
+    {
+        *result = **argv;
+        *argv += 1;
+        *argc -= 1;
+        return ERROR_OK;
+    }
+}
+
+
+static error__t process_args(int argc, char *const argv[])
 {
     return
-        TEST_OK_(argc == 0, "Unexpected extra arguments")  ?:
-        TEST_OK_(device_prefix, "Must specify device prefix")  ?:
-        TEST_OK_(hardware_config_file, "Must specify hardware config file")  ?:
-        TEST_OK_(system_config_file, "Must specify system config file");
+        process_arg(&argc, &argv, &system_config_file, "system config file")  ?:
+        process_arg(&argc, &argv, &hardware_config_file, NULL)  ?:
+        TEST_OK_(argc == 0, "Unexpected extra arguments");
 }
 
 
@@ -149,17 +162,25 @@ static error__t load_database(const char *database)
 
 static error__t initialise_epics(void)
 {
+    char filename[PATH_MAX];
+#define MAKE_PATH(name) \
+    ( { snprintf(filename, PATH_MAX, "%s/%s", path_prefix, name); \
+        filename; } )
+
     set_prompt();
     return
         start_caRepeater()  ?:
         IF(enable_pv_logging,
             hook_pv_logging(
-                "db/access.acf", system_config.pv_log_array_length))  ?:
-        TEST_OK(dbLoadDatabase("dbd/lmbf.dbd", NULL, NULL) == 0)  ?:
+                MAKE_PATH("db/access.acf"),
+                system_config.pv_log_array_length))  ?:
+        TEST_OK(dbLoadDatabase(MAKE_PATH("dbd/lmbf.dbd"), NULL, NULL) == 0)  ?:
         TEST_OK(lmbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
-        load_database("db/lmbf.db")  ?:
+        load_database(MAKE_PATH("db/lmbf.db"))  ?:
         TEST_OK(iocInit() == 0)  ?:
         TEST_OK(check_unused_record_bindings(true) == 0);
+
+#undef MAKE_PATH
 }
 
 
@@ -197,14 +218,12 @@ static error__t initialise_subsystems(void)
 int main(int argc, char *const argv[])
 {
     error__t error =
-        process_options(&argc, &argv) ?:
-        validate_options(argc)  ?:
+        process_options(&argc, &argv)  ?:
+        process_args(argc, argv)  ?:
 
-        load_configs(
-            delay_compensation ? hardware_config_file : NULL,
-            system_config_file)  ?:
+        load_configs(hardware_config_file, system_config_file)  ?:
         initialise_hardware(
-            device_prefix, system_config.bunches_per_turn,
+            system_config.device_address, system_config.bunches_per_turn,
             lock_registers, system_config.lmbf_mode)  ?:
         initialise_epics_device()  ?:
 

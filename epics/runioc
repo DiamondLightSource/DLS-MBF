@@ -1,27 +1,26 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
+HERE="$(dirname "$0")"
 
-IOC=bin/linux-x86_64/lmbf
+IOC="$HERE"/bin/linux-x86_64/lmbf
 
-HW_CONFIG=hardware_delays
-DEV_ADDR=pci-0000:04:00.0
-DEBUG=
+HW_CONFIG=("$HERE"/hardware_delays)
+DEBUG=()
 
-while getopts 'vlth-' option; do
+while getopts 'vltzh' option; do
     case "$option" in
-        v)  DEBUG=valgrind ;;
-        l)  [[ $DEBUG ]]  &&  DEBUG="$DEBUG --leak-check=full" ;;
-        t)  [[ $DEBUG ]]  &&  DEBUG="$DEBUG --track-origins=yes" ;;
+        v)  DEBUG=(valgrind) ;;
+        l)  DEBUG=("$DEBUG[@]" --leak-check=full) ;;
+        t)  DEBUG=("$DEBUG[@]" --track-origins=yes) ;;
+        z)  HW_CONFIG=() ;;
         h)  cat <<EOF
 Usage: runioc [options]
 Starts LMBF IOC with configured options.
     -v      Run with valgrind memory checker enabled
     -l      Add leak check to valgrind
-    --      Pass further options on to IOC
+    -z      Disable delay compensation
 EOF
             exit 0;;
-        -)  break ;;
         *)  echo >&2 'Invalid option: try -h for help'
             exit 1 ;;
     esac
@@ -31,13 +30,11 @@ shift $((OPTIND-1))
 SYS_CONFIG="${1:?Must specify system configuration}"
 shift
 
+DEV_ADDR=pci-0000:04:00.0
 
-
-DEV_PREFIX=/dev/amc525_lmbf/"$DEV_ADDR"/amc525_lmbf
 
 # Initialise the hardware.  This sets up the clock PLL, ADC and DAC.  The rest
 # of the system will be initialised by the IOC proper.
-../python/setup_lmbf $DEV_ADDR  &&
+"$HERE"/setup_lmbf "$SYS_CONFIG"  &&
 
-exec $DEBUG $IOC \
-    -H "$HW_CONFIG" -S "$SYS_CONFIG" -p "$DEV_PREFIX" "$@"
+exec "${DEBUG[@]}" "$IOC" -C "$HERE" "$SYS_CONFIG" "${HW_CONFIG[@]}"

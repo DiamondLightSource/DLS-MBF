@@ -21,6 +21,7 @@ extern const struct hardware_delays {
 } hardware_delays;
 
 extern const struct system_config {
+    const char *device_address;
     const char *epics_name;
     const char *channel0_name;
     const char *channel1_name;

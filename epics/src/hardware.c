@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <limits.h>
 #include <fcntl.h>
 #include <stdarg.h>
 #include <sys/ioctl.h>
@@ -968,24 +969,24 @@ static error__t set_hardware_config(unsigned int bunches, bool lmbf_mode)
 
 
 error__t initialise_hardware(
-    const char *prefix, unsigned int bunches,
+    const char *device_address, unsigned int bunches,
     bool lock_registers, bool lmbf_mode)
 {
-    printf("initialise_hardware %s %d\n", prefix, lock_registers);
+    printf("initialise_hardware @%s %d\n", device_address, lock_registers);
 
-    /* Compute device node names from the prefix. */
-    size_t prefix_length = strlen(prefix);
-    char reg_device_name[prefix_length + 8];
-    char dram0_device_name[prefix_length + 8];
-    char dram1_device_name[prefix_length + 8];
-    sprintf(reg_device_name, "%s.reg", prefix);
-    sprintf(dram0_device_name, "%s.ddr0", prefix);
-    sprintf(dram1_device_name, "%s.ddr1", prefix);
+    /* Compute device node names from the device_address. */
+    const char *device_template = "/dev/amc525_lmbf/%s/amc525_lmbf.%s";
+    char reg_device_name[PATH_MAX];
+    char dram0_device_name[PATH_MAX];
+    char dram1_device_name[PATH_MAX];
+    sprintf(reg_device_name,   device_template, device_address, "reg");
+    sprintf(dram0_device_name, device_template, device_address, "ddr0");
+    sprintf(dram1_device_name, device_template, device_address, "ddr1");
 
     public_dram0_device_name = strdup(dram0_device_name);
     return
         TEST_IO_(reg_device = open(reg_device_name, O_RDWR | O_SYNC),
-            "Unable to open LMBF device with prefix %s", prefix)  ?:
+            "Unable to open LMBF device %s", reg_device_name)  ?:
         TEST_IO(dram0_device = open(dram0_device_name, O_RDONLY))  ?:
         TEST_IO(dram1_device = open(dram1_device_name, O_RDONLY))  ?:
         IF(lock_registers,
