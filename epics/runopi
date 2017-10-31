@@ -17,5 +17,12 @@ case "$MODE" in
             exit 2 ;;
 esac
 
-exec edm -x -eolc \
-    -m device="$DEVICE" -m chan0="$AXIS0" -m chan1="$AXIS1" "$START"
+MACROS=(
+    -m device="$DEVICE"
+    -m chan0="$AXIS0"
+    -m chan1="$AXIS1")
+if [[ "$MODE" = LMBF ]]; then
+    MACROS=("${MACROS[@]}" -m chan01="$AXIS0$AXIS1")
+fi
+
+exec edm -x -eolc "${MACROS[@]}" "$START"

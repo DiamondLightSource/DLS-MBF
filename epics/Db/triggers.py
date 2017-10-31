@@ -46,7 +46,8 @@ def target_pvs():
 
 
 def trigger_channel_pvs():
-    with_name_prefix('SEQ', target_pvs)
+    with name_prefix('SEQ'):
+        target_pvs()
     longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
 
     longOut('TURN:OFFSET', DESC = 'Turn clock offset')
@@ -74,7 +75,8 @@ def turn_pvs():
 
 
 def trigger_common_pvs():
-    with_name_prefix('MEM', target_pvs)
+    with name_prefix('MEM'):
+        target_pvs()
 
     events_in = event_set('IN', 'input')
     events_in.append(event('BLNK:IN', 'Blanking event'))
@@ -91,8 +93,10 @@ def trigger_common_pvs():
         SCAN = 'I/O Intr',
         DESC = 'Trigger target status')
 
-    with_name_prefix('TURN', turn_pvs)
+    with name_prefix('TURN'):
+        turn_pvs()
 
 
 for_channels('TRG', trigger_channel_pvs)
-with_name_prefix('TRG', trigger_common_pvs)
+with name_prefix('TRG'):
+    trigger_common_pvs()

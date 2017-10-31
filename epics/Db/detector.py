@@ -40,7 +40,8 @@ def detector_pvs():
     ]
 
     for det in range(4):
-        with_name_prefix('%d' % det, detector_bank_pvs, updates)
+        with name_prefix('%d' % det):
+            detector_bank_pvs(updates)
 
     boolOut('SELECT', 'ADC', 'FIR', DESC = 'Select detector source')
 

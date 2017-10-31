@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
+#include <string.h>
 
 #include "error.h"
 #include "epics_device.h"
@@ -35,6 +36,22 @@ void _exit_channel_step(void)
     pop_record_name_prefix();
 }
 
+void _push_iq_prefix(const char *prefix)
+{
+    char channel01[
+        strlen(system_config.channel0_name) +
+        strlen(system_config.channel1_name) + 1];
+    sprintf(channel01, "%s%s",
+        system_config.channel0_name, system_config.channel1_name);
+    push_record_name_prefix(channel01);
+    push_record_name_prefix(prefix);
+}
+
+void _pop_iq_prefix(void)
+{
+    pop_record_name_prefix();
+    pop_record_name_prefix();
+}
 
 void float_array_to_int(
     size_t count, float in[], int out[], int bits, int high_bits)

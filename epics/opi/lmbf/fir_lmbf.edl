@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 141
-y 210
+x 143
+y 212
 w 544
-h 260
+h 232
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -67,7 +67,7 @@ major 4
 minor 1
 release 0
 x 472
-y 232
+y 200
 w 64
 h 24
 fgColor index 46
@@ -372,11 +372,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 496
+x 88
 y 200
 w 40
-h 24
-controlPv "$(device):$(channel):FIR:DECIMATION_S"
+h 20
+controlPv "$(device):$(chan01):FIR:DECIMATION_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -400,7 +400,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 416
+x 8
 y 200
 w 70
 h 14

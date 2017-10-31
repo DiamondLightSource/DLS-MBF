@@ -23,7 +23,8 @@ def bunch_select_pvs():
     # We have four banks and for each bank three waveforms of parameters to
     # configure.   Very similar to FIR.
     for bank in range(4):
-        with_name_prefix('%d' % bank, bank_pvs, bank)
+        with name_prefix('%d' % bank):
+            bank_pvs(bank)
 
     # Feedback mode.  This is aggregated from the sequencer state and the
     # selected DAC output status.

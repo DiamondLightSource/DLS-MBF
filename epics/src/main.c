@@ -147,6 +147,9 @@ static error__t load_database(const char *database)
     database_add_macro("DEVICE", "%s", system_config.epics_name);
     database_add_macro("CHAN0", "%s", system_config.channel0_name);
     database_add_macro("CHAN1", "%s", system_config.channel1_name);
+    if (system_config.lmbf_mode)
+        database_add_macro("CHAN01", "%s%s",
+            system_config.channel0_name, system_config.channel1_name);
     database_add_macro("ADC_TAPS", "%d", hardware_config.adc_taps);
     database_add_macro("BUNCH_TAPS", "%d", hardware_config.bunch_taps);
     database_add_macro("DAC_TAPS", "%d", hardware_config.dac_taps);
@@ -167,6 +170,8 @@ static error__t initialise_epics(void)
     ( { snprintf(filename, PATH_MAX, "%s/%s", path_prefix, name); \
         filename; } )
 
+    const char *database =
+        system_config.lmbf_mode ? "db/lmbf.db" : "db/tmbf.db";
     set_prompt();
     return
         start_caRepeater()  ?:
@@ -176,7 +181,7 @@ static error__t initialise_epics(void)
                 system_config.pv_log_array_length))  ?:
         TEST_OK(dbLoadDatabase(MAKE_PATH("dbd/lmbf.dbd"), NULL, NULL) == 0)  ?:
         TEST_OK(lmbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
-        load_database(MAKE_PATH("db/lmbf.db"))  ?:
+        load_database(MAKE_PATH(database))  ?:
         TEST_OK(iocInit() == 0)  ?:
         TEST_OK(check_unused_record_bindings(true) == 0);
 

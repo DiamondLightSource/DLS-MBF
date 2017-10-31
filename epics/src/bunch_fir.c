@@ -15,6 +15,7 @@
 
 #include "hardware.h"
 #include "common.h"
+#include "configs.h"
 
 #include "bunch_fir.h"
 
@@ -159,11 +160,10 @@ static bool write_fir_gain(void *context, unsigned int *value)
 }
 
 
-static bool write_fir_decimation(void *context, unsigned int *value)
+static void write_fir_decimation(unsigned int value)
 {
-    struct fir_context *fir = context;
-    hw_write_bunch_decimation(fir->channel, *value);
-    return true;
+    for (int i = 0; i < CHANNEL_COUNT; i ++)
+        hw_write_bunch_decimation(i, value);
 }
 
 
@@ -175,10 +175,18 @@ error__t initialise_bunch_fir(void)
         fir->channel = channel;
 
         PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
-        PUBLISH_C_P(ulongout, "DECIMATION", write_fir_decimation, fir);
 
         for (unsigned int i = 0; i < FIR_BANKS; i ++)
             publish_bank(channel, i, &fir->banks[i]);
     }
+
+    /* In LMBF mode the FIR decimation factor is programmable, in TMBF mode this
+     * is hard-wired to 1. */
+    if (system_config.lmbf_mode)
+        WITH_IQ_PREFIX("FIR")
+            PUBLISH_WRITER_P(ulongout, "DECIMATION", write_fir_decimation);
+    else
+        write_fir_decimation(1);
+
     return ERROR_OK;
 }

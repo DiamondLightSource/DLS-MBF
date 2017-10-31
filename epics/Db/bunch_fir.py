@@ -26,15 +26,18 @@ def bunch_fir_pvs():
     # directly as a waveform or by separately controlling phase and fractional
     # frequency.
     for bank in range(4):
-        with_name_prefix('%d' % bank, bank_pvs)
+        with name_prefix('%d' % bank):
+            bank_pvs()
 
     mbbOut('GAIN',
         DESC = 'FIR gain select', *dBrange(16, -6, 48))
     records.longin('N_TAPS', VAL = BUNCH_TAPS, PINI = 'YES',
         DESC = 'FIR filter length')
 
-    longOut('DECIMATION', 1, 128,
-        DESC = 'Bunch by bunch decimation')
-
 
 for_channels('FIR', bunch_fir_pvs)
+
+if lmbf_mode:
+    with iq_prefix('FIR'):
+        longOut('DECIMATION', 1, 128,
+            DESC = 'Bunch by bunch decimation')

@@ -25,4 +25,5 @@ def do_mms_pvs(source):
 
 
 def mms_pvs(source):
-    with_name_prefix('MMS', do_mms_pvs, source)
+    with name_prefix('MMS'):
+        do_mms_pvs(source)

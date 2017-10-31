@@ -106,7 +106,8 @@ def count_pvs(super_count):
 def sequencer_pvs():
     # Super-sequencer control and state.  Returns PV controlling number of super
     # sequencer states
-    super_count = with_name_prefix('SUPER', super_pvs)
+    with name_prefix('SUPER'):
+        super_count = super_pvs()
 
     # This PV needs to be updated by any parameter which changes sequencer
     # duration or capture count.
@@ -118,7 +119,8 @@ def sequencer_pvs():
 
     # PVs for the 7 programmable banks
     for state in range(1, 8):
-        with_name_prefix('%d' % state, bank_pvs, update_count)
+        with name_prefix('%d' % state):
+            bank_pvs(update_count)
 
     # Number of sequencer states when triggered
     longOut('PC', 1, 7, FLNK = update_count, DESC = 'Sequencer PC')

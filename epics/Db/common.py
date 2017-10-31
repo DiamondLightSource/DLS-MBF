@@ -15,12 +15,19 @@ KB = 1024
 MB = KB * KB
 
 
-# Global parameters
+# We build TMBF and LMBF databases slightly differently
+Target = sys.argv[2]
+assert Target in ['lmbf', 'tmbf']
+lmbf_mode = Target == 'lmbf'
+
 
 # Channel names
 CHANNEL0 = Parameter('CHAN0', 'Prefix for channel 0')
 CHANNEL1 = Parameter('CHAN1', 'Prefix for channel 1')
 CHANNELS = [CHANNEL0, CHANNEL1]
+
+if lmbf_mode:
+    CHANNEL01 = Parameter('CHAN01', 'Prefix for common channel')
 
 BUNCHES_PER_TURN = \
     Parameter('BUNCHES_PER_TURN', 'Bunches per machine revolution')
@@ -36,16 +43,38 @@ REVOLUTION_FREQUENCY = \
     Parameter('REVOLUTION_FREQUENCY', 'Machine revolution frequency in Hz')
 
 
-def with_name_prefix(prefix, action, *args):
-    push_name_prefix(prefix)
-    result = action(*args)
-    pop_name_prefix()
-    return result
+# Context manager for name prefix, allows us to write
+#
+#   with name_prefix(prefix):
+#       generate pvs
+class name_prefix:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def __enter__(self):
+        push_name_prefix(self.prefix)
+
+    def __exit__(self, *exception):
+        pop_name_prefix()
+
+class iq_prefix:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def __enter__(self):
+        push_name_prefix(CHANNEL01)
+        push_name_prefix(self.prefix)
+
+    def __exit__(self, *exception):
+        pop_name_prefix()
+        pop_name_prefix()
+
 
 def for_channels(prefix, action, *args):
     for channel in CHANNELS:
-        with_name_prefix(channel,
-            lambda: with_name_prefix(prefix, action, *args))
+        with name_prefix(channel):
+            with name_prefix(prefix):
+                action(*args)
 
 
 def dBrange(count, step, start = 0):

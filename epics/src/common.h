@@ -16,13 +16,25 @@ void _enter_channel_step(int channel, const char *prefix);
 void _exit_channel_step(void);
 
 
+/* Similar tricksy code to wrap enter and leave functions around a block of
+ * code. */
+#define _id_WITH_ENTER_LEAVE(loop, enter, leave) \
+    for (bool loop = (enter, true); loop; leave, loop = false)
+#define _WITH_ENTER_LEAVE(enter, leave) \
+    _id_WITH_ENTER_LEAVE(UNIQUE_ID(), enter, leave) \
+
+
 /* This executes a block of code with the given record name prefix and ensures
  * that the prefix is safely popped when done. */
-#define _id_WITH_NAME_PREFIX(loop, prefix) \
-    for (bool loop = (push_record_name_prefix(prefix), true); loop; \
-         pop_record_name_prefix(), loop = false)
 #define WITH_NAME_PREFIX(prefix) \
-    _id_WITH_NAME_PREFIX(UNIQUE_ID(), prefix)
+    _WITH_ENTER_LEAVE(push_record_name_prefix(prefix), pop_record_name_prefix())
+
+/* Pushes special IQ prefix and given prefix, similar to FOR_CHANNEL_NAMES, but
+ * only executes body the once. */
+#define WITH_IQ_PREFIX(prefix) \
+    _WITH_ENTER_LEAVE(_push_iq_prefix(prefix), _pop_iq_prefix())
+void _push_iq_prefix(const char *prefix);
+void _pop_iq_prefix(void);
 
 
 /* This simply loops through the configured bunches. */

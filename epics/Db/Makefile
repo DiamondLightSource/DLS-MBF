@@ -12,6 +12,7 @@ include $(TOP)/configure/CONFIG
 # Create and install (or just install) into <top>/db
 # databases, templates, substitutions like this
 DB += lmbf.db
+DB += tmbf.db
 DB += access.acf
 
 #----------------------------------------------------
@@ -28,8 +29,8 @@ export BUNCHES_PER_TURN = 936
 export EPICS_DEVICE
 
 # We use the python library to construct the .db file
-$(COMMON_DIR)/%.db: ../%.py $(wildcard ../*.py)
-	$(PYTHON) $< $@
+%.db: $(wildcard ../*.py)
+	$(PYTHON) ../lmbf.py $@ $(*F)
 
 
 clean::

@@ -84,4 +84,5 @@ def memory_pvs():
         DESC = 'Location of captured origin')
 
 
-with_name_prefix('MEM', memory_pvs)
+with name_prefix('MEM'):
+    memory_pvs()
