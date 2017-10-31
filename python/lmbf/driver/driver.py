@@ -33,7 +33,6 @@ def device_name(part, prefix = 0):
 class RawRegisters:
     def __init__(self, prefix):
         regs_device = device_name('reg', prefix)
-        print regs_device
 
         # Open register file and map into memory.
         self.reg_file = os.open(regs_device, os.O_RDWR | os.O_SYNC)
@@ -52,6 +51,10 @@ class RawRegisters:
         self.reg_system   = regs[0x0000:0x0020]
         self.reg_dsp_ctrl = regs[0x2000:0x2020]
         self.reg_dsp      = [regs[0x3000:0x3020], regs[0x3800:0x3820]]
+
+    def __del__(self):
+        if hasattr(self, 'reg_file'):
+            os.close(self.reg_file)
 
 
 class RegisterMap:

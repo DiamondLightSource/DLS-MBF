@@ -27,7 +27,9 @@ args = parser.parse_args()
 # to 78.125 ps, so 25 steps covers the 2ns input clock
 idelay_step = 78.125
 N = int(math.ceil(1e6 / args.f_rf / idelay_step))
-assert N < 32, 'RF frequency too low'
+if N > 32:
+    print 'Only scanning 32 of %d steps' % N
+    N = 32
 
 
 regs = driver.Registers(args.addr)

@@ -195,6 +195,13 @@ class Settings(SettingsBase):
     PLL2_LF_C3 = 6
 
 
+    # Settings for ESRF.  Target frequency = 352.372.  For this we take
+    #   R1 = N1 = 9
+    #   VCO = 0
+    #   D = 7
+    #   N2 = 74 = 2 * 37
+    #   R2 = 3
+
 
 
 # To bypass all the above and pass CLKin1 straight through to clock path:

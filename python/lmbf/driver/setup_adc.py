@@ -10,8 +10,9 @@ def setup_adc(regs):
     assert status.VCXO_OK, "VCXO power good not detected"
     assert status.ADC_OK, "ADC power good not detected"
     assert status.DAC_OK, "DAC power good not detected"
-    assert status.PLL_LD2, "VCO not locked"
     assert status.DSP_OK, "ADC clock not locked"
+    if not status.PLL_LD2:
+        print >>sys.stderr, "Warning: VCO not locked"
     if not status.PLL_LD1:
         print >>sys.stderr, "Warning: clock not locked"
 
