@@ -1,12 +1,12 @@
 #!/bin/sh
 
 cd "$(dirname "$0")"/opi
-
-DEVICE=TS-DI-TMBF-02
-CHAN0=X
-CHAN1=Y
-
 PATH="scripts/:$PATH"
+
+DEVICE="${1:-TS-DI-TMBF-02}"
+
+AXIS0="$(caget -t "$DEVICE:AXIS0")"  &&
+AXIS1="$(caget -t "$DEVICE:AXIS1")"  &&
 exec edm -x -eolc \
-    -m device=$DEVICE -m chan0=$CHAN0 -m chan1=$CHAN1 \
+    -m device="$DEVICE" -m chan0="$AXIS0" -m chan1="$AXIS1" \
     lmbf/lmbf.edl

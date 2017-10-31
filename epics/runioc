@@ -1,40 +1,51 @@
 #!/bin/bash
 
-HERE="$(dirname "$0")"
+Error() {
+    echo >&2 "$@"
+    exit 1
+}
 
+
+HERE="$(dirname "$0")"
 IOC="$HERE"/bin/linux-x86_64/lmbf
 
-HW_CONFIG=("$HERE"/hardware_delays)
 DEBUG=()
+OPTS=()
+HW_CONFIG=("$HERE"/hardware_delays)
 
-while getopts 'vltzh' option; do
+while getopts 'vltquzh' option; do
     case "$option" in
         v)  DEBUG=(valgrind) ;;
-        l)  DEBUG=("$DEBUG[@]" --leak-check=full) ;;
-        t)  DEBUG=("$DEBUG[@]" --track-origins=yes) ;;
+        l)  DEBUG=("${DEBUG[@]}" --leak-check=full) ;;
+        t)  DEBUG=("${DEBUG[@]}" --track-origins=yes) ;;
+        q)  OPTS=("${OPTS[@]}" -q) ;;
+        u)  OPTS=("${OPTS[@]}" -u) ;;
         z)  HW_CONFIG=() ;;
         h)  cat <<EOF
 Usage: runioc [options]
 Starts LMBF IOC with configured options.
     -v      Run with valgrind memory checker enabled
-    -l      Add leak check to valgrind
+    -l      Add leak check to valgrind (must specify -v first)
+    -t      Add track origins to valgrind (must specify -v first)
+    -q      Disable PV logging
+    -u      Don't lock hardware registers
     -z      Disable delay compensation
 EOF
             exit 0;;
-        *)  echo >&2 'Invalid option: try -h for help'
-            exit 1 ;;
+        *)  Error 'Invalid option: try -h for help' ;;
     esac
 done
 shift $((OPTIND-1))
 
 SYS_CONFIG="${1:?Must specify system configuration}"
 shift
-
-DEV_ADDR=pci-0000:04:00.0
+[[ $# = 0 ]]  ||
+    Error 'Unexpected extra arguments'
 
 
 # Initialise the hardware.  This sets up the clock PLL, ADC and DAC.  The rest
 # of the system will be initialised by the IOC proper.
 "$HERE"/setup_lmbf "$SYS_CONFIG"  &&
-
-exec "${DEBUG[@]}" "$IOC" -C "$HERE" "$SYS_CONFIG" "${HW_CONFIG[@]}"
+# Now run the IOC
+exec "${DEBUG[@]}" \
+    "$IOC" -C "$HERE" "${OPTS[@]}" "$SYS_CONFIG" "${HW_CONFIG[@]}"
