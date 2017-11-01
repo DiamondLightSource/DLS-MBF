@@ -1,18 +1,24 @@
 /* Helper functions and related utilities. */
 
 
+/* A tricksy macro dance so that we can have a macro with a default argument.
+ * Calling GET_DEFAULT(a, b) returns b while GET_DEFAULT(a) returns a. */
+#define _ARG2(x, y, extra...)   y
+#define GET_DEFAULT(def, arg...)    _ARG2(!, ##arg, def)
+
+
 /* This macro is a little tricky: it's intended to be used for iterating over
  * the set of channel names together with a prefix thus:
  *
  *  FOR_CHANNEL_NAME(channel, "ADC") { create pvs ...; }
  *
  * The trickery is in the calling of the exit and enter methods. */
-#define FOR_CHANNEL_NAMES(channel, prefix) \
-    for (int channel = 0; channel < CHANNEL_COUNT; \
-         _exit_channel_step(), channel += 1) \
-    if (_enter_channel_step(channel, prefix), 1)
+#define FOR_CHANNEL_NAMES(channel, prefix, mode...) \
+    for (int channel = 0; \
+         _enter_channel_step(channel, prefix, GET_DEFAULT(false, ##mode)); \
+         _exit_channel_step(), channel += 1)
 
-void _enter_channel_step(int channel, const char *prefix);
+bool _enter_channel_step(int channel, const char *prefix, bool lmbf_mode);
 void _exit_channel_step(void);
 
 
@@ -29,12 +35,6 @@ void _exit_channel_step(void);
 #define WITH_NAME_PREFIX(prefix) \
     _WITH_ENTER_LEAVE(push_record_name_prefix(prefix), pop_record_name_prefix())
 
-/* Pushes special IQ prefix and given prefix, similar to FOR_CHANNEL_NAMES, but
- * only executes body the once. */
-#define WITH_IQ_PREFIX(prefix) \
-    _WITH_ENTER_LEAVE(_push_iq_prefix(prefix), _pop_iq_prefix())
-void _push_iq_prefix(const char *prefix);
-void _pop_iq_prefix(void);
 
 
 /* This simply loops through the configured bunches. */

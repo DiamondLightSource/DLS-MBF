@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2344
-y 333
+x 2494
+y 1
 w 264
 h 234
 font "helvetica-medium-r-8.0"
@@ -300,7 +300,7 @@ displayFileName {
   0 "lmbf/detector.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "channel=$(chan01)"
 }
 endObjectProperties
 

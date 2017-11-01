@@ -23,7 +23,7 @@ records.stringin('AXIS0', VAL = CHANNEL0, PINI = 'YES')
 records.stringin('AXIS1', VAL = CHANNEL1, PINI = 'YES')
 
 
-for c in channels('NCO'):
+for c in channels('NCO', lmbf_mode):
     aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')
     mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(16, -6))
     boolOut('ENABLE', 'Off', 'On', DESC = 'Enable fixed NCO output')

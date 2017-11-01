@@ -246,7 +246,9 @@ void prepare_detector(int channel)
 error__t initialise_detector(void)
 {
     unsigned int detector_length = system_config.detector_length;
-    FOR_CHANNEL_NAMES(channel, "DET")
+
+    /* In LMBF mode we run with just one detector channel. */
+    FOR_CHANNEL_NAMES(channel, "DET", system_config.lmbf_mode)
     {
         struct detector_context *det = &detector_context[channel];
         det->channel = channel;
@@ -272,8 +274,10 @@ error__t initialise_detector(void)
         det->update = create_interlock("UPDATE", false);
     }
 
+    /* Don't listen to events on the idle sequencer in LMBF mode. */
+    unsigned int seq_done = system_config.lmbf_mode ? 1 : 3;
     register_event_handler(
-        INTERRUPT_HANDLER_DETECTOR, INTERRUPTS(.seq_done = 3),
+        INTERRUPT_HANDLER_DETECTOR, INTERRUPTS(.seq_done = seq_done & 3),
         NULL, dispatch_detector_event);
 
     return ERROR_OK;

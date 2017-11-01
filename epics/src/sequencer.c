@@ -376,7 +376,8 @@ void read_detector_scale_info(
 
 error__t initialise_sequencer(void)
 {
-    FOR_CHANNEL_NAMES(channel, "SEQ")
+    /* In LMBF mode we run with just one sequencer channel. */
+    FOR_CHANNEL_NAMES(channel, "SEQ", system_config.lmbf_mode)
     {
         struct seq_context *seq = &seq_context[channel];
         seq->channel = channel;

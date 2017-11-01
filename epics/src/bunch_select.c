@@ -184,6 +184,8 @@ static void write_fir_wf(void *context, char fir_select[], size_t *length)
         bank->config.fir_select[i] = fir_select[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
+    if (system_config.lmbf_mode)
+        hw_write_bunch_config(1, bank->bank, &bank->config);
 }
 
 
@@ -203,6 +205,8 @@ static void write_out_wf(void *context, char out_enable[], size_t *length)
         bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
     }
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
+    if (system_config.lmbf_mode)
+        hw_write_bunch_config(1, bank->bank, &bank->config);
 }
 
 
@@ -220,6 +224,8 @@ static void write_gain_wf(void *context, float gain[], size_t *length)
         bank->config.gain[i] = scaled_gain[j];
 
     hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
+    if (system_config.lmbf_mode)
+        hw_write_bunch_config(1, bank->bank, &bank->config);
 }
 
 
@@ -263,7 +269,9 @@ static void publish_bank(unsigned int ix, struct bunch_bank *bank)
 
 error__t initialise_bunch_select(void)
 {
-    FOR_CHANNEL_NAMES(channel, "BUN")
+    /* In LMBF mode we only expose one bunch selection channel, but mirror both
+     * channels as we write to hardware. */
+    FOR_CHANNEL_NAMES(channel, "BUN", system_config.lmbf_mode)
     {
         struct bunch_context *bun = &bunch_context[channel];
         bun->channel = channel;

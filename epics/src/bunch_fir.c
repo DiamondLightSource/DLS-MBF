@@ -196,18 +196,20 @@ static void publish_bank(unsigned int ix, struct fir_bank *bank)
 }
 
 
-static bool write_fir_gain_tmbf(void *context, unsigned int *value)
+static void publish_banks(struct fir_context *fir)
 {
-    struct fir_context *fir = context;
-    hw_write_dac_fir_gain(fir->channel, *value);
-    return true;
+    for (unsigned int i = 0; i < FIR_BANKS; i ++)
+        publish_bank(i, &fir->banks[i]);
 }
 
 
-static void write_fir_gain_lmbf(unsigned int value)
+static bool write_fir_gain(void *context, unsigned int *value)
 {
-    for (int i = 0; i < CHANNEL_COUNT; i ++)
-        hw_write_dac_fir_gain(i, value);
+    struct fir_context *fir = context;
+    hw_write_dac_fir_gain(fir->channel, *value);
+    if (system_config.lmbf_mode)
+        hw_write_dac_fir_gain(1, *value);
+    return true;
 }
 
 
@@ -231,33 +233,21 @@ error__t initialise_bunch_fir(void)
             publish_bank_waveforms(channel, i, &fir->banks[i]);
     }
 
-    if (system_config.lmbf_mode)
+    /* In TMBF mode the two channels operate independently, in LMBF mode most of
+     * our PVs act on both channels together. */
+    FOR_CHANNEL_NAMES(channel, "FIR", system_config.lmbf_mode)
     {
-        /* In LMBF mode most of our PVs act on both channels together. */
-        WITH_IQ_PREFIX("FIR")
-        {
+        struct fir_context *fir = &fir_context[channel];
+        publish_banks(fir);
+        PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
+
+        if (system_config.lmbf_mode)
             PUBLISH_WRITER_P(ulongout, "DECIMATION", write_fir_decimation);
-
-            struct fir_context *fir = &fir_context[0];
-            for (unsigned int i = 0; i < FIR_BANKS; i ++)
-                publish_bank(i, &fir->banks[i]);
-            PUBLISH_WRITER_P(mbbo, "GAIN", write_fir_gain_lmbf);
-        }
     }
-    else
-    {
-        /* In TMBF mode the two channels operate independently. */
-        FOR_CHANNEL_NAMES(channel, "FIR")
-        {
-            struct fir_context *fir = &fir_context[channel];
-            for (unsigned int i = 0; i < FIR_BANKS; i ++)
-                publish_bank(i, &fir->banks[i]);
-            PUBLISH_C_P(mbbo, "GAIN", write_fir_gain_tmbf, fir);
-        }
 
+    if (!system_config.lmbf_mode)
         /* Disable decimation in TMBF mode. */
         write_fir_decimation(1);
-    }
 
     return ERROR_OK;
 }

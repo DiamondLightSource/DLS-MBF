@@ -103,7 +103,7 @@ def count_pvs(super_count):
 
 # The sequencer has eight possible states, however state 0 has somewhat
 # different behaviour from the remaining 7.
-for c in channels('SEQ'):
+for c in channels('SEQ', lmbf_mode):
     # Super-sequencer control and state.  Returns PV controlling number of super
     # sequencer states
     with name_prefix('SUPER'):

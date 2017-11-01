@@ -22,12 +22,27 @@ static const char *const *channel_names[] = {
     &system_config.channel1_name,
 };
 
+static char *iq_channel_name;
 
 
-void _enter_channel_step(int channel, const char *prefix)
+bool _enter_channel_step(int channel, const char *prefix, bool lmbf_mode)
 {
-    push_record_name_prefix(*channel_names[channel]);
-    push_record_name_prefix(prefix);
+    /* Ugly first use initialisation. */
+    if (!iq_channel_name)
+        asprintf(&iq_channel_name, "%s%s",
+            system_config.channel0_name, system_config.channel1_name);
+
+    int channel_count = lmbf_mode ? 1 : CHANNEL_COUNT;
+    if (channel < channel_count)
+    {
+        const char *channel_name =
+            lmbf_mode ? iq_channel_name : *channel_names[channel];
+        push_record_name_prefix(channel_name);
+        push_record_name_prefix(prefix);
+        return true;
+    }
+    else
+        return false;
 }
 
 void _exit_channel_step(void)
@@ -36,22 +51,6 @@ void _exit_channel_step(void)
     pop_record_name_prefix();
 }
 
-void _push_iq_prefix(const char *prefix)
-{
-    char channel01[
-        strlen(system_config.channel0_name) +
-        strlen(system_config.channel1_name) + 1];
-    sprintf(channel01, "%s%s",
-        system_config.channel0_name, system_config.channel1_name);
-    push_record_name_prefix(channel01);
-    push_record_name_prefix(prefix);
-}
-
-void _pop_iq_prefix(void)
-{
-    pop_record_name_prefix();
-    pop_record_name_prefix();
-}
 
 void float_array_to_int(
     size_t count, float in[], int out[], int bits, int high_bits)

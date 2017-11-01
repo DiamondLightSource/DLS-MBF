@@ -47,7 +47,7 @@ static bool set_nco_enable(void *context, bool *enable)
 
 static void publish_nco_pvs(void)
 {
-    FOR_CHANNEL_NAMES(channel, "NCO")
+    FOR_CHANNEL_NAMES(channel, "NCO", system_config.lmbf_mode)
     {
         struct nco_context *nco = &nco_context[channel];
         nco->channel = channel;
