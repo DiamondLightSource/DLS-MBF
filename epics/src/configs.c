@@ -74,6 +74,7 @@ static const struct config_entry system_config_entries[] = {
     SYSTEM_ENTRY(string, channel1_name),
     SYSTEM_ENTRY(uint, bunches_per_turn),
     SYSTEM_ENTRY(bool, lmbf_mode),
+    SYSTEM_ENTRY(double, lmbf_fir_offset),
     SYSTEM_ENTRY(double, revolution_frequency),
     SYSTEM_ENTRY(uint, mms_poll_interval),
     SYSTEM_ENTRY(string, persistence_file),

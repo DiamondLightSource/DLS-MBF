@@ -6,7 +6,8 @@ import mms
 
 
 dac_events = []
-def dac_pvs():
+
+for c in channels('DAC'):
     WaveformOut('FILTER', DAC_TAPS, 'FLOAT',
         DESC = 'Output preemphasis filter')
     longOut('FILTER:DELAY', 0, 7, DESC = 'Preemphasis filter group delay')
@@ -28,7 +29,6 @@ def dac_pvs():
 
     mms.mms_pvs('DAC')
 
-for_channels('DAC', dac_pvs)
 
 Action('DAC:EVENTS',
     SCAN = '.1 second',

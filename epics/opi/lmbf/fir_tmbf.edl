@@ -118,11 +118,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_tmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_tmbf.edl"
 }
 symbols {
   0 "fir=0"
@@ -146,11 +146,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_tmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_tmbf.edl"
 }
 symbols {
   0 "fir=1"
@@ -174,11 +174,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_tmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_tmbf.edl"
 }
 symbols {
   0 "fir=2"
@@ -202,11 +202,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_tmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_tmbf.edl"
 }
 symbols {
   0 "fir=3"

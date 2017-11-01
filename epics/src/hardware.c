@@ -972,7 +972,8 @@ error__t initialise_hardware(
     const char *device_address, unsigned int bunches,
     bool lock_registers, bool lmbf_mode)
 {
-    printf("initialise_hardware @%s %d\n", device_address, lock_registers);
+    printf("initialise_hardware @%s %s\n",
+        device_address, lock_registers ? "" : "unlocked");
 
     /* Compute device node names from the device_address. */
     const char *device_template = "/dev/amc525_lmbf/%s/amc525_lmbf.%s";

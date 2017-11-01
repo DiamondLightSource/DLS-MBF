@@ -28,7 +28,7 @@ def detector_bank_pvs(updates):
     ])
 
 
-def detector_pvs():
+for c in channels('DET'):
     updates = [
         Waveform('SCALE', DETECTOR_LENGTH, 'DOUBLE',
             DESC = 'Scale for frequency sweep'),
@@ -46,6 +46,3 @@ def detector_pvs():
     boolOut('SELECT', 'ADC', 'FIR', DESC = 'Select detector source')
 
     Trigger('UPDATE', *updates)
-
-
-for_channels('DET', detector_pvs)

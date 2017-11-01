@@ -1,0 +1,252 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 249
+y 111
+w 599
+h 26
+font "helvetica-medium-r-18.0"
+ctlFont "helvetica-medium-r-18.0"
+btnFont "helvetica-medium-r-18.0"
+fgColor index 14
+bgColor index 4
+textColor index 14
+ctlFgColor1 index 14
+ctlFgColor2 index 0
+ctlBgColor1 index 0
+ctlBgColor2 index 14
+topShadowColor index 0
+botShadowColor index 14
+showGrid
+snapToGrid
+gridSize 8
+disableScroll
+endScreenProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 0
+y 0
+w 32
+h 16
+font "helvetica-bold-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "$(fir)"
+}
+autoSize
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 416
+y 0
+w 48
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Wf $(chan0)"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/fir_waveforms.edl"
+}
+symbols {
+  0 "channel=$(chan0),fir=$(fir)"
+}
+propagateMacros {
+  0 0
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 312
+y 0
+w 96
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(channel):FIR:$(fir):USEWF_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 16
+y 0
+w 32
+h 20
+controlPv "$(device):$(channel):FIR:$(fir):CYCLES_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 72
+y 0
+w 32
+h 20
+controlPv "$(device):$(channel):FIR:$(fir):LENGTH_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 56
+y 0
+w 4
+h 16
+font "helvetica-bold-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "/"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 264
+y 0
+w 40
+h 20
+controlPv "$(device):$(channel):FIR:$(fir):PHASE_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Motif Slider)
+object activeMotifSliderClass
+beginObjectProperties
+major 4
+minor 2
+release 0
+x 128
+y 0
+w 128
+h 24
+fgColor index 6
+bgColor index 4
+2ndBgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+increment 10
+controlPv "$(device):$(channel):FIR:$(fir):PHASE_S"
+controlLabel "$(device):$(channel):FIRPHASE_S"
+controlLabelType "pvName"
+font "helvetica-medium-r-8.0"
+scaleMin -360
+scaleMax 360
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 464
+y 0
+w 48
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Wf $(chan1)"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/fir_waveforms.edl"
+}
+symbols {
+  0 "channel=$(chan1),fir=$(fir)"
+}
+propagateMacros {
+  0 0
+}
+endObjectProperties
+

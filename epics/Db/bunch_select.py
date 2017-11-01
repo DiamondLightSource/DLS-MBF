@@ -19,7 +19,7 @@ def bank_pvs(bank):
     BunchWaveforms('GAINWF', 'FLOAT', 'DAC output gain')
 
 
-def bunch_select_pvs():
+for c in channels('BUN'):
     # We have four banks and for each bank three waveforms of parameters to
     # configure.   Very similar to FIR.
     for bank in range(4):
@@ -29,6 +29,3 @@ def bunch_select_pvs():
     # Feedback mode.  This is aggregated from the sequencer state and the
     # selected DAC output status.
     stringIn('MODE', SCAN = '1 second', DESC = 'Feedback mode')
-
-
-for_channels('BUN', bunch_select_pvs)

@@ -103,7 +103,7 @@ def count_pvs(super_count):
 
 # The sequencer has eight possible states, however state 0 has somewhat
 # different behaviour from the remaining 7.
-def sequencer_pvs():
+for c in channels('SEQ'):
     # Super-sequencer control and state.  Returns PV controlling number of super
     # sequencer states
     with name_prefix('SUPER'):
@@ -139,6 +139,3 @@ def sequencer_pvs():
     window = WaveformOut('WINDOW', 1024, 'FLOAT', DESC = 'Detector window')
     Action('RESET_WIN', FLNK = window,
         DESC = 'Reset detector window to Hamming')
-
-
-for_channels('SEQ', sequencer_pvs)

@@ -23,7 +23,7 @@ records.stringin('AXIS0', VAL = CHANNEL0, PINI = 'YES')
 records.stringin('AXIS1', VAL = CHANNEL1, PINI = 'YES')
 
 
-def channel_pvs():
+for c in channels('NCO'):
     aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')
     mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(16, -6))
     boolOut('ENABLE', 'Off', 'On', DESC = 'Enable fixed NCO output')
@@ -32,8 +32,6 @@ def channel_pvs():
 def clock_status(name, desc):
     return boolIn(name, 'Unlocked', 'Locked', ZSV = 'MAJOR', DESC = desc)
 
-
-for_channels('NCO', channel_pvs)
 
 with name_prefix('STA'):
     Action('POLL',

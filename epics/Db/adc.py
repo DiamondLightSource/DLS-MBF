@@ -6,7 +6,8 @@ import mms
 
 
 adc_events = []
-def adc_pvs():
+
+for c in channels('ADC'):
     WaveformOut('FILTER', ADC_TAPS, 'FLOAT',
         DESC = 'Input compensation filter')
     longOut('FILTER:DELAY', 0, 7, DESC = 'Compensation filter group delay')
@@ -29,9 +30,6 @@ def adc_pvs():
     ])
 
     mms.mms_pvs('ADC')
-
-
-for_channels('ADC', adc_pvs)
 
 
 Action('ADC:EVENTS',

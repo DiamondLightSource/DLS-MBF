@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2343
-y 332
+x 2344
+y 333
 w 264
 h 234
 font "helvetica-medium-r-8.0"
@@ -176,7 +176,7 @@ displayFileName {
   0 "lmbf/control.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "channel=$(chan01)"
 }
 endObjectProperties
 
@@ -359,7 +359,7 @@ displayFileName {
   0 "lmbf/fir_lmbf.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "channel=$(chan01)"
 }
 endObjectProperties
 

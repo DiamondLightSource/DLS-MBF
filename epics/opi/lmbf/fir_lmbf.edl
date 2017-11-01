@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 143
-y 212
+x 144
+y 213
 w 544
 h 232
 font "helvetica-medium-r-18.0"
@@ -118,11 +118,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_lmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_lmbf.edl"
 }
 symbols {
   0 "fir=0"
@@ -146,11 +146,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_lmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_lmbf.edl"
 }
 symbols {
   0 "fir=1"
@@ -174,11 +174,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_lmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_lmbf.edl"
 }
 symbols {
   0 "fir=2"
@@ -202,11 +202,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/fir_state.edl"
+file "lmbf/fir_state_lmbf.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_state.edl"
+  0 "lmbf/fir_state_lmbf.edl"
 }
 symbols {
   0 "fir=3"
@@ -376,7 +376,7 @@ x 88
 y 200
 w 40
 h 20
-controlPv "$(device):$(chan01):FIR:DECIMATION_S"
+controlPv "$(device):$(channel):FIR:DECIMATION_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14

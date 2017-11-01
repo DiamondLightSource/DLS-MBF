@@ -27,6 +27,7 @@ extern const struct system_config {
     const char *channel1_name;
     unsigned int bunches_per_turn;
     bool lmbf_mode;
+    double lmbf_fir_offset;
     double revolution_frequency;
     unsigned int mms_poll_interval;
     const char *persistence_file;

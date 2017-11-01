@@ -13,6 +13,8 @@ def bank_pvs():
         longOut('CYCLES', 1, BUNCH_TAPS, DESC = 'Cycles in filter'),
         aOut('PHASE', -360, 360, DESC = 'FIR phase'))
 
+
+def bank_waveforms():
     # Waveform taps in two forms: TAPS_S is what is set directly as a
     # waveform write, TAPS is what is current loaded.
     WaveformOut('TAPS', BUNCH_TAPS, 'FLOAT', address = 'TAPS_S',
@@ -35,9 +37,14 @@ def bunch_fir_pvs():
         DESC = 'FIR filter length')
 
 
-for_channels('FIR', bunch_fir_pvs)
+# The bank waveforms are the same in both TMBF and LMBF modes
+for c in channels('FIR'):
+    for bank in range(4):
+        with name_prefix('%d' % bank):
+            bank_waveforms()
 
-if lmbf_mode:
-    with iq_prefix('FIR'):
+for c in channels('FIR', lmbf_mode):
+    bunch_fir_pvs()
+    if lmbf_mode:
         longOut('DECIMATION', 1, 128,
             DESC = 'Bunch by bunch decimation')

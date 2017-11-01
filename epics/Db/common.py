@@ -47,6 +47,8 @@ REVOLUTION_FREQUENCY = \
 #
 #   with name_prefix(prefix):
 #       generate pvs
+#
+# to generate PVs named prefix:name
 class name_prefix:
     def __init__(self, prefix):
         self.prefix = prefix
@@ -57,24 +59,20 @@ class name_prefix:
     def __exit__(self, *exception):
         pop_name_prefix()
 
-class iq_prefix:
-    def __init__(self, prefix):
-        self.prefix = prefix
 
-    def __enter__(self):
-        push_name_prefix(CHANNEL01)
-        push_name_prefix(self.prefix)
-
-    def __exit__(self, *exception):
-        pop_name_prefix()
-        pop_name_prefix()
-
-
-def for_channels(prefix, action, *args):
-    for channel in CHANNELS:
-        with name_prefix(channel):
+# Generates name prefixes for records with names channel:prefix:name
+# If lmbf_mode is passed as the second argument and is True then a single prefix
+# of the form IQ:prefix:name is generated.
+def channels(prefix, iq_mode = False):
+    if iq_mode:
+        with name_prefix(CHANNEL01):
             with name_prefix(prefix):
-                action(*args)
+                yield
+    else:
+        for channel in CHANNELS:
+            with name_prefix(channel):
+                with name_prefix(prefix):
+                    yield
 
 
 def dBrange(count, step, start = 0):

@@ -97,6 +97,7 @@ def trigger_common_pvs():
         turn_pvs()
 
 
-for_channels('TRG', trigger_channel_pvs)
+for c in channels('TRG'):
+    trigger_channel_pvs()
 with name_prefix('TRG'):
     trigger_common_pvs()
