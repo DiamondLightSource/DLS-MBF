@@ -525,8 +525,16 @@ static bool write_turn_offset(void *context, unsigned int *offset)
     if (*offset < system_config.bunches_per_turn)
     {
         struct channel_context *chan = context;
+        struct channel_context *other_chan =
+            system_config.lmbf_mode ? &channel_contexts[1] : NULL;
+
         chan->turn_clock_offset = *offset;
         hw_write_turn_clock_offset(chan->channel, *offset);
+        if (other_chan)
+        {
+            other_chan->turn_clock_offset = *offset;
+            hw_write_turn_clock_offset(other_chan->channel, *offset);
+        }
 
         unsigned int offsets[CHANNEL_COUNT] = {
             [0] = channel_contexts[0].turn_clock_offset,
@@ -572,7 +580,7 @@ error__t initialise_triggers(void)
         }
     }
 
-    FOR_CHANNEL_NAMES(channel, "TRG")
+    FOR_CHANNEL_NAMES(channel, "TRG", system_config.lmbf_mode)
     {
         struct channel_context *chan = &channel_contexts[channel];
         create_target("SEQ", chan->sequencer);
@@ -582,11 +590,12 @@ error__t initialise_triggers(void)
 
     /* We're interested in the trigger and complete events for each trigger
      * target, these are dispatched to the appropriate target. */
+    unsigned int seq_mask = system_config.lmbf_mode ? 1 : 3;
     register_event_handler(
         INTERRUPT_HANDLER_TRIGGER,
         INTERRUPTS(
             .dram_trigger = 1, .dram_done = 1,
-            .seq_trigger  = 3, .seq_done  = 3),
+            .seq_trigger = seq_mask & 3, .seq_done = seq_mask & 3),
         NULL, dispatch_target_events);
 
     return ERROR_OK;

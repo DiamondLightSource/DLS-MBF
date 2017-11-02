@@ -18,39 +18,32 @@ def event_set(suffix, suffix_desc):
         for source, desc in trigger_sources]
 
 
-def target_pvs():
-    source_events = event_set('HIT', 'source')
-    boolIn('HIT',
-        FLNK = create_fanout('HIT:FAN', *source_events),
-        SCAN = 'I/O Intr',
-        DESC = 'Update source events')
+def target_pvs(prefix):
+    with name_prefix(prefix):
+        source_events = event_set('HIT', 'source')
+        boolIn('HIT',
+            FLNK = create_fanout('HIT:FAN', *source_events),
+            SCAN = 'I/O Intr',
+            DESC = 'Update source events')
 
-    write_en = Action('EN', DESC = 'Write enables')
-    write_bl = Action('BL', DESC = 'Write blanking')
-    for source, desc in trigger_sources:
-        boolOut('%s:EN' % source, 'Ignore', 'Enable',
-            FLNK = write_en,
-            DESC = 'Enable %s input' % desc)
-        boolOut('%s:BL' % source, 'All', 'Blanking',
-            FLNK = write_bl,
-            DESC = 'Enable blanking for trigger source')
+        write_en = Action('EN', DESC = 'Write enables')
+        write_bl = Action('BL', DESC = 'Write blanking')
+        for source, desc in trigger_sources:
+            boolOut('%s:EN' % source, 'Ignore', 'Enable',
+                FLNK = write_en,
+                DESC = 'Enable %s input' % desc)
+            boolOut('%s:BL' % source, 'All', 'Blanking',
+                FLNK = write_bl,
+                DESC = 'Enable blanking for trigger source')
 
-    longOut('DELAY', 0, 2**16 - 1, DESC = 'Trigger delay')
+        longOut('DELAY', 0, 2**16 - 1, DESC = 'Trigger delay')
 
-    Action('ARM', DESC = 'Arm trigger')
-    Action('DISARM', DESC = 'Disarm trigger')
-    mbbOut('MODE', 'One Shot', 'Rearm', 'Shared', DESC = 'Arming mode')
-    mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
-        SCAN = 'I/O Intr',
-        DESC = 'Trigger target status')
-
-
-def trigger_channel_pvs():
-    with name_prefix('SEQ'):
-        target_pvs()
-    longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
-
-    longOut('TURN:OFFSET', DESC = 'Turn clock offset')
+        Action('ARM', DESC = 'Arm trigger')
+        Action('DISARM', DESC = 'Disarm trigger')
+        mbbOut('MODE', 'One Shot', 'Rearm', 'Shared', DESC = 'Arming mode')
+        mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
+            SCAN = 'I/O Intr',
+            DESC = 'Trigger target status')
 
 
 def turn_pvs():
@@ -74,9 +67,15 @@ def turn_pvs():
         DESC = 'Update turn status')
 
 
-def trigger_common_pvs():
-    with name_prefix('MEM'):
-        target_pvs()
+for c in channels('TRG', lmbf_mode):
+    target_pvs('SEQ')
+
+    longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
+    longOut('TURN:OFFSET', DESC = 'Turn clock offset')
+
+
+with name_prefix('TRG'):
+    target_pvs('MEM')
 
     events_in = event_set('IN', 'input')
     events_in.append(event('BLNK:IN', 'Blanking event'))
@@ -95,9 +94,3 @@ def trigger_common_pvs():
 
     with name_prefix('TURN'):
         turn_pvs()
-
-
-for c in channels('TRG'):
-    trigger_channel_pvs()
-with name_prefix('TRG'):
-    trigger_common_pvs()
