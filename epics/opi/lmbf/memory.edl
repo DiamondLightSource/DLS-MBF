@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1970
-y 507
+x 1972
+y 509
 w 641
 h 641
 font "helvetica-medium-r-18.0"
@@ -818,5 +818,31 @@ value {
   "turns"
 }
 autoSize
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 488
+y 520
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "MEM Trig"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/trigger_target.edl"
+}
+symbols {
+  0 "dest=TRG:MEM"
+}
 endObjectProperties
 

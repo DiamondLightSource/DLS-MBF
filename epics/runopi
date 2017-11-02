@@ -3,26 +3,31 @@
 cd "$(dirname "$0")"/opi
 PATH="scripts/:$PATH"
 
-DEVICE="${1:-TS-DI-TMBF-02}"
+DEVICE="$1"
+if [[ -z $DEVICE ]]; then
+    MACROS=()
+    START=lmbf_launcher.edl
+else
+    AXIS0="$(caget -t "$DEVICE:AXIS0")"  &&
+    AXIS1="$(caget -t "$DEVICE:AXIS1")"  &&
+    MODE="$(caget -t "$DEVICE:MODE")"  ||
+        exit 1
 
-AXIS0="$(caget -t "$DEVICE:AXIS0")"  &&
-AXIS1="$(caget -t "$DEVICE:AXIS1")"  &&
-MODE="$(caget -t "$DEVICE:MODE")"  ||
-    exit 1
+    case "$MODE" in
+        TMBF)   START=lmbf/tmbf.edl ;;
+        LMBF)   START=lmbf/lmbf.edl ;;
+        *)      echo >&2 "Unknown MODE: $MODE"
+                exit 2 ;;
+    esac
 
-case "$MODE" in
-    TMBF)   START=lmbf/tmbf.edl ;;
-    LMBF)   START=lmbf/lmbf.edl ;;
-    *)      echo >&2 "Unknown MODE: $MODE"
-            exit 2 ;;
-esac
-
-MACROS=(
-    -m device="$DEVICE"
-    -m chan0="$AXIS0"
-    -m chan1="$AXIS1")
-if [[ "$MODE" = LMBF ]]; then
-    MACROS=("${MACROS[@]}" -m chan01="$AXIS0$AXIS1")
+    MACROS=(
+        -m device="$DEVICE"
+        -m mode="$MODE"
+        -m chan0="$AXIS0"
+        -m chan1="$AXIS1")
+    if [[ "$MODE" = LMBF ]]; then
+        MACROS=("${MACROS[@]}" -m chan01="$AXIS0$AXIS1")
+    fi
 fi
 
-exec edm -x -eolc "${MACROS[@]}" "$START"
+edm -x -eolc "${MACROS[@]}" "$START" &

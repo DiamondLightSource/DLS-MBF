@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2020
-y 55
-w 928
-h 505
+x 994
+y 417
+w 544
+h 394
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -32,55 +32,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 8
-y 48
-w 120
-h 240
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 400
-y 304
-w 256
-h 72
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 664
-y 304
-w 256
-h 72
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
 x 136
-y 304
+y 48
 w 256
-h 72
+h 112
 lineColor index 14
 fill
 fillColor index 4
@@ -94,7 +49,7 @@ minor 1
 release 1
 x 0
 y 0
-w 928
+w 544
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -111,8 +66,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 856
-y 472
+x 472
+y 360
 w 64
 h 24
 fgColor index 46
@@ -147,738 +102,14 @@ command {
 includeHelpIcon
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 64
-w 32
-h 16
-controlPv "$(device):TRG:SOFT:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 64
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:SOFT:IN"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 88
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:EXT:IN"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 88
-w 32
-h 16
-controlPv "$(device):TRG:EXT:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 112
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:PM:IN"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 112
-w 32
-h 16
-controlPv "$(device):TRG:PM:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 136
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:ADC0:IN"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 136
-w 32
-h 16
-controlPv "$(device):TRG:ADC0:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 160
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:ADC1:IN"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 160
-w 32
-h 16
-controlPv "$(device):TRG:ADC1:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 184
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:SEQ0:IN"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 184
-w 32
-h 16
-controlPv "$(device):TRG:SEQ0:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 208
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:SEQ1:IN"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 208
-w 32
-h 16
-controlPv "$(device):TRG:SEQ1:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 136
-y 48
-w 256
-h 240
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 136
-y 40
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "$(chan0):SEQ"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 136
-y 40
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Embedded Window)
-object activePipClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 144
-y 64
-w 240
-h 216
-fgColor index 14
-bgColor index 3
-topShadowColor index 0
-botShadowColor index 14
-displaySource "menu"
-filePv "LOC\\menu0=i:0"
-file "lmbf/seq_state.edl"
-sizeOfs 5
-numDsps 1
-displayFileName {
-  0 "lmbf/trigger_dest.edl"
-}
-symbols {
-  0 "dest=$(chan0):TRG:SEQ"
-}
-noScroll
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 400
-y 48
-w 256
-h 240
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 400
-y 40
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "$(chan1):SEQ"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 400
-y 40
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 664
-y 48
-w 256
-h 240
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 664
-y 40
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "MEM"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 664
-y 40
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Embedded Window)
-object activePipClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 408
-y 64
-w 240
-h 216
-fgColor index 14
-bgColor index 3
-topShadowColor index 0
-botShadowColor index 14
-displaySource "menu"
-filePv "LOC\\menu0=i:0"
-file "lmbf/seq_state.edl"
-sizeOfs 5
-numDsps 1
-displayFileName {
-  0 "lmbf/trigger_dest.edl"
-}
-symbols {
-  0 "dest=$(chan1):TRG:SEQ"
-}
-noScroll
-endObjectProperties
-
-# (Embedded Window)
-object activePipClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 672
-y 64
-w 240
-h 216
-fgColor index 14
-bgColor index 3
-topShadowColor index 0
-botShadowColor index 14
-displaySource "menu"
-filePv "LOC\\menu0=i:0"
-file "lmbf/seq_state.edl"
-sizeOfs 5
-numDsps 1
-displayFileName {
-  0 "lmbf/trigger_dest.edl"
-}
-symbols {
-  0 "dest=TRG:MEM"
-}
-noScroll
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 64
-w 34
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "SOFT"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 88
-w 24
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "EXT"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 112
-w 19
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "PM"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 136
-w 32
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "ADC0"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 160
-w 32
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "ADC1"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 184
-w 34
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "SEQ0"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 208
-w 34
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "SEQ1"
-}
-autoSize
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 256
-w 32
-h 16
-controlPv "$(device):TRG:BLNK:IN"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 56
-y 256
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):TRG:BLNK:IN"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 256
-w 34
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "BLNK"
-}
-autoSize
-endObjectProperties
-
 # (Message Button)
 object activeMessageButtonClass
 beginObjectProperties
 major 4
 minor 1
 release 0
-x 408
-y 320
+x 144
+y 128
 w 72
 h 22
 fgColor index 25
@@ -900,8 +131,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 488
-y 320
+x 224
+y 128
 w 88
 h 22
 fgColor index 14
@@ -913,102 +144,6 @@ controlPv "$(device):TRG:SOFT_S.SCAN"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 768
-y 320
-w 96
-h 20
-controlPv "$(device):$(chan0):TRG:BLANKING_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 672
-y 320
-w 112
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "$(chan0) Blanking:"
-}
-autoSize
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 768
-y 344
-w 96
-h 20
-controlPv "$(device):$(chan1):TRG:BLANKING_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 672
-y 344
-w 112
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "$(chan1) Blanking:"
-}
-autoSize
-endObjectProperties
-
 # (Message Button)
 object activeMessageButtonClass
 beginObjectProperties
@@ -1016,7 +151,7 @@ major 4
 minor 1
 release 0
 x 248
-y 320
+y 64
 w 64
 h 24
 fgColor index 25
@@ -1039,7 +174,7 @@ major 4
 minor 1
 release 0
 x 320
-y 320
+y 64
 w 64
 h 24
 fgColor index 25
@@ -1062,7 +197,7 @@ major 4
 minor 6
 release 0
 x 152
-y 352
+y 96
 w 80
 h 16
 controlPv "$(device):TRG:STATUS"
@@ -1087,7 +222,7 @@ major 4
 minor 0
 release 0
 x 144
-y 320
+y 64
 w 96
 h 24
 fgColor index 14
@@ -1106,7 +241,7 @@ major 4
 minor 1
 release 1
 x 136
-y 296
+y 40
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -1125,96 +260,11 @@ major 4
 minor 0
 release 0
 x 136
-y 296
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 400
-y 296
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Soft Trigger"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 400
-y 296
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 664
-y 296
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Blanking"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 664
-y 296
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
 y 40
-w 104
+w 120
 h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Inputs"
-}
+lineColor index 14
+fillColor index 0
 endObjectProperties
 
 # (Rectangle)
@@ -1224,132 +274,22 @@ major 4
 minor 0
 release 0
 x 8
-y 40
-w 104
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 136
-y 392
-w 592
-h 104
+y 304
+w 432
+h 80
 lineColor index 14
 fill
 fillColor index 4
 endObjectProperties
 
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 240
-y 408
-w 96
-h 20
-controlPv "$(device):$(chan0):TRG:TURN:OFFSET_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
 major 4
 minor 1
 release 1
-x 144
-y 408
-w 101
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "$(chan0) Offset:"
-}
-autoSize
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 240
-y 432
-w 96
-h 20
-controlPv "$(device):$(chan1):TRG:TURN:OFFSET_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 144
-y 432
-w 101
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "$(chan1) Offset:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 136
-y 384
+x 8
+y 296
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -1367,8 +307,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 136
-y 384
+x 8
+y 296
 w 120
 h 16
 lineColor index 14
@@ -1381,8 +321,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 584
-y 408
+x 168
+y 320
 w 88
 h 16
 controlPv "$(device):TRG:TURN:STATUS"
@@ -1406,8 +346,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 368
-y 464
+x 240
+y 352
 w 40
 h 24
 controlPv "$(device):TRG:TURN:DELAY_S"
@@ -1434,8 +374,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 144
-y 464
+x 16
+y 352
 w 72
 h 14
 font "helvetica-bold-r-12.0"
@@ -1454,8 +394,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 376
-y 408
+x 16
+y 320
 w 72
 h 22
 fgColor index 25
@@ -1477,8 +417,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 592
-y 432
+x 344
+y 328
 w 64
 h 16
 controlPv "$(device):TRG:TURN:RATE"
@@ -1505,8 +445,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 512
-y 432
+x 264
+y 328
 w 76
 h 14
 font "helvetica-bold-r-12.0"
@@ -1525,8 +465,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 512
-y 408
+x 96
+y 320
 w 44
 h 14
 font "helvetica-bold-r-12.0"
@@ -1545,8 +485,8 @@ beginObjectProperties
 major 4
 minor 2
 release 0
-x 224
-y 464
+x 96
+y 352
 w 136
 h 24
 fgColor index 6
@@ -1559,5 +499,61 @@ controlPv "$(device):TRG:TURN:DELAY_S"
 controlLabelType "pvName"
 font "helvetica-medium-r-18.0"
 limitsFromDb
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 40
+w 128
+h 256
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "lmbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "lmbf/trigger_inputs.edl"
+}
+symbols {
+  0 "bank=0"
+}
+noScroll
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 136
+y 168
+w 408
+h 128
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "lmbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "lmbf/trigger_$(mode).edl"
+}
+symbols {
+  0 "bank=0"
+}
+noScroll
 endObjectProperties
 

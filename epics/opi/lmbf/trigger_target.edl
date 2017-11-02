@@ -3,15 +3,15 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 542
-y 440
-w 358
-h 336
+x 2003
+y 490
+w 399
+h 332
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
 fgColor index 14
-bgColor index 4
+bgColor index 3
 textColor index 14
 ctlFgColor1 index 14
 ctlFgColor2 index 0
@@ -19,11 +19,121 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
+title "$(device) Trigger Configuration"
 showGrid
 snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 0
+y 0
+w 400
+h 32
+font "helvetica-medium-r-18.0"
+fontAlign "center"
+fgColor index 14
+bgColor index 73
+value {
+  "$(device):$(dest) Trigger"
+}
+endObjectProperties
+
+# (Exit Button)
+object activeExitButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 328
+y 296
+w 64
+h 24
+fgColor index 46
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+label "EXIT"
+font "helvetica-bold-r-12.0"
+3d
+endObjectProperties
+
+# (Shell Command)
+object shellCmdClass
+beginObjectProperties
+major 4
+minor 3
+release 0
+x 4
+y 4
+w 24
+h 24
+fgColor index 14
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-14.0"
+buttonLabel "?"
+numCmds 1
+command {
+  0 "diagnostics-help LMBF_triggers"
+}
+includeHelpIcon
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 136
+y 48
+w 256
+h 240
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 136
+y 40
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "$(dest)"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 136
+y 40
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
 
 # (Text Monitor)
 object activeXTextDspClass:noedit
@@ -31,8 +141,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 208
-y 0
+x 352
+y 64
 w 32
 h 16
 controlPv "$(device):$(dest):SOFT:HIT"
@@ -56,8 +166,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 184
-y 0
+x 328
+y 64
 w 16
 h 16
 lineColor index 14
@@ -73,8 +183,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 184
-y 24
+x 328
+y 88
 w 16
 h 16
 lineColor index 14
@@ -90,8 +200,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 208
-y 24
+x 352
+y 88
 w 32
 h 16
 controlPv "$(device):$(dest):EXT:HIT"
@@ -115,8 +225,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 184
-y 48
+x 328
+y 112
 w 16
 h 16
 lineColor index 14
@@ -132,8 +242,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 208
-y 48
+x 352
+y 112
 w 32
 h 16
 controlPv "$(device):$(dest):PM:HIT"
@@ -157,8 +267,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 184
-y 72
+x 328
+y 136
 w 16
 h 16
 lineColor index 14
@@ -174,8 +284,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 208
-y 72
+x 352
+y 136
 w 32
 h 16
 controlPv "$(device):$(dest):ADC0:HIT"
@@ -199,8 +309,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 184
-y 96
+x 328
+y 160
 w 16
 h 16
 lineColor index 14
@@ -216,8 +326,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 208
-y 96
+x 352
+y 160
 w 32
 h 16
 controlPv "$(device):$(dest):ADC1:HIT"
@@ -241,8 +351,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 184
-y 120
+x 328
+y 184
 w 16
 h 16
 lineColor index 14
@@ -258,8 +368,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 208
-y 120
+x 352
+y 184
 w 32
 h 16
 controlPv "$(device):$(dest):SEQ0:HIT"
@@ -283,8 +393,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 184
-y 144
+x 328
+y 208
 w 16
 h 16
 lineColor index 14
@@ -300,8 +410,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 208
-y 144
+x 352
+y 208
 w 32
 h 16
 controlPv "$(device):$(dest):SEQ1:HIT"
@@ -325,8 +435,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 0
+x 144
+y 64
 w 80
 h 22
 fgColor index 14
@@ -344,8 +454,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 88
-y 0
+x 232
+y 64
 w 80
 h 22
 fgColor index 14
@@ -363,8 +473,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 88
-y 24
+x 232
+y 88
 w 80
 h 22
 fgColor index 14
@@ -382,8 +492,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 24
+x 144
+y 88
 w 80
 h 22
 fgColor index 14
@@ -401,8 +511,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 88
-y 48
+x 232
+y 112
 w 80
 h 22
 fgColor index 14
@@ -420,8 +530,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 48
+x 144
+y 112
 w 80
 h 22
 fgColor index 14
@@ -439,8 +549,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 88
-y 72
+x 232
+y 136
 w 80
 h 22
 fgColor index 14
@@ -458,8 +568,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 72
+x 144
+y 136
 w 80
 h 22
 fgColor index 14
@@ -477,8 +587,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 88
-y 96
+x 232
+y 160
 w 80
 h 22
 fgColor index 14
@@ -496,8 +606,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 96
+x 144
+y 160
 w 80
 h 22
 fgColor index 14
@@ -515,8 +625,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 88
-y 120
+x 232
+y 184
 w 80
 h 22
 fgColor index 14
@@ -534,8 +644,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 120
+x 144
+y 184
 w 80
 h 22
 fgColor index 14
@@ -553,8 +663,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 88
-y 144
+x 232
+y 208
 w 80
 h 22
 fgColor index 14
@@ -572,8 +682,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 144
+x 144
+y 208
 w 80
 h 22
 fgColor index 14
@@ -591,8 +701,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 0
-y 168
+x 144
+y 240
 w 96
 h 22
 fgColor index 14
@@ -610,8 +720,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 104
-y 168
+x 248
+y 240
 w 64
 h 22
 fgColor index 25
@@ -633,8 +743,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 176
-y 168
+x 320
+y 240
 w 64
 h 22
 fgColor index 25
@@ -656,8 +766,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 144
-y 192
+x 288
+y 264
 w 96
 h 20
 controlPv "$(device):$(dest):DELAY_S"
@@ -684,8 +794,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 104
-y 196
+x 248
+y 266
 w 38
 h 14
 font "helvetica-bold-r-12.0"
@@ -704,8 +814,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 0
-y 196
+x 144
+y 266
 w 72
 h 16
 controlPv "$(device):$(dest):STATUS"
@@ -721,5 +831,33 @@ fastUpdate
 useHexPrefix
 newPos
 objType "monitors"
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 40
+w 128
+h 256
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "lmbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "lmbf/trigger_inputs.edl"
+}
+symbols {
+  0 "bank=0"
+}
+noScroll
 endObjectProperties
 
