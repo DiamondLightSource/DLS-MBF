@@ -87,9 +87,6 @@ def configure_timing_test(lmbf, compensate = False):
     # Each test will need to configure the bank setup it needs.
     lmbf.state0(0)
 
-    # Disable FIR decimation
-    lmbf.set('FIR:DECIMATION_S', 1)
-
     # Configure FIR 0 to default pass-through mode and FIR 1 to zero
     lmbf.fir_wf(FIR_UNIT, unit_fir(lmbf.bunch_taps))
     lmbf.fir_wf(FIR_ZERO, numpy.zeros(lmbf.bunch_taps))
