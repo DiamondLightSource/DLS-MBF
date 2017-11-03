@@ -145,14 +145,14 @@
     # operation: for independent channels, set all MUX bits to 0, for coupled
     # channels set to 1.
     CONTROL     RW
-        # ADC mux: if set input to channel 0 FIR has copy of channel 1 ADC
+        # ADC mux: if set input to channel 1 FIR has copy of channel 0 ADC
         .ADC_MUX
-        # NCO0 mux: if set channel 0 NCO0 has sin data from channel 1
+        # NCO0 mux: if set channel 1 NCO0 has sin data from channel 0
         .NCO0_MUX
-        # NCO1 mux: if set channel 0 NCO1 has sin data from channel 1
+        # NCO1 mux: if set channel 1 NCO1 has sin data from channel 0
         .NCO1_MUX
-        # Bank mux: if set channel 0 bank selection is copy of bank selection
-        # from channel 1.
+        # Bank mux: if set channel 1 bank selection is copy of bank selection
+        # from channel 0.
         .BANK_MUX
         # If set to 1 the output from the corresponding channel is looped back
         # to the ADC input.  Set to 0 for normal operation.

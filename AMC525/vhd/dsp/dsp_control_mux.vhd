@@ -61,12 +61,12 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- ADC input multiplexing
+            adc_o(0) <= d2c0.adc_data;
             if adc_mux_i = '1' then
-                adc_o(0) <= d2c1.adc_data;
+                adc_o(1) <= d2c0.adc_data;
             else
-                adc_o(0) <= d2c0.adc_data;
+                adc_o(1) <= d2c1.adc_data;
             end if;
-            adc_o(1) <= d2c1.adc_data;
 
             -- NCO output multiplexing
             nco_0_o(0) <= assign_cos(d2c0.nco_0_data);
