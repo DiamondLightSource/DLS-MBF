@@ -1,0 +1,2 @@
+# During development we have state files here.  Ignore them.
+*.state

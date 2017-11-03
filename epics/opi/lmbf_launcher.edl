@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1923
-y 1064
+x 1924
+y 1065
 w 296
 h 113
 font "helvetica-medium-r-14.0"
@@ -93,7 +93,7 @@ displayFileName {
   0 "lmbf/lmbf.edl"
 }
 symbols {
-  0 "device=TS-DI-LMBF-02,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"
+  0 "device=TS-DI-LMBF-01,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"
 }
 endObjectProperties
 
