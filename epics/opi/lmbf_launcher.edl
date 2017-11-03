@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1922
-y 1063
+x 1923
+y 1064
 w 296
 h 113
 font "helvetica-medium-r-14.0"
@@ -53,7 +53,7 @@ minor 4
 release 0
 x 24
 y 40
-w 88
+w 96
 h 24
 fgColor index 43
 bgColor index 3
@@ -79,7 +79,7 @@ minor 4
 release 0
 x 176
 y 40
-w 88
+w 96
 h 24
 fgColor index 43
 bgColor index 3
@@ -94,6 +94,32 @@ displayFileName {
 }
 symbols {
   0 "device=TS-DI-LMBF-02,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 176
+y 72
+w 96
+h 24
+fgColor index 43
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "SR23C-LMBF"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/tmbf.edl"
+}
+symbols {
+  0 "device=SR23C-DI-LMBF-01,chan0=X,chan1=Y,mode=TMBF"
 }
 endObjectProperties
 

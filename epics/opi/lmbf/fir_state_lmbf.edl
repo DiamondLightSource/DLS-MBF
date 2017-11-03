@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 249
-y 111
+x 250
+y 112
 w 599
 h 26
 font "helvetica-medium-r-18.0"
@@ -67,10 +67,10 @@ displayFileName {
   0 "lmbf/fir_waveforms.edl"
 }
 symbols {
-  0 "channel=$(chan0),fir=$(fir)"
+  0 "device=$(device),channel=$(chan0),fir=$(fir)"
 }
-propagateMacros {
-  0 0
+replaceSymbols {
+  0 1
 }
 endObjectProperties
 
@@ -243,10 +243,10 @@ displayFileName {
   0 "lmbf/fir_waveforms.edl"
 }
 symbols {
-  0 "channel=$(chan1),fir=$(fir)"
+  0 "device=$(device),channel=$(chan1),fir=$(fir)"
 }
-propagateMacros {
-  0 0
+replaceSymbols {
+  0 1
 }
 endObjectProperties
 
