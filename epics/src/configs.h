@@ -21,20 +21,21 @@ extern const struct hardware_delays {
 } hardware_delays;
 
 extern const struct system_config {
-    const char *device_address;
-    const char *epics_name;
-    const char *channel0_name;
-    const char *channel1_name;
-    unsigned int bunches_per_turn;
-    bool lmbf_mode;
-    double lmbf_fir_offset;
-    double revolution_frequency;
-    unsigned int mms_poll_interval;
-    const char *persistence_file;
-    int persistence_interval;
-    int pv_log_array_length;
-    unsigned int memory_readout_length;
-    unsigned int detector_length;
+    const char *device_address;         // Name of hardware device
+    const char *epics_name;             // Prefix for all EPICS names
+    const char *channel0_name;          // Name of the two channels, normally
+    const char *channel1_name;          // either X,Y or I,Q
+    unsigned int bunches_per_turn;      // Fundamental machine parameter
+    bool lmbf_mode;                     // Set if running in longitudinal mode
+    double lmbf_fir_offset;             // Phase offset between FIR filters
+    double revolution_frequency;        // Machine RF in MHz for time delays
+    unsigned int mms_poll_interval;     // Frequency of MMS readouts
+    const char *persistence_file;       // Where to save the persistent state
+    int persistence_interval;           // How often to update state (in secs)
+    int pv_log_array_length;            // Manages PV logging verbosity
+    unsigned int memory_readout_length; // Length of MEM readout PVs
+    unsigned int detector_length;       // Length of DET readout PVs
+    unsigned int data_port;             // Socket port for fast data readout
 } system_config;
 
 

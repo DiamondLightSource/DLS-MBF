@@ -65,10 +65,7 @@ lmbf_SRCS += sequencer.c        # State sequencer control
 lmbf_SRCS += memory.c           # Fast memory readout
 lmbf_SRCS += triggers.c         # Trigger control and selection
 lmbf_SRCS += detector.c         # I/Q detector
-# lmbf_SRCS += tune.c             # Tune measurement and high level control
-# lmbf_SRCS += tune_support.c     # Support library for tune measurement
-# lmbf_SRCS += tune_peaks.c       # High level tune peak detection
-# lmbf_SRCS += sensors.c          # Miscellaneous system health sensors
+lmbf_SRCS += socket_server.c    # Socket connection for high speed data
 # lmbf_SRCS += tune_follow.c      # Support for tune following
 
 lmbf_LIBS += epics_device

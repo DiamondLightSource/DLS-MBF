@@ -3,4 +3,4 @@
 cd "$(dirname "$0")"
 IOC="$(basename "$0")"
 
-exec ../epics/runioc "$IOC".config
+exec ../epics/runioc "$@" "$IOC".config

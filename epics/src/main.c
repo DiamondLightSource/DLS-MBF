@@ -36,6 +36,7 @@
 #include "events.h"
 #include "triggers.h"
 #include "detector.h"
+#include "socket_server.h"
 
 
 /* External declaration of DBD binding. */
@@ -238,7 +239,8 @@ int main(int argc, char *const argv[])
         load_persistent_state(
             system_config.persistence_file,
             system_config.persistence_interval, false)  ?:
-        initialise_epics();
+        initialise_epics()  ?:
+        initialise_socket_server(system_config.data_port);
 
     if (!error)
     {
@@ -251,6 +253,7 @@ int main(int argc, char *const argv[])
     }
 
     /* Orderly shutdown. */
+    terminate_socket_server();
     stop_epics();
     stop_mms_handlers();
     terminate_events();
