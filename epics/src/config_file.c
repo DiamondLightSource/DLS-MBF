@@ -11,106 +11,12 @@
 
 #include "error.h"
 
+#include "parse.h"
 #include "config_file.h"
 
 
 #define NAME_LENGTH 40
 #define LINE_SIZE   100
-
-
-static error__t parse_eos(const char **string)
-{
-    return TEST_OK_(**string == '\0', "Unexpected character");
-}
-
-static bool skip_whitespace(const char **string)
-{
-    bool seen = false;
-    while (isspace((unsigned char) **string))
-    {
-        *string += 1;
-        seen = true;
-    }
-    return seen;
-}
-
-static bool read_char(const char **string, char ch)
-{
-    if (**string == ch)
-    {
-        *string += 1;
-        return true;
-    }
-    else
-        return false;
-}
-
-static error__t parse_char(const char **string, char ch)
-{
-    return TEST_OK_(read_char(string, ch), "Character '%c' expected", ch);
-}
-
-
-/* Called after a C library conversion function checks that anything was
- * converted and that the conversion was successful.  Relies on errno being zero
- * before conversion started. */
-static error__t check_number(const char *start, const char *end)
-{
-    return
-        TEST_OK_(end > start, "Number missing")  ?:
-        TEST_IO_(errno == 0, "Error converting number");
-}
-
-
-/* Parsing numbers is rather boilerplate.  This macro encapsulates everything in
- * one common form. */
-#define DEFINE_PARSE_NUM(name, type, convert, extra...) \
-    static error__t name(const char **string, type *result) \
-    { \
-        errno = 0; \
-        const char *start = *string; \
-        char *end; \
-        *result = (type) convert(start, &end, ##extra); \
-        *string = end; \
-        return check_number(start, *string); \
-    }
-
-DEFINE_PARSE_NUM(parse_int,    int,          strtol, 10)
-DEFINE_PARSE_NUM(parse_uint,   unsigned int, strtoul, 10)
-DEFINE_PARSE_NUM(parse_double, double,       strtod)
-
-
-static error__t parse_string(const char **string, char **result)
-{
-    *result = strdup(*string);
-    *string += strlen(*string);
-    return ERROR_OK;
-}
-
-
-static error__t parse_bool(const char **string, bool *result)
-{
-    unsigned int value;
-    return
-        parse_uint(string, &value)  ?:
-        DO(*result = value);
-}
-
-
-static error__t parse_name(const char **string, char *name, size_t length)
-{
-    error__t error =
-        TEST_OK_(isalpha((unsigned int) **string), "Not a valid name");
-    while (!error  &&  (isalnum((unsigned int) **string)  ||  **string == '_'))
-    {
-        *name++ = *(*string)++;
-        length -= 1;
-        error = TEST_OK_(length > 0, "Name too long");
-    }
-    if (!error)
-        *name = '\0';
-    return error;
-}
 
 
 static error__t lookup_name(
@@ -138,11 +44,11 @@ static error__t parse_value(
         case CONFIG_uint:
             return parse_uint(string, config_table->address);
         case CONFIG_string:
-            return parse_string(string, config_table->address);
+            return parse_to_eos(string, config_table->address);
         case CONFIG_double:
             return parse_double(string, config_table->address);
         case CONFIG_bool:
-            return parse_bool(string, config_table->address);
+            return parse_bit(string, config_table->address);
         default:
             return FAIL_("Invalid config entry");
     }
@@ -168,7 +74,7 @@ static error__t do_parse_line(
      * a lot more long winded than it otherwise ought to be. */
     char name[NAME_LENGTH];
     error__t error =
-        parse_name(&string, name, NAME_LENGTH)  ?:
+        parse_alphanum_name(&string, name, NAME_LENGTH)  ?:
         DO(skip_whitespace(&string))  ?:
         parse_char(&string, '=')  ?:
         DO(skip_whitespace(&string));
