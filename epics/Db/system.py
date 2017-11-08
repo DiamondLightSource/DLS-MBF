@@ -5,22 +5,30 @@ import sys
 from common import *
 
 
-# Version string from build
-stringIn('VERSION', PINI = 'YES', DESC = 'LMBF version')
-stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'LMBF version')
-stringIn('HOSTNAME', PINI = 'YES', DESC = 'Host name of LMBF IOC')
-
+# System identification PVs
+stringIn('VERSION', PINI = 'YES', DESC = 'Software version')
+stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'Firmware version')
+Waveform('HOSTNAME', 256,
+    PINI = 'YES', FTVL = 'CHAR', DESC = 'Host name of LMBF IOC')
+longIn('SOCKET', PINI = 'YES', DESC = 'Socket number for data server')
+stringIn('DEVICE', PINI = 'YES', DESC = 'Name of AMC525 device')
 boolIn('MODE', 'TMBF', 'LMBF', PINI = 'YES', DESC = 'Operational mode')
 
 # A variety of constants
-records.longin('BUNCHES', VAL = BUNCHES_PER_TURN, PINI = 'YES')
-records.longin('ADC_TAPS', VAL = ADC_TAPS, PINI = 'YES')
-records.longin('DAC_TAPS', VAL = DAC_TAPS, PINI = 'YES')
-records.longin('BUNCH_TAPS', VAL = BUNCH_TAPS, PINI = 'YES')
+records.longin('BUNCHES', VAL = BUNCHES_PER_TURN, PINI = 'YES',
+    DESC = 'Number of bunches per revolution')
+records.longin('ADC_TAPS', VAL = ADC_TAPS, PINI = 'YES',
+    DESC = 'Length of ADC compensation filter')
+records.longin('DAC_TAPS', VAL = DAC_TAPS, PINI = 'YES',
+    DESC = 'Length of DAC pre-emphasis filter')
+records.longin('BUNCH_TAPS', VAL = BUNCH_TAPS, PINI = 'YES',
+    DESC = 'Length of bunch-by-bunch feedback filter')
 
 # Names of the two axes
-records.stringin('AXIS0', VAL = CHANNEL0, PINI = 'YES')
-records.stringin('AXIS1', VAL = CHANNEL1, PINI = 'YES')
+records.stringin('AXIS0', VAL = CHANNEL0, PINI = 'YES',
+    DESC = 'Name of first axis')
+records.stringin('AXIS1', VAL = CHANNEL1, PINI = 'YES',
+    DESC = 'Name of second axis')
 
 
 for c in channels('NCO', lmbf_mode):

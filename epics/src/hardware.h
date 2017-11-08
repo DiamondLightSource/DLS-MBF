@@ -37,9 +37,6 @@ void terminate_hardware(void);
 error__t hw_lock_registers(void);
 error__t hw_unlock_registers(void);
 
-/* Returns device node name for direct access to fast DRAM. */
-error__t hw_read_fast_dram_name(char *name, size_t length);
-
 /* Returns a mask of interrupt events, blocks until an event arrives. */
 error__t hw_read_interrupt_events(struct interrupts *interrupts);
 

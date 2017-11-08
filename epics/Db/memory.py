@@ -38,7 +38,8 @@ select_channel = [
     'DAC1',
 ]
 
-def memory_pvs():
+
+with name_prefix('MEM'):
     Trigger('READOUT',
         memory_wf('WF0', 'Capture waveform #0'),
         memory_wf('WF1', 'Capture waveform #1'))
@@ -76,13 +77,5 @@ def memory_pvs():
     mbbOut('RUNOUT', '0%', '25%', '50%', '75%', '100%',
         DESC = 'Post trigger capture count')
 
-    # Path to fast DRAM device for direct access (if on same machine) and
-    # position of seek origin
-    Waveform('DEVICE', 256,
-        PINI = 'YES', FTVL = 'CHAR', DESC = 'Name of fast memory device')
     longIn('ORIGIN', EGU = 'bytes', SCAN = 'I/O Intr',
         DESC = 'Location of captured origin')
-
-
-with name_prefix('MEM'):
-    memory_pvs()

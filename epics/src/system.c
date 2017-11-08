@@ -80,21 +80,26 @@ static void publish_status_pvs(void)
 /* Some published strings for system identification etc. */
 static EPICS_STRING version_string = { LMBF_VERSION };
 static EPICS_STRING fpga_version = { };
-static EPICS_STRING hostname = { };
+static char hostname[256];
+static EPICS_STRING device_name;
+
 
 static error__t initialise_constants(void)
 {
     PUBLISH_READ_VAR(stringin, "VERSION", version_string);
     PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
-    PUBLISH_READ_VAR(stringin, "HOSTNAME", hostname);
+    PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
     PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
+    PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
+    PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
 
     sprintf(fpga_version.s, "%08x", hw_read_fpga_version());
+    strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
 
     struct utsname utsname;
     return
         TEST_IO(uname(&utsname))  ?:
-        DO(strncpy(hostname.s, utsname.nodename, sizeof(hostname.s)));
+        DO(strncpy(hostname, utsname.nodename, sizeof(hostname)));
 }
 
 

@@ -139,14 +139,6 @@ static error__t read_dma_memory(
 static volatile struct sys *sys_regs;
 
 
-static const char *public_dram0_device_name;
-
-error__t hw_read_fast_dram_name(char *name, size_t length)
-{
-    strncpy(name, public_dram0_device_name, length);
-    return ERROR_OK;
-}
-
 uint32_t hw_read_fpga_version(void)
 {
     return READL(sys_regs->version);
@@ -984,7 +976,6 @@ error__t initialise_hardware(
     sprintf(dram0_device_name, device_template, device_address, "ddr0");
     sprintf(dram1_device_name, device_template, device_address, "ddr1");
 
-    public_dram0_device_name = strdup(dram0_device_name);
     return
         TEST_IO_(reg_device = open(reg_device_name, O_RDWR | O_SYNC),
             "Unable to open LMBF device %s", reg_device_name)  ?:
