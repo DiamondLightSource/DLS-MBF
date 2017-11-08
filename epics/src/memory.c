@@ -145,8 +145,6 @@ static int16_t *memory_wf1;
 
 static struct in_epics_record_bi *busy_status;
 
-static struct epics_record *origin_pv;
-
 static unsigned int trigger_origin;
 static int readout_offset;
 
@@ -274,7 +272,6 @@ static void write_readout_offset(int offset)
 static void capture_complete(void)
 {
     trigger_origin = hw_read_dram_address();
-    trigger_record(origin_pv);
     readout_memory();
 }
 
@@ -356,8 +353,6 @@ error__t initialise_memory(void)
         PUBLISH_ACTION("CAPTURE", immediate_memory_capture);
         busy_status = PUBLISH_IN_VALUE_I(bi, "BUSY");
         PUBLISH_WRITER_P(mbbo, "RUNOUT", write_dram_runout);
-
-        origin_pv = PUBLISH_READ_VAR_I(ulongin, "ORIGIN", trigger_origin);
     }
 
     return ERROR_OK;

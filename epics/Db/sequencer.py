@@ -130,11 +130,13 @@ for c in channels('SEQ', lmbf_mode):
 
     Action('STATUS:READ',
         SCAN = '.1 second',
+        DESC = 'Poll sequencer status',
         FLNK = create_fanout('STATUS:FAN',
             longIn('PC', DESC = 'Current sequencer state'),
             longIn('SUPER:COUNT', 0, SUPER_SEQ_STATES,
                 DESC = 'Current super sequencer count'),
-            boolIn('BUSY', 'Idle', 'Busy', OSV = 'MINOR')))
+            boolIn('BUSY', 'Idle', 'Busy', OSV = 'MINOR',
+                DESC = 'Sequencer busy state')))
 
     window = WaveformOut('WINDOW', 1024, 'FLOAT', DESC = 'Detector window')
     Action('RESET_WIN', FLNK = window,

@@ -43,6 +43,7 @@ def clock_status(name, desc):
 
 with name_prefix('STA'):
     Action('POLL',
+        DESC = 'Poll system status',
         SCAN = '.2 second', FLNK = create_fanout('FAN',
             clock_status('CLOCK', 'ADC clock status'),
             clock_status('VCO', 'VCO clock status'),

@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2392
-y 515
+x 2393
+y 516
 w 641
-h 641
+h 594
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -129,7 +129,7 @@ major 4
 minor 1
 release 0
 x 568
-y 608
+y 560
 w 64
 h 24
 fgColor index 46
@@ -303,8 +303,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 400
-y 520
+x 408
+y 488
 w 72
 h 24
 fgColor index 25
@@ -326,8 +326,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 368
-y 560
+x 376
+y 528
 w 96
 h 16
 controlPv "$(device):MEM:BUSY.DESC"
@@ -351,8 +351,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 472
-y 560
+x 480
+y 528
 w 16
 h 16
 lineColor index 14
@@ -368,8 +368,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 496
-y 560
+x 504
+y 528
 w 128
 h 16
 controlPv "$(device):MEM:BUSY"
@@ -384,52 +384,6 @@ useHexPrefix
 newPos
 objType "monitors"
 noExecuteClipMask
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 104
-y 616
-w 152
-h 16
-controlPv "$(device):MEM:ORIGIN"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-useHexPrefix
-showUnits
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 616
-w 86
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Trigger offset:"
-}
-autoSize
 endObjectProperties
 
 # (Static Text)
@@ -782,8 +736,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 488
-y 520
+x 496
+y 488
 w 72
 h 24
 fgColor index 43

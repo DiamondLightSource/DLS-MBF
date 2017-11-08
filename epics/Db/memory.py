@@ -76,6 +76,3 @@ with name_prefix('MEM'):
         OSV = 'MINOR', SCAN = 'I/O Intr', DESC = 'Capture status')
     mbbOut('RUNOUT', '0%', '25%', '50%', '75%', '100%',
         DESC = 'Post trigger capture count')
-
-    longIn('ORIGIN', EGU = 'bytes', SCAN = 'I/O Intr',
-        DESC = 'Location of captured origin')
