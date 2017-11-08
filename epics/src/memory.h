@@ -12,3 +12,10 @@ void set_memory_adc_offset(int channel, unsigned int delay);
 /* The turn clock control needs to let us know about skew between the turn
  * clocks, as this affects our delays. */
 void set_memory_turn_clock_offsets(unsigned int offsets[CHANNEL_COUNT]);
+
+
+/* Helper function for memory readout: converts turns offset (relative to
+ * trigger) into seek offset for memory readout. */
+size_t compute_dram_offset(int offset_turns);
+/* Returns channel delays for the two dram channels. */
+void get_memory_channel_delays(unsigned int *d0, unsigned int *d1);

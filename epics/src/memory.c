@@ -209,15 +209,30 @@ static void update_channel_delays(void)
 }
 
 
+size_t compute_dram_offset(int offset_turns)
+{
+    return
+        (size_t) trigger_origin +
+        (size_t) (
+            offset_turns *
+            (int) system_config.bunches_per_turn *
+            (int) sizeof(uint32_t));
+}
+
+
+void get_memory_channel_delays(unsigned int *d0, unsigned int *d1)
+{
+    *d0 = channel_delays[0];
+    *d1 = channel_delays[1];
+}
+
+
 static void readout_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
     unsigned int bunches_per_turn = system_config.bunches_per_turn;
 
-    size_t origin = (size_t) trigger_origin;
-    size_t delta = (size_t) (
-        readout_offset * (int) bunches_per_turn * (int) sizeof(uint32_t));
-    size_t offset = origin + delta;
+    size_t offset = compute_dram_offset(readout_offset);
     hw_read_dram_memory(
         offset, readout_length + bunches_per_turn, memory_buffer);
 
@@ -284,8 +299,6 @@ void prepare_memory(void)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-static char device_name[256];
-
 
 static bool fir_gains[CHANNEL_COUNT];
 static bool fir_overflow[CHANNEL_COUNT];
@@ -344,9 +357,8 @@ error__t initialise_memory(void)
         busy_status = PUBLISH_IN_VALUE_I(bi, "BUSY");
         PUBLISH_WRITER_P(mbbo, "RUNOUT", write_dram_runout);
 
-        PUBLISH_WF_READ_VAR(char, "DEVICE", sizeof(device_name), device_name);
         origin_pv = PUBLISH_READ_VAR_I(ulongin, "ORIGIN", trigger_origin);
     }
 
-    return hw_read_fast_dram_name(device_name, sizeof(device_name));
+    return ERROR_OK;
 }

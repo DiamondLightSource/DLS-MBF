@@ -66,7 +66,11 @@ lmbf_SRCS += sequencer.c        # State sequencer control
 lmbf_SRCS += memory.c           # Fast memory readout
 lmbf_SRCS += triggers.c         # Trigger control and selection
 lmbf_SRCS += detector.c         # I/Q detector
+
+lmbf_SRCS += buffered_file.c    # Helper for buffered file access
+lmbf_SRCS += socket_command.c   # Command implementation for high speed data
 lmbf_SRCS += socket_server.c    # Socket connection for high speed data
+
 # lmbf_SRCS += tune_follow.c      # Support for tune following
 
 lmbf_LIBS += epics_device

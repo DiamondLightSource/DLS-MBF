@@ -15,6 +15,8 @@
 #include <pthread.h>
 
 #include "error.h"
+#include "buffered_file.h"
+#include "socket_command.h"
 
 #include "socket_server.h"
 
@@ -29,22 +31,31 @@
 
 
 struct connection {
-    int sock;
+    int sock;                       // Connected socket
+    char name[64];                  // Name of connected client
 };
 
 
-static struct connection *create_connection(int sock)
+static struct connection *create_connection(
+    int sock, struct sockaddr_in *client)
 {
     struct connection *connection = malloc(sizeof(struct connection));
     *connection = (struct connection) {
         .sock = sock,
     };
+
+    uint8_t *ip = (uint8_t *) &client->sin_addr.s_addr;
+    sprintf(connection->name, "%u.%u.%u.%u:%u",
+        ip[0], ip[1], ip[2], ip[3], ntohs(client->sin_port));
+
+    log_message("Client %s connected", connection->name);
     return connection;
 }
 
 
 static void delete_connection(struct connection *connection)
 {
+    log_message("Client %s disconnected", connection->name);
     close(connection->sock);
     free(connection);
 }
@@ -53,7 +64,30 @@ static void delete_connection(struct connection *connection)
 static void *process_connection(void *context)
 {
     struct connection *connection = context;
-    write(connection->sock, "goodbye\n", 8);
+    struct buffered_file *file = create_buffered_file(
+        connection->sock, 4096, 4096);
+
+    char line[256];
+    bool ok = true;
+    while (ok  &&  read_line(file, line, sizeof(line), true))
+    {
+        log_message("Client %s command: \"%s\"", connection->name, line);
+        switch (line[0])
+        {
+            case 'M':   ok = process_memory_command(file, line);     break;
+            case 'D':   ok = process_detector_command(file, line);   break;
+            case '\0':
+                write_formatted_string(file, "Missing command\n");
+                break;
+            default:
+                write_formatted_string(file,
+                    "Error: Unknown command: %c.\n", line[0]);
+                break;
+        }
+    }
+
+    error__t error = destroy_buffered_file(file);
+    ERROR_REPORT(error, "Error handling client %s", connection->name);
     delete_connection(connection);
     return NULL;
 }
@@ -81,11 +115,13 @@ static void *run_server(void *context)
     ASSERT_PTHREAD(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));
 
     int scon;
+    struct sockaddr_in client;
+    socklen_t client_len = sizeof(client);
     error__t error;
-    while (error = TEST_IO(scon = accept(listen_socket, NULL, NULL)),
+    while (error = TEST_IO(scon = accept(listen_socket, &client, &client_len)),
            !error)
     {
-        struct connection *connection = create_connection(scon);
+        struct connection *connection = create_connection(scon, &client);
         pthread_t thread;
         error = TEST_PTHREAD(pthread_create(
             &thread, &attr, process_connection, connection));
