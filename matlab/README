@@ -1,0 +1,5 @@
+Before we delete it, the following is a useful conversion trick:
+
+    f = fopen(filename);
+    a = double(reshape(fread(f, inf, 'int16=>int16'), 2, [])');
+    fclose(f);

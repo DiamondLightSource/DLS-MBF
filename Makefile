@@ -58,6 +58,16 @@ clean-driver:
 
 
 # ------------------------------------------------------------------------------
+# Miscellanous other builds
+
+SUB_BUILDS = epics matlab
+.PHONY: $(SUB_BUILDS)
+
+$(SUB_BUILDS):
+	make -C $@
+
+
+# ------------------------------------------------------------------------------
 
 clean:
 	rm -rf $(BUILD_DIR)

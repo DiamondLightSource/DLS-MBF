@@ -4,5 +4,7 @@
 *~
 *.html
 
+/matlab/*.mexa64
+
 # Put stuff we want to ignore here
 /ignore
