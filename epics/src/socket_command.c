@@ -10,12 +10,35 @@
 #include "hardware.h"
 #include "common.h"
 #include "configs.h"
-#include "memory.h"
-#include "buffered_file.h"
 #include "parse.h"
+#include "buffered_file.h"
+#include "memory.h"
+#include "detector.h"
 
 #include "socket_command.h"
 
+
+static bool report_error(
+    struct buffered_file *file,
+    error__t error, const char *command, const char *parsed, bool raw_mode)
+{
+    error_extend(error, "Parse error at offset %zu", parsed - command);
+    if (raw_mode)
+    {
+        ERROR_REPORT(error, "Error parsing \"%s\"", command);
+        return false;
+    }
+    else
+    {
+        write_formatted_string(file, "%s\n", error_format(error));
+        error_discard(error);
+        return true;
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* MEM capture readout. */
 
 /* The correct read buffer size is slightly delicate.  We want all reads from
  * DRAM0 to complete in a single DMA transfer where possible.  The internal DMA
@@ -86,53 +109,112 @@ static void send_memory_data(
 
 /* Supports command of the form:
  *
- *      M [R] count [O offset] [C]
+ *      M [R] count [O offset]
  *
- * Returns count turns starting at offset turns from trigger point. */
+ * Returns memory captured into memory with the following options:
+ *
+ *      R   If set then only raw data is returned and the connection is closed
+ *          if a parse error occurs.
+ *      count
+ *          Number of turns of data to capture.
+ *      O offset
+ *          Starting offset in turns, default to 0.
+ */
 bool process_memory_command(struct buffered_file *file, const char *command)
 {
     const char *command_in = command;
     unsigned int count = 0;
     int offset = 0;
     bool raw_mode = false;
-    bool auto_close = false;
     error__t error =
         parse_char(&command, 'M')  ?:
-        IF(read_char(&command, 'R'),
-            DO(raw_mode = true))  ?:
+        DO(raw_mode = read_char(&command, 'R'))  ?:
         parse_uint(&command, &count)  ?:
         IF(read_char(&command, 'O'),
             parse_int(&command, &offset))  ?:
-        IF(read_char(&command, 'C'),
-            DO(auto_close = true))  ?:
         parse_eos(&command);
 
     if (error)
-    {
-        error_extend(error, "Parse error at offset %zu", command - command_in);
-        if (raw_mode)
-        {
-            ERROR_REPORT(error, "Error parsing \"%s\"", command_in);
-            auto_close = true;
-        }
-        else
-        {
-            write_formatted_string(file, "%s\n", error_format(error));
-            error_discard(error);
-        }
-    }
+        return report_error(file, error, command_in, command, raw_mode);
     else
     {
         if (!raw_mode)
             write_char(file, '\0');
         send_memory_data(file, count, offset);
+        return true;
     }
-    return !auto_close;
 }
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* DET detector readout. */
+
+struct detector_frame {
+    uint32_t channels;
+    uint32_t samples;
+};
+
+
+static void send_detector_data(
+    struct buffered_file *file, int channel, bool framed)
+{
+    struct detector_frame frame;
+    get_detector_samples(channel, &frame.channels, &frame.samples);
+
+    if (framed)
+        write_block(file, &frame, sizeof(frame));
+
+    unsigned int samples = frame.samples * frame.channels;
+    unsigned int offset = 0;
+    while (samples > 0)
+    {
+        unsigned int sample_size = sizeof(struct detector_result);
+        struct detector_result buffer[READ_BUFFER_BYTES / sample_size];
+        unsigned int samples_to_read = MIN(samples, ARRAY_SIZE(buffer));
+        hw_read_det_memory(channel, samples_to_read, offset, buffer);
+        write_block(file, buffer, samples_to_read * sample_size);
+
+        samples -= samples_to_read;
+        offset += samples_to_read * sample_size;
+    }
+}
+
+
+/* Supports command of form:
+ *
+ *      D [R] channel [F]
+ *
+ * Returns detector readout with the following options:
+ *
+ *      R   If set then only raw data is returned and the connection is closed
+ *          if a parse error occurs.
+ *      channel
+ *          Specifies which channel is being read.
+ *      F   If set the number of channels and samples is sent as a header before
+ *          sending the raw data.
+ */
 bool process_detector_command(struct buffered_file *file, const char *command)
 {
-    write_formatted_string(file, "DET\n");
-    return true;
+    const char *command_in = command;
+    bool raw_mode = false;
+    int channel;
+    bool framed = false;
+    error__t error =
+        parse_char(&command, 'D')  ?:
+        DO(raw_mode = read_char(&command, 'R'))  ?:
+        parse_int(&command, &channel)  ?:
+        TEST_OK_(0 <= channel  &&  channel < CHANNEL_COUNT,
+            "Invalid channel number")  ?:
+        DO(framed = read_char(&command, 'F'))  ?:
+        parse_eos(&command);
+
+    if (error)
+        return report_error(file, error, command_in, command, raw_mode);
+    else
+    {
+        if (!raw_mode)
+            write_char(file, '\0');
+        send_detector_data(file, channel, framed);
+        return true;
+    }
 }

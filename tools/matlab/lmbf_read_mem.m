@@ -10,7 +10,7 @@ function a = lmbf_read_mem(lmbf, turns, offset)
 
     % Capture data over socket connection to temporary file
     filename = tempname;
-    command = sprintf('echo MR%dO%dC | nc %s %d >%s', ...
+    command = sprintf('echo MR%dO%d | nc %s %d >%s', ...
         turns, offset, server, port, filename);
     system(command);
 

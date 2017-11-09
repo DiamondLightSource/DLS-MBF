@@ -870,11 +870,12 @@ void hw_read_det_events(int channel,
 
 
 void hw_read_det_memory(
-    int channel, unsigned int result_count, struct detector_result result[])
+    int channel, unsigned int result_count, unsigned int offset,
+    struct detector_result result[])
 {
     LOCK(dram1_mutex);
     error__t error = read_dma_memory(
-        dram1_device, (unsigned int) channel * (DRAM1_LENGTH / 2),
+        dram1_device, (unsigned int) channel * (DRAM1_LENGTH / 2) + offset,
         result_count * sizeof(struct detector_result), result);
     UNLOCK(dram1_mutex);
     ERROR_REPORT(error, "Error reading from DRAM1");

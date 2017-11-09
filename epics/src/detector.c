@@ -80,13 +80,22 @@ static void gather_buffers(
 }
 
 
+void get_detector_samples(
+    int channel, unsigned int *channels, unsigned int *samples)
+{
+    struct detector_context *det = &detector_context[channel];
+    *channels = det->active_channels;
+    *samples = det->scale_info.samples;
+}
+
+
 static void read_detector_memory(
     struct detector_context *det, unsigned int samples)
 {
     unsigned int detector_length = system_config.detector_length;
     samples = MIN(samples, detector_length);    // Clip to available length
     hw_read_det_memory(
-        det->channel, samples * det->active_channels, det->read_buffer);
+        det->channel, samples * det->active_channels, 0, det->read_buffer);
 
     /* Gather all the buffers. */
     bool enables[DETECTOR_COUNT];

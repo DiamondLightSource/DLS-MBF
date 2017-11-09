@@ -81,7 +81,7 @@ static void *process_connection(void *context)
                 break;
             default:
                 write_formatted_string(file,
-                    "Error: Unknown command: %c.\n", line[0]);
+                    "Unknown command: %c.\n", line[0]);
                 break;
         }
     }

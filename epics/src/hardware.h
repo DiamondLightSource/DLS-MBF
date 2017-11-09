@@ -368,4 +368,5 @@ void hw_read_det_events(int channel,
 
 /* Reads detector result in raw format. */
 void hw_read_det_memory(
-    int channel, unsigned int result_count, struct detector_result result[]);
+    int channel, unsigned int result_count, unsigned int offset,
+    struct detector_result result[]);
