@@ -4,7 +4,7 @@ import time
 import sys
 
 
-def setup_adc(regs):
+def setup_adc(regs, idelay):
     # Check that the VCXO and ADC power good signals are ok
     status = regs.SYS.STATUS._fields
     assert status.VCXO_OK, "VCXO power good not detected"
@@ -45,4 +45,4 @@ def setup_adc(regs):
     regs.ADC_SPI[0x568] = 0x01      # parallel interleaved mode (two converters)
 
     # Configure ADC clock delay
-    regs.SYS.ADC_IDELAY._write_fields_wo(VALUE = 12, WRITE = 1)
+    regs.SYS.ADC_IDELAY._write_fields_wo(VALUE = idelay, WRITE = 1)
