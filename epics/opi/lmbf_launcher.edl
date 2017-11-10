@@ -116,10 +116,10 @@ buttonLabel "SR23C-LMBF"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/tmbf.edl"
+  0 "lmbf/lmbf.edl"
 }
 symbols {
-  0 "device=SR23C-DI-LMBF-01,chan0=X,chan1=Y,mode=TMBF"
+  0 "device=SR23C-DI-LMBF-01,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"
 }
 endObjectProperties
 
