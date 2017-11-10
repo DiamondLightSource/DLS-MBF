@@ -1,6 +1,8 @@
 TOP = ..
 include $(TOP)/Makefile.common
-# MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
+
+MEX_FILES = lmbf_detector_mex lmbf_memory_mex
+
 
 MEX_OPTS += -largeArrayDims
 MEX_OPTS += COPTIMFLAGS='-O2 -DNDEBUG'
@@ -15,10 +17,12 @@ CFLAGS += -Werror
 CFLAGS += -Wno-missing-field-initializers
 CFLAGS += -Wno-unused-parameter
 
-%.mexa64: %.c
-	$(MEX) $(MEX_OPTS) CFLAGS='$$CFLAGS $(CFLAGS)' $<
+%.mexa64: %.c socket.c
+	$(MEX) $(MEX_OPTS) CFLAGS='$$CFLAGS $(CFLAGS)' $^
 
-default: lmbf_memory_mex.mexa64
+default: $(MEX_FILES:%=%.mexa64)
 
 clean:
 	rm -f *.mexa64
+
+.PHONY: default clean
