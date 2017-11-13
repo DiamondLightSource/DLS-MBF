@@ -20,9 +20,8 @@
 
 static bool report_error(
     struct buffered_file *file,
-    error__t error, const char *command, const char *parsed, bool raw_mode)
+    error__t error, const char *command, bool raw_mode)
 {
-    error_extend(error, "Parse error at offset %zu", parsed - command);
     if (raw_mode)
     {
         ERROR_REPORT(error, "Error parsing \"%s\"", command);
@@ -135,7 +134,10 @@ bool process_memory_command(struct buffered_file *file, const char *command)
         parse_eos(&command);
 
     if (error)
-        return report_error(file, error, command_in, command, raw_mode);
+        error_extend(error, "Parse error at offset %zu", command_in - command);
+
+    if (error)
+        return report_error(file, error, command_in, raw_mode);
     else
     {
         if (!raw_mode)
@@ -203,13 +205,19 @@ bool process_detector_command(struct buffered_file *file, const char *command)
         parse_char(&command, 'D')  ?:
         DO(raw_mode = read_char(&command, 'R'))  ?:
         parse_int(&command, &channel)  ?:
-        TEST_OK_(0 <= channel  &&  channel < CHANNEL_COUNT,
-            "Invalid channel number")  ?:
         DO(framed = read_char(&command, 'F'))  ?:
         parse_eos(&command);
 
+    /* Separate parse checking from argument validation, report parse errors
+     * with position of error. */
     if (error)
-        return report_error(file, error, command_in, command, raw_mode);
+        error_extend(error, "Parse error at offset %zu", command_in - command);
+    error = error ?:
+        TEST_OK_(0 <= channel  &&  channel < CHANNEL_COUNT,
+            "Invalid channel number");
+
+    if (error)
+        return report_error(file, error, command_in, raw_mode);
     else
     {
         if (!raw_mode)

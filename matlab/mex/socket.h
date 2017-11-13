@@ -3,17 +3,30 @@
 
 /* Some simple error handling macros.  They all call mexErrMsgIdAndTxt() which
  * does not return, instead either uses longjmp or a C++ exception. */
+#define UNEXPECTED_ERROR  "unexpected", "Unexpected error"
 #define FAIL_(id, error...) \
-    mexErrMsgIdAndTxt("lmbf_memory_mex:" id, error)
+    mexErrMsgIdAndTxt("mex_lmbf:" id, error)
 #define FAIL() \
     FAIL_("unexpected", "Unexpected error")
 #define TEST_OK_(test, id, error...) \
     do if (!(test)) \
         FAIL_(id, error); \
     while (0)
+#define TEST_OK(test)   TEST_OK_(test, "unexpected", "Unexpected error")
 #define TEST_IO_(test, id, error...) \
     TEST_OK_((test) != -1, id, error)
 #define TEST_IO(test)   TEST_IO_(test, "unexpected", "Unexpected error")
+
+/* A special annoyance for error tests with a socket involved: we need to close
+ * the socket before failing! */
+#define TEST_SOCK_(sock, test, id, error...) \
+    do if (!(test)) \
+    { \
+        close(sock); \
+        FAIL_(id, error); \
+    } while (0)
+#define TEST_SOCK(sock, test) \
+    TEST_SOCK_(sock, test, "unexpected", "Unexpected error")
 
 
 /* Connects to socket server, if possible, returning connected socket if
@@ -24,6 +37,10 @@ int connect_server(const char *hostname, int port);
 /* Sends command to server and closes write side of socket so that we have
  * requested a complete transaction. */
 void send_command(int sock, const char *format, ...);
+
+/* Checks server response, raises error if the server returns error.  Expects
+ * server to return single null character on success, error message on fail. */
+void check_result(int sock);
 
 /* Fills buffer from socket (or fails) and returns the number of samples
  * actually read.  The parameters behave as follows:

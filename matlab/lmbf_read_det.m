@@ -11,5 +11,5 @@ function a = lmbf_read_mem(lmbf, channel)
     server = deblank(char(lcaGet([lmbf ':HOSTNAME'])));
     port = lcaGet([lmbf ':SOCKET']);
 
-    a = lmbf_detector_mex(server, port, channel);
+    a = mex_lmbf_detector_(server, port, channel);
 end

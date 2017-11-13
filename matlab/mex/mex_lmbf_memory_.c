@@ -75,7 +75,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
      * Fortunately after this point we don't call into Matlab anymore (except to
      * fail), so we're in control. */
     int sock = connect_server(hostname, port);
-    send_command(sock, "MR%dO%d\n", count, offset);
+    send_command(sock, "M%dO%d\n", count, offset);
+    check_result(sock);
 
     /* Process data in reasonably sized chunks. */
     while (raw_samples > 0)

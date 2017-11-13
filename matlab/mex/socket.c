@@ -31,12 +31,9 @@ int connect_server(const char *hostname, int port)
     };
     memcpy(&s_in.sin_addr.s_addr, hostent->h_addr, hostent->h_length);
 
-    if (connect(sock, (struct sockaddr *) &s_in, sizeof(s_in)) != 0)
-    {
-        close(sock);
-        FAIL_("connect", "Unable to connect to server %s:%d", hostname, port);
-    }
-
+    TEST_SOCK_(sock,
+        connect(sock, (struct sockaddr *) &s_in, sizeof(s_in)) == 0,
+        "connect", "Unable to connect to server %s:%d", hostname, port);
     return sock;
 }
 
@@ -54,29 +51,46 @@ void send_command(int sock, const char *format, ...)
 }
 
 
+/* Reads bytes until buffer is full or EOF, returns bytes read. */
+static int read_buffer(int sock, void *buffer, int length)
+{
+    int total = 0;
+    while (length > 0)
+    {
+        ssize_t bytes_read = read(sock, buffer, length);
+        TEST_SOCK(sock, bytes_read >= 0);
+        if (bytes_read == 0)
+            break;
+        total += bytes_read;
+        length -= bytes_read;
+    }
+    return total;
+}
+
+
+void check_result(int sock)
+{
+    char message[256];
+    TEST_SOCK(sock, read(sock, message, 1) == 1);
+    if (message[0] != '\0')
+    {
+        /* Whoops, we have an error message to read. */
+        int bytes_read = read_buffer(sock, message + 1, sizeof(message) - 1);
+        close(sock);
+
+        TEST_OK(message[bytes_read] == '\n');
+        message[bytes_read] = '\0';
+        FAIL_("server", message);
+    }
+}
+
+
 int fill_buffer(
     int sock, void *buffer, int sample_size, int buffer_samples, int samples)
 {
     int samples_to_read = samples > buffer_samples ? buffer_samples : samples;
     int bytes_to_read = sample_size * samples_to_read;
-
-    /* Ensure we actually fill the buffer so that we don't have any nasty little
-     * bits left over if a packet gets split somewhere along the line. */
-    void *read_buffer = buffer;
-    while (bytes_to_read > 0)
-    {
-        ssize_t bytes_read = read(sock, read_buffer, bytes_to_read);
-        if (bytes_read <= 0)
-        {
-            close(sock);
-            if (bytes_read == 0)
-                FAIL_("read", "Unexpected end of input");
-            else
-                FAIL();
-        }
-        read_buffer += bytes_read;
-        bytes_to_read -= bytes_read;
-    }
-
+    TEST_SOCK_(sock, read_buffer(sock, buffer, bytes_to_read) == bytes_to_read,
+        "read", "Unexpected end of input");
     return samples_to_read;
 }

@@ -89,11 +89,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     int channel = (int) mxGetScalar(prhs[2]);
 
     /* Connect to server and send command.  Once we've allocated the socket we
-     * have to make sure we close it before calling any error functions!
-     * Fortunately after this point we don't call into Matlab anymore (except to
-     * fail), so we're in control. */
+     * have to make sure we close it before calling any error functions! */
     int sock = connect_server(hostname, port);
-    send_command(sock, "DR%dF\n", channel);
+    send_command(sock, "D%dF\n", channel);
+    check_result(sock);
 
     /* Start by reading the frame so we know what data to expect. */
     struct detector_frame frame;

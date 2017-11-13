@@ -13,5 +13,5 @@ function a = lmbf_read_mem(lmbf, turns, offset)
     port = lcaGet([lmbf ':SOCKET']);
     bunches = lcaGet([lmbf ':BUNCHES']);
 
-    a = lmbf_memory_mex(server, port, bunches, turns, offset);
+    a = mex_lmbf_memory_(server, port, bunches, turns, offset);
 end
