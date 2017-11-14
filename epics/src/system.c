@@ -82,6 +82,7 @@ static EPICS_STRING version_string = { LMBF_VERSION };
 static EPICS_STRING git_version_string = { GIT_VERSION };
 static EPICS_STRING fpga_version = { };
 static EPICS_STRING fpga_git_version = { };
+static EPICS_STRING driver_version = { };
 static char hostname[256];
 static EPICS_STRING device_name;
 
@@ -96,6 +97,7 @@ static error__t initialise_constants(void)
     PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
     PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
     PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
+    PUBLISH_READ_VAR(stringin, "DRIVER_VERSION", driver_version);
 
     struct fpga_version fpga;
     hw_read_fpga_version(&fpga);
@@ -105,9 +107,16 @@ static error__t initialise_constants(void)
     strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
 
     struct utsname utsname;
+    FILE *file;
     return
         TEST_IO(uname(&utsname))  ?:
-        DO(strncpy(hostname, utsname.nodename, sizeof(hostname)));
+        DO(strncpy(hostname, utsname.nodename, sizeof(hostname)))  ?:
+        TEST_OK(file = fopen("/sys/module/amc525_lmbf/version", "r"))  ?:
+        DO_FINALLY(
+            TEST_OK(fgets(driver_version.s, sizeof(driver_version.s), file))  ?:
+            DO(*strchrnul(driver_version.s, '\n') = '\0'),
+        // finally
+            fclose(file));
 }
 
 
