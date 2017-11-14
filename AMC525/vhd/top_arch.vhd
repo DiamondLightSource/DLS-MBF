@@ -8,6 +8,7 @@ use work.defines.all;
 use work.register_defs.all;
 use work.fmc500m_defs.all;
 use work.dsp_defs.all;
+use work.version.all;
 
 architecture arch of top is
     -- IO instances
@@ -124,6 +125,8 @@ architecture arch of top is
 
     -- Digital I/O on FMC0
     signal dio_inputs : std_logic_vector(4 downto 0);
+    signal dio_out_enable : std_logic_vector(4 downto 0);
+    signal dio_term_enable : std_logic_vector(4 downto 0);
     signal dio_outputs : std_logic_vector(4 downto 0);
     signal dio_leds : std_logic_vector(1 downto 0);
 
@@ -166,6 +169,7 @@ architecture arch of top is
 
     -- Control registers
     signal version_data : reg_data_t;
+    signal git_version_data : reg_data_t;
     signal info_data : reg_data_t;
     signal status_data : reg_data_t;
     signal control_data : reg_data_t;
@@ -544,8 +548,8 @@ begin
         FMC_LA_N => FMC0_LA_N,
 
         -- Configure ports 1-3 as terminated inputs, ports 4,5 will be outputs.
-        out_enable_i  => "11000",
-        term_enable_i => "00111",
+        out_enable_i  => dio_out_enable,
+        term_enable_i => dio_term_enable,
 
         output_i => dio_outputs,
         leds_i => dio_leds,
@@ -639,6 +643,7 @@ begin
         read_ack_o => system_read_ack,
 
         version_read_data_i => version_data,
+        git_version_read_data_i => git_version_data,
         info_read_data_i => info_data,
         status_read_data_i => status_data,
         control_data_o => control_data,
@@ -709,6 +714,15 @@ begin
     -- Control register mapping.
 
     version_data <= (
+        SYS_VERSION_PATCH_BITS => to_std_logic_vector(VERSION_PATCH, 8),
+        SYS_VERSION_MINOR_BITS => to_std_logic_vector(VERSION_MINOR, 8),
+        SYS_VERSION_MAJOR_BITS => to_std_logic_vector(VERSION_MAJOR, 8),
+        others => '0'
+    );
+
+    git_version_data <= (
+        SYS_GIT_VERSION_SHA_BITS => to_std_logic_vector(GIT_VERSION, 28),
+        SYS_GIT_VERSION_DIRTY_BIT => to_std_logic(GIT_DIRTY),
         others => '0'
     );
 
@@ -751,5 +765,9 @@ begin
         4 => dsp_events(1),
         others => '0'
     );
+    -- The top two IOs are configured as outputs, we control termination for the
+    -- remaining three inputs.
+    dio_out_enable <= "11000";
+    dio_term_enable <= "00" & control_data(SYS_CONTROL_DIO_TERM_BITS);
 
 end;
