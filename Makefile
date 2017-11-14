@@ -4,6 +4,8 @@ TOP := $(CURDIR)
 
 include Makefile.common
 
+include VERSION
+
 
 # Get our version from git.  The name of the most recent parent tag is
 # optionally followed by a commit count and a git code.
@@ -67,9 +69,18 @@ $(SUB_BUILDS):
 	make -C $@
 
 
+print_version:
+	@echo VERSION_EXTRA=$(VERSION_EXTRA)
+	@echo VERSION_MAJOR=$(VERSION_MAJOR)
+	@echo VERSION_MINOR=$(VERSION_MINOR)
+	@echo VERSION_PATCH=$(VERSION_PATCH)
+.PHONY: print_version
+
+
 # ------------------------------------------------------------------------------
 
 clean:
 	rm -rf $(BUILD_DIR)
+	make -C epics clean uninstall
 
 .PHONY: default clean

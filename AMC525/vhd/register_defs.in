@@ -58,8 +58,16 @@
 #
 # Used for top level hardware management
 !SYS
-    # No fields yet defined
+    # Version of software at time of build
     VERSION     R
+        .PATCH          8
+        .MINOR          8
+        .MAJOR          8
+
+    GIT_VERSION R
+        .SHA            28
+        -               3
+        .DIRTY
 
     # Configuration information
     INFO        R

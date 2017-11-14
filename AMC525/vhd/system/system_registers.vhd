@@ -25,6 +25,7 @@ entity system_registers is
 
         -- General system status bits
         version_read_data_i : in reg_data_t;
+        git_version_read_data_i : in reg_data_t;
         info_read_data_i : in reg_data_t;
         status_read_data_i : in reg_data_t;
 
@@ -57,10 +58,13 @@ architecture arch of system_registers is
     constant STATUS_PIPELINE : natural := 4;
 
 begin
-    -- Version register, read only.
+    -- Version registers, read only.
     write_ack_o(SYS_VERSION_REG) <= '1';
     read_data_o(SYS_VERSION_REG) <= version_read_data_i;
     read_ack_o(SYS_VERSION_REG) <= '1';
+    write_ack_o(SYS_GIT_VERSION_REG) <= '1';
+    read_data_o(SYS_GIT_VERSION_REG) <= git_version_read_data_i;
+    read_ack_o(SYS_GIT_VERSION_REG) <= '1';
 
     -- Configuration info register, read only.
     write_ack_o(SYS_INFO_REG) <= '1';

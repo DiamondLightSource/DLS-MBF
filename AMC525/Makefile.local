@@ -28,6 +28,7 @@ VPATH += $(PYTHONDIR)           # Needed for generated files
 BUILT_FILES += built/top_entity.vhd
 BUILT_FILES += built/register_defs.vhd
 BUILT_FILES += built/nco_cos_sin_table.vhd
+BUILT_FILES += built/version.vhd
 
 SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/vhd/*/*.vhd)
@@ -56,6 +57,9 @@ $(INTERCONNECT_BD): $(BDDIR)/interconnect.tcl
 built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
 	cd built  &&  $(PYTHON) $(PYTHONDIR)/make_entity.py $^ top
+
+built/version.vhd: $(TOP)/VERSION
+	tcl/make_version.sh $@
 
 # Other generated vhd files
 built/%.vhd: %.py %.in
