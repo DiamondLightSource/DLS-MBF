@@ -101,8 +101,6 @@ def count_pvs(super_count):
         FLNK = count_fanout, DESC = 'Internal sequencer state update')
 
 
-# The sequencer has eight possible states, however state 0 has somewhat
-# different behaviour from the remaining 7.
 for c in channels('SEQ', lmbf_mode):
     # Super-sequencer control and state.  Returns PV controlling number of super
     # sequencer states

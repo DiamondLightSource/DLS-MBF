@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2501
-y 58
+x 2485
+y 1
 w 264
 h 234
 font "helvetica-medium-r-8.0"
@@ -39,6 +39,58 @@ h 112
 lineColor index 14
 fill
 fillColor index 4
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 48
+y 92
+w 128
+h 0
+lineColor index 14
+fillColor index 0
+lineWidth 3
+numPoints 2
+xPoints {
+  0 48
+  1 176
+}
+yPoints {
+  0 92
+  1 92
+}
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 176
+y 76
+w 40
+h 32
+lineColor index 14
+fillColor index 0
+lineWidth 3
+numPoints 4
+xPoints {
+  0 216
+  1 176
+  2 176
+  3 216
+}
+yPoints {
+  0 76
+  1 76
+  2 108
+  3 108
+}
 endObjectProperties
 
 # (Static Text)
@@ -109,8 +161,8 @@ major 4
 minor 4
 release 0
 x 16
-y 64
-w 72
+y 80
+w 64
 h 24
 fgColor index 43
 bgColor index 4
@@ -135,8 +187,8 @@ major 4
 minor 4
 release 0
 x 16
-y 96
-w 72
+y 112
+w 64
 h 24
 fgColor index 43
 bgColor index 4
@@ -186,9 +238,9 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 176
+x 184
 y 64
-w 72
+w 64
 h 24
 fgColor index 43
 bgColor index 4
@@ -212,9 +264,9 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 176
+x 184
 y 96
-w 72
+w 64
 h 24
 fgColor index 43
 bgColor index 4

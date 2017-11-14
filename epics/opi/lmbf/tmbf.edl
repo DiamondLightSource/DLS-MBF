@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2789
-y 2
+x 2751
+y 1
 w 264
 h 313
 font "helvetica-medium-r-8.0"
@@ -33,12 +33,75 @@ major 4
 minor 0
 release 0
 x 8
+y 152
+w 248
+h 88
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 40
+y 180
+w 184
+h 0
+lineColor index 14
+fillColor index 0
+lineWidth 3
+numPoints 2
+xPoints {
+  0 40
+  1 224
+}
+yPoints {
+  0 180
+  1 180
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
 y 48
 w 248
 h 88
 lineColor index 14
 fill
 fillColor index 4
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 44
+y 76
+w 184
+h 0
+lineColor index 14
+fillColor index 0
+lineWidth 3
+numPoints 2
+xPoints {
+  0 44
+  1 228
+}
+yPoints {
+  0 76
+  1 76
+}
 endObjectProperties
 
 # (Static Text)
@@ -110,7 +173,7 @@ minor 4
 release 0
 x 16
 y 64
-w 72
+w 64
 h 24
 fgColor index 43
 bgColor index 4
@@ -161,21 +224,6 @@ lineColor index 14
 fillColor index 0
 endObjectProperties
 
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 152
-w 248
-h 88
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
 # (Related Display)
 object relatedDisplayClass
 beginObjectProperties
@@ -184,7 +232,7 @@ minor 4
 release 0
 x 16
 y 168
-w 72
+w 64
 h 24
 fgColor index 43
 bgColor index 4
@@ -293,9 +341,9 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 176
+x 184
 y 64
-w 72
+w 64
 h 24
 fgColor index 43
 bgColor index 4
@@ -319,9 +367,9 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 176
+x 184
 y 168
-w 72
+w 64
 h 24
 fgColor index 43
 bgColor index 4
@@ -509,6 +557,28 @@ numPvs 4
 numDsps 1
 displayFileName {
   0 "lmbf/memory.edl"
+}
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 88
+y 304
+w 0
+h 0
+lineColor index 14
+fillColor index 0
+lineWidth 3
+numPoints 1
+xPoints {
+  0 88
+}
+yPoints {
+  0 304
 }
 endObjectProperties
 
