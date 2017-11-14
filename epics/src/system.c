@@ -79,7 +79,9 @@ static void publish_status_pvs(void)
 
 /* Some published strings for system identification etc. */
 static EPICS_STRING version_string = { LMBF_VERSION };
+static EPICS_STRING git_version_string = { GIT_VERSION };
 static EPICS_STRING fpga_version = { };
+static EPICS_STRING fpga_git_version = { };
 static char hostname[256];
 static EPICS_STRING device_name;
 
@@ -87,13 +89,19 @@ static EPICS_STRING device_name;
 static error__t initialise_constants(void)
 {
     PUBLISH_READ_VAR(stringin, "VERSION", version_string);
+    PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
     PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
+    PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
     PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
     PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
     PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
     PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
 
-    sprintf(fpga_version.s, "%08x", hw_read_fpga_version());
+    struct fpga_version fpga;
+    hw_read_fpga_version(&fpga);
+    sprintf(fpga_version.s, "%u.%u.%u", fpga.major, fpga.minor, fpga.patch);
+    sprintf(fpga_git_version.s, "%07x%s",
+        fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
     strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
 
     struct utsname utsname;

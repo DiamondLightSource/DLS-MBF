@@ -10,11 +10,15 @@ include $(EPICS_DEVICE)/src/Makefile.extra
 USR_CFLAGS += -Werror
 
 
-# # Pick up configuration symbols and pass them through to the IOC build
-# include $(TOP)/install_d/CONFIG
-LMBF_VERSION = testing testing
+# Compute the version information
+include $(TOP)/../VERSION
+LMBF_VERSION = \
+    $(VERSION_EXTRA)$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
+GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)
+
 
 USR_CFLAGS += -DLMBF_VERSION='"$(LMBF_VERSION)"'
+USR_CFLAGS += -DGIT_VERSION='"$(GIT_VERSION)"'
 
 # Compute a sensible format of build date
 USR_CFLAGS += -DBUILD_DATE_TIME='"$(shell date '+%Y-%m-%d %H:%M')"'

@@ -8,7 +8,6 @@ use work.defines.all;
 use work.register_defs.all;
 use work.fmc500m_defs.all;
 use work.dsp_defs.all;
-use work.version.all;
 
 architecture arch of top is
     -- IO instances
@@ -167,7 +166,6 @@ architecture arch of top is
 
     -- Control registers
     signal version_data : reg_data_t;
-    signal git_version_data : reg_data_t;
     signal info_data : reg_data_t;
     signal status_data : reg_data_t;
     signal control_data : reg_data_t;
@@ -641,7 +639,6 @@ begin
         read_ack_o => system_read_ack,
 
         version_read_data_i => version_data,
-        git_version_read_data_i => git_version_data,
         info_read_data_i => info_data,
         status_read_data_i => status_data,
         control_data_o => control_data,
@@ -712,15 +709,6 @@ begin
     -- Control register mapping.
 
     version_data <= (
-        SYS_VERSION_PATCH_BITS => to_std_logic_vector(VERSION_PATCH, 8),
-        SYS_VERSION_MINOR_BITS => to_std_logic_vector(VERSION_MINOR, 8),
-        SYS_VERSION_MAJOR_BITS => to_std_logic_vector(VERSION_MAJOR, 8),
-        others => '0'
-    );
-
-    git_version_data <= (
-        SYS_GIT_VERSION_SHA_BITS => to_std_logic_vector(GIT_VERSION, 28),
-        SYS_GIT_VERSION_DIRTY_BIT => to_std_logic(GIT_DIRTY),
         others => '0'
     );
 

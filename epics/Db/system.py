@@ -7,7 +7,9 @@ from common import *
 
 # System identification PVs
 stringIn('VERSION', PINI = 'YES', DESC = 'Software version')
+stringIn('GIT_VERSION', PINI = 'YES', DESC = 'Software git version')
 stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'Firmware version')
+stringIn('FPGA_GIT_VERSION', PINI = 'YES', DESC = 'Firmware git version')
 Waveform('HOSTNAME', 256,
     PINI = 'YES', FTVL = 'CHAR', DESC = 'Host name of LMBF IOC')
 longIn('SOCKET', PINI = 'YES', DESC = 'Socket number for data server')

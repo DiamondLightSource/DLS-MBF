@@ -55,8 +55,16 @@ struct system_status {
     bool temp_alert;
 };
 
+struct fpga_version {
+    unsigned int major;
+    unsigned int minor;
+    unsigned int patch;
+    unsigned int git_sha;
+    bool git_dirty;
+};
+
 /* Returns firmware version code from FPGA. */
-uint32_t hw_read_fpga_version(void);
+void hw_read_fpga_version(struct fpga_version *version);
 
 /* Reads system status registers. */
 void hw_read_system_status(struct system_status *status);

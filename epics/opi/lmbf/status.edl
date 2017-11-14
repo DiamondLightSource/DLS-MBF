@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1921
-y 576
+x 390
+y 317
 w 304
-h 248
+h 289
 font "helvetica-medium-r-8.0"
 ctlFont "helvetica-medium-r-8.0"
 btnFont "helvetica-medium-r-8.0"
@@ -52,7 +52,7 @@ major 4
 minor 1
 release 0
 x 240
-y 216
+y 256
 w 56
 h 24
 fgColor index 46
@@ -138,7 +138,7 @@ major 4
 minor 6
 release 0
 x 104
-y 56
+y 72
 w 200
 h 14
 controlPv "$(device):FPGA_VERSION"
@@ -162,7 +162,7 @@ major 4
 minor 1
 release 1
 x 8
-y 56
+y 72
 w 85
 h 14
 font "helvetica-bold-r-12.0"
@@ -182,7 +182,7 @@ major 4
 minor 6
 release 0
 x 104
-y 72
+y 112
 w 200
 h 14
 controlPv "$(device):HOSTNAME"
@@ -206,7 +206,7 @@ major 4
 minor 1
 release 1
 x 8
-y 72
+y 112
 w 64
 h 14
 font "helvetica-bold-r-12.0"
@@ -226,7 +226,7 @@ major 4
 minor 6
 release 0
 x 8
-y 144
+y 184
 w 64
 h 16
 controlPv "$(device):STA:CLOCK"
@@ -251,7 +251,7 @@ major 4
 minor 0
 release 0
 x 80
-y 144
+y 184
 w 16
 h 16
 lineColor index 14
@@ -268,7 +268,7 @@ major 4
 minor 6
 release 0
 x 104
-y 144
+y 184
 w 160
 h 16
 controlPv "$(device):STA:CLOCK.DESC"
@@ -293,7 +293,7 @@ major 4
 minor 6
 release 0
 x 8
-y 168
+y 208
 w 64
 h 16
 controlPv "$(device):STA:VCO"
@@ -318,7 +318,7 @@ major 4
 minor 0
 release 0
 x 80
-y 168
+y 208
 w 16
 h 16
 lineColor index 14
@@ -335,7 +335,7 @@ major 4
 minor 6
 release 0
 x 104
-y 168
+y 208
 w 160
 h 14
 controlPv "$(device):STA:VCO.DESC"
@@ -360,7 +360,7 @@ major 4
 minor 6
 release 0
 x 8
-y 192
+y 232
 w 64
 h 16
 controlPv "$(device):STA:VCXO"
@@ -385,7 +385,7 @@ major 4
 minor 0
 release 0
 x 80
-y 192
+y 232
 w 16
 h 16
 lineColor index 14
@@ -402,7 +402,7 @@ major 4
 minor 6
 release 0
 x 104
-y 192
+y 232
 w 160
 h 14
 controlPv "$(device):STA:VCXO.DESC"
@@ -427,7 +427,7 @@ major 4
 minor 6
 release 0
 x 104
-y 88
+y 128
 w 200
 h 14
 controlPv "$(device):SOCKET"
@@ -451,7 +451,7 @@ major 4
 minor 1
 release 1
 x 8
-y 88
+y 128
 w 76
 h 14
 font "helvetica-bold-r-12.0"
@@ -471,7 +471,7 @@ major 4
 minor 6
 release 0
 x 104
-y 104
+y 144
 w 200
 h 14
 controlPv "$(device):DEVICE"
@@ -495,7 +495,7 @@ major 4
 minor 1
 release 1
 x 8
-y 104
+y 144
 w 81
 h 14
 font "helvetica-bold-r-12.0"
@@ -504,6 +504,94 @@ bgColor index 0
 useDisplayBg
 value {
   "Device name:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 104
+y 88
+w 200
+h 14
+controlPv "$(device):FPGA_GIT_VERSION"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 88
+w 59
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "FPGA Git:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 104
+y 56
+w 200
+h 14
+controlPv "$(device):GIT_VERSION"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 56
+w 70
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Git Version:"
 }
 autoSize
 endObjectProperties

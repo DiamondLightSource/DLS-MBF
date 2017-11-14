@@ -139,9 +139,17 @@ static error__t read_dma_memory(
 static volatile struct sys *sys_regs;
 
 
-uint32_t hw_read_fpga_version(void)
+void hw_read_fpga_version(struct fpga_version *version)
 {
-    return READL(sys_regs->version);
+    struct sys_version sys_version = sys_regs->version;
+    struct sys_git_version git_version = sys_regs->git_version;
+    *version = (struct fpga_version) {
+        .major = sys_version.major,
+        .minor = sys_version.minor,
+        .patch = sys_version.patch,
+        .git_sha = git_version.sha,
+        .git_dirty = git_version.dirty,
+    };
 }
 
 void hw_read_system_status(struct system_status *result)
