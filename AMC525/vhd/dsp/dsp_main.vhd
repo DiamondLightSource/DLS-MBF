@@ -95,6 +95,8 @@ architecture arch of dsp_main is
     signal loopback : std_logic_vector(CHANNELS);
     signal output_enable : std_logic_vector(CHANNELS);
 
+    signal dsp_events : dsp_events_o'SUBTYPE;
+
 begin
     -- Demultiplex top two bits to our main components
     register_mux : entity work.register_mux port map (
@@ -243,7 +245,7 @@ begin
             control_to_dsp_i => control_to_dsp(c),
             dsp_to_control_o => dsp_to_control(c),
 
-            dsp_event_o => dsp_events_o(c)
+            dsp_event_o => dsp_events(c)
         );
 
         -- Loopback enable for internal testing and output control
@@ -260,4 +262,13 @@ begin
             dac_data_o => dac_data_o(c)
         );
     end generate;
+
+    -- Stretch the DSP output event
+    stretch_pulse : entity work.stretch_pulse generic map (
+        WIDTH => dsp_events'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        pulse_i => dsp_events,
+        pulse_o => dsp_events_o
+    );
 end;

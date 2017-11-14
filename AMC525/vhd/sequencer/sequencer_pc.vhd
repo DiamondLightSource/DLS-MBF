@@ -136,6 +136,7 @@ begin
             -- Edge capture for state trigger
             last_trigger <= trigger_now;
 
+            state_trigger_o <= trigger_now and not last_trigger;
         end if;
     end process;
 
@@ -143,5 +144,4 @@ begin
     start_load_o <= start_load;
     seq_pc_o <= seq_pc;
     super_count_o <= super_count;
-    state_trigger_o <= trigger_now and not last_trigger;
 end;
