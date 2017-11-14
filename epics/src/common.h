@@ -88,3 +88,6 @@ double _pure freq_to_tune_signed(unsigned int freq);
 /* Generic squaring function. */
 #define _id_SQR(temp, x)    ( { typeof(x) temp = (x); temp * temp; } )
 #define SQR(x)  _id_SQR(UNIQUE_ID(), x)
+
+/* Type aware calloc. */
+#define CALLOC(type, nelm)      (type *) calloc(nelm, sizeof(type))

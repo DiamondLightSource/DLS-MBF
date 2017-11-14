@@ -237,11 +237,11 @@ static void initialise_bank(
 
     unsigned int bunches = hardware_config.bunches;
     bank->config = (struct bunch_config) {
-        .fir_select  = calloc(bunches, sizeof(char)),
-        .gain        = calloc(bunches, sizeof(int)),
-        .fir_enable  = calloc(bunches, sizeof(char)),
-        .nco0_enable = calloc(bunches, sizeof(char)),
-        .nco1_enable = calloc(bunches, sizeof(char)),
+        .fir_select  = CALLOC(char, bunches),
+        .gain        = CALLOC(int, bunches),
+        .fir_enable  = CALLOC(bool, bunches),
+        .nco0_enable = CALLOC(bool, bunches),
+        .nco1_enable = CALLOC(bool, bunches),
     };
 }
 

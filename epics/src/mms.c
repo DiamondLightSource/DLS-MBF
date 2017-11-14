@@ -182,17 +182,17 @@ struct mms_handler *create_mms_handler(
         .bunch_offset = 0,          // Will be set separately
         .mutex = PTHREAD_MUTEX_INITIALIZER,
         .accum = {
-            .raw_min  = calloc(bunches, sizeof(int16_t)),
-            .raw_max  = calloc(bunches, sizeof(int16_t)),
-            .raw_sum  = calloc(bunches, sizeof(int64_t)),
-            .raw_sum2 = calloc(bunches, sizeof(uint64_t)),
+            .raw_min  = CALLOC(int16_t, bunches),
+            .raw_max  = CALLOC(int16_t, bunches),
+            .raw_sum  = CALLOC(int64_t, bunches),
+            .raw_sum2 = CALLOC(uint64_t, bunches),
         },
         .epics = {
-            .min      = calloc(bunches, sizeof(float)),
-            .max      = calloc(bunches, sizeof(float)),
-            .delta    = calloc(bunches, sizeof(float)),
-            .mean     = calloc(bunches, sizeof(float)),
-            .std      = calloc(bunches, sizeof(float)),
+            .min      = CALLOC(float, bunches),
+            .max      = CALLOC(float, bunches),
+            .delta    = CALLOC(float, bunches),
+            .mean     = CALLOC(float, bunches),
+            .std      = CALLOC(float, bunches),
         },
     };
 

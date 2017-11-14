@@ -318,9 +318,9 @@ error__t initialise_memory(void)
     unsigned int bunches_per_turn = system_config.bunches_per_turn;
 
     /* Allocate one extra turn for the memory readout buffer. */
-    memory_buffer = calloc(sizeof(int32_t), readout_length + bunches_per_turn);
-    memory_wf0 = calloc(sizeof(int16_t), readout_length);
-    memory_wf1 = calloc(sizeof(int16_t), readout_length);
+    memory_buffer = CALLOC(uint32_t, readout_length + bunches_per_turn);
+    memory_wf0 = CALLOC(int16_t, readout_length);
+    memory_wf1 = CALLOC(int16_t, readout_length);
 
     register_event_handler(
         INTERRUPT_HANDLER_MEMORY,

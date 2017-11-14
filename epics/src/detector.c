@@ -199,12 +199,12 @@ static void publish_detector(
     bank->channel = context->channel;
 
     unsigned int detector_length = system_config.detector_length;
-    char *bunch_enables = calloc(1, system_config.bunches_per_turn);
+    char *bunch_enables = CALLOC(char, system_config.bunches_per_turn);
 
     bank->config.bunch_enables = (bool *) bunch_enables;
-    bank->wf_i = calloc(sizeof(float), detector_length);
-    bank->wf_q = calloc(sizeof(float), detector_length);
-    bank->wf_power = calloc(sizeof(float), detector_length);
+    bank->wf_i = CALLOC(float, detector_length);
+    bank->wf_q = CALLOC(float, detector_length);
+    bank->wf_power = CALLOC(float, detector_length);
 
     char prefix[4];
     sprintf(prefix, "%d", i);
@@ -262,8 +262,8 @@ error__t initialise_detector(void)
         struct detector_context *det = &detector_context[channel];
         det->channel = channel;
 
-        det->read_buffer = calloc(
-            DETECTOR_COUNT * sizeof(struct detector_result), detector_length);
+        det->read_buffer =
+            CALLOC(struct detector_result, DETECTOR_COUNT * detector_length);
 
         for (int i = 0; i < DETECTOR_COUNT; i ++)
             publish_detector(det, i, &det->banks[i]);
@@ -274,8 +274,8 @@ error__t initialise_detector(void)
 
         /* Initialise our own copy of the sequencer scale scale_info. */
         struct scale_info *info = &det->scale_info;
-        info->tune_scale = calloc(sizeof(double), detector_length);
-        info->timebase = calloc(sizeof(int), detector_length);
+        info->tune_scale = CALLOC(double, detector_length);
+        info->timebase = CALLOC(int, detector_length);
         PUBLISH_WF_READ_VAR(double, "SCALE", detector_length, info->tune_scale);
         PUBLISH_WF_READ_VAR(int, "TIMEBASE", detector_length, info->timebase);
         PUBLISH_READ_VAR(ulongin, "SAMPLES", info->samples);

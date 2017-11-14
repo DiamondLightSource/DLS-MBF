@@ -161,8 +161,8 @@ static void publish_bank_waveforms(
 {
     bank->channel = channel;
     bank->index = ix;
-    bank->current_taps = calloc(hardware_config.bunch_taps, sizeof(float));
-    bank->set_taps     = calloc(hardware_config.bunch_taps, sizeof(float));
+    bank->current_taps = CALLOC(float, hardware_config.bunch_taps);
+    bank->set_taps     = CALLOC(float, hardware_config.bunch_taps);
 
     char prefix[4];
     sprintf(prefix, "%d", ix);
