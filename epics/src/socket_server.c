@@ -114,18 +114,20 @@ static void *run_server(void *context)
     ASSERT_PTHREAD(pthread_attr_init(&attr));
     ASSERT_PTHREAD(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));
 
-    int scon;
-    struct sockaddr_in client;
-    socklen_t client_len = sizeof(client);
-    error__t error;
-    while (error = TEST_IO(scon = accept(listen_socket, &client, &client_len)),
-           !error)
-    {
-        struct connection *connection = create_connection(scon, &client);
+    error__t error = ERROR_OK;
+    do {
+        int scon;
+        struct sockaddr_in client;
+        socklen_t client_len = sizeof(client);
+        struct connection *connection;
         pthread_t thread;
-        error = TEST_PTHREAD(pthread_create(
-            &thread, &attr, process_connection, connection));
-    }
+
+        error =
+            TEST_IO(scon = accept(listen_socket, &client, &client_len))  ?:
+            DO(connection = create_connection(scon, &client))  ?:
+            TEST_PTHREAD(pthread_create(
+                &thread, &attr, process_connection, connection));
+    } while (!error);
 
     if (error  &&  errno == EINVAL  &&  server_shutdown)
         /* Our normal exit reason is triggered by shutdown(listen_socket) which
