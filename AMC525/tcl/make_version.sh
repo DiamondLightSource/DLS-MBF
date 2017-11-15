@@ -1,21 +1,20 @@
 #!/bin/bash
 
-set -e
-
 # Shell script for creating VHDL version file
+
+set -e
 
 # First argument specifies where to place the file we're going to build
 TARGET_FILE="${1?:Must specify target file}"
 
-cd "$(dirname "$0")"
-TOP=../..
+TOP="$(dirname "$0")"/../..
 
 set -o pipefail
 
 # First pick up the git information
-if GIT_SHA=$(git rev-parse HEAD | cut -b -7); then
+if GIT_SHA=$(cd "$TOP"; git rev-parse HEAD | cut -b -7); then
     # Ok, we have a valid git repository
-    GIT_DIRTY=$(git diff-index --quiet HEAD; echo $?)
+    GIT_DIRTY=$(cd "$TOP"; git diff-index --quiet HEAD; echo $?)
 else
     # No git repository, create default values instead
     GIT_SHA=0000000

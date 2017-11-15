@@ -59,7 +59,7 @@ built/top_entity.vhd: constr/signals constr/pins constr/used
 	cd built  &&  $(PYTHON) $(PYTHONDIR)/make_entity.py $^ top
 
 built/version.vhd: $(TOP)/VERSION
-	tcl/make_version.sh $@
+	$(TCLDIR)/make_version.sh $@
 
 # Other generated vhd files
 built/%.vhd: %.py %.in
