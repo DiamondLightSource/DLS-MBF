@@ -62,6 +62,7 @@ static int read_buffer(int sock, void *buffer, int length)
         if (bytes_read == 0)
             break;
         total += bytes_read;
+        buffer += bytes_read;
         length -= bytes_read;
     }
     return total;
