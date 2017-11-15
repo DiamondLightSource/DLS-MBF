@@ -15,6 +15,17 @@
 #include "socket.h"
 
 
+mxArray *create_array(int rows, int cols, double **reals, double **imags)
+{
+    mxComplexity type = imags ? mxCOMPLEX : mxREAL;
+    mxArray *array = mxCreateDoubleMatrix(rows, cols, type);
+    *reals = mxGetData(array);
+    if (imags)
+        *imags = mxGetImagData(array);
+    return array;
+}
+
+
 int connect_server(const char *hostname, int port)
 {
     struct hostent *hostent = gethostbyname(hostname);

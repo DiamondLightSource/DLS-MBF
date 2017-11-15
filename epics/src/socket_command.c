@@ -14,6 +14,7 @@
 #include "buffered_file.h"
 #include "memory.h"
 #include "detector.h"
+#include "sequencer.h"
 
 #include "socket_command.h"
 
@@ -134,7 +135,7 @@ bool process_memory_command(struct buffered_file *file, const char *command)
         parse_eos(&command);
 
     if (error)
-        error_extend(error, "Parse error at offset %zu", command_in - command);
+        error_extend(error, "Parse error at offset %zu", command - command_in);
 
     if (error)
         return report_error(file, error, command_in, raw_mode);
@@ -157,8 +158,57 @@ struct detector_frame {
 };
 
 
+static void read_detector_samples(
+    int channel, void *buffer, unsigned int sample_size,
+    unsigned int offset, unsigned int samples)
+{
+    unsigned int sample_count = (unsigned int) (
+        sample_size / sizeof(struct detector_result) * samples);
+    hw_read_det_memory(channel, sample_count, sample_size * offset, buffer);
+}
+
+static void read_detector_scale(
+    int channel, void *buffer, unsigned int sample_size,
+    unsigned int offset, unsigned int samples)
+{
+    compute_scale_info(channel, buffer, NULL, offset, samples);
+}
+
+static void read_detector_timebase(
+    int channel, void *buffer, unsigned int sample_size,
+    unsigned int offset, unsigned int samples)
+{
+    compute_scale_info(channel, NULL, buffer, offset, samples);
+}
+
+
+/* Sends data to destination by repeatedly filling the buffer using the given
+ * read_samples() function and then sending. */
 static void send_detector_data(
-    struct buffered_file *file, int channel, bool framed)
+    struct buffered_file *file, int channel, unsigned int samples,
+    unsigned int sample_size,
+    void (*read_samples)(
+        int channel, void *buffer, unsigned int sample_size,
+        unsigned int offset, unsigned int samples))
+{
+    unsigned int offset = 0;
+    while (samples > 0)
+    {
+        unsigned int buffer_samples = READ_BUFFER_BYTES / sample_size;
+        char buffer[READ_BUFFER_BYTES];
+        unsigned int samples_to_read = MIN(samples, buffer_samples);
+        read_samples(channel, buffer, sample_size, offset, samples_to_read);
+        write_block(file, buffer, samples_to_read * sample_size);
+
+        samples -= samples_to_read;
+        offset += samples_to_read;
+    }
+}
+
+
+static void send_detector_result(
+    struct buffered_file *file, int channel, bool framed,
+    bool scale, bool timebase)
 {
     struct detector_frame frame;
     get_detector_samples(channel, &frame.channels, &frame.samples);
@@ -166,25 +216,24 @@ static void send_detector_data(
     if (framed)
         write_block(file, &frame, sizeof(frame));
 
-    unsigned int samples = frame.samples * frame.channels;
-    unsigned int offset = 0;
-    while (samples > 0)
-    {
-        unsigned int sample_size = sizeof(struct detector_result);
-        struct detector_result buffer[READ_BUFFER_BYTES / sample_size];
-        unsigned int samples_to_read = MIN(samples, ARRAY_SIZE(buffer));
-        hw_read_det_memory(channel, samples_to_read, offset, buffer);
-        write_block(file, buffer, samples_to_read * sample_size);
-
-        samples -= samples_to_read;
-        offset += samples_to_read * sample_size;
-    }
+    send_detector_data(
+        file, channel, frame.samples,
+        frame.channels * (unsigned int) sizeof(struct detector_result),
+        read_detector_samples);
+    if (scale)
+        send_detector_data(
+            file, channel, frame.samples,
+            sizeof(uint32_t), read_detector_scale);
+    if (timebase)
+        send_detector_data(
+            file, channel, frame.samples,
+            sizeof(uint32_t), read_detector_timebase);
 }
 
 
 /* Supports command of form:
  *
- *      D [R] channel [F]
+ *      D [R] channel [F] [S] [T]
  *
  * Returns detector readout with the following options:
  *
@@ -192,26 +241,34 @@ static void send_detector_data(
  *          if a parse error occurs.
  *      channel
  *          Specifies which channel is being read.
- *      F   If set the number of channels and samples is sent as a header before
- *          sending the raw data.
+ *      F   Request that the number of channels and samples is sent as a header
+ *          before sending the raw data.
+ *      S   Request that the frequency scale for the detector is transmitted
+ *          after sending the channel data.
+ *      T   Request that the timebase for the detector is transmitted after the
+ *          channel data, and after the frequency scale if requested.
  */
 bool process_detector_command(struct buffered_file *file, const char *command)
 {
     const char *command_in = command;
     bool raw_mode = false;
     int channel;
-    bool framed = false;
+    bool framed;
+    bool scale;
+    bool timebase;
     error__t error =
         parse_char(&command, 'D')  ?:
         DO(raw_mode = read_char(&command, 'R'))  ?:
         parse_int(&command, &channel)  ?:
         DO(framed = read_char(&command, 'F'))  ?:
+        DO(scale = read_char(&command, 'S'))  ?:
+        DO(timebase = read_char(&command, 'T'))  ?:
         parse_eos(&command);
 
     /* Separate parse checking from argument validation, report parse errors
      * with position of error. */
     if (error)
-        error_extend(error, "Parse error at offset %zu", command_in - command);
+        error_extend(error, "Parse error at offset %zu", command - command_in);
     error = error ?:
         TEST_OK_(0 <= channel  &&  channel < CHANNEL_COUNT,
             "Invalid channel number");
@@ -222,7 +279,7 @@ bool process_detector_command(struct buffered_file *file, const char *command)
     {
         if (!raw_mode)
             write_char(file, '\0');
-        send_detector_data(file, channel, framed);
+        send_detector_result(file, channel, framed, scale, timebase);
         return true;
     }
 }

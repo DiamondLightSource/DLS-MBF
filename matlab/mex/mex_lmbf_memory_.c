@@ -22,14 +22,6 @@
 #include "socket.h"
 
 
-static double *create_array(mxArray *lhs[], int raw_samples)
-{
-    mxArray *array = mxCreateDoubleMatrix(raw_samples, 2, mxREAL);
-    lhs[0] = array;
-    return mxGetData(array);
-}
-
-
 /* Convert samples into doubles for matlab and transpose so that the layout is
  * appropriate for matlab. */
 static void convert_samples(
@@ -67,7 +59,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     /* Allocate array to receive the result.  Do this before connecting to the
      * server so that matlab can clean up our memory if we fail. */
     int raw_samples = bunches * count;
-    double *data0 = create_array(plhs, raw_samples);
+    double *data0;
+    plhs[0] = create_array(raw_samples, 2, &data0, NULL);
     double *data1 = data0 + raw_samples;
 
     /* Connect to server and send command.  Once we've allocated the socket we

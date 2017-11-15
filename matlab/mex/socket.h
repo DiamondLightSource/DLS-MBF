@@ -29,6 +29,10 @@
     TEST_SOCK_(sock, test, "unexpected", "Unexpected error")
 
 
+/* Creates and returns matlab array and returns pointers to real and imaginary
+ * parts.  If imags is NULL then a real array is created. */
+mxArray *create_array(int rows, int cols, double **reals, double **imags);
+
 /* Connects to socket server, if possible, returning connected socket if
  * successful.  If this function returns the caller MUST close the returned
  * socket handle before returning control to matlab. */

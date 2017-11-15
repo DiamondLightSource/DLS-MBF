@@ -302,13 +302,25 @@ static bool reset_detector_window(void *context, bool *value)
 }
 
 
-/* Computes frequency and timebase scales from detector configuration. */
-static void update_scale_info(
-    const struct seq_config *seq_config, unsigned int length,
-    struct scale_info *scale_info)
+/* Helper function for compute_scale_info() below. */
+static inline void write_scale_point(
+    unsigned int frequency[], unsigned int timebase[],
+    unsigned int i, unsigned int f0, unsigned int total_time)
 {
+    if (frequency) frequency[i] = f0;
+    if (timebase)  timebase[i] = total_time;
+}
+
+/* Computes frequency and timebase scales from detector configuration. */
+unsigned int compute_scale_info(
+    int channel, unsigned int frequency[], unsigned int timebase[],
+    unsigned int start_offset, unsigned int length)
+{
+    const struct seq_context *seq = &seq_context[channel];
+    const struct seq_config *seq_config = &seq->seq_hw_config;
     unsigned int super_count = seq_config->super_seq_count;
     unsigned int seq_count = seq_config->sequencer_pc;
+    unsigned int end_offset = start_offset + length;
 
     /* Iterate through super sequencer. */
     unsigned int ix = 0;            // Index into generated vectors
@@ -327,11 +339,10 @@ static void update_scale_info(
                 gap_time = 0;
                 for (unsigned int i = 0; i < entry->capture_count; i ++)
                 {
-                    if (ix < length)
-                    {
-                        scale_info->tune_scale[ix] = freq_to_tune(f0);
-                        scale_info->timebase[ix] = (int) total_time;
-                    }
+                    if (start_offset <= ix  &&  ix < end_offset)
+                        write_scale_point(
+                            frequency, timebase, ix - start_offset,
+                            f0, total_time);
                     f0 += entry->delta_freq;
                     total_time += dwell_time;
                     ix += 1;
@@ -342,13 +353,12 @@ static void update_scale_info(
         }
 
     /* Fill in the rest of the waveforms. */
-    double final_f = freq_to_tune(f0);
-    for (unsigned int i = ix; i < length; i ++)
-    {
-        scale_info->tune_scale[i] = final_f;
-        scale_info->timebase[i] = (int) total_time;
-    }
-    scale_info->samples = ix;
+    for (unsigned int i = ix; i < end_offset; i ++)
+        write_scale_point(
+            frequency, timebase, i - start_offset, f0, total_time);
+
+    /* Return total number of samples computed. */
+    return ix;
 }
 
 
@@ -367,10 +377,14 @@ void prepare_sequencer(int channel)
 /* This is called as part of detector readout, at which point we want to present
  * the user with an accurate view of the detector scaling. */
 void read_detector_scale_info(
-    int channel, unsigned int length, struct scale_info *info)
+    int channel, unsigned int length, struct scale_info *scale_info)
 {
-    const struct seq_context *seq = &seq_context[channel];
-    update_scale_info(&seq->seq_hw_config, length, info);
+    /* Need buffer for frequency data so we can covert to tune afterwards. */
+    unsigned int frequency[length];
+    scale_info->samples = compute_scale_info(
+        channel, frequency, (unsigned int *) scale_info->timebase, 0, length);
+    for (unsigned int i = 0; i < length; i ++)
+        scale_info->tune_scale[i] = freq_to_tune(frequency[i]);
 }
 
 

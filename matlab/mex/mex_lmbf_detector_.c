@@ -18,11 +18,15 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "mex.h"
 #include "matrix.h"
 
 #include "socket.h"
+
+
+#define BUFFER_SIZE     (1 << 13)
 
 
 /* Two structures copied from the EPICS driver. */
@@ -38,17 +42,6 @@ struct detector_result {
     int32_t i;
     int32_t q;
 };
-
-
-static void create_array(
-    mxArray *lhs[], int samples, int channels,
-    double **reals, double **imags)
-{
-    mxArray *array = mxCreateDoubleMatrix(samples, channels, mxCOMPLEX);
-    lhs[0] = array;
-    *reals = mxGetData(array);
-    *imags = mxGetImagData(array);
-}
 
 
 /* Convert samples into doubles for matlab and transpose so that the layout is
@@ -72,54 +65,93 @@ static void convert_samples(
 }
 
 
-#define BUFFER_SIZE     (1 << 13)
+static void read_and_convert_samples(
+    mxArray **lhs, int sock, int samples, int channels)
+{
+    double *reals[4], *imags[4];
+    *lhs = create_array(samples, channels, &reals[0], &imags[0]);
+    for (int i = 1; i < channels; i ++)
+    {
+        reals[i] = reals[0] + i * samples;
+        imags[i] = imags[0] + i * samples;
+    }
+
+    /* Process data in reasonably sized chunks. */
+    while (samples > 0)
+    {
+        int sample_size = sizeof(struct detector_result) * channels;
+        struct detector_result buffer[BUFFER_SIZE * channels];
+        int samples_read = fill_buffer(
+            sock, buffer, sample_size, BUFFER_SIZE, samples);
+        convert_samples(buffer, samples_read, channels, reals, imags);
+        samples -= samples_read;
+    }
+}
+
+
+static void read_and_convert_frequency(
+    mxArray **lhs, int sock, int samples, int bunches)
+{
+    double *frequency;
+    *lhs = create_array(samples, 1, &frequency, NULL);
+    while (samples > 0)
+    {
+        uint32_t buffer[BUFFER_SIZE];
+        int samples_read = fill_buffer(
+            sock, buffer, sizeof(uint32_t), BUFFER_SIZE, samples);
+        for (int i = 0; i < samples_read; i ++)
+            *frequency++ = ldexp(buffer[i], -32) * bunches;
+        samples -= samples_read;
+    }
+}
+
+
+static void read_and_convert_timebase(mxArray **lhs, int sock, int samples)
+{
+    double *timebase;
+    *lhs = create_array(samples, 1, &timebase, NULL);
+    while (samples > 0)
+    {
+        uint32_t buffer[BUFFER_SIZE];
+        int samples_read = fill_buffer(
+            sock, buffer, sizeof(uint32_t), BUFFER_SIZE, samples);
+        for (int i = 0; i < samples_read; i ++)
+            *timebase++ = buffer[i];
+        samples -= samples_read;
+    }
+}
 
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    /* We expect five arguments: hostname, port, bunches, count, offset. */
-    TEST_OK_(nrhs == 3, "args", "Wrong number of arguments");
-    /* We only assign one result. */
-    TEST_OK_(nlhs <= 1, "result", "Wrong number of results");
+    /* We expect four arguments: hostname, port, bunches, channel. */
+    TEST_OK_(nrhs == 4, "args", "Wrong number of arguments");
+    /* Can assign up to three results. */
+    TEST_OK_(nlhs <= 3, "result", "Wrong number of results");
 
     char hostname[256];
     TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
     int port = (int) mxGetScalar(prhs[1]);
-    int channel = (int) mxGetScalar(prhs[2]);
+    int bunches = (int) mxGetScalar(prhs[2]);
+    int channel = (int) mxGetScalar(prhs[3]);
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions! */
     int sock = connect_server(hostname, port);
-    send_command(sock, "D%dF\n", channel);
+    send_command(sock, "D%dF%s%s\n",
+        channel, nlhs >= 2 ? "S" : "", nlhs >= 3 ? "T" : "");
     check_result(sock);
 
     /* Start by reading the frame so we know what data to expect. */
     struct detector_frame frame;
     fill_buffer(sock, &frame, sizeof(frame), 1, 1);
 
-    /* Create the data array.  Alas, if this fails due to out of memory we will
-     * leak a socket, and we can't fix this without resorting to C++ exception
-     * handling. */
-    double *reals[4], *imags[4];
-    create_array(plhs, frame.samples, frame.channels, &reals[0], &imags[0]);
-    for (unsigned int i = 1; i < frame.channels; i ++)
-    {
-        reals[i] = reals[0] + i * frame.samples;
-        imags[i] = imags[0] + i * frame.samples;
-    }
-
-    /* Process data in reasonably sized chunks. */
-    int samples = frame.samples;
-    while (samples > 0)
-    {
-        int sample_size = sizeof(struct detector_result) * frame.channels;
-        struct detector_result buffer[BUFFER_SIZE * frame.channels];
-        int samples_read = fill_buffer(
-            sock, buffer, sample_size, BUFFER_SIZE, samples);
-        convert_samples(buffer, samples_read, frame.channels, reals, imags);
-        samples -= samples_read;
-    }
+    read_and_convert_samples(&plhs[0], sock, frame.samples, frame.channels);
+    if (nlhs >= 2)
+        read_and_convert_frequency(&plhs[1], sock, frame.samples, bunches);
+    if (nlhs >= 3)
+        read_and_convert_timebase(&plhs[2], sock, frame.samples);
 
     close(sock);
 }
