@@ -253,9 +253,9 @@ bool process_detector_command(struct buffered_file *file, const char *command)
     const char *command_in = command;
     bool raw_mode = false;
     int channel;
-    bool framed;
-    bool scale;
-    bool timebase;
+    bool framed = false;
+    bool scale = false;
+    bool timebase = false;
     error__t error =
         parse_char(&command, 'D')  ?:
         DO(raw_mode = read_char(&command, 'R'))  ?:
@@ -269,8 +269,9 @@ bool process_detector_command(struct buffered_file *file, const char *command)
      * with position of error. */
     if (error)
         error_extend(error, "Parse error at offset %zu", command - command_in);
+    int channel_count = system_config.lmbf_mode ? 1 : CHANNEL_COUNT;
     error = error ?:
-        TEST_OK_(0 <= channel  &&  channel < CHANNEL_COUNT,
+        TEST_OK_(0 <= channel  &&  channel < channel_count,
             "Invalid channel number");
 
     if (error)
