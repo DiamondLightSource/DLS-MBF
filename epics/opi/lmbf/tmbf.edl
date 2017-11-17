@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2751
-y 1
+x 2752
+y 2
 w 264
 h 313
 font "helvetica-medium-r-8.0"
@@ -184,10 +184,10 @@ buttonLabel "ADC"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/adc.edl"
+  0 "lmbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "channel=$(chan0),part=ADC"
 }
 endObjectProperties
 
@@ -243,10 +243,10 @@ buttonLabel "ADC"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/adc.edl"
+  0 "lmbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan1)"
+  0 "channel=$(chan1),part=ADC"
 }
 endObjectProperties
 
@@ -354,10 +354,10 @@ buttonLabel "DAC"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/dac.edl"
+  0 "lmbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "channel=$(chan0),part=DAC"
 }
 endObjectProperties
 
@@ -380,10 +380,10 @@ buttonLabel "DAC"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/dac.edl"
+  0 "lmbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan1)"
+  0 "channel=$(chan1),part=DAC"
 }
 endObjectProperties
 

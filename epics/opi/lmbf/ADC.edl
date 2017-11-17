@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 811
-y 64
+x 499
+y 22
 w 641
-h 521
+h 360
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -19,60 +19,12 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel) DAC Overview"
+title "$(device):$(channel) ADC Overview"
 showGrid
 snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
-
-# (X-Y Graph)
-object xyGraphClass
-beginObjectProperties
-major 4
-minor 8
-release 0
-# Geometry
-x 8
-y 40
-w 624
-h 184
-# Appearance
-autoScaleBothDirections
-graphTitle "DAC motion"
-fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "fromUser"
-xMin -10
-xMax 1000
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMax 1
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 1
-yPv {
-  0 "$(device):$(channel):DAC:MMS:DELTA"
-}
-plotUpdateMode {
-  0 "y"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 27
-}
-endObjectProperties
 
 # (Static Text)
 object activeXTextClass
@@ -89,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel) DAC Overview"
+  "$(device):$(channel) ADC Overview"
 }
 endObjectProperties
 
@@ -100,7 +52,7 @@ major 4
 minor 1
 release 0
 x 568
-y 488
+y 328
 w 64
 h 24
 fgColor index 46
@@ -130,7 +82,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "diagnostics-help LMBF_DAC"
+  0 "diagnostics-help LMBF_ADC"
 }
 includeHelpIcon
 endObjectProperties
@@ -142,14 +94,14 @@ major 4
 minor 0
 release 0
 x 8
-y 416
+y 232
 w 16
 h 16
 lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):DAC:BUN_OVF"
+alarmPv "$(device):$(channel):ADC:INPUT_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -159,10 +111,10 @@ major 4
 minor 6
 release 0
 x 32
-y 416
+y 232
 w 168
 h 16
-controlPv "$(device):$(channel):DAC:BUN_OVF.DESC"
+controlPv "$(device):$(channel):ADC:INPUT_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -176,32 +128,6 @@ objType "monitors"
 noExecuteClipMask
 endObjectProperties
 
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 560
-y 416
-w 72
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "MMS"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/minmax.edl"
-}
-symbols {
-  0 "part=DAC"
-}
-endObjectProperties
-
 # (X-Y Graph)
 object xyGraphClass
 beginObjectProperties
@@ -210,12 +136,12 @@ minor 8
 release 0
 # Geometry
 x 8
-y 224
+y 40
 w 624
 h 184
 # Appearance
 autoScaleBothDirections
-graphTitle "DAC Compensation Filter"
+graphTitle "ADC Compensation Filter"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -237,7 +163,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):DAC:FILTER_S"
+  0 "$(device):$(channel):ADC:FILTER_S"
 }
 plotUpdateMode {
   0 "y"
@@ -250,47 +176,6 @@ plotColor {
 }
 endObjectProperties
 
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 488
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):$(channel):DAC:MMS_OVF"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 32
-y 488
-w 168
-h 16
-controlPv "$(device):$(channel):DAC:MMS_OVF.DESC"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
@@ -298,10 +183,10 @@ major 4
 minor 6
 release 0
 x 456
-y 416
+y 256
 w 80
 h 20
-controlPv "$(device):$(channel):DAC:DELAY_S"
+controlPv "$(device):$(channel):ADC:OVF_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -323,16 +208,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 360
-y 416
-w 81
+x 328
+y 256
+w 119
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Output delay:"
+  "Overflow threshold:"
 }
 autoSize
 endObjectProperties
@@ -344,14 +229,14 @@ major 4
 minor 0
 release 0
 x 8
-y 440
+y 304
 w 16
 h 16
 lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):DAC:FIR_OVF"
+alarmPv "$(device):$(channel):ADC:EVENT"
 endObjectProperties
 
 # (Text Monitor)
@@ -361,10 +246,10 @@ major 4
 minor 6
 release 0
 x 32
-y 440
+y 304
 w 168
 h 16
-controlPv "$(device):$(channel):DAC:FIR_OVF.DESC"
+controlPv "$(device):$(channel):ADC:EVENT.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -378,44 +263,29 @@ objType "monitors"
 noExecuteClipMask
 endObjectProperties
 
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 464
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):$(channel):DAC:MUX_OVF"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
+# (Text Control)
+object activeXTextDspClass
 beginObjectProperties
 major 4
 minor 6
 release 0
-x 32
-y 464
-w 168
-h 16
-controlPv "$(device):$(channel):DAC:MUX_OVF.DESC"
-font "helvetica-medium-r-12.0"
+x 456
+y 280
+w 80
+h 20
+controlPv "$(device):$(channel):ADC:EVENT_LIMIT_S"
+font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
+editable
 autoHeight
+motifWidget
 limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
-objType "monitors"
+objType "controls"
 noExecuteClipMask
 endObjectProperties
 
@@ -425,18 +295,100 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 360
-y 440
-w 87
+x 328
+y 280
+w 113
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Output enable:"
+  "Min/max threshold:"
 }
 autoSize
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 256
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):$(channel):ADC:FIR_OVF"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 32
+y 256
+w 168
+h 16
+controlPv "$(device):$(channel):ADC:FIR_OVF.DESC"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 280
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):$(channel):ADC:MMS_OVF"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 32
+y 280
+w 168
+h 16
+controlPv "$(device):$(channel):ADC:MMS_OVF.DESC"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
 endObjectProperties
 
 # (Menu Button)
@@ -446,7 +398,7 @@ major 4
 minor 0
 release 0
 x 456
-y 440
+y 232
 w 96
 h 22
 fgColor index 14
@@ -455,7 +407,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DAC:ENABLE_S"
+controlPv "$(device):$(channel):ADC:LOOPBACK_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -465,8 +417,74 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 360
-y 464
+x 328
+y 232
+w 102
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Loopback enable:"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 280
+y 232
+w 32
+h 20
+controlPv "$(device):$(channel):ADC:FILTER:DELAY_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 200
+y 232
+w 70
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Filter delay:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 376
+y 304
 w 68
 h 14
 font "helvetica-bold-r-12.0"
@@ -486,7 +504,7 @@ major 4
 minor 0
 release 0
 x 456
-y 464
+y 304
 w 96
 h 22
 fgColor index 14
@@ -495,7 +513,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DAC:MMS_SOURCE_S"
+controlPv "$(device):$(channel):ADC:MMS_SOURCE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -506,7 +524,7 @@ major 4
 minor 0
 release 0
 x 456
-y 488
+y 328
 w 96
 h 22
 fgColor index 14
@@ -515,7 +533,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DAC:DRAM_SOURCE_S"
+controlPv "$(device):$(channel):ADC:DRAM_SOURCE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -525,8 +543,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 360
-y 488
+x 376
+y 328
 w 74
 h 14
 font "helvetica-bold-r-12.0"
@@ -535,52 +553,6 @@ bgColor index 0
 useDisplayBg
 value {
   "DRAM input:"
-}
-autoSize
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 296
-y 416
-w 32
-h 24
-controlPv "$(device):$(channel):DAC:FILTER:DELAY_S"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 216
-y 416
-w 72
-h 16
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Filter delay:"
 }
 autoSize
 endObjectProperties
