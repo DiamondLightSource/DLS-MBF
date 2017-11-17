@@ -115,7 +115,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "diagnostics-help LMBF_bunch_enable"
+  0 "lmbf-help det_bunches"
 }
 includeHelpIcon
 endObjectProperties

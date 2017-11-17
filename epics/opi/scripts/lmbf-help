@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# Helper for launching LMBF help pages
+
+HERE="$(dirname "$0")"
+
+TABLE="$HERE"/../help_table
+
+# Searches for given key in $TABLE, assigns result to URL, fails if not found
+search_for()
+{
+    URL="$(sed -n "/^$1  */{s///;p;}" "$TABLE")"  &&
+    [[ -n "$URL" ]]
+}
+
+# Try for requested page, then try fallback page if necessary
+if search_for "$1"  ||  search_for '\*'; then
+    firefox -new-window "$URL" &
+else
+    echo >&2 "Unable to find help page for $1 or default help page"
+fi
