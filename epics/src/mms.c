@@ -73,6 +73,51 @@ static struct mms_handlers {
 };
 
 
+/* Helper functions for adding with overflow detection.  This is annoyingly a
+ * lot more tricky than might be hoped.  In more recent versions of GCC (from
+ * version 5) we have __builtin_add_overflow() functions, but this is not
+ * supported in GCC 4 which is used for this project.
+ *    Unsigned overflow detection isn't too painful: if a+b<a or b then overflow
+ * has occurred, and it seems the compiler understands this and generates the
+ * right code.  Signed overflow detection is not so great, as it actually
+ * triggers undefined behaviour, and so needs to be tested for before actually
+ * doing the sum.
+ *    We need overflow detection for threee types: unsigned int, uint64_t, and
+ * int64_t, the last being the troublemaker.  To make accumulating overflow
+ * detection easier we only set the overflow flag. */
+static unsigned int add_overflow_uint(
+    unsigned int a, unsigned int b, bool *overflow)
+{
+    unsigned int result = a + b;
+    if (result < a)  *overflow = true;
+    return result;
+}
+
+static uint64_t add_overflow_uint64_t(uint64_t a, uint64_t b, bool *overflow)
+{
+    uint64_t result = a + b;
+    if (result < a)  *overflow = true;
+    return result;
+}
+
+static int64_t add_overflow_int64_t(int64_t a, int64_t b, bool *overflow)
+{
+    /* Writing C to work around this problem produces truly nasty code.
+     * Fortunately the following assembler is pretty straightforward. */
+    int64_t result;
+    __asm__(
+        "movq    %[a], %[result]" "\n\t"
+        "addq    %[b], %[result]" "\n\t"
+        "jno     1f" "\n\t"
+        "movb    $1, (%[overflow])" "\n"
+        "1:"
+        : [result] "=&r" (result), "+m" (*overflow)
+        : [a] "r" (a), [b] "r" (b), [overflow] "r" (overflow)
+        : "cc" );
+    return result;
+}
+
+
 /* This is called at a regular interval to ensure that the MMS waveforms are up
  * to date and have not overflowed. */
 static void read_raw_mms(struct mms_handler *mms)
@@ -92,19 +137,25 @@ static void read_raw_mms(struct mms_handler *mms)
 
     /* Accumulate result into the accumulator. */
     struct mms_accum *accum = &mms->accum;
+    bool sum_ovfl = false;
+    bool sum2_ovfl = false;
     FOR_BUNCHES_OFFSET(j, i, mms->bunch_offset)
     {
         accum->raw_min[j] = MIN(accum->raw_min[j], minimum[i]);
         accum->raw_max[j] = MAX(accum->raw_max[j], maximum[i]);
-        accum->raw_sum[j] += sum[i];
-        accum->raw_sum2[j] += sum2[i];
+        accum->raw_sum[j] =
+            add_overflow_int64_t(accum->raw_sum[j], sum[i], &sum_ovfl);
+        accum->raw_sum2[j] =
+            add_overflow_uint64_t(accum->raw_sum2[j], sum2[i], &sum2_ovfl);
     }
 
     /* Accumulate turns and overflow flags. */
-    accum->raw_turns += result.turns;
-    accum->turns_ovfl |= result.turns_ovfl;
-    accum->sum_ovfl |= result.sum_ovfl;
-    accum->sum2_ovfl |= result.sum2_ovfl;
+    bool turns_ovfl = false;
+    accum->raw_turns =
+        add_overflow_uint(accum->raw_turns, result.turns, &turns_ovfl);
+    accum->turns_ovfl |= result.turns_ovfl | turns_ovfl;
+    accum->sum_ovfl   |= result.sum_ovfl   | sum_ovfl;
+    accum->sum2_ovfl  |= result.sum2_ovfl  | sum2_ovfl;
 }
 
 
