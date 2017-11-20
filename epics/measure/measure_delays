@@ -111,6 +111,13 @@ def configure_timing_test(lmbf, compensate = False):
     lmbf.set('SEQ:SUPER:COUNT_S', 1)
 
 
+# Basic configuration of MMS
+def configure_mms(lmbf, part):
+    lmbf.set('%s:MMS:SCAN_S.SCAN' % part, '.1 second')
+    lmbf.set('%s:MMS_SOURCE_S' % part, 'Before FIR')
+    return lmbf.PV('%s:MMS:MAX' % part)
+
+
 
 # We'll gather final configuration parameters for printout at the end.
 class Results:
@@ -252,9 +259,7 @@ def measure_loop(lmbf, results):
     lmbf.configure_dac_single_pulse()
 
     # Monitor MMS and configure for rapid update rate
-    maxdac = lmbf.PV('DAC:MMS:MAX')
-    lmbf.set('DAC:MMS:SCAN_S.SCAN', '.1 second')
-    lmbf.set('DAC:MMS_SOURCE_S', 'Before FIR')
+    maxdac = configure_mms(lmbf, 'DAC')
 
     # Take DAC output mux select bunch zero as the reference bunch
     # and measure delays to DAC max.  This allows us to measure the closed
@@ -285,8 +290,8 @@ def measure_dac_mms(lmbf, results):
     print >>sys.stderr, 'Measuring DAC MMS'
 
     lmbf.configure_dac_single_pulse()
-    maxdac = lmbf.PV('DAC:MMS:MAX')
-    maxadc = lmbf.PV('ADC:MMS:MAX')
+    maxdac = configure_mms(lmbf, 'DAC')
+    maxadc = configure_mms(lmbf, 'ADC')
 
     # Measure the MMS ADC skew now we've closed the loop
     lmbf.set('ADC:MMS_SOURCE_S', 'Before FIR')
