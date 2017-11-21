@@ -7,21 +7,43 @@ def mms_waveform(name, desc):
 
 
 def do_mms_pvs(source):
+    std_mean = aIn('STD_MEAN', 0, 1, PREC = 6,
+        DESC = 'Mean MMS standard deviation')
+    std_mean_db = records.calc('STD_MEAN_DB',
+        CALC = '20*LOG(A)', INPA = std_mean,
+        EGU = 'dB', PREC = 1,
+        DESC = 'Mean MMS deviation in dB')
     pvs = [
         mms_waveform('MIN', 'Min %s values per bunch' % source),
         mms_waveform('MAX', 'Max %s values per bunch' % source),
         mms_waveform('DELTA', 'Max %s values per bunch' % source),
         mms_waveform('MEAN', 'Mean %s values per bunch' % source),
         mms_waveform('STD', '%s standard deviation per bunch' % source),
+        aIn('MEAN_MEAN', -1, 1, PREC = 6, DESC = 'Mean position'),
+        std_mean,
+        std_mean_db,
         longIn('TURNS', DESC = 'Number of turns in this sample'),
-        overflow('TURN_OVF', 'MMS turn counter overflow'),
-        overflow('SUM_OVF', 'MMS accumulator overflow'),
-        overflow('SUM2_OVF', 'MMS squares accumulator overflow'),
+        mbbIn('OVERFLOW',
+            ('Ok',                       0, 'NO_ALARM'),
+            ('Turns Overflow',           1, 'MAJOR'),
+            ('Sum Overflow',             2, 'MAJOR'),
+            ('Turns+Sum Overflow',       3, 'MAJOR'),
+            ('Sum2 Overflow',            4, 'MAJOR'),
+            ('Turns+Sum2 Overflow',      5, 'MAJOR'),
+            ('Sum+Sum2 Overflow',        6, 'MAJOR'),
+            ('Turns+Sum+Sum2 Overflow',  7, 'MAJOR'),
+            DESC = 'MMS capture overflow status'),
     ]
     Action('SCAN',
         SCAN = '.2 second',
         FLNK = create_fanout('FAN', *pvs),
         DESC = '%s min/max scanning' % source)
+
+    # We reset the MMS fault bits on startup because the very first readout
+    # tends to have lots of overflow bits set!
+    boolOut('RESET_FAULT',
+        PINI = 'YES',
+        DESC = 'Resets MMS fault accumulation')
 
 
 def mms_pvs(source):

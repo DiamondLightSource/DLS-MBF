@@ -33,9 +33,7 @@ struct mms_accum {
 
     /* Raw state from MMS. */
     unsigned int raw_turns;
-    bool turns_ovfl;
-    bool sum_ovfl;
-    bool sum2_ovfl;
+    unsigned int mms_overflow;
 };
 
 
@@ -46,11 +44,11 @@ struct mms_epics {
     float *delta;
     float *mean;
     float *std;
+    double mean_mean;
+    double std_mean;
 
-    int turns;
-    bool turns_ovfl;
-    bool sum_ovfl;
-    bool sum2_ovfl;
+    unsigned int turns;
+    unsigned int mms_overflow;
 };
 
 
@@ -137,8 +135,8 @@ static void read_raw_mms(struct mms_handler *mms)
 
     /* Accumulate result into the accumulator. */
     struct mms_accum *accum = &mms->accum;
-    bool sum_ovfl = false;
-    bool sum2_ovfl = false;
+    bool sum_ovfl = result.sum_ovfl;
+    bool sum2_ovfl = result.sum2_ovfl;
     FOR_BUNCHES_OFFSET(j, i, mms->bunch_offset)
     {
         accum->raw_min[j] = MIN(accum->raw_min[j], minimum[i]);
@@ -150,12 +148,13 @@ static void read_raw_mms(struct mms_handler *mms)
     }
 
     /* Accumulate turns and overflow flags. */
-    bool turns_ovfl = false;
+    bool turns_ovfl = result.turns_ovfl;
     accum->raw_turns =
         add_overflow_uint(accum->raw_turns, result.turns, &turns_ovfl);
-    accum->turns_ovfl |= result.turns_ovfl | turns_ovfl;
-    accum->sum_ovfl   |= result.sum_ovfl   | sum_ovfl;
-    accum->sum2_ovfl  |= result.sum2_ovfl  | sum2_ovfl;
+
+    /* Convert individual overflow bits into encoding. */
+    accum->mms_overflow |=
+        (unsigned int) (turns_ovfl | sum_ovfl << 1 | sum2_ovfl << 2);
 }
 
 
@@ -170,9 +169,6 @@ static void reset_accum(struct mms_handler *mms)
         accum->raw_sum2[i] = 0;
     }
     accum->raw_turns = 0;
-    accum->turns_ovfl = false;
-    accum->sum_ovfl = false;
-    accum->sum2_ovfl = false;
 }
 
 
@@ -188,19 +184,23 @@ static void process_mms_waveforms(struct mms_handler *mms)
     FOR_BUNCHES(i)
         epics->delta[i] =
             ldexpf((float) (accum->raw_max[i] - accum->raw_min[i]), -15);
+    double mean_mean = 0;
+    double std_mean = 0;
     FOR_BUNCHES(i)
     {
         double mean = (double) accum->raw_sum[i] / accum->raw_turns;
         epics->mean[i] = ldexpf((float) mean, -15);
+        mean_mean += mean;
         double mean2 = (double) accum->raw_sum2[i] / accum->raw_turns;
         float var = (float) (mean2 - mean * mean);
         epics->std[i] = ldexpf(sqrtf(var >= 0 ? var : 0), -15);
+        std_mean += var;
     }
+    epics->mean_mean = ldexp(mean_mean / hardware_config.bunches, -15);
+    epics->std_mean = ldexp(sqrt(std_mean / hardware_config.bunches), -15);
 
-    epics->turns = (int) accum->raw_turns;
-    epics->turns_ovfl = accum->turns_ovfl;
-    epics->sum_ovfl = accum->sum_ovfl;
-    epics->sum2_ovfl = accum->sum2_ovfl;
+    epics->turns = accum->raw_turns;
+    epics->mms_overflow = accum->mms_overflow;
 }
 
 
@@ -210,12 +210,17 @@ static bool start_mms_readback(void *context, bool *value)
 
     /* Bring ourself up to date.  It's reasonably harmless if these happen
      * back-to-back, just a trifle wasteful. */
-
-    LOCK(mms->mutex);
     read_raw_mms(mms);
     process_mms_waveforms(mms);
     reset_accum(mms);
-    UNLOCK(mms->mutex);
+    return true;
+}
+
+
+static bool reset_mms_fault(void *context, bool *value)
+{
+    struct mms_handler *mms = context;
+    mms->accum.mms_overflow = 0;
     return true;
 }
 
@@ -250,16 +255,18 @@ struct mms_handler *create_mms_handler(
     WITH_NAME_PREFIX("MMS")
     {
         struct mms_epics *epics = &mms->epics;
-        PUBLISH_C(bo, "SCAN", start_mms_readback, mms);
+        PUBLISH_C(bo, "SCAN", start_mms_readback, mms, .mutex = &mms->mutex);
         PUBLISH_WF_READ_VAR(float, "MIN",   bunches, epics->min);
         PUBLISH_WF_READ_VAR(float, "MAX",   bunches, epics->max);
         PUBLISH_WF_READ_VAR(float, "DELTA", bunches, epics->delta);
         PUBLISH_WF_READ_VAR(float, "MEAN",  bunches, epics->mean);
         PUBLISH_WF_READ_VAR(float, "STD",   bunches, epics->std);
-        PUBLISH_READ_VAR(longin, "TURNS", epics->turns);
-        PUBLISH_READ_VAR(bi, "TURN_OVF", epics->turns_ovfl);
-        PUBLISH_READ_VAR(bi, "SUM_OVF", epics->sum_ovfl);
-        PUBLISH_READ_VAR(bi, "SUM2_OVF", epics->sum2_ovfl);
+        PUBLISH_READ_VAR(ai, "MEAN_MEAN", epics->mean_mean);
+        PUBLISH_READ_VAR(ai, "STD_MEAN", epics->std_mean);
+        PUBLISH_READ_VAR(ulongin, "TURNS", epics->turns);
+        PUBLISH_READ_VAR(mbbi, "OVERFLOW", epics->mms_overflow);
+        PUBLISH_C(bo, "RESET_FAULT", reset_mms_fault, mms,
+            .mutex = &mms->mutex);
     }
 
     return mms;
