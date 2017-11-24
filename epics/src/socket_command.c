@@ -56,7 +56,8 @@ static bool report_error(
 
 static void send_converted_memory_data(
     struct buffered_file *file, size_t read_samples,
-    unsigned int d0, unsigned int d1, const uint32_t read_buffer[])
+    unsigned int d0, unsigned int d1, const uint32_t read_buffer[],
+    const bool channels[2])
 
 {
     while (read_samples > 0)
@@ -66,11 +67,15 @@ static void send_converted_memory_data(
         int16_t *write_buf = write_buffer;
         for (size_t i = 0; i < write_samples; i ++)
         {
-            *write_buf++ = (int16_t) read_buffer[i + d0];
-            *write_buf++ = (int16_t) (read_buffer[i + d1] >> 16);
+            if (channels[0])
+                *write_buf++ = (int16_t) read_buffer[i + d0];
+            if (channels[1])
+                *write_buf++ = (int16_t) (read_buffer[i + d1] >> 16);
         }
 
-        write_block(file, write_buffer, sizeof(uint32_t) * write_samples);
+        write_block(
+            file, write_buffer,
+            sizeof(int16_t) * (size_t) (write_buf - write_buffer));
 
         read_samples -= write_samples;
         read_buffer += write_samples;
@@ -79,7 +84,8 @@ static void send_converted_memory_data(
 
 
 static void send_memory_data(
-    struct buffered_file *file, unsigned int count, int offset_turns)
+    struct buffered_file *file, unsigned int count, int offset_turns,
+    const bool channels[2])
 {
     /* Convert count and offset into a byte offset from the trigger and a number
      * of samples. */
@@ -100,7 +106,8 @@ static void send_memory_data(
         hw_read_dram_memory(offset, read_samples, read_buffer);
 
         read_samples -= bunches_per_turn;
-        send_converted_memory_data(file, read_samples, d0, d1, read_buffer);
+        send_converted_memory_data(
+            file, read_samples, d0, d1, read_buffer, channels);
         samples -= read_samples;
         offset += read_samples * sizeof(uint32_t);
     }
@@ -109,7 +116,7 @@ static void send_memory_data(
 
 /* Supports command of the form:
  *
- *      M [R] count [O offset]
+ *      M [R] count [O offset] [C channel]
  *
  * Returns memory captured into memory with the following options:
  *
@@ -119,6 +126,9 @@ static void send_memory_data(
  *          Number of turns of data to capture.
  *      O offset
  *          Starting offset in turns, default to 0.
+ *      C channel
+ *          If requested, only the one channel will be transmitted, halving the
+ *          data transmitted.
  */
 bool process_memory_command(struct buffered_file *file, const char *command)
 {
@@ -126,12 +136,17 @@ bool process_memory_command(struct buffered_file *file, const char *command)
     unsigned int count = 0;
     int offset = 0;
     bool raw_mode = false;
+    int channel = -1;
     error__t error =
         parse_char(&command, 'M')  ?:
         DO(raw_mode = read_char(&command, 'R'))  ?:
         parse_uint(&command, &count)  ?:
         IF(read_char(&command, 'O'),
             parse_int(&command, &offset))  ?:
+        IF(read_char(&command, 'C'),
+            parse_int(&command, &channel)  ?:
+            TEST_OK_(0 <= channel  &&  channel < CHANNEL_COUNT,
+                "Invalid channel number"))  ?:
         parse_eos(&command);
 
     if (error)
@@ -141,9 +156,13 @@ bool process_memory_command(struct buffered_file *file, const char *command)
         return report_error(file, error, command_in, raw_mode);
     else
     {
+        bool channels[2] = { true, true };
+        if (channel >=0)
+            channels[1 - channel] = false;
+
         if (!raw_mode)
             write_char(file, '\0');
-        send_memory_data(file, count, offset);
+        send_memory_data(file, count, offset, channels);
         return true;
     }
 }
