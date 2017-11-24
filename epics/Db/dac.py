@@ -24,7 +24,6 @@ for c in channels('DAC'):
         overflow('BUN_OVF', 'Bunch FIR overflow'),
         overflow('MUX_OVF', 'DAC output overflow'),
         overflow('FIR_OVF', 'DAC FIR overflow'),
-        overflow('MMS_OVF', 'Overflow in MMS'),
     ])
 
     mms.mms_pvs('DAC')

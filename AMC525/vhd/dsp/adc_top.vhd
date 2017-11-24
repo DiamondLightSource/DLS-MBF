@@ -56,7 +56,6 @@ architecture arch of adc_top is
     signal event_bits : reg_data_t;
     signal input_overflow : std_logic;
     signal fir_overflow : std_logic;
-    signal mms_overflow : std_logic;
 
     signal filtered_data : data_o'SUBTYPE;
     signal data_in : data_i'SUBTYPE;
@@ -104,7 +103,6 @@ begin
     event_bits <= (
         DSP_ADC_EVENTS_INP_OVF_BIT => input_overflow,
         DSP_ADC_EVENTS_FIR_OVF_BIT => fir_overflow,
-        DSP_ADC_EVENTS_MMS_OVF_BIT => mms_overflow,
         DSP_ADC_EVENTS_DELTA_BIT   => delta_event_o,
         others => '0'
     );
@@ -176,7 +174,6 @@ begin
 
         data_i => mms_data,
         delta_o => mms_delta,
-        overflow_o => mms_overflow,
 
         read_strobe_i => read_strobe_i(DSP_ADC_MMS_REGS),
         read_data_o => read_data_o(DSP_ADC_MMS_REGS),

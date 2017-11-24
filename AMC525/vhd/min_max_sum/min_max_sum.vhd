@@ -21,7 +21,6 @@ entity min_max_sum is
 
         data_i : in signed(15 downto 0);
         delta_o : out unsigned(15 downto 0);
-        overflow_o : out std_logic;
 
         -- Two register readout interface:
         -- First returns the accumulated event count and swaps buffers
@@ -58,7 +57,6 @@ architecture arch of min_max_sum is
     signal sum_overflow : std_logic;
     signal sum2_overflow : std_logic;
     signal delta : unsigned(15 downto 0);
-    signal overflow : std_logic;
 
     signal readout_strobe : std_logic;
     signal readout_ack : std_logic;
@@ -67,7 +65,6 @@ architecture arch of min_max_sum is
     constant TURN_CLOCK_PIPELINE : natural := 4;
     constant DATA_PIPELINE : natural := 4;
     constant DELTA_PIPELINE : natural := 2;
-    constant OVERFLOW_PIPELINE : natural := 4;
 
 begin
     -- -------------------------------------------------------------------------
@@ -97,14 +94,6 @@ begin
         clk_i => adc_clk_i,
         data_i => std_logic_vector(delta),
         unsigned(data_o) => delta_o
-    );
-
-    overflow_delay : entity work.dlyreg generic map (
-        DLY => OVERFLOW_PIPELINE
-    ) port map (
-        clk_i => dsp_clk_i,
-        data_i(0) => overflow,
-        data_o(0) => overflow_o
     );
 
 
@@ -177,15 +166,6 @@ begin
         sum_overflow_o => sum_overflow,
         sum2_overflow_o => sum2_overflow,
         delta_o => delta
-    );
-
-    -- Convert overflow pulse on ADC clock to DSP clock
-    pulse_adc_to_dsp_inst : entity work.pulse_adc_to_dsp port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-
-        pulse_i => sum_overflow or sum2_overflow,
-        pulse_o => overflow
     );
 
 

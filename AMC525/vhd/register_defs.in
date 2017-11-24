@@ -429,8 +429,8 @@
                 .INP_OVF
                 # Set if overflow detected during input compensation filter
                 .FIR_OVF
-                # Set if any of the ADC min/max/sum accumulators overflow
-                .MMS_OVF
+                # Placeholder for obsolete bit
+                -
                 # Set when ADC min/max/sum motion exceeds configured threshold
                 .DELTA
             # Writing to this register generates a pulse on the selected bits
@@ -508,8 +508,8 @@
                 .FIR_OVF
                 # Set when DAC output multiplexer detects overflow
                 .MUX_OVF
-                # Set if any of the DAC min/max/sum accumulators overflow
-                .MMS_OVF
+                # Placeholder for obsolete bit
+                -
                 # Set if overflow detected during output preemphasis filter
                 .OUT_OVF
             # Writing to this register generates a pulse on the selected bits

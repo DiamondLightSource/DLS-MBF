@@ -217,7 +217,6 @@ void hw_write_nco0_frequency(int channel, unsigned int frequency);
 struct adc_events {
     bool input_ovf;
     bool fir_ovf;
-    bool mms_ovf;
     bool delta_event;
 };
 
@@ -270,7 +269,6 @@ void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[]);
 struct dac_events {
     bool fir_ovf;
     bool mux_ovf;
-    bool mms_ovf;
     bool out_ovf;
 };
 

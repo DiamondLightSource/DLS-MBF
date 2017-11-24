@@ -131,7 +131,6 @@ error__t initialise_adc(void)
 
         PUBLISH_READ_VAR(bi, "INPUT_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF",   adc->events.fir_ovf);
-        PUBLISH_READ_VAR(bi, "MMS_OVF",   adc->events.mms_ovf);
         PUBLISH_READ_VAR(bi, "EVENT",     adc->events.delta_event);
 
         adc->mms = create_mms_handler(channel, hw_read_adc_mms);

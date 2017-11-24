@@ -25,7 +25,6 @@ for c in channels('ADC'):
     adc_events.extend([
         overflow('INPUT_OVF', 'ADC input overflow'),
         overflow('FIR_OVF', 'ADC FIR overflow'),
-        overflow('MMS_OVF', 'Overflow in MMS'),
         event('EVENT', 'ADC min/max event'),
     ])
 

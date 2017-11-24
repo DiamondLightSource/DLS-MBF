@@ -65,7 +65,6 @@ architecture arch of dac_top is
     signal event_bits : reg_data_t;
     signal fir_overflow : std_logic;
     signal mux_overflow : std_logic;
-    signal mms_overflow : std_logic;
     signal preemph_overflow : std_logic;
 
     -- Pipelined input
@@ -133,7 +132,6 @@ begin
     event_bits <= (
         DSP_DAC_EVENTS_FIR_OVF_BIT => fir_overflow,
         DSP_DAC_EVENTS_MUX_OVF_BIT => mux_overflow,
-        DSP_DAC_EVENTS_MMS_OVF_BIT => mms_overflow,
         DSP_DAC_EVENTS_OUT_OVF_BIT => preemph_overflow,
         others => '0'
     );
@@ -257,7 +255,6 @@ begin
 
         data_i => mms_data_in,
         delta_o => open,
-        overflow_o => mms_overflow,
 
         read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS),
         read_data_o => read_data_o(DSP_DAC_MMS_REGS),

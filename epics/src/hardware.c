@@ -548,7 +548,6 @@ void hw_read_adc_events(int channel, struct adc_events *result)
     struct dsp_adc_events events = READL(dsp_regs[channel]->adc_events);
     result->input_ovf = events.inp_ovf;
     result->fir_ovf = events.fir_ovf;
-    result->mms_ovf = events.mms_ovf;
     result->delta_event = events.delta;
 }
 
@@ -681,7 +680,6 @@ void hw_read_dac_events(int channel, struct dac_events *result)
     struct dsp_dac_events events = READL(dsp_regs[channel]->dac_events);
     result->fir_ovf = events.fir_ovf;
     result->mux_ovf = events.mux_ovf;
-    result->mms_ovf = events.mms_ovf;
     result->out_ovf = events.out_ovf;
 }
 
