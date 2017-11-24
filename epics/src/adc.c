@@ -23,6 +23,7 @@ static struct adc_context {
     int channel;
     bool mms_after_fir;
     bool dram_after_fir;
+    bool overflow;
     unsigned int filter_delay;
     struct adc_events events;
     struct mms_handler *mms;
@@ -108,7 +109,11 @@ static bool write_filter_delay(void *context, unsigned int *delay)
 static void scan_events(void)
 {
     for (int i = 0; i < CHANNEL_COUNT; i ++)
-        hw_read_adc_events(i, &adc_context[i].events);
+    {
+        struct adc_context *adc = &adc_context[i];
+        hw_read_adc_events(i, &adc->events);
+        adc->overflow = adc->events.input_ovf | adc->events.fir_ovf;
+    }
 }
 
 
@@ -129,9 +134,10 @@ error__t initialise_adc(void)
         PUBLISH_C_P(bo, "MMS_SOURCE",  write_adc_mms_source, adc);
         PUBLISH_C_P(bo, "DRAM_SOURCE", write_adc_dram_source, adc);
 
-        PUBLISH_READ_VAR(bi, "INPUT_OVF", adc->events.input_ovf);
-        PUBLISH_READ_VAR(bi, "FIR_OVF",   adc->events.fir_ovf);
-        PUBLISH_READ_VAR(bi, "EVENT",     adc->events.delta_event);
+        PUBLISH_READ_VAR(bi, "INP_OVF", adc->events.input_ovf);
+        PUBLISH_READ_VAR(bi, "FIR_OVF", adc->events.fir_ovf);
+        PUBLISH_READ_VAR(bi, "OVF",     adc->overflow);
+        PUBLISH_READ_VAR(bi, "EVENT",   adc->events.delta_event);
 
         adc->mms = create_mms_handler(channel, hw_read_adc_mms);
     }

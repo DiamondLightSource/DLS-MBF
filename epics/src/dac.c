@@ -23,6 +23,7 @@ static struct dac_context {
     int channel;
     bool mms_after_fir;
     bool dram_after_fir;
+    bool overflow;
     unsigned int filter_delay;
     struct dac_events events;
     struct mms_handler *mms;
@@ -97,7 +98,12 @@ static bool write_filter_delay(void *context, unsigned int *delay)
 static void scan_events(void)
 {
     for (int i = 0; i < CHANNEL_COUNT; i ++)
-        hw_read_dac_events(i, &dac_context[i].events);
+    {
+        struct dac_context *dac = &dac_context[i];
+        hw_read_dac_events(i, &dac->events);
+        dac->overflow =
+            dac->events.fir_ovf | dac->events.mux_ovf | dac->events.out_ovf;
+    }
 }
 
 
@@ -120,6 +126,7 @@ error__t initialise_dac(void)
         PUBLISH_READ_VAR(bi, "BUN_OVF", dac->events.fir_ovf);
         PUBLISH_READ_VAR(bi, "MUX_OVF", dac->events.mux_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
+        PUBLISH_READ_VAR(bi, "OVF",     dac->overflow);
 
         dac->mms = create_mms_handler(channel, hw_read_dac_mms);
     }

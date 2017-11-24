@@ -23,8 +23,9 @@ for c in channels('ADC'):
         DESC = 'Source of memory data')
 
     adc_events.extend([
-        overflow('INPUT_OVF', 'ADC input overflow'),
+        overflow('INP_OVF', 'ADC input overflow'),
         overflow('FIR_OVF', 'ADC FIR overflow'),
+        overflow('OVF', 'ADC overflow'),
         event('EVENT', 'ADC min/max event'),
     ])
 
