@@ -10,7 +10,7 @@ import numpy
 import cothread
 from cothread.catools import *
 
-from configure import LMBF, DRAM
+from configure import LMBF, DRAM, PV_set
 
 
 # Common support code.
@@ -248,6 +248,33 @@ def search_det_bunch(lmbf, det_power, source):
     return lmbf.fixup_delay(-binary_search(0, lmbf.bunches, test))
 
 
+# Computes group delay from scaled IQ.
+def compute_group_delay(lmbf, scale, iq):
+    angle = numpy.unwrap(numpy.angle(iq))
+    fit = numpy.polyfit(scale, angle, 1)
+    slope = fit[0]
+    mean_error = numpy.std(angle - numpy.polyval(fit, scale))
+    assert mean_error < 0.001, 'Unexpected error in slope fit'
+
+    # Convert slope into revolutions per bunch to get group delay (frequency
+    # scale is in units of tune).
+    return int(round(slope/2/numpy.pi * lmbf.bunches))
+
+
+def get_detector_delay(lmbf, source, pvs):
+    lmbf.set('DET:SELECT_S', source)
+
+    lmbf.set('TRG:SEQ:ARM_S', 0)
+    lmbf.set_shared('TRG:SOFT_S', 0)
+
+    wf_i = pvs.det_i
+    wf_q = pvs.det_q
+    s = pvs.scale
+    iq = wf_i + 1j * wf_q
+    return compute_group_delay(lmbf, s, iq) - lmbf.bunches
+
+
+
 # ------------------------------------------------------------------------------
 # Measurement functions
 
@@ -357,6 +384,20 @@ def measure_det_bunch(lmbf, results):
     power.close()
 
 
+def measure_detector_delay(lmbf, results):
+    lmbf.state(1, start = 1, step = 0.001, dwell = 20, holdoff = 10)
+    lmbf.bank_wf(1, 1, FIR_UNIT, DAC_OUT.SWEEP)
+    lmbf.set('DET:0:BUNCHES_S', numpy.ones(lmbf.bunches))
+    lmbf.set('DET:SELECT_S', 'FIR')
+
+    pvs = PV_set(lmbf)
+    pvs.det_i = 'DET:0:I'
+    pvs.det_q = 'DET:0:Q'
+    pvs.scale = 'DET:SCALE'
+
+    results.DET_FIR_DELAY = get_detector_delay(lmbf, 'FIR', pvs)
+    results.DET_ADC_DELAY = get_detector_delay(lmbf, 'ADC', pvs)
+
 
 
 # ------------------------------------------------------------------------------
@@ -365,6 +406,7 @@ actions = [
     'dac_mms',
     'dram',
     'det_bunch',
+    'detector_delay',
 ]
 
 
@@ -376,6 +418,8 @@ parser.add_argument('-m', '--measure', action = 'append',
     help = 'Specify measurements to perform, any of: ' + ', '.join(actions))
 parser.add_argument('-o', '--output',
     help = 'Specify output file')
+parser.add_argument('--skip-init', action = 'store_true', default = False,
+    help = 'Bypass initial loop measurement.  Testing only!')
 args = parser.parse_args()
 
 
@@ -384,7 +428,8 @@ results = Results(lmbf)
 
 lmbf.configure_timing_test()
 
-dac_minmax_delay = measure_loop(lmbf, results)
+if not args.skip_init:
+    dac_minmax_delay = measure_loop(lmbf, results)
 
 if args.measure:
     actions = args.measure

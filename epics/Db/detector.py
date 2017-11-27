@@ -44,5 +44,7 @@ for c in channels('DET', lmbf_mode):
             detector_bank_pvs(updates)
 
     boolOut('SELECT', 'ADC', 'FIR', DESC = 'Select detector source')
+    aOut('FIR_DELAY', PREC = 1, EGU = 'turns',
+        DESC = 'FIR nominal group delay')
 
     Trigger('UPDATE', *updates)

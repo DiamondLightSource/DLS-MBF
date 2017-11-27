@@ -50,6 +50,10 @@ struct detector_context {
 
     /* Shared detector configuration. */
     bool input_select;
+    /* Phase delay to be compensated, in bunches. */
+    int phase_delay;
+    /* Nominal extra FIR delay. */
+    double fir_group_delay;
 
     /* Global detector memory underrun event.  Hope this never happens. */
     bool underrun;
@@ -89,11 +93,11 @@ void get_detector_samples(
 }
 
 
-static void read_detector_memory(
-    struct detector_context *det, unsigned int samples)
+static void read_detector_memory(struct detector_context *det)
 {
+    const struct scale_info *info = &det->scale_info;
     unsigned int detector_length = system_config.detector_length;
-    samples = MIN(samples, detector_length);    // Clip to available length
+    unsigned int samples = MIN(info->samples, detector_length);
     hw_read_det_memory(
         det->channel, samples * det->active_channels, 0, det->read_buffer);
 
@@ -114,15 +118,24 @@ static void read_detector_memory(
 
     /* Transpose the readout into the corresponding output waveforms. */
     struct detector_result *result = det->read_buffer;
+    const double *scale = info->tune_scale;
+    double phase_delay =
+        2.0 * M_PI * det->phase_delay / hardware_config.bunches;
     for (unsigned int i = 0; i < samples; i ++)
     {
+        double angle = phase_delay * *scale;
+        double rotI = cos(angle);
+        double rotQ = sin(angle);
         for (int j = 0; j < DETECTOR_COUNT; j ++)
             if (enables[j])
             {
-                wf_i[j][i] = (float) result->i;
-                wf_q[j][i] = (float) result->q;
+                double ri = result->i;
+                double rq = result->q;
+                wf_i[j][i] = (float) (rotI * ri + rotQ * rq);
+                wf_q[j][i] = (float) (rotI * rq - rotQ * ri);
                 result += 1;
             }
+        scale += 1;
     }
 
     /* Compute the power waveform. */
@@ -160,7 +173,7 @@ static void detector_readout_event(struct detector_context *det)
     read_detector_scale_info(
         det->channel, system_config.detector_length, &det->scale_info);
 
-    read_detector_memory(det, det->scale_info.samples);
+    read_detector_memory(det);
 
     interlock_signal(det->update, NULL);
 }
@@ -228,6 +241,28 @@ static void publish_detector(
 }
 
 
+static int compute_detector_delay(struct detector_context *det)
+{
+    if (hardware_delays.valid)
+    {
+        switch (det->input_select)
+        {
+            case true:      // FIR
+                return
+                    hardware_delays.DET_FIR_DELAY +
+                    (int) lround(
+                        det->fir_group_delay * hardware_config.bunches);
+            case false:     // ADC
+                return
+                    hardware_delays.DET_ADC_DELAY +
+                    (int) hardware_config.bunches;
+        }
+    }
+    else
+        return 0;
+}
+
+
 /* Called before arming the detector. */
 void prepare_detector(int channel)
 {
@@ -236,10 +271,10 @@ void prepare_detector(int channel)
     struct detector_config config[DETECTOR_COUNT];
     for (int i = 0; i < DETECTOR_COUNT; i ++)
         config[i] = det->banks[i].config;
-    unsigned int delay = det->input_select ?
+    unsigned int offset = det->input_select ?
         hardware_delays.DET_FIR_OFFSET :
         hardware_delays.DET_ADC_OFFSET;
-    hw_write_det_config(channel, det->input_select, delay, config);
+    hw_write_det_config(channel, det->input_select, offset, config);
     hw_write_det_start(channel);
 
     /* Count the number of active channels, needed for readout. */
@@ -249,6 +284,9 @@ void prepare_detector(int channel)
         if (config[i].enable)
             det->active_channels += 1;
     }
+
+    /* Compute the delay required for phase correction. */
+    det->phase_delay = compute_detector_delay(det);
 }
 
 
@@ -279,6 +317,7 @@ error__t initialise_detector(void)
         PUBLISH_WF_READ_VAR(double, "SCALE", detector_length, info->tune_scale);
         PUBLISH_WF_READ_VAR(int, "TIMEBASE", detector_length, info->timebase);
         PUBLISH_READ_VAR(ulongin, "SAMPLES", info->samples);
+        PUBLISH_WRITE_VAR_P(ao, "FIR_DELAY", det->fir_group_delay);
 
         det->update = create_interlock("UPDATE", false);
     }

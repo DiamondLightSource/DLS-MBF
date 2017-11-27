@@ -40,6 +40,26 @@ class PV:
                 return value
 
 
+class PV_set(object):
+    def __init__(self, lmbf):
+        self.__lmbf = lmbf
+        self.__pv_set = {}
+
+    def __del__(self):
+        for pv in self.__pv_set.values():
+            pv.close()
+
+    def __setattr__(self, name, value):
+        # Hack to bypass setting of local names
+        if name[:7] == '_PV_set':
+            self.__dict__[name] = value
+        else:
+            self.__pv_set[name] = self.__lmbf.PV(value)
+
+    def __getattr__(self, name):
+        return self.__pv_set[name].get()
+
+
 class LMBF:
     CHANNELS = range(2)
 

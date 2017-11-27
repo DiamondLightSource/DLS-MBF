@@ -27,8 +27,6 @@ const struct system_config system_config;
 #pragma GCC diagnostic ignored "-Wcast-qual"
 
 
-static struct hardware_delays hardware_delays_in;
-
 
 /* We're rather tricksy about the hardware delays.  We read them as int into an
  * unsigned int, and then later perform some conversions to ensure they are true
@@ -37,7 +35,7 @@ static struct hardware_delays hardware_delays_in;
     { \
         .entry_type = CONFIG_int, \
         .name = #entry, \
-        .address = (void *) &hardware_delays_in.entry, \
+        .address = (void *) &hardware_delays.entry, \
     }
 
 static const struct config_entry hardware_delays_entries[] = {
@@ -57,6 +55,9 @@ static const struct config_entry hardware_delays_entries[] = {
 
     DELAY_ENTRY(DET_ADC_OFFSET),
     DELAY_ENTRY(DET_FIR_OFFSET),
+
+    DELAY_ENTRY(DET_FIR_DELAY),
+    DELAY_ENTRY(DET_ADC_DELAY),
 };
 
 
@@ -96,12 +97,20 @@ static unsigned int convert_field(unsigned int value)
 }
 
 
+#define ASSIGN_FIELD(field, value) \
+    *CAST_TO(typeof(value) *, &(field)) = (value)
+#define CONVERT_FIELD(name) \
+    ASSIGN_FIELD(hardware_delays.name, convert_field(hardware_delays.name))
+#if 0
 #define CONVERT_FIELD(name) \
     *CAST_TO(unsigned int *, &hardware_delays.name) = \
-        convert_field(hardware_delays_in.name)
+        convert_field(hardware_delays.name)
+#endif
 
 static void convert_hardware_config(void)
 {
+    ASSIGN_FIELD(hardware_delays.valid, true);
+
     CONVERT_FIELD(MMS_ADC_DELAY);
     CONVERT_FIELD(MMS_ADC_FIR_DELAY);
     CONVERT_FIELD(MMS_DAC_DELAY);
