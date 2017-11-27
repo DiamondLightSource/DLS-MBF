@@ -8,9 +8,9 @@ use work.support.all;
 
 package defines is
     -- Number of taps in ADC compensation filter
-    constant ADC_FIR_TAP_COUNT : natural := 8;
+    constant ADC_FIR_TAP_COUNT : natural := 20;
     constant BUNCH_FIR_TAP_COUNT : natural := 16;
-    constant DAC_FIR_TAP_COUNT : natural := 8;
+    constant DAC_FIR_TAP_COUNT : natural := 20;
 
 
     -- Register data is in blocks of 32-bits
