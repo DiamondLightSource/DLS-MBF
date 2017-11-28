@@ -3,14 +3,18 @@
  *
  * The function defined here must be called thus:
  *
- *      d = lmbf_detector_mex(hostname, port, channel);
+ *      [d,s,g,t] = mex_lmbf_detector_(hostname, port, bunches, channel);
  *
  * Data is captured from hostname:port and returned in an array of size
  *
- *      size(d) = [samples, channels]
+ *      size(d) = [samples, detectors]
  *
- * where samples is the number of captured sequencer states, and channels is the
- * number of active detectors.
+ * where samples is the number of captured sequencer states, and detectors is
+ * the number of active detectors.  The remaining results are optional and are:
+ *
+ *      s   Frequency scale in turns (of length samples) for detector values
+ *      g   Group delay in radians per turn of captured data
+ *      t   Timebase in turns (of length samples) of detector value
  */
 
 #include <stdbool.h>
@@ -33,7 +37,9 @@
 
 /* Framing header sent at start of detector readout. */
 struct detector_frame {
-    uint32_t channels;
+    uint8_t channel_count;
+    uint8_t channel_mask;
+    uint16_t delay;
     uint32_t samples;
 };
 
@@ -42,6 +48,7 @@ struct detector_result {
     int32_t i;
     int32_t q;
 };
+
 
 
 /* Convert samples into doubles for matlab and transpose so that the layout is
@@ -122,12 +129,20 @@ static void read_and_convert_timebase(mxArray **lhs, int sock, int samples)
 }
 
 
+static void send_group_delay(mxArray **lhs, int sock, int bunches, int delay)
+{
+    double *group_delay;
+    *lhs = create_array(1, 1, &group_delay, NULL);
+    *group_delay = 2.0 * M_PI * delay / bunches;
+}
+
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     /* We expect four arguments: hostname, port, bunches, channel. */
     TEST_OK_(nrhs == 4, "args", "Wrong number of arguments");
     /* Can assign up to three results. */
-    TEST_OK_(nlhs <= 3, "result", "Wrong number of results");
+    TEST_OK_(nlhs <= 4, "result", "Too many results requested");
 
     char hostname[256];
     TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
@@ -147,11 +162,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     struct detector_frame frame;
     fill_buffer(sock, &frame, sizeof(frame), 1, 1);
 
-    read_and_convert_samples(&plhs[0], sock, frame.samples, frame.channels);
+    read_and_convert_samples(
+        &plhs[0], sock, frame.samples, frame.channel_count);
     if (nlhs >= 2)
         read_and_convert_frequency(&plhs[1], sock, frame.samples, bunches);
     if (nlhs >= 3)
-        read_and_convert_timebase(&plhs[2], sock, frame.samples);
+        send_group_delay(&plhs[2], sock, bunches, frame.delay);
+    if (nlhs >= 4)
+        read_and_convert_timebase(&plhs[3], sock, frame.samples);
 
     close(sock);
 }

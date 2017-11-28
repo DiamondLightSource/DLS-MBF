@@ -4,7 +4,7 @@
 % channel is specified, the default is 0.  The frequency scale and timebase are
 % returned if requested.
 
-function varargout = lmbf_read_mem(lmbf, channel)
+function [d, s, varargout] = lmbf_read_mem(lmbf, channel)
     % Default arguments
     if ~exist('channel', 'var'); channel = 0; end
 
@@ -13,5 +13,10 @@ function varargout = lmbf_read_mem(lmbf, channel)
     port = lcaGet([lmbf ':SOCKET']);
     bunches = lcaGet([lmbf ':BUNCHES']);
 
-    [varargout{1:nargout}] = mex_lmbf_detector_(server, port, bunches, channel);
+    % Capture detector data, frequency scale, group delay, and optional timebase
+    [d, s, g, varargout{1:nargout-2}] = ...
+        mex_lmbf_detector_(server, port, bunches, channel);
+
+    % Phase correction of captured data
+    d = repmat(exp(-1i * g * s), 1, size(d, 2)) .* d;
 end

@@ -60,6 +60,7 @@ struct detector_context {
 
     /* Detector readout support. */
     unsigned int active_channels;       // Updated when preparing detector
+    unsigned int channel_mask;
     struct detector_result *read_buffer;
 
     /* Scale information for detector readout copied from sequencer. */
@@ -84,12 +85,13 @@ static void gather_buffers(
 }
 
 
-void get_detector_samples(
-    int channel, unsigned int *channels, unsigned int *samples)
+void get_detector_info(int channel, struct detector_info *info)
 {
     struct detector_context *det = &detector_context[channel];
-    *channels = det->active_channels;
-    *samples = det->scale_info.samples;
+    info->channel_mask = det->channel_mask;
+    info->channel_count = det->active_channels;
+    info->samples = det->scale_info.samples;
+    info->delay = det->phase_delay;
 }
 
 
@@ -279,10 +281,14 @@ void prepare_detector(int channel)
 
     /* Count the number of active channels, needed for readout. */
     det->active_channels = 0;
+    det->channel_mask = 0;
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
         if (config[i].enable)
+        {
             det->active_channels += 1;
+            det->channel_mask |= 1U << i;
+        }
     }
 
     /* Compute the delay required for phase correction. */

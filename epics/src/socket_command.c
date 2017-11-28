@@ -171,10 +171,26 @@ bool process_memory_command(struct buffered_file *file, const char *command)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* DET detector readout. */
 
+/* Same content as detector_info, but fixed size words. */
 struct detector_frame {
-    uint32_t channels;
+    uint8_t channel_count;
+    uint8_t channel_mask;
+    uint16_t delay;
     uint32_t samples;
 };
+
+
+static void write_detector_info(
+    struct buffered_file *file, struct detector_info *info)
+{
+    struct detector_frame frame = {
+        .channel_count = (uint8_t) info->channel_count,
+        .channel_mask = (uint8_t) info->channel_mask,
+        .delay = (uint16_t) info->delay,
+        .samples = (uint32_t) info->samples,
+    };
+    write_block(file, &frame, sizeof(frame));
+}
 
 
 static void read_detector_samples(
@@ -229,23 +245,23 @@ static void send_detector_result(
     struct buffered_file *file, int channel, bool framed,
     bool scale, bool timebase)
 {
-    struct detector_frame frame;
-    get_detector_samples(channel, &frame.channels, &frame.samples);
+    struct detector_info info;
+    get_detector_info(channel, &info);
 
     if (framed)
-        write_block(file, &frame, sizeof(frame));
+        write_detector_info(file, &info);
 
     send_detector_data(
-        file, channel, frame.samples,
-        frame.channels * (unsigned int) sizeof(struct detector_result),
+        file, channel, info.samples,
+        info.channel_count * (unsigned int) sizeof(struct detector_result),
         read_detector_samples);
     if (scale)
         send_detector_data(
-            file, channel, frame.samples,
+            file, channel, info.samples,
             sizeof(uint32_t), read_detector_scale);
     if (timebase)
         send_detector_data(
-            file, channel, frame.samples,
+            file, channel, info.samples,
             sizeof(uint32_t), read_detector_timebase);
 }
 
