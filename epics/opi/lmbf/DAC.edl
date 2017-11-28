@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2769
-y 324
+x 2682
+y 614
 w 641
 h 337
 font "helvetica-medium-r-18.0"
@@ -468,5 +468,31 @@ value {
   "Filter delay:"
 }
 autoSize
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 568
+y 280
+w 64
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "MMS"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/minmax.edl"
+}
+symbols {
+  0 "part=DAC"
+}
 endObjectProperties
 

@@ -1,26 +1,27 @@
 # Table of help pages for LMBF.  First column is OPI script name, second column
 # is URL for help page.
 
-ADC             http://confluence.diamond.ac.uk/x/ex5VB
-bunch_waveforms http://confluence.diamond.ac.uk/x/bx9VB
-control         http://confluence.diamond.ac.uk/x/Xx9VB
-DAC             http://confluence.diamond.ac.uk/x/WR9VB
-det_bunches     http://confluence.diamond.ac.uk/x/hh9VB
-detector        http://confluence.diamond.ac.uk/x/gB9VB
-det_waveforms   http://confluence.diamond.ac.uk/x/gx9VB
-fir_lmbf        http://confluence.diamond.ac.uk/x/-B5VB
-fir_tmbf        http://confluence.diamond.ac.uk/x/-B5VB
-fir_waveforms   http://confluence.diamond.ac.uk/x/Ah9VB
-lmbf            http://confluence.diamond.ac.uk/x/yx5VB
-memory          http://confluence.diamond.ac.uk/x/eh9VB
-minmax          http://confluence.diamond.ac.uk/x/xB5VB
-sequencer       http://confluence.diamond.ac.uk/x/aB9VB
-seq_window      http://confluence.diamond.ac.uk/x/Yh9VB
-status          http://confluence.diamond.ac.uk/x/ix9VB
-super_seq       http://confluence.diamond.ac.uk/x/bB9VB
-tmbf            http://confluence.diamond.ac.uk/x/yB5VB
-triggers        http://confluence.diamond.ac.uk/x/dx9VB
-trigger_target  http://confluence.diamond.ac.uk/x/cx9VB
+ADC             https://confluence.diamond.ac.uk/x/ex5VB
+bunch_waveforms https://confluence.diamond.ac.uk/x/bx9VB
+control         https://confluence.diamond.ac.uk/x/Xx9VB
+DAC             https://confluence.diamond.ac.uk/x/WR9VB
+det_bunches     https://confluence.diamond.ac.uk/x/hh9VB
+detector        https://confluence.diamond.ac.uk/x/gB9VB
+det_waveforms   https://confluence.diamond.ac.uk/x/gx9VB
+fir_lmbf        https://confluence.diamond.ac.uk/x/-B5VB
+fir_tmbf        https://confluence.diamond.ac.uk/x/-B5VB
+fir_waveforms   https://confluence.diamond.ac.uk/x/Ah9VB
+info            https://confluence.diamond.ac.uk/x/8oGNB
+lmbf            https://confluence.diamond.ac.uk/x/yx5VB
+memory          https://confluence.diamond.ac.uk/x/eh9VB
+minmax          https://confluence.diamond.ac.uk/x/xB5VB
+sequencer       https://confluence.diamond.ac.uk/x/aB9VB
+seq_window      https://confluence.diamond.ac.uk/x/Yh9VB
+status          https://confluence.diamond.ac.uk/x/ix9VB
+super_seq       https://confluence.diamond.ac.uk/x/bB9VB
+tmbf            https://confluence.diamond.ac.uk/x/yB5VB
+triggers        https://confluence.diamond.ac.uk/x/dx9VB
+trigger_target  https://confluence.diamond.ac.uk/x/cx9VB
 
 # The following default target is searched for if none of the above are valid
-*               http://confluence.diamond.ac.uk/x/eR5VB
+*               https://confluence.diamond.ac.uk/x/eR5VB

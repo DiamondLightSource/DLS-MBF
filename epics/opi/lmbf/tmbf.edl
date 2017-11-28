@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2752
-y 2
+x 2753
+y 3
 w 264
 h 313
 font "helvetica-medium-r-8.0"
@@ -579,6 +579,29 @@ xPoints {
 }
 yPoints {
   0 304
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 16
+y 280
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Info"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "lmbf/info.edl"
 }
 endObjectProperties
 
