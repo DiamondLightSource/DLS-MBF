@@ -7,8 +7,8 @@ void prepare_detector(int channel);
 
 
 struct detector_info {
-    unsigned int channel_mask;      // Mask of active detector channels
-    unsigned int channel_count;     // Number of channels captured into memory
+    unsigned int detector_mask;     // Mask of active detector channels
+    unsigned int detector_count;    // Number of channels captured into memory
     unsigned int samples;           // Number of samples captured
     int delay;                      // Detector skew in samples
 };

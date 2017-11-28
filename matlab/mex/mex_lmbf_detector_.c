@@ -37,8 +37,8 @@
 
 /* Framing header sent at start of detector readout. */
 struct detector_frame {
-    uint8_t channel_count;
-    uint8_t channel_mask;
+    uint8_t detector_count;
+    uint8_t detector_mask;
     uint16_t delay;
     uint32_t samples;
 };
@@ -163,7 +163,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     fill_buffer(sock, &frame, sizeof(frame), 1, 1);
 
     read_and_convert_samples(
-        &plhs[0], sock, frame.samples, frame.channel_count);
+        &plhs[0], sock, frame.samples, frame.detector_count);
     if (nlhs >= 2)
         read_and_convert_frequency(&plhs[1], sock, frame.samples, bunches);
     if (nlhs >= 3)

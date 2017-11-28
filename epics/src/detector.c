@@ -59,8 +59,8 @@ struct detector_context {
     bool underrun;
 
     /* Detector readout support. */
-    unsigned int active_channels;       // Updated when preparing detector
-    unsigned int channel_mask;
+    unsigned int detector_count;        // Number of active detectors
+    unsigned int detector_mask;
     struct detector_result *read_buffer;
 
     /* Scale information for detector readout copied from sequencer. */
@@ -88,8 +88,8 @@ static void gather_buffers(
 void get_detector_info(int channel, struct detector_info *info)
 {
     struct detector_context *det = &detector_context[channel];
-    info->channel_mask = det->channel_mask;
-    info->channel_count = det->active_channels;
+    info->detector_mask = det->detector_mask;
+    info->detector_count = det->detector_count;
     info->samples = det->scale_info.samples;
     info->delay = det->phase_delay;
 }
@@ -101,7 +101,7 @@ static void read_detector_memory(struct detector_context *det)
     unsigned int detector_length = system_config.detector_length;
     unsigned int samples = MIN(info->samples, detector_length);
     hw_read_det_memory(
-        det->channel, samples * det->active_channels, 0, det->read_buffer);
+        det->channel, samples * det->detector_count, 0, det->read_buffer);
 
     /* Gather all the buffers. */
     bool enables[DETECTOR_COUNT];
@@ -280,14 +280,14 @@ void prepare_detector(int channel)
     hw_write_det_start(channel);
 
     /* Count the number of active channels, needed for readout. */
-    det->active_channels = 0;
-    det->channel_mask = 0;
+    det->detector_count = 0;
+    det->detector_mask = 0;
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
         if (config[i].enable)
         {
-            det->active_channels += 1;
-            det->channel_mask |= 1U << i;
+            det->detector_count += 1;
+            det->detector_mask |= 1U << i;
         }
     }
 

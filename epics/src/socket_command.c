@@ -173,19 +173,70 @@ bool process_memory_command(struct buffered_file *file, const char *command)
 
 /* Same content as detector_info, but fixed size words. */
 struct detector_frame {
-    uint8_t channel_count;
-    uint8_t channel_mask;
+    uint8_t detector_count;
+    uint8_t detector_mask;
     uint16_t delay;
     uint32_t samples;
 };
 
 
+/* This structure captures the parsed results of a detector request command of
+ * the form:
+ *
+ *      D [R] channel [F] [S] [T]
+ *
+ * Returns detector readout with the following options:
+ *
+ *      R   If set then only raw data is returned and the connection is closed
+ *          if a parse error occurs.
+ *      channel
+ *          Specifies which channel is being read.
+ *      F   Request that the number of detectors and samples is sent as a header
+ *          before sending the raw data.
+ *      S   Request that the frequency scale for the detector is transmitted
+ *          after sending the channel data.
+ *      T   Request that the timebase for the detector is transmitted after the
+ *          channel data, and after the frequency scale if requested.
+ */
+struct detector_args {
+    bool raw_mode;                  // R    Don't send ok header
+    int channel;                    //      Detector channel
+    bool framed;                    // F    Send header frame
+    bool scale;                     // S    Send frequency scale
+    bool timebase;                  // T    Send timebase
+};
+
+
+/* Parsing of detector readout command. */
+static error__t parse_detector_args(
+    const char *command, struct detector_args *args)
+{
+    const char *command_in = command;
+    *args = (struct detector_args) { };
+    error__t error =
+        parse_char(&command, 'D')  ?:
+        DO(args->raw_mode = read_char(&command, 'R'))  ?:
+        parse_int(&command, &args->channel)  ?:
+        DO(args->framed = read_char(&command, 'F'))  ?:
+        DO(args->scale = read_char(&command, 'S'))  ?:
+        DO(args->timebase = read_char(&command, 'T'))  ?:
+        parse_eos(&command);
+
+    /* If a parse error, extend error with parse position. */
+    if (error)
+        error_extend(error, "Parse error at offset %zu", command - command_in);
+    return error;
+}
+
+
 static void write_detector_info(
     struct buffered_file *file, struct detector_info *info)
 {
+    /* Send the channel mask and count corresponding to which samples we're
+     * actually sending. */
     struct detector_frame frame = {
-        .channel_count = (uint8_t) info->channel_count,
-        .channel_mask = (uint8_t) info->channel_mask,
+        .detector_count = (uint8_t) info->detector_count,
+        .detector_mask = (uint8_t) info->detector_mask,
         .delay = (uint16_t) info->delay,
         .samples = (uint32_t) info->samples,
     };
@@ -241,81 +292,61 @@ static void send_detector_data(
 }
 
 
-static void send_detector_result(
-    struct buffered_file *file, int channel, bool framed,
-    bool scale, bool timebase)
+/* This is called before we have committed to sending a result, but after we
+ * have validated arguments. */
+static error__t prepare_detector_result(
+    struct buffered_file *file, struct detector_args *args,
+    struct detector_info *info)
 {
-    struct detector_info info;
-    get_detector_info(channel, &info);
+    get_detector_info(args->channel, info);
+    return ERROR_OK;
+}
 
-    if (framed)
-        write_detector_info(file, &info);
+
+static void send_detector_result(
+    struct buffered_file *file, struct detector_args *args,
+    struct detector_info *info)
+{
+    if (args->framed)
+        write_detector_info(file, info);
 
     send_detector_data(
-        file, channel, info.samples,
-        info.channel_count * (unsigned int) sizeof(struct detector_result),
+        file, args->channel, info->samples,
+        info->detector_count * (unsigned int) sizeof(struct detector_result),
         read_detector_samples);
-    if (scale)
+    if (args->scale)
         send_detector_data(
-            file, channel, info.samples,
+            file, args->channel, info->samples,
             sizeof(uint32_t), read_detector_scale);
-    if (timebase)
+    if (args->timebase)
         send_detector_data(
-            file, channel, info.samples,
+            file, args->channel, info->samples,
             sizeof(uint32_t), read_detector_timebase);
 }
 
 
-/* Supports command of form:
- *
- *      D [R] channel [F] [S] [T]
- *
- * Returns detector readout with the following options:
- *
- *      R   If set then only raw data is returned and the connection is closed
- *          if a parse error occurs.
- *      channel
- *          Specifies which channel is being read.
- *      F   Request that the number of channels and samples is sent as a header
- *          before sending the raw data.
- *      S   Request that the frequency scale for the detector is transmitted
- *          after sending the channel data.
- *      T   Request that the timebase for the detector is transmitted after the
- *          channel data, and after the frequency scale if requested.
- */
+/* Support detector result readout. */
 bool process_detector_command(struct buffered_file *file, const char *command)
 {
-    const char *command_in = command;
-    bool raw_mode = false;
-    int channel;
-    bool framed = false;
-    bool scale = false;
-    bool timebase = false;
-    error__t error =
-        parse_char(&command, 'D')  ?:
-        DO(raw_mode = read_char(&command, 'R'))  ?:
-        parse_int(&command, &channel)  ?:
-        DO(framed = read_char(&command, 'F'))  ?:
-        DO(scale = read_char(&command, 'S'))  ?:
-        DO(timebase = read_char(&command, 'T'))  ?:
-        parse_eos(&command);
-
-    /* Separate parse checking from argument validation, report parse errors
-     * with position of error. */
-    if (error)
-        error_extend(error, "Parse error at offset %zu", command - command_in);
+    struct detector_args args;
     int channel_count = system_config.lmbf_mode ? 1 : CHANNEL_COUNT;
-    error = error ?:
-        TEST_OK_(0 <= channel  &&  channel < channel_count,
+    error__t error =
+        parse_detector_args(command, &args)  ?:
+        TEST_OK_(0 <= args.channel  &&  args.channel < channel_count,
             "Invalid channel number");
 
+    /* At this point we need to make a start on the send process. */
+    struct detector_info info;
+    error = error ?:
+        prepare_detector_result(file, &args, &info);
+
     if (error)
-        return report_error(file, error, command_in, raw_mode);
+        return report_error(file, error, command, args.raw_mode);
     else
     {
-        if (!raw_mode)
+        if (!args.raw_mode)
             write_char(file, '\0');
-        send_detector_result(file, channel, framed, scale, timebase);
+        send_detector_result(file, &args, &info);
         return true;
     }
 }
