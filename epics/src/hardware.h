@@ -263,6 +263,9 @@ void hw_write_bunch_decimation(int channel, unsigned int decimation);
 /* Write taps for bunch by bunch FIR. */
 void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[]);
 
+/* Checks for FIR overflow on selected channel. */
+bool hw_read_bunch_overflow(int channel);
+
 
 /* DAC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

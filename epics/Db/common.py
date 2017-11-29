@@ -67,12 +67,12 @@ def channels(prefix, iq_mode = False):
     if iq_mode:
         with name_prefix(CHANNEL01):
             with name_prefix(prefix):
-                yield
+                yield CHANNEL01
     else:
         for channel in CHANNELS:
             with name_prefix(channel):
                 with name_prefix(prefix):
-                    yield
+                    yield channel
 
 
 def dBrange(count, step, start = 0):

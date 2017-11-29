@@ -628,6 +628,12 @@ void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[])
     UNLOCK(dsp_locks[channel]);
 }
 
+bool hw_read_bunch_overflow(int channel)
+{
+    struct dsp_fir_events events = READL(dsp_regs[channel]->fir_events);
+    return events.overflow;
+}
+
 
 /* DAC registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

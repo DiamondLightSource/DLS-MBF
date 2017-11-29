@@ -30,7 +30,8 @@ for c in channels('DAC'):
     mms.mms_pvs('DAC')
 
 
-Action('DAC:EVENTS',
-    SCAN = '.1 second',
-    FLNK = create_fanout('DAC:SCAN:FAN', *dac_events),
-    DESC = 'DAC event detect scan')
+with name_prefix('DAC'):
+    Action('EVENTS',
+        SCAN = '.1 second',
+        FLNK = create_fanout('SCAN:FAN', *dac_events),
+        DESC = 'DAC event detect scan')

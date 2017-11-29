@@ -32,7 +32,8 @@ for c in channels('ADC'):
     mms.mms_pvs('ADC')
 
 
-Action('ADC:EVENTS',
-    SCAN = '.1 second',
-    FLNK = create_fanout('ADC:SCAN:FAN', *adc_events),
-    DESC = 'ADC event detect scan')
+with name_prefix('ADC'):
+    Action('EVENTS',
+        SCAN = '.1 second',
+        FLNK = create_fanout('EVENTS:FAN', *adc_events),
+        DESC = 'ADC event detect scan')

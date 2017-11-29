@@ -36,6 +36,7 @@ struct fir_bank {
 
 static struct fir_context {
     int channel;
+    bool overflow;
     struct fir_bank banks[FIR_BANKS];
 } fir_context[CHANNEL_COUNT];
 
@@ -220,6 +221,16 @@ static void write_fir_decimation(unsigned int value)
 }
 
 
+static void scan_events(void)
+{
+    for (int i = 0; i < CHANNEL_COUNT; i ++)
+    {
+        struct fir_context *fir = &fir_context[i];
+        fir->overflow = hw_read_bunch_overflow(i);
+    }
+}
+
+
 error__t initialise_bunch_fir(void)
 {
     /* Initialise the common functionality: both channels publish individual
@@ -231,6 +242,8 @@ error__t initialise_bunch_fir(void)
 
         for (unsigned int i = 0; i < FIR_BANKS; i ++)
             publish_bank_waveforms(channel, i, &fir->banks[i]);
+
+        PUBLISH_READ_VAR(bi, "OVF", fir->overflow);
     }
 
     /* In TMBF mode the two channels operate independently, in LMBF mode most of
@@ -244,6 +257,8 @@ error__t initialise_bunch_fir(void)
         if (system_config.lmbf_mode)
             PUBLISH_WRITER_P(ulongout, "DECIMATION", write_fir_decimation);
     }
+
+    PUBLISH_ACTION("FIR:EVENTS", scan_events);
 
     if (!system_config.lmbf_mode)
         /* Disable decimation in TMBF mode. */
