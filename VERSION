@@ -1,6 +1,6 @@
 # This file contains the global version definition for the LMBF project.
 
-VERSION_EXTRA =
+VERSION_EXTRA = pre-
 VERSION_MAJOR = 0
-VERSION_MINOR = 1
+VERSION_MINOR = 2
 VERSION_PATCH = 0
