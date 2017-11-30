@@ -354,18 +354,19 @@ static void process_target_complete(struct target_config *target)
  * complete events. */
 static void dispatch_target_events(void *context, struct interrupts interrupts)
 {
-    LOCK(mutex);
-    FOR_ALL_TARGETS(target)
+    WITH_MUTEX(mutex)
     {
-        /* If we get both trigger and complete simultaneously we can process
-         * them in sequence. */
-        if (test_intersect(interrupts, target->trigger_interrupt))
-            process_target_trigger(target);
-        if (test_intersect(interrupts, target->complete_interrupt))
-            process_target_complete(target);
+        FOR_ALL_TARGETS(target)
+        {
+            /* If we get both trigger and complete simultaneously we can process
+             * them in sequence. */
+            if (test_intersect(interrupts, target->trigger_interrupt))
+                process_target_trigger(target);
+            if (test_intersect(interrupts, target->complete_interrupt))
+                process_target_complete(target);
+        }
+        update_global_state();
     }
-    update_global_state();
-    UNLOCK(mutex);
 }
 
 
@@ -373,13 +374,14 @@ void immediate_memory_capture(void)
 {
     struct target_config *target = &targets[TRIGGER_DRAM];
     bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
-    LOCK(mutex);
-    hw_write_dram_capture_command(true, false);
-    hw_write_trigger_fire(fire);
-    set_target_state(target, STATE_ARMED);
-    target->dont_rearm = true;      // Ensure this is a one-shot capture!
-    update_global_state();
-    UNLOCK(mutex);
+    WITH_MUTEX(mutex)
+    {
+        hw_write_dram_capture_command(true, false);
+        hw_write_trigger_fire(fire);
+        set_target_state(target, STATE_ARMED);
+        target->dont_rearm = true;      // Ensure this is a one-shot capture!
+        update_global_state();
+    }
 }
 
 

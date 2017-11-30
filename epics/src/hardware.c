@@ -181,33 +181,36 @@ static struct ctrl ctrl_mirror;
 
 void hw_write_lmbf_mode(bool lmbf_mode)
 {
-    LOCK(ctrl_lock);
-    ctrl_mirror.control.adc_mux  = lmbf_mode;
-    ctrl_mirror.control.nco0_mux = lmbf_mode;
-    ctrl_mirror.control.nco1_mux = lmbf_mode;
-    ctrl_mirror.control.bank_mux = lmbf_mode;
-    WRITEL(ctrl_regs->control, ctrl_mirror.control);
-    UNLOCK(ctrl_lock);
+    WITH_MUTEX(ctrl_lock)
+    {
+        ctrl_mirror.control.adc_mux  = lmbf_mode;
+        ctrl_mirror.control.nco0_mux = lmbf_mode;
+        ctrl_mirror.control.nco1_mux = lmbf_mode;
+        ctrl_mirror.control.bank_mux = lmbf_mode;
+        WRITEL(ctrl_regs->control, ctrl_mirror.control);
+    }
 }
 
 void hw_write_loopback_enable(int channel, bool loopback)
 {
-    LOCK(ctrl_lock);
-    uint32_t loopbacks = write_selected_bit(
-        ctrl_mirror.control.loopback, (unsigned) channel, loopback);
-    ctrl_mirror.control.loopback = loopbacks & 0x3;
-    WRITEL(ctrl_regs->control, ctrl_mirror.control);
-    UNLOCK(ctrl_lock);
+    WITH_MUTEX(ctrl_lock)
+    {
+        uint32_t loopbacks = write_selected_bit(
+            ctrl_mirror.control.loopback, (unsigned) channel, loopback);
+        ctrl_mirror.control.loopback = loopbacks & 0x3;
+        WRITEL(ctrl_regs->control, ctrl_mirror.control);
+    }
 }
 
 void hw_write_output_enable(int channel, bool enable)
 {
-    LOCK(ctrl_lock);
-    uint32_t enables = write_selected_bit(
-        ctrl_mirror.control.output, (unsigned) channel, enable);
-    ctrl_mirror.control.output = enables & 0x3;
-    WRITEL(ctrl_regs->control, ctrl_mirror.control);
-    UNLOCK(ctrl_lock);
+    WITH_MUTEX(ctrl_lock)
+    {
+        uint32_t enables = write_selected_bit(
+            ctrl_mirror.control.output, (unsigned) channel, enable);
+        ctrl_mirror.control.output = enables & 0x3;
+        WRITEL(ctrl_regs->control, ctrl_mirror.control);
+    }
 }
 
 
@@ -215,19 +218,21 @@ void hw_write_output_enable(int channel, bool enable)
 
 void hw_write_dram_mux(unsigned int mux)
 {
-    LOCK(ctrl_lock);
-    ctrl_mirror.mem_config.mux_select = mux & 0xF;
-    WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
-    UNLOCK(ctrl_lock);
+    WITH_MUTEX(ctrl_lock)
+    {
+        ctrl_mirror.mem_config.mux_select = mux & 0xF;
+        WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
+    }
 }
 
 void hw_write_dram_fir_gains(bool gains[CHANNEL_COUNT])
 {
-    LOCK(ctrl_lock);
-    ctrl_mirror.mem_config.fir0_gain = gains[0];
-    ctrl_mirror.mem_config.fir1_gain = gains[1];
-    WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
-    UNLOCK(ctrl_lock);
+    WITH_MUTEX(ctrl_lock)
+    {
+        ctrl_mirror.mem_config.fir0_gain = gains[0];
+        ctrl_mirror.mem_config.fir1_gain = gains[1];
+        WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
+    }
 }
 
 void hw_write_dram_runout(unsigned int count)
@@ -273,10 +278,11 @@ void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[])
 
 static void hw_write_bunch_count(unsigned int bunches)
 {
-    LOCK(ctrl_lock);
-    ctrl_mirror.trg_config_turn.max_bunch = (bunches - 1) & 0x3FF;
-    WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
-    UNLOCK(ctrl_lock);
+    WITH_MUTEX(ctrl_lock)
+    {
+        ctrl_mirror.trg_config_turn.max_bunch = (bunches - 1) & 0x3FF;
+        WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
+    }
 }
 
 void hw_write_turn_clock_sync(void)
@@ -298,18 +304,19 @@ void hw_write_turn_clock_offset(int channel, unsigned int offset)
      * generated.  Unfortunately this will then cause reading mms.count to hang
      * which will then freeze the system.  So don't. */
     ASSERT_OK(offset < hardware_config.bunches);
-    LOCK(ctrl_lock);
-    switch (channel)
+    WITH_MUTEX(ctrl_lock)
     {
-        case 0:
-            ctrl_mirror.trg_config_turn.dsp0_offset = offset & 0x3FF;
-            break;
-        case 1:
-            ctrl_mirror.trg_config_turn.dsp1_offset = offset & 0x3FF;
-            break;
+        switch (channel)
+        {
+            case 0:
+                ctrl_mirror.trg_config_turn.dsp0_offset = offset & 0x3FF;
+                break;
+            case 1:
+                ctrl_mirror.trg_config_turn.dsp1_offset = offset & 0x3FF;
+                break;
+        }
+        WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
     }
-    WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
-    UNLOCK(ctrl_lock);
 }
 
 void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking)
@@ -383,18 +390,19 @@ void hw_read_trigger_sources(
 
 void hw_write_trigger_blanking_duration(int channel, unsigned int duration)
 {
-    LOCK(ctrl_lock);
-    switch (channel)
+    WITH_MUTEX(ctrl_lock)
     {
-        case 0:
-            ctrl_mirror.trg_config_blanking.dsp0 = duration & 0xFFFF;
-            break;
-        case 1:
-            ctrl_mirror.trg_config_blanking.dsp1 = duration & 0xFFFF;
-            break;
+        switch (channel)
+        {
+            case 0:
+                ctrl_mirror.trg_config_blanking.dsp0 = duration & 0xFFFF;
+                break;
+            case 1:
+                ctrl_mirror.trg_config_blanking.dsp1 = duration & 0xFFFF;
+                break;
+        }
+        WRITEL(ctrl_regs->trg_config_blanking, ctrl_mirror.trg_config_blanking);
     }
-    WRITEL(ctrl_regs->trg_config_blanking, ctrl_mirror.trg_config_blanking);
-    UNLOCK(ctrl_lock);
 }
 
 void hw_write_trigger_delay(
@@ -422,26 +430,27 @@ void hw_write_trigger_enable_mask(
     const bool sources[TRIGGER_SOURCE_COUNT])
 {
     uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
-    LOCK(ctrl_lock);
-    switch (target)
+    WITH_MUTEX(ctrl_lock)
     {
-        case TRIGGER_SEQ0:
-            ctrl_mirror.trg_config_trig_seq.enable0 = source_mask & 0x7F;
-            WRITEL(ctrl_regs->trg_config_trig_seq,
-                ctrl_mirror.trg_config_trig_seq);
-            break;
-        case TRIGGER_SEQ1:
-            ctrl_mirror.trg_config_trig_seq.enable1 = source_mask & 0x7F;
-            WRITEL(ctrl_regs->trg_config_trig_seq,
-                ctrl_mirror.trg_config_trig_seq);
-            break;
-        case TRIGGER_DRAM:
-            ctrl_mirror.trg_config_trig_dram.enable = source_mask & 0x7F;
-            WRITEL(ctrl_regs->trg_config_trig_dram,
-                ctrl_mirror.trg_config_trig_dram);
-            break;
+        switch (target)
+        {
+            case TRIGGER_SEQ0:
+                ctrl_mirror.trg_config_trig_seq.enable0 = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq,
+                    ctrl_mirror.trg_config_trig_seq);
+                break;
+            case TRIGGER_SEQ1:
+                ctrl_mirror.trg_config_trig_seq.enable1 = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq,
+                    ctrl_mirror.trg_config_trig_seq);
+                break;
+            case TRIGGER_DRAM:
+                ctrl_mirror.trg_config_trig_dram.enable = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_dram,
+                    ctrl_mirror.trg_config_trig_dram);
+                break;
+        }
     }
-    UNLOCK(ctrl_lock);
 }
 
 void hw_write_trigger_blanking_mask(
@@ -449,35 +458,38 @@ void hw_write_trigger_blanking_mask(
     const bool sources[TRIGGER_SOURCE_COUNT])
 {
     uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
-    LOCK(ctrl_lock);
-    switch (target)
+    WITH_MUTEX(ctrl_lock)
     {
-        case TRIGGER_SEQ0:
-            ctrl_mirror.trg_config_trig_seq.blanking0 = source_mask & 0x7F;
-            WRITEL(ctrl_regs->trg_config_trig_seq,
-                ctrl_mirror.trg_config_trig_seq);
-            break;
-        case TRIGGER_SEQ1:
-            ctrl_mirror.trg_config_trig_seq.blanking1 = source_mask & 0x7F;
-            WRITEL(ctrl_regs->trg_config_trig_seq,
-                ctrl_mirror.trg_config_trig_seq);
-            break;
-        case TRIGGER_DRAM:
-            ctrl_mirror.trg_config_trig_dram.blanking = source_mask & 0x7F;
-            WRITEL(ctrl_regs->trg_config_trig_dram,
-                ctrl_mirror.trg_config_trig_dram);
-            break;
+        switch (target)
+        {
+            case TRIGGER_SEQ0:
+                ctrl_mirror.trg_config_trig_seq.blanking0 = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq,
+                    ctrl_mirror.trg_config_trig_seq);
+                break;
+            case TRIGGER_SEQ1:
+                ctrl_mirror.trg_config_trig_seq.blanking1 = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq,
+                    ctrl_mirror.trg_config_trig_seq);
+                break;
+            case TRIGGER_DRAM:
+                ctrl_mirror.trg_config_trig_dram.blanking = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_dram,
+                    ctrl_mirror.trg_config_trig_dram);
+                break;
+        }
     }
-    UNLOCK(ctrl_lock);
 }
 
 void hw_write_trigger_dram_blanking(const bool blanking[CHANNEL_COUNT])
 {
     uint32_t blanking_mask = bools_to_bits(CHANNEL_COUNT, blanking);
-    LOCK(ctrl_lock);
-    ctrl_mirror.trg_config_trig_dram.blanking_sel = blanking_mask & 0x3;
-    WRITEL(ctrl_regs->trg_config_trig_dram, ctrl_mirror.trg_config_trig_dram);
-    UNLOCK(ctrl_lock);
+    WITH_MUTEX(ctrl_lock)
+    {
+        ctrl_mirror.trg_config_trig_dram.blanking_sel = blanking_mask & 0x3;
+        WRITEL(
+            ctrl_regs->trg_config_trig_dram, ctrl_mirror.trg_config_trig_dram);
+    }
 }
 
 
@@ -495,28 +507,27 @@ static struct dsp dsp_mirror[2];
 static void read_mms(
     int channel, volatile struct mms *mms, struct mms_result *result)
 {
-    LOCK(dsp_locks[channel]);
-
-    struct mms_count count = READL(mms->count);
-    result->turns = count.turns + 1U;
-    result->turns_ovfl = count.turns_ovfl;
-    result->sum_ovfl = count.sum_ovfl;
-    result->sum2_ovfl = count.sum2_ovfl;
-
-    FOR_BUNCHES(i)
+    WITH_MUTEX(dsp_locks[channel])
     {
-        struct mms_readout_min_max min_max = READL(mms->readout.min_max);
-        result->minimum[i] = (int16_t) min_max.min;
-        result->maximum[i] = (int16_t) min_max.max;
+        struct mms_count count = READL(mms->count);
+        result->turns = count.turns + 1U;
+        result->turns_ovfl = count.turns_ovfl;
+        result->sum_ovfl = count.sum_ovfl;
+        result->sum2_ovfl = count.sum2_ovfl;
 
-        result->sum[i] = (int32_t) readl(&mms->readout.sum);
+        FOR_BUNCHES(i)
+        {
+            struct mms_readout_min_max min_max = READL(mms->readout.min_max);
+            result->minimum[i] = (int16_t) min_max.min;
+            result->maximum[i] = (int16_t) min_max.max;
 
-        uint32_t sum2_low = readl(&mms->readout.sum2_low);
-        uint32_t sum2_high = READL(mms->readout.sum2_high).sum2;
-        result->sum2[i] = sum2_low | (uint64_t) sum2_high << 32;
+            result->sum[i] = (int32_t) readl(&mms->readout.sum);
+
+            uint32_t sum2_low = readl(&mms->readout.sum2_low);
+            uint32_t sum2_high = READL(mms->readout.sum2_high).sum2;
+            result->sum2[i] = sum2_low | (uint64_t) sum2_high << 32;
+        }
     }
-
-    UNLOCK(dsp_locks[channel]);
 }
 
 
@@ -531,16 +542,14 @@ void hw_write_nco0_frequency(int channel, unsigned int frequency)
 
 void hw_write_adc_overflow_threshold(int channel, unsigned int threshold)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, adc_config, threshold, threshold & 0x3FFF);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, adc_config, threshold, threshold & 0x3FFF);
 }
 
 void hw_write_adc_delta_threshold(int channel, unsigned int delta)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, adc_config, delta, delta & 0xFFFF);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, adc_config, delta, delta & 0xFFFF);
 }
 
 void hw_read_adc_events(int channel, struct adc_events *result)
@@ -553,25 +562,24 @@ void hw_read_adc_events(int channel, struct adc_events *result)
 
 void hw_write_adc_taps(int channel, const int taps[])
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_FIELDS(dsp_regs[channel]->adc_command, .write = 1);
-    for (unsigned int i = 0; i < hardware_config.adc_taps; i ++)
-        writel(&dsp_regs[channel]->adc_taps, (uint32_t) taps[i]);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+    {
+        WRITE_FIELDS(dsp_regs[channel]->adc_command, .write = 1);
+        for (unsigned int i = 0; i < hardware_config.adc_taps; i ++)
+            writel(&dsp_regs[channel]->adc_taps, (uint32_t) taps[i]);
+    }
 }
 
 void hw_write_adc_mms_source(int channel, bool after_fir)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, adc_config, mms_source, after_fir);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, adc_config, mms_source, after_fir);
 }
 
 void hw_write_adc_dram_source(int channel, bool after_fir)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, adc_config, dram_source, after_fir);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, adc_config, dram_source, after_fir);
 }
 
 void hw_read_adc_mms(int channel, struct mms_result *result)
@@ -588,19 +596,20 @@ void hw_read_adc_mms(int channel, struct mms_result *result)
 void hw_write_bunch_config(
     int channel, unsigned int bank, const struct bunch_config *config)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_FIELDS(dsp_regs[channel]->bunch_config, .bank = bank & 0x3);
-    FOR_BUNCHES(i)
+    WITH_MUTEX(dsp_locks[channel])
     {
-        int gain = config->gain[i] >> (32 - 13);
-        WRITE_FIELDS(dsp_regs[channel]->bunch_bank,
-            .fir_select = (unsigned int) config->fir_select[i] & 0x3,
-            .gain = (unsigned int) gain & 0x1FFF,
-            .fir_enable = config->fir_enable[i],
-            .nco0_enable = config->nco0_enable[i],
-            .nco1_enable = config->nco1_enable[i]);
+        WRITE_FIELDS(dsp_regs[channel]->bunch_config, .bank = bank & 0x3);
+        FOR_BUNCHES(i)
+        {
+            int gain = config->gain[i] >> (32 - 13);
+            WRITE_FIELDS(dsp_regs[channel]->bunch_bank,
+                .fir_select = (unsigned int) config->fir_select[i] & 0x3,
+                .gain = (unsigned int) gain & 0x1FFF,
+                .fir_enable = config->fir_enable[i],
+                .nco0_enable = config->nco0_enable[i],
+                .nco1_enable = config->nco1_enable[i]);
+        }
     }
-    UNLOCK(dsp_locks[channel]);
 }
 
 void hw_write_bunch_decimation(int channel, unsigned int decimation)
@@ -612,20 +621,22 @@ void hw_write_bunch_decimation(int channel, unsigned int decimation)
     unsigned int decimation_shift =
         decimation == 1 ? 0 : 32 - (unsigned int) __builtin_clz(decimation - 1);
 
-    LOCK(dsp_locks[channel]);
-    dsp_mirror[channel].fir_config.limit = (decimation - 1) & 0x3F;
-    dsp_mirror[channel].fir_config.shift = decimation_shift & 0x7;
-    WRITEL(dsp_regs[channel]->fir_config, dsp_mirror[channel].fir_config);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+    {
+        dsp_mirror[channel].fir_config.limit = (decimation - 1) & 0x3F;
+        dsp_mirror[channel].fir_config.shift = decimation_shift & 0x7;
+        WRITEL(dsp_regs[channel]->fir_config, dsp_mirror[channel].fir_config);
+    }
 }
 
 void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[])
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, fir_config, bank, fir & 0x3);
-    for (unsigned int i = 0; i < hardware_config.bunch_taps; i ++)
-        writel(&dsp_regs[channel]->fir_taps, (uint32_t) taps[i]);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+    {
+        WRITE_DSP_MIRROR(channel, fir_config, bank, fir & 0x3);
+        for (unsigned int i = 0; i < hardware_config.bunch_taps; i ++)
+            writel(&dsp_regs[channel]->fir_taps, (uint32_t) taps[i]);
+    }
 }
 
 bool hw_read_bunch_overflow(int channel)
@@ -640,44 +651,38 @@ bool hw_read_bunch_overflow(int channel)
 
 void hw_write_dac_delay(int channel, unsigned int delay)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, delay, delay & 0x3FF);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, dac_config, delay, delay & 0x3FF);
 }
 
 void hw_write_dac_fir_gain(int channel, unsigned int gain)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, fir_gain, gain & 0xF);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, dac_config, fir_gain, gain & 0xF);
 }
 
 void hw_write_dac_nco0_gain(int channel, unsigned int gain)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, nco0_gain, gain & 0xF);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, dac_config, nco0_gain, gain & 0xF);
 }
 
 void hw_write_dac_nco0_enable(int channel, bool enable)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, nco0_enable, enable);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, dac_config, nco0_enable, enable);
 }
 
 void hw_write_dac_mms_source(int channel, bool after_fir)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, mms_source, after_fir);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, dac_config, mms_source, after_fir);
 }
 
 void hw_write_dac_dram_source(int channel, bool after_fir)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, dac_config, dram_source, after_fir);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, dac_config, dram_source, after_fir);
 }
 
 
@@ -691,11 +696,12 @@ void hw_read_dac_events(int channel, struct dac_events *result)
 
 void hw_write_dac_taps(int channel, const int taps[])
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_FIELDS(dsp_regs[channel]->dac_command, .write = 1);
-    for (unsigned int i = 0; i < hardware_config.dac_taps; i ++)
-        writel(&dsp_regs[channel]->dac_taps, (uint32_t) taps[i]);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+    {
+        WRITE_FIELDS(dsp_regs[channel]->dac_command, .write = 1);
+        for (unsigned int i = 0; i < hardware_config.dac_taps; i ++)
+            writel(&dsp_regs[channel]->dac_taps, (uint32_t) taps[i]);
+    }
 }
 
 void hw_read_dac_mms(int channel, struct mms_result *result)
@@ -776,27 +782,26 @@ static void write_sequencer_super_entries(
 
 void hw_write_seq_config(int channel, const struct seq_config *config)
 {
-    LOCK(dsp_locks[channel]);
-    write_sequencer_entries(channel, config->bank0, config->entries);
-    write_sequencer_window(channel, config->window);
-    write_sequencer_super_entries(
-        channel, config->super_seq_count, config->super_offsets);
-    WRITE_DSP_MIRROR(channel, seq_config, pc, config->sequencer_pc & 0x7);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+    {
+        write_sequencer_entries(channel, config->bank0, config->entries);
+        write_sequencer_window(channel, config->window);
+        write_sequencer_super_entries(
+            channel, config->super_seq_count, config->super_offsets);
+        WRITE_DSP_MIRROR(channel, seq_config, pc, config->sequencer_pc & 0x7);
+    }
 }
 
 void hw_write_seq_bank0(int channel, unsigned int bank0)
 {
-    LOCK(dsp_locks[channel]);
-    write_sequencer_entries(channel, bank0, NULL);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        write_sequencer_entries(channel, bank0, NULL);
 }
 
 void hw_write_seq_trigger_state(int channel, unsigned int state)
 {
-    LOCK(dsp_locks[channel]);
-    WRITE_DSP_MIRROR(channel, seq_config, trigger, state & 0x7);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        WRITE_DSP_MIRROR(channel, seq_config, trigger, state & 0x7);
 }
 
 void hw_write_seq_abort(int channel)
@@ -858,11 +863,10 @@ void hw_write_det_config(
         .enable3 = config[3].enable,
     };
 
-    LOCK(dsp_locks[channel]);
-    for (int i = 0; i < DETECTOR_COUNT; i ++)
-        write_det_bunch_enable(
-            channel, det_config, i, delay, config[i].bunch_enables);
-    UNLOCK(dsp_locks[channel]);
+    WITH_MUTEX(dsp_locks[channel])
+        for (int i = 0; i < DETECTOR_COUNT; i ++)
+            write_det_bunch_enable(
+                channel, det_config, i, delay, config[i].bunch_enables);
 }
 
 void hw_write_det_start(int channel)
@@ -885,11 +889,11 @@ void hw_read_det_memory(
     int channel, unsigned int result_count, unsigned int offset,
     struct detector_result result[])
 {
-    LOCK(dram1_mutex);
-    error__t error = read_dma_memory(
-        dram1_device, (unsigned int) channel * (DRAM1_LENGTH / 2) + offset,
-        result_count * sizeof(struct detector_result), result);
-    UNLOCK(dram1_mutex);
+    error__t error;
+    WITH_MUTEX(dram1_mutex)
+        error = read_dma_memory(
+            dram1_device, (unsigned int) channel * (DRAM1_LENGTH / 2) + offset,
+            result_count * sizeof(struct detector_result), result);
     ERROR_REPORT(error, "Error reading from DRAM1");
 }
 

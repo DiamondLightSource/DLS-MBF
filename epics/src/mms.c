@@ -287,11 +287,8 @@ static void *read_mms_thread(void *context)
     {
         usleep(system_config.mms_poll_interval);
         for (unsigned int i = 0; i < mms_handlers.count; i ++)
-        {
-            LOCK(mms_handlers.handlers[i].mutex);
-            read_raw_mms(&mms_handlers.handlers[i]);
-            UNLOCK(mms_handlers.handlers[i].mutex);
-        }
+            WITH_MUTEX(mms_handlers.handlers[i].mutex)
+                read_raw_mms(&mms_handlers.handlers[i]);
     }
     return NULL;
 }

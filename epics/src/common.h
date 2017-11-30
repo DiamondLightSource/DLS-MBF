@@ -84,6 +84,8 @@ double _pure freq_to_tune_signed(unsigned int freq);
 #define LOCK(mutex)     pthread_mutex_lock(&mutex)
 #define UNLOCK(mutex)   pthread_mutex_unlock(&mutex)
 
+#define WITH_MUTEX(mutex)   _WITH_ENTER_LEAVE(LOCK(mutex), UNLOCK(mutex))
+
 
 /* Generic squaring function. */
 #define _id_SQR(temp, x)    ( { typeof(x) temp = (x); temp * temp; } )
