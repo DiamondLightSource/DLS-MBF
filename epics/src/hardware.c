@@ -141,8 +141,8 @@ static volatile struct sys *sys_regs;
 
 void hw_read_fpga_version(struct fpga_version *version)
 {
-    struct sys_version sys_version = sys_regs->version;
-    struct sys_git_version git_version = sys_regs->git_version;
+    struct sys_version sys_version = READL(sys_regs->version);
+    struct sys_git_version git_version = READL(sys_regs->git_version);
     *version = (struct fpga_version) {
         .major = sys_version.major,
         .minor = sys_version.minor,
@@ -154,7 +154,7 @@ void hw_read_fpga_version(struct fpga_version *version)
 
 void hw_read_system_status(struct system_status *result)
 {
-    struct sys_status status = sys_regs->status;
+    struct sys_status status = READL(sys_regs->status);
     result->dsp_ok = status.dsp_ok;
     result->vcxo_ok = status.vcxo_ok;
     result->adc_ok = status.adc_ok;
@@ -242,7 +242,7 @@ void hw_write_dram_runout(unsigned int count)
 
 unsigned int hw_read_dram_address(void)
 {
-    return readl(&ctrl_regs->mem_address);
+    return READL(ctrl_regs->mem_address);
 }
 
 void hw_write_dram_capture_command(bool start, bool stop)
@@ -254,8 +254,7 @@ void hw_write_dram_capture_command(bool start, bool stop)
 
 bool hw_read_dram_active(void)
 {
-    struct ctrl_mem_status status = READL(ctrl_regs->mem_status);
-    return status.enable;
+    return READL(ctrl_regs->mem_status).enable;
 }
 
 void hw_read_dram_status(bool fir_overflow[CHANNEL_COUNT])
@@ -294,8 +293,8 @@ void hw_read_turn_clock_counts(
     unsigned int *turn_count, unsigned int *error_count)
 {
     WRITE_FIELDS(ctrl_regs->trg_control, .read_sync = 1);
-    *turn_count = ctrl_regs->trg_turn_count.count;
-    *error_count = ctrl_regs->trg_error_count.count;
+    *turn_count  = READL(ctrl_regs->trg_turn_count).count;
+    *error_count = READL(ctrl_regs->trg_error_count).count;
 }
 
 void hw_write_turn_clock_offset(int channel, unsigned int offset)
@@ -371,7 +370,7 @@ void hw_read_trigger_sources(
     enum trigger_target target,
     bool sources[TRIGGER_SOURCE_COUNT])
 {
-    struct ctrl_trg_sources trg_sources = ctrl_regs->trg_sources;
+    struct ctrl_trg_sources trg_sources = READL(ctrl_regs->trg_sources);
     uint32_t source_mask = 0;
     switch (target)
     {
@@ -521,9 +520,9 @@ static void read_mms(
             result->minimum[i] = (int16_t) min_max.min;
             result->maximum[i] = (int16_t) min_max.max;
 
-            result->sum[i] = (int32_t) readl(&mms->readout.sum);
+            result->sum[i] = (int32_t) READL(mms->readout.sum);
 
-            uint32_t sum2_low = readl(&mms->readout.sum2_low);
+            uint32_t sum2_low = READL(mms->readout.sum2_low);
             uint32_t sum2_high = READL(mms->readout.sum2_high).sum2;
             result->sum2[i] = sum2_low | (uint64_t) sum2_high << 32;
         }
@@ -533,7 +532,7 @@ static void read_mms(
 
 void hw_write_nco0_frequency(int channel, unsigned int frequency)
 {
-    writel(&dsp_regs[channel]->nco0_freq, frequency);
+    WRITEL(dsp_regs[channel]->nco0_freq, frequency);
 }
 
 
@@ -566,7 +565,7 @@ void hw_write_adc_taps(int channel, const int taps[])
     {
         WRITE_FIELDS(dsp_regs[channel]->adc_command, .write = 1);
         for (unsigned int i = 0; i < hardware_config.adc_taps; i ++)
-            writel(&dsp_regs[channel]->adc_taps, (uint32_t) taps[i]);
+            WRITEL(dsp_regs[channel]->adc_taps, (uint32_t) taps[i]);
     }
 }
 
@@ -635,14 +634,13 @@ void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[])
     {
         WRITE_DSP_MIRROR(channel, fir_config, bank, fir & 0x3);
         for (unsigned int i = 0; i < hardware_config.bunch_taps; i ++)
-            writel(&dsp_regs[channel]->fir_taps, (uint32_t) taps[i]);
+            WRITEL(dsp_regs[channel]->fir_taps, (uint32_t) taps[i]);
     }
 }
 
 bool hw_read_bunch_overflow(int channel)
 {
-    struct dsp_fir_events events = READL(dsp_regs[channel]->fir_events);
-    return events.overflow;
+    return READL(dsp_regs[channel]->fir_events).overflow;
 }
 
 
@@ -700,7 +698,7 @@ void hw_write_dac_taps(int channel, const int taps[])
     {
         WRITE_FIELDS(dsp_regs[channel]->dac_command, .write = 1);
         for (unsigned int i = 0; i < hardware_config.dac_taps; i ++)
-            writel(&dsp_regs[channel]->dac_taps, (uint32_t) taps[i]);
+            WRITEL(dsp_regs[channel]->dac_taps, (uint32_t) taps[i]);
     }
 }
 
@@ -717,8 +715,8 @@ static void write_sequencer_state(int channel, const struct seq_entry *entry)
 {
     volatile union dsp_seq_state *target = &dsp_regs[channel]->seq_state;
 
-    writel(&target->start_freq, entry->start_freq);
-    writel(&target->delta_freq, entry->delta_freq);
+    WRITEL(target->start_freq, entry->start_freq);
+    WRITEL(target->delta_freq, entry->delta_freq);
     WRITE_FIELDS(target->time,
         .dwell = (entry->dwell_time - 1) & 0xFFFF,
         .capture = (entry->capture_count - 1) & 0xFFFF);
@@ -729,11 +727,11 @@ static void write_sequencer_state(int channel, const struct seq_entry *entry)
         .ena_write = entry->write_enable,
         .ena_blank = entry->enable_blanking,
         .ena_nco = entry->nco_enable);
-    writel(&target->window_rate, entry->window_rate);
+    WRITEL(target->window_rate, entry->window_rate);
     WRITE_FIELDS(target->holdoff,
         .holdoff = entry->holdoff & 0xFFFF);
-    writel(&target->padding, 0);
-    writel(&target->padding, 0);
+    WRITEL(target->padding, 0);
+    WRITEL(target->padding, 0);
 }
 
 /* Writes the complete sequencer memory. */
@@ -759,7 +757,7 @@ static void write_sequencer_window(int channel, const int window[])
     WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
     WRITE_DSP_MIRROR(channel, seq_config, target, 1);
     for (unsigned int i = 0; i < DET_WINDOW_LENGTH; i ++)
-        writel(&dsp_regs[channel]->seq_det_window, (uint32_t) window[i]);
+        WRITEL(dsp_regs[channel]->seq_det_window, (uint32_t) window[i]);
 }
 
 /* Writes the super sequencer entries. */
@@ -775,7 +773,7 @@ static void write_sequencer_super_entries(
      * match the fact that states will be read from count down to 0, and we
      * only need to write the states that will actually be used. */
     for (unsigned int i = 0; i < super_count; i ++)
-        writel(&dsp_regs[channel]->seq_super_state,
+        WRITEL(dsp_regs[channel]->seq_super_state,
             offsets[super_count - 1 - i]);
 }
 
@@ -839,12 +837,12 @@ static void write_det_bunch_enable(
         enable_mask |= (uint32_t) enables[j] << (i & 0x1F);
         if ((i & 0x1F) == 0x1F)
         {
-            writel(&dsp_regs[channel]->det_bunch, enable_mask);
+            WRITEL(dsp_regs[channel]->det_bunch, enable_mask);
             enable_mask = 0;
         }
     }
     if (hardware_config.bunches & 0x1F)
-        writel(&dsp_regs[channel]->det_bunch, enable_mask);
+        WRITEL(dsp_regs[channel]->det_bunch, enable_mask);
 }
 
 void hw_write_det_config(
