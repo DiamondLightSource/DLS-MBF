@@ -24,21 +24,17 @@
 #include "socket_command.h"
 
 
-static bool report_error(
-    struct buffered_file *file,
-    error__t error, const char *command, bool raw_mode)
+/* Extends a parse error with an annotation of where the error was detected.
+ * The results aren't always all that clear! */
+static error__t fixup_parse_error(
+    error__t error, const char *parsed, const char *command, bool raw_mode)
 {
-    if (raw_mode)
-    {
-        ERROR_REPORT(error, "Error parsing \"%s\"", command);
-        return false;
-    }
-    else
-    {
-        write_formatted_string(file, "%s\n", error_format(error));
-        error_discard(error);
-        return true;
-    }
+    /* For the offset take account of the leading command character and any
+     * preceding R mark. */
+    ssize_t offset = parsed - command + 1 + raw_mode;
+    if (error)
+        error_extend(error, "Parse error at offset %zu", offset);
+    return error;
 }
 
 
@@ -159,7 +155,6 @@ static void release_lock(
  *          succeed.
  */
 struct memory_args {
-    bool raw_mode;                  // R    Don't send ok header
     unsigned int count;             //      Number of turns to send
     int offset;                     // O    Start offset
     int channel;                    // C    Channel selection
@@ -168,15 +163,13 @@ struct memory_args {
 
 
 static error__t parse_memory_args(
-    const char *command, struct memory_args *args)
+    const char *command, struct memory_args *args, bool raw_mode)
 {
     const char *command_in = command;
     *args = (struct memory_args) {
         .channel = -1,
     };
     error__t error =
-        parse_char(&command, 'M')  ?:
-        DO(args->raw_mode = read_char(&command, 'R'))  ?:
         parse_uint(&command, &args->count)  ?:
         IF(read_char(&command, 'O'),
             parse_int(&command, &args->offset))  ?:
@@ -187,9 +180,7 @@ static error__t parse_memory_args(
         parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
 
-    if (error)
-        error_extend(error, "Parse error at offset %zu", command - command_in);
-    return error;
+    return fixup_parse_error(error, command, command_in, raw_mode);
 }
 
 
@@ -253,19 +244,18 @@ static void send_memory_data(
 }
 
 
-bool process_memory_command(struct buffered_file *file, const char *command)
+error__t process_memory_command(
+    struct buffered_file *file, bool raw_mode, const char *command)
 {
     struct memory_args args;
     struct trigger_ready_lock *lock = get_memory_trigger_ready_lock();
     error__t error =
-        parse_memory_args(command, &args)  ?:
+        parse_memory_args(command, &args, raw_mode)  ?:
         wait_for_lock(lock, file, args.locking);
 
-    if (error)
-        return report_error(file, error, command, args.raw_mode);
-    else
+    if (!error)
     {
-        if (!args.raw_mode)
+        if (!raw_mode)
             write_char(file, '\0');
 
         bool channels[2] = { true, true };
@@ -274,8 +264,8 @@ bool process_memory_command(struct buffered_file *file, const char *command)
         send_memory_data(file, args.count, args.offset, channels);
 
         release_lock(lock, args.locking);
-        return true;
     }
+    return error;
 }
 
 
@@ -314,7 +304,6 @@ struct detector_frame {
  *          succeed.
  */
 struct detector_args {
-    bool raw_mode;                  // R    Don't send ok header
     int channel;                    //      Detector channel
     bool framed;                    // F    Send header frame
     bool scale;                     // S    Send frequency scale
@@ -325,13 +314,11 @@ struct detector_args {
 
 /* Parsing of detector readout command. */
 static error__t parse_detector_args(
-    const char *command, struct detector_args *args)
+    const char *command, struct detector_args *args, bool raw_mode)
 {
     const char *command_in = command;
     *args = (struct detector_args) { };
     error__t error =
-        parse_char(&command, 'D')  ?:
-        DO(args->raw_mode = read_char(&command, 'R'))  ?:
         parse_int(&command, &args->channel)  ?:
         DO(args->framed = read_char(&command, 'F'))  ?:
         DO(args->scale = read_char(&command, 'S'))  ?:
@@ -339,10 +326,7 @@ static error__t parse_detector_args(
         parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
 
-    /* If a parse error, extend error with parse position. */
-    if (error)
-        error_extend(error, "Parse error at offset %zu", command - command_in);
-    return error;
+    return fixup_parse_error(error, command, command_in, raw_mode);
 }
 
 
@@ -432,23 +416,22 @@ static void send_detector_result(
 
 
 /* Support detector result readout. */
-bool process_detector_command(struct buffered_file *file, const char *command)
+error__t process_detector_command(
+    struct buffered_file *file, bool raw_mode, const char *command)
 {
     struct detector_args args;
     int channel_count = system_config.lmbf_mode ? 1 : CHANNEL_COUNT;
     struct trigger_ready_lock *lock;
     error__t error =
-        parse_detector_args(command, &args)  ?:
+        parse_detector_args(command, &args, raw_mode)  ?:
         TEST_OK_(0 <= args.channel  &&  args.channel < channel_count,
             "Invalid channel number")  ?:
         DO(lock = get_detector_trigger_ready_lock(args.channel))  ?:
         wait_for_lock(lock, file, args.locking);
 
-    if (error)
-        return report_error(file, error, command, args.raw_mode);
-    else
+    if (!error)
     {
-        if (!args.raw_mode)
+        if (!raw_mode)
             write_char(file, '\0');
 
         struct detector_info info;
@@ -456,6 +439,7 @@ bool process_detector_command(struct buffered_file *file, const char *command)
         send_detector_result(file, &args, &info);
 
         release_lock(lock, args.locking);
-        return true;
     }
+
+    return error;
 }

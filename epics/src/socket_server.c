@@ -17,6 +17,7 @@
 #include "error.h"
 #include "buffered_file.h"
 #include "socket_command.h"
+#include "parse.h"
 
 #include "socket_server.h"
 
@@ -33,6 +34,7 @@
 struct connection {
     int sock;                       // Connected socket
     char name[64];                  // Name of connected client
+    struct buffered_file *file;     // Buffered access to socket
 };
 
 
@@ -42,6 +44,7 @@ static struct connection *create_connection(
     struct connection *connection = malloc(sizeof(struct connection));
     *connection = (struct connection) {
         .sock = sock,
+        .file = create_buffered_file(sock, 4096, 4096),
     };
 
     uint8_t *ip = (uint8_t *) &client->sin_addr.s_addr;
@@ -53,10 +56,24 @@ static struct connection *create_connection(
 }
 
 
+static void report_error(
+    struct connection *connection,
+    error__t error, const char *command, bool raw_mode)
+{
+    log_message("Client %s error: %s", connection->name, error_format(error));
+    if (!raw_mode)
+        write_formatted_string(connection->file, "%s\n", error_format(error));
+    error_discard(error);
+}
+
+
 static void delete_connection(struct connection *connection)
 {
-    log_message("Client %s disconnected", connection->name);
+    error__t error = destroy_buffered_file(connection->file);
     close(connection->sock);
+
+    ERROR_REPORT(error, "Client %s error", connection->name);
+    log_message("Client %s disconnected", connection->name);
     free(connection);
 }
 
@@ -64,30 +81,40 @@ static void delete_connection(struct connection *connection)
 static void *process_connection(void *context)
 {
     struct connection *connection = context;
-    struct buffered_file *file = create_buffered_file(
-        connection->sock, 4096, 4096);
+    struct buffered_file *file = connection->file;
 
     char line[256];
-    bool ok = true;
-    while (ok  &&  read_line(file, line, sizeof(line), true))
+    while (read_line(file, line, sizeof(line), true))
     {
         log_message("Client %s command: \"%s\"", connection->name, line);
-        switch (line[0])
+
+        const char *command = line;
+        bool raw_mode = read_char(&command, 'R');
+        error__t error;
+        switch (*command)
         {
-            case 'M':   ok = process_memory_command(file, line);     break;
-            case 'D':   ok = process_detector_command(file, line);   break;
+            case 'M':
+                error = process_memory_command(file, raw_mode, ++command);
+                break;
+            case 'D':
+                error = process_detector_command(file, raw_mode, ++command);
+                break;
             case '\0':
-                write_formatted_string(file, "Missing command\n");
+                error = FAIL_("Missing command");
                 break;
             default:
-                write_formatted_string(file,
-                    "Unknown command: %c.\n", line[0]);
+                error = FAIL_("Unknown command: '%c'", *command);
+                break;
+        }
+
+        if (error)
+        {
+            report_error(connection, error, line, raw_mode);
+            if (raw_mode)
                 break;
         }
     }
 
-    error__t error = destroy_buffered_file(file);
-    ERROR_REPORT(error, "Error handling client %s", connection->name);
     delete_connection(connection);
     return NULL;
 }

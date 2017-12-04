@@ -254,6 +254,8 @@ struct buffered_file *create_buffered_file(
 
 error__t destroy_buffered_file(struct buffered_file *file)
 {
+    flush_out_buf(file);
+
     error__t error = file->error;
     free(file->in_buf);
     free(file->out_buf);
