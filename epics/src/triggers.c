@@ -89,7 +89,6 @@ static void prepare_seq_target(struct target_config *target)
 
 static void stop_seq_target(struct target_config *target)
 {
-    hw_write_seq_abort(target->channel);
 }
 
 
@@ -138,16 +137,16 @@ struct target_config targets[TRIGGER_TARGET_COUNT] = {
 
 struct channel_context {
     int channel;
-    struct target_config *sequencer;
+    struct target_config *target;
     unsigned int turn_clock_offset;
 } channel_contexts[CHANNEL_COUNT] = {
     [0] = {
         .channel = 0,
-        .sequencer = &targets[TRIGGER_SEQ0],
+        .target = &targets[TRIGGER_SEQ0],
     },
     [1] = {
         .channel = 1,
-        .sequencer = &targets[TRIGGER_SEQ1],
+        .target = &targets[TRIGGER_SEQ1],
     },
 };
 
@@ -166,6 +165,46 @@ static bool retrigger_mode = false;
 static bool dont_rearm = false;     // One shot suppression of rearm on disarm
 static unsigned int trigger_state;
 static struct epics_record *trigger_status_pv;
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Trigger locking. */
+
+
+#define POLL_INTERVAL   1000U
+
+
+struct trigger_ready_lock *get_memory_trigger_ready_lock(void)
+{
+    return (struct trigger_ready_lock *) &targets[TRIGGER_DRAM];
+}
+
+struct trigger_ready_lock *get_detector_trigger_ready_lock(int channel)
+{
+    return (struct trigger_ready_lock *) channel_contexts[channel].target;
+}
+
+
+error__t lock_trigger_ready(
+    struct trigger_ready_lock *lock, unsigned int timeout,
+    error__t (*poll)(void *context), void *context)
+{
+    while (timeout > POLL_INTERVAL)
+    {
+        unsigned int duration = MIN(timeout, POLL_INTERVAL);
+        timeout -= duration;
+        error__t error = poll(context);
+        if (error)
+            return error;
+    }
+    return ERROR_OK;
+}
+
+
+void unlock_trigger_ready(struct trigger_ready_lock *lock)
+{
+}
+
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -565,10 +604,10 @@ error__t initialise_triggers(void)
         PUBLISH_ACTION("IN", read_input_events);
         PUBLISH_ACTION("SOFT", hw_write_trigger_soft_trigger);
 
+        PUBLISH_WRITE_VAR_P(bo, "MODE", retrigger_mode, .mutex = &mutex);
         PUBLISH_ACTION("ARM", arm_shared_targets, .mutex = &mutex);
         PUBLISH_ACTION("DISARM", disarm_shared_targets, .mutex = &mutex);
 
-        PUBLISH_WRITE_VAR_P(bo, "MODE", retrigger_mode, .mutex = &mutex);
         trigger_status_pv = PUBLISH_READ_VAR_I(mbbi, "STATUS", trigger_state);
 
         WITH_NAME_PREFIX("TURN")
@@ -585,7 +624,7 @@ error__t initialise_triggers(void)
     FOR_CHANNEL_NAMES(channel, "TRG", system_config.lmbf_mode)
     {
         struct channel_context *chan = &channel_contexts[channel];
-        create_target("SEQ", chan->sequencer);
+        create_target("SEQ", chan->target);
         PUBLISH_C_P(ulongout, "BLANKING", write_blanking_window, chan);
         PUBLISH_C_P(ulongout, "TURN:OFFSET", write_turn_offset, chan);
     }

@@ -3,7 +3,8 @@
  *
  * The function defined here must be called thus:
  *
- *      [d,s,g,t] = mex_lmbf_detector_(hostname, port, bunches, channel);
+ *      [d,s,g,t] = mex_lmbf_detector_( ...
+ *          hostname, port, bunches, channel, locking);
  *
  * Data is captured from hostname:port and returned in an array of size
  *
@@ -15,6 +16,11 @@
  *      s   Frequency scale in turns (of length samples) for detector values
  *      g   Group delay in radians per turn of captured data
  *      t   Timebase in turns (of length samples) of detector value
+ *
+ * The locking parameter determines behaviour as follows:
+ *      locking < 0  => No locking requested
+ *      locking == 0 => Immediate lock only requested
+ *      locking > 0  => Lock with timeout requested
  */
 
 #include <stdbool.h>
@@ -137,26 +143,45 @@ static void send_group_delay(mxArray **lhs, int sock, int bunches, int delay)
 }
 
 
+static void do_send_command(
+    int sock, int channel, bool timebase, int locking)
+{
+    char command[64];
+    char *command_in = command;
+    command_in += sprintf(command_in, "D%dFS", channel);
+    if (timebase)
+        command_in += sprintf(command_in, "T");
+
+    if (locking >= 0)
+        command_in += sprintf(command_in, "L");
+    if (locking > 0)
+        command_in += sprintf(command_in, "W%d", locking);
+
+    send_command(sock, "%s\n", command);
+    check_result(sock);
+}
+
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     /* We expect four arguments: hostname, port, bunches, channel. */
-    TEST_OK_(nrhs == 4, "args", "Wrong number of arguments");
-    /* Can assign up to three results. */
+    TEST_OK_(nrhs == 5, "args", "Wrong number of arguments");
+    /* Can assign up to four results, expect three. */
+    TEST_OK_(nlhs >= 3, "result", "Too few results requested");
     TEST_OK_(nlhs <= 4, "result", "Too many results requested");
 
     char hostname[256];
     TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
-    int port = (int) mxGetScalar(prhs[1]);
+    int port    = (int) mxGetScalar(prhs[1]);
     int bunches = (int) mxGetScalar(prhs[2]);
     int channel = (int) mxGetScalar(prhs[3]);
+    int locking = (int) (mxGetScalar(prhs[4]) * 1e3);
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions! */
     int sock = connect_server(hostname, port);
-    send_command(sock, "D%dF%s%s\n",
-        channel, nlhs >= 2 ? "S" : "", nlhs >= 3 ? "T" : "");
-    check_result(sock);
+    do_send_command(sock, channel, nlhs > 3, locking);
 
     /* Start by reading the frame so we know what data to expect. */
     struct detector_frame frame;

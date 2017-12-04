@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
 
 #include "error.h"
 
@@ -15,6 +19,7 @@
 #include "memory.h"
 #include "detector.h"
 #include "sequencer.h"
+#include "triggers.h"
 
 #include "socket_command.h"
 
@@ -38,6 +43,85 @@ static bool report_error(
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Locking. */
+
+struct lock_parse {
+    bool lock;                      // L    Request locked readout
+    unsigned int timeout;           // W    Lock timeout in milliseconds
+};
+
+/* Parses [L [W timeout]] fragment of readout request. */
+static error__t parse_lock(
+    const char **command, struct lock_parse *parse)
+{
+    parse->lock = read_char(command, 'L');
+    parse->timeout = 0;
+    return
+        IF(parse->lock  &&  read_char(command, 'W'),
+            parse_uint(command, &parse->timeout));
+}
+
+
+/* This check_connection call is polled periodically to ensure that the socket
+ * client is still connected.  Without this check, it is possible for a client
+ * to create numerous stalled threads and possibly exhaust the available
+ * threads.
+ *
+ * Unfortunately, this check is quite tricky to set up and it takes about a
+ * minute for a disconnected client to be discovered. */
+static error__t check_connection(void *context)
+{
+    struct buffered_file *file = context;
+    int sock = get_socket(file);
+    return TEST_IO_(send(sock, NULL, 0, 0), "Client disconnected");
+}
+
+
+static error__t wait_for_lock(
+    struct trigger_ready_lock *lock,
+    struct buffered_file *file, struct lock_parse args)
+{
+    if (args.lock)
+    {
+        int sock = get_socket(file);
+        int keepalive = true;
+        int keepidle = 1;
+        int keepintvl = 1;
+        int keepcnt = 5;
+        struct timeval sndtimeo = { .tv_sec = 5, .tv_usec = 0 };
+        return
+            /* The following options are documented in tcp(7).  We need to
+             * enable SO_KEEPALIVE with timeout so that we can detect that our
+             * client has gone away in a timely manner. */
+            TEST_IO(setsockopt(
+                sock, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(int)))  ?:
+            TEST_IO(setsockopt(
+                sock, SOL_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int)))  ?:
+            TEST_IO(setsockopt(
+                sock, SOL_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int)))  ?:
+            TEST_IO(setsockopt(
+                sock, SOL_TCP, TCP_KEEPCNT, &keepcnt, sizeof(int)))  ?:
+            /* Also set the send timeout so that when we do start sending we'll
+             * detect failure quickly. */
+            TEST_IO(setsockopt(
+                sock, SOL_SOCKET, SO_SNDTIMEO, &sndtimeo, sizeof(sndtimeo)))  ?:
+            /* Finally go and grab the trigger ready lock, if we can. */
+            lock_trigger_ready(lock, args.timeout, check_connection, file);
+    }
+    else
+        return ERROR_OK;
+}
+
+
+static void release_lock(
+    struct trigger_ready_lock *lock, struct lock_parse args)
+{
+    if (args.lock)
+        unlock_trigger_ready(lock);
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* MEM capture readout. */
 
 /* The correct read buffer size is slightly delicate.  We want all reads from
@@ -52,6 +136,61 @@ static bool report_error(
  * keep the socket data flowing efficiently, but not so large as to provoke
  * stack overflow for our smaller thread stack. */
 #define WRITE_BUFFER_BYTES      (1 << 16)
+
+
+/* Supports command of the form:
+ *
+ *      M [R] count [O offset] [C channel] [L [W timeout]]
+ *
+ * Returns memory captured into memory with the following options:
+ *
+ *      R   If set then only raw data is returned and the connection is closed
+ *          if a parse error occurs.
+ *      count
+ *          Number of turns of data to capture.
+ *      O offset
+ *          Starting offset in turns, default to 0.
+ *      C channel
+ *          If requested, only the one channel will be transmitted, halving the
+ *          data transmitted.
+ *      L   If set then lock readout
+ *      W timeout
+ *          If locking then optionally wait timeout milliseconds for lock to
+ *          succeed.
+ */
+struct memory_args {
+    bool raw_mode;                  // R    Don't send ok header
+    unsigned int count;             //      Number of turns to send
+    int offset;                     // O    Start offset
+    int channel;                    // C    Channel selection
+    struct lock_parse locking;      // L,W  Locking request
+};
+
+
+static error__t parse_memory_args(
+    const char *command, struct memory_args *args)
+{
+    const char *command_in = command;
+    *args = (struct memory_args) {
+        .channel = -1,
+    };
+    error__t error =
+        parse_char(&command, 'M')  ?:
+        DO(args->raw_mode = read_char(&command, 'R'))  ?:
+        parse_uint(&command, &args->count)  ?:
+        IF(read_char(&command, 'O'),
+            parse_int(&command, &args->offset))  ?:
+        IF(read_char(&command, 'C'),
+            parse_int(&command, &args->channel)  ?:
+            TEST_OK_(0 <= args->channel  &&  args->channel < CHANNEL_COUNT,
+                "Invalid channel number"))  ?:
+        parse_lock(&command, &args->locking)  ?:
+        parse_eos(&command);
+
+    if (error)
+        error_extend(error, "Parse error at offset %zu", command - command_in);
+    return error;
+}
 
 
 static void send_converted_memory_data(
@@ -114,55 +253,27 @@ static void send_memory_data(
 }
 
 
-/* Supports command of the form:
- *
- *      M [R] count [O offset] [C channel]
- *
- * Returns memory captured into memory with the following options:
- *
- *      R   If set then only raw data is returned and the connection is closed
- *          if a parse error occurs.
- *      count
- *          Number of turns of data to capture.
- *      O offset
- *          Starting offset in turns, default to 0.
- *      C channel
- *          If requested, only the one channel will be transmitted, halving the
- *          data transmitted.
- */
 bool process_memory_command(struct buffered_file *file, const char *command)
 {
-    const char *command_in = command;
-    unsigned int count = 0;
-    int offset = 0;
-    bool raw_mode = false;
-    int channel = -1;
+    struct memory_args args;
+    struct trigger_ready_lock *lock = get_memory_trigger_ready_lock();
     error__t error =
-        parse_char(&command, 'M')  ?:
-        DO(raw_mode = read_char(&command, 'R'))  ?:
-        parse_uint(&command, &count)  ?:
-        IF(read_char(&command, 'O'),
-            parse_int(&command, &offset))  ?:
-        IF(read_char(&command, 'C'),
-            parse_int(&command, &channel)  ?:
-            TEST_OK_(0 <= channel  &&  channel < CHANNEL_COUNT,
-                "Invalid channel number"))  ?:
-        parse_eos(&command);
+        parse_memory_args(command, &args)  ?:
+        wait_for_lock(lock, file, args.locking);
 
     if (error)
-        error_extend(error, "Parse error at offset %zu", command - command_in);
-
-    if (error)
-        return report_error(file, error, command_in, raw_mode);
+        return report_error(file, error, command, args.raw_mode);
     else
     {
-        bool channels[2] = { true, true };
-        if (channel >=0)
-            channels[1 - channel] = false;
-
-        if (!raw_mode)
+        if (!args.raw_mode)
             write_char(file, '\0');
-        send_memory_data(file, count, offset, channels);
+
+        bool channels[2] = { true, true };
+        if (args.channel >= 0)
+            channels[1 - args.channel] = false;
+        send_memory_data(file, args.count, args.offset, channels);
+
+        release_lock(lock, args.locking);
         return true;
     }
 }
@@ -183,7 +294,7 @@ struct detector_frame {
 /* This structure captures the parsed results of a detector request command of
  * the form:
  *
- *      D [R] channel [F] [S] [T]
+ *      D [R] channel [F] [S] [T] [L [W timeout]]
  *
  * Returns detector readout with the following options:
  *
@@ -197,6 +308,10 @@ struct detector_frame {
  *          after sending the channel data.
  *      T   Request that the timebase for the detector is transmitted after the
  *          channel data, and after the frequency scale if requested.
+ *      L   If set then lock readout
+ *      W timeout
+ *          If locking then optionally wait timeout milliseconds for lock to
+ *          succeed.
  */
 struct detector_args {
     bool raw_mode;                  // R    Don't send ok header
@@ -204,6 +319,7 @@ struct detector_args {
     bool framed;                    // F    Send header frame
     bool scale;                     // S    Send frequency scale
     bool timebase;                  // T    Send timebase
+    struct lock_parse locking;      // L,W  Locking request
 };
 
 
@@ -220,6 +336,7 @@ static error__t parse_detector_args(
         DO(args->framed = read_char(&command, 'F'))  ?:
         DO(args->scale = read_char(&command, 'S'))  ?:
         DO(args->timebase = read_char(&command, 'T'))  ?:
+        parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
 
     /* If a parse error, extend error with parse position. */
@@ -292,17 +409,6 @@ static void send_detector_data(
 }
 
 
-/* This is called before we have committed to sending a result, but after we
- * have validated arguments. */
-static error__t prepare_detector_result(
-    struct buffered_file *file, struct detector_args *args,
-    struct detector_info *info)
-{
-    get_detector_info(args->channel, info);
-    return ERROR_OK;
-}
-
-
 static void send_detector_result(
     struct buffered_file *file, struct detector_args *args,
     struct detector_info *info)
@@ -330,15 +436,13 @@ bool process_detector_command(struct buffered_file *file, const char *command)
 {
     struct detector_args args;
     int channel_count = system_config.lmbf_mode ? 1 : CHANNEL_COUNT;
+    struct trigger_ready_lock *lock;
     error__t error =
         parse_detector_args(command, &args)  ?:
         TEST_OK_(0 <= args.channel  &&  args.channel < channel_count,
-            "Invalid channel number");
-
-    /* At this point we need to make a start on the send process. */
-    struct detector_info info;
-    error = error ?:
-        prepare_detector_result(file, &args, &info);
+            "Invalid channel number")  ?:
+        DO(lock = get_detector_trigger_ready_lock(args.channel))  ?:
+        wait_for_lock(lock, file, args.locking);
 
     if (error)
         return report_error(file, error, command, args.raw_mode);
@@ -346,7 +450,12 @@ bool process_detector_command(struct buffered_file *file, const char *command)
     {
         if (!args.raw_mode)
             write_char(file, '\0');
+
+        struct detector_info info;
+        get_detector_info(args.channel, &info);
         send_detector_result(file, &args, &info);
+
+        release_lock(lock, args.locking);
         return true;
     }
 }

@@ -265,3 +265,8 @@ bool check_buffered_file(struct buffered_file *file)
 {
     return !file->error;
 }
+
+int get_socket(struct buffered_file *file)
+{
+    return file->sock;
+}

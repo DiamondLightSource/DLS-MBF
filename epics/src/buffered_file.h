@@ -46,3 +46,6 @@ error__t destroy_buffered_file(struct buffered_file *file);
 /* Returns the error status of the buffered file.  If false is returned then an
  * error condition has been detected. */
 bool check_buffered_file(struct buffered_file *file);
+
+/* Returns the socket handle associated with the given buffered_file. */
+int get_socket(struct buffered_file *file);

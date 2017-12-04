@@ -271,6 +271,7 @@ static void write_readout_offset(int offset)
 
 static void capture_complete(void)
 {
+    update_channel_delays();
     trigger_origin = hw_read_dram_address();
     readout_memory();
 }
@@ -281,10 +282,7 @@ static void handle_memory_event(void *context, struct interrupts interrupts)
     WRITE_IN_RECORD(bi, busy_status, hw_read_dram_active());
 
     if (interrupts.dram_done)
-    {
-        update_channel_delays();
         capture_complete();
-    }
 }
 
 
@@ -322,11 +320,6 @@ error__t initialise_memory(void)
     memory_wf0 = CALLOC(int16_t, readout_length);
     memory_wf1 = CALLOC(int16_t, readout_length);
 
-    register_event_handler(
-        INTERRUPT_HANDLER_MEMORY,
-        INTERRUPTS(.dram_busy = 1, .dram_done = 1),
-        NULL, handle_memory_event);
-
     WITH_NAME_PREFIX("MEM")
     {
         /* Memory readout. */
@@ -354,6 +347,11 @@ error__t initialise_memory(void)
         busy_status = PUBLISH_IN_VALUE_I(bi, "BUSY");
         PUBLISH_WRITER_P(mbbo, "RUNOUT", write_dram_runout);
     }
+
+    register_event_handler(
+        INTERRUPT_HANDLER_MEMORY,
+        INTERRUPTS(.dram_busy = 1, .dram_done = 1),
+        NULL, handle_memory_event);
 
     return ERROR_OK;
 }
