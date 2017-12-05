@@ -99,7 +99,9 @@ static void prepare_mem_target(struct target_config *target)
 
 static void stop_mem_target(struct target_config *target)
 {
-    hw_write_dram_capture_command(false, true);
+    /* Stop the memory target by actually forcing a trigger! */
+    bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
+    hw_write_trigger_fire(fire);
 }
 
 
@@ -128,7 +130,7 @@ struct target_config targets[TRIGGER_TARGET_COUNT] = {
         .channel = -1,          // Not valid for this target
         .prepare_target = prepare_mem_target,
         .stop_target = stop_mem_target,
-        .disarmed_state = STATE_BUSY,
+        .disarmed_state = STATE_ARMED,  // A trigger is on its way!
         .trigger_interrupt = { .dram_trigger = 1, },
         .complete_interrupt = { .dram_done = 1, },
     },
@@ -253,12 +255,11 @@ static void do_arm_target(struct target_config *target, bool arm_mask[])
 
 /* Disarms a single target by performing a target specific stop, recording the
  * disarm flag, and switching into the target specific state. */
-static void do_disarm_target(struct target_config *target, bool disarm_mask[])
+static void do_disarm_target(struct target_config *target)
 {
     target->dont_rearm = target->state != STATE_IDLE;
     if (target->state == STATE_ARMED)
     {
-        disarm_mask[target->target] = true;
         target->stop_target(target);
         set_target_state(target, target->disarmed_state);
     }
@@ -310,29 +311,6 @@ static void update_trigger_sources(struct target_config *target)
  * All these methods are called with the target mutex lock held. */
 
 
-/* This is called with mutex locked to arm the target. */
-static bool arm_target(void *context, bool *value)
-{
-    bool arm_mask[TRIGGER_TARGET_COUNT] = { };
-    do_arm_target(context, arm_mask);
-    hw_write_trigger_arm(arm_mask);
-    update_global_state();
-    return true;
-}
-
-
-/* This is called with mutex locked to disarm the target.  Only valid when
- * target is in Armed state. */
-static bool disarm_target(void *context, bool *value)
-{
-    bool disarm_mask[TRIGGER_TARGET_COUNT] = { };
-    do_disarm_target(context, disarm_mask);
-    hw_write_trigger_disarm(disarm_mask);
-    update_global_state();
-    return true;
-}
-
-
 /* Called with mutex locked to arm all shared targets. */
 static void arm_shared_targets(void)
 {
@@ -349,15 +327,56 @@ static void arm_shared_targets(void)
 static void disarm_shared_targets(void)
 {
     dont_rearm = trigger_state != STATE_IDLE;
+
     bool disarm_mask[TRIGGER_TARGET_COUNT] = { };
     FOR_SHARED_TARGETS(target)
-        do_disarm_target(target, disarm_mask);
+        disarm_mask[target->target] = true;
     hw_write_trigger_disarm(disarm_mask);
+
+    FOR_SHARED_TARGETS(target)
+        do_disarm_target(target);
     update_global_state();
 }
 
 
 /* This is called with mutex locked to process trigger event. */
+static bool arm_target(void *context, bool *value)
+{
+    struct target_config *target = context;
+    if (target->mode == MODE_SHARED)
+        arm_shared_targets();
+    else
+    {
+        bool arm_mask[TRIGGER_TARGET_COUNT] = { };
+        do_arm_target(target, arm_mask);
+        hw_write_trigger_arm(arm_mask);
+        update_global_state();
+    }
+    return true;
+}
+
+
+/* This is called with trigger_mutex locked to disarm the target.  Only valid
+ * when target is in Armed state. */
+static bool disarm_target(void *context, bool *value)
+{
+    struct target_config *target = context;
+    if (target->mode == MODE_SHARED)
+        disarm_shared_targets();
+    else
+    {
+        bool disarm_mask[TRIGGER_TARGET_COUNT] = { };
+        disarm_mask[target->target] = true;
+        hw_write_trigger_disarm(disarm_mask);
+
+        do_disarm_target(target);
+        update_global_state();
+    }
+    return true;
+}
+
+
+/* This is called with trigger_mutex locked to process trigger event. */
 static void process_target_trigger(struct target_config *target)
 {
     if (target->state == STATE_ARMED)

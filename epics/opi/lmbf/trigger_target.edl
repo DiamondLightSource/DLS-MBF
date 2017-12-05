@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 705
-y 363
+x 378
+y 449
 w 399
 h 376
 font "helvetica-medium-r-18.0"
@@ -900,7 +900,7 @@ release 0
 x 8
 y 112
 w 112
-h 192
+h 256
 lineColor index 14
 fill
 fillColor index 4
@@ -1457,5 +1457,28 @@ w 104
 h 16
 lineColor index 14
 fillColor index 0
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 24
+y 320
+w 80
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):TRG:SOFT_S.PROC"
+pressValue "0"
+onLabel "Soft"
+offLabel "Soft"
+3d
+font "helvetica-bold-r-12.0"
 endObjectProperties
 
