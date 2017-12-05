@@ -74,7 +74,7 @@ static error__t check_connection(void *context)
 
 
 static error__t wait_for_lock(
-    struct trigger_ready_lock *lock,
+    struct target_config *lock,
     struct buffered_file *file, struct lock_parse args)
 {
     if (args.lock)
@@ -109,8 +109,7 @@ static error__t wait_for_lock(
 }
 
 
-static void release_lock(
-    struct trigger_ready_lock *lock, struct lock_parse args)
+static void release_lock(struct target_config *lock, struct lock_parse args)
 {
     if (args.lock)
         unlock_trigger_ready(lock);
@@ -248,7 +247,7 @@ error__t process_memory_command(
     struct buffered_file *file, bool raw_mode, const char *command)
 {
     struct memory_args args;
-    struct trigger_ready_lock *lock = get_memory_trigger_ready_lock();
+    struct target_config *lock = get_memory_trigger_ready_lock();
     error__t error =
         parse_memory_args(command, &args, raw_mode)  ?:
         wait_for_lock(lock, file, args.locking);
@@ -421,7 +420,7 @@ error__t process_detector_command(
 {
     struct detector_args args;
     int channel_count = system_config.lmbf_mode ? 1 : CHANNEL_COUNT;
-    struct trigger_ready_lock *lock;
+    struct target_config *lock;
     error__t error =
         parse_detector_args(command, &args, raw_mode)  ?:
         TEST_OK_(0 <= args.channel  &&  args.channel < channel_count,

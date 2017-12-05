@@ -10,9 +10,9 @@ void immediate_memory_capture(void);
 /* The trigger ready lock is used to wait for the trigger to become ready (not
  * armed, not busy).  First the appropriate lock should be captured using one of
  * these two methods. */
-struct trigger_ready_lock;
-struct trigger_ready_lock *get_memory_trigger_ready_lock(void);
-struct trigger_ready_lock *get_detector_trigger_ready_lock(int channel);
+struct target_config;
+struct target_config *get_memory_trigger_ready_lock(void);
+struct target_config *get_detector_trigger_ready_lock(int channel);
 
 /* Call this function to wait for the trigger target state to become ready and
  * lockable.  The timeout is in milliseconds and specifies how long the caller
@@ -23,9 +23,9 @@ struct trigger_ready_lock *get_detector_trigger_ready_lock(int channel);
  *   While waiting for the lock, poll(context) may be called repeatedly, and can
  * return false to abort waiting for the lock. */
 error__t lock_trigger_ready(
-    struct trigger_ready_lock *lock, unsigned int timeout,
+    struct target_config *lock, unsigned int timeout,
     error__t (*poll)(void *context), void *context);
 
 /* This must be called after a successful lock, and needs to be called in a
  * timely manner to avoid starvation of the system. */
-void unlock_trigger_ready(struct trigger_ready_lock *lock);
+void unlock_trigger_ready(struct target_config *lock);

@@ -17,6 +17,11 @@ def event_set(suffix, suffix_desc):
         event('%s:%s' % (source, suffix), '%s %s' % (desc, suffix_desc))
         for source, desc in trigger_sources]
 
+def target_status():
+    return mbbIn('STATUS', 'Idle', 'Armed', 'Busy', 'Locked',
+        SCAN = 'I/O Intr',
+        DESC = 'Trigger target status')
+
 
 def target_pvs(prefix):
     with name_prefix(prefix):
@@ -41,9 +46,7 @@ def target_pvs(prefix):
         Action('ARM', DESC = 'Arm trigger')
         Action('DISARM', DESC = 'Disarm trigger')
         mbbOut('MODE', 'One Shot', 'Rearm', 'Shared', DESC = 'Arming mode')
-        mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
-            SCAN = 'I/O Intr',
-            DESC = 'Trigger target status')
+        target_status()
 
 
 def turn_pvs():
@@ -88,9 +91,7 @@ with name_prefix('TRG'):
     Action('DISARM', DESC = 'Disarm all shared targets')
 
     boolOut('MODE', 'One Shot', 'Rearm', DESC = 'Shared trigger mode')
-    mbbIn('STATUS', 'Idle', 'Armed', 'Busy',
-        SCAN = 'I/O Intr',
-        DESC = 'Trigger target status')
+    target_status()
 
     with name_prefix('TURN'):
         turn_pvs()
