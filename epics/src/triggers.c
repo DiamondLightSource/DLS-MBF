@@ -94,11 +94,6 @@ static void prepare_seq_target(struct target_config *target)
     prepare_detector(target->channel);
 }
 
-static void stop_seq_target(struct target_config *target)
-{
-}
-
-
 static void prepare_mem_target(struct target_config *target)
 {
     prepare_memory();
@@ -118,7 +113,6 @@ struct target_config targets[TRIGGER_TARGET_COUNT] = {
         .target = TRIGGER_SEQ0,
         .channel = 0,
         .prepare_target = prepare_seq_target,
-        .stop_target = stop_seq_target,
         .disarmed_state = STATE_IDLE,
         .trigger_interrupt = { .seq_trigger = 1, },
         .complete_interrupt = { .seq_done = 1, },
@@ -127,7 +121,6 @@ struct target_config targets[TRIGGER_TARGET_COUNT] = {
         .target = TRIGGER_SEQ1,
         .channel = 1,
         .prepare_target = prepare_seq_target,
-        .stop_target = stop_seq_target,
         .disarmed_state = STATE_IDLE,
         .trigger_interrupt = { .seq_trigger = 2, },
         .complete_interrupt = { .seq_done = 2, },
@@ -233,7 +226,8 @@ static void do_disarm_target(struct target_config *target)
     target->dont_rearm = target->state != STATE_IDLE;
     if (target->state == STATE_ARMED)
     {
-        target->stop_target(target);
+        if (target->stop_target)
+            target->stop_target(target);
         set_target_state(target, target->disarmed_state);
     }
     else if (target->state == STATE_LOCKED)
@@ -276,134 +270,6 @@ static void update_trigger_sources(struct target_config *target)
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Trigger locking. */
-
-#define POLL_INTERVAL   10          // Seconds
-
-
-struct target_config *get_memory_trigger_ready_lock(void)
-{
-    return &targets[TRIGGER_DRAM];
-}
-
-struct target_config *get_detector_trigger_ready_lock(int channel)
-{
-    return channel_contexts[channel].target;
-}
-
-
-/* Checks if the trigger is ready. */
-static bool check_trigger_ready(struct target_config *target)
-{
-    return target->state == STATE_IDLE  ||  target->state == STATE_LOCKED;
-}
-
-
-/* Waits for event or deadline, returns true if deadline reached. */
-static bool pwait_deadline(
-    pthread_mutex_t *mutex, pthread_cond_t *signal,
-    const struct timespec *deadline)
-{
-struct timespec now = get_current_time();
-struct timespec delta = subtract_timespec(*deadline, now);
-printf("pwait %ld.%09ld\n", delta.tv_sec, delta.tv_nsec);
-    int rc = pthread_cond_timedwait(signal, mutex, deadline);
-    if (rc == ETIMEDOUT)
-        return true;
-    else
-    {
-        ASSERT_PTHREAD(rc);
-        return false;
-    }
-}
-
-
-/* This is the complex locking path where we wait with repeated polls for the
- * trigger to become ready. */
-static error__t wait_trigger_ready(
-    struct target_config *target, unsigned int timeout,
-    error__t (*poll)(void *context), void *context)
-{
-    /* The main complication here is that we need to wait with repeated wakeups
-     * so that we can ensure that poll() is called, this is required so that we
-     * don't just hang forever. */
-    struct timespec now = get_current_time();
-    struct timespec final_deadline =
-        add_timespec(now, interval_to_timespec((int) timeout, MSECS));
-    struct timespec delta = interval_to_timespec(POLL_INTERVAL, 1);
-
-    error__t error = ERROR_OK;
-    struct timespec next_tick = now;
-    do {
-        /* Compute the deadline for the next wait. */
-        next_tick = earliest_timespec(
-            add_timespec(next_tick, delta), final_deadline);
-        bool last_tick = compare_timespec_eq(next_tick, final_deadline);
-
-        /* Wait to reach the current deadline. */
-        bool timed_out, ready;
-        do {
-            timed_out = pwait_deadline(
-                &trigger_mutex, &trigger_event, &next_tick);
-            ready = check_trigger_ready(target);
-        } while (!ready  &&  !timed_out);
-
-        /* If we're ready we're done, if we run out of ticks we've timed out,
-         * otherwise poll for client disconnect and go round and wait again. */
-        if (ready)
-            break;
-        else if (last_tick)
-            error = FAIL_("Timed out waiting for trigger");
-        else
-            error = poll(context);
-    } while (!error);
-    return error;
-}
-
-
-/* Must be called under lock.  If the lock count reaches zero and there's a
- * pending arm request then it is honoured. */
-static void decrement_trigger_lock_count(struct target_config *target)
-{
-    target->lock_count -= 1;
-    if (target->lock_count == 0  &&  target->state == STATE_LOCKED)
-    {
-printf("should arm target now\n");
-    }
-}
-
-
-error__t lock_trigger_ready(
-    struct target_config *target, unsigned int timeout,
-    error__t (*poll)(void *context), void *context)
-{
-    error__t error = ERROR_OK;
-    WITH_MUTEX(trigger_mutex)
-    {
-        target->lock_count += 1;
-        bool ready = check_trigger_ready(target);
-
-        if (timeout == 0  ||  ready)
-            error = TEST_OK_(ready, "Trigger not ready");
-        else
-            error = wait_trigger_ready(target, timeout, poll, context);
-
-        if (error)
-            decrement_trigger_lock_count(target);
-    }
-    return error;
-}
-
-
-void unlock_trigger_ready(struct target_config *target)
-{
-    WITH_MUTEX(trigger_mutex)
-        decrement_trigger_lock_count(target);
-}
-
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Trigger target state control entry points. */
 
 /* Here we manage the state transitions for a single trigger target.  We report
@@ -418,6 +284,13 @@ void unlock_trigger_ready(struct target_config *target)
 static void arm_shared_targets(void)
 {
     dont_rearm = false;
+
+    /* First check whether any of the given targets are locked. */
+    bool locked = false;
+    FOR_SHARED_TARGETS(target)
+        if (target->lock_count > 0)
+            locked = true;
+
     bool arm_mask[TRIGGER_TARGET_COUNT] = { };
     FOR_SHARED_TARGETS(target)
         do_arm_target(target, arm_mask);
@@ -479,16 +352,38 @@ static bool disarm_target(void *context, bool *value)
 }
 
 
+/* Called on transition from target locked for readout to unlocked, performs
+ * rearming where possible, updates global state if appropriate. */
+static void process_target_unlocked(struct target_config *target)
+{
+    if (target->state == STATE_LOCKED)
+    {
+        if (target->mode == MODE_SHARED)
+            update_global_state();
+        else
+        {
+            target->state = STATE_IDLE;
+            arm_target(target, NULL);
+        }
+    }
+}
+
+
+/* Controls target rearming mode and refresh global state as appropriate. */
+static bool write_target_mode(void *context, unsigned int *mode)
+{
+    struct target_config *target = context;
+    target->mode = *mode;
+    update_global_state();
+    return true;
+}
+
+
 /* This is called with trigger_mutex locked to process trigger event. */
 static void process_target_trigger(struct target_config *target)
 {
     if (target->state == STATE_ARMED)
         set_target_state(target, STATE_BUSY);
-    else if (target->state == STATE_IDLE)
-        /* Normally the trigger takes us straight from Armed to Busy, but if we
-         * see a trigger in Idle mode it's possible that the disarm was too
-         * late.  In this case forcibly stop the target. */
-        target->stop_target(target);
     else
         printf("Unexpected trigger %u %u\n", target->target, target->state);
 
@@ -548,20 +443,141 @@ void immediate_memory_capture(void)
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Trigger locking. */
+
+#define POLL_INTERVAL   10          // Seconds
+
+
+struct target_config *get_memory_trigger_ready_lock(void)
+{
+    return &targets[TRIGGER_DRAM];
+}
+
+struct target_config *get_detector_trigger_ready_lock(int channel)
+{
+    return channel_contexts[channel].target;
+}
+
+
+/* Returns true if we are now ready to deliver data without interference, ie if
+ * the underlying state is idle. */
+static bool check_trigger_ready(struct target_config *target)
+{
+    return target->state == STATE_IDLE  ||  target->state == STATE_LOCKED;
+}
+
+
+/* Waits for event or deadline, returns true if deadline reached. */
+static bool pwait_deadline(
+    pthread_mutex_t *mutex, pthread_cond_t *signal,
+    const struct timespec *deadline)
+{
+    int rc = pthread_cond_timedwait(signal, mutex, deadline);
+    if (rc == ETIMEDOUT)
+        return true;
+    else
+    {
+        ASSERT_PTHREAD(rc);
+        return false;
+    }
+}
+
+
+/* This is the complex locking path where we wait with repeated polls for the
+ * trigger to become ready. */
+static error__t wait_trigger_ready(
+    struct target_config *target, unsigned int timeout,
+    error__t (*poll)(void *context), void *context)
+{
+    /* The main complication here is that we need to wait with repeated wakeups
+     * so that we can ensure that poll() is called, this is required so that we
+     * don't just hang forever. */
+    struct timespec now = get_current_time();
+    struct timespec final_deadline =
+        add_timespec(now, interval_to_timespec((int) timeout, MSECS));
+    struct timespec delta = interval_to_timespec(POLL_INTERVAL, 1);
+
+    error__t error = ERROR_OK;
+    struct timespec next_tick = now;
+    do {
+        /* Compute the deadline for the next wait. */
+        next_tick = earliest_timespec(
+            add_timespec(next_tick, delta), final_deadline);
+        bool last_tick = compare_timespec_eq(next_tick, final_deadline);
+
+        /* Wait to reach the current deadline. */
+        bool timed_out, ready;
+        do {
+            timed_out = pwait_deadline(
+                &trigger_mutex, &trigger_event, &next_tick);
+            ready = check_trigger_ready(target);
+        } while (!ready  &&  !timed_out);
+
+        /* If we're ready we're done, if we run out of ticks we've timed out,
+         * otherwise poll for client disconnect and go round and wait again. */
+        if (ready)
+            break;
+        else if (last_tick)
+            error = FAIL_("Timed out waiting for trigger");
+        else
+            error = poll(context);
+    } while (!error);
+    return error;
+}
+
+
+/* Must be called under lock.  If the lock count reaches zero and there's a
+ * pending arm request then it is honoured. */
+static void decrement_trigger_lock_count(struct target_config *target)
+{
+    target->lock_count -= 1;
+    if (target->lock_count == 0)
+        process_target_unlocked(target);
+}
+
+
+error__t lock_trigger_ready(
+    struct target_config *target, unsigned int timeout,
+    error__t (*poll)(void *context), void *context)
+{
+    error__t error;
+    WITH_MUTEX(trigger_mutex)
+    {
+        if (check_trigger_ready(target))
+        {
+            target->lock_count += 1;
+            error = ERROR_OK;
+        }
+        else if (timeout == 0)
+            error = FAIL_("Trigger not ready");
+        else
+        {
+            /* Add to the lock count while we wait.  This ensures that when we
+             * do become ready the trigger will remain locked. */
+            target->lock_count += 1;
+            error = wait_trigger_ready(target, timeout, poll, context);
+            if (error)
+                decrement_trigger_lock_count(target);
+        }
+    }
+    return error;
+}
+
+
+void unlock_trigger_ready(struct target_config *target)
+{
+    WITH_MUTEX(trigger_mutex)
+        decrement_trigger_lock_count(target);
+}
+
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Trigger target specific configuration */
 
 
 static const char *source_names[] = {
     "SOFT", "EXT", "PM", "ADC0", "ADC1", "SEQ0", "SEQ1", };
-
-
-static bool write_target_mode(void *context, unsigned int *mode)
-{
-    struct target_config *target = context;
-    target->mode = *mode;
-    update_global_state();
-    return true;
-}
 
 
 static bool write_enables(void *context, bool *value)
