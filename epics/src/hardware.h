@@ -119,7 +119,7 @@ void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[]);
 /* Trigger configuration - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* This defines the set of internal trigger targets. */
-enum trigger_target {
+enum trigger_target_id {
     TRIGGER_SEQ0,
     TRIGGER_SEQ1,
     TRIGGER_DRAM,
@@ -164,7 +164,7 @@ void hw_read_trigger_status(struct trigger_status *status);
 
 /* Reads which trigger sources fired the selected target. */
 void hw_read_trigger_sources(
-    enum trigger_target target,
+    enum trigger_target_id target,
     bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Program duration of blanking window. */
@@ -172,17 +172,17 @@ void hw_write_trigger_blanking_duration(int channel, unsigned int duration);
 
 /* Programs the delay in turns from internal firing of trigger to delivery. */
 void hw_write_trigger_delay(
-    enum trigger_target target, unsigned int delay);
+    enum trigger_target_id target, unsigned int delay);
 
 /* Configure which trigger sources will be used to trigger the selected
  * target. */
 void hw_write_trigger_enable_mask(
-    enum trigger_target target,
+    enum trigger_target_id target,
     const bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Configure which trigger sources are blanked for the selected target. */
 void hw_write_trigger_blanking_mask(
-    enum trigger_target target,
+    enum trigger_target_id target,
     const bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Configure the blanking pulse(s) used for DRAM triggering. */

@@ -367,7 +367,7 @@ void hw_read_trigger_status(struct trigger_status *result)
 }
 
 void hw_read_trigger_sources(
-    enum trigger_target target,
+    enum trigger_target_id target,
     bool sources[TRIGGER_SOURCE_COUNT])
 {
     struct ctrl_trg_sources trg_sources = READL(ctrl_regs->trg_sources);
@@ -405,7 +405,7 @@ void hw_write_trigger_blanking_duration(int channel, unsigned int duration)
 }
 
 void hw_write_trigger_delay(
-    enum trigger_target target, unsigned int delay)
+    enum trigger_target_id target, unsigned int delay)
 {
     switch (target)
     {
@@ -425,7 +425,7 @@ void hw_write_trigger_delay(
 }
 
 void hw_write_trigger_enable_mask(
-    enum trigger_target target,
+    enum trigger_target_id target,
     const bool sources[TRIGGER_SOURCE_COUNT])
 {
     uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
@@ -453,7 +453,7 @@ void hw_write_trigger_enable_mask(
 }
 
 void hw_write_trigger_blanking_mask(
-    enum trigger_target target,
+    enum trigger_target_id target,
     const bool sources[TRIGGER_SOURCE_COUNT])
 {
     uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);

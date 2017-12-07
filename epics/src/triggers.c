@@ -69,7 +69,7 @@ struct target_config {
     /* Fixed target identification and behaviour definitions. */
 
     /* Target identity. */
-    const enum trigger_target target;
+    const enum trigger_target_id target;
     const int channel;          // Not valid for DRAM target
 
     /* Target specific methods and variables. */
