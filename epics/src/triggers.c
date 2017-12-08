@@ -99,7 +99,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
             .target_id = TRIGGER_SEQ0,
             .channel = 0,
             .prepare_target = prepare_seq_target,
-            .disarmed_state = STATE_IDLE,
+            .disarmed_state = TARGET_IDLE,
             .set_target_state = set_target_state,
         },
         .trigger_interrupt = { .seq_trigger = 1, },
@@ -110,7 +110,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
             .target_id = TRIGGER_SEQ1,
             .channel = 1,
             .prepare_target = prepare_seq_target,
-            .disarmed_state = STATE_IDLE,
+            .disarmed_state = TARGET_IDLE,
             .set_target_state = set_target_state,
         },
         .trigger_interrupt = { .seq_trigger = 2, },
@@ -122,7 +122,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
             .channel = -1,          // Not valid for this target
             .prepare_target = prepare_mem_target,
             .stop_target = stop_mem_target,
-            .disarmed_state = STATE_ARMED,  // A trigger is on its way!
+            .disarmed_state = TARGET_ARMED,  // A trigger is on its way!
             .set_target_state = set_target_state,
         },
         .trigger_interrupt = { .dram_trigger = 1, },
@@ -380,7 +380,7 @@ static bool write_turn_offset(void *context, unsigned int *offset)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-static void set_shared_state(enum target_state state)
+static void set_shared_state(enum shared_target_state state)
 {
     WRITE_IN_RECORD(mbbi, shared_state_pv, state);
 }

@@ -14,10 +14,21 @@ enum target_mode {
 
 /* State of a trigger target. */
 enum target_state {
-    STATE_IDLE,         // Trigger ready for arming
-    STATE_ARMED,        // Waiting for trigger
-    STATE_BUSY,         // Trigger received, target processing trigger
-    STATE_LOCKED,       // Arm request seen, but trigger locked
+    TARGET_IDLE,        // Trigger ready for arming
+    TARGET_ARMED,       // Waiting for trigger
+    TARGET_BUSY,        // Trigger received, target processing trigger
+    TARGET_LOCKED,      // Arm request seen, but trigger locked
+};
+
+
+/* State of shared target control. */
+enum shared_target_state {
+    SHARED_IDLE,        // All triggers ready for arming
+    SHARED_ARMED,       // All triggers waiting for trigger
+    SHARED_LOCKED,      // Arm request seen, but at least one trigger locked
+    SHARED_BUSY,        // Trigger received, target processing trigger
+    SHARED_MIXED,       // Some targets triggered, some not triggered
+    SHARED_INVALID,     // Inconsistent shared state
 };
 
 
@@ -39,7 +50,7 @@ struct target_config {
 
 /* Initialises shared target management by setting state callback. */
 error__t initialise_trigger_targets(
-    void (*set_shared_state)(enum target_state state));
+    void (*set_shared_state)(enum shared_target_state state));
 
 /* Create and initialise a single trigger target.  The context is used for the
  * .set_target_state() callback. */

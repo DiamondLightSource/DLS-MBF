@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 378
-y 449
-w 399
-h 376
+x 229
+y 245
+w 400
+h 408
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -33,7 +33,7 @@ major 4
 minor 0
 release 1
 x 80
-y 208
+y 240
 w 120
 h 0
 lineColor index 14
@@ -45,8 +45,8 @@ xPoints {
   1 200
 }
 yPoints {
-  0 208
-  1 208
+  0 240
+  1 240
 }
 endObjectProperties
 
@@ -83,7 +83,7 @@ release 0
 x 8
 y 48
 w 384
-h 48
+h 80
 lineColor index 14
 fill
 fillColor index 4
@@ -96,7 +96,7 @@ major 4
 minor 0
 release 0
 x 136
-y 320
+y 352
 w 184
 h 48
 lineColor index 14
@@ -130,7 +130,7 @@ major 4
 minor 1
 release 0
 x 328
-y 344
+y 376
 w 64
 h 24
 fgColor index 46
@@ -172,7 +172,7 @@ major 4
 minor 0
 release 0
 x 136
-y 112
+y 144
 w 256
 h 192
 lineColor index 14
@@ -187,7 +187,7 @@ major 4
 minor 1
 release 1
 x 136
-y 104
+y 136
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -206,7 +206,7 @@ major 4
 minor 0
 release 0
 x 136
-y 104
+y 136
 w 120
 h 16
 lineColor index 14
@@ -220,7 +220,7 @@ major 4
 minor 6
 release 0
 x 352
-y 128
+y 160
 w 32
 h 16
 controlPv "$(device):$(dest):SOFT:HIT"
@@ -245,7 +245,7 @@ major 4
 minor 0
 release 0
 x 328
-y 128
+y 160
 w 16
 h 16
 lineColor index 14
@@ -262,7 +262,7 @@ major 4
 minor 0
 release 0
 x 328
-y 152
+y 184
 w 16
 h 16
 lineColor index 14
@@ -279,7 +279,7 @@ major 4
 minor 6
 release 0
 x 352
-y 152
+y 184
 w 32
 h 16
 controlPv "$(device):$(dest):EXT:HIT"
@@ -304,7 +304,7 @@ major 4
 minor 0
 release 0
 x 328
-y 176
+y 208
 w 16
 h 16
 lineColor index 14
@@ -321,7 +321,7 @@ major 4
 minor 6
 release 0
 x 352
-y 176
+y 208
 w 32
 h 16
 controlPv "$(device):$(dest):PM:HIT"
@@ -346,7 +346,7 @@ major 4
 minor 0
 release 0
 x 328
-y 200
+y 232
 w 16
 h 16
 lineColor index 14
@@ -363,7 +363,7 @@ major 4
 minor 6
 release 0
 x 352
-y 200
+y 232
 w 32
 h 16
 controlPv "$(device):$(dest):ADC0:HIT"
@@ -388,7 +388,7 @@ major 4
 minor 0
 release 0
 x 328
-y 224
+y 256
 w 16
 h 16
 lineColor index 14
@@ -405,7 +405,7 @@ major 4
 minor 6
 release 0
 x 352
-y 224
+y 256
 w 32
 h 16
 controlPv "$(device):$(dest):ADC1:HIT"
@@ -430,7 +430,7 @@ major 4
 minor 0
 release 0
 x 328
-y 248
+y 280
 w 16
 h 16
 lineColor index 14
@@ -447,7 +447,7 @@ major 4
 minor 6
 release 0
 x 352
-y 248
+y 280
 w 32
 h 16
 controlPv "$(device):$(dest):SEQ0:HIT"
@@ -472,7 +472,7 @@ major 4
 minor 0
 release 0
 x 328
-y 272
+y 304
 w 16
 h 16
 lineColor index 14
@@ -489,7 +489,7 @@ major 4
 minor 6
 release 0
 x 352
-y 272
+y 304
 w 32
 h 16
 controlPv "$(device):$(dest):SEQ1:HIT"
@@ -514,7 +514,7 @@ major 4
 minor 0
 release 0
 x 144
-y 128
+y 160
 w 80
 h 22
 fgColor index 14
@@ -533,7 +533,7 @@ major 4
 minor 0
 release 0
 x 232
-y 128
+y 160
 w 80
 h 22
 fgColor index 14
@@ -552,7 +552,7 @@ major 4
 minor 0
 release 0
 x 232
-y 152
+y 184
 w 80
 h 22
 fgColor index 14
@@ -571,7 +571,7 @@ major 4
 minor 0
 release 0
 x 144
-y 152
+y 184
 w 80
 h 22
 fgColor index 14
@@ -590,7 +590,7 @@ major 4
 minor 0
 release 0
 x 232
-y 176
+y 208
 w 80
 h 22
 fgColor index 14
@@ -609,7 +609,7 @@ major 4
 minor 0
 release 0
 x 144
-y 176
+y 208
 w 80
 h 22
 fgColor index 14
@@ -628,7 +628,7 @@ major 4
 minor 0
 release 0
 x 232
-y 200
+y 232
 w 80
 h 22
 fgColor index 14
@@ -647,7 +647,7 @@ major 4
 minor 0
 release 0
 x 144
-y 200
+y 232
 w 80
 h 22
 fgColor index 14
@@ -666,7 +666,7 @@ major 4
 minor 0
 release 0
 x 232
-y 224
+y 256
 w 80
 h 22
 fgColor index 14
@@ -685,7 +685,7 @@ major 4
 minor 0
 release 0
 x 144
-y 224
+y 256
 w 80
 h 22
 fgColor index 14
@@ -704,7 +704,7 @@ major 4
 minor 0
 release 0
 x 232
-y 248
+y 280
 w 80
 h 22
 fgColor index 14
@@ -723,7 +723,7 @@ major 4
 minor 0
 release 0
 x 144
-y 248
+y 280
 w 80
 h 22
 fgColor index 14
@@ -742,7 +742,7 @@ major 4
 minor 0
 release 0
 x 232
-y 272
+y 304
 w 80
 h 22
 fgColor index 14
@@ -761,7 +761,7 @@ major 4
 minor 0
 release 0
 x 144
-y 272
+y 304
 w 80
 h 22
 fgColor index 14
@@ -845,7 +845,7 @@ major 4
 minor 6
 release 0
 x 144
-y 336
+y 368
 w 96
 h 20
 controlPv "$(device):$(dest):DELAY_S"
@@ -898,7 +898,7 @@ major 4
 minor 0
 release 0
 x 8
-y 112
+y 144
 w 112
 h 256
 lineColor index 14
@@ -913,7 +913,7 @@ major 4
 minor 6
 release 0
 x 80
-y 128
+y 160
 w 32
 h 16
 controlPv "$(device):TRG:SOFT:IN"
@@ -938,7 +938,7 @@ major 4
 minor 0
 release 0
 x 56
-y 128
+y 160
 w 16
 h 16
 lineColor index 14
@@ -955,7 +955,7 @@ major 4
 minor 0
 release 0
 x 56
-y 152
+y 184
 w 16
 h 16
 lineColor index 14
@@ -972,7 +972,7 @@ major 4
 minor 6
 release 0
 x 80
-y 152
+y 184
 w 32
 h 16
 controlPv "$(device):TRG:EXT:IN"
@@ -997,7 +997,7 @@ major 4
 minor 0
 release 0
 x 56
-y 176
+y 208
 w 16
 h 16
 lineColor index 14
@@ -1014,7 +1014,7 @@ major 4
 minor 6
 release 0
 x 80
-y 176
+y 208
 w 32
 h 16
 controlPv "$(device):TRG:PM:IN"
@@ -1039,7 +1039,7 @@ major 4
 minor 0
 release 0
 x 56
-y 200
+y 232
 w 16
 h 16
 lineColor index 14
@@ -1056,7 +1056,7 @@ major 4
 minor 6
 release 0
 x 80
-y 200
+y 232
 w 32
 h 16
 controlPv "$(device):TRG:ADC0:IN"
@@ -1081,7 +1081,7 @@ major 4
 minor 0
 release 0
 x 56
-y 224
+y 256
 w 16
 h 16
 lineColor index 14
@@ -1098,7 +1098,7 @@ major 4
 minor 6
 release 0
 x 80
-y 224
+y 256
 w 32
 h 16
 controlPv "$(device):TRG:ADC1:IN"
@@ -1123,7 +1123,7 @@ major 4
 minor 0
 release 0
 x 56
-y 248
+y 280
 w 16
 h 16
 lineColor index 14
@@ -1140,7 +1140,7 @@ major 4
 minor 6
 release 0
 x 80
-y 248
+y 280
 w 32
 h 16
 controlPv "$(device):TRG:SEQ0:IN"
@@ -1165,7 +1165,7 @@ major 4
 minor 0
 release 0
 x 56
-y 272
+y 304
 w 16
 h 16
 lineColor index 14
@@ -1182,7 +1182,7 @@ major 4
 minor 6
 release 0
 x 80
-y 272
+y 304
 w 32
 h 16
 controlPv "$(device):TRG:SEQ1:IN"
@@ -1207,7 +1207,7 @@ major 4
 minor 1
 release 1
 x 16
-y 128
+y 160
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1227,7 +1227,7 @@ major 4
 minor 1
 release 1
 x 16
-y 152
+y 184
 w 24
 h 14
 font "helvetica-bold-r-12.0"
@@ -1247,7 +1247,7 @@ major 4
 minor 1
 release 1
 x 16
-y 176
+y 208
 w 19
 h 14
 font "helvetica-bold-r-12.0"
@@ -1267,7 +1267,7 @@ major 4
 minor 1
 release 1
 x 16
-y 200
+y 232
 w 32
 h 14
 font "helvetica-bold-r-12.0"
@@ -1287,7 +1287,7 @@ major 4
 minor 1
 release 1
 x 16
-y 224
+y 256
 w 32
 h 14
 font "helvetica-bold-r-12.0"
@@ -1307,7 +1307,7 @@ major 4
 minor 1
 release 1
 x 16
-y 248
+y 280
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1327,7 +1327,7 @@ major 4
 minor 1
 release 1
 x 16
-y 272
+y 304
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1347,7 +1347,7 @@ major 4
 minor 1
 release 1
 x 8
-y 104
+y 136
 w 104
 h 16
 font "helvetica-medium-r-12.0"
@@ -1366,7 +1366,7 @@ major 4
 minor 0
 release 0
 x 8
-y 104
+y 136
 w 104
 h 16
 lineColor index 14
@@ -1380,7 +1380,7 @@ major 4
 minor 1
 release 1
 x 136
-y 312
+y 344
 w 104
 h 16
 font "helvetica-medium-r-12.0"
@@ -1399,7 +1399,7 @@ major 4
 minor 0
 release 0
 x 136
-y 312
+y 344
 w 104
 h 16
 lineColor index 14
@@ -1413,7 +1413,7 @@ major 4
 minor 1
 release 1
 x 248
-y 336
+y 368
 w 31
 h 14
 font "helvetica-medium-r-12.0"
@@ -1466,7 +1466,7 @@ major 4
 minor 1
 release 0
 x 24
-y 320
+y 336
 w 80
 h 24
 fgColor index 25
@@ -1480,5 +1480,88 @@ onLabel "Soft"
 offLabel "Soft"
 3d
 font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 168
+y 92
+w 96
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):TRG:MODE_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 272
+y 96
+w 80
+h 16
+controlPv "$(device):TRG:STATUS"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 24
+y 96
+w 109
+h 16
+font "helvetica-bold-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Shared control:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 16
+y 368
+w 96
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):TRG:SOFT_S.SCAN"
+font "helvetica-medium-r-12.0"
 endObjectProperties
 
