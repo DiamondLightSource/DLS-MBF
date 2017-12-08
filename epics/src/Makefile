@@ -112,3 +112,10 @@ register_defs.h: ../make_c_defs $(LMBF_TOP)/AMC525/vhd/register_defs.in
 
 test_defs.c: ../make_c_defs_test $(LMBF_TOP)/AMC525/vhd/register_defs.in
 	PYTHONPATH=$(LMBF_TOP)/python $(PYTHON) $< >$@
+
+
+check_vars:
+	../check_global_vars ../global_vars .
+.PHONY: check_vars
+
+build: check_vars

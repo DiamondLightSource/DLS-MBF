@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# This script checks for unexpected global variables, and should be called this:
+#
+#   ./check_global_vars global-vars object-dir
+#
+# where global-vars is a file containing a list of permitted global variables,
+# and object-dir is the object directory to check.
+
+vars_file="${1:?Must specify list of allowed variables}"
+object_dir="${2:?Must specify directory to check}"
+
+vars="$(sed '/^#/d;/^$/d' "$vars_file")"
+
+sep=
+pattern=
+for var in $vars; do
+    pattern="$pattern$sep$var"
+    sep='|'
+done
+
+# List all the global variables using nm, filter out only C ("common" or
+# uninitialised data) and D (initialised data) entries, and filter out the
+# documented expected variables.
+extra_vars="$(
+    nm "$object_dir"/*.o |
+    grep ' [DC] ' |
+    cut -d ' ' -f 3- |
+    grep -v -E "^($pattern)$")"
+
+if [[ -n $extra_vars ]]; then
+    echo >&2 Unexpected global variables seen: $extra_vars
+    exit 1
+fi

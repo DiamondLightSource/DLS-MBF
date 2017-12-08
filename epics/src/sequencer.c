@@ -33,7 +33,7 @@ struct sequencer_bank {
 };
 
 
-struct seq_context {
+static struct seq_context {
     int channel;
 
     struct seq_config seq_config;   // Hardware configuration set by EPICS

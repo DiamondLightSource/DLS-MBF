@@ -1,0 +1,10 @@
+# This file enumerates all the permitted global variables.
+
+# System configuration, defined in configs.{c,h}
+system_config
+
+# Hardware delay compensation configuration, defined in configs.{c,h}
+hardware_delays
+
+# Hardware settings read from FPGA, defined in hardware.{c,h}
+hardware_config

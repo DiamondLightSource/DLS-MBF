@@ -41,7 +41,7 @@ struct detector_bank {
 };
 
 
-struct detector_context {
+static struct detector_context {
     int channel;
 
     struct epics_interlock *update;
