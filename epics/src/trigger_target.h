@@ -1,0 +1,110 @@
+/* Support for a single trigger target and for shared trigger target control. */
+
+/* Abstract interface to a single trigger target. */
+struct trigger_target;
+
+
+/* Target arming control. */
+enum target_mode {
+    MODE_ONE_SHOT,      // Normal single shot operation
+    MODE_REARM,         // Rearm this target after trigger complete
+    MODE_SHARED,        // Shared trigger operation
+};
+
+
+/* State of a trigger target. */
+enum target_state {
+    STATE_IDLE,         // Trigger ready for arming
+    STATE_ARMED,        // Waiting for trigger
+    STATE_BUSY,         // Trigger received, target processing trigger
+    STATE_LOCKED,       // Arm request seen, but trigger locked
+};
+
+
+/* Definition of behaviour of a single trigger target. */
+struct target_config {
+    /* Target identity. */
+    enum trigger_target_id target_id;   // Hardware identification
+    int channel;                        // Not valid for DRAM target
+
+    /* Target specific methods and variables. */
+    void (*prepare_target)(int channel);
+    void (*stop_target)(int channel);
+    enum target_state disarmed_state;
+
+    /* State change notification. */
+    void (*set_target_state)(void *context, enum target_state state);
+};
+
+
+/* Initialises shared target management by setting state callback. */
+error__t initialise_trigger_targets(
+    void (*set_shared_state)(enum target_state state));
+
+/* Create and initialise a single trigger target.  The context is used for the
+ * .set_target_state() callback. */
+struct trigger_target *create_trigger_target(
+    const struct target_config *config, void *context);
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Single trigger target actions. */
+
+/* Software request to arm specified trigger target. */
+void trigger_target_arm(struct trigger_target *target);
+
+/* Software request to disarm specified trigger target. */
+void trigger_target_disarm(struct trigger_target *target);
+
+/* Handle trigger event seen by target. */
+void trigger_target_trigger(struct trigger_target *target);
+
+/* Handle trigger completion for target.  Called after all other target
+ * processing has completed. */
+void trigger_target_complete(struct trigger_target *target);
+
+/* Sets the arming control mode. */
+void trigger_target_set_mode(
+    struct trigger_target *target, enum target_mode mode);
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Shared trigger target actions. */
+
+/* Arms all shared triggers. */
+void shared_trigger_target_arm(void);
+
+/* Disarms all shared triggers. */
+void shared_trigger_target_disarm(void);
+
+/* Configure rearming behaviour of shared triggers. */
+void shared_trigger_set_mode(bool auto_rearm);
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Target locking. */
+
+/* Call this function to wait for the trigger target state to become ready and
+ * lockable.  The timeout is in milliseconds and specifies how long the caller
+ * can be blocked waiting for the ready state.  If timeout is zero then this
+ * call will not block.
+ *   If lock_trigger_ready() is successful then the caller *must* call
+ * unlock_trigger_ready() when done.
+ *   While waiting for the lock, poll(context) may be called repeatedly, and can
+ * return an error code to abort waiting for the lock. */
+error__t lock_trigger_ready(
+    struct trigger_target *lock, unsigned int timeout,
+    error__t (*poll)(void *context), void *context);
+
+/* This must be called after a successful lock, and needs to be called in a
+ * timely manner to avoid starvation of the system. */
+void unlock_trigger_ready(struct trigger_target *lock);
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Specials */
+
+
+/* Special hook for memory capture: needs to interact with trigger state
+ * control, so we do the control internally. */
+void immediate_memory_capture(void);

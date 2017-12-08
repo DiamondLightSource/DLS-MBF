@@ -20,7 +20,7 @@
 #include "common.h"
 #include "configs.h"
 #include "events.h"
-#include "triggers.h"
+#include "trigger_target.h"
 
 #include "memory.h"
 

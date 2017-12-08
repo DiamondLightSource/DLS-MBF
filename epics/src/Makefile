@@ -68,6 +68,7 @@ lmbf_SRCS += bunch_fir.c        # Bunch buunch FIR filter control
 lmbf_SRCS += bunch_select.c     # Bunch selection control
 lmbf_SRCS += sequencer.c        # State sequencer control
 lmbf_SRCS += memory.c           # Fast memory readout
+lmbf_SRCS += trigger_target.c   # Trigger target specific control
 lmbf_SRCS += triggers.c         # Trigger control and selection
 lmbf_SRCS += detector.c         # I/Q detector
 
@@ -75,7 +76,6 @@ lmbf_SRCS += buffered_file.c    # Helper for buffered file access
 lmbf_SRCS += socket_command.c   # Command implementation for high speed data
 lmbf_SRCS += socket_server.c    # Socket connection for high speed data
 
-# lmbf_SRCS += tune_follow.c      # Support for tune following
 
 lmbf_LIBS += epics_device
 lmbf_LIBS += $(EPICS_BASE_IOC_LIBS)
