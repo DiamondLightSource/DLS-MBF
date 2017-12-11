@@ -55,6 +55,7 @@ struct trigger_target_state {
 
 
 static struct in_epics_record_mbbi *shared_state_pv;
+static struct in_epics_record_stringin *shared_targets_pv;
 
 /* Used for monitoring the status of the trigger sources and blanking input. */
 static bool sources_in[TRIGGER_SOURCE_COUNT];
@@ -104,6 +105,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .config = {
             .target_id = TRIGGER_SEQ0,
             .channel = 0,
+            .name = "SEQ0",
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
             .set_target_state = set_target_state,
@@ -115,6 +117,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .config = {
             .target_id = TRIGGER_SEQ1,
             .channel = 1,
+            .name = "SEQ1",
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
             .set_target_state = set_target_state,
@@ -126,6 +129,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .config = {
             .target_id = TRIGGER_DRAM,
             .channel = -1,          // Not valid for this target
+            .name = "MEM",
             .prepare_target = prepare_mem_target,
             .stop_target = stop_mem_target,
             .set_target_state = set_target_state,
@@ -390,6 +394,13 @@ static void set_shared_state(enum shared_target_state state)
     WRITE_IN_RECORD(mbbi, shared_state_pv, state);
 }
 
+static void set_shared_targets(const char *value)
+{
+    EPICS_STRING s;
+    snprintf(s.s, sizeof(s.s), "%s", value);
+    WRITE_IN_RECORD(stringin, shared_targets_pv, s);
+}
+
 
 error__t initialise_triggers(void)
 {
@@ -407,6 +418,7 @@ error__t initialise_triggers(void)
         PUBLISH_ACTION("DISARM", shared_trigger_target_disarm);
 
         shared_state_pv = PUBLISH_IN_VALUE_I(mbbi, "STATUS");
+        shared_targets_pv = PUBLISH_IN_VALUE_I(stringin, "SHARED");
 
         WITH_NAME_PREFIX("TURN")
         {
@@ -438,5 +450,5 @@ error__t initialise_triggers(void)
         NULL, dispatch_target_events);
 
     /* Initialise the condition. */
-    return initialise_trigger_targets(set_shared_state);
+    return initialise_trigger_targets(set_shared_state, set_shared_targets);
 }

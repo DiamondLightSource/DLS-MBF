@@ -91,6 +91,7 @@ with name_prefix('TRG'):
     mbbIn('STATUS', 'Idle', 'Armed', 'Locked', 'Busy', 'Mixed', 'Invalid',
         SCAN = 'I/O Intr',
         DESC = 'Shared trigger target status')
+    stringIn('SHARED', SCAN = 'I/O Intr', DESC = 'List of shared targets')
 
     with name_prefix('TURN'):
         turn_pvs()

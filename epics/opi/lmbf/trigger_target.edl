@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 229
-y 245
+x 361
+y 284
 w 400
-h 408
+h 425
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -33,7 +33,7 @@ major 4
 minor 0
 release 1
 x 80
-y 240
+y 256
 w 120
 h 0
 lineColor index 14
@@ -45,8 +45,8 @@ xPoints {
   1 200
 }
 yPoints {
-  0 240
-  1 240
+  0 256
+  1 256
 }
 endObjectProperties
 
@@ -59,7 +59,7 @@ release 1
 x 272
 y 72
 w 0
-h 288
+h 336
 lineColor index 14
 fillColor index 0
 lineWidth 3
@@ -70,7 +70,7 @@ xPoints {
 }
 yPoints {
   0 72
-  1 360
+  1 408
 }
 endObjectProperties
 
@@ -83,7 +83,7 @@ release 0
 x 8
 y 48
 w 384
-h 80
+h 96
 lineColor index 14
 fill
 fillColor index 4
@@ -96,7 +96,7 @@ major 4
 minor 0
 release 0
 x 136
-y 352
+y 368
 w 184
 h 48
 lineColor index 14
@@ -130,7 +130,7 @@ major 4
 minor 1
 release 0
 x 328
-y 376
+y 392
 w 64
 h 24
 fgColor index 46
@@ -172,7 +172,7 @@ major 4
 minor 0
 release 0
 x 136
-y 144
+y 160
 w 256
 h 192
 lineColor index 14
@@ -187,7 +187,7 @@ major 4
 minor 1
 release 1
 x 136
-y 136
+y 152
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -206,7 +206,7 @@ major 4
 minor 0
 release 0
 x 136
-y 136
+y 152
 w 120
 h 16
 lineColor index 14
@@ -220,7 +220,7 @@ major 4
 minor 6
 release 0
 x 352
-y 160
+y 176
 w 32
 h 16
 controlPv "$(device):$(dest):SOFT:HIT"
@@ -245,7 +245,7 @@ major 4
 minor 0
 release 0
 x 328
-y 160
+y 176
 w 16
 h 16
 lineColor index 14
@@ -262,7 +262,7 @@ major 4
 minor 0
 release 0
 x 328
-y 184
+y 200
 w 16
 h 16
 lineColor index 14
@@ -279,7 +279,7 @@ major 4
 minor 6
 release 0
 x 352
-y 184
+y 200
 w 32
 h 16
 controlPv "$(device):$(dest):EXT:HIT"
@@ -304,7 +304,7 @@ major 4
 minor 0
 release 0
 x 328
-y 208
+y 224
 w 16
 h 16
 lineColor index 14
@@ -321,7 +321,7 @@ major 4
 minor 6
 release 0
 x 352
-y 208
+y 224
 w 32
 h 16
 controlPv "$(device):$(dest):PM:HIT"
@@ -346,7 +346,7 @@ major 4
 minor 0
 release 0
 x 328
-y 232
+y 248
 w 16
 h 16
 lineColor index 14
@@ -363,7 +363,7 @@ major 4
 minor 6
 release 0
 x 352
-y 232
+y 248
 w 32
 h 16
 controlPv "$(device):$(dest):ADC0:HIT"
@@ -388,7 +388,7 @@ major 4
 minor 0
 release 0
 x 328
-y 256
+y 272
 w 16
 h 16
 lineColor index 14
@@ -405,7 +405,7 @@ major 4
 minor 6
 release 0
 x 352
-y 256
+y 272
 w 32
 h 16
 controlPv "$(device):$(dest):ADC1:HIT"
@@ -430,7 +430,7 @@ major 4
 minor 0
 release 0
 x 328
-y 280
+y 296
 w 16
 h 16
 lineColor index 14
@@ -447,7 +447,7 @@ major 4
 minor 6
 release 0
 x 352
-y 280
+y 296
 w 32
 h 16
 controlPv "$(device):$(dest):SEQ0:HIT"
@@ -472,7 +472,7 @@ major 4
 minor 0
 release 0
 x 328
-y 304
+y 320
 w 16
 h 16
 lineColor index 14
@@ -489,7 +489,7 @@ major 4
 minor 6
 release 0
 x 352
-y 304
+y 320
 w 32
 h 16
 controlPv "$(device):$(dest):SEQ1:HIT"
@@ -514,7 +514,7 @@ major 4
 minor 0
 release 0
 x 144
-y 160
+y 176
 w 80
 h 22
 fgColor index 14
@@ -533,7 +533,7 @@ major 4
 minor 0
 release 0
 x 232
-y 160
+y 176
 w 80
 h 22
 fgColor index 14
@@ -552,7 +552,7 @@ major 4
 minor 0
 release 0
 x 232
-y 184
+y 200
 w 80
 h 22
 fgColor index 14
@@ -571,7 +571,7 @@ major 4
 minor 0
 release 0
 x 144
-y 184
+y 200
 w 80
 h 22
 fgColor index 14
@@ -590,7 +590,7 @@ major 4
 minor 0
 release 0
 x 232
-y 208
+y 224
 w 80
 h 22
 fgColor index 14
@@ -609,7 +609,7 @@ major 4
 minor 0
 release 0
 x 144
-y 208
+y 224
 w 80
 h 22
 fgColor index 14
@@ -628,7 +628,7 @@ major 4
 minor 0
 release 0
 x 232
-y 232
+y 248
 w 80
 h 22
 fgColor index 14
@@ -647,7 +647,7 @@ major 4
 minor 0
 release 0
 x 144
-y 232
+y 248
 w 80
 h 22
 fgColor index 14
@@ -666,7 +666,7 @@ major 4
 minor 0
 release 0
 x 232
-y 256
+y 272
 w 80
 h 22
 fgColor index 14
@@ -685,7 +685,7 @@ major 4
 minor 0
 release 0
 x 144
-y 256
+y 272
 w 80
 h 22
 fgColor index 14
@@ -704,7 +704,7 @@ major 4
 minor 0
 release 0
 x 232
-y 280
+y 296
 w 80
 h 22
 fgColor index 14
@@ -723,7 +723,7 @@ major 4
 minor 0
 release 0
 x 144
-y 280
+y 296
 w 80
 h 22
 fgColor index 14
@@ -742,7 +742,7 @@ major 4
 minor 0
 release 0
 x 232
-y 304
+y 320
 w 80
 h 22
 fgColor index 14
@@ -761,7 +761,7 @@ major 4
 minor 0
 release 0
 x 144
-y 304
+y 320
 w 80
 h 22
 fgColor index 14
@@ -845,7 +845,7 @@ major 4
 minor 6
 release 0
 x 144
-y 368
+y 384
 w 96
 h 20
 controlPv "$(device):$(dest):DELAY_S"
@@ -874,7 +874,7 @@ minor 6
 release 0
 x 272
 y 64
-w 96
+w 112
 h 16
 controlPv "$(device):$(dest):STATUS"
 font "helvetica-medium-r-14.0"
@@ -898,7 +898,7 @@ major 4
 minor 0
 release 0
 x 8
-y 144
+y 160
 w 112
 h 256
 lineColor index 14
@@ -913,7 +913,7 @@ major 4
 minor 6
 release 0
 x 80
-y 160
+y 176
 w 32
 h 16
 controlPv "$(device):TRG:SOFT:IN"
@@ -938,7 +938,7 @@ major 4
 minor 0
 release 0
 x 56
-y 160
+y 176
 w 16
 h 16
 lineColor index 14
@@ -955,7 +955,7 @@ major 4
 minor 0
 release 0
 x 56
-y 184
+y 200
 w 16
 h 16
 lineColor index 14
@@ -972,7 +972,7 @@ major 4
 minor 6
 release 0
 x 80
-y 184
+y 200
 w 32
 h 16
 controlPv "$(device):TRG:EXT:IN"
@@ -997,7 +997,7 @@ major 4
 minor 0
 release 0
 x 56
-y 208
+y 224
 w 16
 h 16
 lineColor index 14
@@ -1014,7 +1014,7 @@ major 4
 minor 6
 release 0
 x 80
-y 208
+y 224
 w 32
 h 16
 controlPv "$(device):TRG:PM:IN"
@@ -1039,7 +1039,7 @@ major 4
 minor 0
 release 0
 x 56
-y 232
+y 248
 w 16
 h 16
 lineColor index 14
@@ -1056,7 +1056,7 @@ major 4
 minor 6
 release 0
 x 80
-y 232
+y 248
 w 32
 h 16
 controlPv "$(device):TRG:ADC0:IN"
@@ -1081,7 +1081,7 @@ major 4
 minor 0
 release 0
 x 56
-y 256
+y 272
 w 16
 h 16
 lineColor index 14
@@ -1098,7 +1098,7 @@ major 4
 minor 6
 release 0
 x 80
-y 256
+y 272
 w 32
 h 16
 controlPv "$(device):TRG:ADC1:IN"
@@ -1123,7 +1123,7 @@ major 4
 minor 0
 release 0
 x 56
-y 280
+y 296
 w 16
 h 16
 lineColor index 14
@@ -1140,7 +1140,7 @@ major 4
 minor 6
 release 0
 x 80
-y 280
+y 296
 w 32
 h 16
 controlPv "$(device):TRG:SEQ0:IN"
@@ -1165,7 +1165,7 @@ major 4
 minor 0
 release 0
 x 56
-y 304
+y 320
 w 16
 h 16
 lineColor index 14
@@ -1182,7 +1182,7 @@ major 4
 minor 6
 release 0
 x 80
-y 304
+y 320
 w 32
 h 16
 controlPv "$(device):TRG:SEQ1:IN"
@@ -1207,7 +1207,7 @@ major 4
 minor 1
 release 1
 x 16
-y 160
+y 176
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1227,7 +1227,7 @@ major 4
 minor 1
 release 1
 x 16
-y 184
+y 200
 w 24
 h 14
 font "helvetica-bold-r-12.0"
@@ -1247,7 +1247,7 @@ major 4
 minor 1
 release 1
 x 16
-y 208
+y 224
 w 19
 h 14
 font "helvetica-bold-r-12.0"
@@ -1267,7 +1267,7 @@ major 4
 minor 1
 release 1
 x 16
-y 232
+y 248
 w 32
 h 14
 font "helvetica-bold-r-12.0"
@@ -1287,7 +1287,7 @@ major 4
 minor 1
 release 1
 x 16
-y 256
+y 272
 w 32
 h 14
 font "helvetica-bold-r-12.0"
@@ -1307,7 +1307,7 @@ major 4
 minor 1
 release 1
 x 16
-y 280
+y 296
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1327,7 +1327,7 @@ major 4
 minor 1
 release 1
 x 16
-y 304
+y 320
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1347,7 +1347,7 @@ major 4
 minor 1
 release 1
 x 8
-y 136
+y 152
 w 104
 h 16
 font "helvetica-medium-r-12.0"
@@ -1366,7 +1366,7 @@ major 4
 minor 0
 release 0
 x 8
-y 136
+y 152
 w 104
 h 16
 lineColor index 14
@@ -1380,7 +1380,7 @@ major 4
 minor 1
 release 1
 x 136
-y 344
+y 360
 w 104
 h 16
 font "helvetica-medium-r-12.0"
@@ -1399,7 +1399,7 @@ major 4
 minor 0
 release 0
 x 136
-y 344
+y 360
 w 104
 h 16
 lineColor index 14
@@ -1413,7 +1413,7 @@ major 4
 minor 1
 release 1
 x 248
-y 368
+y 384
 w 31
 h 14
 font "helvetica-medium-r-12.0"
@@ -1466,7 +1466,7 @@ major 4
 minor 1
 release 0
 x 24
-y 336
+y 352
 w 80
 h 24
 fgColor index 25
@@ -1509,7 +1509,7 @@ minor 6
 release 0
 x 272
 y 96
-w 80
+w 112
 h 16
 controlPv "$(device):TRG:STATUS"
 font "helvetica-medium-r-14.0"
@@ -1553,7 +1553,7 @@ major 4
 minor 0
 release 0
 x 16
-y 368
+y 384
 w 96
 h 24
 fgColor index 14
@@ -1563,5 +1563,50 @@ topShadowColor index 1
 botShadowColor index 11
 controlPv "$(device):TRG:SOFT_S.SCAN"
 font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 24
+y 120
+w 108
+h 16
+font "helvetica-bold-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Shared targets:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 144
+y 120
+w 224
+h 16
+controlPv "$(device):TRG:SHARED"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
 endObjectProperties
 

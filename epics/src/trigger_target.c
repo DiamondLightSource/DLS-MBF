@@ -43,6 +43,7 @@ struct shared_triggers {
     bool dont_rearm;
     enum shared_target_state state;
     void (*set_shared_state)(enum shared_target_state state);
+    void (*set_shared_targets)(const char *targets);
 };
 
 
@@ -96,6 +97,17 @@ static void set_global_state(enum shared_target_state state)
         shared.state = state;
         shared.set_shared_state(state);
     }
+}
+
+
+static void update_shared_targets(void)
+{
+    char value[40] = "";
+    size_t n = 0;
+    FOR_SHARED_TARGETS(target)
+        n += (size_t) snprintf(value + n, sizeof(value) - n,
+            "%s ", target->config->name);
+    shared.set_shared_targets(value);
 }
 
 
@@ -437,6 +449,7 @@ void trigger_target_set_mode(
     {
         target->mode = mode;
         update_global_state();
+        update_shared_targets();
     }
 }
 
@@ -634,11 +647,13 @@ struct trigger_target *create_trigger_target(
 
 
 error__t initialise_trigger_targets(
-    void (*set_shared_state)(enum shared_target_state state))
+    void (*set_shared_state)(enum shared_target_state state),
+    void (*set_shared_targets)(const char *targets))
 {
     shared = (struct shared_triggers) {
         .dont_rearm = true,
         .set_shared_state = set_shared_state,
+        .set_shared_targets = set_shared_targets,
     };
     return pwait_initialise(&trigger_event);
 }

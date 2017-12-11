@@ -37,6 +37,7 @@ struct target_config {
     /* Target identity. */
     enum trigger_target_id target_id;   // Hardware identification
     int channel;                        // Not valid for DRAM target
+    const char *name;
 
     /* Target specific methods and variables. */
     void (*prepare_target)(int channel);
@@ -49,7 +50,8 @@ struct target_config {
 
 /* Initialises shared target management by setting state callback. */
 error__t initialise_trigger_targets(
-    void (*set_shared_state)(enum shared_target_state state));
+    void (*set_shared_state)(enum shared_target_state state),
+    void (*set_shared_targets)(const char *targets));
 
 /* Create and initialise a single trigger target.  The context is used for the
  * .set_target_state() callback. */
