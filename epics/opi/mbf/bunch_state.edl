@@ -78,7 +78,7 @@ x 24
 y 0
 w 104
 h 16
-controlPv "$(device):$(channel):BUN:$(bank):FIRWF:STA"
+controlPv "$(device):$(axis):BUN:$(bank):FIRWF:STA"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -103,7 +103,7 @@ x 120
 y 0
 w 184
 h 16
-controlPv "$(device):$(channel):BUN:$(bank):OUTWF:STA"
+controlPv "$(device):$(axis):BUN:$(bank):OUTWF:STA"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -128,7 +128,7 @@ x 304
 y 0
 w 136
 h 16
-controlPv "$(device):$(channel):BUN:$(bank):GAINWF:STA"
+controlPv "$(device):$(axis):BUN:$(bank):GAINWF:STA"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm

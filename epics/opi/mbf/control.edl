@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel) Control Configuration"
+title "$(device):$(axis) Control Configuration"
 showGrid
 snapToGrid
 gridSize 8
@@ -56,7 +56,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel) Control Configuration"
+  "$(device):$(axis) Control Configuration"
 }
 endObjectProperties
 
@@ -618,7 +618,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):SEQ:0:BANK_S"
+controlPv "$(device):$(axis):SEQ:0:BANK_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -730,7 +730,7 @@ x 56
 y 392
 w 88
 h 24
-controlPv "$(device):$(channel):NCO:FREQ_S"
+controlPv "$(device):$(axis):NCO:FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -763,7 +763,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):NCO:GAIN_S"
+controlPv "$(device):$(axis):NCO:GAIN_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -830,7 +830,7 @@ x 88
 y 152
 w 16
 h 16
-controlPv "$(device):$(channel):SEQ:PC"
+controlPv "$(device):$(axis):SEQ:PC"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -854,7 +854,7 @@ x 56
 y 152
 w 24
 h 24
-controlPv "$(device):$(channel):SEQ:PC_S"
+controlPv "$(device):$(axis):SEQ:PC_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -908,7 +908,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):$(channel):SEQ:RESET_S.PROC"
+controlPv "$(device):$(axis):SEQ:RESET_S.PROC"
 pressValue "0"
 onLabel "Stop"
 offLabel "Stop"
@@ -926,7 +926,7 @@ x 56
 y 176
 w 56
 h 20
-controlPv "$(device):$(channel):SEQ:SUPER:COUNT_S"
+controlPv "$(device):$(axis):SEQ:SUPER:COUNT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -955,7 +955,7 @@ x 120
 y 176
 w 64
 h 16
-controlPv "$(device):$(channel):SEQ:SUPER:COUNT"
+controlPv "$(device):$(axis):SEQ:SUPER:COUNT"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -980,7 +980,7 @@ x 264
 y 152
 w 88
 h 16
-controlPv "$(device):$(channel):SEQ:TOTAL:LENGTH"
+controlPv "$(device):$(axis):SEQ:TOTAL:LENGTH"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -1045,7 +1045,7 @@ x 264
 y 168
 w 120
 h 16
-controlPv "$(device):$(channel):SEQ:TOTAL:DURATION:S"
+controlPv "$(device):$(axis):SEQ:TOTAL:DURATION:S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -1091,7 +1091,7 @@ x 264
 y 184
 w 120
 h 16
-controlPv "$(device):$(channel):SEQ:SUPER:OFFSET_S"
+controlPv "$(device):$(axis):SEQ:SUPER:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -1142,7 +1142,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):NCO:ENABLE_S"
+controlPv "$(device):$(axis):NCO:ENABLE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -1191,7 +1191,7 @@ displayFileName {
   0 "mbf/trigger_target.edl"
 }
 symbols {
-  0 "dest=$(channel):TRG:SEQ"
+  0 "dest=$(axis):TRG:SEQ"
 }
 endObjectProperties
 
@@ -1205,7 +1205,7 @@ x 424
 y 368
 w 32
 h 20
-controlPv "$(device):$(channel):SEQ:TRIGGER_S"
+controlPv "$(device):$(axis):SEQ:TRIGGER_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14

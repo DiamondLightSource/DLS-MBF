@@ -67,7 +67,7 @@ displayFileName {
   0 "mbf/tmbf.edl"
 }
 symbols {
-  0 "device=TS-DI-TMBF-02,chan0=X,chan1=Y,mode=TMBF"
+  0 "device=TS-DI-TMBF-02,axis0=X,axis1=Y,mode=TMBF"
 }
 endObjectProperties
 
@@ -93,7 +93,7 @@ displayFileName {
   0 "mbf/lmbf.edl"
 }
 symbols {
-  0 "device=TS-DI-LMBF-01,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"
+  0 "device=TS-DI-LMBF-01,axis0=I,axis1=Q,axis01=IQ,mode=LMBF"
 }
 endObjectProperties
 
@@ -119,7 +119,7 @@ displayFileName {
   0 "mbf/lmbf.edl"
 }
 symbols {
-  0 "device=SR23C-DI-LMBF-01,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"
+  0 "device=SR23C-DI-LMBF-01,axis0=I,axis1=Q,axis01=IQ,mode=LMBF"
 }
 endObjectProperties
 

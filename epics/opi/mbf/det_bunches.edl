@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel):DET:$(det) Bunch Enables"
+title "$(device):$(axis):DET:$(det) Bunch Enables"
 showGrid
 snapToGrid
 gridSize 8
@@ -74,7 +74,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel):DET:$(det) Bunch Enables"
+  "$(device):$(axis):DET:$(det) Bunch Enables"
 }
 endObjectProperties
 
@@ -158,7 +158,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):DET:$(det):BUNCHES_S"
+  0 "$(device):$(axis):DET:$(det):BUNCHES_S"
 }
 plotUpdateMode {
   0 "y"
@@ -232,7 +232,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_waveform_pv $(device):$(channel):DET:$(det):BUNCHES_S $(enable) $(bunch)"
+  0 "run-command 'Set bunch' set_waveform_pv $(device):$(axis):DET:$(det):BUNCHES_S $(enable) $(bunch)"
 }
 endObjectProperties
 
@@ -287,7 +287,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_waveform_pv $(device):$(channel):DET:$(det):BUNCHES_S $(enable)"
+  0 "run-command 'Set bunch' set_waveform_pv $(device):$(axis):DET:$(det):BUNCHES_S $(enable)"
 }
 endObjectProperties
 

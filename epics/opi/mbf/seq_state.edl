@@ -35,7 +35,7 @@ x 24
 y 0
 w 72
 h 20
-controlPv "$(device):$(channel):SEQ:$(state):START_FREQ_S"
+controlPv "$(device):$(axis):SEQ:$(state):START_FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -63,7 +63,7 @@ x 104
 y 0
 w 80
 h 24
-controlPv "$(device):$(channel):SEQ:$(state):STEP_FREQ_S"
+controlPv "$(device):$(axis):SEQ:$(state):STEP_FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -91,7 +91,7 @@ x 168
 y 24
 w 72
 h 24
-controlPv "$(device):$(channel):SEQ:$(state):DWELL_S"
+controlPv "$(device):$(axis):SEQ:$(state):DWELL_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -119,7 +119,7 @@ x 24
 y 24
 w 56
 h 20
-controlPv "$(device):$(channel):SEQ:$(state):COUNT_S"
+controlPv "$(device):$(axis):SEQ:$(state):COUNT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -152,7 +152,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):SEQ:$(state):BANK_S"
+controlPv "$(device):$(axis):SEQ:$(state):BANK_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -171,7 +171,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):SEQ:$(state):GAIN_S"
+controlPv "$(device):$(axis):SEQ:$(state):GAIN_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -210,7 +210,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):SEQ:$(state):ENWIN_S"
+controlPv "$(device):$(axis):SEQ:$(state):ENWIN_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -224,7 +224,7 @@ x 192
 y 0
 w 72
 h 20
-controlPv "$(device):$(channel):SEQ:$(state):END_FREQ_S"
+controlPv "$(device):$(axis):SEQ:$(state):END_FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -258,7 +258,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):SEQ:$(state):CAPTURE_S"
+controlPv "$(device):$(axis):SEQ:$(state):CAPTURE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -272,7 +272,7 @@ x 104
 y 24
 w 56
 h 20
-controlPv "$(device):$(channel):SEQ:$(state):HOLDOFF_S"
+controlPv "$(device):$(axis):SEQ:$(state):HOLDOFF_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -328,7 +328,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):SEQ:$(state):BLANK_S"
+controlPv "$(device):$(axis):SEQ:$(state):BLANK_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -347,7 +347,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):SEQ:$(state):ENABLE_S"
+controlPv "$(device):$(axis):SEQ:$(state):ENABLE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 

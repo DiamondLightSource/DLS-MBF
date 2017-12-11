@@ -51,7 +51,7 @@ x 192
 y 40
 w 96
 h 20
-controlPv "$(device):$(chan01):TRG:BLANKING_S"
+controlPv "$(device):$(axis01):TRG:BLANKING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -85,7 +85,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan01):"
+  "$(axis01):"
 }
 endObjectProperties
 
@@ -132,7 +132,7 @@ x 48
 y 40
 w 96
 h 20
-controlPv "$(device):$(chan01):TRG:TURN:OFFSET_S"
+controlPv "$(device):$(axis01):TRG:TURN:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -166,7 +166,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan01):"
+  "$(axis01):"
 }
 endObjectProperties
 
@@ -192,7 +192,7 @@ displayFileName {
   0 "mbf/trigger_target.edl"
 }
 symbols {
-  0 "dest=$(chan01):TRG:SEQ"
+  0 "dest=$(axis01):TRG:SEQ"
 }
 endObjectProperties
 

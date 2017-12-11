@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel) ADC Overview"
+title "$(device):$(axis) ADC Overview"
 showGrid
 snapToGrid
 gridSize 8
@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel) ADC Overview"
+  "$(device):$(axis) ADC Overview"
 }
 endObjectProperties
 
@@ -101,7 +101,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):ADC:INP_OVF"
+alarmPv "$(device):$(axis):ADC:INP_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -114,7 +114,7 @@ x 32
 y 232
 w 168
 h 14
-controlPv "$(device):$(channel):ADC:INP_OVF.DESC"
+controlPv "$(device):$(axis):ADC:INP_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -163,7 +163,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):ADC:FILTER_S"
+  0 "$(device):$(axis):ADC:FILTER_S"
 }
 plotUpdateMode {
   0 "y"
@@ -186,7 +186,7 @@ x 456
 y 256
 w 80
 h 20
-controlPv "$(device):$(channel):ADC:OVF_LIMIT_S"
+controlPv "$(device):$(axis):ADC:OVF_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -236,7 +236,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):ADC:EVENT"
+alarmPv "$(device):$(axis):ADC:EVENT"
 endObjectProperties
 
 # (Text Monitor)
@@ -249,7 +249,7 @@ x 32
 y 280
 w 168
 h 16
-controlPv "$(device):$(channel):ADC:EVENT.DESC"
+controlPv "$(device):$(axis):ADC:EVENT.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -273,7 +273,7 @@ x 456
 y 280
 w 80
 h 20
-controlPv "$(device):$(channel):ADC:EVENT_LIMIT_S"
+controlPv "$(device):$(axis):ADC:EVENT_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -323,7 +323,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):ADC:FIR_OVF"
+alarmPv "$(device):$(axis):ADC:FIR_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -336,7 +336,7 @@ x 32
 y 256
 w 168
 h 16
-controlPv "$(device):$(channel):ADC:FIR_OVF.DESC"
+controlPv "$(device):$(axis):ADC:FIR_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -366,7 +366,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):ADC:LOOPBACK_S"
+controlPv "$(device):$(axis):ADC:LOOPBACK_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -400,7 +400,7 @@ x 280
 y 232
 w 32
 h 20
-controlPv "$(device):$(channel):ADC:FILTER:DELAY_S"
+controlPv "$(device):$(axis):ADC:FILTER:DELAY_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -472,7 +472,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):ADC:MMS_SOURCE_S"
+controlPv "$(device):$(axis):ADC:MMS_SOURCE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -492,7 +492,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):ADC:DRAM_SOURCE_S"
+controlPv "$(device):$(axis):ADC:DRAM_SOURCE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 

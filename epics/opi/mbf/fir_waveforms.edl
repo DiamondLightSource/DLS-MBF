@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel) FIR $(fir) Filter Settings"
+title "$(device):$(axis) FIR $(fir) Filter Settings"
 showGrid
 snapToGrid
 gridSize 8
@@ -60,7 +60,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):FIR:$(fir):TAPS"
+  0 "$(device):$(axis):FIR:$(fir):TAPS"
 }
 plotUpdateMode {
   0 "y"
@@ -88,7 +88,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel) FIR $(fir) Filter Settings"
+  "$(device):$(axis) FIR $(fir) Filter Settings"
 }
 endObjectProperties
 
@@ -168,7 +168,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):FIR:$(fir):TAPS_S"
+  0 "$(device):$(axis):FIR:$(fir):TAPS_S"
 }
 plotUpdateMode {
   0 "y"

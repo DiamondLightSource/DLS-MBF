@@ -555,7 +555,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Channel $(chan0):"
+  "Channel $(axis0):"
 }
 autoSize
 endObjectProperties
@@ -575,7 +575,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Channel $(chan1):"
+  "Channel $(axis1):"
 }
 autoSize
 endObjectProperties

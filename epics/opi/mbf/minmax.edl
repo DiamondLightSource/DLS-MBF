@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel) $(part) Min/Max/Sum Data"
+title "$(device):$(axis) $(part) Min/Max/Sum Data"
 showGrid
 snapToGrid
 gridSize 8
@@ -61,8 +61,8 @@ y2Max 1
 # Trace Properties
 numTraces 2
 yPv {
-  0 "$(device):$(channel):$(part):MMS:MAX"
-  1 "$(device):$(channel):$(part):MMS:MIN"
+  0 "$(device):$(axis):$(part):MMS:MAX"
+  1 "$(device):$(axis):$(part):MMS:MIN"
 }
 plotUpdateMode {
   0 "y"
@@ -93,7 +93,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel) $(part) Min/Max/Sum Data"
+  "$(device):$(axis) $(part) Min/Max/Sum Data"
 }
 endObjectProperties
 
@@ -175,7 +175,7 @@ y2Max 16600
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):$(part):MMS:DELTA"
+  0 "$(device):$(axis):$(part):MMS:DELTA"
 }
 plotUpdateMode {
   0 "y"
@@ -203,7 +203,7 @@ bgColor index 4
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):$(part):MMS:SCAN_S.SCAN"
+controlPv "$(device):$(axis):$(part):MMS:SCAN_S.SCAN"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -243,7 +243,7 @@ y2Max 16600
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):$(part):MMS:MEAN"
+  0 "$(device):$(axis):$(part):MMS:MEAN"
 }
 plotUpdateMode {
   0 "y"
@@ -292,7 +292,7 @@ y2Max 16600
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):$(part):MMS:STD"
+  0 "$(device):$(axis):$(part):MMS:STD"
 }
 plotUpdateMode {
   0 "y"
@@ -335,7 +335,7 @@ x 56
 y 784
 w 104
 h 14
-controlPv "$(device):$(channel):$(part):MMS:TURNS"
+controlPv "$(device):$(axis):$(part):MMS:TURNS"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -358,7 +358,7 @@ x 288
 y 784
 w 160
 h 14
-controlPv "$(device):$(channel):$(part):MMS:OVERFLOW"
+controlPv "$(device):$(axis):$(part):MMS:OVERFLOW"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 fgAlarm
@@ -388,7 +388,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):$(channel):$(part):MMS:SCAN_S.PROC"
+controlPv "$(device):$(axis):$(part):MMS:SCAN_S.PROC"
 pressValue "0"
 onLabel "Scan"
 offLabel "Scan"
@@ -449,7 +449,7 @@ x 80
 y 824
 w 64
 h 14
-controlPv "$(device):$(channel):$(part):MMS:STD_MEAN"
+controlPv "$(device):$(axis):$(part):MMS:STD_MEAN"
 font "helvetica-medium-r-12.0"
 fontAlign "right"
 fgColor index 14
@@ -473,7 +473,7 @@ x 168
 y 824
 w 64
 h 16
-controlPv "$(device):$(channel):$(part):MMS:STD_MEAN_DB"
+controlPv "$(device):$(axis):$(part):MMS:STD_MEAN_DB"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -517,7 +517,7 @@ x 72
 y 808
 w 72
 h 16
-controlPv "$(device):$(channel):$(part):MMS:MEAN_MEAN"
+controlPv "$(device):$(axis):$(part):MMS:MEAN_MEAN"
 font "helvetica-medium-r-12.0"
 fontAlign "right"
 fgColor index 14
@@ -566,7 +566,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):$(channel):$(part):MMS:RESET_FAULT_S.PROC"
+controlPv "$(device):$(axis):$(part):MMS:RESET_FAULT_S.PROC"
 pressValue "0"
 onLabel "Reset"
 offLabel "Reset"

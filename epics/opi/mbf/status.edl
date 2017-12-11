@@ -77,7 +77,7 @@ displayFileName {
   0 "mbf/DAC.edl"
 }
 symbols {
-  0 "channel=$(chan1)"
+  0 "axis=$(axis1)"
 }
 endObjectProperties
 
@@ -117,7 +117,7 @@ displayFileName {
   0 "mbf/ADC.edl"
 }
 symbols {
-  0 "channel=$(chan1)"
+  0 "axis=$(axis1)"
 }
 endObjectProperties
 
@@ -142,7 +142,7 @@ displayFileName {
   0 "mbf/DAC.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "axis=$(axis0)"
 }
 endObjectProperties
 
@@ -167,7 +167,7 @@ displayFileName {
   0 "mbf/ADC.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "axis=$(axis0)"
 }
 endObjectProperties
 
@@ -642,7 +642,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):ADC:INP_OVF"
+alarmPv "$(device):$(axis0):ADC:INP_OVF"
 endObjectProperties
 
 # (Static Text)
@@ -661,7 +661,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan0)"
+  "$(axis0)"
 }
 endObjectProperties
 
@@ -699,7 +699,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):ADC:INP_OVF"
+alarmPv "$(device):$(axis1):ADC:INP_OVF"
 endObjectProperties
 
 # (Rectangle)
@@ -716,7 +716,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):ADC:FIR_OVF"
+alarmPv "$(device):$(axis0):ADC:FIR_OVF"
 endObjectProperties
 
 # (Static Text)
@@ -753,7 +753,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):ADC:FIR_OVF"
+alarmPv "$(device):$(axis1):ADC:FIR_OVF"
 endObjectProperties
 
 # (Static Text)
@@ -772,7 +772,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan1)"
+  "$(axis1)"
 }
 endObjectProperties
 
@@ -790,7 +790,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):DAC:FIR_OVF"
+alarmPv "$(device):$(axis0):DAC:FIR_OVF"
 endObjectProperties
 
 # (Static Text)
@@ -827,7 +827,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):DAC:FIR_OVF"
+alarmPv "$(device):$(axis1):DAC:FIR_OVF"
 endObjectProperties
 
 # (Rectangle)
@@ -844,7 +844,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):DAC:BUN_OVF"
+alarmPv "$(device):$(axis1):DAC:BUN_OVF"
 endObjectProperties
 
 # (Static Text)
@@ -881,7 +881,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):DAC:BUN_OVF"
+alarmPv "$(device):$(axis0):DAC:BUN_OVF"
 endObjectProperties
 
 # (Rectangle)
@@ -898,7 +898,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):DAC:MUX_OVF"
+alarmPv "$(device):$(axis0):DAC:MUX_OVF"
 endObjectProperties
 
 # (Static Text)
@@ -935,7 +935,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):DAC:MUX_OVF"
+alarmPv "$(device):$(axis1):DAC:MUX_OVF"
 endObjectProperties
 
 # (Exit Button)
@@ -971,7 +971,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):ADC:LOOPBACK_S"
+alarmPv "$(device):$(axis1):ADC:LOOPBACK_S"
 endObjectProperties
 
 # (Rectangle)
@@ -988,7 +988,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):ADC:LOOPBACK_S"
+alarmPv "$(device):$(axis0):ADC:LOOPBACK_S"
 endObjectProperties
 
 # (Static Text)
@@ -1025,7 +1025,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):DAC:ENABLE_S"
+alarmPv "$(device):$(axis1):DAC:ENABLE_S"
 endObjectProperties
 
 # (Rectangle)
@@ -1042,7 +1042,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):DAC:ENABLE_S"
+alarmPv "$(device):$(axis0):DAC:ENABLE_S"
 endObjectProperties
 
 # (Static Text)
@@ -1075,7 +1075,7 @@ x 368
 y 136
 w 64
 h 16
-controlPv "$(device):$(chan0):DAC:MMS:STD_MEAN_DB"
+controlPv "$(device):$(axis0):DAC:MMS:STD_MEAN_DB"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -1119,7 +1119,7 @@ x 144
 y 136
 w 64
 h 16
-controlPv "$(device):$(chan0):ADC:MMS:STD_MEAN_DB"
+controlPv "$(device):$(axis0):ADC:MMS:STD_MEAN_DB"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -1163,7 +1163,7 @@ x 368
 y 192
 w 64
 h 16
-controlPv "$(device):$(chan0):DAC:MMS:STD_MEAN_DB"
+controlPv "$(device):$(axis0):DAC:MMS:STD_MEAN_DB"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -1227,7 +1227,7 @@ x 144
 y 192
 w 64
 h 16
-controlPv "$(device):$(chan0):ADC:MMS:STD_MEAN_DB"
+controlPv "$(device):$(axis0):ADC:MMS:STD_MEAN_DB"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -1315,7 +1315,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan0):FIR:OVF"
+alarmPv "$(device):$(axis0):FIR:OVF"
 endObjectProperties
 
 # (Static Text)
@@ -1353,6 +1353,6 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(chan1):FIR:OVF"
+alarmPv "$(device):$(axis1):FIR:OVF"
 endObjectProperties
 

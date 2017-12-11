@@ -187,7 +187,7 @@ displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan0),part=ADC"
+  0 "axis=$(axis0),part=ADC"
 }
 endObjectProperties
 
@@ -206,7 +206,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Axis $(chan0)"
+  "Axis $(axis0)"
 }
 endObjectProperties
 
@@ -246,7 +246,7 @@ displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan1),part=ADC"
+  0 "axis=$(axis1),part=ADC"
 }
 endObjectProperties
 
@@ -265,7 +265,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Axis $(chan1)"
+  "Axis $(axis1)"
 }
 endObjectProperties
 
@@ -305,7 +305,7 @@ displayFileName {
   0 "mbf/control.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "axis=$(axis0)"
 }
 endObjectProperties
 
@@ -331,7 +331,7 @@ displayFileName {
   0 "mbf/control.edl"
 }
 symbols {
-  0 "channel=$(chan1)"
+  0 "axis=$(axis1)"
 }
 endObjectProperties
 
@@ -357,7 +357,7 @@ displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan0),part=DAC"
+  0 "axis=$(axis0),part=DAC"
 }
 endObjectProperties
 
@@ -383,7 +383,7 @@ displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan1),part=DAC"
+  0 "axis=$(axis1),part=DAC"
 }
 endObjectProperties
 
@@ -432,7 +432,7 @@ displayFileName {
   0 "mbf/detector.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "axis=$(axis0)"
 }
 endObjectProperties
 
@@ -458,7 +458,7 @@ displayFileName {
   0 "mbf/detector.edl"
 }
 symbols {
-  0 "channel=$(chan1)"
+  0 "axis=$(axis1)"
 }
 endObjectProperties
 
@@ -484,7 +484,7 @@ displayFileName {
   0 "mbf/fir_tmbf.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
+  0 "axis=$(axis0)"
 }
 endObjectProperties
 
@@ -510,7 +510,7 @@ displayFileName {
   0 "mbf/fir_tmbf.edl"
 }
 symbols {
-  0 "channel=$(chan1)"
+  0 "axis=$(axis1)"
 }
 endObjectProperties
 

@@ -169,14 +169,14 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "ADC $(chan0)"
+buttonLabel "ADC $(axis0)"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan0),part=ADC"
+  0 "axis=$(axis0),part=ADC"
 }
 endObjectProperties
 
@@ -195,14 +195,14 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "ADC $(chan1)"
+buttonLabel "ADC $(axis1)"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan1),part=ADC"
+  0 "axis=$(axis1),part=ADC"
 }
 endObjectProperties
 
@@ -228,7 +228,7 @@ displayFileName {
   0 "mbf/control.edl"
 }
 symbols {
-  0 "channel=$(chan01)"
+  0 "axis=$(axis01)"
 }
 endObjectProperties
 
@@ -247,14 +247,14 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "DAC $(chan0)"
+buttonLabel "DAC $(axis0)"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan0),part=DAC"
+  0 "axis=$(axis0),part=DAC"
 }
 endObjectProperties
 
@@ -273,14 +273,14 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "DAC $(chan1)"
+buttonLabel "DAC $(axis1)"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "mbf/minmax.edl"
 }
 symbols {
-  0 "channel=$(chan1),part=DAC"
+  0 "axis=$(axis1),part=DAC"
 }
 endObjectProperties
 
@@ -352,7 +352,7 @@ displayFileName {
   0 "mbf/detector.edl"
 }
 symbols {
-  0 "channel=$(chan01)"
+  0 "axis=$(axis01)"
 }
 endObjectProperties
 
@@ -411,7 +411,7 @@ displayFileName {
   0 "mbf/fir_lmbf.edl"
 }
 symbols {
-  0 "channel=$(chan01)"
+  0 "axis=$(axis01)"
 }
 endObjectProperties
 

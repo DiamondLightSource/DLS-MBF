@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel):DET:$(det) Waveforms"
+title "$(device):$(axis):DET:$(det) Waveforms"
 showGrid
 snapToGrid
 gridSize 8
@@ -61,12 +61,12 @@ y2Max 1
 # Trace Properties
 numTraces 2
 xPv {
-  0 "$(device):$(channel):DET:$(x_axis)"
-  1 "$(device):$(channel):DET:$(x_axis)"
+  0 "$(device):$(axis):DET:$(x_axis)"
+  1 "$(device):$(axis):DET:$(x_axis)"
 }
 yPv {
-  0 "$(device):$(channel):DET:$(det):I"
-  1 "$(device):$(channel):DET:$(det):Q"
+  0 "$(device):$(axis):DET:$(det):I"
+  1 "$(device):$(axis):DET:$(det):Q"
 }
 plotUpdateMode {
   0 "y"
@@ -97,7 +97,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel):DET:$(det) Waveforms"
+  "$(device):$(axis):DET:$(det) Waveforms"
 }
 endObjectProperties
 
@@ -178,10 +178,10 @@ y2Max 1
 # Trace Properties
 numTraces 1
 xPv {
-  0 "$(device):$(channel):DET:$(x_axis)"
+  0 "$(device):$(axis):DET:$(x_axis)"
 }
 yPv {
-  0 "$(device):$(channel):DET:$(det):POWER"
+  0 "$(device):$(axis):DET:$(det):POWER"
 }
 plotUpdateMode {
   0 "y"
@@ -228,10 +228,10 @@ y2Max 1
 # Trace Properties
 numTraces 1
 xPv {
-  0 "$(device):$(channel):DET:$(det):I"
+  0 "$(device):$(axis):DET:$(det):I"
 }
 yPv {
-  0 "$(device):$(channel):DET:$(det):Q"
+  0 "$(device):$(axis):DET:$(det):Q"
 }
 ySigned {
   0 1
@@ -285,7 +285,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):DET:$(det):OUT_OVF"
+alarmPv "$(device):$(axis):DET:$(det):OUT_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -298,7 +298,7 @@ x 552
 y 472
 w 72
 h 16
-controlPv "$(device):$(channel):DET:$(det):OUT_OVF"
+controlPv "$(device):$(axis):DET:$(det):OUT_OVF"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -322,7 +322,7 @@ x 576
 y 560
 w 32
 h 16
-controlPv "$(device):$(channel):DET:$(det):COUNT"
+controlPv "$(device):$(axis):DET:$(det):COUNT"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -347,7 +347,7 @@ x 528
 y 448
 w 56
 h 16
-controlPv "$(device):$(channel):DET:$(det):MAX_POWER"
+controlPv "$(device):$(axis):DET:$(det):MAX_POWER"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -398,7 +398,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DET:$(det):SCALING_S"
+controlPv "$(device):$(axis):DET:$(det):SCALING_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -440,7 +440,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DET:$(det):ENABLE_S"
+controlPv "$(device):$(axis):DET:$(det):ENABLE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 

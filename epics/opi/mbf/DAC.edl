@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(channel) DAC Overview"
+title "$(device):$(axis) DAC Overview"
 showGrid
 snapToGrid
 gridSize 8
@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(channel) DAC Overview"
+  "$(device):$(axis) DAC Overview"
 }
 endObjectProperties
 
@@ -101,7 +101,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):DAC:BUN_OVF"
+alarmPv "$(device):$(axis):DAC:BUN_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -114,7 +114,7 @@ x 32
 y 232
 w 168
 h 16
-controlPv "$(device):$(channel):DAC:BUN_OVF.DESC"
+controlPv "$(device):$(axis):DAC:BUN_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -163,7 +163,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(channel):DAC:FILTER_S"
+  0 "$(device):$(axis):DAC:FILTER_S"
 }
 plotUpdateMode {
   0 "y"
@@ -186,7 +186,7 @@ x 456
 y 232
 w 80
 h 20
-controlPv "$(device):$(channel):DAC:DELAY_S"
+controlPv "$(device):$(axis):DAC:DELAY_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -236,7 +236,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):DAC:FIR_OVF"
+alarmPv "$(device):$(axis):DAC:FIR_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -249,7 +249,7 @@ x 32
 y 256
 w 168
 h 16
-controlPv "$(device):$(channel):DAC:FIR_OVF.DESC"
+controlPv "$(device):$(axis):DAC:FIR_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -277,7 +277,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(channel):DAC:MUX_OVF"
+alarmPv "$(device):$(axis):DAC:MUX_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -290,7 +290,7 @@ x 32
 y 280
 w 168
 h 16
-controlPv "$(device):$(channel):DAC:MUX_OVF.DESC"
+controlPv "$(device):$(axis):DAC:MUX_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -340,7 +340,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DAC:ENABLE_S"
+controlPv "$(device):$(axis):DAC:ENABLE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -380,7 +380,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DAC:MMS_SOURCE_S"
+controlPv "$(device):$(axis):DAC:MMS_SOURCE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -400,7 +400,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):DAC:DRAM_SOURCE_S"
+controlPv "$(device):$(axis):DAC:DRAM_SOURCE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -434,7 +434,7 @@ x 296
 y 232
 w 32
 h 24
-controlPv "$(device):$(channel):DAC:FILTER:DELAY_S"
+controlPv "$(device):$(axis):DAC:FILTER:DELAY_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0

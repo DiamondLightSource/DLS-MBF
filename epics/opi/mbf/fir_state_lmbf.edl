@@ -60,14 +60,14 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "Wf $(chan0)"
+buttonLabel "Wf $(axis0)"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "mbf/fir_waveforms.edl"
 }
 symbols {
-  0 "device=$(device),channel=$(chan0),fir=$(fir)"
+  0 "device=$(device),axis=$(axis0),fir=$(fir)"
 }
 replaceSymbols {
   0 1
@@ -89,7 +89,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(channel):FIR:$(fir):USEWF_S"
+controlPv "$(device):$(axis):FIR:$(fir):USEWF_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -103,7 +103,7 @@ x 16
 y 0
 w 32
 h 20
-controlPv "$(device):$(channel):FIR:$(fir):CYCLES_S"
+controlPv "$(device):$(axis):FIR:$(fir):CYCLES_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -131,7 +131,7 @@ x 72
 y 0
 w 32
 h 20
-controlPv "$(device):$(channel):FIR:$(fir):LENGTH_S"
+controlPv "$(device):$(axis):FIR:$(fir):LENGTH_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -179,7 +179,7 @@ x 264
 y 0
 w 40
 h 20
-controlPv "$(device):$(channel):FIR:$(fir):PHASE_S"
+controlPv "$(device):$(axis):FIR:$(fir):PHASE_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -213,8 +213,8 @@ bgColor index 4
 topShadowColor index 0
 botShadowColor index 14
 increment 10
-controlPv "$(device):$(channel):FIR:$(fir):PHASE_S"
-controlLabel "$(device):$(channel):FIRPHASE_S"
+controlPv "$(device):$(axis):FIR:$(fir):PHASE_S"
+controlLabel "$(device):$(axis):FIRPHASE_S"
 controlLabelType "pvName"
 font "helvetica-medium-r-8.0"
 scaleMin -360
@@ -236,14 +236,14 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "Wf $(chan1)"
+buttonLabel "Wf $(axis1)"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "mbf/fir_waveforms.edl"
 }
 symbols {
-  0 "device=$(device),channel=$(chan1),fir=$(fir)"
+  0 "device=$(device),axis=$(axis1),fir=$(fir)"
 }
 replaceSymbols {
   0 1

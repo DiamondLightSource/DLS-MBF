@@ -23,10 +23,10 @@ else
     MACROS=(
         -m device="$DEVICE"
         -m mode="$MODE"
-        -m chan0="$AXIS0"
-        -m chan1="$AXIS1")
+        -m axis0="$AXIS0"
+        -m axis1="$AXIS1")
     if [[ "$MODE" = LMBF ]]; then
-        MACROS=("${MACROS[@]}" -m chan01="$AXIS0$AXIS1")
+        MACROS=("${MACROS[@]}" -m axis01="$AXIS0$AXIS1")
     fi
 fi
 

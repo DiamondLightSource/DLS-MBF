@@ -51,7 +51,7 @@ x 192
 y 40
 w 96
 h 20
-controlPv "$(device):$(chan0):TRG:BLANKING_S"
+controlPv "$(device):$(axis0):TRG:BLANKING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -85,7 +85,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan0):"
+  "$(axis0):"
 }
 endObjectProperties
 
@@ -99,7 +99,7 @@ x 192
 y 64
 w 96
 h 20
-controlPv "$(device):$(chan1):TRG:BLANKING_S"
+controlPv "$(device):$(axis1):TRG:BLANKING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -133,7 +133,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan1):"
+  "$(axis1):"
 }
 endObjectProperties
 
@@ -180,7 +180,7 @@ x 48
 y 40
 w 96
 h 20
-controlPv "$(device):$(chan0):TRG:TURN:OFFSET_S"
+controlPv "$(device):$(axis0):TRG:TURN:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -214,7 +214,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan0):"
+  "$(axis0):"
 }
 endObjectProperties
 
@@ -228,7 +228,7 @@ x 48
 y 64
 w 96
 h 20
-controlPv "$(device):$(chan1):TRG:TURN:OFFSET_S"
+controlPv "$(device):$(axis1):TRG:TURN:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -262,7 +262,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan1):"
+  "$(axis1):"
 }
 endObjectProperties
 
@@ -288,7 +288,7 @@ displayFileName {
   0 "mbf/trigger_target.edl"
 }
 symbols {
-  0 "dest=$(chan0):TRG:SEQ"
+  0 "dest=$(axis0):TRG:SEQ"
 }
 endObjectProperties
 
@@ -314,7 +314,7 @@ displayFileName {
   0 "mbf/trigger_target.edl"
 }
 symbols {
-  0 "dest=$(chan1):TRG:SEQ"
+  0 "dest=$(axis1):TRG:SEQ"
 }
 endObjectProperties
 

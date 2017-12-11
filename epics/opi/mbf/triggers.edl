@@ -1128,7 +1128,7 @@ x 112
 y 136
 w 64
 h 24
-controlPv "$(device):$(chan0):ADC:EVENT_LIMIT_S"
+controlPv "$(device):$(axis0):ADC:EVENT_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -1154,7 +1154,7 @@ x 112
 y 160
 w 64
 h 20
-controlPv "$(device):$(chan1):ADC:EVENT_LIMIT_S"
+controlPv "$(device):$(axis1):ADC:EVENT_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -1193,7 +1193,7 @@ x 144
 y 184
 w 32
 h 20
-controlPv "$(device):$(chan01):SEQ:TRIGGER_S"
+controlPv "$(device):$(axis01):SEQ:TRIGGER_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1241,7 +1241,7 @@ x 112
 y 208
 w 32
 h 20
-controlPv "$(device):$(chan1):SEQ:TRIGGER_S"
+controlPv "$(device):$(axis1):SEQ:TRIGGER_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1269,7 +1269,7 @@ x 112
 y 184
 w 32
 h 20
-controlPv "$(device):$(chan0):SEQ:TRIGGER_S"
+controlPv "$(device):$(axis0):SEQ:TRIGGER_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
