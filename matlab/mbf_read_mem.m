@@ -1,4 +1,4 @@
-% d = lmbf_read_mem(lmbf, turns ...
+% d = mbf_read_mem(mbf, turns ...
 %       [, 'offset', offset] [, 'channel', channel], [, 'lock', timeout])
 %
 % Reads the specified number of turns from fast memory from given device.  If
@@ -13,7 +13,7 @@
 % ready.  A timeout of zero means no waiting, the call will fail if the trigger
 % is not ready.
 
-function a = lmbf_read_mem(lmbf, turns, varargin)
+function a = mbf_read_mem(mbf, turns, varargin)
     % Argument parsing
     p = inputParser;
     addParamValue(p, 'offset', 0);
@@ -25,10 +25,10 @@ function a = lmbf_read_mem(lmbf, turns, varargin)
     locking = p.Results.lock;
 
     % Pick up server address and machine parameters
-    server = deblank(char(lcaGet([lmbf ':HOSTNAME'])));
-    port = lcaGet([lmbf ':SOCKET']);
-    bunches = lcaGet([lmbf ':BUNCHES']);
+    server = deblank(char(lcaGet([mbf ':HOSTNAME'])));
+    port = lcaGet([mbf ':SOCKET']);
+    bunches = lcaGet([mbf ':BUNCHES']);
 
-    a = mex_lmbf_memory_( ...
+    a = mex_mbf_memory_( ...
         server, port, bunches, turns, offset, channel, locking);
 end

@@ -3,7 +3,7 @@
  *
  * The function defined here must be called thus:
  *
- *      [d,s,g,t] = mex_lmbf_detector_( ...
+ *      [d,s,g,t] = mex_mbf_detector_( ...
  *          hostname, port, bunches, channel, locking);
  *
  * Data is captured from hostname:port and returned in an array of size

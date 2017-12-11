@@ -1,7 +1,7 @@
 TOP = ..
 include $(TOP)/Makefile.common
 
-MEX_FILES = mex_lmbf_detector_ mex_lmbf_memory_
+MEX_FILES = mex_mbf_detector_ mex_mbf_memory_
 
 
 MEX_OPTS += -largeArrayDims

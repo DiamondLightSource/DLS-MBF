@@ -5,7 +5,7 @@
  * does not return, instead either uses longjmp or a C++ exception. */
 #define UNEXPECTED_ERROR  "unexpected", "Unexpected error"
 #define FAIL_(id, error...) \
-    mexErrMsgIdAndTxt("mex_lmbf:" id, error)
+    mexErrMsgIdAndTxt("mex_mbf:" id, error)
 #define FAIL() \
     FAIL_("unexpected", "Unexpected error")
 #define TEST_OK_(test, id, error...) \

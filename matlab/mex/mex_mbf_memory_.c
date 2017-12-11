@@ -3,7 +3,7 @@
  *
  * The function defined here must be called thus:
  *
- *      d = mex_lmbf_memory_( ...
+ *      d = mex_mbf_memory_( ...
  *          hostname, port, bunches, count, offset, channel, locking);
  *
  * Data is captured from hostname:port starting from offset from trigger, and
