@@ -79,8 +79,12 @@ print_version:
 
 # ------------------------------------------------------------------------------
 
+install: epics matlab
+	make driver-rpm
+
 clean:
 	rm -rf $(BUILD_DIR)
 	make -C epics clean uninstall
+	make -C matlab clean
 
-.PHONY: default clean
+.PHONY: default install clean
