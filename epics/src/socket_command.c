@@ -175,7 +175,7 @@ static error__t parse_memory_args(
             parse_int(&command, &args->offset))  ?:
         IF(read_char(&command, 'C'),
             parse_int(&command, &args->channel)  ?:
-            TEST_OK_(0 <= args->channel  &&  args->channel < CHANNEL_COUNT,
+            TEST_OK_(0 <= args->channel  &&  args->channel < MEM_CHANNEL_COUNT,
                 "Invalid channel number"))  ?:
         parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
@@ -284,27 +284,27 @@ struct detector_frame {
 /* This structure captures the parsed results of a detector request command of
  * the form:
  *
- *      D [R] channel [F] [S] [T] [L [W timeout]]
+ *      D [R] axis [F] [S] [T] [L [W timeout]]
  *
  * Returns detector readout with the following options:
  *
  *      R   If set then only raw data is returned and the connection is closed
  *          if a parse error occurs.
- *      channel
- *          Specifies which channel is being read.
+ *      axis
+ *          Specifies which axis is being read.
  *      F   Request that the number of detectors and samples is sent as a header
  *          before sending the raw data.
  *      S   Request that the frequency scale for the detector is transmitted
- *          after sending the channel data.
+ *          after sending the axis data.
  *      T   Request that the timebase for the detector is transmitted after the
- *          channel data, and after the frequency scale if requested.
+ *          axis data, and after the frequency scale if requested.
  *      L   If set then lock readout
  *      W timeout
  *          If locking then optionally wait timeout milliseconds for lock to
  *          succeed.
  */
 struct detector_args {
-    int channel;                    //      Detector channel
+    int axis;                       //      Detector axis
     bool framed;                    // F    Send header frame
     bool scale;                     // S    Send frequency scale
     bool timebase;                  // T    Send timebase
@@ -319,7 +319,7 @@ static error__t parse_detector_args(
     const char *command_in = command;
     *args = (struct detector_args) { };
     error__t error =
-        parse_int(&command, &args->channel)  ?:
+        parse_int(&command, &args->axis)  ?:
         DO(args->framed = read_char(&command, 'F'))  ?:
         DO(args->scale = read_char(&command, 'S'))  ?:
         DO(args->timebase = read_char(&command, 'T'))  ?:
@@ -333,7 +333,7 @@ static error__t parse_detector_args(
 static void write_detector_info(
     struct buffered_file *file, struct detector_info *info)
 {
-    /* Send the channel mask and count corresponding to which samples we're
+    /* Send the axis mask and count corresponding to which samples we're
      * actually sending. */
     struct detector_frame frame = {
         .detector_count = (uint8_t) info->detector_count,
@@ -346,36 +346,36 @@ static void write_detector_info(
 
 
 static void read_detector_samples(
-    int channel, void *buffer, unsigned int sample_size,
+    int axis, void *buffer, unsigned int sample_size,
     unsigned int offset, unsigned int samples)
 {
     unsigned int sample_count = (unsigned int) (
         sample_size / sizeof(struct detector_result) * samples);
-    hw_read_det_memory(channel, sample_count, sample_size * offset, buffer);
+    hw_read_det_memory(axis, sample_count, sample_size * offset, buffer);
 }
 
 static void read_detector_scale(
-    int channel, void *buffer, unsigned int sample_size,
+    int axis, void *buffer, unsigned int sample_size,
     unsigned int offset, unsigned int samples)
 {
-    compute_scale_info(channel, buffer, NULL, offset, samples);
+    compute_scale_info(axis, buffer, NULL, offset, samples);
 }
 
 static void read_detector_timebase(
-    int channel, void *buffer, unsigned int sample_size,
+    int axis, void *buffer, unsigned int sample_size,
     unsigned int offset, unsigned int samples)
 {
-    compute_scale_info(channel, NULL, buffer, offset, samples);
+    compute_scale_info(axis, NULL, buffer, offset, samples);
 }
 
 
 /* Sends data to destination by repeatedly filling the buffer using the given
  * read_samples() function and then sending. */
 static void send_detector_data(
-    struct buffered_file *file, int channel, unsigned int samples,
+    struct buffered_file *file, int axis, unsigned int samples,
     unsigned int sample_size,
     void (*read_samples)(
-        int channel, void *buffer, unsigned int sample_size,
+        int axis, void *buffer, unsigned int sample_size,
         unsigned int offset, unsigned int samples))
 {
     unsigned int offset = 0;
@@ -384,7 +384,7 @@ static void send_detector_data(
         unsigned int buffer_samples = READ_BUFFER_BYTES / sample_size;
         char buffer[READ_BUFFER_BYTES];
         unsigned int samples_to_read = MIN(samples, buffer_samples);
-        read_samples(channel, buffer, sample_size, offset, samples_to_read);
+        read_samples(axis, buffer, sample_size, offset, samples_to_read);
         write_block(file, buffer, samples_to_read * sample_size);
 
         samples -= samples_to_read;
@@ -401,16 +401,16 @@ static void send_detector_result(
         write_detector_info(file, info);
 
     send_detector_data(
-        file, args->channel, info->samples,
+        file, args->axis, info->samples,
         info->detector_count * (unsigned int) sizeof(struct detector_result),
         read_detector_samples);
     if (args->scale)
         send_detector_data(
-            file, args->channel, info->samples,
+            file, args->axis, info->samples,
             sizeof(uint32_t), read_detector_scale);
     if (args->timebase)
         send_detector_data(
-            file, args->channel, info->samples,
+            file, args->axis, info->samples,
             sizeof(uint32_t), read_detector_timebase);
 }
 
@@ -420,13 +420,13 @@ error__t process_detector_command(
     struct buffered_file *file, bool raw_mode, const char *command)
 {
     struct detector_args args;
-    int channel_count = system_config.lmbf_mode ? 1 : CHANNEL_COUNT;
+    int axis_count = system_config.lmbf_mode ? 1 : AXIS_COUNT;
     struct trigger_target *lock;
     error__t error =
         parse_detector_args(command, &args, raw_mode)  ?:
-        TEST_OK_(0 <= args.channel  &&  args.channel < channel_count,
-            "Invalid channel number")  ?:
-        DO(lock = get_detector_trigger_ready_lock(args.channel))  ?:
+        TEST_OK_(0 <= args.axis  &&  args.axis < axis_count,
+            "Invalid axis number")  ?:
+        DO(lock = get_detector_trigger_ready_lock(args.axis))  ?:
         wait_for_lock(lock, file, args.locking);
 
     if (!error)
@@ -435,7 +435,7 @@ error__t process_detector_command(
             write_char(file, '\0');
 
         struct detector_info info;
-        get_detector_info(args.channel, &info);
+        get_detector_info(args.axis, &info);
         send_detector_result(file, &args, &info);
 
         release_lock(lock, args.locking);

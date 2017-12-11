@@ -19,8 +19,8 @@
 #include "mms.h"
 
 
-/* We need four MMS handlers: ADC, DAC, two channels each. */
-#define MMS_HANDLER_COUNT   4
+/* We need four MMS handlers: ADC, and DAC for each axis. */
+#define MMS_HANDLER_COUNT   (2 * AXIS_COUNT)
 
 
 /* Accumulator for MMS readouts. */
@@ -53,7 +53,7 @@ struct mms_epics {
 
 
 struct mms_handler {
-    int channel;
+    int axis;
     void (*read_mms)(int, struct mms_result*);
     unsigned int bunch_offset;
     pthread_mutex_t mutex;
@@ -131,7 +131,7 @@ static void read_raw_mms(struct mms_handler *mms)
         .minimum = minimum, .maximum = maximum, .sum = sum, .sum2 = sum2 };
 
     /* Read an update from hardware. */
-    mms->read_mms(mms->channel, &result);
+    mms->read_mms(mms->axis, &result);
 
     /* Accumulate result into the accumulator. */
     struct mms_accum *accum = &mms->accum;
@@ -226,14 +226,14 @@ static bool reset_mms_fault(void *context, bool *value)
 
 
 struct mms_handler *create_mms_handler(
-    int channel, void (*read_mms)(int, struct mms_result*))
+    int axis, void (*read_mms)(int, struct mms_result*))
 {
     struct mms_handler *mms = &mms_handlers.handlers[mms_handlers.count];
     mms_handlers.count += 1;
 
     unsigned int bunches = hardware_config.bunches;
     *mms = (struct mms_handler) {
-        .channel = channel,
+        .axis = axis,
         .read_mms = read_mms,
         .bunch_offset = 0,          // Will be set separately
         .mutex = PTHREAD_MUTEX_INITIALIZER,

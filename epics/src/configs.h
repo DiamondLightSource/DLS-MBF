@@ -28,8 +28,8 @@ extern const struct hardware_delays {
 extern const struct system_config {
     const char *device_address;         // Name of hardware device
     const char *epics_name;             // Prefix for all EPICS names
-    const char *channel0_name;          // Name of the two channels, normally
-    const char *channel1_name;          // either X,Y or I,Q
+    const char *axis0_name;             // Name of the two axes, normally
+    const char *axis1_name;             // either X,Y or I,Q
     unsigned int bunches_per_turn;      // Fundamental machine parameter
     bool lmbf_mode;                     // Set if running in longitudinal mode
     double lmbf_fir_offset;             // Phase offset between FIR filters

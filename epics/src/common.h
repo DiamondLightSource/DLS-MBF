@@ -8,18 +8,18 @@
 
 
 /* This macro is a little tricky: it's intended to be used for iterating over
- * the set of channel names together with a prefix thus:
+ * the set of axis names together with a prefix thus:
  *
- *  FOR_CHANNEL_NAME(channel, "ADC") { create pvs ...; }
+ *  FOR_AXIS_NAME(axis, "ADC") { create pvs ...; }
  *
  * The trickery is in the calling of the exit and enter methods. */
-#define FOR_CHANNEL_NAMES(channel, prefix, mode...) \
-    for (int channel = 0; \
-         _enter_channel_step(channel, prefix, GET_DEFAULT(false, ##mode)); \
-         _exit_channel_step(), channel += 1)
+#define FOR_AXIS_NAMES(axis, prefix, mode...) \
+    for (int axis = 0; \
+         _enter_axis_step(axis, prefix, GET_DEFAULT(false, ##mode)); \
+         _exit_axis_step(), axis += 1)
 
-bool _enter_channel_step(int channel, const char *prefix, bool lmbf_mode);
-void _exit_channel_step(void);
+bool _enter_axis_step(int axis, const char *prefix, bool lmbf_mode);
+void _exit_axis_step(void);
 
 
 /* Similar tricksy code to wrap enter and leave functions around a block of

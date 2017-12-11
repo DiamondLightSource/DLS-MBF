@@ -146,11 +146,11 @@ static void set_prompt(void)
 static error__t load_database(const char *database)
 {
     database_add_macro("DEVICE", "%s", system_config.epics_name);
-    database_add_macro("AXIS0", "%s", system_config.channel0_name);
-    database_add_macro("AXIS1", "%s", system_config.channel1_name);
+    database_add_macro("AXIS0", "%s", system_config.axis0_name);
+    database_add_macro("AXIS1", "%s", system_config.axis1_name);
     if (system_config.lmbf_mode)
         database_add_macro("AXIS01", "%s%s",
-            system_config.channel0_name, system_config.channel1_name);
+            system_config.axis0_name, system_config.axis1_name);
     database_add_macro("ADC_TAPS", "%d", hardware_config.adc_taps);
     database_add_macro("BUNCH_TAPS", "%d", hardware_config.bunch_taps);
     database_add_macro("DAC_TAPS", "%d", hardware_config.dac_taps);

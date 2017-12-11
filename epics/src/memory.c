@@ -36,7 +36,7 @@ static struct epics_record *chan1_select;
 
 /* Current channel selection. */
 enum chan_select { ADC0, FIR0, DAC0, ADC1, FIR1, DAC1 };
-static enum chan_select chan_selection[CHANNEL_COUNT];
+static enum chan_select chan_selection[MEM_CHANNEL_COUNT];
 
 
 
@@ -149,28 +149,28 @@ static unsigned int trigger_origin;
 static int readout_offset;
 
 /* dac_delays[] is written by the DAC control, as this delay is a bit dynamic.
- * channel_delays[] is written when capture is complete, so that we don't see
+ * channel[] is written when capture is complete, so that we don't see
  * changes while working with the runout. */
-static unsigned int dac_delays[CHANNEL_COUNT];
-static unsigned int adc_delays[CHANNEL_COUNT];
-static unsigned int channel_delays[CHANNEL_COUNT];
-static unsigned int channel_skew;
+static unsigned int dac_delays[AXIS_COUNT];
+static unsigned int adc_delays[AXIS_COUNT];
+static unsigned int channel_delays[MEM_CHANNEL_COUNT];
+static unsigned int axis_skew;
 
 
-void set_memory_dac_offset(int channel, unsigned int delay)
+void set_memory_dac_offset(int axis, unsigned int delay)
 {
-    dac_delays[channel] = delay;
+    dac_delays[axis] = delay;
 }
 
-void set_memory_adc_offset(int channel, unsigned int delay)
+void set_memory_adc_offset(int axis, unsigned int delay)
 {
-    adc_delays[channel] = delay;
+    adc_delays[axis] = delay;
 }
 
-void set_memory_turn_clock_offsets(unsigned int offsets[CHANNEL_COUNT])
+void set_memory_turn_clock_offsets(unsigned int offsets[AXIS_COUNT])
 {
     unsigned int bunches_per_turn = system_config.bunches_per_turn;
-    channel_skew =
+    axis_skew =
         (bunches_per_turn + offsets[0] - offsets[1]) % bunches_per_turn;
 }
 
@@ -179,7 +179,7 @@ void set_memory_turn_clock_offsets(unsigned int offsets[CHANNEL_COUNT])
  * completed.  This is as good a time as any to take a snapshot. */
 static void update_channel_delays(void)
 {
-    for (int channel = 0; channel < CHANNEL_COUNT; channel ++)
+    for (int channel = 0; channel < MEM_CHANNEL_COUNT; channel ++)
     {
         unsigned int delay = 0;
         switch (chan_selection[channel])
@@ -200,7 +200,7 @@ static void update_channel_delays(void)
                 break;
             case ADC1: case FIR1: case DAC1:
                 channel_delays[channel] =
-                    (delay + channel_skew) % hardware_config.bunches;
+                    (delay + axis_skew) % hardware_config.bunches;
                 break;
         }
     }
@@ -295,8 +295,8 @@ void prepare_memory(void)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-static bool fir_gains[CHANNEL_COUNT];
-static bool fir_overflow[CHANNEL_COUNT];
+static bool fir_gains[AXIS_COUNT];
+static bool fir_overflow[AXIS_COUNT];
 
 
 static void write_fir_gain(void)

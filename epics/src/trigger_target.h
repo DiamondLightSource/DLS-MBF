@@ -36,12 +36,12 @@ enum shared_target_state {
 struct target_config {
     /* Target identity. */
     enum trigger_target_id target_id;   // Hardware identification
-    int channel;                        // Not valid for DRAM target
+    int axis;                        // Not valid for DRAM target
     const char *name;
 
     /* Target specific methods and variables. */
-    void (*prepare_target)(int channel);
-    enum target_state (*stop_target)(int channel);
+    void (*prepare_target)(int axis);
+    enum target_state (*stop_target)(int axis);
 
     /* State change notification. */
     void (*set_target_state)(void *context, enum target_state state);

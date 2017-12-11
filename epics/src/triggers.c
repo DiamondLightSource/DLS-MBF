@@ -67,23 +67,23 @@ static bool blanking_in;
 /* Target specific configuration and implementation. */
 
 
-static void prepare_seq_target(int channel)
+static void prepare_seq_target(int axis)
 {
-    prepare_sequencer(channel);
-    prepare_detector(channel);
+    prepare_sequencer(axis);
+    prepare_detector(axis);
 }
 
-static enum target_state stop_seq_target(int channel)
+static enum target_state stop_seq_target(int axis)
 {
     return TARGET_IDLE;
 }
 
-static void prepare_mem_target(int channel)
+static void prepare_mem_target(int axis)
 {
     prepare_memory();
 }
 
-static enum target_state stop_mem_target(int channel)
+static enum target_state stop_mem_target(int axis)
 {
     /* Stop the memory target by actually forcing a trigger! */
     bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
@@ -104,7 +104,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_SEQ0] = {
         .config = {
             .target_id = TRIGGER_SEQ0,
-            .channel = 0,
+            .axis = 0,
             .name = "SEQ0",
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
@@ -116,7 +116,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_SEQ1] = {
         .config = {
             .target_id = TRIGGER_SEQ1,
-            .channel = 1,
+            .axis = 1,
             .name = "SEQ1",
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
@@ -128,7 +128,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_DRAM] = {
         .config = {
             .target_id = TRIGGER_DRAM,
-            .channel = -1,          // Not valid for this target
+            .axis = -1,          // Not valid for this target
             .name = "MEM",
             .prepare_target = prepare_mem_target,
             .stop_target = stop_mem_target,
@@ -140,17 +140,17 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
 };
 
 
-static struct channel_context {
-    int channel;
+static struct axis_context {
+    int axis;
     struct trigger_target_state *target;
     unsigned int turn_clock_offset;
-} channel_contexts[CHANNEL_COUNT] = {
+} axis_contexts[AXIS_COUNT] = {
     [0] = {
-        .channel = 0,
+        .axis = 0,
         .target = &targets[TRIGGER_SEQ0],
     },
     [1] = {
-        .channel = 1,
+        .axis = 1,
         .target = &targets[TRIGGER_SEQ1],
     },
 };
@@ -293,9 +293,9 @@ struct trigger_target *get_memory_trigger_ready_lock(void)
     return targets[TRIGGER_DRAM].target;
 }
 
-struct trigger_target *get_detector_trigger_ready_lock(int channel)
+struct trigger_target *get_detector_trigger_ready_lock(int axis)
 {
-    return channel_contexts[channel].target->target;
+    return axis_contexts[axis].target->target;
 }
 
 
@@ -320,8 +320,8 @@ static void read_input_events(void)
 
 static bool write_blanking_window(void *context, unsigned int *value)
 {
-    struct channel_context *chan = context;
-    hw_write_trigger_blanking_duration(chan->channel, *value);
+    struct axis_context *chan = context;
+    hw_write_trigger_blanking_duration(chan->axis, *value);
     return true;
 }
 
@@ -360,21 +360,21 @@ static bool write_turn_offset(void *context, unsigned int *offset)
 {
     if (*offset < system_config.bunches_per_turn)
     {
-        struct channel_context *chan = context;
-        struct channel_context *other_chan =
-            system_config.lmbf_mode ? &channel_contexts[1] : NULL;
+        struct axis_context *chan = context;
+        struct axis_context *other_chan =
+            system_config.lmbf_mode ? &axis_contexts[1] : NULL;
 
         chan->turn_clock_offset = *offset;
-        hw_write_turn_clock_offset(chan->channel, *offset);
+        hw_write_turn_clock_offset(chan->axis, *offset);
         if (other_chan)
         {
             other_chan->turn_clock_offset = *offset;
-            hw_write_turn_clock_offset(other_chan->channel, *offset);
+            hw_write_turn_clock_offset(other_chan->axis, *offset);
         }
 
-        unsigned int offsets[CHANNEL_COUNT] = {
-            [0] = channel_contexts[0].turn_clock_offset,
-            [1] = channel_contexts[1].turn_clock_offset,
+        unsigned int offsets[AXIS_COUNT] = {
+            [0] = axis_contexts[0].turn_clock_offset,
+            [1] = axis_contexts[1].turn_clock_offset,
         };
         set_memory_turn_clock_offsets(offsets);
         return true;
@@ -431,9 +431,9 @@ error__t initialise_triggers(void)
         }
     }
 
-    FOR_CHANNEL_NAMES(channel, "TRG", system_config.lmbf_mode)
+    FOR_AXIS_NAMES(axis, "TRG", system_config.lmbf_mode)
     {
-        struct channel_context *chan = &channel_contexts[channel];
+        struct axis_context *chan = &axis_contexts[axis];
         create_target("SEQ", chan->target);
         PUBLISH_C_P(ulongout, "BLANKING", write_blanking_window, chan);
         PUBLISH_C_P(ulongout, "TURN:OFFSET", write_turn_offset, chan);

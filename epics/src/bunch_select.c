@@ -23,7 +23,7 @@
 
 
 struct bunch_bank {
-    int channel;
+    int axis;
     unsigned int bank;
 
     struct bunch_config config;
@@ -34,9 +34,9 @@ struct bunch_bank {
 };
 
 static struct bunch_context {
-    int channel;
+    int axis;
     struct bunch_bank banks[BUNCH_BANKS];
-} bunch_context[CHANNEL_COUNT];
+} bunch_context[AXIS_COUNT];
 
 
 
@@ -183,7 +183,7 @@ static void write_fir_wf(void *context, char fir_select[], size_t *length)
     FOR_BUNCHES_OFFSET(i, j, hardware_delays.BUNCH_FIR_OFFSET)
         bank->config.fir_select[i] = fir_select[j];
 
-    hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
+    hw_write_bunch_config(bank->axis, bank->bank, &bank->config);
     if (system_config.lmbf_mode)
         hw_write_bunch_config(1, bank->bank, &bank->config);
 }
@@ -204,7 +204,7 @@ static void write_out_wf(void *context, char out_enable[], size_t *length)
         bank->config.nco0_enable[i] = (out_enable[i] >> 1) & 1;
         bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
     }
-    hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
+    hw_write_bunch_config(bank->axis, bank->bank, &bank->config);
     if (system_config.lmbf_mode)
         hw_write_bunch_config(1, bank->bank, &bank->config);
 }
@@ -223,16 +223,16 @@ static void write_gain_wf(void *context, float gain[], size_t *length)
     FOR_BUNCHES_OFFSET(i, j, hardware_delays.BUNCH_GAIN_OFFSET)
         bank->config.gain[i] = scaled_gain[j];
 
-    hw_write_bunch_config(bank->channel, bank->bank, &bank->config);
+    hw_write_bunch_config(bank->axis, bank->bank, &bank->config);
     if (system_config.lmbf_mode)
         hw_write_bunch_config(1, bank->bank, &bank->config);
 }
 
 
 static void initialise_bank(
-    int channel, unsigned int ix, struct bunch_bank *bank)
+    int axis, unsigned int ix, struct bunch_bank *bank)
 {
-    bank->channel = channel;
+    bank->axis = axis;
     bank->bank = ix;
 
     unsigned int bunches = hardware_config.bunches;
@@ -269,16 +269,16 @@ static void publish_bank(unsigned int ix, struct bunch_bank *bank)
 
 error__t initialise_bunch_select(void)
 {
-    /* In LMBF mode we only expose one bunch selection channel, but mirror both
-     * channels as we write to hardware. */
-    FOR_CHANNEL_NAMES(channel, "BUN", system_config.lmbf_mode)
+    /* In LMBF mode we only expose one bunch selection axis, but mirror both
+     * axes as we write to hardware. */
+    FOR_AXIS_NAMES(axis, "BUN", system_config.lmbf_mode)
     {
-        struct bunch_context *bun = &bunch_context[channel];
-        bun->channel = channel;
+        struct bunch_context *bun = &bunch_context[axis];
+        bun->axis = axis;
 
         for (unsigned int i = 0; i < BUNCH_BANKS; i ++)
         {
-            initialise_bank(channel, i, &bun->banks[i]);
+            initialise_bank(axis, i, &bun->banks[i]);
             publish_bank(i, &bun->banks[i]);
         }
     }

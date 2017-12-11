@@ -27,7 +27,7 @@
 
 
 struct detector_bank {
-    int channel;
+    int axis;
 
     struct detector_config config;  // Hardware configuration
     unsigned int bunch_count;       // Number of enabled bunches
@@ -42,7 +42,7 @@ struct detector_bank {
 
 
 static struct detector_context {
-    int channel;
+    int axis;
 
     struct epics_interlock *update;
 
@@ -65,7 +65,7 @@ static struct detector_context {
 
     /* Scale information for detector readout copied from sequencer. */
     struct scale_info scale_info;
-} detector_context[CHANNEL_COUNT];
+} detector_context[AXIS_COUNT];
 
 
 static void gather_buffers(
@@ -85,9 +85,9 @@ static void gather_buffers(
 }
 
 
-void get_detector_info(int channel, struct detector_info *info)
+void get_detector_info(int axis, struct detector_info *info)
 {
-    struct detector_context *det = &detector_context[channel];
+    struct detector_context *det = &detector_context[axis];
     info->detector_mask = det->detector_mask;
     info->detector_count = det->detector_count;
     info->samples = det->scale_info.samples;
@@ -101,7 +101,7 @@ static void read_detector_memory(struct detector_context *det)
     unsigned int detector_length = system_config.detector_length;
     unsigned int samples = MIN(info->samples, detector_length);
     hw_read_det_memory(
-        det->channel, samples * det->detector_count, 0, det->read_buffer);
+        det->axis, samples * det->detector_count, 0, det->read_buffer);
 
     /* Gather all the buffers. */
     bool enables[DETECTOR_COUNT];
@@ -163,7 +163,7 @@ static void detector_readout_event(struct detector_context *det)
 
     bool output_ovf[DETECTOR_COUNT];
     bool underrun;
-    hw_read_det_events(det->channel, output_ovf, &underrun);
+    hw_read_det_events(det->axis, output_ovf, &underrun);
     for (int i = 0; i < DETECTOR_COUNT; i ++)
         det->banks[i].output_ovf = output_ovf[i];
 
@@ -173,7 +173,7 @@ static void detector_readout_event(struct detector_context *det)
     det->underrun |= underrun;
 
     read_detector_scale_info(
-        det->channel, system_config.detector_length, &det->scale_info);
+        det->axis, system_config.detector_length, &det->scale_info);
 
     read_detector_memory(det);
 
@@ -183,7 +183,7 @@ static void detector_readout_event(struct detector_context *det)
 
 static void dispatch_detector_event(void *context, struct interrupts interrupts)
 {
-    for (int i = 0; i < CHANNEL_COUNT; i ++)
+    for (int i = 0; i < AXIS_COUNT; i ++)
         if (test_intersect(interrupts, INTERRUPTS(.seq_done = (1U << i) & 0x3)))
             detector_readout_event(&detector_context[i]);
 }
@@ -211,7 +211,7 @@ static void publish_detector(
 {
     COMPILE_ASSERT(sizeof(char) == sizeof(bool));   // We assume this!
 
-    bank->channel = context->channel;
+    bank->axis = context->axis;
 
     unsigned int detector_length = system_config.detector_length;
     char *bunch_enables = CALLOC(char, system_config.bunches_per_turn);
@@ -266,9 +266,9 @@ static int compute_detector_delay(struct detector_context *det)
 
 
 /* Called before arming the detector. */
-void prepare_detector(int channel)
+void prepare_detector(int axis)
 {
-    struct detector_context *det = &detector_context[channel];
+    struct detector_context *det = &detector_context[axis];
 
     struct detector_config config[DETECTOR_COUNT];
     for (int i = 0; i < DETECTOR_COUNT; i ++)
@@ -276,10 +276,10 @@ void prepare_detector(int channel)
     unsigned int offset = det->input_select ?
         hardware_delays.DET_FIR_OFFSET :
         hardware_delays.DET_ADC_OFFSET;
-    hw_write_det_config(channel, det->input_select, offset, config);
-    hw_write_det_start(channel);
+    hw_write_det_config(axis, det->input_select, offset, config);
+    hw_write_det_start(axis);
 
-    /* Count the number of active channels, needed for readout. */
+    /* Count the number of active axes, needed for readout. */
     det->detector_count = 0;
     det->detector_mask = 0;
     for (int i = 0; i < DETECTOR_COUNT; i ++)
@@ -300,11 +300,11 @@ error__t initialise_detector(void)
 {
     unsigned int detector_length = system_config.detector_length;
 
-    /* In LMBF mode we run with just one detector channel. */
-    FOR_CHANNEL_NAMES(channel, "DET", system_config.lmbf_mode)
+    /* In LMBF mode we run with just one detector axis. */
+    FOR_AXIS_NAMES(axis, "DET", system_config.lmbf_mode)
     {
-        struct detector_context *det = &detector_context[channel];
-        det->channel = channel;
+        struct detector_context *det = &detector_context[axis];
+        det->axis = axis;
 
         det->read_buffer =
             CALLOC(struct detector_result, DETECTOR_COUNT * detector_length);

@@ -20,14 +20,14 @@
 
 
 static struct dac_context {
-    int channel;
+    int axis;
     bool mms_after_fir;
     bool dram_after_fir;
     bool overflow;
     unsigned int filter_delay;
     struct dac_events events;
     struct mms_handler *mms;
-} dac_context[CHANNEL_COUNT];
+} dac_context[AXIS_COUNT];
 
 
 static void write_dac_taps(void *context, float array[], size_t *length)
@@ -38,14 +38,14 @@ static void write_dac_taps(void *context, float array[], size_t *length)
     int taps[hardware_config.dac_taps];
     float_array_to_int(hardware_config.dac_taps, array, taps, 32, 0);
 
-    hw_write_dac_taps(dac->channel, taps);
+    hw_write_dac_taps(dac->axis, taps);
 }
 
 
 static bool write_dac_delay(void *context, unsigned int *value)
 {
     struct dac_context *dac = context;
-    hw_write_dac_delay(dac->channel, *value);
+    hw_write_dac_delay(dac->axis, *value);
     return true;
 }
 
@@ -53,7 +53,7 @@ static bool write_dac_delay(void *context, unsigned int *value)
 static bool write_dac_output_enable(void *context, bool *value)
 {
     struct dac_context *dac = context;
-    hw_write_output_enable(dac->channel, *value);
+    hw_write_output_enable(dac->axis, *value);
     return true;
 }
 
@@ -63,7 +63,7 @@ static void update_delays(struct dac_context *dac)
     set_mms_offset(dac->mms, dac->mms_after_fir ?
         hardware_delays.MMS_DAC_FIR_DELAY + dac->filter_delay :
         hardware_delays.MMS_DAC_DELAY);
-    set_memory_dac_offset(dac->channel, dac->dram_after_fir ?
+    set_memory_dac_offset(dac->axis, dac->dram_after_fir ?
         hardware_delays.DRAM_DAC_FIR_DELAY + dac->filter_delay :
         hardware_delays.DRAM_DAC_DELAY);
 }
@@ -72,7 +72,7 @@ static bool write_dac_mms_source(void *context, bool *after_fir)
 {
     struct dac_context *dac = context;
     dac->mms_after_fir = *after_fir;
-    hw_write_dac_mms_source(dac->channel, *after_fir);
+    hw_write_dac_mms_source(dac->axis, *after_fir);
     update_delays(dac);
     return true;
 }
@@ -81,7 +81,7 @@ static bool write_dac_dram_source(void *context, bool *after_fir)
 {
     struct dac_context *dac = context;
     dac->dram_after_fir = *after_fir;
-    hw_write_dac_dram_source(dac->channel, *after_fir);
+    hw_write_dac_dram_source(dac->axis, *after_fir);
     update_delays(dac);
     return true;
 }
@@ -97,7 +97,7 @@ static bool write_filter_delay(void *context, unsigned int *delay)
 
 static void scan_events(void)
 {
-    for (int i = 0; i < CHANNEL_COUNT; i ++)
+    for (int i = 0; i < AXIS_COUNT; i ++)
     {
         struct dac_context *dac = &dac_context[i];
         hw_read_dac_events(i, &dac->events);
@@ -109,10 +109,10 @@ static void scan_events(void)
 
 error__t initialise_dac(void)
 {
-    FOR_CHANNEL_NAMES(channel, "DAC")
+    FOR_AXIS_NAMES(axis, "DAC")
     {
-        struct dac_context *dac = &dac_context[channel];
-        dac->channel = channel;
+        struct dac_context *dac = &dac_context[axis];
+        dac->axis = axis;
 
         PUBLISH_WAVEFORM_C_P(float, "FILTER",
             hardware_config.dac_taps, write_dac_taps, dac);
@@ -128,7 +128,7 @@ error__t initialise_dac(void)
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
         PUBLISH_READ_VAR(bi, "OVF",     dac->overflow);
 
-        dac->mms = create_mms_handler(channel, hw_read_dac_mms);
+        dac->mms = create_mms_handler(axis, hw_read_dac_mms);
     }
 
     PUBLISH_ACTION("DAC:EVENTS", scan_events);

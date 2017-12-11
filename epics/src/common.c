@@ -17,27 +17,27 @@
 #include "common.h"
 
 
-static const char *const *channel_names[] = {
-    &system_config.channel0_name,
-    &system_config.channel1_name,
+static const char *const *axis_names[] = {
+    &system_config.axis0_name,
+    &system_config.axis1_name,
 };
 
-static char *iq_channel_name;
+static char *iq_axis_name;
 
 
-bool _enter_channel_step(int channel, const char *prefix, bool lmbf_mode)
+bool _enter_axis_step(int axis, const char *prefix, bool lmbf_mode)
 {
     /* Ugly first use initialisation. */
-    if (!iq_channel_name)
-        asprintf(&iq_channel_name, "%s%s",
-            system_config.channel0_name, system_config.channel1_name);
+    if (!iq_axis_name)
+        asprintf(&iq_axis_name, "%s%s",
+            system_config.axis0_name, system_config.axis1_name);
 
-    int channel_count = lmbf_mode ? 1 : CHANNEL_COUNT;
-    if (channel < channel_count)
+    int axis_count = lmbf_mode ? 1 : AXIS_COUNT;
+    if (axis < axis_count)
     {
-        const char *channel_name =
-            lmbf_mode ? iq_channel_name : *channel_names[channel];
-        push_record_name_prefix(channel_name);
+        const char *axis_name =
+            lmbf_mode ? iq_axis_name : *axis_names[axis];
+        push_record_name_prefix(axis_name);
         push_record_name_prefix(prefix);
         return true;
     }
@@ -45,7 +45,7 @@ bool _enter_channel_step(int channel, const char *prefix, bool lmbf_mode)
         return false;
 }
 
-void _exit_channel_step(void)
+void _exit_axis_step(void)
 {
     pop_record_name_prefix();
     pop_record_name_prefix();

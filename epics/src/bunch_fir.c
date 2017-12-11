@@ -22,7 +22,7 @@
 
 /* Represents the internal state of a single FIR bank. */
 struct fir_bank {
-    int channel;
+    int axis;
     unsigned int index;
     unsigned int cycles;
     unsigned int length;
@@ -35,10 +35,10 @@ struct fir_bank {
 };
 
 static struct fir_context {
-    int channel;
+    int axis;
     bool overflow;
     struct fir_bank banks[FIR_BANKS];
-} fir_context[CHANNEL_COUNT];
+} fir_context[AXIS_COUNT];
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -66,7 +66,7 @@ static void update_taps(struct fir_bank *bank) {
     int taps[hardware_config.bunch_taps];
     float_array_to_int(
         hardware_config.bunch_taps, bank->current_taps, taps, 32, 0);
-    hw_write_bunch_fir_taps(bank->channel, bank->index, taps);
+    hw_write_bunch_fir_taps(bank->axis, bank->index, taps);
     trigger_record(bank->taps_waveform);
 }
 
@@ -99,7 +99,7 @@ static bool reload_fir(void *context, bool *value)
     struct fir_bank *other_bank =
         system_config.lmbf_mode ? &fir_context[1].banks[bank->index] : NULL;
 
-    /* In LMBF mode copy all relevant bank settings to the other channel. */
+    /* In LMBF mode copy all relevant bank settings to the other axis. */
     if (other_bank)
     {
         other_bank->length = bank->length;
@@ -158,9 +158,9 @@ static void set_fir_taps(void *context, float *taps, size_t *length)
 
 
 static void publish_bank_waveforms(
-    int channel, unsigned int ix, struct fir_bank *bank)
+    int axis, unsigned int ix, struct fir_bank *bank)
 {
-    bank->channel = channel;
+    bank->axis = axis;
     bank->index = ix;
     bank->current_taps = CALLOC(float, hardware_config.bunch_taps);
     bank->set_taps     = CALLOC(float, hardware_config.bunch_taps);
@@ -207,7 +207,7 @@ static void publish_banks(struct fir_context *fir)
 static bool write_fir_gain(void *context, unsigned int *value)
 {
     struct fir_context *fir = context;
-    hw_write_dac_fir_gain(fir->channel, *value);
+    hw_write_dac_fir_gain(fir->axis, *value);
     if (system_config.lmbf_mode)
         hw_write_dac_fir_gain(1, *value);
     return true;
@@ -216,14 +216,14 @@ static bool write_fir_gain(void *context, unsigned int *value)
 
 static void write_fir_decimation(unsigned int value)
 {
-    for (int i = 0; i < CHANNEL_COUNT; i ++)
+    for (int i = 0; i < AXIS_COUNT; i ++)
         hw_write_bunch_decimation(i, value);
 }
 
 
 static void scan_events(void)
 {
-    for (int i = 0; i < CHANNEL_COUNT; i ++)
+    for (int i = 0; i < AXIS_COUNT; i ++)
     {
         struct fir_context *fir = &fir_context[i];
         fir->overflow = hw_read_bunch_overflow(i);
@@ -233,24 +233,24 @@ static void scan_events(void)
 
 error__t initialise_bunch_fir(void)
 {
-    /* Initialise the common functionality: both channels publish individual
+    /* Initialise the common functionality: both axes publish individual
      * banks for the waveform PVs. */
-    FOR_CHANNEL_NAMES(channel, "FIR")
+    FOR_AXIS_NAMES(axis, "FIR")
     {
-        struct fir_context *fir = &fir_context[channel];
-        fir->channel = channel;
+        struct fir_context *fir = &fir_context[axis];
+        fir->axis = axis;
 
         for (unsigned int i = 0; i < FIR_BANKS; i ++)
-            publish_bank_waveforms(channel, i, &fir->banks[i]);
+            publish_bank_waveforms(axis, i, &fir->banks[i]);
 
         PUBLISH_READ_VAR(bi, "OVF", fir->overflow);
     }
 
-    /* In TMBF mode the two channels operate independently, in LMBF mode most of
-     * our PVs act on both channels together. */
-    FOR_CHANNEL_NAMES(channel, "FIR", system_config.lmbf_mode)
+    /* In TMBF mode the two axes operate independently, in LMBF mode most of
+     * our PVs act on both axes together. */
+    FOR_AXIS_NAMES(axis, "FIR", system_config.lmbf_mode)
     {
-        struct fir_context *fir = &fir_context[channel];
+        struct fir_context *fir = &fir_context[axis];
         publish_banks(fir);
         PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
 

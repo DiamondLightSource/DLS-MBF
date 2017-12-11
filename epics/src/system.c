@@ -21,36 +21,36 @@
 
 
 static struct nco_context {
-    int channel;
-} nco_context[CHANNEL_COUNT];
+    int axis;
+} nco_context[AXIS_COUNT];
 
 static bool set_nco_frequency(void *context, double *freq)
 {
     struct nco_context *nco = context;
-    hw_write_nco0_frequency(nco->channel, tune_to_freq(*freq));
+    hw_write_nco0_frequency(nco->axis, tune_to_freq(*freq));
     return true;
 }
 
 static bool set_nco_gain(void *context, unsigned int *gain)
 {
     struct nco_context *nco = context;
-    hw_write_dac_nco0_gain(nco->channel, *gain);
+    hw_write_dac_nco0_gain(nco->axis, *gain);
     return true;
 }
 
 static bool set_nco_enable(void *context, bool *enable)
 {
     struct nco_context *nco = context;
-    hw_write_dac_nco0_enable(nco->channel, *enable);
+    hw_write_dac_nco0_enable(nco->axis, *enable);
     return true;
 }
 
 static void publish_nco_pvs(void)
 {
-    FOR_CHANNEL_NAMES(channel, "NCO", system_config.lmbf_mode)
+    FOR_AXIS_NAMES(axis, "NCO", system_config.lmbf_mode)
     {
-        struct nco_context *nco = &nco_context[channel];
-        nco->channel = channel;
+        struct nco_context *nco = &nco_context[axis];
+        nco->axis = axis;
         PUBLISH_C_P(ao, "FREQ", set_nco_frequency, nco);
         PUBLISH_C_P(mbbo, "GAIN", set_nco_gain, nco);
         PUBLISH_C_P(bo, "ENABLE", set_nco_enable, nco);
@@ -135,13 +135,13 @@ static void call_unlock_registers(const iocshArgBuf *args)
 static void call_set_lmbf_mode(const iocshArgBuf *args)
 {
     hw_write_lmbf_mode(true);
-    printf("Running in LMBF mode with I/Q channels\n");
+    printf("Running in LMBF mode with I/Q axes\n");
 }
 
 static void call_set_tmbf_mode(const iocshArgBuf *args)
 {
     hw_write_lmbf_mode(false);
-    printf("Running in TMBF mode with X/Y channels\n");
+    printf("Running in TMBF mode with X/Y axes\n");
 }
 
 static error__t register_iocsh_commands(void)

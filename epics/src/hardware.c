@@ -28,7 +28,7 @@ const struct hardware_config hardware_config;
 
 static int dram0_device = -1;
 static int dram1_device = -1;
-/* We share the dram1 device between two channels under a lock, as there is
+/* We share the dram1 device between two axes under a lock, as there is
  * absolutely no benefit in running two copies of this file handle -- there's
  * only one underly DMA device anyway. */
 static pthread_mutex_t dram1_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -82,9 +82,9 @@ static uint32_t readl(volatile uint32_t *reg)
     WRITEL(target, ((typeof(target)) { fields }))
 
 
-#define WRITE_DSP_MIRROR(channel, reg, field, value) \
-    dsp_mirror[channel].reg.field = (value); \
-    WRITEL(dsp_regs[channel]->reg, dsp_mirror[channel].reg)
+#define WRITE_DSP_MIRROR(axis, reg, field, value) \
+    dsp_mirror[axis].reg.field = (value); \
+    WRITEL(dsp_regs[axis]->reg, dsp_mirror[axis].reg)
 
 
 /* Convert array of bits to an array of booleans. */
@@ -191,23 +191,23 @@ void hw_write_lmbf_mode(bool lmbf_mode)
     }
 }
 
-void hw_write_loopback_enable(int channel, bool loopback)
+void hw_write_loopback_enable(int axis, bool loopback)
 {
     WITH_MUTEX(ctrl_lock)
     {
         uint32_t loopbacks = write_selected_bit(
-            ctrl_mirror.control.loopback, (unsigned) channel, loopback);
+            ctrl_mirror.control.loopback, (unsigned) axis, loopback);
         ctrl_mirror.control.loopback = loopbacks & 0x3;
         WRITEL(ctrl_regs->control, ctrl_mirror.control);
     }
 }
 
-void hw_write_output_enable(int channel, bool enable)
+void hw_write_output_enable(int axis, bool enable)
 {
     WITH_MUTEX(ctrl_lock)
     {
         uint32_t enables = write_selected_bit(
-            ctrl_mirror.control.output, (unsigned) channel, enable);
+            ctrl_mirror.control.output, (unsigned) axis, enable);
         ctrl_mirror.control.output = enables & 0x3;
         WRITEL(ctrl_regs->control, ctrl_mirror.control);
     }
@@ -225,7 +225,7 @@ void hw_write_dram_mux(unsigned int mux)
     }
 }
 
-void hw_write_dram_fir_gains(bool gains[CHANNEL_COUNT])
+void hw_write_dram_fir_gains(bool gains[AXIS_COUNT])
 {
     WITH_MUTEX(ctrl_lock)
     {
@@ -257,10 +257,10 @@ bool hw_read_dram_active(void)
     return READL(ctrl_regs->mem_status).enable;
 }
 
-void hw_read_dram_status(bool fir_overflow[CHANNEL_COUNT])
+void hw_read_dram_status(bool fir_overflow[AXIS_COUNT])
 {
     struct ctrl_mem_pulsed pulsed = READL(ctrl_regs->mem_pulsed);
-    bits_to_bools(CHANNEL_COUNT, pulsed.fir_ovf, fir_overflow);
+    bits_to_bools(AXIS_COUNT, pulsed.fir_ovf, fir_overflow);
 }
 
 void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[])
@@ -297,7 +297,7 @@ void hw_read_turn_clock_counts(
     *error_count = READL(ctrl_regs->trg_error_count).count;
 }
 
-void hw_write_turn_clock_offset(int channel, unsigned int offset)
+void hw_write_turn_clock_offset(int axis, unsigned int offset)
 {
     /* Note!  If offset >= bunches_per_turn then turn clocks will stop being
      * generated.  Unfortunately this will then cause reading mms.count to hang
@@ -305,7 +305,7 @@ void hw_write_turn_clock_offset(int channel, unsigned int offset)
     ASSERT_OK(offset < hardware_config.bunches);
     WITH_MUTEX(ctrl_lock)
     {
-        switch (channel)
+        switch (axis)
         {
             case 0:
                 ctrl_mirror.trg_config_turn.dsp0_offset = offset & 0x3FF;
@@ -387,11 +387,11 @@ void hw_read_trigger_sources(
     bits_to_bools(TRIGGER_SOURCE_COUNT, source_mask, sources);
 }
 
-void hw_write_trigger_blanking_duration(int channel, unsigned int duration)
+void hw_write_trigger_blanking_duration(int axis, unsigned int duration)
 {
     WITH_MUTEX(ctrl_lock)
     {
-        switch (channel)
+        switch (axis)
         {
             case 0:
                 ctrl_mirror.trg_config_blanking.dsp0 = duration & 0xFFFF;
@@ -480,9 +480,9 @@ void hw_write_trigger_blanking_mask(
     }
 }
 
-void hw_write_trigger_dram_blanking(const bool blanking[CHANNEL_COUNT])
+void hw_write_trigger_dram_blanking(const bool blanking[AXIS_COUNT])
 {
-    uint32_t blanking_mask = bools_to_bits(CHANNEL_COUNT, blanking);
+    uint32_t blanking_mask = bools_to_bits(AXIS_COUNT, blanking);
     WITH_MUTEX(ctrl_lock)
     {
         ctrl_mirror.trg_config_trig_dram.blanking_sel = blanking_mask & 0x3;
@@ -495,18 +495,18 @@ void hw_write_trigger_dram_blanking(const bool blanking[CHANNEL_COUNT])
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* DSP registers. */
 
-static volatile struct dsp *dsp_regs[2];
-static pthread_mutex_t dsp_locks[2] = {
+static volatile struct dsp *dsp_regs[AXIS_COUNT];
+static pthread_mutex_t dsp_locks[AXIS_COUNT] = {
     PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, };
-static struct dsp dsp_mirror[2];
+static struct dsp dsp_mirror[AXIS_COUNT];
 
 
 /* Reads min/max/sum: shared between ADC and DAC, which have identical
  * registers. */
 static void read_mms(
-    int channel, volatile struct mms *mms, struct mms_result *result)
+    int axis, volatile struct mms *mms, struct mms_result *result)
 {
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
     {
         struct mms_count count = READL(mms->count);
         result->turns = count.turns + 1U;
@@ -530,62 +530,62 @@ static void read_mms(
 }
 
 
-void hw_write_nco0_frequency(int channel, unsigned int frequency)
+void hw_write_nco0_frequency(int axis, unsigned int frequency)
 {
-    WRITEL(dsp_regs[channel]->nco0_freq, frequency);
+    WRITEL(dsp_regs[axis]->nco0_freq, frequency);
 }
 
 
 /* ADC registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-void hw_write_adc_overflow_threshold(int channel, unsigned int threshold)
+void hw_write_adc_overflow_threshold(int axis, unsigned int threshold)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, adc_config, threshold, threshold & 0x3FFF);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, adc_config, threshold, threshold & 0x3FFF);
 }
 
-void hw_write_adc_delta_threshold(int channel, unsigned int delta)
+void hw_write_adc_delta_threshold(int axis, unsigned int delta)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, adc_config, delta, delta & 0xFFFF);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, adc_config, delta, delta & 0xFFFF);
 }
 
-void hw_read_adc_events(int channel, struct adc_events *result)
+void hw_read_adc_events(int axis, struct adc_events *result)
 {
-    struct dsp_adc_events events = READL(dsp_regs[channel]->adc_events);
+    struct dsp_adc_events events = READL(dsp_regs[axis]->adc_events);
     result->input_ovf = events.inp_ovf;
     result->fir_ovf = events.fir_ovf;
     result->delta_event = events.delta;
 }
 
-void hw_write_adc_taps(int channel, const int taps[])
+void hw_write_adc_taps(int axis, const int taps[])
 {
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
     {
-        WRITE_FIELDS(dsp_regs[channel]->adc_command, .write = 1);
+        WRITE_FIELDS(dsp_regs[axis]->adc_command, .write = 1);
         for (unsigned int i = 0; i < hardware_config.adc_taps; i ++)
-            WRITEL(dsp_regs[channel]->adc_taps, (uint32_t) taps[i]);
+            WRITEL(dsp_regs[axis]->adc_taps, (uint32_t) taps[i]);
     }
 }
 
-void hw_write_adc_mms_source(int channel, bool after_fir)
+void hw_write_adc_mms_source(int axis, bool after_fir)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, adc_config, mms_source, after_fir);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, adc_config, mms_source, after_fir);
 }
 
-void hw_write_adc_dram_source(int channel, bool after_fir)
+void hw_write_adc_dram_source(int axis, bool after_fir)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, adc_config, dram_source, after_fir);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, adc_config, dram_source, after_fir);
 }
 
-void hw_read_adc_mms(int channel, struct mms_result *result)
+void hw_read_adc_mms(int axis, struct mms_result *result)
 {
-    read_mms(channel, &dsp_regs[channel]->adc_mms, result);
+    read_mms(axis, &dsp_regs[axis]->adc_mms, result);
     /* Re-arm delta event after mms readout. */
-    WRITE_FIELDS(dsp_regs[channel]->adc_command, .reset_delta = 1);
+    WRITE_FIELDS(dsp_regs[axis]->adc_command, .reset_delta = 1);
 }
 
 
@@ -593,15 +593,15 @@ void hw_read_adc_mms(int channel, struct mms_result *result)
 
 
 void hw_write_bunch_config(
-    int channel, unsigned int bank, const struct bunch_config *config)
+    int axis, unsigned int bank, const struct bunch_config *config)
 {
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
     {
-        WRITE_FIELDS(dsp_regs[channel]->bunch_config, .bank = bank & 0x3);
+        WRITE_FIELDS(dsp_regs[axis]->bunch_config, .bank = bank & 0x3);
         FOR_BUNCHES(i)
         {
             int gain = config->gain[i] >> (32 - 13);
-            WRITE_FIELDS(dsp_regs[channel]->bunch_bank,
+            WRITE_FIELDS(dsp_regs[axis]->bunch_bank,
                 .fir_select = (unsigned int) config->fir_select[i] & 0x3,
                 .gain = (unsigned int) gain & 0x1FFF,
                 .fir_enable = config->fir_enable[i],
@@ -611,7 +611,7 @@ void hw_write_bunch_config(
     }
 }
 
-void hw_write_bunch_decimation(int channel, unsigned int decimation)
+void hw_write_bunch_decimation(int axis, unsigned int decimation)
 {
     /* Compute the required shift corresponding to the given decimation.  We
      * need  2^shift >= decimation, ie shift >= log2(decimation), and we use CLZ
@@ -620,100 +620,100 @@ void hw_write_bunch_decimation(int channel, unsigned int decimation)
     unsigned int decimation_shift =
         decimation == 1 ? 0 : 32 - (unsigned int) __builtin_clz(decimation - 1);
 
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
     {
-        dsp_mirror[channel].fir_config.limit = (decimation - 1) & 0x3F;
-        dsp_mirror[channel].fir_config.shift = decimation_shift & 0x7;
-        WRITEL(dsp_regs[channel]->fir_config, dsp_mirror[channel].fir_config);
+        dsp_mirror[axis].fir_config.limit = (decimation - 1) & 0x3F;
+        dsp_mirror[axis].fir_config.shift = decimation_shift & 0x7;
+        WRITEL(dsp_regs[axis]->fir_config, dsp_mirror[axis].fir_config);
     }
 }
 
-void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[])
+void hw_write_bunch_fir_taps(int axis, unsigned int fir, const int taps[])
 {
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
     {
-        WRITE_DSP_MIRROR(channel, fir_config, bank, fir & 0x3);
+        WRITE_DSP_MIRROR(axis, fir_config, bank, fir & 0x3);
         for (unsigned int i = 0; i < hardware_config.bunch_taps; i ++)
-            WRITEL(dsp_regs[channel]->fir_taps, (uint32_t) taps[i]);
+            WRITEL(dsp_regs[axis]->fir_taps, (uint32_t) taps[i]);
     }
 }
 
-bool hw_read_bunch_overflow(int channel)
+bool hw_read_bunch_overflow(int axis)
 {
-    return READL(dsp_regs[channel]->fir_events).overflow;
+    return READL(dsp_regs[axis]->fir_events).overflow;
 }
 
 
 /* DAC registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-void hw_write_dac_delay(int channel, unsigned int delay)
+void hw_write_dac_delay(int axis, unsigned int delay)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, dac_config, delay, delay & 0x3FF);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, dac_config, delay, delay & 0x3FF);
 }
 
-void hw_write_dac_fir_gain(int channel, unsigned int gain)
+void hw_write_dac_fir_gain(int axis, unsigned int gain)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, dac_config, fir_gain, gain & 0xF);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, dac_config, fir_gain, gain & 0xF);
 }
 
-void hw_write_dac_nco0_gain(int channel, unsigned int gain)
+void hw_write_dac_nco0_gain(int axis, unsigned int gain)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, dac_config, nco0_gain, gain & 0xF);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, dac_config, nco0_gain, gain & 0xF);
 }
 
-void hw_write_dac_nco0_enable(int channel, bool enable)
+void hw_write_dac_nco0_enable(int axis, bool enable)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, dac_config, nco0_enable, enable);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, dac_config, nco0_enable, enable);
 }
 
-void hw_write_dac_mms_source(int channel, bool after_fir)
+void hw_write_dac_mms_source(int axis, bool after_fir)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, dac_config, mms_source, after_fir);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, dac_config, mms_source, after_fir);
 }
 
-void hw_write_dac_dram_source(int channel, bool after_fir)
+void hw_write_dac_dram_source(int axis, bool after_fir)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, dac_config, dram_source, after_fir);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, dac_config, dram_source, after_fir);
 }
 
 
-void hw_read_dac_events(int channel, struct dac_events *result)
+void hw_read_dac_events(int axis, struct dac_events *result)
 {
-    struct dsp_dac_events events = READL(dsp_regs[channel]->dac_events);
+    struct dsp_dac_events events = READL(dsp_regs[axis]->dac_events);
     result->fir_ovf = events.fir_ovf;
     result->mux_ovf = events.mux_ovf;
     result->out_ovf = events.out_ovf;
 }
 
-void hw_write_dac_taps(int channel, const int taps[])
+void hw_write_dac_taps(int axis, const int taps[])
 {
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
     {
-        WRITE_FIELDS(dsp_regs[channel]->dac_command, .write = 1);
+        WRITE_FIELDS(dsp_regs[axis]->dac_command, .write = 1);
         for (unsigned int i = 0; i < hardware_config.dac_taps; i ++)
-            WRITEL(dsp_regs[channel]->dac_taps, (uint32_t) taps[i]);
+            WRITEL(dsp_regs[axis]->dac_taps, (uint32_t) taps[i]);
     }
 }
 
-void hw_read_dac_mms(int channel, struct mms_result *result)
+void hw_read_dac_mms(int axis, struct mms_result *result)
 {
-    read_mms(channel, &dsp_regs[channel]->dac_mms, result);
+    read_mms(axis, &dsp_regs[axis]->dac_mms, result);
 }
 
 
 /* Sequencer registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Writes a single sequencer state as a sequence of 8 writes. */
-static void write_sequencer_state(int channel, const struct seq_entry *entry)
+static void write_sequencer_state(int axis, const struct seq_entry *entry)
 {
-    volatile union dsp_seq_state *target = &dsp_regs[channel]->seq_state;
+    volatile union dsp_seq_state *target = &dsp_regs[axis]->seq_state;
 
     WRITEL(target->start_freq, entry->start_freq);
     WRITEL(target->delta_freq, entry->delta_freq);
@@ -736,80 +736,80 @@ static void write_sequencer_state(int channel, const struct seq_entry *entry)
 
 /* Writes the complete sequencer memory. */
 static void write_sequencer_entries(
-    int channel, unsigned int bank0,
+    int axis, unsigned int bank0,
     const struct seq_entry entries[MAX_SEQUENCER_COUNT])
 {
-    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
-    WRITE_DSP_MIRROR(channel, seq_config, target, 0);
-    write_sequencer_state(channel, &(struct seq_entry) {
+    WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
+    WRITE_DSP_MIRROR(axis, seq_config, target, 0);
+    write_sequencer_state(axis, &(struct seq_entry) {
         .dwell_time = 1,
         .bunch_bank = bank0,
         .capture_count = 1,
     });
     if (entries)
         for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
-            write_sequencer_state(channel, &entries[i]);
+            write_sequencer_state(axis, &entries[i]);
 }
 
 /* Writes the sequencer detector window. */
-static void write_sequencer_window(int channel, const int window[])
+static void write_sequencer_window(int axis, const int window[])
 {
-    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
-    WRITE_DSP_MIRROR(channel, seq_config, target, 1);
+    WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
+    WRITE_DSP_MIRROR(axis, seq_config, target, 1);
     for (unsigned int i = 0; i < DET_WINDOW_LENGTH; i ++)
-        WRITEL(dsp_regs[channel]->seq_det_window, (uint32_t) window[i]);
+        WRITEL(dsp_regs[axis]->seq_det_window, (uint32_t) window[i]);
 }
 
 /* Writes the super sequencer entries. */
 static void write_sequencer_super_entries(
-    int channel, unsigned int super_count, const uint32_t offsets[])
+    int axis, unsigned int super_count, const uint32_t offsets[])
 {
-    WRITE_FIELDS(dsp_regs[channel]->seq_command, .write = 1);
-    dsp_mirror[channel].seq_config.target = 2;
-    dsp_mirror[channel].seq_config.super_count = (super_count - 1) & 0x3FF;
-    WRITEL(dsp_regs[channel]->seq_config, dsp_mirror[channel].seq_config);
+    WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
+    dsp_mirror[axis].seq_config.target = 2;
+    dsp_mirror[axis].seq_config.super_count = (super_count - 1) & 0x3FF;
+    WRITEL(dsp_regs[axis]->seq_config, dsp_mirror[axis].seq_config);
 
     /* When writing the offsets memory we have to write in reverse order to
      * match the fact that states will be read from count down to 0, and we
      * only need to write the states that will actually be used. */
     for (unsigned int i = 0; i < super_count; i ++)
-        WRITEL(dsp_regs[channel]->seq_super_state,
+        WRITEL(dsp_regs[axis]->seq_super_state,
             offsets[super_count - 1 - i]);
 }
 
 
-void hw_write_seq_config(int channel, const struct seq_config *config)
+void hw_write_seq_config(int axis, const struct seq_config *config)
 {
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
     {
-        write_sequencer_entries(channel, config->bank0, config->entries);
-        write_sequencer_window(channel, config->window);
+        write_sequencer_entries(axis, config->bank0, config->entries);
+        write_sequencer_window(axis, config->window);
         write_sequencer_super_entries(
-            channel, config->super_seq_count, config->super_offsets);
-        WRITE_DSP_MIRROR(channel, seq_config, pc, config->sequencer_pc & 0x7);
+            axis, config->super_seq_count, config->super_offsets);
+        WRITE_DSP_MIRROR(axis, seq_config, pc, config->sequencer_pc & 0x7);
     }
 }
 
-void hw_write_seq_bank0(int channel, unsigned int bank0)
+void hw_write_seq_bank0(int axis, unsigned int bank0)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        write_sequencer_entries(channel, bank0, NULL);
+    WITH_MUTEX(dsp_locks[axis])
+        write_sequencer_entries(axis, bank0, NULL);
 }
 
-void hw_write_seq_trigger_state(int channel, unsigned int state)
+void hw_write_seq_trigger_state(int axis, unsigned int state)
 {
-    WITH_MUTEX(dsp_locks[channel])
-        WRITE_DSP_MIRROR(channel, seq_config, trigger, state & 0x7);
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, seq_config, trigger, state & 0x7);
 }
 
-void hw_write_seq_abort(int channel)
+void hw_write_seq_abort(int axis)
 {
-    WRITE_FIELDS(dsp_regs[channel]->seq_command, .abort = 1);
+    WRITE_FIELDS(dsp_regs[axis]->seq_command, .abort = 1);
 }
 
-void hw_read_seq_state(int channel, struct seq_state *state)
+void hw_read_seq_state(int axis, struct seq_state *state)
 {
-    struct dsp_seq_status status = READL(dsp_regs[channel]->seq_status);
+    struct dsp_seq_status status = READL(dsp_regs[axis]->seq_status);
     state->busy = status.busy;
     state->pc = status.pc;
     state->super_pc = status.super;
@@ -820,15 +820,15 @@ void hw_read_seq_state(int channel, struct seq_state *state)
 
 
 static void write_det_bunch_enable(
-    int channel, struct dsp_det_config det_config,
+    int axis, struct dsp_det_config det_config,
     int det, unsigned int delay, const bool enables[])
 {
     /* Select the requested bank. */
     det_config.bank = (unsigned int) det & 0x3;
-    WRITEL(dsp_regs[channel]->det_config, det_config);
+    WRITEL(dsp_regs[axis]->det_config, det_config);
 
     /* Also reset the bunch write pointer. */
-    WRITE_FIELDS(dsp_regs[channel]->det_command, .write = 1);
+    WRITE_FIELDS(dsp_regs[axis]->det_command, .write = 1);
 
     /* Convert array of bits into an array of 32-bit words. */
     uint32_t enable_mask = 0;
@@ -837,16 +837,16 @@ static void write_det_bunch_enable(
         enable_mask |= (uint32_t) enables[j] << (i & 0x1F);
         if ((i & 0x1F) == 0x1F)
         {
-            WRITEL(dsp_regs[channel]->det_bunch, enable_mask);
+            WRITEL(dsp_regs[axis]->det_bunch, enable_mask);
             enable_mask = 0;
         }
     }
     if (hardware_config.bunches & 0x1F)
-        WRITEL(dsp_regs[channel]->det_bunch, enable_mask);
+        WRITEL(dsp_regs[axis]->det_bunch, enable_mask);
 }
 
 void hw_write_det_config(
-    int channel, bool input_select, unsigned int delay,
+    int axis, bool input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT])
 {
     struct dsp_det_config det_config = {
@@ -861,36 +861,36 @@ void hw_write_det_config(
         .enable3 = config[3].enable,
     };
 
-    WITH_MUTEX(dsp_locks[channel])
+    WITH_MUTEX(dsp_locks[axis])
         for (int i = 0; i < DETECTOR_COUNT; i ++)
             write_det_bunch_enable(
-                channel, det_config, i, delay, config[i].bunch_enables);
+                axis, det_config, i, delay, config[i].bunch_enables);
 }
 
-void hw_write_det_start(int channel)
+void hw_write_det_start(int axis)
 {
-    WRITE_FIELDS(dsp_regs[channel]->det_command, .reset = 1);
+    WRITE_FIELDS(dsp_regs[axis]->det_command, .reset = 1);
 }
 
-void hw_read_det_events(int channel,
+void hw_read_det_events(int axis,
     bool output_ovf[DETECTOR_COUNT], bool *underrun)
 {
-    struct dsp_det_events events = READL(dsp_regs[channel]->det_events);
+    struct dsp_det_events events = READL(dsp_regs[axis]->det_events);
     bits_to_bools(DETECTOR_COUNT, events.output_ovfl, output_ovf);
-    /* For underrun don't pick out the individual channels, just report any
+    /* For underrun don't pick out the individual axes, just report any
      * underrun event.  This will mean major trouble. */
     *underrun = events.underrun;
 }
 
 
 void hw_read_det_memory(
-    int channel, unsigned int result_count, unsigned int offset,
+    int axis, unsigned int result_count, unsigned int offset,
     struct detector_result result[])
 {
     error__t error;
     WITH_MUTEX(dram1_mutex)
         error = read_dma_memory(
-            dram1_device, (unsigned int) channel * (DRAM1_LENGTH / 2) + offset,
+            dram1_device, (unsigned int) axis * (DRAM1_LENGTH / 2) + offset,
             result_count * sizeof(struct detector_result), result);
     ERROR_REPORT(error, "Error reading from DRAM1");
 }

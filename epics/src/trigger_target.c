@@ -213,7 +213,7 @@ static bool do_arm_target(struct trigger_target *target)
         if (target->lock_count == 0)
         {
             target->dont_rearm = false;
-            target->config->prepare_target(target->config->channel);
+            target->config->prepare_target(target->config->axis);
             set_target_state(target, TARGET_ARMED);
             armed = true;
         }
@@ -247,7 +247,7 @@ static void do_disarm_target(struct trigger_target *target)
     if (target->state == TARGET_ARMED)
     {
         const struct target_config *config = target->config;
-        enum target_state disarmed = config->stop_target(config->channel);
+        enum target_state disarmed = config->stop_target(config->axis);
         set_target_state(target, disarmed);
     }
     else if (target->state == TARGET_LOCKED)

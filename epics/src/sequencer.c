@@ -34,7 +34,7 @@ struct sequencer_bank {
 
 
 static struct seq_context {
-    int channel;
+    int axis;
 
     struct seq_config seq_config;   // Hardware configuration set by EPICS
     struct sequencer_bank banks[MAX_SEQUENCER_COUNT];   // EPICS management
@@ -47,7 +47,7 @@ static struct seq_context {
 
     bool reset_offsets;             // Reset super sequencer offsets
     bool reset_window;              // Reset detector window
-} seq_context[CHANNEL_COUNT];
+} seq_context[AXIS_COUNT];
 
 
 
@@ -190,7 +190,7 @@ static bool set_state0_bunch_bank(void *context, unsigned int *bank)
 {
     struct seq_context *seq = context;
     seq->seq_config.bank0 = *bank;
-    hw_write_seq_bank0(seq->channel, *bank);
+    hw_write_seq_bank0(seq->axis, *bank);
     return true;
 }
 
@@ -216,7 +216,7 @@ static bool update_capture_count(void *context, bool *value)
 static bool write_seq_reset(void *context, bool *value)
 {
     struct seq_context *seq = context;
-    hw_write_seq_abort(seq->channel);
+    hw_write_seq_abort(seq->axis);
     return true;
 }
 
@@ -224,7 +224,7 @@ static bool write_seq_reset(void *context, bool *value)
 static bool write_seq_trig_state(void *context, unsigned int *value)
 {
     struct seq_context *seq = context;
-    hw_write_seq_trigger_state(seq->channel, *value);
+    hw_write_seq_trigger_state(seq->axis, *value);
     return true;
 }
 
@@ -232,7 +232,7 @@ static bool write_seq_trig_state(void *context, unsigned int *value)
 static bool read_seq_status(void *context, bool *value)
 {
     struct seq_context *seq = context;
-    hw_read_seq_state(seq->channel, &seq->seq_state);
+    hw_read_seq_state(seq->axis, &seq->seq_state);
     return true;
 }
 
@@ -313,10 +313,10 @@ static inline void write_scale_point(
 
 /* Computes frequency and timebase scales from detector configuration. */
 unsigned int compute_scale_info(
-    int channel, unsigned int frequency[], unsigned int timebase[],
+    int axis, unsigned int frequency[], unsigned int timebase[],
     unsigned int start_offset, unsigned int length)
 {
-    const struct seq_context *seq = &seq_context[channel];
+    const struct seq_context *seq = &seq_context[axis];
     const struct seq_config *seq_config = &seq->seq_hw_config;
     unsigned int super_count = seq_config->super_seq_count;
     unsigned int seq_count = seq_config->sequencer_pc;
@@ -366,23 +366,23 @@ unsigned int compute_scale_info(
  * sequencer state and write this to hardware.  The copy is remembered so that
  * when a subsequent request is made for the scale info we will return a
  * truthful version. */
-void prepare_sequencer(int channel)
+void prepare_sequencer(int axis)
 {
-    struct seq_context *seq = &seq_context[channel];
+    struct seq_context *seq = &seq_context[axis];
     seq->seq_hw_config = seq->seq_config;
-    hw_write_seq_config(seq->channel, &seq->seq_hw_config);
+    hw_write_seq_config(seq->axis, &seq->seq_hw_config);
 }
 
 
 /* This is called as part of detector readout, at which point we want to present
  * the user with an accurate view of the detector scaling. */
 void read_detector_scale_info(
-    int channel, unsigned int length, struct scale_info *scale_info)
+    int axis, unsigned int length, struct scale_info *scale_info)
 {
     /* Need buffer for frequency data so we can covert to tune afterwards. */
     unsigned int frequency[length];
     scale_info->samples = compute_scale_info(
-        channel, frequency, (unsigned int *) scale_info->timebase, 0, length);
+        axis, frequency, (unsigned int *) scale_info->timebase, 0, length);
     for (unsigned int i = 0; i < length; i ++)
         scale_info->tune_scale[i] = freq_to_tune(frequency[i]);
 }
@@ -390,11 +390,11 @@ void read_detector_scale_info(
 
 error__t initialise_sequencer(void)
 {
-    /* In LMBF mode we run with just one sequencer channel. */
-    FOR_CHANNEL_NAMES(channel, "SEQ", system_config.lmbf_mode)
+    /* In LMBF mode we run with just one sequencer axis. */
+    FOR_AXIS_NAMES(axis, "SEQ", system_config.lmbf_mode)
     {
-        struct seq_context *seq = &seq_context[channel];
-        seq->channel = channel;
+        struct seq_context *seq = &seq_context[axis];
+        seq->axis = axis;
 
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)

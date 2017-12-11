@@ -1,6 +1,6 @@
 /* Hardware interfacing to LMBF system. */
 
-#define CHANNEL_COUNT       2       // Two independent processing channels
+#define AXIS_COUNT          2       // Two independent processing axes
 #define FIR_BANKS           4       // Four bunch-by-bunch selectable FIRs
 #define BUNCH_BANKS         4       // Four selectable bunch configurations
 #define DETECTOR_COUNT      4       // Four independed detectors
@@ -12,6 +12,8 @@
 #define DRAM1_LENGTH        0x08000000U     // 128M
 
 #define TRIGGER_SOURCE_COUNT    7   // Seven distinct possible trigger sources
+
+#define MEM_CHANNEL_COUNT   2       // Memory capture uses two channels
 
 
 /* Defined in register_defs.h. */
@@ -76,16 +78,16 @@ void hw_write_turn_clock_idelay(unsigned int delay);
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Shared Control interface. */
 
-/* Configure interaction between the two channels.  For TMBF operations the two
- * channels are independent, for LMBF operation the two channels are identical
+/* Configure interaction between the two axes.  For TMBF operations the two
+ * axes are independent, for LMBF operation the two axes are identical
  * with a 90 degree phase shift between them. */
 void hw_write_lmbf_mode(bool lmbf_mode);
 
-/* Configure loopback for the selected channel. */
-void hw_write_loopback_enable(int channel, bool loopback);
+/* Configure loopback for the selected axis. */
+void hw_write_loopback_enable(int axis, bool loopback);
 
-/* Configure DAC output enable for the selected channel. */
-void hw_write_output_enable(int channel, bool enable);
+/* Configure DAC output enable for the selected axis. */
+void hw_write_output_enable(int axis, bool enable);
 
 
 /* DRAM capture configuration - - - - - - - - - - - - - - - - - - - - - - - */
@@ -94,7 +96,7 @@ void hw_write_output_enable(int channel, bool enable);
 void hw_write_dram_mux(unsigned int mux);
 
 /* Configure FIR gain when capturing FIR data to DRAM0. */
-void hw_write_dram_fir_gains(bool gains[CHANNEL_COUNT]);
+void hw_write_dram_fir_gains(bool gains[AXIS_COUNT]);
 
 /* Configures length of DRAM0 runout after trigger event. */
 void hw_write_dram_runout(unsigned int count);
@@ -109,7 +111,7 @@ void hw_write_dram_capture_command(bool start, bool stop);
 bool hw_read_dram_active(void);
 
 /* Reads memory events. */
-void hw_read_dram_status(bool fir_overflow[CHANNEL_COUNT]);
+void hw_read_dram_status(bool fir_overflow[AXIS_COUNT]);
 
 /* Reads the specified number of samples from DRAM0 starting at the given offset
  * into the given result array, which must be at least samples entries long. */
@@ -142,7 +144,7 @@ void hw_read_turn_clock_counts(
     unsigned int *turn_count, unsigned int *error_count);
 
 /* Delay from external turn clock to internal turn clock. */
-void hw_write_turn_clock_offset(int channel, unsigned int offset);
+void hw_write_turn_clock_offset(int axis, unsigned int offset);
 
 /* Returns which incoming trigger events have occurred since the last call. */
 void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);
@@ -168,7 +170,7 @@ void hw_read_trigger_sources(
     bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Program duration of blanking window. */
-void hw_write_trigger_blanking_duration(int channel, unsigned int duration);
+void hw_write_trigger_blanking_duration(int axis, unsigned int duration);
 
 /* Programs the delay in turns from internal firing of trigger to delivery. */
 void hw_write_trigger_delay(
@@ -186,7 +188,7 @@ void hw_write_trigger_blanking_mask(
     const bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Configure the blanking pulse(s) used for DRAM triggering. */
-void hw_write_trigger_dram_blanking(const bool blanking[CHANNEL_COUNT]);
+void hw_write_trigger_dram_blanking(const bool blanking[AXIS_COUNT]);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -209,7 +211,7 @@ struct mms_result {
 };
 
 /* Directly sets the fixed frequency oscillator. */
-void hw_write_nco0_frequency(int channel, unsigned int frequency);
+void hw_write_nco0_frequency(int axis, unsigned int frequency);
 
 
 /* ADC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -221,25 +223,25 @@ struct adc_events {
 };
 
 /* Sets threshold for reporting ADC input overflow. */
-void hw_write_adc_overflow_threshold(int channel, unsigned int threshold);
+void hw_write_adc_overflow_threshold(int axis, unsigned int threshold);
 
 /* Sets the threshold for generating ADC bunch motion event. */
-void hw_write_adc_delta_threshold(int channel, unsigned int delta);
+void hw_write_adc_delta_threshold(int axis, unsigned int delta);
 
 /* Polls the ADC events: input overflow, FIR overflow, min/max/sum overflow,
  * bunch motion event. */
-void hw_read_adc_events(int channel, struct adc_events *events);
+void hw_read_adc_events(int axis, struct adc_events *events);
 
 /* Sets the taps for the ADC input.  The number of taps must be as read from the
  * FPGA configuration. */
-void hw_write_adc_taps(int channel, const int taps[]);
+void hw_write_adc_taps(int axis, const int taps[]);
 
 /* Set output source for ADC MMS. */
-void hw_write_adc_mms_source(int channel, bool after_fir);
-void hw_write_adc_dram_source(int channel, bool after_fir);
+void hw_write_adc_mms_source(int axis, bool after_fir);
+void hw_write_adc_dram_source(int axis, bool after_fir);
 
 /* Reads min/max/sum for ADC. */
-void hw_read_adc_mms(int channel, struct mms_result *result);
+void hw_read_adc_mms(int axis, struct mms_result *result);
 
 
 /* Bunch configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -255,16 +257,16 @@ struct bunch_config {
 
 /* Write bunch configuration. */
 void hw_write_bunch_config(
-    int channel, unsigned int bank, const struct bunch_config *config);
+    int axis, unsigned int bank, const struct bunch_config *config);
 
 /* Programs bunch decimation factor. */
-void hw_write_bunch_decimation(int channel, unsigned int decimation);
+void hw_write_bunch_decimation(int axis, unsigned int decimation);
 
 /* Write taps for bunch by bunch FIR. */
-void hw_write_bunch_fir_taps(int channel, unsigned int fir, const int taps[]);
+void hw_write_bunch_fir_taps(int axis, unsigned int fir, const int taps[]);
 
-/* Checks for FIR overflow on selected channel. */
-bool hw_read_bunch_overflow(int channel);
+/* Checks for FIR overflow on selected axis. */
+bool hw_read_bunch_overflow(int axis);
 
 
 /* DAC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -276,27 +278,27 @@ struct dac_events {
 };
 
 /* Set DAC output delay. */
-void hw_write_dac_delay(int channel, unsigned int delay);
+void hw_write_dac_delay(int axis, unsigned int delay);
 
 /* Set output FIR gain. */
-void hw_write_dac_fir_gain(int channel, unsigned int gain);
+void hw_write_dac_fir_gain(int axis, unsigned int gain);
 
 /* Set output NCO0 gain and enable. */
-void hw_write_dac_nco0_gain(int channel, unsigned int gain);
-void hw_write_dac_nco0_enable(int channel, bool enable);
+void hw_write_dac_nco0_gain(int axis, unsigned int gain);
+void hw_write_dac_nco0_enable(int axis, bool enable);
 
 /* Set output source for DAC memory and MMS. */
-void hw_write_dac_mms_source(int channel, bool after_fir);
-void hw_write_dac_dram_source(int channel, bool after_fir);
+void hw_write_dac_mms_source(int axis, bool after_fir);
+void hw_write_dac_dram_source(int axis, bool after_fir);
 
 /* Returns bunch by bunch, accumulator, min/max/sum, DAC FIR overflow events. */
-void hw_read_dac_events(int channel, struct dac_events *events);
+void hw_read_dac_events(int axis, struct dac_events *events);
 
 /* Set DAC output FIR taps. */
-void hw_write_dac_taps(int channel, const int taps[]);
+void hw_write_dac_taps(int axis, const int taps[]);
 
 /* Reads min/max/sum for DAC. */
-void hw_read_dac_mms(int channel, struct mms_result *result);
+void hw_read_dac_mms(int axis, struct mms_result *result);
 
 
 /* Sequencer configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -334,19 +336,19 @@ struct seq_state {
 
 /* Writes complete active sequencer configuration in preparation for triggered
  * operation. */
-void hw_write_seq_config(int channel, const struct seq_config *config);
+void hw_write_seq_config(int axis, const struct seq_config *config);
 
 /* Updates the choice of bank0. */
-void hw_write_seq_bank0(int channel, unsigned int bank0);
+void hw_write_seq_bank0(int axis, unsigned int bank0);
 
 /* Configure state used to generate trigger event. */
-void hw_write_seq_trigger_state(int channel, unsigned int state);
+void hw_write_seq_trigger_state(int axis, unsigned int state);
 
 /* Resets sequencer. */
-void hw_write_seq_abort(int channel);
+void hw_write_seq_abort(int axis);
 
 /* Returns current sequencer state. */
-void hw_read_seq_state(int channel, struct seq_state *state);
+void hw_read_seq_state(int axis, struct seq_state *state);
 
 
 /* Detector configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -365,17 +367,17 @@ struct detector_result {
 
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
-    int channel, bool input_select, unsigned int delay,
+    int axis, bool input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT]);
 
 /* Resets detector capture address. */
-void hw_write_det_start(int channel);
+void hw_write_det_start(int axis);
 
 /* Reads events from the detector. */
-void hw_read_det_events(int channel,
+void hw_read_det_events(int axis,
     bool output_ovf[DETECTOR_COUNT], bool *underrun);
 
 /* Reads detector result in raw format. */
 void hw_read_det_memory(
-    int channel, unsigned int result_count, unsigned int offset,
+    int axis, unsigned int result_count, unsigned int offset,
     struct detector_result result[]);
