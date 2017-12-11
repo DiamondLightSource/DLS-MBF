@@ -4,7 +4,7 @@
  * The function defined here must be called thus:
  *
  *      [d,s,g,t] = mex_mbf_detector_( ...
- *          hostname, port, bunches, channel, locking);
+ *          hostname, port, bunches, axis, locking);
  *
  * Data is captured from hostname:port and returned in an array of size
  *
@@ -144,11 +144,11 @@ static void send_group_delay(mxArray **lhs, int sock, int bunches, int delay)
 
 
 static void do_send_command(
-    int sock, int channel, bool timebase, int locking)
+    int sock, int axis, bool timebase, int locking)
 {
     char command[64];
     char *command_in = command;
-    command_in += sprintf(command_in, "D%dFS", channel);
+    command_in += sprintf(command_in, "D%dFS", axis);
     if (timebase)
         command_in += sprintf(command_in, "T");
 
@@ -164,7 +164,7 @@ static void do_send_command(
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    /* We expect four arguments: hostname, port, bunches, channel. */
+    /* We expect four arguments: hostname, port, bunches, axis. */
     TEST_OK_(nrhs == 5, "args", "Wrong number of arguments");
     /* Can assign up to four results, expect three. */
     TEST_OK_(nlhs >= 3, "result", "Too few results requested");
@@ -175,13 +175,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         "hostname", "Error reading hostname");
     int port    = (int) mxGetScalar(prhs[1]);
     int bunches = (int) mxGetScalar(prhs[2]);
-    int channel = (int) mxGetScalar(prhs[3]);
+    int axis    = (int) mxGetScalar(prhs[3]);
     int locking = (int) (mxGetScalar(prhs[4]) * 1e3);
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions! */
     int sock = connect_server(hostname, port);
-    do_send_command(sock, channel, nlhs > 3, locking);
+    do_send_command(sock, axis, nlhs > 3, locking);
 
     /* Start by reading the frame so we know what data to expect. */
     struct detector_frame frame;
