@@ -7,7 +7,7 @@ import mms
 
 adc_events = []
 
-for c in channels('ADC'):
+for a in axes('ADC'):
     WaveformOut('FILTER', ADC_TAPS, 'FLOAT',
         DESC = 'Input compensation filter')
     longOut('FILTER:DELAY', 0, 7, DESC = 'Compensation filter group delay')

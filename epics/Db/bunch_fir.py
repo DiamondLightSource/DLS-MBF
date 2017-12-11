@@ -37,7 +37,7 @@ def bunch_fir_pvs():
         DESC = 'FIR filter length')
 
 
-for c in channels('FIR', lmbf_mode):
+for a in axes('FIR', lmbf_mode):
     bunch_fir_pvs()
     if lmbf_mode:
         longOut('DECIMATION', 1, 128,
@@ -45,15 +45,15 @@ for c in channels('FIR', lmbf_mode):
 
 
 overflows = []
-for c in channels('FIR'):
+for a in axes('FIR'):
     # The bank waveforms are the same in both TMBF and LMBF modes
     for bank in range(4):
         with name_prefix('%d' % bank):
             bank_waveforms()
 
-    # Channel specific overflow detection
+    # Axis specific overflow detection
     overflows.append(
-        overflow('OVF', 'Overflow in %s bunch-by-bunch filter' % c))
+        overflow('OVF', 'Overflow in %s bunch-by-bunch filter' % a))
 
 with name_prefix('FIR'):
     Action('EVENTS',

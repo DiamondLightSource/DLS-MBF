@@ -30,7 +30,7 @@ export EPICS_DEVICE
 
 # We use the python library to construct the .db file
 %.db: $(wildcard ../*.py)
-	$(PYTHON) ../lmbf.py $@ $(*F)
+	$(PYTHON) ../mbf.py $@ $(*F)
 
 
 clean::

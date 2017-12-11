@@ -19,7 +19,7 @@ def bank_pvs(bank):
     BunchWaveforms('GAINWF', 'FLOAT', 'DAC output gain')
 
 
-for c in channels('BUN', lmbf_mode):
+for a in axes('BUN', lmbf_mode):
     # We have four banks and for each bank three waveforms of parameters to
     # configure.   Very similar to FIR.
     for bank in range(4):

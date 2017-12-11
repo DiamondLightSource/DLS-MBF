@@ -28,7 +28,7 @@ def detector_bank_pvs(updates):
     ])
 
 
-for c in channels('DET', lmbf_mode):
+for a in axes('DET', lmbf_mode):
     updates = [
         Waveform('SCALE', DETECTOR_LENGTH, 'DOUBLE',
             DESC = 'Scale for frequency sweep'),

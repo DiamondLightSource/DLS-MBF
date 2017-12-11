@@ -29,13 +29,13 @@ records.longin('BUNCH_TAPS', VAL = BUNCH_TAPS, PINI = 'YES',
     DESC = 'Length of bunch-by-bunch feedback filter')
 
 # Names of the two axes
-records.stringin('AXIS0', VAL = CHANNEL0, PINI = 'YES',
+records.stringin('AXIS0', VAL = AXIS0, PINI = 'YES',
     DESC = 'Name of first axis')
-records.stringin('AXIS1', VAL = CHANNEL1, PINI = 'YES',
+records.stringin('AXIS1', VAL = AXIS1, PINI = 'YES',
     DESC = 'Name of second axis')
 
 
-for c in channels('NCO', lmbf_mode):
+for a in axes('NCO', lmbf_mode):
     aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')
     mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(16, -6))
     boolOut('ENABLE', 'Off', 'On', DESC = 'Enable fixed NCO output')

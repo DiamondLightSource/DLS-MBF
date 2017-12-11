@@ -6,10 +6,10 @@ trigger_sources = [
     ('SOFT', 'Soft trigger'),
     ('EXT',  'External trigger'),
     ('PM',   'Postmortem trigger'),
-    ('ADC0', '%s ADC event' % CHANNEL0),
-    ('ADC1', '%s ADC event' % CHANNEL1),
-    ('SEQ0', '%s SEQ event' % CHANNEL0),
-    ('SEQ1', '%s SEQ event' % CHANNEL1),
+    ('ADC0', '%s ADC event' % AXIS0),
+    ('ADC1', '%s ADC event' % AXIS1),
+    ('SEQ0', '%s SEQ event' % AXIS0),
+    ('SEQ1', '%s SEQ event' % AXIS1),
 ]
 
 def event_set(suffix, suffix_desc):
@@ -67,7 +67,7 @@ def turn_pvs():
         DESC = 'Update turn status')
 
 
-for c in channels('TRG', lmbf_mode):
+for a in axes('TRG', lmbf_mode):
     target_pvs('SEQ')
 
     longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')

@@ -101,7 +101,7 @@ def count_pvs(super_count):
         FLNK = count_fanout, DESC = 'Internal sequencer state update')
 
 
-for c in channels('SEQ', lmbf_mode):
+for a in axes('SEQ', lmbf_mode):
     # Super-sequencer control and state.  Returns PV controlling number of super
     # sequencer states
     with name_prefix('SUPER'):

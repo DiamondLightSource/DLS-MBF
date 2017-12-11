@@ -1,7 +1,7 @@
 # PVs for fast memory readout
 #
 # Unlike most other parts of the system, the memory interface is not split into
-# channels.
+# axes.
 
 from common import *
 

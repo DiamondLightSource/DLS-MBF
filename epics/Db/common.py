@@ -21,13 +21,13 @@ assert Target in ['lmbf', 'tmbf']
 lmbf_mode = Target == 'lmbf'
 
 
-# Channel names
-CHANNEL0 = Parameter('CHAN0', 'Prefix for channel 0')
-CHANNEL1 = Parameter('CHAN1', 'Prefix for channel 1')
-CHANNELS = [CHANNEL0, CHANNEL1]
+# Axis names
+AXIS0 = Parameter('AXIS0', 'Prefix for axis 0')
+AXIS1 = Parameter('AXIS1', 'Prefix for axis 1')
+AXES = [AXIS0, AXIS1]
 
 if lmbf_mode:
-    CHANNEL01 = Parameter('CHAN01', 'Prefix for common channel')
+    AXIS01 = Parameter('AXIS01', 'Prefix for common axis')
 
 BUNCHES_PER_TURN = \
     Parameter('BUNCHES_PER_TURN', 'Bunches per machine revolution')
@@ -60,19 +60,19 @@ class name_prefix:
         pop_name_prefix()
 
 
-# Generates name prefixes for records with names channel:prefix:name
+# Generates name prefixes for records with names axis:prefix:name
 # If lmbf_mode is passed as the second argument and is True then a single prefix
 # of the form IQ:prefix:name is generated.
-def channels(prefix, iq_mode = False):
+def axes(prefix, iq_mode = False):
     if iq_mode:
-        with name_prefix(CHANNEL01):
+        with name_prefix(AXIS01):
             with name_prefix(prefix):
-                yield CHANNEL01
+                yield AXIS01
     else:
-        for channel in CHANNELS:
-            with name_prefix(channel):
+        for axis in AXES:
+            with name_prefix(axis):
                 with name_prefix(prefix):
-                    yield channel
+                    yield axis
 
 
 def dBrange(count, step, start = 0):
