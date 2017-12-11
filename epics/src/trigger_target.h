@@ -40,8 +40,7 @@ struct target_config {
 
     /* Target specific methods and variables. */
     void (*prepare_target)(int channel);
-    void (*stop_target)(int channel);
-    enum target_state disarmed_state;
+    enum target_state (*stop_target)(int channel);
 
     /* State change notification. */
     void (*set_target_state)(void *context, enum target_state state);

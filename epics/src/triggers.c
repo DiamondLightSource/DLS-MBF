@@ -72,16 +72,22 @@ static void prepare_seq_target(int channel)
     prepare_detector(channel);
 }
 
+static enum target_state stop_seq_target(int channel)
+{
+    return TARGET_IDLE;
+}
+
 static void prepare_mem_target(int channel)
 {
     prepare_memory();
 }
 
-static void stop_mem_target(int channel)
+static enum target_state stop_mem_target(int channel)
 {
     /* Stop the memory target by actually forcing a trigger! */
     bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
     hw_write_trigger_fire(fire);
+    return TARGET_ARMED;
 }
 
 
@@ -99,7 +105,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
             .target_id = TRIGGER_SEQ0,
             .channel = 0,
             .prepare_target = prepare_seq_target,
-            .disarmed_state = TARGET_IDLE,
+            .stop_target = stop_seq_target,
             .set_target_state = set_target_state,
         },
         .trigger_interrupt = { .seq_trigger = 1, },
@@ -110,7 +116,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
             .target_id = TRIGGER_SEQ1,
             .channel = 1,
             .prepare_target = prepare_seq_target,
-            .disarmed_state = TARGET_IDLE,
+            .stop_target = stop_seq_target,
             .set_target_state = set_target_state,
         },
         .trigger_interrupt = { .seq_trigger = 2, },
@@ -122,7 +128,6 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
             .channel = -1,          // Not valid for this target
             .prepare_target = prepare_mem_target,
             .stop_target = stop_mem_target,
-            .disarmed_state = TARGET_ARMED,  // A trigger is on its way!
             .set_target_state = set_target_state,
         },
         .trigger_interrupt = { .dram_trigger = 1, },

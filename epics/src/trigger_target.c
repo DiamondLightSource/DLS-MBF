@@ -61,9 +61,6 @@ static pthread_cond_t trigger_event;
 
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Target state control. */
-
 /* Helper macros for looping through targets. */
 #define _FOR_ALL_TARGETS(i, target) \
     for (unsigned int i = 0; i < TRIGGER_TARGET_COUNT; i ++) \
@@ -76,12 +73,14 @@ static pthread_cond_t trigger_event;
 
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Target state control. */
 
 /* Updates state of target and corresponding PV. */
 static void set_target_state(
     struct trigger_target *target, enum target_state state)
 {
-    if (target->state != state)
+    if (state != target->state)
     {
         target->state = state;
         target->config->set_target_state(target->context, state);
@@ -97,46 +96,6 @@ static void set_global_state(enum shared_target_state state)
         shared.state = state;
         shared.set_shared_state(state);
     }
-}
-
-
-/* Arms a single target by performing target specific preparation, recording
- * which target needs a hardware arm, and switch into armed state.  If the
- * arming does not actually occur then false is returned. */
-static bool do_arm_target(struct trigger_target *target)
-{
-    bool armed = false;
-    if (target->state == TARGET_IDLE  ||  target->state == TARGET_LOCKED)
-    {
-        if (target->lock_count == 0)
-        {
-            target->dont_rearm = false;
-            target->config->prepare_target(target->config->channel);
-            set_target_state(target, TARGET_ARMED);
-            armed = true;
-        }
-        else
-            /* Don't arm now, but maybe later. */
-            set_target_state(target, TARGET_LOCKED);
-    }
-    return armed;
-}
-
-
-/* Disarms a single target by performing a target specific stop, recording the
- * disarm flag, and switching into the target specific state. */
-static void do_disarm_target(struct trigger_target *target)
-{
-    target->dont_rearm = true;
-    if (target->state == TARGET_ARMED)
-    {
-        const struct target_config *config = target->config;
-        if (config->stop_target)
-            config->stop_target(config->channel);
-        set_target_state(target, config->disarmed_state);
-    }
-    else if (target->state == TARGET_LOCKED)
-        set_target_state(target, TARGET_IDLE);
 }
 
 
@@ -203,6 +162,16 @@ static bool any_locked_targets(void)
 }
 
 
+/* Returns true if there are any shared targets. */
+static bool any_shared_targets(void)
+{
+    bool any_shared = false;
+    FOR_SHARED_TARGETS(target)
+        any_shared = true;
+    return any_shared;
+}
+
+
 static void get_target_mask(struct trigger_target *target, bool mask[])
 {
     memset(mask, false, sizeof(bool) * TRIGGER_TARGET_COUNT);
@@ -221,6 +190,73 @@ static void get_shared_mask(bool mask[])
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Trigger target state control entry points. */
 
+/* Arms a single target by performing target specific preparation, recording
+ * which target needs a hardware arm, and switch into armed state.  If the
+ * arming does not actually occur then false is returned. */
+static bool do_arm_target(struct trigger_target *target)
+{
+    bool armed = false;
+    if (target->state == TARGET_IDLE  ||  target->state == TARGET_LOCKED)
+    {
+        if (target->lock_count == 0)
+        {
+            target->dont_rearm = false;
+            target->config->prepare_target(target->config->channel);
+            set_target_state(target, TARGET_ARMED);
+            armed = true;
+        }
+        else
+            /* Don't arm now, but maybe later. */
+            set_target_state(target, TARGET_LOCKED);
+    }
+    return armed;
+}
+
+static void do_arm_target_hardware(struct trigger_target *target)
+{
+    bool arm_mask[TRIGGER_TARGET_COUNT];
+    get_target_mask(target, arm_mask);
+    hw_write_trigger_arm(arm_mask);
+}
+
+static void do_arm_shared_hardware(void)
+{
+    bool arm_mask[TRIGGER_TARGET_COUNT];
+    get_shared_mask(arm_mask);
+    hw_write_trigger_arm(arm_mask);
+}
+
+
+/* Disarms a single target by performing a target specific stop, recording the
+ * disarm flag, and switching into the target specific state. */
+static void do_disarm_target(struct trigger_target *target)
+{
+    target->dont_rearm = true;
+    if (target->state == TARGET_ARMED)
+    {
+        const struct target_config *config = target->config;
+        enum target_state disarmed = config->stop_target(config->channel);
+        set_target_state(target, disarmed);
+    }
+    else if (target->state == TARGET_LOCKED)
+        set_target_state(target, TARGET_IDLE);
+}
+
+static void do_disarm_target_hardware(struct trigger_target *target)
+{
+    bool disarm_mask[TRIGGER_TARGET_COUNT];
+    get_target_mask(target, disarm_mask);
+    hw_write_trigger_disarm(disarm_mask);
+}
+
+static void do_disarm_shared_hardware(void)
+{
+    bool disarm_mask[TRIGGER_TARGET_COUNT];
+    get_shared_mask(disarm_mask);
+    hw_write_trigger_disarm(disarm_mask);
+}
+
+
 /* Here we manage the state transitions for a single trigger target.  We report
  * three states, Idle, Armed, Busy, as reported by enum target_state.
  * Transitions between states are triggered by arm and disarm commands, and by
@@ -234,31 +270,28 @@ static void arm_shared_targets(void)
 {
     shared.dont_rearm = false;
 
-    /* Only permit arming if all the targets are idle or locked. */
-    if (shared.state != SHARED_IDLE  &&  shared.state != SHARED_LOCKED)
-        log_message("Unable to arm in state %d\n", shared.state);
+    /* Only permit arming if the shared state is idle. */
+    if (shared.state != SHARED_IDLE)
+        log_message("Unable to arm in state %d", shared.state);
 
     /* Check if any of the targets we want to arm are locked.  If so we'll need
      * to back off and rely on update_global_state() to do this later.  We'll
      * push any locked targets into the delayed arm mode. */
     else if (any_locked_targets())
     {
-        /* If any targets are locked then put them all in the locked state. */
+        /* If any targets are locked then put them all in the locked state.
+         * We're guaranteed that one will be in this state. */
         FOR_SHARED_TARGETS(target)
             if (target->lock_count > 0)
                 set_target_state(target, TARGET_LOCKED);
         set_global_state(SHARED_LOCKED);
     }
-    else
+    else if (any_shared_targets())
     {
         /* This is the successful case, all targets are ready to arm. */
         FOR_SHARED_TARGETS(target)
             do_arm_target(target);
-
-        bool arm_mask[TRIGGER_TARGET_COUNT];
-        get_shared_mask(arm_mask);
-        hw_write_trigger_arm(arm_mask);
-
+        do_arm_shared_hardware();
         set_global_state(SHARED_ARMED);
     }
 }
@@ -288,12 +321,9 @@ static void update_global_state(void)
 /* Called with trigger_mutex locked to disarm all shared targets. */
 static void disarm_shared_targets(void)
 {
-    shared.dont_rearm = shared.state != SHARED_IDLE;
+    shared.dont_rearm = true;
 
-    bool disarm_mask[TRIGGER_TARGET_COUNT];
-    get_shared_mask(disarm_mask);
-    hw_write_trigger_disarm(disarm_mask);
-
+    do_disarm_shared_hardware();
     FOR_SHARED_TARGETS(target)
         do_disarm_target(target);
     update_global_state();
@@ -307,12 +337,61 @@ static void arm_target(struct trigger_target *target)
     else
     {
         if (do_arm_target(target))
-        {
-            bool arm_mask[TRIGGER_TARGET_COUNT];
-            get_target_mask(target, arm_mask);
-            hw_write_trigger_arm(arm_mask);
-        }
+            do_arm_target_hardware(target);
     }
+}
+
+
+static void disarm_target(struct trigger_target *target)
+{
+    if (target->mode == MODE_SHARED)
+        disarm_shared_targets();
+    else
+    {
+        do_disarm_target_hardware(target);
+        do_disarm_target(target);
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Target state change: triggers, completion, unlocking. */
+
+void trigger_target_trigger(struct trigger_target *target)
+{
+    WITH_MUTEX(trigger_mutex)
+        if (target->state == TARGET_ARMED)
+        {
+            set_target_state(target, TARGET_BUSY);
+            if (target->mode == MODE_SHARED)
+                update_global_state();
+        }
+        else
+            log_message("Unexpected trigger %u %u",
+                target->config->target_id, target->state);
+}
+
+
+void trigger_target_complete(struct trigger_target *target)
+{
+    WITH_MUTEX(trigger_mutex)
+        if (target->state == TARGET_BUSY)
+        {
+            set_target_state(target, TARGET_IDLE);
+
+            if (target->mode == MODE_SHARED)
+                update_global_state();
+            else if (target->mode == MODE_REARM  &&  !target->dont_rearm)
+                /* Automatically re-arm where requested and possible. */
+                arm_target(target);
+
+            /* On completion let all listening locks know that something may
+             * have changed. */
+            ASSERT_PTHREAD(pthread_cond_broadcast(&trigger_event));
+        }
+        else
+            log_message("Unexpected complete %u %u",
+                target->config->target_id, target->state);
 }
 
 
@@ -332,9 +411,10 @@ static void process_target_unlocked(struct trigger_target *target)
 }
 
 
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Single trigger target actions. */
+/* User actions: arm, disarm, set_mode. */
+
+/* Single trigger. */
 
 void trigger_target_arm(struct trigger_target *target)
 {
@@ -346,53 +426,7 @@ void trigger_target_arm(struct trigger_target *target)
 void trigger_target_disarm(struct trigger_target *target)
 {
     WITH_MUTEX(trigger_mutex)
-        if (target->mode == MODE_SHARED)
-            disarm_shared_targets();
-        else
-        {
-            bool disarm_mask[TRIGGER_TARGET_COUNT];
-            get_target_mask(target, disarm_mask);
-            hw_write_trigger_disarm(disarm_mask);
-
-            do_disarm_target(target);
-        }
-}
-
-
-void trigger_target_trigger(struct trigger_target *target)
-{
-    WITH_MUTEX(trigger_mutex)
-        if (target->state == TARGET_ARMED)
-        {
-            set_target_state(target, TARGET_BUSY);
-            if (target->mode == MODE_SHARED)
-                update_global_state();
-        }
-        else
-            log_message("Unexpected trigger %u %u\n",
-                target->config->target_id, target->state);
-}
-
-
-void trigger_target_complete(struct trigger_target *target)
-{
-    WITH_MUTEX(trigger_mutex)
-        if (target->state == TARGET_BUSY)
-        {
-            set_target_state(target, TARGET_IDLE);
-            if (target->mode == MODE_SHARED)
-                update_global_state();
-            else if (target->mode == MODE_REARM  &&  !target->dont_rearm)
-                /* Automatically re-arm where requested and possible. */
-                arm_target(target);
-
-            /* On completion let all listening locks know that something may
-             * have changed. */
-            ASSERT_PTHREAD(pthread_cond_broadcast(&trigger_event));
-        }
-        else
-            log_message("Unexpected complete %u %u\n",
-                target->config->target_id, target->state);
+        disarm_target(target);
 }
 
 
@@ -402,19 +436,12 @@ void trigger_target_set_mode(
     WITH_MUTEX(trigger_mutex)
     {
         target->mode = mode;
-
-        /* Don't leave the target in locked state if not applicable. */
-        if (mode != MODE_SHARED  &&  target->state == TARGET_LOCKED  &&
-             target->lock_count == 0)
-            set_target_state(target, TARGET_IDLE);
-
         update_global_state();
     }
 }
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Shared trigger target actions. */
+/* Shared trigger. */
 
 void shared_trigger_target_arm(void)
 {
