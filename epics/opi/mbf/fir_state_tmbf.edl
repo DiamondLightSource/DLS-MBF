@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 250
-y 112
+x 248
+y 110
 w 599
 h 26
 font "helvetica-medium-r-18.0"
@@ -51,26 +51,20 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 416
+x 424
 y 0
-w 48
+w 88
 h 22
 fgColor index 43
 bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "Wf $(chan0)"
+buttonLabel "Waveforms"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_waveforms.edl"
-}
-symbols {
-  0 "device=$(device),channel=$(chan0),fir=$(fir)"
-}
-replaceSymbols {
-  0 1
+  0 "mbf/fir_waveforms.edl"
 }
 endObjectProperties
 
@@ -80,7 +74,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 312
+x 320
 y 0
 w 96
 h 22
@@ -96,6 +90,7 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
+inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -116,7 +111,6 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
-inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -124,6 +118,7 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
+inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -144,7 +139,6 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
-inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -172,6 +166,7 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
+inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -192,7 +187,6 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
-inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -219,34 +213,5 @@ controlLabelType "pvName"
 font "helvetica-medium-r-8.0"
 scaleMin -360
 scaleMax 360
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 464
-y 0
-w 48
-h 22
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Wf $(chan1)"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/fir_waveforms.edl"
-}
-symbols {
-  0 "device=$(device),channel=$(chan1),fir=$(fir)"
-}
-replaceSymbols {
-  0 1
-}
 endObjectProperties
 

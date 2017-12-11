@@ -127,7 +127,7 @@ buttonLabel "Bunches"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/det_bunches.edl"
+  0 "mbf/det_bunches.edl"
 }
 endObjectProperties
 
@@ -169,7 +169,7 @@ buttonLabel "Waveforms"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/det_waveforms.edl"
+  0 "mbf/det_waveforms.edl"
 }
 endObjectProperties
 

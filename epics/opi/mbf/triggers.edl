@@ -112,7 +112,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "lmbf-help triggers"
+  0 "mbf-help triggers"
 }
 includeHelpIcon
 endObjectProperties
@@ -532,11 +532,11 @@ topShadowColor index 0
 botShadowColor index 14
 displaySource "menu"
 filePv "LOC\\menu0=i:0"
-file "lmbf/bunch_state.edl"
+file "mbf/bunch_state.edl"
 sizeOfs 5
 numDsps 1
 displayFileName {
-  0 "lmbf/trigger_$(mode).edl"
+  0 "mbf/trigger_$(mode).edl"
 }
 symbols {
   0 "bank=0"

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 171
-y 489
+x 172
+y 490
 w 498
 h 281
 font "helvetica-medium-r-18.0"
@@ -51,7 +51,7 @@ x 192
 y 40
 w 96
 h 20
-controlPv "$(device):$(chan0):TRG:BLANKING_S"
+controlPv "$(device):$(chan01):TRG:BLANKING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -85,55 +85,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan0):"
-}
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 192
-y 64
-w 96
-h 20
-controlPv "$(device):$(chan1):TRG:BLANKING_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 152
-y 64
-w 32
-h 16
-font "helvetica-bold-r-12.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "$(chan1):"
+  "$(chan01):"
 }
 endObjectProperties
 
@@ -180,7 +132,7 @@ x 48
 y 40
 w 96
 h 20
-controlPv "$(device):$(chan0):TRG:TURN:OFFSET_S"
+controlPv "$(device):$(chan01):TRG:TURN:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -214,55 +166,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "$(chan0):"
-}
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 48
-y 64
-w 96
-h 20
-controlPv "$(device):$(chan1):TRG:TURN:OFFSET_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 64
-w 32
-h 16
-font "helvetica-bold-r-12.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "$(chan1):"
+  "$(chan01):"
 }
 endObjectProperties
 
@@ -285,36 +189,10 @@ buttonLabel "SEQ Trig"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/trigger_target.edl"
+  0 "mbf/trigger_target.edl"
 }
 symbols {
-  0 "dest=$(chan0):TRG:SEQ"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 296
-y 64
-w 96
-h 22
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "SEQ Trig"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/trigger_target.edl"
-}
-symbols {
-  0 "dest=$(chan1):TRG:SEQ"
+  0 "dest=$(chan01):TRG:SEQ"
 }
 endObjectProperties
 
@@ -337,7 +215,7 @@ buttonLabel "MEM Trig"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/trigger_target.edl"
+  0 "mbf/trigger_target.edl"
 }
 symbols {
   0 "dest=TRG:MEM"

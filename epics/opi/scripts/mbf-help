@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Helper for launching LMBF help pages
+# Helper for launching MBF help pages
 
 HERE="$(dirname "$0")"
 

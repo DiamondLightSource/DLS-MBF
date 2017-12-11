@@ -129,7 +129,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "lmbf-help fir_waveforms"
+  0 "mbf-help fir_waveforms"
 }
 includeHelpIcon
 endObjectProperties

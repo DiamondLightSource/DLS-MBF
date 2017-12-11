@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2753
+x 2487
 y 3
 w 264
-h 313
+h 234
 font "helvetica-medium-r-8.0"
 ctlFont "helvetica-medium-r-8.0"
 btnFont "helvetica-medium-r-8.0"
@@ -33,48 +33,9 @@ major 4
 minor 0
 release 0
 x 8
-y 152
-w 248
-h 88
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Lines)
-object activeLineClass
-beginObjectProperties
-major 4
-minor 0
-release 1
-x 40
-y 180
-w 184
-h 0
-lineColor index 14
-fillColor index 0
-lineWidth 3
-numPoints 2
-xPoints {
-  0 40
-  1 224
-}
-yPoints {
-  0 180
-  1 180
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
 y 48
 w 248
-h 88
+h 112
 lineColor index 14
 fill
 fillColor index 4
@@ -86,21 +47,49 @@ beginObjectProperties
 major 4
 minor 0
 release 1
-x 44
-y 76
-w 184
+x 48
+y 92
+w 128
 h 0
 lineColor index 14
 fillColor index 0
 lineWidth 3
 numPoints 2
 xPoints {
-  0 44
-  1 228
+  0 48
+  1 176
+}
+yPoints {
+  0 92
+  1 92
+}
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 176
+y 76
+w 40
+h 32
+lineColor index 14
+fillColor index 0
+lineWidth 3
+numPoints 4
+xPoints {
+  0 216
+  1 176
+  2 176
+  3 216
 }
 yPoints {
   0 76
   1 76
+  2 108
+  3 108
 }
 endObjectProperties
 
@@ -130,7 +119,7 @@ major 4
 minor 1
 release 0
 x 200
-y 280
+y 200
 w 56
 h 24
 fgColor index 46
@@ -160,7 +149,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "lmbf-help tmbf"
+  0 "mbf-help lmbf"
 }
 includeHelpIcon
 endObjectProperties
@@ -172,7 +161,7 @@ major 4
 minor 4
 release 0
 x 16
-y 64
+y 80
 w 64
 h 24
 fgColor index 43
@@ -180,48 +169,15 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "ADC"
+buttonLabel "ADC $(chan0)"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/minmax.edl"
+  0 "mbf/minmax.edl"
 }
 symbols {
   0 "channel=$(chan0),part=ADC"
 }
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 40
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Axis $(chan0)"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 40
-w 120
-h 16
-lineColor index 14
-fillColor index 0
 endObjectProperties
 
 # (Related Display)
@@ -231,7 +187,7 @@ major 4
 minor 4
 release 0
 x 16
-y 168
+y 112
 w 64
 h 24
 fgColor index 43
@@ -239,50 +195,17 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "ADC"
+buttonLabel "ADC $(chan1)"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/minmax.edl"
+  0 "mbf/minmax.edl"
 }
 symbols {
   0 "channel=$(chan1),part=ADC"
 }
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 144
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Axis $(chan1)"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 144
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
 # (Related Display)
 object relatedDisplayClass
 beginObjectProperties
@@ -290,7 +213,7 @@ major 4
 minor 4
 release 0
 x 96
-y 96
+y 128
 w 72
 h 24
 fgColor index 43
@@ -302,36 +225,10 @@ buttonLabel "Control"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/control.edl"
+  0 "mbf/control.edl"
 }
 symbols {
-  0 "channel=$(chan0)"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 96
-y 200
-w 72
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Control"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/control.edl"
-}
-symbols {
-  0 "channel=$(chan1)"
+  0 "channel=$(chan01)"
 }
 endObjectProperties
 
@@ -350,11 +247,11 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "DAC"
+buttonLabel "DAC $(chan0)"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/minmax.edl"
+  0 "mbf/minmax.edl"
 }
 symbols {
   0 "channel=$(chan0),part=DAC"
@@ -368,7 +265,7 @@ major 4
 minor 4
 release 0
 x 184
-y 168
+y 96
 w 64
 h 24
 fgColor index 43
@@ -376,11 +273,11 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "DAC"
+buttonLabel "DAC $(chan1)"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/minmax.edl"
+  0 "mbf/minmax.edl"
 }
 symbols {
   0 "channel=$(chan1),part=DAC"
@@ -393,8 +290,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 96
-y 248
+x 16
+y 168
 w 72
 h 24
 fgColor index 43
@@ -402,89 +299,11 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "Triggers"
+buttonLabel "Memory"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/triggers.edl"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 176
-y 96
-w 72
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Detector"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/detector.edl"
-}
-symbols {
-  0 "channel=$(chan0)"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 176
-y 200
-w 72
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Detector"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/detector.edl"
-}
-symbols {
-  0 "channel=$(chan1)"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 96
-y 64
-w 72
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "FIR"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/fir_tmbf.edl"
-}
-symbols {
-  0 "channel=$(chan0)"
+  0 "mbf/memory.edl"
 }
 endObjectProperties
 
@@ -503,14 +322,11 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "FIR"
+buttonLabel "Triggers"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/fir_tmbf.edl"
-}
-symbols {
-  0 "channel=$(chan1)"
+  0 "mbf/triggers.edl"
 }
 endObjectProperties
 
@@ -521,7 +337,92 @@ major 4
 minor 4
 release 0
 x 176
-y 248
+y 128
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Detector"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/detector.edl"
+}
+symbols {
+  0 "channel=$(chan01)"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 40
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Axes"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 40
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 96
+y 80
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "FIR"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/fir_lmbf.edl"
+}
+symbols {
+  0 "channel=$(chan01)"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 176
+y 168
 w 72
 h 24
 fgColor index 43
@@ -533,7 +434,7 @@ buttonLabel "Status"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/status.edl"
+  0 "mbf/status.edl"
 }
 endObjectProperties
 
@@ -544,52 +445,7 @@ major 4
 minor 4
 release 0
 x 16
-y 248
-w 72
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Memory"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "lmbf/memory.edl"
-}
-endObjectProperties
-
-# (Lines)
-object activeLineClass
-beginObjectProperties
-major 4
-minor 0
-release 1
-x 88
-y 304
-w 0
-h 0
-lineColor index 14
-fillColor index 0
-lineWidth 3
-numPoints 1
-xPoints {
-  0 88
-}
-yPoints {
-  0 304
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 16
-y 280
+y 200
 w 72
 h 24
 fgColor index 43
@@ -601,7 +457,7 @@ buttonLabel "Info"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/info.edl"
+  0 "mbf/info.edl"
 }
 endObjectProperties
 

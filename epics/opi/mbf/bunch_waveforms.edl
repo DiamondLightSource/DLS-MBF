@@ -205,7 +205,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "lmbf-help bunch_waveforms"
+  0 "mbf-help bunch_waveforms"
 }
 includeHelpIcon
 endObjectProperties

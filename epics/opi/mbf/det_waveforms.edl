@@ -138,7 +138,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "lmbf-help det_waveforms"
+  0 "mbf-help det_waveforms"
 }
 includeHelpIcon
 endObjectProperties
@@ -421,7 +421,7 @@ buttonLabel "Bunches"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/det_bunches.edl"
+  0 "mbf/det_bunches.edl"
 }
 endObjectProperties
 

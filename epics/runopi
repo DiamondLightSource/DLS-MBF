@@ -6,7 +6,7 @@ PATH="scripts/:$PATH"
 DEVICE="$1"
 if [[ -z $DEVICE ]]; then
     MACROS=()
-    START=lmbf_launcher.edl
+    START=mbf_launcher.edl
 else
     AXIS0="$(caget -t "$DEVICE:AXIS0")"  &&
     AXIS1="$(caget -t "$DEVICE:AXIS1")"  &&
@@ -14,8 +14,8 @@ else
         exit 1
 
     case "$MODE" in
-        TMBF)   START=lmbf/tmbf.edl ;;
-        LMBF)   START=lmbf/lmbf.edl ;;
+        TMBF)   START=mbf/tmbf.edl ;;
+        LMBF)   START=mbf/lmbf.edl ;;
         *)      echo >&2 "Unknown MODE: $MODE"
                 exit 2 ;;
     esac

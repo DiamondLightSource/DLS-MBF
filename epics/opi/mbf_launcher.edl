@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "New LMBF"
+  "New MBF"
 }
 endObjectProperties
 
@@ -64,7 +64,7 @@ buttonLabel "TS-TMBF"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/tmbf.edl"
+  0 "mbf/tmbf.edl"
 }
 symbols {
   0 "device=TS-DI-TMBF-02,chan0=X,chan1=Y,mode=TMBF"
@@ -90,7 +90,7 @@ buttonLabel "TS-LMBF"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/lmbf.edl"
+  0 "mbf/lmbf.edl"
 }
 symbols {
   0 "device=TS-DI-LMBF-01,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"
@@ -116,7 +116,7 @@ buttonLabel "SR23C-LMBF"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/lmbf.edl"
+  0 "mbf/lmbf.edl"
 }
 symbols {
   0 "device=SR23C-DI-LMBF-01,chan0=I,chan1=Q,chan01=IQ,mode=LMBF"

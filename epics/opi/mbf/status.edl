@@ -74,7 +74,7 @@ font "helvetica-bold-r-12.0"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/DAC.edl"
+  0 "mbf/DAC.edl"
 }
 symbols {
   0 "channel=$(chan1)"
@@ -114,7 +114,7 @@ font "helvetica-bold-r-12.0"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/ADC.edl"
+  0 "mbf/ADC.edl"
 }
 symbols {
   0 "channel=$(chan1)"
@@ -139,7 +139,7 @@ font "helvetica-bold-r-12.0"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/DAC.edl"
+  0 "mbf/DAC.edl"
 }
 symbols {
   0 "channel=$(chan0)"
@@ -164,7 +164,7 @@ font "helvetica-bold-r-12.0"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/ADC.edl"
+  0 "mbf/ADC.edl"
 }
 symbols {
   0 "channel=$(chan0)"
@@ -275,7 +275,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "lmbf-help status"
+  0 "mbf-help status"
 }
 includeHelpIcon
 endObjectProperties

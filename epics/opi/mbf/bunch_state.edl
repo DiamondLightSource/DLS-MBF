@@ -64,7 +64,7 @@ buttonLabel "Setup"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "lmbf/bunch_waveforms.edl"
+  0 "mbf/bunch_waveforms.edl"
 }
 endObjectProperties
 
