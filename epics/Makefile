@@ -1,7 +1,7 @@
 # Makefile at top of application tree
 TOP = .
 
-export LMBF_TOP := $(CURDIR)/..
+export MBF_TOP := $(CURDIR)/..
 
 include $(TOP)/configure/CONFIG
 DIRS += configure

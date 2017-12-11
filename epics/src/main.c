@@ -40,7 +40,7 @@
 
 
 /* External declaration of DBD binding. */
-extern int lmbf_registerRecordDeviceDriver(struct dbBase *pdbbase);
+extern int mbf_registerRecordDeviceDriver(struct dbBase *pdbbase);
 
 
 /* Device prefix for EPICS files. */
@@ -66,7 +66,7 @@ static bool enable_pv_logging = true;
 static void usage(void)
 {
     printf(
-"LMBF IOC.  Options:\n"
+"MBF IOC.  Options:\n"
 "   -C: Specify directory where EPICS files are found\n"
 "   -u  Startup with hardware registers unlocked (debug only)\n"
 "   -q  Disable PV logging\n"
@@ -180,8 +180,8 @@ static error__t initialise_epics(void)
             hook_pv_logging(
                 MAKE_PATH("db/access.acf"),
                 system_config.pv_log_array_length))  ?:
-        TEST_OK(dbLoadDatabase(MAKE_PATH("dbd/lmbf.dbd"), NULL, NULL) == 0)  ?:
-        TEST_OK(lmbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
+        TEST_OK(dbLoadDatabase(MAKE_PATH("dbd/mbf.dbd"), NULL, NULL) == 0)  ?:
+        TEST_OK(mbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
         load_database(MAKE_PATH(database))  ?:
         TEST_OK(iocInit() == 0)  ?:
         TEST_OK(check_unused_record_bindings(true) == 0);
@@ -244,8 +244,10 @@ int main(int argc, char *const argv[])
 
     if (!error)
     {
-        printf("EPICS TMBF Driver, Version %s.  Built: %s.\n",
-            LMBF_VERSION, BUILD_DATE_TIME);
+        printf("EPICS MBF Driver, Version %s.  Built: %s.\n",
+            MBF_VERSION, BUILD_DATE_TIME);
+        printf("Running in %s mode\n",
+            system_config.lmbf_mode ? "LMBF" : "TMBF");
 
         error = TEST_OK(iocsh(NULL) == 0);
 

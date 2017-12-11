@@ -1,4 +1,4 @@
-/* Hardware interfacing to LMBF system. */
+/* Hardware interfacing to MBF system. */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -942,13 +942,13 @@ static error__t map_config_regs(void)
 error__t hw_lock_registers(void)
 {
     return TEST_IO_(ioctl(reg_device, LMBF_REG_LOCK),
-        "Unable to lock LMBF registers");
+        "Unable to lock MBF registers");
 }
 
 error__t hw_unlock_registers(void)
 {
     return TEST_IO_(ioctl(reg_device, LMBF_REG_UNLOCK),
-        "Unable to unlock LMBF registers");
+        "Unable to unlock MBF registers");
 }
 
 
@@ -993,7 +993,7 @@ error__t initialise_hardware(
 
     return
         TEST_IO_(reg_device = open(reg_device_name, O_RDWR | O_SYNC),
-            "Unable to open LMBF device %s", reg_device_name)  ?:
+            "Unable to open MBF device %s", reg_device_name)  ?:
         TEST_IO(dram0_device = open(dram0_device_name, O_RDONLY))  ?:
         TEST_IO(dram1_device = open(dram1_device_name, O_RDONLY))  ?:
         IF(lock_registers,

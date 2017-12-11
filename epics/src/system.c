@@ -78,7 +78,7 @@ static void publish_status_pvs(void)
 
 
 /* Some published strings for system identification etc. */
-static EPICS_STRING version_string = { LMBF_VERSION };
+static EPICS_STRING version_string = { MBF_VERSION };
 static EPICS_STRING git_version_string = { GIT_VERSION };
 static EPICS_STRING fpga_version = { };
 static EPICS_STRING fpga_git_version = { };
@@ -123,13 +123,13 @@ static error__t initialise_constants(void)
 static void call_lock_registers(const iocshArgBuf *args)
 {
     if (!error_report(hw_lock_registers()))
-        printf("LMBF control registers locked for exclusive access\n");
+        printf("MBF control registers locked for exclusive access\n");
 }
 
 static void call_unlock_registers(const iocshArgBuf *args)
 {
     if (!error_report(hw_unlock_registers()))
-        printf("LMBF control registers unlocked\n");
+        printf("MBF control registers unlocked\n");
 }
 
 static void call_set_lmbf_mode(const iocshArgBuf *args)

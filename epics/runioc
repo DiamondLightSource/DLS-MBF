@@ -7,7 +7,7 @@ Error() {
 
 
 HERE="$(dirname "$0")"
-IOC="$HERE"/bin/linux-x86_64/lmbf
+IOC="$HERE"/bin/linux-x86_64/mbf
 
 DEBUG=()
 OPTS=()
@@ -45,7 +45,7 @@ shift
 
 # Initialise the hardware.  This sets up the clock PLL, ADC and DAC.  The rest
 # of the system will be initialised by the IOC proper.
-"$HERE"/setup_lmbf "$SYS_CONFIG"  &&
+"$HERE"/setup_mbf "$SYS_CONFIG"  &&
 # Now run the IOC
 exec "${DEBUG[@]}" \
     "$IOC" -C "$HERE" "${OPTS[@]}" "$SYS_CONFIG" "${HW_CONFIG[@]}"
