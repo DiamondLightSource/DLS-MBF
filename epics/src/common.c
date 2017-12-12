@@ -22,22 +22,31 @@ static const char *const *axis_names[] = {
     &system_config.axis1_name,
 };
 
-static char *iq_axis_name;
+
+
+const char *get_axis_name(int axis, bool lmbf_mode)
+{
+    static char *iq_axis_name = NULL;
+
+    if (lmbf_mode)
+    {
+        /* Ugly first use initialisation. */
+        if (!iq_axis_name)
+            asprintf(&iq_axis_name, "%s%s",
+                system_config.axis0_name, system_config.axis1_name);
+        return iq_axis_name;
+    }
+    else
+        return *axis_names[axis];
+}
 
 
 bool _enter_axis_step(int axis, const char *prefix, bool lmbf_mode)
 {
-    /* Ugly first use initialisation. */
-    if (!iq_axis_name)
-        asprintf(&iq_axis_name, "%s%s",
-            system_config.axis0_name, system_config.axis1_name);
-
     int axis_count = lmbf_mode ? 1 : AXIS_COUNT;
     if (axis < axis_count)
     {
-        const char *axis_name =
-            lmbf_mode ? iq_axis_name : *axis_names[axis];
-        push_record_name_prefix(axis_name);
+        push_record_name_prefix(get_axis_name(axis, lmbf_mode));
         push_record_name_prefix(prefix);
         return true;
     }

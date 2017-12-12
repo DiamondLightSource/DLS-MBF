@@ -103,10 +103,16 @@ static void set_global_state(enum shared_target_state state)
 static void update_shared_targets(void)
 {
     char value[40] = "";
-    size_t n = 0;
+    char *out = value;
+    bool first = true;
     FOR_SHARED_TARGETS(target)
-        n += (size_t) snprintf(value + n, sizeof(value) - n,
-            "%s ", target->config->name);
+    {
+        if (!first)
+            out += snprintf(out, (size_t) (value + sizeof(value) - out), " ");
+        out += target->config->get_target_name(
+            target->config->axis, out, (size_t) (value + sizeof(value) - out));
+        first = false;
+    }
     shared.set_shared_targets(value);
 }
 

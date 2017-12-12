@@ -67,6 +67,13 @@ static bool blanking_in;
 /* Target specific configuration and implementation. */
 
 
+static size_t get_seq_name(int axis, char name[], size_t length)
+{
+    return (size_t) snprintf(name, length, "%s:SEQ",
+        get_axis_name(axis, system_config.lmbf_mode));
+}
+
+
 static void prepare_seq_target(int axis)
 {
     prepare_sequencer(axis);
@@ -76,6 +83,11 @@ static void prepare_seq_target(int axis)
 static enum target_state stop_seq_target(int axis)
 {
     return TARGET_IDLE;
+}
+
+static size_t get_mem_name(int axis, char name[], size_t length)
+{
+    return (size_t) snprintf(name, length, "MEM");
 }
 
 static void prepare_mem_target(int axis)
@@ -105,7 +117,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .config = {
             .target_id = TRIGGER_SEQ0,
             .axis = 0,
-            .name = "SEQ0",
+            .get_target_name = get_seq_name,
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
             .set_target_state = set_target_state,
@@ -117,7 +129,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .config = {
             .target_id = TRIGGER_SEQ1,
             .axis = 1,
-            .name = "SEQ1",
+            .get_target_name = get_seq_name,
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
             .set_target_state = set_target_state,
@@ -129,7 +141,7 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .config = {
             .target_id = TRIGGER_DRAM,
             .axis = -1,          // Not valid for this target
-            .name = "MEM",
+            .get_target_name = get_mem_name,
             .prepare_target = prepare_mem_target,
             .stop_target = stop_mem_target,
             .set_target_state = set_target_state,

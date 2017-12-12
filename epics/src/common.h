@@ -50,6 +50,11 @@ void _exit_axis_step(void);
          i += 1, j = j + 1 < hardware_config.bunches ? j + 1 : 0)
 
 
+/* Returns name of given axis.  If lmbf_mode is set then the common axis name is
+ * returned. */
+const char *get_axis_name(int axis, bool lmbf_mode);
+
+
 /* This function converts an array of floats into the corresponding array of
  * integer values by multiplying each value by 2^(bits-high_bits-1).  The
  * floating point values are clipped to the extreme possible values as

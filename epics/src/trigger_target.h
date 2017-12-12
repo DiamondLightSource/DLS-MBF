@@ -37,7 +37,7 @@ struct target_config {
     /* Target identity. */
     enum trigger_target_id target_id;   // Hardware identification
     int axis;                        // Not valid for DRAM target
-    const char *name;
+    size_t (*get_target_name)(int axis, char name[], size_t length);
 
     /* Target specific methods and variables. */
     void (*prepare_target)(int axis);
