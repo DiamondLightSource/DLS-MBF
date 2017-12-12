@@ -289,7 +289,7 @@ static void arm_shared_targets(void)
     shared.dont_rearm = false;
 
     /* Only permit arming if the shared state is idle. */
-    if (shared.state != SHARED_IDLE)
+    if (shared.state != SHARED_IDLE  &&  shared.state != SHARED_LOCKED)
         log_message("Unable to arm in state %d", shared.state);
 
     /* Check if any of the targets we want to arm are locked.  If so we'll need
@@ -420,12 +420,9 @@ static void process_target_unlocked(struct trigger_target *target)
     if (target->mode == MODE_SHARED)
         update_global_state();
     else if (target->state == TARGET_LOCKED)
-    {
         /* When the last lock has gone, if we're in the Locked state and not
          * shared then we can perform the posponed arming of our target. */
-        target->state = TARGET_IDLE;
         arm_target(target);
-    }
 }
 
 
