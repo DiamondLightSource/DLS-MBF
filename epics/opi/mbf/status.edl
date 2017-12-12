@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 199
-y 483
+x 915
+y 592
 w 512
 h 338
 font "helvetica-medium-r-8.0"
@@ -1163,7 +1163,7 @@ x 368
 y 192
 w 64
 h 16
-controlPv "$(device):$(axis0):DAC:MMS:STD_MEAN_DB"
+controlPv "$(device):$(axis1):DAC:MMS:STD_MEAN_DB"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -1227,7 +1227,7 @@ x 144
 y 192
 w 64
 h 16
-controlPv "$(device):$(axis0):ADC:MMS:STD_MEAN_DB"
+controlPv "$(device):$(axis1):ADC:MMS:STD_MEAN_DB"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0

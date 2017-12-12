@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 171
-y 489
+x 172
+y 490
 w 498
 h 281
 font "helvetica-medium-r-18.0"
@@ -281,7 +281,7 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "SEQ Trig"
+buttonLabel "SEQ $(axis0) Trig"
 numPvs 4
 numDsps 1
 displayFileName {
@@ -307,7 +307,7 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "SEQ Trig"
+buttonLabel "SEQ $(axis1) Trig"
 numPvs 4
 numDsps 1
 displayFileName {
