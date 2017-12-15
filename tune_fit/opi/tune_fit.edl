@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2883
-y 8
+x 3148
+y 32
 w 641
 h 849
 font "helvetica-medium-r-18.0"
@@ -229,8 +229,8 @@ xPv {
   1 "$(prefix):SCALE"
 }
 yPv {
-  0 "$(prefix):MODEL1:P"
-  1 "$(prefix):MODEL2:P"
+  0 "$(prefix):MODEL1:R"
+  1 "$(prefix):MODEL2:R"
 }
 plotUpdateMode {
   0 "y"

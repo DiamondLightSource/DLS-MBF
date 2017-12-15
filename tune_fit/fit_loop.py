@@ -7,6 +7,11 @@ import cothread
 from cothread.catools import *
 
 import fitter
+import pvs
+
+
+LENGTH = 4096
+MAX_PEAKS = 5
 
 
 class Gather:
@@ -44,7 +49,8 @@ class TuneFitLoop:
         gather.monitor(self.update, 'Q', pv_q)
         gather.monitor(self.update, 'S', pv_s)
 
-        self.fitter = fitter.Fitter(target)
+        self.pvs = pvs.publish_pvs(target, LENGTH, MAX_PEAKS)
+        self.fitter = fitter.Fitter(LENGTH, MAX_PEAKS)
 
     def update(self, timestamp, values):
         iq = numpy.complex128(values['I'] + 1j * values['Q'])
@@ -55,7 +61,7 @@ class TuneFitLoop:
         while True:
             try:
                 t, s, iq = self.event.Wait()
-                self.fitter.fit_tune(t, s, iq)
+                self.fitter.fit_tune(self.pvs, t, s, iq)
             except:
                 print 'Fitter caught exception'
                 traceback.print_exc()

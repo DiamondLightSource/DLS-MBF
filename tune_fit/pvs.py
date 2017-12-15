@@ -20,7 +20,7 @@ class PvSet(object):
         pv.TSE = -2
         self.__pvs[name] = pv
 
-    def emit(self, **kargs):
+    def output(self, **kargs):
         timestamp = self.__timestamp
         for key, value in kargs.items():
             self.__pvs[key].set(value, timestamp = timestamp)
@@ -89,14 +89,22 @@ def publish_model(prefix, length):
         pvs.publish('i',    Waveform('I', length))
         pvs.publish('q',    Waveform('Q', length))
         pvs.publish('p',    Waveform('P', length))
+        pvs.publish('r',    Waveform('R', length))
     return pvs
 
 
 def publish_config():
+    def publish(build, name, pv_name, value, *args, **kargs):
+        pv = build(pv_name + '_S', initial_value = value, *args, **kargs)
+        pvs.publish(name, pv)
+
     pvs = PvSet()
     with name_prefix('CONFIG'):
-        pvs.publish('sel',
-            builder.mbbOut('SEL_S', '/16', '/64', PINI = 'YES'))
+        publish(builder.mbbOut, 'sel', 'SEL', 0, '/16', '/64')
+        publish(builder.aOut, 'fit_threshold', 'THRESHOLD', 0.2, PREC = 2)
+        publish(builder.aOut, 'max_error', 'FITERROR', 0.6, PREC = 2)
+        publish(builder.aOut, 'min_width', 'MINWIDTH', 1e-6, PREC = 2)
+        publish(builder.aOut, 'max_width', 'MAXWIDTH', 5e-3, PREC = 2)
     return pvs
 
 
@@ -115,8 +123,10 @@ def publish_pvs(prefix, length, max_peaks):
 
         pvs.add_group('peak16', publish_peak_info(length, max_peaks, 16))
         pvs.add_group('peak64', publish_peak_info(length, max_peaks, 64))
+
         pvs.add_group('model1', publish_model('MODEL1', length))
         pvs.add_group('model2', publish_model('MODEL2', length))
+
         pvs.add_group('config', publish_config())
 
     return pvs
