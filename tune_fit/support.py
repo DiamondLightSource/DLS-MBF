@@ -142,11 +142,11 @@ def eval_one_peak(fit, s):
 
 
 # Evaluates model from a list of fits
-def eval_model(fits, s):
-    result = numpy.zeros(s.shape, dtype = numpy.complex)
+def eval_model(scale, fits, offset = 0):
+    result = numpy.zeros(scale.shape, dtype = numpy.complex)
     for fit in fits:
-        result += eval_one_peak(fit, s)
-    return result
+        result += eval_one_peak(fit, scale)
+    return result + offset
 
 
 # Take as much of the existing model into account by subtracting it from the
@@ -254,6 +254,7 @@ def eval_derivative(fits, scale):
         da = 1 / (scale - b)
         db = a * da * da
         result.extend([da, db])
+    result.append(numpy.ones(len(scale)))
     return numpy.array(result)
 
 
@@ -263,13 +264,14 @@ def assess_delta(a, delta):
     return (width + shift > 1e-7).all() and (numpy.abs(shift) < width).all()
 
 
-def step_refine_fits(scale, iq, fits, lam):
-    w = eval_model(fits, scale)
-    w = iq
+def step_refine_fits(scale, iq, fits, offset, lam):
+    w = eval_model(scale, fits, offset)
+#     w = iq
 
-    e = w * (eval_model(fits, scale) - iq)
+    e = w * (eval_model(scale, fits, offset) - iq)
     de = w * eval_derivative(fits, scale)
-    a = numpy.array(fits).flatten()
+
+    a = numpy.append(numpy.array(fits).flatten(), offset)
 
     beta = numpy.inner(de.conj(), e)
     alpha0 = numpy.inner(de.conj(), de)
@@ -281,13 +283,14 @@ def step_refine_fits(scale, iq, fits, lam):
         alpha = +alpha0
         alpha[d] *= 1 + lam
         delta = numpy.linalg.solve(alpha, beta)
-        if not assess_delta(a, delta):
+        if not assess_delta(a[:-1], delta[:-1]):
             lam *= 10.0
             print 'U', lam,
         else:
             a_new = a - delta
-            new_fit = a_new.reshape(-1, 2)
-            e = w * (eval_model(new_fit, scale) - iq)
+            new_fit = a_new[:-1].reshape(-1, 2)
+            offset = a_new[-1]
+            e = w * (eval_model(scale, new_fit, offset) - iq)
             Eout = abs2(e).sum()
             if Eout >= Ein:
                 lam *= 10.0
@@ -296,43 +299,107 @@ def step_refine_fits(scale, iq, fits, lam):
                 lam *= 0.1
                 change = 1 - Eout / Ein
                 print 'OK %g -%.1f%%' % (lam, 100 * change)
-                return (new_fit, lam, change)
+                return (new_fit, offset, lam, change)
 
     raise Exception('Whoops')
 
+MIN_WIDTH = 2e-5
+MAX_WIDTH = 5e-2
+MAX_WIDTH = 1e-2
 
-def prune_peaks(fit):
+CLUSTER_WIDTH = 1.0
+
+
+def find_clusters(fit):
     result = []
-    for a, b in fit:
-        width = -b.imag
-#         if width < 5e-5 or width > 1e-2:
-        if width < 0.00002 or width > 0.005:
-            print 'dropping: width =', width
+    cluster_found = False
+    for ab in fit:
+        c1 = ab[1].real
+        w1 = -ab[1].imag
+        for cluster in result:
+            # See if we're close to any peaks in any existing cluster
+            found = False
+            for ab2 in cluster:
+                c2 = ab2[1].real
+                w2 = -ab2[1].imag
+                if abs(c2 - c1) < CLUSTER_WIDTH * min(w1, w2):
+                    cluster.append(ab)
+                    found = True
+                    break
+            if found:
+                cluster_found = True
+                break
         else:
-#         if 5e-5 < width < 1e-2:
+            result.append([ab])
+    return result, cluster_found
+
+
+def flatten_clusters(clusters):
+    result = []
+    for cluster in clusters:
+        if len(cluster) > 1:
+            print 'group', len(cluster), 'poles'
+            ab = numpy.array(cluster)
+            a = ab[:, 0].sum()
+            b = ab[:, 1].mean()
             result.append((a, b))
-#         else:
-#             print 'dropping', (a, b)
-    return numpy.array(result)
+        else:
+            result.append(cluster[0])
+    return result
+
+
+def prune_peaks(scale, fit):
+    result = []
+    changed = False
+
+    left = scale[0]
+    right = scale[-1]
+    if left > right: left, right = right, left
+
+    for a, b in fit:
+        centre = b.real
+        width = -b.imag
+        if width < MIN_WIDTH or width > MAX_WIDTH:
+            print 'dropping: width =', width
+            changed = True
+        elif centre < left + width or centre > right - width:
+            print 'dropping: centre = ', centre
+            changed = True
+        else:
+            result.append((a, b))
+
+    return numpy.array(result), changed
+
+
+def merge_peaks(fit, changed = False):
+    clusters, found = find_clusters(fit)
+    if found:
+        return numpy.array(flatten_clusters(clusters)), True
+    else:
+        return fit, changed
 
 
 plot_refine_fits = False
-plot_refine_fits = True
+# plot_refine_fits = True
+
+
+REFINE_FRACTION = 0.01
 
 def refine_fits(scale, iq, fit):
     fit_in = fit
 
     N = 20
-#     N = 7
-    fit = prune_peaks(fit)
+    fit, _ = prune_peaks(scale, fit)
+    offset = (iq - eval_model(scale, fit, 0)).mean()
 
     all_fits = [fit]
     lam = 0.1
     for n in range(N):
-        fit, lam, change = step_refine_fits(scale, iq, fit, lam)
-        fit = prune_peaks(fit)
+        fit, offset, lam, change = step_refine_fits(scale, iq, fit, offset, lam)
+        fit, changed = prune_peaks(scale, fit)
+        fit, changed = merge_peaks(fit, changed)
         all_fits.append(fit)
-        if change < 0.01:
+        if not changed and change < REFINE_FRACTION:
             break
     print n, '=>', len(fit)
 
@@ -342,10 +409,9 @@ def refine_fits(scale, iq, fit):
 
     from matplotlib import pyplot, gridspec
 
-    pb = [[b for a,b in f] for f in all_fits]
     pb = [f[:, 1] for f in all_fits]
-    m_in = eval_model(fit_in, scale)
-    mm = eval_model(fit, scale)
+    m_in = eval_model(scale, fit_in)
+    mm = eval_model(scale, fit, offset)
 
     pyplot.figure(figsize = (9, 11))
 
@@ -391,6 +457,8 @@ def refine_fits(scale, iq, fit):
 #         numpy.abs(smooth_waveform(res - mbg, 16)))
 # #     pyplot.plot(scale, numpy.abs(res - mbg))
 
+    areas = abs2(fit[:,0]) / - fit[:,1].imag
+    print 'areas', areas / areas.max()
     pyplot.show()
 
 

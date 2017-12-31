@@ -77,7 +77,7 @@ def output_fits(result, fits, errors, max_fits):
         e = pad(errors))
 
 def output_model(result, scale, fits, iq):
-    model = support.eval_model(fits, scale)
+    model = support.eval_model(scale, fits)
     result.output(
         i = model.real,
         q = model.imag,
