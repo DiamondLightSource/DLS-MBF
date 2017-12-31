@@ -28,6 +28,7 @@ def assess_peak(config, scale, range, fit, error):
         return True
 
 def prune_bad_peaks(config, scale, ranges, fits, errors):
+    return (ranges, fits, errors)
     result = zip(*[
         (range, fit, error)
         for range, fit, error in zip(ranges, fits, errors)
@@ -38,7 +39,8 @@ def prune_bad_peaks(config, scale, ranges, fits, errors):
         return ((), (), ())
 
 
-def fit_peaks(config, scale, iq, ranges, fits = None):
+def fit_peaks_to_ranges(config, scale, iq, ranges):
+    fits, errors = support.fit_multiple_peaks(scale, iq, ranges)
     fits, errors = support.fit_multiple_peaks(scale, iq, ranges, fits)
     return prune_bad_peaks(config, scale, ranges, fits, errors)
 
@@ -59,6 +61,21 @@ def refine_fit_ranges(scale, fits, fit_threshold):
         for fit in fits]
 
 
+def output_fits(result, fits, errors, max_fits):
+    def pad(l):
+        l = list(l)
+        a = numpy.empty(max_fits)
+        a[:] = numpy.nan
+        a[:len(l)] = l
+        return a
+
+    result.output(
+        ar = pad(a.real for a, b in fits),
+        ai = pad(a.imag for a, b in fits),
+        br = pad(b.real for a, b in fits),
+        bi = pad(b.imag for a, b in fits),
+        e = pad(errors))
+
 def output_model(result, scale, fits, iq):
     model = support.eval_model(fits, scale)
     result.output(
@@ -68,37 +85,43 @@ def output_model(result, scale, fits, iq):
         r = support.abs2(iq - model))
 
 
-def process_peak_tune(result, scale, iq, ranges):
-    ranges, fits, errors = fit_peaks(result.config, scale, iq, ranges)
-    output_model(result.model1, scale, fits, iq)
-
-    ranges, fits = extract_good_peaks(scale, ranges, fits)
-    ranges = refine_fit_ranges(scale, fits, result.config.fit_threshold)
-
-    ranges, fits, errors = fit_peaks(result.config, scale, iq, ranges, fits)
-    output_model(result.model2, scale, fits, iq)
-
-    return 0, 0, 0
-
-
-    # Discard all but the three largest peaks.
-    discard_small_peaks(second_fit)
-
-    # Extract the final peaks in ascending order of frequency.
-#         struct one_pole final_fits[MAX_PEAKS]
-    fitted_peak_count = extract_final_fits(second_fit, final_fits)
-
-    # Finally compute the three peaks and the associated tune.
-    status = extract_peak_tune(fitted_peak_count, final_fits, tune, phase)
-
-    return status, tune, phase
-
-
 class Fitter:
     def __init__(self, length, max_peaks, fit_peaks = 3):
         self.LENGTH = length
         self.MAX_PEAKS = max_peaks
         self.FIT_PEAKS = fit_peaks
+
+
+    def process_peak_tune(self, result, scale, iq, ranges):
+        ranges, fits, errors = fit_peaks_to_ranges(
+            result.config, scale, iq, ranges)
+        output_fits(result.fits1, fits, errors, self.MAX_PEAKS)
+        output_model(result.model1, scale, fits, iq)
+
+        fits = support.refine_fits(scale, iq, fits)
+        output_fits(result.fits2, fits, [], self.MAX_PEAKS)
+
+#         ranges, fits = extract_good_peaks(scale, ranges, fits)
+#         ranges = refine_fit_ranges(scale, fits, result.config.fit_threshold)
+
+    #     ranges, fits, errors = fit_peaks_to_ranges(result.config, scale, iq, ranges, fits)
+    #     output_model(result.model2, scale, fits, iq)
+
+        return 0, 0, 0
+
+
+        # Discard all but the three largest peaks.
+        discard_small_peaks(second_fit)
+
+        # Extract the final peaks in ascending order of frequency.
+    #         struct one_pole final_fits[MAX_PEAKS]
+        fitted_peak_count = extract_final_fits(second_fit, final_fits)
+
+        # Finally compute the three peaks and the associated tune.
+        status = extract_peak_tune(fitted_peak_count, final_fits, tune, phase)
+
+        return status, tune, phase
+
 
     # Computes result of fitting tune to (s, iq)
     def fit_tune(self, result, timestamp, scale, iq):
@@ -114,4 +137,4 @@ class Fitter:
         # Start with an initial set of ranges extracted from the power waveform
         ranges = dd_peaks.get_peak_ranges(result, power, self.MAX_PEAKS)
 
-        status, tune, phase = process_peak_tune(result, scale, iq, ranges)
+        status, tune, phase = self.process_peak_tune(result, scale, iq, ranges)

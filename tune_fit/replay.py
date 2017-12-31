@@ -1,0 +1,123 @@
+#!/bin/env python
+
+import traceback
+import numpy
+
+import fitter
+
+
+class Config:
+    sel = 0
+    fit_threshold = 0.2
+    max_error = 0.6
+    max_error = 10
+    min_width = 1e-6
+    max_width = 5e-3
+
+class Result:
+    def __init__(self, N):
+        self.__N = N
+        self.__ix = 0
+        self._groups = []
+
+    def __getattr__(self, name):
+        if name.startswith('__'):
+            raise AttributeError
+
+        self._groups.append(name)
+        result = Result(self.__N)
+        setattr(self, name, result)
+        return result
+
+    def set_timestamp(self, t):
+        pass
+
+    def create_arrays(self, kargs):
+        for key, value in kargs.items():
+            a = numpy.empty((self.__N,) + value.shape)
+            a[:] = numpy.nan
+            setattr(self, key, a)
+        self._arrays = kargs.keys()
+
+    def output(self, **kargs):
+        if self.__ix == 0:
+            self.create_arrays(kargs)
+        for key, value in kargs.items():
+            getattr(self, key)[self.__ix] = value
+        self.__ix += 1
+
+    def print_summary(self, indent = ''):
+        for k in self._arrays:
+            a = getattr(self, k)
+            print '%s%s: %s %s' % (indent, k, a.shape, a.dtype)
+        for k in self._groups:
+            print '%s%s:' % (indent, k)
+            getattr(self, k).print_summary(indent + '    ')
+
+    config = Config
+
+
+def load_replay(filename, max_n = 0):
+    s_valid = False
+    ts_i = ''
+    ts_q = ''
+
+    N = 0
+    result = []
+
+    replay = file(filename)
+    for line in replay:
+        pv, day, time, count, rest = line.split(None, 4)
+        # This is a bit faster than map(double, line.split())
+        value = numpy.fromstring(rest, sep = ' ')
+
+        if pv.endswith(':I'):
+            value_i = value
+            ts_i = time
+        elif pv.endswith(':Q'):
+            value_q = value
+            ts_q = time
+        else:
+            value_s = value
+            if not s_valid:
+                s_valid = True
+
+        if ts_i == ts_q == time and s_valid:
+            result.append((value_s, value_i + 1j * value_q))
+            N += 1
+
+            if max_n and N >= max_n:
+                break
+
+    return result
+
+
+def replay_file(filename, max_n = 0, subset = []):
+    s_iq = load_replay(filename, max_n)
+
+    if subset:
+        s_iq = [s_iq[ix] for ix in subset]
+
+    N = len(s_iq)
+    W = len(s_iq[0][1])
+    print 'Replaying', N, 'trials'
+
+    result = Result(N)
+    f = fitter.Fitter(W, 6, 3)
+    for s, iq in s_iq:
+        try:
+            f.fit_tune(result, 0, s, iq)
+        except:
+            print 'Fit failed'
+            traceback.print_exc()
+
+    return result
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) > 2:
+        max_n = int(sys.argv[2])
+    else:
+        max_n = 0
+    replay_file(sys.argv[1], max_n)

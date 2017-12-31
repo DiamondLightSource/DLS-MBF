@@ -3,8 +3,13 @@
 import numpy
 
 
+def smooth_waveform(wf, n):
+    wf = wf[:n * (len(wf) / n)]
+    return wf.reshape(-1, n).mean(1)
+
 # Smooths waveform by averaging adjacent groups of four samples
 def smooth_waveform_4(wf):
+    return smooth_waveform(wf, 4)
     wf = wf[:len(wf) & -4]      # Ensure waveform length is a multiple of 4
     return wf.reshape(-1, 4).mean(1)
 
@@ -209,14 +214,184 @@ def fit_multiple_peaks(scale, iq, ranges, fits = None):
         fits = list(fits)
     errors = numpy.zeros(len(ranges))
 
+    result = []
     for ix, range in enumerate(ranges):
         l, r = range
         fit_result = fit_one_peak(scale[l:r], +iq[l:r], ix, fits)
         if fit_result:
             fits[ix], errors[ix] = fit_result
-        else:
-            # Return the fits that were successful.
-            return fits[:ix], errors[:ix]
+            result.append(fit_result)
+#         else:
+#             # Return the fits that were successful.
+#             return fits[:ix], errors[:ix]
 
-    # All fits produced some result
-    return fits, errors
+    return zip(*result)
+
+
+
+# A more direct version of the above which doesn't try tricks with adjusting the
+# data.
+def fit_multiple_peaks2(scale, iq, ranges):
+    fits = []
+    errors = []
+
+    for range in ranges:
+        range = slice(*range)
+        fit_s = scale[range]
+        fit_iq = iq[range]
+        fit = fit_one_pole(fit_s, fit_iq, abs2(fit_iq))
+        if not fit:
+            break
+        error = compute_fit_error(fit_s, fit_iq, fit)
+        fits.append(fit)
+        errors.append(error)
+    return (fits, errors)
+
+
+def eval_derivative(fits, scale):
+    result = []
+    for a, b in fits:
+        da = 1 / (scale - b)
+        db = a * da * da
+        result.extend([da, db])
+    return numpy.array(result)
+
+
+def assess_delta(a, delta):
+    width = -a[1::2].imag
+    shift = delta[1::2].real
+    return (width + shift > 1e-7).all() and (numpy.abs(shift) < width).all()
+
+
+def step_refine_fits(scale, iq, fits, lam):
+    w = eval_model(fits, scale)
+    w = iq
+
+    e = w * (eval_model(fits, scale) - iq)
+    de = w * eval_derivative(fits, scale)
+    a = numpy.array(fits).flatten()
+
+    beta = numpy.inner(de.conj(), e)
+    alpha0 = numpy.inner(de.conj(), de)
+
+    d = (numpy.arange(len(a)), numpy.arange(len(a)))
+
+    Ein = abs2(e).sum()
+    while lam < 100:
+        alpha = +alpha0
+        alpha[d] *= 1 + lam
+        delta = numpy.linalg.solve(alpha, beta)
+        if not assess_delta(a, delta):
+            lam *= 10.0
+            print 'U', lam,
+        else:
+            a_new = a - delta
+            new_fit = a_new.reshape(-1, 2)
+            e = w * (eval_model(new_fit, scale) - iq)
+            Eout = abs2(e).sum()
+            if Eout >= Ein:
+                lam *= 10.0
+                print 'X', lam,
+            else:
+                lam *= 0.1
+                change = 1 - Eout / Ein
+                print 'OK %g -%.1f%%' % (lam, 100 * change)
+                return (new_fit, lam, change)
+
+    raise Exception('Whoops')
+
+
+def prune_peaks(fit):
+    result = []
+    for a, b in fit:
+        width = -b.imag
+#         if width < 5e-5 or width > 1e-2:
+        if width < 0.00002 or width > 0.005:
+            print 'dropping: width =', width
+        else:
+#         if 5e-5 < width < 1e-2:
+            result.append((a, b))
+#         else:
+#             print 'dropping', (a, b)
+    return numpy.array(result)
+
+
+plot_refine_fits = False
+plot_refine_fits = True
+
+def refine_fits(scale, iq, fit):
+    fit_in = fit
+
+    N = 20
+#     N = 7
+    fit = prune_peaks(fit)
+
+    all_fits = [fit]
+    lam = 0.1
+    for n in range(N):
+        fit, lam, change = step_refine_fits(scale, iq, fit, lam)
+        fit = prune_peaks(fit)
+        all_fits.append(fit)
+        if change < 0.01:
+            break
+    print n, '=>', len(fit)
+
+    if not plot_refine_fits:
+        return fit
+
+
+    from matplotlib import pyplot, gridspec
+
+    pb = [[b for a,b in f] for f in all_fits]
+    pb = [f[:, 1] for f in all_fits]
+    m_in = eval_model(fit_in, scale)
+    mm = eval_model(fit, scale)
+
+    pyplot.figure(figsize = (9, 11))
+
+    pyplot.subplot(511)
+    pyplot.plot(scale, numpy.abs(iq))
+    pyplot.plot(scale, numpy.abs(m_in))
+    pyplot.plot(scale, numpy.abs(mm))
+    pyplot.legend(['iq', 'in', 'fit'])
+
+    pyplot.subplot2grid((5, 2), (1, 0), rowspan = 2)
+    pyplot.plot(iq.real, iq.imag)
+    pyplot.plot(m_in.real, m_in.imag)
+    pyplot.plot(mm.real, mm.imag)
+    pyplot.legend(['iq', 'in', 'fit'])
+
+    pyplot.subplot2grid((5, 2), (1, 1), rowspan = 2)
+    for bb in pb[:-1]:
+        pyplot.plot(bb.real, bb.imag, '.')
+    pyplot.plot(pb[-1].real, pb[-1].imag, 'o')
+#     pyplot.plot(pb.T.real, pb.T.imag)
+
+    pyplot.subplot2grid((5, 2), (3, 0), colspan = 2)
+    pyplot.plot(scale, numpy.abs(iq))
+    for f in fit:
+        pyplot.plot(scale, numpy.abs(eval_one_peak(f, scale)))
+    pyplot.legend(['iq'] + ['p%d' % n for n in range(len(fit))])
+
+    res = mm - iq
+    res16 = smooth_waveform(res, 16)
+    pyplot.subplot(515)
+    pyplot.plot(scale, numpy.abs(res))
+#     pyplot.plot(smooth_waveform(scale, 16), smooth_waveform(abs2(res), 16))
+    pyplot.plot(smooth_waveform(scale, 16), numpy.abs(res16))
+
+#     pyplot.subplot(5, 2, 10)
+#     pyplot.plot(res16.real, res16.imag, '.')
+#     bg = fit_one_pole(scale, res, numpy.array(1))
+#     mbg = eval_one_peak(bg, scale)
+#     pyplot.plot(mbg.real, mbg.imag)
+# 
+#     pyplot.subplot(529)
+#     pyplot.plot(smooth_waveform(scale, 16),
+#         numpy.abs(smooth_waveform(res - mbg, 16)))
+# #     pyplot.plot(scale, numpy.abs(res - mbg))
+
+    pyplot.show()
+
+
+    return fit
