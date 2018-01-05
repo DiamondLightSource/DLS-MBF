@@ -1,5 +1,9 @@
 # Plotting of fits
 
+from pkg_resources import require
+require('numpy')
+require('matplotlib')
+
 import sys
 import numpy
 import matplotlib
@@ -14,10 +18,6 @@ A4_PORTRAIT  = (8.27, 11.69)
 A4_LANDSCAPE = (11.69, 8.27)
 
 
-LOG_FILE = 'sr23c-di-lmbf-01.tune.log'
-# LOG_FILE = 'sr23c-di-tmbf-01.tune.log'
-LOG_FILE = 'sr23c-di-tmbf-02.tune.log'
-
 LOG_FILE = sys.argv[1]
 
 MAX_N = 100
@@ -27,7 +27,20 @@ subset = []
 if len(sys.argv) > 3:
     subset = map(int, sys.argv[3:])
 
-result = replay.replay_file(LOG_FILE, MAX_N, subset)
+
+import fitter
+f = fitter.Fitter(4096, 6, 3)
+
+
+n = 0
+def fit_tune(result, timestamp, scale, iq):
+    global n
+    print 'fit_tune', n
+    n += 1
+    f.fit_tune(result, timestamp, scale, iq)
+
+
+result = replay.replay_file(LOG_FILE, fit_tune, MAX_N, subset = subset)
 
 # result.print_summary()
 
@@ -93,6 +106,7 @@ plot_fits(result.fits1)
 f = pyplot.figure()
 plot_fits(result.fits2)
 pyplot.show()
+
 
 # f.set_size_inches(11.69, 8.27)
 # f.set_size_inches(8.27, 11.69)

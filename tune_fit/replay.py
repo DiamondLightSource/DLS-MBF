@@ -1,9 +1,8 @@
 #!/bin/env python
 
+import sys
 import traceback
 import numpy
-
-import fitter
 
 
 class Config:
@@ -14,15 +13,18 @@ class Config:
     min_width = 1e-6
     max_width = 5e-3
 
+
 class Result:
     def __init__(self, N):
         self.__N = N
         self.__ix = 0
         self._groups = []
+        self._arrays = None
 
     def __getattr__(self, name):
         if name.startswith('__'):
-            raise AttributeError
+            raise AttributeError(
+                '\'Result\' object has no attribute \'%s\'' % name)
 
         self._groups.append(name)
         result = Result(self.__N)
@@ -40,7 +42,7 @@ class Result:
         self._arrays = kargs.keys()
 
     def output(self, **kargs):
-        if self.__ix == 0:
+        if self._arrays is None:
             self.create_arrays(kargs)
         for key, value in kargs.items():
             getattr(self, key)[self.__ix] = value
@@ -92,23 +94,21 @@ def load_replay(filename, max_n = 0):
     return result
 
 
-def replay_file(filename, max_n = 0, subset = []):
+def replay_file(filename, fit_tune, max_n = 0, subset = []):
     s_iq = load_replay(filename, max_n)
 
     if subset:
         s_iq = [s_iq[ix] for ix in subset]
 
     N = len(s_iq)
-    W = len(s_iq[0][1])
     print 'Replaying', N, 'trials'
 
     result = Result(N)
-    f = fitter.Fitter(W, 6, 3)
-    for s, iq in s_iq:
+    for n, (s, iq) in enumerate(s_iq):
         try:
-            f.fit_tune(result, 0, s, iq)
+            fit_tune(result, 0, s, iq)
         except:
-            print 'Fit failed'
+            print >>sys.stderr, 'Fit', n, 'failed'
             traceback.print_exc()
 
     return result
@@ -120,4 +120,6 @@ if __name__ == '__main__':
         max_n = int(sys.argv[2])
     else:
         max_n = 0
-    replay_file(sys.argv[1], max_n)
+    import fitter
+    f = fitter.Fitter(4096, 6, 3)
+    replay_file(sys.argv[1], max_n, fit = f.fit_tune)

@@ -7,23 +7,6 @@ def smooth_waveform(wf, n):
     wf = wf[:n * (len(wf) / n)]
     return wf.reshape(-1, n).mean(1)
 
-# Smooths waveform by averaging adjacent groups of four samples
-def smooth_waveform_4(wf):
-    return smooth_waveform(wf, 4)
-    wf = wf[:len(wf) & -4]      # Ensure waveform length is a multiple of 4
-    return wf.reshape(-1, 4).mean(1)
-
-
-# Compute second derivative of waveform.  Ensure waveform is padded with zeros
-# at both ends to keep the original length.
-def compute_dd(wf):
-    result = numpy.empty(len(wf))
-    result[0] = 0
-    result[-1] = 0
-    result[1:-1] = numpy.diff(wf, n=2)
-    return result
-
-
 # On the assumption that scale is sorted returns an index into scale that is,
 # hopefully, close to the given tune.
 def tune_to_index(scale, tune):
@@ -248,7 +231,30 @@ def fit_multiple_peaks2(scale, iq, ranges):
     return (fits, errors)
 
 
-def eval_derivative(fits, scale):
+MINIMUM_WIDTH = 1e-7
+MAXIMUM_SHIFT = 0.5
+
+def assess_delta(a, delta, new_a):
+    peak_shift = delta[1:-1:2].real
+    new_peak = -new_a[1:-1:2].imag
+    return (
+        (new_peak > MINIMUM_WIDTH) &
+        (numpy.abs(peak_shift) < MAXIMUM_SHIFT)).all()
+
+
+LAMBDA_UP = 2.0
+LAMBDA_DOWN = 1 / 3.0
+LAMBDA_MAX = 100
+
+
+# This computes the Jacobian derivative matrix dm/dx where m is our model and x
+# is fits.  In our model x is a pair of vectors a,b with
+#
+#               a_i            dm       1        dm        a_i
+#   m = SUM_i ------- and so  ---- = ------- ,  ---- = -----------
+#             s - b_i         da_i   s - b_i    db_i   (s - b_i)^2
+#
+def eval_derivative(scale, fits):
     result = []
     for a, b in fits:
         da = 1 / (scale - b)
@@ -258,94 +264,57 @@ def eval_derivative(fits, scale):
     return numpy.array(result)
 
 
-def assess_delta(a, delta):
-    width = -a[1::2].imag
-    shift = delta[1::2].real
-    return (width + shift > 1e-7).all() and (numpy.abs(shift) < width).all()
-
+AVMAX = 1
 
 def step_refine_fits(scale, iq, fits, offset, lam):
     w = eval_model(scale, fits, offset)
 #     w = iq
+#     w = 1
 
-    e = w * (eval_model(scale, fits, offset) - iq)
-    de = w * eval_derivative(fits, scale)
+    e   = w * (eval_model(scale, fits, offset) - iq)
+    de  = w * eval_derivative(scale, fits)
 
     a = numpy.append(numpy.array(fits).flatten(), offset)
 
     beta = numpy.inner(de.conj(), e)
     alpha0 = numpy.inner(de.conj(), de)
 
-    d = (numpy.arange(len(a)), numpy.arange(len(a)))
-
-    Ein = abs2(e).sum()
-    while lam < 100:
-        alpha = +alpha0
-        alpha[d] *= 1 + lam
+    Ein2 = abs2(e).sum()
+    while lam < LAMBDA_MAX:
+        alpha = alpha0 + numpy.diag(lam * alpha0.diagonal().real)
         delta = numpy.linalg.solve(alpha, beta)
-        if not assess_delta(a[:-1], delta[:-1]):
-            lam *= 10.0
+
+        a_new = a - delta
+        if not assess_delta(a, delta, a_new):
+            lam *= LAMBDA_UP
             print 'U', lam,
         else:
-            a_new = a - delta
             new_fit = a_new[:-1].reshape(-1, 2)
             offset = a_new[-1]
-            e = w * (eval_model(scale, new_fit, offset) - iq)
-            Eout = abs2(e).sum()
-            if Eout >= Ein:
-                lam *= 10.0
+            e_new = w * (eval_model(scale, new_fit, offset) - iq)
+            Eout2 = abs2(e_new).sum()
+            if Eout2 >= Ein2:
+                lam *= LAMBDA_UP
                 print 'X', lam,
             else:
-                lam *= 0.1
-                change = 1 - Eout / Ein
-                print 'OK %g -%.1f%%' % (lam, 100 * change)
+                lam *= LAMBDA_DOWN
+                change = 1 - Eout2 / Ein2
+                print 'OK %g -%.3g%%' % (lam, 100 * change)
                 return (new_fit, offset, lam, change)
 
     raise Exception('Whoops')
+
 
 MIN_WIDTH = 2e-5
 MAX_WIDTH = 5e-2
 MAX_WIDTH = 1e-2
 
 CLUSTER_WIDTH = 1.0
-
-
-def find_clusters(fit):
-    result = []
-    cluster_found = False
-    for ab in fit:
-        c1 = ab[1].real
-        w1 = -ab[1].imag
-        for cluster in result:
-            # See if we're close to any peaks in any existing cluster
-            found = False
-            for ab2 in cluster:
-                c2 = ab2[1].real
-                w2 = -ab2[1].imag
-                if abs(c2 - c1) < CLUSTER_WIDTH * min(w1, w2):
-                    cluster.append(ab)
-                    found = True
-                    break
-            if found:
-                cluster_found = True
-                break
-        else:
-            result.append([ab])
-    return result, cluster_found
-
-
-def flatten_clusters(clusters):
-    result = []
-    for cluster in clusters:
-        if len(cluster) > 1:
-            print 'group', len(cluster), 'poles'
-            ab = numpy.array(cluster)
-            a = ab[:, 0].sum()
-            b = ab[:, 1].mean()
-            result.append((a, b))
-        else:
-            result.append(cluster[0])
-    return result
+# CLUSTER_WIDTH = 0.25
+CLUSTER_WIDTH = 0.75
+# CLUSTER_WIDTH = 0.5
+# CLUSTER_WIDTH = 0.25
+CLUSTER_WIDTH = 1.1
 
 
 def prune_peaks(scale, fit):
@@ -371,6 +340,47 @@ def prune_peaks(scale, fit):
     return numpy.array(result), changed
 
 
+def find_clusters(fit):
+    result = []
+    cluster_found = False
+    for ab in fit:
+        c1 = ab[1]
+        w1 = -ab[1].imag
+        for cluster in result:
+            # See if we're close to any peaks in any existing cluster
+            found = False
+            for ab2 in cluster:
+                c2 = ab2[1]
+                w2 = -ab2[1].imag
+                if abs(c2.real - c1.real) < CLUSTER_WIDTH * min(w1, w2):
+#                 if abs(c2.real - c1.real) < CLUSTER_WIDTH * max(w1, w2):
+#                 if abs(c2 - c1) < CLUSTER_WIDTH * min(w1, w2):
+                    cluster.append(ab)
+                    found = True
+                    break
+            if found:
+                cluster_found = True
+                break
+        else:
+            result.append([ab])
+    return result, cluster_found
+
+
+def flatten_clusters(clusters):
+    result = []
+    for cluster in clusters:
+        if len(cluster) > 1:
+            print 'group', len(cluster), 'poles', cluster
+            ain, bin = numpy.array(cluster).T
+            b = bin.mean()
+#             a = ain.sum()
+            a = b.imag * (ain / bin.imag).sum()
+            result.append((a, b))
+        else:
+            result.append(cluster[0])
+    return result
+
+
 def merge_peaks(fit, changed = False):
     clusters, found = find_clusters(fit)
     if found:
@@ -380,21 +390,27 @@ def merge_peaks(fit, changed = False):
 
 
 plot_refine_fits = False
-# plot_refine_fits = True
+plot_refine_fits = True
 
 
 REFINE_FRACTION = 0.01
+REFINE_FRACTION = 1e-4
+REFINE_FRACTION = 1e-6
+MAX_STEPS = 20
+MAX_STEPS = 250
+MAX_STEPS = 205
 
 def refine_fits(scale, iq, fit):
     fit_in = fit
 
-    N = 20
     fit, _ = prune_peaks(scale, fit)
     offset = (iq - eval_model(scale, fit, 0)).mean()
 
     all_fits = [fit]
     lam = 0.1
-    for n in range(N):
+    lam = 1
+    for n in range(MAX_STEPS):
+        print n,
         fit, offset, lam, change = step_refine_fits(scale, iq, fit, offset, lam)
         fit, changed = prune_peaks(scale, fit)
         fit, changed = merge_peaks(fit, changed)
@@ -403,11 +419,26 @@ def refine_fits(scale, iq, fit):
             break
     print n, '=>', len(fit)
 
+
+    print fit[:,1]
+
+#     assert len(fit) == 4
+
+    r = fit[:,1].real
+    i = fit[:,1].imag
+#     if ((r > 80.278) & (i < -0.0025)).any():
+    if (r < 80.26).any():
+        print 'About to bail out'
+        import os
+#         os._exit(0)
+
+
     if not plot_refine_fits:
         return fit
 
 
     from matplotlib import pyplot, gridspec
+    from dd_peaks import smooth_waveform
 
     pb = [f[:, 1] for f in all_fits]
     m_in = eval_model(scale, fit_in)
@@ -430,8 +461,8 @@ def refine_fits(scale, iq, fit):
     pyplot.subplot2grid((5, 2), (1, 1), rowspan = 2)
     for bb in pb[:-1]:
         pyplot.plot(bb.real, bb.imag, '.')
+    pyplot.plot(pb[0].real, pb[0].imag, '*')
     pyplot.plot(pb[-1].real, pb[-1].imag, 'o')
-#     pyplot.plot(pb.T.real, pb.T.imag)
 
     pyplot.subplot2grid((5, 2), (3, 0), colspan = 2)
     pyplot.plot(scale, numpy.abs(iq))
@@ -443,23 +474,30 @@ def refine_fits(scale, iq, fit):
     res16 = smooth_waveform(res, 16)
     pyplot.subplot(515)
     pyplot.plot(scale, numpy.abs(res))
-#     pyplot.plot(smooth_waveform(scale, 16), smooth_waveform(abs2(res), 16))
     pyplot.plot(smooth_waveform(scale, 16), numpy.abs(res16))
 
-#     pyplot.subplot(5, 2, 10)
-#     pyplot.plot(res16.real, res16.imag, '.')
-#     bg = fit_one_pole(scale, res, numpy.array(1))
-#     mbg = eval_one_peak(bg, scale)
-#     pyplot.plot(mbg.real, mbg.imag)
-# 
-#     pyplot.subplot(529)
-#     pyplot.plot(smooth_waveform(scale, 16),
-#         numpy.abs(smooth_waveform(res - mbg, 16)))
-# #     pyplot.plot(scale, numpy.abs(res - mbg))
+
+
+    pyplot.show()
+    return fit
+
+
+    pyplot.figure()
+    for bb in pb[:-1]:
+        pyplot.plot(bb.real, bb.imag, '.')
+    pyplot.plot(pb[0].real, pb[0].imag, '*')
+    pyplot.plot(pb[-1].real, pb[-1].imag, 'o')
+
+    pyplot.figure()
+    pa = [f[:, 0] for f in all_fits]
+    for aa in pa[:-1]:
+        pyplot.plot(aa.real, aa.imag, '.')
+    pyplot.plot(pa[0].real, pa[0].imag, '*')
+    pyplot.plot(pa[-1].real, pa[-1].imag, 'o')
 
     areas = abs2(fit[:,0]) / - fit[:,1].imag
     print 'areas', areas / areas.max()
+
+
     pyplot.show()
-
-
     return fit

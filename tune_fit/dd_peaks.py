@@ -1,8 +1,25 @@
-# Preliminary peak discovery by smoothing and second derivative
+# Preliminary peak discovery by smoothing and second derivative.
 
 import numpy
 
-import support
+
+def smooth_waveform(wf, n):
+    wf = wf[:n * (len(wf) / n)]
+    return wf.reshape(-1, n).mean(1)
+
+# Smooths waveform by averaging adjacent groups of four samples
+def smooth_waveform_4(wf):
+    return smooth_waveform(wf, 4)
+
+
+# Compute second derivative of waveform.  Ensure waveform is padded with zeros
+# at both ends to keep the original length.
+def compute_dd(wf):
+    result = numpy.empty(len(wf))
+    result[0] = 0
+    result[-1] = 0
+    result[1:-1] = numpy.diff(wf, n=2)
+    return result
 
 
 # Given a point at the peak (as determined by DD) track away in both directions
@@ -75,7 +92,7 @@ def set_peak_result(result, power, dd, peak_data, max_peaks):
 
 def process_peak_info(result, power, max_peaks):
     # Compute second derivative of smoothed data for peak detection.
-    dd = support.compute_dd(power)
+    dd = compute_dd(power)
 
     # Work through second derivative and extract all peaks.
     peak_data = extract_peaks(power, dd, max_peaks)
@@ -96,9 +113,8 @@ def peak_info_to_ranges(peak_data, scaling):
 
 # Extracts initial set of raw peak ranges from power spectrum
 def get_peak_ranges(result, power, max_peaks):
-    peak_power_4  = support.smooth_waveform_4(power)
-    peak_power_16 = support.smooth_waveform_4(peak_power_4)
-    peak_power_64 = support.smooth_waveform_4(peak_power_16)
+    peak_power_16 = smooth_waveform(power, 16)
+    peak_power_64 = smooth_waveform_4(peak_power_16)
 
     peaks_16 = process_peak_info(result.peak16, peak_power_16, max_peaks)
     peaks_64 = process_peak_info(result.peak64, peak_power_64, max_peaks)
