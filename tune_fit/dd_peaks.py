@@ -1,15 +1,19 @@
 # Preliminary peak discovery by smoothing and second derivative.
 
+from collections import namedtuple
+
 import numpy
+
+
+class Struct:
+    def __init__(self, **kargs):
+        self.__dict__.update(kargs)
 
 
 def smooth_waveform(wf, n):
     wf = wf[:n * (len(wf) / n)]
     return wf.reshape(-1, n).mean(1)
 
-# Smooths waveform by averaging adjacent groups of four samples
-def smooth_waveform_4(wf):
-    return smooth_waveform(wf, 4)
 
 
 # Compute second derivative of waveform.  Ensure waveform is padded with zeros
@@ -71,14 +75,62 @@ def extract_peaks(power, dd, max_peaks):
     return peaks
 
 
+# Computes a list of peak candidates in the given data by a three stage process:
+#   1.  Smooth and decimate the data by the given factor
+#   2.  Compute the second derivative of the smoothed and decimated data
+#   3.  Extract peaks from second derivative
+def compute_peaks(power, smoothing, max_peaks):
+    smoothed = smooth_waveform(power, smoothing)
+    dd = compute_dd(smoothed)
+    peaks = extract_peaks(smoothed, dd, max_peaks)
+
+    return (peaks, Struct(smoothed = smoothed, dd = dd, peaks = peaks))
+
+
+# Converts a peak description into scaled left and right boundaries
+def peak_info_to_ranges(peaks, scaling):
+    ranges = []
+    for ix, l, r in peaks:
+        ranges.append((scaling * l, scaling * (r + 1) - 1))
+    return ranges
+
+
+# Entry point for peak fitting.  The returned trace has the following fields:
+#
+#   power: power spectrum to be fitted
+#   peaks_16, peaks_64: structures containing the following fields
+#       smoothed: the smoothed power spectrum
+#       dd: the second deriviative of the smoothed power spectrum
+#       peaks: a list of discovered peaks, each entry consisting of three
+#           numbers (ix, left, right) being the center, left, right of the
+#           discovered peak.
+def do_get_peak_ranges(config, power):
+    max_peaks = config.max_peaks
+    selection = config.selection
+
+    peaks_16, trace_16 = compute_peaks(power, 16, max_peaks)
+    peaks_64, trace_64 = compute_peaks(power, 64, max_peaks)
+
+    peaks, scaling = [(peaks_16, 16), (peaks_64, 64)][selection]
+    return (
+        peak_info_to_ranges(peaks, scaling),
+        Struct(power = power, peaks_16 = trace_16, peaks_64 = trace_64))
+
+
+
+
 # Converts [(ix, l, r)] into ([ix], [l], [r], [power]) for presentation
-def set_peak_result(result, power, dd, peak_data, max_peaks):
+def set_peak_result(result, trace, max_peaks):
+    power = trace.smoothed
+    dd = trace.dd
+    peaks = trace.peaks
+
     def pad(l):
         a = numpy.zeros(max_peaks)
         a[:len(l)] = l
         return a
 
-    ix, l, r = zip(*peak_data)
+    ix, l, r = zip(*peaks)
     p = power[list(ix)]
 
     result.output(
@@ -90,36 +142,14 @@ def set_peak_result(result, power, dd, peak_data, max_peaks):
         v = pad(p))
 
 
-def process_peak_info(result, power, max_peaks):
-    # Compute second derivative of smoothed data for peak detection.
-    dd = compute_dd(power)
-
-    # Work through second derivative and extract all peaks.
-    peak_data = extract_peaks(power, dd, max_peaks)
-
-    # Convert peak data into presentation waveforms
-    set_peak_result(result, power, dd, peak_data, max_peaks)
-
-    return peak_data
-
-
-# Converts a peak description into scaled left and right boundaries
-def peak_info_to_ranges(peak_data, scaling):
-    ranges = []
-    for ix, l, r in peak_data:
-        ranges.append((scaling * l, scaling * (r + 1) - 1))
-    return ranges
-
-
 # Extracts initial set of raw peak ranges from power spectrum
 def get_peak_ranges(result, power, max_peaks):
-    peak_power_16 = smooth_waveform(power, 16)
-    peak_power_64 = smooth_waveform_4(peak_power_16)
+    config = Struct(
+        max_peaks = max_peaks,
+        selection = result.config.sel)
+    ranges, trace = do_get_peak_ranges(config, power)
 
-    peaks_16 = process_peak_info(result.peak16, peak_power_16, max_peaks)
-    peaks_64 = process_peak_info(result.peak64, peak_power_64, max_peaks)
+    set_peak_result(result.peak16, trace.peaks_16, max_peaks)
+    set_peak_result(result.peak64, trace.peaks_64, max_peaks)
 
-    sel = result.config.sel
-    peak_info = [peaks_16, peaks_64][sel]
-    scaling = [16, 64][sel]
-    return peak_info_to_ranges(peak_info, scaling)
+    return ranges

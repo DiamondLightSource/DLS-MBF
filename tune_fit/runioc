@@ -6,4 +6,4 @@ PYIOC=/dls_sw/prod/R3.14.12.3/support/pythonSoftIoc/$PYIOC_VERSION/pythonIoc
 export EPICS_CA_MAX_ARRAY_BYTES=1000000
 
 HERE="$(dirname "$0")"
-exec $PYIOC "$HERE"/tune_fit.py "$@"
+exec $PYIOC "$HERE"/tune_fit_ioc "$@"

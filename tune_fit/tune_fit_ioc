@@ -48,3 +48,5 @@ for fitter in fitters:
     fitter.start()
 
 softioc.interactive_ioc(globals())
+
+# vim: set filetype=python:
