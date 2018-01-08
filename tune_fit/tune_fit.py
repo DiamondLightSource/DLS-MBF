@@ -8,7 +8,7 @@ import prefit
 import refine
 
 
-def fit_tune(config, scale, iq):
+def fit_tune_model(config, scale, iq):
     # First extract candidate ranges from second derivative of power spectrum
     power = support.abs2(iq)
     input_trace = support.Struct(scale = scale, iq = iq, power = power)
@@ -31,6 +31,11 @@ def fit_tune(config, scale, iq):
         prefit = prefit_trace,
         refine = refine_trace)
     return (model, trace)
+
+
+def fit_tune(config, scale, iq):
+    model, trace = fit_tune_model(config, scale, iq)
+    return trace
 
 
 def output_input(result, trace):
@@ -77,5 +82,5 @@ def update_pvs(config, trace, result):
     output_input(result, trace.input)
     output_dd(result.peak16, trace.dd.peaks_16, max_peaks)
     output_dd(result.peak64, trace.dd.peaks_64, max_peaks)
-    output_poles(result.fits1, trace.prefit.fit, max_peaks)
-    output_poles(result.fits2, trace.refine.fit, max_peaks)
+#     output_poles(result.fits1, trace.prefit.fit, max_peaks)
+#     output_poles(result.fits2, trace.refine.fit, max_peaks)

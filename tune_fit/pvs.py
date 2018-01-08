@@ -4,8 +4,11 @@ import epicsdbbuilder
 from softioc import builder
 
 
+# This gethers the top level collection of PVs gathered into named groups for
+# more convenient control.
 class PvSet(object):
-    def __init__(self):
+    def __init__(self, **kargs):
+        self.__dict__.update(kargs)
         self.__timestamp = 0
         self.__pvs = {}
         self.__groups = {}
@@ -93,14 +96,14 @@ def publish_model(prefix, length):
     return pvs
 
 
-def publish_config():
+def publish_config(max_peaks):
     def publish(build, name, pv_name, value, *args, **kargs):
         pv = build(pv_name + '_S', initial_value = value, *args, **kargs)
         pvs.publish(name, pv)
 
-    pvs = PvSet()
+    pvs = PvSet(max_peaks = max_peaks)
     with name_prefix('CONFIG'):
-        publish(builder.mbbOut, 'sel', 'SEL', 0, '/16', '/64')
+        publish(builder.mbbOut, 'selection', 'SEL', 0, '/16', '/64')
         publish(builder.aOut, 'fit_threshold', 'THRESHOLD', 0.2, PREC = 2)
         publish(builder.aOut, 'max_error', 'FITERROR', 0.6, PREC = 2)
         publish(builder.aOut, 'min_width', 'MINWIDTH', 1e-6, PREC = 2)
@@ -127,6 +130,6 @@ def publish_pvs(prefix, length, max_peaks):
         pvs.add_group('model1', publish_model('MODEL1', length))
         pvs.add_group('model2', publish_model('MODEL2', length))
 
-        pvs.add_group('config', publish_config())
+        pvs.add_group('config', publish_config(max_peaks))
 
     return pvs

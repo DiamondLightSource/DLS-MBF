@@ -74,6 +74,7 @@ def plot_refine(iq, trace):
     pyplot.plot(m_in.real, m_in.imag)
     pyplot.plot(mm.real, mm.imag)
     pyplot.legend(['iq', 'in', 'fit'])
+    pyplot.axis('equal')
 
     pyplot.subplot2grid((5, 2), (1, 1), rowspan = 2)
     for bb in pb[:-1]:
@@ -104,7 +105,7 @@ def fit_tune(result, timestamp, scale, iq):
     n += 1
 
     config = support.Struct(max_peaks = 6, selection = 0)
-    model, trace = tune_fit.fit_tune(config, scale, iq)
+    model, trace = tune_fit.fit_tune_model(config, scale, iq)
     plot_refine(iq, trace.refine)
 
     result.set_timestamp(timestamp)

@@ -1,4 +1,4 @@
-# Top level fitter
+# Top level fitter loop for IOC
 
 import traceback
 import numpy
@@ -6,7 +6,7 @@ import numpy
 import cothread
 from cothread.catools import *
 
-import fitter
+import tune_fit
 import pvs
 
 
@@ -30,6 +30,8 @@ class Gather:
         timestamp = value.timestamp
         self.timestamps[key] = timestamp
         self.values[key] = +value
+        if any(t == 0 for t in self.timestamps.values()):
+            return
         if all(self.timestamps[u] == timestamp for u in self.updates):
             self.emit(timestamp, self.values)
 
@@ -50,20 +52,24 @@ class TuneFitLoop:
         gather.monitor(self.update, 'S', pv_s)
 
         self.pvs = pvs.publish_pvs(target, LENGTH, MAX_PEAKS)
-        self.fitter = fitter.Fitter(LENGTH, MAX_PEAKS)
 
     def update(self, timestamp, values):
         iq = numpy.complex128(values['I'] + 1j * values['Q'])
         s = numpy.float64(values['S'])
         self.event.Signal((timestamp, s, iq))
 
+    def fit_one_sweep(self):
+        config = self.pvs.config
+        t, s, iq = self.event.Wait()
+        trace = tune_fit.fit_tune(config, s, iq)
+        tune_fit.update_pvs(config, trace, self.pvs)
+
     def fit_thread(self):
         while True:
             try:
-                t, s, iq = self.event.Wait()
-                self.fitter.fit_tune(self.pvs, t, s, iq)
+                self.fit_one_sweep()
             except:
-                print 'Fitter caught exception'
+                print 'Fitter raised exception'
                 traceback.print_exc()
 
     def start(self):
