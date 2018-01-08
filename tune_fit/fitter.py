@@ -135,6 +135,6 @@ class Fitter:
             scale = scale[:self.LENGTH])
 
         # Start with an initial set of ranges extracted from the power waveform
-        ranges = dd_peaks.get_peak_ranges(result, power, self.MAX_PEAKS)
+        ranges = dd_peaks.do_get_peak_ranges(result, power, self.MAX_PEAKS)
 
         status, tune, phase = self.process_peak_tune(result, scale, iq, ranges)

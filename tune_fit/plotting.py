@@ -9,9 +9,12 @@ import numpy
 import matplotlib
 # matplotlib.use('PDF')
 
-from matplotlib import pyplot
+from matplotlib import pyplot, gridspec
 
+import support
 import replay
+import dd_peaks
+import tune_fit
 
 
 A4_PORTRAIT  = (8.27, 11.69)
@@ -28,52 +31,89 @@ if len(sys.argv) > 3:
     subset = map(int, sys.argv[3:])
 
 
-import fitter
-f = fitter.Fitter(4096, 6, 3)
-
-
 n = 0
+
+
+def plot_poles(fit, show = False):
+    from matplotlib import pyplot
+    pyplot.figure()
+    bb = fit[:, 1]
+    pyplot.plot(bb.real, bb.imag, 'o')
+    c0 = numpy.exp(2j * numpy.pi * numpy.linspace(0, 1, 100))
+    for b in bb:
+        c = b + b.imag * c0
+        pyplot.plot(c.real, c.imag)
+    pyplot.axis('equal')
+    if show:
+        pyplot.show()
+
+
+def plot_refine(iq, trace):
+    from dd_peaks import smooth_waveform
+
+    scale = trace.scale
+    fit = trace.fit
+    all_fits = trace.all_fits
+    fit_in = trace.fit_in
+    offset = trace.offset
+
+    pb = [f[:, 1] for f in all_fits]
+    m_in = support.eval_model(scale, fit_in)
+    mm = support.eval_model(scale, fit, offset)
+
+    pyplot.figure(figsize = (9, 11))
+
+    pyplot.subplot(511)
+    pyplot.plot(scale, numpy.abs(iq))
+    pyplot.plot(scale, numpy.abs(m_in))
+    pyplot.plot(scale, numpy.abs(mm))
+    pyplot.legend(['iq', 'in', 'fit'])
+
+    pyplot.subplot2grid((5, 2), (1, 0), rowspan = 2)
+    pyplot.plot(iq.real, iq.imag)
+    pyplot.plot(m_in.real, m_in.imag)
+    pyplot.plot(mm.real, mm.imag)
+    pyplot.legend(['iq', 'in', 'fit'])
+
+    pyplot.subplot2grid((5, 2), (1, 1), rowspan = 2)
+    for bb in pb[:-1]:
+        pyplot.plot(bb.real, bb.imag, '.')
+    pyplot.plot(pb[0].real, pb[0].imag, '*')
+    pyplot.plot(pb[-1].real, pb[-1].imag, 'o')
+
+    pyplot.subplot2grid((5, 2), (3, 0), colspan = 2)
+    pyplot.plot(scale, numpy.abs(iq))
+    for f in fit:
+        pyplot.plot(scale, numpy.abs(support.eval_one_peak(f, scale)))
+    pyplot.legend(['iq'] + ['p%d' % n for n in range(len(fit))])
+
+    res = mm - iq
+    res16 = dd_peaks.smooth_waveform(res, 16)
+    pyplot.subplot(515)
+    pyplot.plot(scale, numpy.abs(res))
+    pyplot.plot(dd_peaks.smooth_waveform(scale, 16), numpy.abs(res16))
+
+    plot_poles(fit)
+
+    pyplot.show()
+
+
 def fit_tune(result, timestamp, scale, iq):
     global n
-    print 'fit_tune', n
+    print >>sys.stderr, 'fit_tune', n
     n += 1
-    f.fit_tune(result, timestamp, scale, iq)
+
+    config = support.Struct(max_peaks = 6, selection = 0)
+    model, trace = tune_fit.fit_tune(config, scale, iq)
+    plot_refine(iq, trace.refine)
+
+    result.set_timestamp(timestamp)
+    tune_fit.update_pvs(config, trace, result)
 
 
 result = replay.replay_file(LOG_FILE, fit_tune, MAX_N, subset = subset)
-
 # result.print_summary()
 
-
-def plot_dd_peaks(peaks):
-    M, N = peaks.power.shape
-    P = peaks.ix.shape[1]
-
-#     f = pyplot.figure(figsize = A4_PORTRAIT)
-    f = pyplot.figure()
-
-    pyplot.subplot(411)
-    pyplot.plot(peaks.power.max(0))
-    pyplot.plot(peaks.power.min(0))
-    pyplot.plot(peaks.power.mean(0))
-
-    pyplot.subplot(412)
-    am = numpy.arange(M)
-    pyplot.plot(peaks.l, am, '.', markersize = 1)
-    pyplot.plot(peaks.r, am, '.', markersize = 1)
-    pyplot.xlim((0, N))
-
-    pyplot.subplot(413)
-    pyplot.plot(peaks.ix, am, '.', markersize = 1)
-    pyplot.xlim((0, N))
-
-    return f
-
-def plot_model(model):
-    M, N = model.p.shape
-
-    pyplot.subplot(414)
-    pyplot.plot(model.p.T)
 
 def plot_fits(fits):
     pyplot.subplot(211)
@@ -84,21 +124,6 @@ def plot_fits(fits):
     pyplot.plot(fits.br, fits.bi, '.')
     pyplot.title('Poles')
 
-#     pyplot.plot(fits.e, '.')
-
-
-# for style in pyplot.style.available:
-#     print style
-#     pyplot.style.use(style)
-#     f = plot_dd_peaks(result.peak16)
-
-# f = plot_dd_peaks(result.peak16)
-# plot_model(result.model1)
-# pyplot.show()
-
-import support
-if support.plot_refine_fits:
-    sys.exit()
 
 f = pyplot.figure()
 plot_fits(result.fits1)

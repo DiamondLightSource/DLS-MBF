@@ -1,13 +1,8 @@
 # Preliminary peak discovery by smoothing and second derivative.
 
-from collections import namedtuple
-
 import numpy
 
-
-class Struct:
-    def __init__(self, **kargs):
-        self.__dict__.update(kargs)
+from support import Struct
 
 
 def smooth_waveform(wf, n):
@@ -104,7 +99,7 @@ def peak_info_to_ranges(peaks, scaling):
 #       peaks: a list of discovered peaks, each entry consisting of three
 #           numbers (ix, left, right) being the center, left, right of the
 #           discovered peak.
-def do_get_peak_ranges(config, power):
+def get_peak_ranges(config, power):
     max_peaks = config.max_peaks
     selection = config.selection
 
@@ -119,35 +114,12 @@ def do_get_peak_ranges(config, power):
 
 
 
-# Converts [(ix, l, r)] into ([ix], [l], [r], [power]) for presentation
-def set_peak_result(result, trace, max_peaks):
-    power = trace.smoothed
-    dd = trace.dd
-    peaks = trace.peaks
-
-    def pad(l):
-        a = numpy.zeros(max_peaks)
-        a[:len(l)] = l
-        return a
-
-    ix, l, r = zip(*peaks)
-    p = power[list(ix)]
-
-    result.output(
-        power = power,
-        pdd = dd,
-        ix = pad(ix),
-        l = pad(l),
-        r = pad(r),
-        v = pad(p))
-
-
 # Extracts initial set of raw peak ranges from power spectrum
-def get_peak_ranges(result, power, max_peaks):
+def do_get_peak_ranges(result, power, max_peaks):
     config = Struct(
         max_peaks = max_peaks,
         selection = result.config.sel)
-    ranges, trace = do_get_peak_ranges(config, power)
+    ranges, trace = get_peak_ranges(config, power)
 
     set_peak_result(result.peak16, trace.peaks_16, max_peaks)
     set_peak_result(result.peak64, trace.peaks_64, max_peaks)
