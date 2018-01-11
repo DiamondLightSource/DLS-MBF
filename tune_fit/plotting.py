@@ -5,6 +5,8 @@ require('numpy')
 require('matplotlib')
 
 import sys
+import argparse
+
 import numpy
 import matplotlib
 # matplotlib.use('PDF')
@@ -19,19 +21,6 @@ import tune_fit
 
 A4_PORTRAIT  = (8.27, 11.69)
 A4_LANDSCAPE = (11.69, 8.27)
-
-
-LOG_FILE = sys.argv[1]
-
-MAX_N = 100
-if len(sys.argv) > 2:
-    MAX_N = int(sys.argv[2])
-subset = []
-if len(sys.argv) > 3:
-    subset = map(int, sys.argv[3:])
-
-
-n = 0
 
 
 def plot_poles(fit, show = False):
@@ -54,20 +43,21 @@ def plot_refine(iq, trace):
     scale = trace.scale
     fit = trace.fit
     all_fits = trace.all_fits
-    fit_in = trace.fit_in
+    fit_in, offset_in = trace.model_in
     offset = trace.offset
 
     pb = [f[:, 1] for f in all_fits]
-    m_in = support.eval_model(scale, fit_in)
+    m_in = support.eval_model(scale, fit_in, offset_in)
     mm = support.eval_model(scale, fit, offset)
 
     pyplot.figure(figsize = (9, 11))
 
     pyplot.subplot(511)
     pyplot.plot(scale, numpy.abs(iq))
-    pyplot.plot(scale, numpy.abs(m_in))
     pyplot.plot(scale, numpy.abs(mm))
-    pyplot.legend(['iq', 'in', 'fit'])
+    for f in fit_in:
+        pyplot.plot(scale, numpy.abs(support.eval_one_peak(f, scale)))
+    pyplot.legend(['iq', 'fit'] + ['in%d' % n for n in range(len(fit_in))])
 
     pyplot.subplot2grid((5, 2), (1, 0), rowspan = 2)
     pyplot.plot(iq.real, iq.imag)
@@ -94,46 +84,80 @@ def plot_refine(iq, trace):
     pyplot.plot(scale, numpy.abs(res))
     pyplot.plot(dd_peaks.smooth_waveform(scale, 16), numpy.abs(res16))
 
-    plot_poles(fit)
 
-    pyplot.show()
+class Fitter:
+    def __init__(self, samples, max_peaks, plot_each):
+        self.max_peaks = max_peaks
+        self.plot_each = plot_each
+        self.fits = numpy.empty((samples, max_peaks, 2), dtype = numpy.complex)
+        self.fits[:] = numpy.nan
+        self.n = 0
 
+    def fit_tune(self, scale, iq):
+        n = self.n
+        print 'fit_tune', n
+        self.n = n + 1
 
-def fit_tune(result, timestamp, scale, iq):
-    global n
-    print >>sys.stderr, 'fit_tune', n
-    n += 1
+        config = support.Struct(max_peaks = self.max_peaks)
+        model, trace = tune_fit.fit_tune_model(config, scale, iq)
 
-    config = support.Struct(max_peaks = 6, selection = 0)
-    model, trace = tune_fit.fit_tune_model(config, scale, iq)
-    plot_refine(iq, trace.refine)
+        if plot_each:
+            plot_refine(iq, trace.refine[-1])
+            pyplot.show()
 
-    result.set_timestamp(timestamp)
-    tune_fit.update_pvs(config, trace, result)
-
-
-result = replay.replay_file(LOG_FILE, fit_tune, MAX_N, subset = subset)
-# result.print_summary()
-
-
-def plot_fits(fits):
-    pyplot.subplot(211)
-    pyplot.plot(fits.ar, fits.ai, '.')
-    pyplot.title('Phase and magnitude')
-
-    pyplot.subplot(212)
-    pyplot.plot(fits.br, fits.bi, '.')
-    pyplot.title('Poles')
+        fit = trace.refine[-1].fit
+        self.fits[n, :len(fit)] = fit
 
 
-f = pyplot.figure()
-plot_fits(result.fits1)
+    def plot_fits(self):
+        aa = self.fits[..., 0]
+        bb = self.fits[..., 1]
 
-f = pyplot.figure()
-plot_fits(result.fits2)
-pyplot.show()
+        pyplot.subplot(211)
+        pyplot.plot(aa.real, aa.imag, '.')
+        pyplot.title('Phase and magnitude')
+
+        pyplot.subplot(212)
+        pyplot.plot(bb.real, bb.imag, '.')
+        pyplot.title('Poles')
+        pyplot.axis('equal')
+        pyplot.legend(['p%d' % (n+1) for n in range(self.max_peaks)])
+
+        print numpy.nonzero(bb.imag < -0.003)
 
 
 # f.set_size_inches(11.69, 8.27)
 # f.set_size_inches(8.27, 11.69)
 # f.savefig('foo.pdf', papertype = 'a4', orientation = 'portrait')
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description = 'Replay and plot')
+    parser.add_argument('-n', '--peaks', default = 3, type = int,
+        help = 'Number of peaks to match')
+    parser.add_argument('filename',
+        help = 'Name of file to replay')
+    parser.add_argument('samples', nargs = '?', default = 0, type = int,
+        help = 'Number of samples to replay')
+    parser.add_argument('subset', nargs = argparse.REMAINDER, type = int,
+        help = 'Individual samples to process')
+
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    print args
+
+    s_iq = replay.load_replay(args.filename, args.samples)
+    if args.subset:
+        s_iq = [s_iq[ix] for ix in args.subset]
+
+    plot_each = bool(args.subset)
+
+    fitter = Fitter(len(s_iq), args.peaks, plot_each)
+    replay.replay_s_iq(s_iq, fitter.fit_tune)
+
+    if not plot_each:
+        fitter.plot_fits()
+        pyplot.show()

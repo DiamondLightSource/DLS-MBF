@@ -3,6 +3,8 @@
 import numpy
 
 import support
+import dd_peaks
+import prefit
 
 
 MINIMUM_WIDTH = 1e-7
@@ -41,8 +43,8 @@ def eval_derivative(scale, fits):
 AVMAX = 1
 
 def step_refine_fits(scale, iq, fits, offset, lam):
-    w = support.eval_model(scale, fits, offset)
-#     w = iq
+#     w = support.eval_model(scale, fits, offset)
+    w = iq
 #     w = 1
 
     e   = w * (support.eval_model(scale, fits, offset) - iq)
@@ -79,7 +81,7 @@ def step_refine_fits(scale, iq, fits, offset, lam):
     raise Exception('Whoops')
 
 
-MIN_WIDTH = 2e-5
+MIN_WIDTH = 1e-5
 MAX_WIDTH = 5e-2
 MAX_WIDTH = 1e-2
 
@@ -172,12 +174,14 @@ MAX_STEPS = 20
 MAX_STEPS = 250
 MAX_STEPS = 205
 
+REFINE_FRACTION = 1e-3
 
 def refine_fits(config, scale, iq, fit):
-    fit_in = fit
+    print 'refine', fit
 
-    fit, _ = prune_peaks(scale, fit)
+#     fit, _ = prune_peaks(scale, fit)
     offset = (iq - support.eval_model(scale, fit, 0)).mean()
+    model_in = (fit, offset)
 
     all_fits = [fit]
     lam = 0.1
@@ -185,16 +189,65 @@ def refine_fits(config, scale, iq, fit):
     for n in range(MAX_STEPS):
         print n,
         fit, offset, lam, change = step_refine_fits(scale, iq, fit, offset, lam)
-        fit, changed = prune_peaks(scale, fit)
-        fit, changed = merge_peaks(fit, changed)
+#         fit, changed = prune_peaks(scale, fit)
+#         fit, changed = merge_peaks(fit, changed)
+        changed = False
         all_fits.append(fit)
         if not changed and change < REFINE_FRACTION:
             break
 
     import sys
-    print >>sys.stderr, n, '=>', len(fit)
+    print n, '=>', len(fit)
 
+    model = (fit, offset)
     trace = support.Struct(
-        scale = scale, fit_in = fit_in,
+        scale = scale, model_in = model_in,
         all_fits = all_fits, fit = fit, offset = offset)
-    return (fit, trace)
+
+
+#     import plotting
+#     plotting.plot_refine(iq, trace)
+
+    return (model, trace)
+
+
+# Adds one further pole to the given fit
+def add_one_pole(config, scale, iq, model):
+    print 'add_one_pole'
+
+    # Compute the residue to fit.
+    fit, offset = model
+    residue = iq - support.eval_model(scale, fit, offset)
+
+    # Take the most peaky peak from the residue
+    smoothing = 64
+    power = support.abs2(residue)
+    (l, r), trace = dd_peaks.get_next_peak(power, smoothing)
+
+    # Compute an initial fit
+    peak = prefit.fit_one_pole(scale[l:r], residue[l:r], power[l:r])
+
+#     from matplotlib import pyplot
+#     ss = scale[::smoothing]
+#     pyplot.figure()
+#     pyplot.subplot(411)
+#     pyplot.plot(scale, power)
+#     pyplot.plot(ss, trace.smoothed)
+#     pyplot.plot(scale[[l, r]], power[[l, r]], '-o')
+#     pyplot.subplot(412)
+#     pyplot.plot(ss, trace.dd)
+#     if mask_in is not None:
+#         pyplot.plot(ss, (1-mask_in) * trace.dd)
+#     pyplot.subplot(212)
+#     pyplot.plot(residue.real, residue.imag)
+#     pyplot.plot(residue[l:r].real, residue[l:r].imag)
+#     mp = support.eval_one_peak(peak, scale)
+#     pyplot.plot(mp[l:r].real, mp[l:r].imag)
+#     pyplot.axis('equal')
+#     pyplot.show()
+# 
+#     if -peak[1].imag < MIN_WIDTH:
+#         peak = (peak[0], peak[1].real - 1j * MIN_WIDTH)
+
+    fit = numpy.append(fit, numpy.array(peak).reshape((1, 2)), 0)
+    return refine_fits(config, scale, iq, fit)

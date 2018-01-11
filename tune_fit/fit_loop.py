@@ -62,6 +62,7 @@ class TuneFitLoop:
         config = self.pvs.config
         t, s, iq = self.event.Wait()
         trace = tune_fit.fit_tune(config, s, iq)
+        self.pvs.set_timestamp(t)
         tune_fit.update_pvs(config, trace, self.pvs)
 
     def fit_thread(self):

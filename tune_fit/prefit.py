@@ -53,7 +53,10 @@ import support
 # where
 #      D = S(2) S(2 |iq|^2) - |S(w iq)|^2
 
-def fit_one_pole(scale, iq, weights):
+def fit_one_pole(scale, iq, weights = None):
+    if weights is None:
+        weights = numpy.ones(iq.shape)
+
     # Compute the components of M^H W M and M^H W y.
     iq2 = support.abs2(iq)
     S_w       = weights.sum()                   # S w
@@ -68,9 +71,9 @@ def fit_one_pole(scale, iq, weights):
     if len(iq) >= 2  and  abs(det) > S_w:
         a = (S_w_iq2 * S_w_s_iq - S_w_iq * S_w_s_iq2) / det
         b = (S_w * S_w_s_iq2 - numpy.conj(S_w_iq) * S_w_s_iq) / det
-        return (a, b)
+        return numpy.array([a, b])
     else:
-        return ()
+        raise Exception('Singular fit')
 
 
 # Computes model for a single fit

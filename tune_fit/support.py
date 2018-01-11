@@ -24,5 +24,3 @@ def eval_model(scale, fits, offset = 0):
     for fit in fits:
         result += eval_one_peak(fit, scale)
     return result + offset
-
-

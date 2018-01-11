@@ -95,6 +95,7 @@ def load_replay(filename, max_n = 0):
 
 
 def replay_file(filename, fit_tune, max_n = 0, subset = []):
+    print 'replay_file', filename, max_n, subset
     s_iq = load_replay(filename, max_n)
 
     if subset:
@@ -114,12 +115,10 @@ def replay_file(filename, fit_tune, max_n = 0, subset = []):
     return result
 
 
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv) > 2:
-        max_n = int(sys.argv[2])
-    else:
-        max_n = 0
-    import fitter
-    f = fitter.Fitter(4096, 6, 3)
-    replay_file(sys.argv[1], max_n, fit = f.fit_tune)
+def replay_s_iq(s_iq, fit_tune):
+    for s, iq in s_iq:
+        try:
+            fit_tune(s, iq)
+        except:
+            print >>sys.stderr, 'Fit failed'
+            traceback.print_exc()

@@ -13,7 +13,8 @@ def fit_tune_model(config, scale, iq):
     power = support.abs2(iq)
     input_trace = support.Struct(scale = scale, iq = iq, power = power)
 
-    ranges, dd_trace = dd_peaks.get_peak_ranges(config, power)
+    ranges, dd_trace = dd_peaks.get_peak_ranges(
+        power, config.max_peaks, config.selection)
 
     # For subsequent processing remove the mean value from the scale
     scale_offset = scale.mean()
@@ -33,10 +34,44 @@ def fit_tune_model(config, scale, iq):
     return (model, trace)
 
 
+def fit_tune_model(config, scale, iq):
+    max_peaks = config.max_peaks
+    print 'tune_fit_model'
+
+    # First extract candidate ranges from second derivative of power spectrum
+    power = support.abs2(iq)
+    input_trace = support.Struct(scale = scale, iq = iq, power = power)
+
+    # For subsequent processing remove the mean value from the scale
+    scale_offset = scale.mean()
+    scale = scale - scale_offset
+
+    # Fit first peak to entire sweep.  This should be our tune centre.
+    one_peak = prefit.fit_one_pole(scale, iq, power).reshape(1, 2)
+    model, refine_trace = refine.refine_fits(config, scale, iq, one_peak)
+
+    # Incrementally fit the remaining peaks
+    models = [model]
+    traces = [refine_trace]
+    for n in range(1, max_peaks):
+        model, refine_trace = refine.add_one_pole(config, scale, iq, model)
+        models.append(model)
+        traces.append(refine_trace)
+
+    trace = support.Struct(
+        input = input_trace,
+        refine = traces)
+    return (model, trace)
+
+
+
 def fit_tune(config, scale, iq):
     model, trace = fit_tune_model(config, scale, iq)
     return trace
 
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Output results
 
 def output_input(result, trace):
     result.output(
@@ -80,7 +115,7 @@ def output_poles(result, fits, max_peaks):
 def update_pvs(config, trace, result):
     max_peaks = config.max_peaks
     output_input(result, trace.input)
-    output_dd(result.peak16, trace.dd.peaks_16, max_peaks)
-    output_dd(result.peak64, trace.dd.peaks_64, max_peaks)
+#     output_dd(result.peak16, trace.dd.peaks_16, max_peaks)
+#     output_dd(result.peak64, trace.dd.peaks_64, max_peaks)
 #     output_poles(result.fits1, trace.prefit.fit, max_peaks)
 #     output_poles(result.fits2, trace.refine.fit, max_peaks)

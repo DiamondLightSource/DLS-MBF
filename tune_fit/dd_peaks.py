@@ -99,29 +99,24 @@ def peak_info_to_ranges(peaks, scaling):
 #       peaks: a list of discovered peaks, each entry consisting of three
 #           numbers (ix, left, right) being the center, left, right of the
 #           discovered peak.
-def get_peak_ranges(config, power):
-    max_peaks = config.max_peaks
-    selection = config.selection
-
+def get_peak_ranges(power, max_peaks, selection):
     peaks_16, trace_16 = compute_peaks(power, 16, max_peaks)
-    peaks_64, trace_64 = compute_peaks(power, 64, max_peaks)
+    peaks_64, trace_64 = compute_peaks(power, 32, max_peaks)
 
-    peaks, scaling = [(peaks_16, 16), (peaks_64, 64)][selection]
+    peaks, scaling = [(peaks_16, 16), (peaks_64, 32)][selection]
     return (
         peak_info_to_ranges(peaks, scaling),
         Struct(power = power, peaks_16 = trace_16, peaks_64 = trace_64))
 
 
+def get_next_peak(power, smoothing):
+    smoothed = smooth_waveform(power, smoothing)
+    dd = compute_dd(smoothed)
 
+    peak_ix = numpy.argmin(dd)
 
-# Extracts initial set of raw peak ranges from power spectrum
-def do_get_peak_ranges(result, power, max_peaks):
-    config = Struct(
-        max_peaks = max_peaks,
-        selection = result.config.sel)
-    ranges, trace = get_peak_ranges(config, power)
+    left, right = find_peak_limits(power, peak_ix)
 
-    set_peak_result(result.peak16, trace.peaks_16, max_peaks)
-    set_peak_result(result.peak64, trace.peaks_64, max_peaks)
-
-    return ranges
+    range = (smoothing * left, smoothing * (right + 1) - 1)
+    trace = Struct(smoothed = smoothed, dd = dd, ix = peak_ix)
+    return (range, trace)
