@@ -9,36 +9,9 @@ import refine
 
 
 def fit_tune_model(config, scale, iq):
-    # First extract candidate ranges from second derivative of power spectrum
-    power = support.abs2(iq)
-    input_trace = support.Struct(scale = scale, iq = iq, power = power)
-
-    ranges, dd_trace = dd_peaks.get_peak_ranges(
-        power, config.max_peaks, config.selection)
-
-    # For subsequent processing remove the mean value from the scale
-    scale_offset = scale.mean()
-    scale = scale - scale_offset
-
-    # Next perform a preliminary fit to the list of ranges
-    peaks, prefit_trace = prefit.prefit_ranges(config, scale, iq, ranges)
-
-    # Now refine the fit with rounds of LM fitting
-    model, refine_trace = refine.refine_fits(config, scale, iq, peaks)
-
-    trace = support.Struct(
-        input = input_trace,
-        dd = dd_trace,
-        prefit = prefit_trace,
-        refine = refine_trace)
-    return (model, trace)
-
-
-def fit_tune_model(config, scale, iq):
     max_peaks = config.max_peaks
     print 'tune_fit_model'
 
-    # First extract candidate ranges from second derivative of power spectrum
     power = support.abs2(iq)
     input_trace = support.Struct(scale = scale, iq = iq, power = power)
 
@@ -47,26 +20,27 @@ def fit_tune_model(config, scale, iq):
     scale = scale - scale_offset
 
     # Fit first peak to entire sweep.  This should be our tune centre.
-    one_peak = prefit.fit_one_pole(scale, iq, power).reshape(1, 2)
-    model, refine_trace = refine.refine_fits(config, scale, iq, one_peak)
+#     one_peak = prefit.fit_one_pole(scale, iq, power).reshape(1, 2)
+#     model, refine_trace = refine.refine_fits(config, scale, iq, one_peak)
 
     # Incrementally fit the remaining peaks
-    models = [model]
-    traces = [refine_trace]
-    for n in range(1, max_peaks):
+#     models = [model]
+#     traces = [refine_trace]
+    models = []
+    traces = []
+    model = (numpy.zeros((0, 2)), 0)
+    for n in range(max_peaks):
         model, refine_trace = refine.add_one_pole(config, scale, iq, model)
         models.append(model)
         traces.append(refine_trace)
 
-    trace = support.Struct(
-        input = input_trace,
-        refine = traces)
-    return (model, trace)
+    trace = support.Struct(input = input_trace, refine = traces)
+    return (model, scale_offset, trace)
 
 
 
 def fit_tune(config, scale, iq):
-    model, trace = fit_tune_model(config, scale, iq)
+    model, offset, trace = fit_tune_model(config, scale, iq)
     return trace
 
 

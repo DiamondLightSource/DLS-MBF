@@ -90,33 +90,29 @@ def peak_info_to_ranges(peaks, scaling):
     return ranges
 
 
-# Entry point for peak fitting.  The returned trace has the following fields:
-#
-#   power: power spectrum to be fitted
-#   peaks_16, peaks_64: structures containing the following fields
-#       smoothed: the smoothed power spectrum
-#       dd: the second deriviative of the smoothed power spectrum
-#       peaks: a list of discovered peaks, each entry consisting of three
-#           numbers (ix, left, right) being the center, left, right of the
-#           discovered peak.
-def get_peak_ranges(power, max_peaks, selection):
-    peaks_16, trace_16 = compute_peaks(power, 16, max_peaks)
-    peaks_64, trace_64 = compute_peaks(power, 32, max_peaks)
-
-    peaks, scaling = [(peaks_16, 16), (peaks_64, 32)][selection]
-    return (
-        peak_info_to_ranges(peaks, scaling),
-        Struct(power = power, peaks_16 = trace_16, peaks_64 = trace_64))
-
-
 def get_next_peak(power, smoothing):
     smoothed = smooth_waveform(power, smoothing)
     dd = compute_dd(smoothed)
 
     peak_ix = numpy.argmin(dd)
 
-    left, right = find_peak_limits(power, peak_ix)
+    left, right = find_peak_limits(smoothed, peak_ix)
 
-    range = (smoothing * left, smoothing * (right + 1) - 1)
-    trace = Struct(smoothed = smoothed, dd = dd, ix = peak_ix)
+    range = [smoothing * left, smoothing * (right + 1) - 1]
+    trace = Struct(
+        power = power,
+        smoothing = smoothing,
+        smoothed = smoothed,
+        dd = dd,
+        ix = peak_ix, range = range)
+
+#     from matplotlib import pyplot
+#     saxis = numpy.arange(len(smoothed)) * smoothing + 0.5 * smoothing
+#     pyplot.figure()
+#     pyplot.plot(power)
+#     pyplot.plot(saxis, smoothed)
+#     pyplot.plot(saxis[[left, right]], smoothed[[left, right]], 'o-')
+#     pyplot.plot(saxis[peak_ix], smoothed[peak_ix], 'o')
+#     pyplot.show()
+
     return (range, trace)
