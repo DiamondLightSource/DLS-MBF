@@ -8,9 +8,67 @@ import prefit
 import refine
 
 
+MINIMUM_WIDTH = 1e-5
+
+MINIMUM_SPACING = 1
+
+MAXIMUM_ANGLE = 100
+
+MINIMUM_HEIGHT = 0.1
+
+
+# Checks whether the model is convincing.  There are four checks that can fail:
+#
+#   1.  A rather arbitrary minimum peak width is specified, narrower peaks are
+#       simply rejected out of hand.  Conveniently, this also catches the
+#       unstable case of negative peak widths.
+#
+#   2.  We prevent peaks from approaching too close to one another.  This one is
+#       a little delicate, as actually it's quite possible for peaks to approach
+#       surprisingly closely.
+#
+#   3.  One disagreeable fitting phenomenon is when two peaks approach each
+#       other and work to cancel one another.  Fortunately it turns out that the
+#       peaks are around 180 degrees out of phase when this happens, and we
+#       normally expect the phase differences between our peaks to be relatively
+#       small.
+#
+#   4.  Finally, relatively small peaks represent fitting errors and can be
+#       discarded.
+def assess_model(config, model):
+    peaks, _ = model
+    aa = peaks[:, 0]
+    bb = peaks[:, 1]
+    widths = -bb.imag
+
+    # First ensure that no peaks are below the minimum width
+    if (widths < MINIMUM_WIDTH).any():
+        return False
+
+    # Ensure that peak separations are sensible
+    ix1, ix2 = numpy.triu_indices(len(peaks), 1)
+    max_width = MINIMUM_SPACING * numpy.maximum(widths[ix1], widths[ix2])
+    if (numpy.abs(bb[ix1] - bb[ix2]) < max_width).any():
+        return False
+
+    # Check for peak phases: if one peak is out of place reject
+    m = numpy.mean(aa * widths)
+    angles = 180 / numpy.pi * numpy.angle(aa / m)
+    if (numpy.abs(angles) > MAXIMUM_ANGLE).any():
+        return False
+
+    # Check for small peaks
+    heights = numpy.abs(aa) / widths
+    min_height = MINIMUM_HEIGHT * numpy.max(heights)
+    if (heights < min_height).any():
+        return False
+
+    return True
+
+
+
 def fit_tune_model(config, scale, iq):
     max_peaks = config.max_peaks
-    print 'tune_fit_model'
 
     power = support.abs2(iq)
     input_trace = support.Struct(scale = scale, iq = iq, power = power)
@@ -19,22 +77,24 @@ def fit_tune_model(config, scale, iq):
     scale_offset = scale.mean()
     scale = scale - scale_offset
 
-    # Fit first peak to entire sweep.  This should be our tune centre.
-#     one_peak = prefit.fit_one_pole(scale, iq, power).reshape(1, 2)
-#     model, refine_trace = refine.refine_fits(config, scale, iq, one_peak)
-
-    # Incrementally fit the remaining peaks
-#     models = [model]
-#     traces = [refine_trace]
+    # Incrementally fit the required number of peaks
     models = []
-    traces = []
+    dd_traces = []
+    refine_traces = []
     model = (numpy.zeros((0, 2)), 0)
     for n in range(max_peaks):
-        model, refine_trace = refine.add_one_pole(config, scale, iq, model)
-        models.append(model)
-        traces.append(refine_trace)
+        model, dd_trace, refine_trace = \
+            refine.add_one_pole(config, scale, iq, model)
 
-    trace = support.Struct(input = input_trace, refine = traces)
+        if model is None or not assess_model(config, model):
+            break
+
+        models.append(model)
+        dd_traces.append(dd_trace)
+        refine_traces.append(refine_trace)
+
+    trace = support.Struct(
+        input = input_trace, dd = dd_traces, refine = refine_traces)
     return (model, scale_offset, trace)
 
 

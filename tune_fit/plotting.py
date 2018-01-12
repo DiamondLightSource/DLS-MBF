@@ -24,18 +24,8 @@ A4_PORTRAIT  = (8.27, 11.69)
 A4_LANDSCAPE = (11.69, 8.27)
 
 
-def plot_poles(fit, show = False):
-    from matplotlib import pyplot
-    pyplot.figure()
-    bb = fit[:, 1]
-    pyplot.plot(bb.real, bb.imag, 'o')
-    c0 = numpy.exp(2j * numpy.pi * numpy.linspace(0, 1, 100))
-    for b in bb:
-        c = b + b.imag * c0
-        pyplot.plot(c.real, c.imag)
-    pyplot.axis('equal')
-    if show:
-        pyplot.show()
+def plot_complex(z, *args, **kargs):
+    pyplot.plot(z.real, z.imag, *args, **kargs)
 
 
 def plot_refine(iq, trace):
@@ -61,17 +51,17 @@ def plot_refine(iq, trace):
     pyplot.legend(['iq', 'fit'] + ['in%d' % n for n in range(len(fit_in))])
 
     pyplot.subplot2grid((5, 2), (1, 0), rowspan = 2)
-    pyplot.plot(iq.real, iq.imag)
-    pyplot.plot(m_in.real, m_in.imag)
-    pyplot.plot(m_out.real, m_out.imag)
+    plot_complex(iq)
+    plot_complex(m_in)
+    plot_complex(m_out)
     pyplot.legend(['iq', 'in', 'fit'])
     pyplot.axis('equal')
 
     pyplot.subplot2grid((5, 2), (1, 1), rowspan = 2)
-    for bb in pb[:-1]:
-        pyplot.plot(bb.real, bb.imag, '.')
-    pyplot.plot(pb[0].real, pb[0].imag, '*')
-    pyplot.plot(pb[-1].real, pb[-1].imag, 'o')
+    for bb in pb[1:-1]:
+        plot_complex(bb, '.')
+    plot_complex(pb[0], '*')
+    plot_complex(pb[-1], 'o')
 
     pyplot.subplot2grid((5, 2), (3, 0), colspan = 2)
     pyplot.plot(scale, numpy.abs(iq))
@@ -82,6 +72,34 @@ def plot_refine(iq, trace):
     residue = m_out - iq
     pyplot.subplot(515)
     pyplot.plot(scale, numpy.abs(residue))
+
+
+    pyplot.figure()
+
+    N = len(fit_out)
+    aa = fit_out[:, 0]
+    bb = fit_out[:, 1]
+
+    pyplot.subplot(211)
+    pyplot.title('Peak poles')
+    plot_complex(bb.reshape(1, N), 'o')
+    pyplot.legend(['p%d' % n for n in range(N)])
+    pyplot.gca().set_color_cycle(None)
+    c = numpy.exp(2j * numpy.pi * numpy.linspace(0, 1, 100))
+    for b in bb:
+        cb = b + b.imag * c
+        plot_complex(b + b.imag * c)
+    pyplot.axis('equal')
+
+    pyplot.subplot(212)
+    pyplot.title('Peak phase and magnitude')
+    plot_complex(aa.reshape(1, N), 'o')
+    pyplot.legend(['p%d' % n for n in range(N)])
+    plot_complex(numpy.stack([numpy.zeros(N), aa]), ':k')
+    plot_complex(numpy.mean(aa * -bb.imag) / numpy.mean(-bb.imag), 'x')
+    pyplot.axis('equal')
+
+    print 'fit', fit_out
 
 
 def plot_dd(trace):
@@ -98,6 +116,63 @@ def plot_dd(trace):
     pyplot.subplot(313)
     pyplot.plot(power)
     pyplot.plot(numpy.array(range), power[range], '.-r')
+
+
+def plot_fits(fits):
+    max_peaks = fits.shape[1]
+    aa = fits[..., 0]
+    bb = fits[..., 1]
+
+    pyplot.figure()
+    pyplot.subplot(211)
+    plot_complex(aa, '.')
+    pyplot.title('Phase and magnitude')
+
+    pyplot.subplot(212)
+    plot_complex(bb, '.')
+    pyplot.title('Poles')
+    pyplot.axis('equal')
+    pyplot.legend(['p%d' % (n+1) for n in range(max_peaks)])
+
+    pyplot.figure()
+    pyplot.subplot(511)
+    pyplot.plot(bb.real, '.')
+    pyplot.legend(['p%d' % (n+1) for n in range(max_peaks)])
+    pyplot.title('Peak centre')
+
+    pyplot.subplot(512)
+    pyplot.title('Normalised peak area')
+    area = support.abs2(aa) / -bb.imag
+    max_area = numpy.nanmax(area, 1)
+    pyplot.semilogy(area / max_area[:, None], '.')
+
+    pyplot.subplot(513)
+    pyplot.plot(180 / numpy.pi * numpy.angle(aa), '.')
+    pyplot.title('Peak phase')
+
+    pyplot.subplot(514)
+    N = len(fits)
+    dmax = numpy.empty(N)
+    dsum = numpy.empty(N)
+    for n in range(N):
+        bb1, bb2 = numpy.meshgrid(bb[n], bb[n])
+        deltas = numpy.abs(bb1.real - bb2.real)
+        mask = numpy.zeros(deltas.shape, dtype = bool)
+        numpy.fill_diagonal(mask, True)
+        deltas = numpy.ma.array(deltas, mask = mask)
+        dmax[n] = numpy.min(deltas / numpy.maximum(-bb1.imag, -bb2.imag))
+        dsum[n] = numpy.min(deltas / - (bb1.imag + bb2.imag))
+    pyplot.plot(dmax)
+    pyplot.plot(dsum)
+    pyplot.legend(['max', 'sum'])
+
+    pyplot.subplot(515)
+    pyplot.title('Normalised peak height')
+    height = numpy.abs(aa) / -bb.imag
+    max_height = numpy.nanmax(height, 1)
+    pyplot.semilogy(height / max_height[:, None], '.')
+
+    print numpy.nonzero(numpy.isnan(fits[:,0,0]))[0]
 
 
 class Fitter:
@@ -124,52 +199,22 @@ class Fitter:
         model, scale_offset, trace = tune_fit.fit_tune_model(config, scale, iq)
 
         if self.plot_each:
-            if self.plot_all:
-                steps = trace.refine
-            else:
-                steps = trace.refine[-1:]
-            for step in steps:
-                if self.plot_dd and hasattr(step, 'dd_trace'):
-                    plot_dd(step.dd_trace)
-                plot_refine(iq, step)
+            dd_traces = trace.dd
+            refine_traces = trace.refine
+            if not self.plot_all:
+                dd_traces = dd_traces[-1:]
+                refine_traces = refine_traces[-1:]
+            if self.plot_dd:
+                for dd in dd_traces:
+                    plot_dd(dd)
+            for refine in refine_traces:
+                plot_refine(iq, refine)
             pyplot.show()
 
         fit, offset = trace.refine[-1].all_fits[-1]
         self.fits[n, :len(fit)] = fit
         self.offsets[n] = offset
         self.scale_offsets[n] = scale_offset
-
-
-    def plot_fits(self):
-        aa = self.fits[..., 0]
-        bb = self.fits[..., 1]
-
-        pyplot.figure()
-        pyplot.subplot(211)
-        pyplot.plot(aa.real, aa.imag, '.')
-        pyplot.title('Phase and magnitude')
-
-        pyplot.subplot(212)
-        pyplot.plot(bb.real, bb.imag, '.')
-        pyplot.title('Poles')
-        pyplot.axis('equal')
-        pyplot.legend(['p%d' % (n+1) for n in range(self.max_peaks)])
-
-        pyplot.figure()
-        pyplot.subplot(311)
-        pyplot.plot(bb.real, '.')
-        pyplot.legend(['p%d' % (n+1) for n in range(self.max_peaks)])
-        pyplot.title('Peak centre')
-
-        pyplot.subplot(312)
-        pyplot.semilogy(support.abs2(aa) / -bb.imag, '.')
-        pyplot.title('Peak area')
-
-        pyplot.subplot(313)
-        pyplot.plot(180 / numpy.pi * numpy.angle(aa), '.')
-        pyplot.title('Peak phase')
-
-        print numpy.nonzero(numpy.isnan(self.fits[:,0,0]))[0]
 
 
 # f.set_size_inches(11.69, 8.27)
@@ -212,7 +257,7 @@ def load_and_plot():
     replay.replay_s_iq(s_iq, fitter.fit_tune)
 
     if not plot_each:
-        fitter.plot_fits()
+        plot_fits(fitter.fits)
         pyplot.show()
 
 

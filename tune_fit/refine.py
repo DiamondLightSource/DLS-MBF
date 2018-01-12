@@ -9,14 +9,9 @@ import prefit
 
 # Various configuration and tuning settings
 
-MINIMUM_WIDTH = 1e-7
-MAXIMUM_SHIFT = 0.5
-
 LAMBDA_UP = 2.0
 LAMBDA_DOWN = 1 / 3.0
 LAMBDA_MAX = 100
-
-MIN_WIDTH = 1e-5
 
 MAX_STEPS = 20
 REFINE_FRACTION = 1e-3
@@ -38,14 +33,6 @@ def eval_model(scale, model):
     for peak in peaks:
         result += eval_one_peak(peak, scale)
     return result
-
-
-def assess_delta(a, delta, new_a):
-    peak_shift = delta[1:-1:2].real
-    new_peak = -new_a[1:-1:2].imag
-    return (
-        (new_peak > MINIMUM_WIDTH) &
-        (numpy.abs(peak_shift) < MAXIMUM_SHIFT)).all()
 
 
 # This computes the Jacobian derivative matrix dm/dx where m is our model and x
@@ -84,43 +71,35 @@ def step_refine_fits(scale, iq, model, lam):
         delta = numpy.linalg.solve(alpha, beta)
 
         a_new = a - delta
-        if not assess_delta(a, delta, a_new):
-            lam *= LAMBDA_UP
-            print 'U', lam,
-        else:
-            new_fit = a_new[:-1].reshape(-1, 2)
-            offset = a_new[-1]
-            e_new = w * (eval_model(scale, (new_fit, offset)) - iq)
-            Eout2 = support.abs2(e_new).sum()
-            if Eout2 >= Ein2:
-                lam *= LAMBDA_UP
-                print 'X', lam,
-            else:
-                lam *= LAMBDA_DOWN
-                change = 1 - Eout2 / Ein2
-                print 'OK %g -%.3g%% %g' % (lam, 100 * change, Eout2)
-                return ((new_fit, offset), lam, change)
+        new_fit = a_new[:-1].reshape(-1, 2)
+        offset = a_new[-1]
 
-    raise Exception('Whoops')
+        e_new = w * (eval_model(scale, (new_fit, offset)) - iq)
+        Eout2 = support.abs2(e_new).sum()
+
+        if Eout2 >= Ein2:
+            lam *= LAMBDA_UP
+        else:
+            lam *= LAMBDA_DOWN
+            change = 1 - Eout2 / Ein2
+            return ((new_fit, offset), lam, change)
+
+    return (None, 0, 0)
 
 
 def refine_fits(config, scale, iq, fit):
-    print 'refine', fit
-
     offset = (iq - eval_model(scale, (fit, 0))).mean()
     model = (fit, offset)
 
     all_fits = [model]
     lam = 1
     for n in range(MAX_STEPS):
-        print n,
         model, lam, change = step_refine_fits(scale, iq, model, lam)
+        if model is None:
+            break
         all_fits.append(model)
         if change < REFINE_FRACTION:
             break
-
-    import sys
-    print n, '=>', len(fit)
 
     trace = support.Struct(scale = scale, all_fits = all_fits)
     return (model, trace)
@@ -128,25 +107,19 @@ def refine_fits(config, scale, iq, fit):
 
 # Adds one further pole to the given fit
 def add_one_pole(config, scale, iq, model):
-    print 'add_one_pole'
-
-    # Compute the residue to fit.
+    # Compute the residue to fit and take the most peaky peak from the residue
     fit, offset = model
     residue = iq - eval_model(scale, model)
-
-    # Take the most peaky peak from the residue
     power = support.abs2(residue)
     (l, r), dd_trace = dd_peaks.get_next_peak(power, SMOOTHING)
 
     # Compute an initial fit
     peak = prefit.fit_one_pole(scale[l:r], residue[l:r], power[l:r])
-
-#     import plotting
-#     from matplotlib import pyplot
-#     plotting.plot_dd(dd_trace)
-#     pyplot.show()
+    if peak is None:
+        return (None, dd_trace, ())
 
     fit = numpy.append(fit, numpy.array(peak).reshape((1, 2)), 0)
-    model, trace = refine_fits(config, scale, iq, fit)
-    trace._extend(dd_trace = dd_trace)
-    return (model, trace)
+    model, refine_trace = refine_fits(config, scale, iq, fit)
+
+    if model is None: print 'returning failure'
+    return (model, dd_trace, refine_trace)

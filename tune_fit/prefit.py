@@ -6,7 +6,6 @@ import numpy
 import support
 
 
-
 # Fitting one pole filter to IQ data.  Given waveforms scale[] and wf[], which
 # we write here as s[] and iq[], this function computes complex parameters a and
 # b to minimise the fitting error for the model
@@ -70,4 +69,4 @@ def fit_one_pole(scale, iq, weights):
         b = (S_w * S_w_s_iq2 - numpy.conj(S_w_iq) * S_w_s_iq) / det
         return numpy.array([a, b])
     else:
-        raise Exception('Singular fit')
+        return None
