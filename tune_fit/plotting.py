@@ -195,8 +195,8 @@ class Fitter:
         print 'fit_tune', n
         self.n = n + 1
 
-        config = support.Trace(max_peaks = self.max_peaks)
-        trace = tune_fit.fit_tune_model(config, scale, iq)
+        config = support.Config(max_peaks = self.max_peaks)
+        trace = tune_fit.fit_tune(config, scale, iq)
 
         if self.plot_each:
             dd_traces = trace.dd

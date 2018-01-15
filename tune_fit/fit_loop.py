@@ -11,7 +11,6 @@ import pvs
 
 
 LENGTH = 4096
-MAX_PEAKS = 5
 
 
 class Gather:
@@ -51,7 +50,7 @@ class TuneFitLoop:
         gather.monitor(self.update, 'Q', pv_q)
         gather.monitor(self.update, 'S', pv_s)
 
-        self.pvs = pvs.publish_pvs(target, LENGTH, MAX_PEAKS)
+        self.pvs = pvs.publish_pvs(target, LENGTH)
 
     def update(self, timestamp, values):
         iq = numpy.complex128(values['I'] + 1j * values['Q'])
@@ -59,11 +58,10 @@ class TuneFitLoop:
         self.event.Signal((timestamp, s, iq))
 
     def fit_one_sweep(self):
-        config = self.pvs.config
         t, s, iq = self.event.Wait()
+        config = self.pvs.get_config()
         trace = tune_fit.fit_tune(config, s, iq)
-        self.pvs.set_timestamp(t)
-        tune_fit.update_pvs(config, trace, self.pvs)
+        self.pvs.update(t, trace)
 
     def fit_thread(self):
         while True:

@@ -4,132 +4,115 @@ import epicsdbbuilder
 from softioc import builder
 
 
-# This gethers the top level collection of PVs gathered into named groups for
-# more convenient control.
-class PvSet(object):
-    def __init__(self, **kargs):
-        self.__dict__.update(kargs)
-        self.__timestamp = 0
-        self.__pvs = {}
-        self.__groups = {}
+# Helper for DB name prefix.
+class NamePrefix:
+    def __init__(self, pvs, pv_prefix, name_prefix):
+        self.pvs = pvs
+        self.pv_prefix = pv_prefix
+        self.name_prefix = name_prefix
+    def __enter__(self):
+        if self.pv_prefix:
+            epicsdbbuilder.PushPrefix(self.pv_prefix)
+        if self.name_prefix:
+            self.pvs._push_name_prefix(self.name_prefix)
+    def __exit__(self, *exception):
+        if self.name_prefix:
+            self.pvs._pop_name_prefix()
+        if self.pv_prefix:
+            epicsdbbuilder.PopPrefix()
 
-    def set_timestamp(self, timestamp):
-        self.__timestamp = timestamp
-        for group in self.__groups.values():
-            group.set_timestamp(timestamp)
+
+def make_pv_builder(pv_type):
+    def publish_pv(self, name, pv_name, *args, **kargs):
+        pv = getattr(builder, pv_type)(pv_name, *args, **kargs)
+        self.publish(name, pv)
+    return publish_pv
+
+
+class PvSet:
+    def __init__(self):
+        self.__pvs = {}
+        self.__name_prefix = []
+
+    def _push_name_prefix(self, prefix):
+        self.__name_prefix.append(prefix)
+
+    def _pop_name_prefix(self):
+        self.__name_prefix.pop()
+
+    def name_prefix(self, pv_prefix, name_prefix = None):
+        return NamePrefix(self, pv_prefix, name_prefix)
+
+    def update(self, timestamp, trace):
+        for name, pv in self.__pvs.items():
+            pv.set(trace._get(name), timestamp = timestamp)
+
+    def get_config(self):
+        import support
+        return support.Config(3)
 
     def publish(self, name, pv):
-        assert name not in self.__pvs and name not in self.__groups
-        pv.TSE = -2
+        name = '.'.join(self.__name_prefix + [name])
         self.__pvs[name] = pv
 
-    def output(self, **kargs):
-        timestamp = self.__timestamp
-        for key, value in kargs.items():
-            self.__pvs[key].set(value, timestamp = timestamp)
+    def Waveform(self, name, pv_name, length, FTVL = 'DOUBLE', **kargs):
+        pv = builder.Waveform(pv_name, length = length, FTVL = FTVL, **kargs)
+        self.publish(name, pv)
 
-    def add_group(self, name, group):
-        assert isinstance(group, PvSet)
-        assert name not in self.__pvs and name not in self.__groups
-        self.__groups[name] = group
-
-    def get_group(self, name):
-        return self.__groups[name]
-
-    # Make use of the PvSet slightly more friendly: expose the PVs and groups as
-    # attributes, and generate a sensible attribute error if appropriate.
-    def __getattr__(self, name):
-        try:
-            return self.__groups[name]
-        except KeyError:
-            try:
-                pv = self.__pvs[name]
-            except KeyError:
-                raise AttributeError(
-                    '\'%s\' object has no attribute \'%s\'' %
-                        (self.__class__.__name__, name))
-            else:
-                return pv.get()
-
-    # Prevent misuse by disallowing direct assignment
-    def __setattr__(self, name, value):
-        if name.startswith('_PvSet__'):
-            super(PvSet, self).__setattr__(name, value)
-        else:
-            raise AttributeError(
-                'Cannot write to \'%s\' attribute' % name)
+    boolIn = make_pv_builder('boolIn')
+    aIn = make_pv_builder('aIn')
+    longIn = make_pv_builder('longIn')
+    mbbIn = make_pv_builder('mbbIn')
 
 
-# Helper for DB name prefix.
-class name_prefix:
-    def __init__(self, prefix):
-        self.prefix = prefix
-    def __enter__(self):
-        epicsdbbuilder.PushPrefix(self.prefix)
-    def __exit__(self, *exception):
-        epicsdbbuilder.PopPrefix()
+def publish_config(pvs):
+    with pvs.name_prefix('CONFIG'):
+        pass
 
 
-def Waveform(name, length, FTVL = 'DOUBLE'):
-    return builder.Waveform(name, length = length, FTVL = FTVL)
+def publish_tune(pvs):
+    with pvs.name_prefix(None, 'tune.tune'):
+        pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5,
+            DESC = 'Measured tune')
+        pvs.aIn('phase', 'PHASE', -180, 180,
+            EGU = 'deg', PREC = 1,
+            DESC = 'Measured tune phase')
+        pvs.aIn('synctune', 'SYNCTUNE', 0, 1, PREC = 5,
+            DESC = 'Synchrotron tune')
 
 
-def publish_peak_info(length, max_peaks, ratio):
+def publish_peak(pvs, name, pv_name):
+    with pvs.name_prefix(pv_name, name):
+        pvs.boolIn('valid', 'VALID', 'Invalid', 'Ok',
+            ZSV = 'MINOR', DESC = 'Peak valid')
+        pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5, DESC = 'Peak centre frequency')
+        pvs.aIn('phase', 'PHASE', -180, 180, PREC = 1, EGU = 'deg',
+            DESC = 'Peak phase')
+        pvs.aIn('area', 'AREA', DESC = 'Peak area')
+        pvs.aIn('width', 'WIDTH', 0, 1, PREC = 3, DESC = 'Peak width')
+        pvs.aIn('height', 'HEIGHT', PREC = 3, DESC = 'Peak height')
+
+
+def publish_delta(pvs, name, pv_name):
+    with pvs.name_prefix(pv_name, name):
+        pvs.aIn('tune', 'DTUNE', 0, 1, PREC = 5,
+            DESC = 'Delta tune')
+        pvs.aIn('phase', 'DPHASE', -180, 180, PREC = 1, EGU = 'deg',
+            DESC = 'Delta phase')
+        pvs.aIn('area', 'RAREA', PREC = 3, DESC = 'Relative area')
+        pvs.aIn('width', 'RWIDTH', 0, 1, PREC = 3, DESC = 'Relative width')
+        pvs.aIn('height', 'RHEIGHT', PREC = 3, DESC = 'Relative height')
+
+
+def publish_pvs(target, length):
     pvs = PvSet()
-    with name_prefix('%d' % ratio):
-        pvs.publish('power', Waveform('POWER', length))
-        pvs.publish('pdd',   Waveform('PDD', length / ratio))
-        pvs.publish('ix',    Waveform('IX', max_peaks, 'LONG'))
-        pvs.publish('l',     Waveform('L', max_peaks, 'LONG'))
-        pvs.publish('r',     Waveform('R', max_peaks, 'LONG'))
-        pvs.publish('v',     Waveform('V', max_peaks))
-    return pvs
+    with pvs.name_prefix(target):
+        publish_config(pvs)
 
-
-def publish_model(prefix, length):
-    pvs = PvSet()
-    with name_prefix(prefix):
-        pvs.publish('i',    Waveform('I', length))
-        pvs.publish('q',    Waveform('Q', length))
-        pvs.publish('p',    Waveform('P', length))
-        pvs.publish('r',    Waveform('R', length))
-    return pvs
-
-
-def publish_config(max_peaks):
-    def publish(build, name, pv_name, value, *args, **kargs):
-        pv = build(pv_name + '_S', initial_value = value, *args, **kargs)
-        pvs.publish(name, pv)
-
-    pvs = PvSet(max_peaks = max_peaks)
-    with name_prefix('CONFIG'):
-        publish(builder.mbbOut, 'selection', 'SEL', 0, '/16', '/64')
-        publish(builder.aOut, 'fit_threshold', 'THRESHOLD', 0.2, PREC = 2)
-        publish(builder.aOut, 'max_error', 'FITERROR', 0.6, PREC = 2)
-        publish(builder.aOut, 'min_width', 'MINWIDTH', 1e-6, PREC = 2)
-        publish(builder.aOut, 'max_width', 'MAXWIDTH', 5e-3, PREC = 2)
-    return pvs
-
-
-def publish_pvs(prefix, length, max_peaks):
-    pvs = PvSet()
-    with name_prefix(prefix):
-        pvs.publish('tune', builder.aIn('TUNE'))
-        pvs.publish('power',
-            builder.Waveform('POWER', length = length, FTVL = 'DOUBLE'))
-        pvs.publish('scale',
-            builder.Waveform('SCALE', length = length, FTVL = 'DOUBLE'))
-        pvs.publish('i',
-            builder.Waveform('I', length = length, FTVL = 'DOUBLE'))
-        pvs.publish('q',
-            builder.Waveform('Q', length = length, FTVL = 'DOUBLE'))
-
-        pvs.add_group('peak16', publish_peak_info(length, max_peaks, 16))
-        pvs.add_group('peak64', publish_peak_info(length, max_peaks, 64))
-
-        pvs.add_group('model1', publish_model('MODEL1', length))
-        pvs.add_group('model2', publish_model('MODEL2', length))
-
-        pvs.add_group('config', publish_config(max_peaks))
-
+        publish_tune(pvs)
+        publish_peak(pvs, 'tune.left', 'LEFT')
+        publish_peak(pvs, 'tune.centre', 'CENTRE')
+        publish_peak(pvs, 'tune.right', 'RIGHT')
+        publish_delta(pvs, 'tune.delta_left', 'LEFT')
+        publish_delta(pvs, 'tune.delta_right', 'RIGHT')
     return pvs

@@ -7,16 +7,18 @@ import dd_peaks
 import prefit
 
 
-# Various configuration and tuning settings
 
+# The following settings control the Levenberg-Marquardt iteration.  There
+# should be little or no need to tamper with these.
+#   The different lambda up and down factors are as recommended by Transtrum and
+# Sethna in "Improvements to the Levenberg-Marquardt algorithm for nonlinear
+# least-squares minimization", arXiv:1201.5885.  Their geodesic trick, the main
+# focus of this paper, didn't seem to help, but the lamba deltas here do seem to
+# speed up convergence.
 LAMBDA_UP = 2.0
 LAMBDA_DOWN = 1 / 3.0
+# If lambda starts to run away then we're not going to converge.
 LAMBDA_MAX = 100
-
-MAX_STEPS = 20
-REFINE_FRACTION = 1e-3
-
-SMOOTHING = 32
 
 
 
@@ -93,12 +95,12 @@ def refine_fits(config, scale, iq, fit):
 
     all_fits = [model]
     lam = 1
-    for n in range(MAX_STEPS):
+    for n in range(config.MAX_STEPS):
         model, lam, change = step_refine_fits(scale, iq, model, lam)
         if model is None:
             break
         all_fits.append(model)
-        if change < REFINE_FRACTION:
+        if change < config.REFINE_FRACTION:
             break
 
     trace = support.Trace(scale = scale, all_fits = all_fits)
@@ -111,7 +113,7 @@ def add_one_pole(config, scale, iq, model):
     fit, offset = model
     residue = iq - eval_model(scale, model)
     power = support.abs2(residue)
-    (l, r), dd_trace = dd_peaks.get_next_peak(power, SMOOTHING)
+    (l, r), dd_trace = dd_peaks.get_next_peak(power, config.SMOOTHING)
 
     # Compute an initial fit
     peak = prefit.fit_one_pole(scale[l:r], residue[l:r], power[l:r])

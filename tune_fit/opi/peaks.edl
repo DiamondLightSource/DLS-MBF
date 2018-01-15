@@ -141,7 +141,7 @@ x 80
 y 96
 w 104
 h 16
-controlPv "$(device):PEAK:STATUS"
+controlPv "$(prefix):STATUS"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -232,7 +232,7 @@ x 232
 y 64
 w 64
 h 24
-controlPv "$(device):PEAK:PHASE"
+controlPv "$(prefix):PHASE"
 font "helvetica-medium-r-18.0"
 fontAlign "right"
 fgColor index 14
@@ -297,7 +297,7 @@ x 80
 y 152
 w 24
 h 16
-controlPv "$(device):PEAK:COUNT"
+controlPv "$(prefix):COUNT"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -342,7 +342,7 @@ x 72
 y 192
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT"
+controlPv "$(prefix):LEFT:TUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -408,7 +408,7 @@ x 72
 y 176
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:VALID"
+controlPv "$(prefix):LEFT:VALID"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -454,7 +454,7 @@ x 72
 y 208
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:PHASE"
+controlPv "$(prefix):LEFT:PHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -500,7 +500,7 @@ x 72
 y 224
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:AREA"
+controlPv "$(prefix):LEFT:AREA"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -546,7 +546,7 @@ x 72
 y 240
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:WIDTH"
+controlPv "$(prefix):LEFT:WIDTH"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -593,7 +593,7 @@ x 168
 y 192
 w 80
 h 16
-controlPv "$(device):PEAK:CENTRE"
+controlPv "$(prefix):CENTRE:TUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -619,7 +619,7 @@ x 168
 y 176
 w 80
 h 16
-controlPv "$(device):PEAK:CENTRE:VALID"
+controlPv "$(prefix):CENTRE:VALID"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -665,7 +665,7 @@ x 168
 y 208
 w 80
 h 16
-controlPv "$(device):PEAK:CENTRE:PHASE"
+controlPv "$(prefix):CENTRE:PHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -691,7 +691,7 @@ x 168
 y 224
 w 80
 h 16
-controlPv "$(device):PEAK:CENTRE:AREA"
+controlPv "$(prefix):CENTRE:AREA"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -717,7 +717,7 @@ x 168
 y 240
 w 80
 h 16
-controlPv "$(device):PEAK:CENTRE:WIDTH"
+controlPv "$(prefix):CENTRE:WIDTH"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -744,7 +744,7 @@ x 264
 y 192
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT"
+controlPv "$(prefix):RIGHT:TUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -770,7 +770,7 @@ x 264
 y 176
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:VALID"
+controlPv "$(prefix):RIGHT:VALID"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -816,7 +816,7 @@ x 264
 y 208
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:PHASE"
+controlPv "$(prefix):RIGHT:PHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -842,7 +842,7 @@ x 264
 y 224
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:AREA"
+controlPv "$(prefix):RIGHT:AREA"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -868,7 +868,7 @@ x 264
 y 240
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:WIDTH"
+controlPv "$(prefix):RIGHT:WIDTH"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1183,7 +1183,7 @@ x 72
 y 256
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:HEIGHT"
+controlPv "$(prefix):LEFT:HEIGHT"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1229,7 +1229,7 @@ x 168
 y 256
 w 80
 h 16
-controlPv "$(device):PEAK:CENTRE:HEIGHT"
+controlPv "$(prefix):CENTRE:HEIGHT"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1255,7 +1255,7 @@ x 264
 y 256
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:HEIGHT"
+controlPv "$(prefix):RIGHT:HEIGHT"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1281,7 +1281,7 @@ x 104
 y 288
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:DTUNE"
+controlPv "$(prefix):LEFT:DTUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1327,7 +1327,7 @@ x 104
 y 304
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:DPHASE"
+controlPv "$(prefix):LEFT:DPHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1373,7 +1373,7 @@ x 104
 y 320
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:RAREA"
+controlPv "$(prefix):LEFT:RAREA"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1419,7 +1419,7 @@ x 104
 y 352
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:RHEIGHT"
+controlPv "$(prefix):LEFT:RHEIGHT"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1465,7 +1465,7 @@ x 224
 y 288
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:DTUNE"
+controlPv "$(prefix):RIGHT:DTUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1491,7 +1491,7 @@ x 224
 y 304
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:DPHASE"
+controlPv "$(prefix):RIGHT:DPHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1517,7 +1517,7 @@ x 224
 y 320
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:RAREA"
+controlPv "$(prefix):RIGHT:RAREA"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1543,7 +1543,7 @@ x 224
 y 352
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:RHEIGHT"
+controlPv "$(prefix):RIGHT:RHEIGHT"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1598,7 +1598,7 @@ x 160
 y 376
 w 80
 h 16
-controlPv "$(device):PEAK:SYNCTUNE"
+controlPv "$(prefix):SYNCTUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1644,7 +1644,7 @@ x 104
 y 336
 w 80
 h 16
-controlPv "$(device):PEAK:LEFT:RWIDTH"
+controlPv "$(prefix):LEFT:RWIDTH"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1690,7 +1690,7 @@ x 224
 y 336
 w 80
 h 16
-controlPv "$(device):PEAK:RIGHT:RWIDTH"
+controlPv "$(prefix):RIGHT:RWIDTH"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1716,7 +1716,7 @@ x 72
 y 520
 w 80
 h 16
-controlPv "$(device):PEAK:DURATION"
+controlPv "$(prefix):DURATION"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
