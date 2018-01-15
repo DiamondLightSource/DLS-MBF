@@ -101,7 +101,7 @@ def refine_fits(config, scale, iq, fit):
         if change < REFINE_FRACTION:
             break
 
-    trace = support.Struct(scale = scale, all_fits = all_fits)
+    trace = support.Trace(scale = scale, all_fits = all_fits)
     return (model, trace)
 
 

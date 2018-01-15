@@ -2,7 +2,7 @@
 
 import numpy
 
-from support import Struct
+import support
 
 
 def smooth_waveform(wf, n):
@@ -49,7 +49,7 @@ def get_next_peak(power, smoothing):
     left, right = find_peak_limits(smoothed, peak_ix)
     range = [smoothing * left, smoothing * (right + 1) - 1]
 
-    trace = Struct(
+    trace = support.Trace(
         power = power,
         smoothing = smoothing,
         smoothed = smoothed,

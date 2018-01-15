@@ -195,8 +195,8 @@ class Fitter:
         print 'fit_tune', n
         self.n = n + 1
 
-        config = support.Struct(max_peaks = self.max_peaks)
-        model, scale_offset, trace = tune_fit.fit_tune_model(config, scale, iq)
+        config = support.Trace(max_peaks = self.max_peaks)
+        trace = tune_fit.fit_tune_model(config, scale, iq)
 
         if self.plot_each:
             dd_traces = trace.dd
@@ -214,7 +214,7 @@ class Fitter:
         fit, offset = trace.refine[-1].all_fits[-1]
         self.fits[n, :len(fit)] = fit
         self.offsets[n] = offset
-        self.scale_offsets[n] = scale_offset
+        self.scale_offsets[n] = trace.scale_offset
 
 
 # f.set_size_inches(11.69, 8.27)

@@ -17,6 +17,26 @@ MAXIMUM_ANGLE = 100
 MINIMUM_HEIGHT = 0.1
 
 
+def fit_multiple_peaks(config, scale, iq):
+    max_peaks = config.max_peaks
+    models = []
+    dd_traces = []
+    refine_traces = []
+    model = (numpy.zeros((0, 2)), 0)
+    for n in range(max_peaks):
+        model, dd_trace, refine_trace = \
+            refine.add_one_pole(config, scale, iq, model)
+
+        if model is None or not assess_model(config, model):
+            break
+
+        models.append(model)
+        dd_traces.append(dd_trace)
+        refine_traces.append(refine_trace)
+
+    return (models, dd_traces, refine_traces)
+
+
 # Checks whether the model is convincing.  There are four checks that can fail:
 #
 #   1.  A rather arbitrary minimum peak width is specified, narrower peaks are
@@ -66,42 +86,103 @@ def assess_model(config, model):
     return True
 
 
+def sort_peaks(model, offset):
+    peaks, _ = model
+    sortix = numpy.argsort(peaks[:, 1].real)
+    peaks = peaks[sortix] + [0, offset]
+    return peaks
+
+
+def find_three_peaks(peaks):
+    count = len(peaks)
+    if count == 0:
+        return (None, None, None)
+    elif count == 1:
+        return (None, peaks[0], None)
+    elif count == 2:
+        maxix = numpy.argmax(support.abs2(aa) / -bb.imag)
+        if maxix == 0:
+            return (None, peaks[0], peaks[1])
+        else:
+            return (peaks[0], peaks[1], None)
+    else:
+        return tuple(peaks)
+
+
+def compute_peak_info(peak):
+    if peak is None:
+        a = numpy.nan + 1j * numpy.nan
+        b = numpy.nan + 1j * numpy.nan
+        valid = False
+    else:
+        a, b = peak
+        valid = True
+
+    width = -b.imag
+    area = support.abs2(a) / width
+    height = area / width
+    return support.Trace(
+        valid = valid,
+        tune = numpy.mod(b.real, 1),
+        phase = 180 / numpy.pi * numpy.angle(-1j * a),
+        width = width,
+        area = area,
+        height = area / width)
+
+
+def compute_delta_info(centre, side):
+    phase = side.phase - centre.phase
+    if phase > 180:
+        phase -= 360
+    elif phase < -180:
+        phase += 360
+    return support.Trace(
+        tune = numpy.abs(side.tune - centre.tune),
+        phase = phase,
+        area = side.area / centre.area,
+        width = side.width / centre.width,
+        height = side.width / centre.width)
+
+
+def compute_tune_result(model, scale_offset):
+    peaks = sort_peaks(model, scale_offset)
+    left, centre, right = find_three_peaks(peaks)
+
+    left = compute_peak_info(left)
+    centre = compute_peak_info(centre)
+    right = compute_peak_info(right)
+    delta_left = compute_delta_info(centre, left)
+    delta_right = compute_delta_info(centre, right)
+
+    tune = support.Trace(tune = centre.tune, phase = centre.phase)
+    return support.Trace(
+        tune = tune,
+        left = left, centre = centre, right = right,
+        delta_left = delta_left, delta_right = delta_right)
+
 
 def fit_tune_model(config, scale, iq):
-    max_peaks = config.max_peaks
-
     power = support.abs2(iq)
-    input_trace = support.Struct(scale = scale, iq = iq, power = power)
+    input_trace = support.Trace(scale = scale, iq = iq, power = power)
 
     # For subsequent processing remove the mean value from the scale
     scale_offset = scale.mean()
     scale = scale - scale_offset
 
     # Incrementally fit the required number of peaks
-    models = []
-    dd_traces = []
-    refine_traces = []
-    model = (numpy.zeros((0, 2)), 0)
-    for n in range(max_peaks):
-        model, dd_trace, refine_trace = \
-            refine.add_one_pole(config, scale, iq, model)
+    models, dd_traces, refine_traces = fit_multiple_peaks(config, scale, iq)
 
-        if model is None or not assess_model(config, model):
-            break
+    # Compute final peak result
+    tune = compute_tune_result(models[-1], scale_offset)
+    tune._print()
 
-        models.append(model)
-        dd_traces.append(dd_trace)
-        refine_traces.append(refine_trace)
+    return support.Trace(
+        input = input_trace,
+        scale_offset = scale_offset,
+        dd = dd_traces,
+        refine = refine_traces,
+        tune = tune)
 
-    trace = support.Struct(
-        input = input_trace, dd = dd_traces, refine = refine_traces)
-    return (model, scale_offset, trace)
-
-
-
-def fit_tune(config, scale, iq):
-    model, offset, trace = fit_tune_model(config, scale, iq)
-    return trace
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
