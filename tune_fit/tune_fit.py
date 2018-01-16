@@ -8,6 +8,9 @@ import prefit
 import refine
 
 
+MAXIMUM_FIT_ERROR = 0.1
+
+
 def fit_multiple_peaks(config, scale, iq):
     models = []
     dd_traces = []
@@ -139,7 +142,9 @@ def compute_delta_info(centre, side):
         height = side.height / centre.height)
 
 
-def compute_tune_result(peaks):
+def compute_tune_result(peaks, fit_error):
+    if fit_error > MAXIMUM_FIT_ERROR:
+        peaks = []
     left, centre, right = find_three_peaks(peaks)
 
     left = compute_peak_info(left)
@@ -167,12 +172,15 @@ def fit_tune(config, scale, iq):
 
     # Incrementally fit the required number of peaks
     models, dd_traces, refine_traces = fit_multiple_peaks(config, scale, iq)
+    model = models[-1]
+
+    fit_error = refine.compute_fit_error(scale, iq, model)
 
     # Compute final peak result after first extracting the peaks part of the
     # final fitted model and restoring the scale offset.
-    peaks, _ = models[-1]
+    peaks, _ = model
     peaks = peaks + [0, scale_offset]
-    tune = compute_tune_result(peaks)
+    tune = compute_tune_result(peaks, fit_error)
 
     return support.Trace(
         input = input_trace,
@@ -180,4 +188,5 @@ def fit_tune(config, scale, iq):
         dd = dd_traces,
         refine = refine_traces,
         models = models,
+        fit_error = fit_error,
         tune = tune)

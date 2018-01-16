@@ -129,3 +129,13 @@ def add_one_pole(config, scale, iq, model):
 
     if model is None: print 'returning failure'
     return (model, dd_trace, refine_trace)
+
+
+# We recompute the final fitting error.  Because we weight the fitting by iq we
+# also need to weight the computed error in the same way.
+def compute_fit_error(scale, iq, model):
+    residue = iq - eval_model(scale, model)
+    r2 = support.abs2(residue)
+    iq2 = support.abs2(iq)
+    return numpy.sum(r2 * iq2) / numpy.sum(iq2 * iq2)
+    return numpy.sum(support.abs2(residue)) / numpy.sum(support.abs2(iq))

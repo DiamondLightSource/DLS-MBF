@@ -118,25 +118,30 @@ def plot_dd(trace):
     pyplot.plot(numpy.array(range), power[range], '.-r')
 
 
-def plot_fits(fits, tunes):
+def plot_fits(fits, tunes, errors):
     max_peaks = fits.shape[1]
     aa = fits[..., 0]
     bb = fits[..., 1]
 
     pyplot.figure()
-    pyplot.subplot(311)
-    plot_complex(aa, '.')
     pyplot.title('Phase and magnitude')
+    pyplot.subplot(411)
+    plot_complex(aa, '.')
 
-    pyplot.subplot(312)
-    plot_complex(bb, '.')
+    pyplot.subplot(412)
     pyplot.title('Poles')
+    plot_complex(bb, '.')
     pyplot.axis('equal')
     pyplot.legend(['p%d' % (n+1) for n in range(max_peaks)])
 
-    pyplot.subplot(313)
+    pyplot.subplot(413)
+    pyplot.title('Measured tunes')
     pyplot.plot(tunes)
     pyplot.legend(['left', 'centre', 'right'])
+
+    pyplot.subplot(414)
+    pyplot.title('Relative fit error')
+    pyplot.plot(errors)
 
     pyplot.figure()
     pyplot.subplot(511)
@@ -194,6 +199,8 @@ class Fitter:
         self.scale_offsets[:] = numpy.nan
         self.tunes = numpy.empty((samples, 3))
         self.tunes[:] = numpy.nan
+        self.errors = numpy.empty(samples)
+        self.errors[:] = numpy.nan
         self.n = 0
 
     def fit_tune(self, scale, iq):
@@ -223,6 +230,7 @@ class Fitter:
         self.scale_offsets[n] = trace.scale_offset
         self.tunes[n] = [
             trace.tune.left.tune, trace.tune.centre.tune, trace.tune.right.tune]
+        self.errors[n] = trace.fit_error
 
 
 # f.set_size_inches(11.69, 8.27)
@@ -265,7 +273,7 @@ def load_and_plot():
     replay.replay_s_iq(s_iq, fitter.fit_tune)
 
     if not plot_each:
-        plot_fits(fitter.fits, fitter.tunes)
+        plot_fits(fitter.fits, fitter.tunes, fitter.errors)
         pyplot.show()
 
 
