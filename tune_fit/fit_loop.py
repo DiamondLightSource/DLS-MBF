@@ -36,7 +36,7 @@ class Gather:
 
 
 class TuneFitLoop:
-    def __init__(self, config, source):
+    def __init__(self, persist, config, source):
         self.event = cothread.Event()
 
         pv_i    = config[source + '_i']
@@ -50,7 +50,7 @@ class TuneFitLoop:
         gather.monitor(self.update, 'Q', pv_q)
         gather.monitor(self.update, 'S', pv_s)
 
-        self.pvs = pvs.publish_pvs(target, LENGTH)
+        self.pvs = pvs.publish_pvs(persist, target, LENGTH)
 
     def update(self, timestamp, values):
         iq = numpy.complex128(values['I'] + 1j * values['Q'])
@@ -72,5 +72,4 @@ class TuneFitLoop:
                 traceback.print_exc()
 
     def start(self):
-        print 'started'
         cothread.Spawn(self.fit_thread)

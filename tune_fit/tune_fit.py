@@ -13,6 +13,7 @@ def fit_multiple_peaks(config, scale, iq):
     dd_traces = []
     refine_traces = []
     model = (numpy.zeros((0, 2)), 0)
+    models.append(model)
     for n in range(config.MAX_PEAKS):
         model, dd_trace, refine_trace = \
             refine.add_one_pole(config, scale, iq, model)
@@ -76,11 +77,12 @@ def assess_model(config, model):
     return True
 
 
-def sort_peaks(model, offset):
-    peaks, _ = model
-    sortix = numpy.argsort(peaks[:, 1].real)
-    peaks = peaks[sortix] + [0, offset]
-    return peaks
+def sort_by_frequency(peaks):
+    return peaks[numpy.argsort(peaks[:, 1].real)]
+
+def sort_by_area(peaks):
+    aa, bb = peaks.T
+    return peaks[numpy.argsort(support.abs2(aa) / -bb.imag)]
 
 
 def find_three_peaks(peaks):
@@ -90,6 +92,7 @@ def find_three_peaks(peaks):
     elif count == 1:
         return (None, peaks[0], None)
     elif count == 2:
+        peaks = sort_by_frequency(peaks)
         aa, bb = peaks.T
         maxix = numpy.argmax(support.abs2(aa) / -bb.imag)
         if maxix == 0:
@@ -97,7 +100,8 @@ def find_three_peaks(peaks):
         else:
             return (peaks[0], peaks[1], None)
     else:
-        return tuple(peaks[:3])
+        # If three or more peaks, return the three largest
+        return tuple(sort_by_frequency(sort_by_area(peaks[:3])))
 
 
 def compute_peak_info(peak):
@@ -135,8 +139,7 @@ def compute_delta_info(centre, side):
         height = side.height / centre.height)
 
 
-def compute_tune_result(model, scale_offset):
-    peaks = sort_peaks(model, scale_offset)
+def compute_tune_result(peaks):
     left, centre, right = find_three_peaks(peaks)
 
     left = compute_peak_info(left)
@@ -165,12 +168,16 @@ def fit_tune(config, scale, iq):
     # Incrementally fit the required number of peaks
     models, dd_traces, refine_traces = fit_multiple_peaks(config, scale, iq)
 
-    # Compute final peak result
-    tune = compute_tune_result(models[-1], scale_offset)
+    # Compute final peak result after first extracting the peaks part of the
+    # final fitted model and restoring the scale offset.
+    peaks, _ = models[-1]
+    peaks = peaks + [0, scale_offset]
+    tune = compute_tune_result(peaks)
 
     return support.Trace(
         input = input_trace,
         scale_offset = scale_offset,
         dd = dd_traces,
         refine = refine_traces,
+        models = models,
         tune = tune)

@@ -12,6 +12,7 @@ require('epicsdbbuilder==1.2')
 from softioc import softioc, builder
 import cothread
 import fit_loop
+import persistence
 
 from softioc import pvlog
 
@@ -37,7 +38,9 @@ builder.UnsetDevice()
 
 
 # Create the fitters
-fitters = [fit_loop.TuneFitLoop(config, source) for source in sources]
+persist = persistence.Persistence(config)
+fitters = [fit_loop.TuneFitLoop(persist, config, source) for source in sources]
+persist.load()
 
 # Now get the IOC started
 builder.LoadDatabase()
@@ -46,7 +49,9 @@ softioc.iocInit()
 # Finally run the fitters
 for fitter in fitters:
     fitter.start()
+persist.start()
 
 softioc.interactive_ioc(globals())
+persist.save()
 
 # vim: set filetype=python:

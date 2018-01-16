@@ -2,8 +2,12 @@
 
 ioc_name = TS-DI-TFIT-01
 
+persistence_file = TS-DI-TFIT-01.state
+persistence_interval = 120
+
 # sources = sr23-02 ts-02.0 ts-02.1 ts-02.2 ts-02.3
-sources = sr23-02 sr23-01.0
+# sources = sr23-02 sr23-01.0
+sources = sr23-02
 # sources = ts-02.0
 # sources = sr23-01.0
 # sources = sr23-01.0 sr23-02

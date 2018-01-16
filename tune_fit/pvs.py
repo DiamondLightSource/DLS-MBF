@@ -22,16 +22,29 @@ class NamePrefix:
             epicsdbbuilder.PopPrefix()
 
 
-def make_pv_builder(pv_type):
-    def publish_pv(self, name, pv_name, *args, **kargs):
+def make_in_pv_builder(pv_type):
+    def publish_in_pv(self, name, pv_name, *args, **kargs):
         pv = getattr(builder, pv_type)(pv_name, *args, **kargs)
-        self.publish(name, pv)
-    return publish_pv
+        self.publish_in_pv(name, pv)
+    return publish_in_pv
+
+
+def make_config_pv_builder(pv_type, record_type):
+    def publish_config_pv(self, name, *args, **kargs):
+        pv = getattr(builder, pv_type)(name + '_S', *args, **kargs)
+        self.publish_config_pv(name, pv, record_type)
+    return publish_config_pv
+
+
+class Config:
+    pass
 
 
 class PvSet:
-    def __init__(self):
-        self.__pvs = {}
+    def __init__(self, persist):
+        self.__persist = persist
+        self.__in_pvs = {}
+        self.__config_pvs = {}
         self.__name_prefix = []
 
     def _push_name_prefix(self, prefix):
@@ -44,30 +57,50 @@ class PvSet:
         return NamePrefix(self, pv_prefix, name_prefix)
 
     def update(self, timestamp, trace):
-        for name, pv in self.__pvs.items():
+        for name, pv in self.__in_pvs.items():
             pv.set(trace._get(name), timestamp = timestamp)
 
     def get_config(self):
-        import support
-        return support.Config(3)
+        config = Config()
+        for name, pv in self.__config_pvs.items():
+            setattr(config, name, pv.get())
+        return config
 
-    def publish(self, name, pv):
+    def publish_in_pv(self, name, pv):
         name = '.'.join(self.__name_prefix + [name])
-        self.__pvs[name] = pv
+        self.__in_pvs[name] = pv
+
+    def publish_config_pv(self, name, pv, type):
+        self.__config_pvs[name] = pv
+        self.__persist.register_pv(pv, type)
 
     def Waveform(self, name, pv_name, length, FTVL = 'DOUBLE', **kargs):
         pv = builder.Waveform(pv_name, length = length, FTVL = FTVL, **kargs)
         self.publish(name, pv)
 
-    boolIn = make_pv_builder('boolIn')
-    aIn = make_pv_builder('aIn')
-    longIn = make_pv_builder('longIn')
-    mbbIn = make_pv_builder('mbbIn')
+    boolIn = make_in_pv_builder('boolIn')
+    aIn    = make_in_pv_builder('aIn')
+    longIn = make_in_pv_builder('longIn')
+    mbbIn  = make_in_pv_builder('mbbIn')
+
+    aOut    = make_config_pv_builder('aOut', float)
+    longOut = make_config_pv_builder('longOut', int)
 
 
 def publish_config(pvs):
     with pvs.name_prefix('CONFIG'):
-        pass
+        pvs.longOut('MAX_PEAKS', 1, 5, initial_value = 3,
+            DESC = 'Maximum number of peaks to fit')
+        pvs.longOut('SMOOTHING', 8, 64, initial_value = 32,
+            DESC = 'Degree of smoothing for 2D peak detect')
+        pvs.aOut('MINIMUM_WIDTH', 0, 1, initial_value = 1e-5, PREC = 5,
+            DESC = 'Reject peaks narrower than this')
+        pvs.aOut('MINIMUM_SPACING', 0, 2, initial_value = 1, PREC = 2,
+            DESC = 'Reject peaks closer than this')
+        pvs.aOut('MAXIMUM_ANGLE', 0, 180, initial_value = 100, EGU = 'deg',
+            DESC = 'Reject phase range above this')
+        pvs.aOut('MINIMUM_HEIGHT', 0, 1, initial_value = 0.1, PREC = 3,
+            DESC = 'Reject peaks shorter than this')
 
 
 def publish_tune(pvs):
@@ -104,8 +137,8 @@ def publish_delta(pvs, name, pv_name):
         pvs.aIn('height', 'RHEIGHT', PREC = 3, DESC = 'Relative height')
 
 
-def publish_pvs(target, length):
-    pvs = PvSet()
+def publish_pvs(persist, target, length):
+    pvs = PvSet(persist)
     with pvs.name_prefix(target):
         publish_config(pvs)
 

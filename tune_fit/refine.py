@@ -20,6 +20,10 @@ LAMBDA_DOWN = 1 / 3.0
 # If lambda starts to run away then we're not going to converge.
 LAMBDA_MAX = 100
 
+# How many steps of L-M refinement to try before bailing out
+MAX_STEPS = 20
+# Stop refinement when incremental improvement drops to this
+REFINE_FRACTION = 1e-3
 
 
 # Computes model for a single fit
@@ -89,18 +93,18 @@ def step_refine_fits(scale, iq, model, lam):
     return (None, 0, 0)
 
 
-def refine_fits(config, scale, iq, fit):
+def refine_fits(scale, iq, fit):
     offset = (iq - eval_model(scale, (fit, 0))).mean()
     model = (fit, offset)
 
     all_fits = [model]
     lam = 1
-    for n in range(config.MAX_STEPS):
+    for n in range(MAX_STEPS):
         model, lam, change = step_refine_fits(scale, iq, model, lam)
         if model is None:
             break
         all_fits.append(model)
-        if change < config.REFINE_FRACTION:
+        if change < REFINE_FRACTION:
             break
 
     trace = support.Trace(scale = scale, all_fits = all_fits)
@@ -121,7 +125,7 @@ def add_one_pole(config, scale, iq, model):
         return (None, dd_trace, ())
 
     fit = numpy.append(fit, numpy.array(peak).reshape((1, 2)), 0)
-    model, refine_trace = refine_fits(config, scale, iq, fit)
+    model, refine_trace = refine_fits(scale, iq, fit)
 
     if model is None: print 'returning failure'
     return (model, dd_trace, refine_trace)

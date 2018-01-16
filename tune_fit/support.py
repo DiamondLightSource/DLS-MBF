@@ -28,8 +28,6 @@ class Config:
     MAXIMUM_ANGLE = 100
     MINIMUM_HEIGHT = 0.1
 
-    MAX_STEPS = 20
-    REFINE_FRACTION = 1e-3
     SMOOTHING = 32
 
     def __init__(self, max_peaks):

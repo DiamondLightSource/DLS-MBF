@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 801
-y 22
+x 2511
+y 141
 w 370
-h 554
+h 600
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -56,7 +56,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(prefix) Tune Peak Detection"
+  "$(prefix) Tune"
 }
 endObjectProperties
 
@@ -264,70 +264,6 @@ bgColor index 0
 useDisplayBg
 value {
   "Status:"
-}
-autoSize
-endObjectProperties
-
-# (Exit Button)
-object activeExitButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 296
-y 520
-w 64
-h 24
-fgColor index 46
-bgColor index 3
-topShadowColor index 1
-botShadowColor index 11
-label "EXIT"
-font "helvetica-bold-r-12.0"
-3d
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 152
-w 24
-h 16
-controlPv "$(prefix):COUNT"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 152
-w 56
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Fit count:"
 }
 autoSize
 endObjectProperties
@@ -927,7 +863,7 @@ release 0
 x 8
 y 416
 w 352
-h 96
+h 144
 lineColor index 14
 fill
 fillColor index 4
@@ -948,7 +884,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Setup"
+  "Config"
 }
 endObjectProperties
 
@@ -976,7 +912,7 @@ x 104
 y 432
 w 64
 h 20
-controlPv "$(prefix):CONFIG:THRESHOLD_S"
+controlPv "$(prefix):CONFIG:MAX_PEAKS_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1002,14 +938,14 @@ minor 1
 release 1
 x 16
 y 432
-w 78
+w 68
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Fit threshold:"
+  "Max peaks:"
 }
 autoSize
 endObjectProperties
@@ -1022,14 +958,14 @@ minor 1
 release 1
 x 16
 y 480
-w 72
+w 65
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Width limits:"
+  "Min height:"
 }
 autoSize
 endObjectProperties
@@ -1044,8 +980,7 @@ x 104
 y 480
 w 80
 h 20
-controlPv "$(prefix):CONFIG:MINWIDTH_S"
-format "exponential"
+controlPv "$(prefix):CONFIG:MINIMUM_HEIGHT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1073,7 +1008,7 @@ x 104
 y 456
 w 64
 h 20
-controlPv "$(prefix):CONFIG:FITERROR_S"
+controlPv "$(prefix):CONFIG:MAXIMUM_ANGLE_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1099,35 +1034,16 @@ minor 1
 release 1
 x 16
 y 456
-w 79
+w 65
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Max fit error:"
+  "Max Angle:"
 }
 autoSize
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 264
-y 432
-w 80
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(prefix):CONFIG:SEL_S"
-font "helvetica-medium-r-12.0"
 endObjectProperties
 
 # (Static Text)
@@ -1136,41 +1052,18 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 192
-y 432
-w 67
+x 16
+y 504
+w 74
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Smoothing:"
+  "Min spacing:"
 }
 autoSize
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 208
-y 520
-w 80
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Graphs"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "peak_graphs.edl"
-}
 endObjectProperties
 
 # (Text Monitor)
@@ -1565,12 +1458,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 200
-y 480
+x 104
+y 504
 w 80
 h 20
-controlPv "$(prefix):CONFIG:MAXWIDTH_S"
-format "exponential"
+controlPv "$(prefix):CONFIG:MINIMUM_SPACING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1706,29 +1598,50 @@ objType "monitors"
 noExecuteClipMask
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
+# (Exit Button)
+object activeExitButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 296
+y 568
+w 64
+h 24
+fgColor index 46
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+label "EXIT"
+font "helvetica-bold-r-12.0"
+3d
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
 beginObjectProperties
 major 4
 minor 6
 release 0
-x 72
-y 520
+x 104
+y 528
 w 80
-h 16
-controlPv "$(prefix):DURATION"
+h 20
+controlPv "$(prefix):CONFIG:SMOOTHING_S"
 font "helvetica-medium-r-14.0"
+fontAlign "right"
 fgColor index 14
-fgAlarm
 bgColor index 0
 useDisplayBg
+editable
 autoHeight
+motifWidget
 limitsFromDb
 nullColor index 0
 useHexPrefix
-showUnits
 newPos
-objType "monitors"
+inputFocusUpdates
+objType "controls"
 noExecuteClipMask
 endObjectProperties
 
@@ -1738,16 +1651,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 8
-y 520
-w 54
+x 16
+y 528
+w 67
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Duration:"
+  "Smoothing:"
 }
 autoSize
 endObjectProperties
