@@ -26,8 +26,11 @@ class Persistence:
         try:
             for line in open(self.persistence_file).readlines():
                 name, value = line.split('=', 1)
-                pv, type = self.pvs[name]
-                pv.set(type(value))
+                if name in self.pvs:
+                    pv, type = self.pvs[name]
+                    pv.set(type(value))
+                else:
+                    print 'Unknown key', name
         except:
             print 'Unable to load', self.persistence_file
             traceback.print_exc()

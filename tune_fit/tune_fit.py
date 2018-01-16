@@ -8,7 +8,7 @@ import prefit
 import refine
 
 
-MAXIMUM_FIT_ERROR = 0.1
+MAXIMUM_FIT_ERROR = 0.2
 
 
 def fit_multiple_peaks(config, scale, iq):
@@ -21,7 +21,7 @@ def fit_multiple_peaks(config, scale, iq):
         model, dd_trace, refine_trace = \
             refine.add_one_pole(config, scale, iq, model)
 
-        if model is None or not assess_model(config, model):
+        if model is None or not assess_model(config, scale, model):
             break
 
         models.append(model)
@@ -49,14 +49,21 @@ def fit_multiple_peaks(config, scale, iq):
 #
 #   4.  Finally, relatively small peaks represent fitting errors and can be
 #       discarded.
-def assess_model(config, model):
+def assess_model(config, scale, model):
     peaks, _ = model
     aa = peaks[:, 0]
     bb = peaks[:, 1]
+    centres = bb.real
     widths = -bb.imag
 
     # First ensure that no peaks are below the minimum width
     if (widths < config.MINIMUM_WIDTH).any():
+        return False
+
+    # Check peak hasn't fallen out of range
+    lr = scale[[0, -1]]
+    l, r = min(lr), max(lr)
+    if ((centres < l) | (r < centres)).any():
         return False
 
     # Ensure that peak separations are sensible
@@ -143,7 +150,7 @@ def compute_delta_info(centre, side):
 
 
 def compute_tune_result(peaks, fit_error):
-    if fit_error > MAXIMUM_FIT_ERROR:
+    if fit_error > MAXIMUM_FIT_ERROR or not numpy.isfinite(fit_error):
         peaks = []
     left, centre, right = find_three_peaks(peaks)
 
