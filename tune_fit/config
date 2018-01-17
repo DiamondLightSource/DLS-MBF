@@ -6,17 +6,30 @@ persistence_file = TS-DI-TFIT-01.state
 persistence_interval = 120
 
 # sources = sr23-02 ts-02.0 ts-02.1 ts-02.2 ts-02.3
-# sources = sr23-02 sr23-01.0
-sources = sr23-02
+sources = sr23-t01 sr23-t02 sr23-01.0
+# sources = sr23-t02
 # sources = ts-02.0
 # sources = sr23-01.0
 # sources = sr23-01.0 sr23-02
 
-sr23-02_i = SR23C-DI-TMBF-02:TUNE:I
-sr23-02_q = SR23C-DI-TMBF-02:TUNE:Q
-sr23-02_s = SR23C-DI-TMBF-02:DET:SCALE
-sr23-02_t = SR23C-DI-TMBF-02:TUNE:
-sr23-02_u = I Q
+sr23-t01_i = SR23C-DI-TMBF-01:TUNE:I
+sr23-t01_q = SR23C-DI-TMBF-01:TUNE:Q
+sr23-t01_s = SR23C-DI-TMBF-01:DET:SCALE
+sr23-t01_t = SR23C-DI-TMBF-01:TUNE:
+sr23-t01_u = I Q
+
+sr23-t02_i = SR23C-DI-TMBF-02:TUNE:I
+sr23-t02_q = SR23C-DI-TMBF-02:TUNE:Q
+sr23-t02_s = SR23C-DI-TMBF-02:DET:SCALE
+sr23-t02_t = SR23C-DI-TMBF-02:TUNE:
+sr23-t02_u = I Q
+
+sr23-01.0_i = SR23C-DI-LMBF-01:IQ:DET:0:I
+sr23-01.0_q = SR23C-DI-LMBF-01:IQ:DET:0:Q
+sr23-01.0_s = SR23C-DI-LMBF-01:IQ:DET:SCALE
+sr23-01.0_t = SR23C-DI-LMBF-01:TUNE:0
+sr23-01.0_u = I Q S
+
 
 ts-02.0_i = TS-DI-TMBF-02:Y:DET:0:I
 ts-02.0_q = TS-DI-TMBF-02:Y:DET:0:Q
@@ -41,9 +54,3 @@ ts-02.3_q = TS-DI-TMBF-02:Y:DET:3:Q
 ts-02.3_s = TS-DI-TMBF-02:Y:DET:SCALE
 ts-02.3_t = TS-DI-TMBF-02:TUNE:3
 ts-02.3_u = I Q S
-
-sr23-01.0_i = SR23C-DI-LMBF-01:IQ:DET:0:I
-sr23-01.0_q = SR23C-DI-LMBF-01:IQ:DET:0:Q
-sr23-01.0_s = SR23C-DI-LMBF-01:IQ:DET:SCALE
-sr23-01.0_t = SR23C-DI-LMBF-01:TUNE:0
-sr23-01.0_u = I Q S

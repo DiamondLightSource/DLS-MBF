@@ -87,31 +87,26 @@ def assess_model(config, scale, model):
     return True
 
 
+def peaks_area(peaks):
+    aa, bb = peaks.T
+    return support.abs2(aa) / -bb.imag
+
 def sort_by_frequency(peaks):
     return peaks[numpy.argsort(peaks[:, 1].real)]
-
-def sort_by_area(peaks):
-    aa, bb = peaks.T
-    return peaks[numpy.argsort(support.abs2(aa) / -bb.imag)]
 
 
 def find_three_peaks(peaks):
     count = len(peaks)
     if count == 0:
         return (None, None, None)
-    elif count == 1:
-        return (None, peaks[0], None)
-    elif count == 2:
-        peaks = sort_by_frequency(peaks)
-        aa, bb = peaks.T
-        maxix = numpy.argmax(support.abs2(aa) / -bb.imag)
-        if maxix == 0:
-            return (None, peaks[0], peaks[1])
-        else:
-            return (peaks[0], peaks[1], None)
     else:
-        # If three or more peaks, return the three largest
-        return tuple(sort_by_frequency(sort_by_area(peaks[:3])))
+        # Take the peak with the largest area as the tune, return the
+        # neighbouring peaks as the sidebands, or return empty peaks if none
+        # available.
+        peaks = sort_by_frequency(peaks)
+        maxix = numpy.argmax(peaks_area(peaks))
+        padded = [None] + list(peaks) + [None]
+        return padded[maxix:maxix+3]
 
 
 def compute_peak_info(peak):
