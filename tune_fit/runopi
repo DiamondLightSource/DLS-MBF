@@ -1,7 +1,5 @@
 #!/bin/sh
 
-PREFIX="${1:-SR23C-DI-TMBF-02:TUNE:}"
-
 cd "$(dirname "$(readlink -f "$0")")"/opi
 
-edm -x -eolc -m prefix="$PREFIX" peaks.edl &
+edm -x -eolc tune_launcher.edl &
