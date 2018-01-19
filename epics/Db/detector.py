@@ -48,4 +48,8 @@ for a in axes('DET', lmbf_mode):
     aOut('FIR_DELAY', PREC = 1, EGU = 'turns',
         DESC = 'FIR nominal group delay')
 
+    # This PV is something of a hack until we sort out the display
+    boolOut('FILL_WAVEFORM', 'Truncated', 'Filled',
+        DESC = 'Treatment of truncated waveforms')
+
     Trigger('UPDATE', *updates)

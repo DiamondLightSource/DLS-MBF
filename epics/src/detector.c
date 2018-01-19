@@ -34,6 +34,7 @@ struct detector_bank {
 
     bool output_ovf;                // Detector readout overflow
 
+    unsigned int samples;           // Number of valid samples in this bank
     float *wf_i;                    // Detector results
     float *wf_q;
     float *wf_power;
@@ -66,6 +67,13 @@ static struct detector_context {
 
     /* Scale information for detector readout copied from sequencer. */
     struct scale_info scale_info;
+
+    /* At the moment there is a compatibility issue with the display manager.
+     * This code lets us switch between truncated and filled waveforms when the
+     * capture length is shorter than buffer length, but in the long term we
+     * will want to switch to truncated waveforms. */
+    bool fill_waveform;
+    unsigned int scale_length;
 } detector_context[AXIS_COUNT];
 
 
@@ -124,6 +132,19 @@ static void compute_wf_iq(
                 result += 1;
             }
         scale += 1;
+    }
+}
+
+
+static void update_samples(struct detector_context *det)
+{
+    for (int i = 0; i < DETECTOR_COUNT; i ++)
+    {
+        struct detector_bank *bank = &det->banks[i];
+        if (bank->config.enable)
+            bank->samples = det->scale_length;
+        else
+            bank->samples = 0;
     }
 }
 
@@ -210,6 +231,9 @@ static void read_detector_memory(struct detector_context *det)
 
     /* Compute the power waveform. */
     compute_power_phase(det, wf_i, wf_q, wf_power, wf_phase);
+
+    /* Update sample count for each detector. */
+    update_samples(det);
 }
 
 
@@ -230,6 +254,11 @@ static void detector_readout_event(struct detector_context *det)
 
     read_detector_scale_info(
         det->axis, system_config.detector_length, &det->scale_info);
+    if (det->fill_waveform)
+        det->scale_length = system_config.detector_length;
+    else
+        det->scale_length =
+            MIN(system_config.detector_length, det->scale_info.samples);
 
     read_detector_memory(det);
 
@@ -293,10 +322,14 @@ static void publish_detector(
 
         PUBLISH_READ_VAR(bi, "OUT_OVF", bank->output_ovf);
 
-        PUBLISH_WF_READ_VAR(float, "I", detector_length, bank->wf_i);
-        PUBLISH_WF_READ_VAR(float, "Q", detector_length, bank->wf_q);
-        PUBLISH_WF_READ_VAR(float, "POWER", detector_length, bank->wf_power);
-        PUBLISH_WF_READ_VAR(float, "PHASE", detector_length, bank->wf_phase);
+        PUBLISH_WF_READ_VAR_LEN(float, "I",
+            detector_length, bank->samples, bank->wf_i);
+        PUBLISH_WF_READ_VAR_LEN(float, "Q",
+            detector_length, bank->samples, bank->wf_q);
+        PUBLISH_WF_READ_VAR_LEN(float, "POWER",
+            detector_length, bank->samples, bank->wf_power);
+        PUBLISH_WF_READ_VAR_LEN(float, "PHASE",
+            detector_length, bank->samples, bank->wf_phase);
         PUBLISH_READ_VAR(ai, "MAX_POWER", bank->max_power);
     }
 }
@@ -379,10 +412,14 @@ error__t initialise_detector(void)
         struct scale_info *info = &det->scale_info;
         info->tune_scale = CALLOC(double, detector_length);
         info->timebase = CALLOC(int, detector_length);
-        PUBLISH_WF_READ_VAR(double, "SCALE", detector_length, info->tune_scale);
-        PUBLISH_WF_READ_VAR(int, "TIMEBASE", detector_length, info->timebase);
+        PUBLISH_WF_READ_VAR_LEN(double, "SCALE",
+            detector_length, det->scale_length, info->tune_scale);
+        PUBLISH_WF_READ_VAR_LEN(int, "TIMEBASE",
+            detector_length, det->scale_length, info->timebase);
         PUBLISH_READ_VAR(ulongin, "SAMPLES", info->samples);
         PUBLISH_WRITE_VAR_P(ao, "FIR_DELAY", det->fir_group_delay);
+
+        PUBLISH_WRITE_VAR_P(bo, "FILL_WAVEFORM", det->fill_waveform);
 
         det->update = create_interlock("UPDATE", false);
     }

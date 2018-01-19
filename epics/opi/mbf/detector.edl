@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 110
-y 367
+x 2602
+y 381
 w 447
 h 409
 font "helvetica-medium-r-18.0"
@@ -309,8 +309,8 @@ minor 6
 release 0
 x 112
 y 376
-w 128
-h 14
+w 72
+h 16
 controlPv "$(device):$(axis):DET:UNDERRUN"
 font "helvetica-medium-r-12.0"
 fgColor index 14
@@ -504,6 +504,45 @@ bgColor index 0
 useDisplayBg
 value {
   "FIR delay:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 264
+y 368
+w 96
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):DET:FILL_WAVEFORM_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 184
+y 372
+w 71
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Waveforms:"
 }
 autoSize
 endObjectProperties
