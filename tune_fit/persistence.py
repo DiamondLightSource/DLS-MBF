@@ -40,13 +40,18 @@ class Persistence:
     # Saves a new state file.  To avoid creating a half-written file, we use
     # rename after writing a temporary file.
     def save(self, state):
-        new_file = self.persistence_file + '.new'
-        with open(new_file, 'w') as state_file:
-            for name, value in state.items():
-                pv, _ = self.pvs[name]
-                state_file.write('%s=%s\n' % (name, pv.get()))
-        os.rename(new_file, self.persistence_file)
-        self.state = state
+        try:
+            new_file = self.persistence_file + '.new'
+            with open(new_file, 'w') as state_file:
+                for name, value in state.items():
+                    pv, _ = self.pvs[name]
+                    state_file.write('%s=%s\n' % (name, pv.get()))
+            os.rename(new_file, self.persistence_file)
+        except:
+            print 'Unable to write', self.persistence_file
+            traceback.print_exc()
+        else:
+            self.state = state
 
     # Called periodically and on exit.  If the state has changed from what is in
     # the state file then update the state file.
