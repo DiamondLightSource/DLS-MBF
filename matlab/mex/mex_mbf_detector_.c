@@ -70,8 +70,8 @@ static void convert_samples(
     {
         for (unsigned int j = 0; j < channels; j ++)
         {
-            *reals[j]++ = buffer->i;
-            *imags[j]++ = buffer->q;
+            *reals[j]++ = ldexp(buffer->i, -31);
+            *imags[j]++ = ldexp(buffer->q, -31);
             buffer += 1;
         }
     }
