@@ -23,6 +23,7 @@ def detector_bank_pvs(updates):
         detector_wf('I', 'Detector I'),
         detector_wf('Q', 'Detector Q'),
         detector_wf('POWER', 'Detector Power'),
+        detector_wf('PHASE', 'Detector Phase'),
         aIn('MAX_POWER', EGU = 'dB',
             DESC = 'Percentage full scale of maximum power'),
     ])

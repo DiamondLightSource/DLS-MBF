@@ -37,6 +37,7 @@ struct detector_bank {
     float *wf_i;                    // Detector results
     float *wf_q;
     float *wf_power;
+    float *wf_phase;
     double max_power;
 };
 
@@ -72,7 +73,7 @@ static void gather_buffers(
     struct detector_context *context,
     bool enables[DETECTOR_COUNT],
     float *wf_i[DETECTOR_COUNT], float *wf_q[DETECTOR_COUNT],
-    float *wf_power[DETECTOR_COUNT])
+    float *wf_power[DETECTOR_COUNT], float *wf_phase[DETECTOR_COUNT])
 {
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
@@ -81,6 +82,7 @@ static void gather_buffers(
         wf_i[i] = bank->wf_i;
         wf_q[i] = bank->wf_q;
         wf_power[i] = bank->wf_power;
+        wf_phase[i] = bank->wf_phase;
     }
 }
 
@@ -95,31 +97,15 @@ void get_detector_info(int axis, struct detector_info *info)
 }
 
 
-static void read_detector_memory(struct detector_context *det)
+/* Converts IQ data from raw buffer into delay compensated IQ data, and
+ * transposes into individual detectors. */
+static void compute_wf_iq(
+    struct detector_context *det, unsigned int samples,
+    const bool enables[DETECTOR_COUNT],
+    float *wf_i[DETECTOR_COUNT], float *wf_q[DETECTOR_COUNT])
 {
-    const struct scale_info *info = &det->scale_info;
-    unsigned int detector_length = system_config.detector_length;
-    unsigned int samples = MIN(info->samples, detector_length);
-    hw_read_det_memory(
-        det->axis, samples * det->detector_count, 0, det->read_buffer);
-
-    /* Gather all the buffers. */
-    bool enables[DETECTOR_COUNT];
-    float *wf_i[DETECTOR_COUNT];
-    float *wf_q[DETECTOR_COUNT];
-    float *wf_power[DETECTOR_COUNT];
-    gather_buffers(det, enables, wf_i, wf_q, wf_power);
-
-    /* First zero fill the target buffers. */
-    for (int i = 0; i < DETECTOR_COUNT; i ++)
-    {
-        memset(wf_i[i], 0, detector_length * sizeof(float));
-        memset(wf_q[i], 0, detector_length * sizeof(float));
-        memset(wf_power[i], 0, detector_length * sizeof(float));
-    }
-
-    /* Transpose the readout into the corresponding output waveforms. */
     struct detector_result *result = det->read_buffer;
+    const struct scale_info *info = &det->scale_info;
     const double *scale = info->tune_scale;
     double phase_delay =
         2.0 * M_PI * det->phase_delay / hardware_config.bunches;
@@ -139,21 +125,91 @@ static void read_detector_memory(struct detector_context *det)
             }
         scale += 1;
     }
+}
 
-    /* Compute the power waveform. */
+
+/* Extends last point to fill entire waveform.  This will be redundant when we
+ * switch to always truncating the generated waveforms (see fill_waveform
+ * configuration and associated PV). */
+static void extend_wf_iq(
+    unsigned int samples,
+    const bool enables[DETECTOR_COUNT],
+    float *wf_i[DETECTOR_COUNT], float *wf_q[DETECTOR_COUNT])
+
+{
+    unsigned int detector_length = system_config.detector_length;
+    for (int i = 0; i < DETECTOR_COUNT; i ++)
+    {
+        if (enables[i]  &&  samples > 0)
+        {
+            float I = wf_i[i][samples - 1];
+            float Q = wf_q[i][samples - 1];
+            for (unsigned int j = samples; j < detector_length; j ++)
+            {
+                wf_i[i][j] = I;
+                wf_q[i][j] = Q;
+            }
+        }
+        else
+        {
+            memset(wf_i[i], 0, detector_length * sizeof(float));
+            memset(wf_q[i], 0, detector_length * sizeof(float));
+        }
+    }
+}
+
+
+/* Computes power and phase from IQ and updates maximum power. */
+static void compute_power_phase(
+    struct detector_context *det,
+    float *const wf_i[DETECTOR_COUNT], float *const wf_q[DETECTOR_COUNT],
+    float *wf_power[DETECTOR_COUNT], float *wf_phase[DETECTOR_COUNT])
+{
+    unsigned int detector_length = system_config.detector_length;
     for (int j = 0; j < DETECTOR_COUNT; j ++)
     {
-        float max_power = 0;
-        if (enables[j])
-            for (unsigned int i = 0; i < samples; i ++)
-            {
-                float power = SQR(wf_i[j][i]) + SQR(wf_q[j][i]);
-                wf_power[j][i] = power;
-                if (power > max_power)
-                    max_power = power;
-            }
-        det->banks[j].max_power = 10 * log10(max_power / ldexp(1, 2*31));
+        float max_power = -INFINITY;
+        for (unsigned int i = 0; i < detector_length; i ++)
+        {
+            float I = wf_i[j][i];
+            float Q = wf_q[j][i];
+            /* The scaling factor of -62 here is because the maximum valid value
+             * for either I or Q is 2^31 (INT32_MAX). */
+            float power = 10 * log10f(ldexpf(SQR(I) + SQR(Q), -62));
+            wf_power[j][i] = power;
+            wf_phase[j][i] = 180.0F / (float) M_PI * atan2f(I, Q);
+            if (power > max_power)
+                max_power = power;
+        }
+        det->banks[j].max_power = max_power;
     }
+}
+
+
+static void read_detector_memory(struct detector_context *det)
+{
+    const struct scale_info *info = &det->scale_info;
+    unsigned int detector_length = system_config.detector_length;
+    unsigned int samples = MIN(info->samples, detector_length);
+    hw_read_det_memory(
+        det->axis, samples * det->detector_count, 0, det->read_buffer);
+
+    /* Gather all the buffers. */
+    bool enables[DETECTOR_COUNT];
+    float *wf_i[DETECTOR_COUNT];
+    float *wf_q[DETECTOR_COUNT];
+    float *wf_power[DETECTOR_COUNT];
+    float *wf_phase[DETECTOR_COUNT];
+    gather_buffers(det, enables, wf_i, wf_q, wf_power, wf_phase);
+
+    /* Transpose the readout into the corresponding output waveforms. */
+    compute_wf_iq(det, samples, enables, wf_i, wf_q);
+
+    /* Extend the last data point to fill the buffer if necessary. */
+    extend_wf_iq(samples, enables, wf_i, wf_q);
+
+    /* Compute the power waveform. */
+    compute_power_phase(det, wf_i, wf_q, wf_power, wf_phase);
 }
 
 
@@ -220,6 +276,7 @@ static void publish_detector(
     bank->wf_i = CALLOC(float, detector_length);
     bank->wf_q = CALLOC(float, detector_length);
     bank->wf_power = CALLOC(float, detector_length);
+    bank->wf_phase = CALLOC(float, detector_length);
 
     char prefix[4];
     sprintf(prefix, "%d", i);
@@ -238,6 +295,7 @@ static void publish_detector(
         PUBLISH_WF_READ_VAR(float, "I", detector_length, bank->wf_i);
         PUBLISH_WF_READ_VAR(float, "Q", detector_length, bank->wf_q);
         PUBLISH_WF_READ_VAR(float, "POWER", detector_length, bank->wf_power);
+        PUBLISH_WF_READ_VAR(float, "PHASE", detector_length, bank->wf_phase);
         PUBLISH_READ_VAR(ai, "MAX_POWER", bank->max_power);
     }
 }

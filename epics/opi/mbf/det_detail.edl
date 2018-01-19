@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 904
-y 143
-w 640
-h 633
+x 224
+y 162
+w 505
+h 529
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -26,62 +26,6 @@ gridSize 8
 disableScroll
 endScreenProperties
 
-# (X-Y Graph)
-object xyGraphClass
-beginObjectProperties
-major 4
-minor 8
-release 0
-# Geometry
-x 8
-y 408
-w 624
-h 184
-# Appearance
-autoScaleBothDirections
-graphTitle "I/Q"
-fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "AutoScale"
-xMin -10
-xMax 1000
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMax 1
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 2
-xPv {
-  0 "$(device):$(axis):DET:$(x_axis)"
-  1 "$(device):$(axis):DET:$(x_axis)"
-}
-yPv {
-  0 "$(device):$(axis):DET:$(det):I"
-  1 "$(device):$(axis):DET:$(det):Q"
-}
-plotUpdateMode {
-  0 "y"
-  1 "y"
-}
-ySigned {
-  0 1
-  1 1
-}
-plotColor {
-  0 index 27
-  1 index 20
-}
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -90,7 +34,7 @@ minor 1
 release 1
 x 0
 y 0
-w 640
+w 504
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -107,8 +51,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 568
-y 600
+x 432
+y 496
 w 64
 h 24
 fgColor index 46
@@ -152,11 +96,11 @@ release 0
 # Geometry
 x 8
 y 40
-w 624
-h 184
+w 488
+h 448
 # Appearance
 autoScaleBothDirections
-graphTitle "Power"
+graphTitle "I/Q"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -166,8 +110,7 @@ nPts 2
 # X axis properties
 showXAxis
 xAxisSrc "AutoScale"
-xMin -10
-xMax 1000
+xMax 1
 # Y axis properties
 showYAxis
 yAxisSrc "AutoScale"
@@ -178,126 +121,19 @@ y2Max 1
 # Trace Properties
 numTraces 1
 xPv {
-  0 "$(device):$(axis):DET:$(x_axis)"
+  0 "$(device):$(axis):DET:$(det):I"
 }
 yPv {
-  0 "$(device):$(axis):DET:$(det):POWER"
-}
-plotUpdateMode {
-  0 "y"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 27
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 488
-y 600
-w 72
-h 24
-fgColor index 43
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Detail"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "mbf/det_detail.edl"
-}
-endObjectProperties
-
-# (X-Y Graph)
-object xyGraphClass
-beginObjectProperties
-major 4
-minor 8
-release 0
-# Geometry
-x 8
-y 224
-w 624
-h 184
-# Appearance
-autoScaleBothDirections
-graphTitle "Phase"
-fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "AutoScale"
-xMin -10
-xMax 1000
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMax 1
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 1
-xPv {
-  0 "$(device):$(axis):DET:$(x_axis)"
-}
-yPv {
-  0 "$(device):$(axis):DET:$(det):PHASE"
+  0 "$(device):$(axis):DET:$(det):Q"
 }
 plotStyle {
   0 "point"
 }
-plotUpdateMode {
-  0 "y"
-}
 ySigned {
   0 1
 }
 plotColor {
   0 index 27
-}
-endObjectProperties
-
-# (Menu Mux)
-object menuMuxClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 56
-y 600
-w 96
-h 24
-fgColor index 14
-bgColor index 3
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-medium-r-12.0"
-numItems 2
-symbolTag {
-  0 "Frequency"
-  1 "Timebase"
-}
-symbol0 {
-  0 "x_axis"
-  1 "x_axis"
-}
-value0 {
-  0 "SCALE"
-  1 "TIMEBASE"
 }
 endObjectProperties
 
@@ -307,8 +143,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 288
-y 600
+x 112
+y 496
 w 16
 h 16
 lineColor index 14
@@ -324,8 +160,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 312
-y 600
+x 136
+y 496
 w 48
 h 16
 controlPv "$(device):$(axis):DET:$(det):OUT_OVF"
@@ -348,8 +184,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 232
-y 600
+x 56
+y 496
 w 56
 h 16
 controlPv "$(device):$(axis):DET:$(det):MAX_POWER"
@@ -374,8 +210,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 184
-y 600
+x 8
+y 496
 w 41
 h 28
 font "helvetica-bold-r-12.0"
@@ -395,8 +231,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 408
-y 600
+x 232
+y 496
 w 72
 h 24
 fgColor index 14
@@ -414,8 +250,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 368
-y 604
+x 192
+y 504
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -428,23 +264,51 @@ value {
 autoSize
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
+# (Text Monitor)
+object activeXTextDspClass:noedit
 beginObjectProperties
 major 4
-minor 1
-release 1
-x 8
-y 604
-w 40
-h 14
-font "helvetica-bold-r-12.0"
+minor 6
+release 0
+x 392
+y 496
+w 32
+h 16
+controlPv "$(device):$(axis):DET:$(det):COUNT"
+font "helvetica-medium-r-14.0"
 fgColor index 14
+fgAlarm
 bgColor index 0
 useDisplayBg
-value {
-  "X axis:"
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 312
+y 496
+w 72
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Bunches"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/det_bunches.edl"
 }
-autoSize
 endObjectProperties
 
