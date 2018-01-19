@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 3089
-y 404
+x 3090
+y 405
 w 640
 h 633
 font "helvetica-medium-r-18.0"
@@ -210,7 +210,7 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "Detail"
+buttonLabel "IQ"
 numPvs 4
 numDsps 1
 displayFileName {

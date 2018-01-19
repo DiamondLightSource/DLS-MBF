@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2511
-y 141
+x 2512
+y 142
 w 370
 h 600
 font "helvetica-medium-r-18.0"
@@ -437,6 +437,7 @@ y 224
 w 80
 h 16
 controlPv "$(prefix):LEFT:AREA"
+format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -628,6 +629,7 @@ y 224
 w 80
 h 16
 controlPv "$(prefix):CENTRE:AREA"
+format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -779,6 +781,7 @@ y 224
 w 80
 h 16
 controlPv "$(prefix):RIGHT:AREA"
+format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1077,6 +1080,7 @@ y 256
 w 80
 h 16
 controlPv "$(prefix):LEFT:HEIGHT"
+format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1123,6 +1127,7 @@ y 256
 w 80
 h 16
 controlPv "$(prefix):CENTRE:HEIGHT"
+format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1149,6 +1154,7 @@ y 256
 w 80
 h 16
 controlPv "$(prefix):RIGHT:HEIGHT"
+format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14

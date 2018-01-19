@@ -121,7 +121,7 @@ def publish_peak(pvs, name, pv_name):
         pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5, DESC = 'Peak centre frequency')
         pvs.aIn('phase', 'PHASE', -180, 180, PREC = 1, EGU = 'deg',
             DESC = 'Peak phase')
-        pvs.aIn('area', 'AREA', DESC = 'Peak area')
+        pvs.aIn('area', 'AREA', PREC = 3, DESC = 'Peak area')
         pvs.aIn('width', 'WIDTH', 0, 1, PREC = 3, DESC = 'Peak width')
         pvs.aIn('height', 'HEIGHT', PREC = 3, DESC = 'Peak height')
 

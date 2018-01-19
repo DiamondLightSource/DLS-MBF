@@ -63,10 +63,6 @@ def fit_one_pole(scale, iq, weights):
 
     # Do the inversion by hand
     det = S_w * S_w_iq2 - support.abs2(S_w_iq)
-    # Check for a sensible fit, otherwise fail.
-    if len(iq) >= 2  and  abs(det) > S_w:
-        a = (S_w_iq2 * S_w_s_iq - S_w_iq * S_w_s_iq2) / det
-        b = (S_w * S_w_s_iq2 - numpy.conj(S_w_iq) * S_w_s_iq) / det
-        return numpy.array([a, b])
-    else:
-        return None
+    a = (S_w_iq2 * S_w_s_iq - S_w_iq * S_w_s_iq2) / det
+    b = (S_w * S_w_s_iq2 - numpy.conj(S_w_iq) * S_w_s_iq) / det
+    return numpy.array([a, b])
