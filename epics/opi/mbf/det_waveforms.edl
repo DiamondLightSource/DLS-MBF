@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 904
-y 143
+x 3089
+y 404
 w 640
 h 633
 font "helvetica-medium-r-18.0"
@@ -157,6 +157,7 @@ h 184
 # Appearance
 autoScaleBothDirections
 graphTitle "Power"
+yLabel "dB"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -231,6 +232,7 @@ h 184
 # Appearance
 autoScaleBothDirections
 graphTitle "Phase"
+yLabel "deg"
 fgColor index 14
 bgColor index 3
 gridColor index 14

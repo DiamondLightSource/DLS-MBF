@@ -125,8 +125,10 @@ static void compute_wf_iq(
         for (int j = 0; j < DETECTOR_COUNT; j ++)
             if (enables[j])
             {
-                double ri = result->i;
-                double rq = result->q;
+                /* Convert I and Q to +-1 max scale, this is easier to
+                 * understand. */
+                double ri = ldexp(result->i, -31);
+                double rq = ldexp(result->q, -31);
                 wf_i[j][i] = (float) (rotI * ri + rotQ * rq);
                 wf_q[j][i] = (float) (rotI * rq - rotQ * ri);
                 result += 1;
@@ -194,9 +196,7 @@ static void compute_power_phase(
         {
             float I = wf_i[j][i];
             float Q = wf_q[j][i];
-            /* The scaling factor of -62 here is because the maximum valid value
-             * for either I or Q is 2^31 (INT32_MAX). */
-            float power = 10 * log10f(ldexpf(SQR(I) + SQR(Q), -62));
+            float power = 10 * log10f(SQR(I) + SQR(Q));
             wf_power[j][i] = power;
             wf_phase[j][i] = 180.0F / (float) M_PI * atan2f(I, Q);
             if (power > max_power)
