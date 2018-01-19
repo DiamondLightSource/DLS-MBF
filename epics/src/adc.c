@@ -30,7 +30,7 @@ static struct adc_context {
 } adc_context[AXIS_COUNT];
 
 
-static void write_adc_taps(void *context, float array[], size_t *length)
+static void write_adc_taps(void *context, float array[], unsigned int *length)
 {
     struct adc_context *adc = context;
     *length = hardware_config.adc_taps;

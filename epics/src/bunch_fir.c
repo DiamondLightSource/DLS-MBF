@@ -146,7 +146,7 @@ static bool set_use_waveform(void *context, bool *use_waveform)
 /* This is called when the waveform TAPS_S is updated.  If we're using the
  * waveform settings then the given waveform is written to hardware, otherwise
  * we just hang onto it. */
-static void set_fir_taps(void *context, float *taps, size_t *length)
+static void set_fir_taps(void *context, float *taps, unsigned int *length)
 {
     struct fir_bank *bank = context;
     *length = hardware_config.bunch_taps;

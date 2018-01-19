@@ -237,7 +237,8 @@ static bool read_seq_status(void *context, bool *value)
 }
 
 
-static void write_super_offsets(void *context, double offsets[], size_t *length)
+static void write_super_offsets(
+    void *context, double offsets[], unsigned int *length)
 {
     struct seq_context *seq = context;
     *length = SUPER_SEQ_STATES;
@@ -279,7 +280,7 @@ static void compute_default_window(float window[])
 
 
 static void write_detector_window(
-    void *context, float window[], size_t *length)
+    void *context, float window[], unsigned int *length)
 {
     struct seq_context *seq = context;
     if (seq->reset_window)

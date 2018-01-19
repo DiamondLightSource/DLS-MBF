@@ -246,7 +246,8 @@ static void dispatch_detector_event(void *context, struct interrupts interrupts)
 
 
 /* Called when updating the set of bunch enables. */
-static void write_bunch_enables(void *context, char enables[], size_t *length)
+static void write_bunch_enables(
+    void *context, char enables[], unsigned int *length)
 {
     struct detector_bank *bank = context;
 

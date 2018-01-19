@@ -173,7 +173,7 @@ static void update_gain_status(struct bunch_bank *bank, const int gain[])
 /* Bunch publish and control. */
 
 
-static void write_fir_wf(void *context, char fir_select[], size_t *length)
+static void write_fir_wf(void *context, char fir_select[], unsigned int *length)
 {
     struct bunch_bank *bank = context;
     *length = hardware_config.bunches;
@@ -189,7 +189,7 @@ static void write_fir_wf(void *context, char fir_select[], size_t *length)
 }
 
 
-static void write_out_wf(void *context, char out_enable[], size_t *length)
+static void write_out_wf(void *context, char out_enable[], unsigned int *length)
 {
     struct bunch_bank *bank = context;
     *length = hardware_config.bunches;
@@ -210,7 +210,7 @@ static void write_out_wf(void *context, char out_enable[], size_t *length)
 }
 
 
-static void write_gain_wf(void *context, float gain[], size_t *length)
+static void write_gain_wf(void *context, float gain[], unsigned int *length)
 {
     struct bunch_bank *bank = context;
     *length = hardware_config.bunches;

@@ -30,7 +30,7 @@ static struct dac_context {
 } dac_context[AXIS_COUNT];
 
 
-static void write_dac_taps(void *context, float array[], size_t *length)
+static void write_dac_taps(void *context, float array[], unsigned int *length)
 {
     struct dac_context *dac = context;
     *length = hardware_config.dac_taps;
