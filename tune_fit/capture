@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Capture IQS PVs from specified IOC
+
+IOC="${1:?Must specify IOC to capture from}"
+
+if [[ $IOC = -h ]]; then
+cat <<EOF
+Usage: capture <ioc-name> >logfile
+
+The IOC name should be the device name for an old style Libera TMBF and should
+be device name:axis for new MBF.  Examples:
+
+    capture SR23C-DI-TMBF-01    >tmbf-x.log
+    capture SR23C-DI-LMBF-01:IQ >lmbf.log
+
+Such logs can then be replayed by running
+
+    dls-python plotting.py logfile
+EOF
+    exit
+fi
+
+# The format of names depends on the source IOC.  If IOC name includes : assume
+# it's a new form IOC, otherwise assume an old form.
+
+if [[ $IOC =~ : ]]; then
+    I=$IOC:DET:0:I
+    Q=$IOC:DET:0:Q
+    S=$IOC:DET:SCALE
+else
+    I=$IOC:TUNE:I
+    Q=$IOC:TUNE:Q
+    S=$IOC:DET:SCALE
+fi
+
+camonitor -f9 $I $Q $S
