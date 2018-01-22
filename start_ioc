@@ -1,0 +1,34 @@
+#!/bin/sh
+
+set -x
+
+# Launches specified IOC under procServ.
+#
+# This script is a temporary measure until we have IOC startup scripts working
+# on our new MicroTCA server.
+
+PROCSERV=/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/procServ
+
+error()
+{
+    echo >&2 "$@"
+    exit 1
+}
+
+
+HERE="$(dirname "$0)")"
+
+IOC="${1:?Must specify IOC to launch}"
+
+
+IOC_PATH="$HERE"/iocs/"$IOC"
+
+# Check the IOC exists
+[[ -x "$IOC_PATH" ]]  ||  error IOC "$IOC" not known
+
+# Try to read the procServ port from the IOC configuration file
+PORT="$(sed -n '/^procserv_port *= */{s///;p}' "$IOC_PATH".config)"  &&
+[[ -n $PORT ]]  ||
+    error Unable to read port
+
+"$PROCSERV" --allow $PORT "$IOC_PATH"
