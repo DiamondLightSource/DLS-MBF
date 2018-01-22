@@ -103,8 +103,20 @@ def publish_config(pvs):
             DESC = 'Reject peaks shorter than this')
 
 
+def publish_mux(pvs, mux):
+    builder.mbbOut('SELECT_S',
+        *mux.mux_options, on_update = mux.update_selection,
+        DESC = 'Select which tune to use')
+    mux.tune_pv = builder.aIn('TUNE', 0, 1,
+        PREC = 5,
+        DESC = 'Selected tune')
+    mux.phase_pv = builder.aIn('PHASE', -180, 180,
+        EGU = 'deg', PREC = 1,
+        DESC = 'Selected tune phase')
+
+
 def publish_tune(pvs):
-    with pvs.name_prefix(None, 'tune.tune'):
+    with pvs.name_prefix('PEAK', 'tune.tune'):
         pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5,
             DESC = 'Measured tune')
         pvs.aIn('phase', 'PHASE', -180, 180,
@@ -137,11 +149,12 @@ def publish_delta(pvs, name, pv_name):
         pvs.aIn('height', 'RHEIGHT', PREC = 3, DESC = 'Relative height')
 
 
-def publish_pvs(persist, target, length):
+def publish_pvs(persist, target, mux, length):
     pvs = PvSet(persist)
     with pvs.name_prefix(target):
         publish_config(pvs)
 
+        publish_mux(pvs, mux)
         publish_tune(pvs)
         publish_peak(pvs, 'tune.left', 'LEFT')
         publish_peak(pvs, 'tune.centre', 'CENTRE')

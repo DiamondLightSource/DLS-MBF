@@ -1,5 +1,6 @@
 # Miscellanous stuff.  This will probably be renamed to support in a bit.
 
+import re
 import numpy
 
 
@@ -20,6 +21,39 @@ class Trace:
                 v._print(indent + '    ')
             else:
                 print '%s%s: %s' % (indent, k, v)
+
+
+# Reads lines from given file but joins lines ending with \
+def read_joined_lines(filename):
+    last_line = None
+    for line in open(filename):
+        # Check for matching continuation pattern, if found delete from line
+        continuation = re.match(r'(.*)\\ *\n$', line)
+        if continuation:
+            line = continuation.groups()[0]
+
+        # If the last line was a continuation then add it to our line
+        if last_line:
+            line = last_line + line
+
+        # Save line or set aside as continuation
+        if continuation:
+            last_line = line
+        else:
+            yield line
+            last_line = None
+    if last_line:
+        yield last_line
+
+
+def read_config(filename):
+    config_lines = read_joined_lines(filename)
+
+    rule_expr = re.compile(r'^(?!#) *([^=]+[^= ]) *= *(.*)\n')
+    config = dict([
+        m.groups()
+        for m in filter(None, map(rule_expr.match, config_lines))])
+    return config
 
 
 class Config:

@@ -2,7 +2,6 @@
 
 from pkg_resources import require
 import sys, os
-import re
 
 require('cothread==2.14')
 require('numpy==1.11.1')
@@ -10,20 +9,16 @@ require('epicsdbbuilder==1.2')
 
 # Import the basic framework components.
 from softioc import softioc, builder
+from softioc import pvlog
+
 import cothread
 import fit_loop
 import persistence
-
-from softioc import pvlog
-
+import support
 
 
 # Start by loading the configuration file
-config_lines = open(sys.argv[1]).readlines()
-rule_expr = re.compile(r'^(?!#)([^= ]+) *= *(.*)\n')
-config = dict([
-    m.groups()
-    for m in filter(None, map(rule_expr.match, config_lines))])
+config = support.read_config(sys.argv[1])
 
 # Read the required configuration parameters
 ioc_name = config['ioc_name']
