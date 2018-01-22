@@ -59,6 +59,18 @@ class Result:
     config = Config
 
 
+# Converts a line numbers into a numpy array.
+def fromstring(line):
+    if line == '\n':
+        # Alas, there is a nasty bug in fromstring if the string is empty: we
+        # get [-1] returned instead!
+        return numpy.empty(0)
+    else:
+        # This is a bit faster than map(double, line.split()); pity about the
+        # empty string bug!
+        return numpy.fromstring(line, sep = ' ')
+
+
 def load_replay(filename, max_n = 0):
     s_valid = False
     ts_i = ''
@@ -69,9 +81,8 @@ def load_replay(filename, max_n = 0):
 
     replay = file(filename)
     for line in replay:
-        pv, day, time, count, rest = line.split(None, 4)
-        # This is a bit faster than map(double, line.split())
-        value = numpy.fromstring(rest, sep = ' ')
+        pv, day, time, count, rest = line.split(' ', 4)
+        value = fromstring(rest)
 
         if pv.endswith(':I'):
             value_i = value
