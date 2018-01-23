@@ -1,12 +1,5 @@
 # Plotting of fits
 
-from pkg_resources import require
-require('numpy')
-require('matplotlib')
-
-import sys
-import argparse
-
 import numpy
 import matplotlib
 # matplotlib.use('PDF')
@@ -14,7 +7,6 @@ import matplotlib
 from matplotlib import pyplot, gridspec
 
 import support
-import replay
 import dd_peaks
 import refine
 import tune_fit
@@ -238,56 +230,3 @@ class Fitter:
 # f.set_size_inches(11.69, 8.27)
 # f.set_size_inches(8.27, 11.69)
 # f.savefig('foo.pdf', papertype = 'a4', orientation = 'portrait')
-
-
-def parse_option(name_value):
-    name, value = name_value.split('=', 1)
-    value_type = type(getattr(support.Config, name))
-    return (name, value_type(value))
-
-def parse_args():
-    parser = argparse.ArgumentParser(description = 'Replay and plot')
-    parser.add_argument('-n', '--peaks', default = 3, type = int,
-        help = 'Number of peaks to match')
-    parser.add_argument('-a', '--plot_all',
-        default = False, action = 'store_true',
-        help = 'Request plotting of all stages of fit')
-    parser.add_argument('-d', '--plot_dd',
-        default = False, action = 'store_true',
-        help = 'Plot derivative fits')
-    parser.add_argument('-o', '--config',
-        default = [], action = 'append', type = parse_option,
-        help = '''Add config option, of form <name>=<value>.  The possible
-            option names are %s.''' % ', '.join(support.Config._keys()))
-    parser.add_argument('filename',
-        help = 'Name of file to replay')
-    parser.add_argument('samples', nargs = '?', default = 0, type = int,
-        help = 'Number of samples to replay')
-    parser.add_argument('subset', nargs = argparse.REMAINDER, type = int,
-        help = 'Individual samples to process')
-
-    return parser.parse_args()
-
-
-def load_and_plot():
-    args = parse_args()
-    print args
-
-    s_iq = replay.load_replay(args.filename, args.samples)
-    if args.subset:
-        s_iq = [s_iq[ix] for ix in args.subset]
-
-    plot_each = bool(args.subset) or args.plot_all
-
-    config = support.Config(args.peaks, **dict(args.config))
-    fitter = Fitter(
-        len(s_iq), config, plot_each, args.plot_all, args.plot_dd)
-    replay.replay_s_iq(s_iq, fitter.fit_tune)
-
-    if not plot_each:
-        plot_fits(fitter.fits, fitter.tunes, fitter.errors)
-        pyplot.show()
-
-
-if __name__ == '__main__':
-    load_and_plot()
