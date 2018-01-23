@@ -57,15 +57,26 @@ def read_config(filename):
 
 
 class Config:
+    MAX_PEAKS = 3
     MINIMUM_WIDTH = 1e-5
-    MINIMUM_SPACING = 1
-    MAXIMUM_ANGLE = 100
+    MINIMUM_SPACING = 1.0
     MINIMUM_HEIGHT = 0.1
+    MAXIMUM_FIT_ERROR = 0.2
 
     SMOOTHING = 32
 
-    def __init__(self, max_peaks):
+    def __init__(self, max_peaks, **kargs):
         self.MAX_PEAKS = max_peaks
+        self.__dict__.update(kargs)
+
+    @classmethod
+    def _keys(cls):
+        return [key for key in cls.__dict__.keys() if key[0] != '_']
+
+    def __repr__(self):
+        return 'Config(%s)' % ', '.join([
+            '%s=%s' % (key, getattr(self, key))
+            for key in self._keys()])
 
 
 def abs2(z):

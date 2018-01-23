@@ -185,13 +185,14 @@ def plot_fits(fits, tunes, errors):
 
 
 class Fitter:
-    def __init__(self, samples, max_peaks, plot_each, plot_all, plot_dd):
-        self.max_peaks = max_peaks
+    def __init__(self, samples, config, plot_each, plot_all, plot_dd):
+        self.config = config
         self.plot_each = plot_each
         self.plot_all = plot_all
         self.plot_dd = plot_dd
 
-        self.fits = numpy.empty((samples, max_peaks, 2), dtype = numpy.complex)
+        self.fits = numpy.empty(
+            (samples, config.MAX_PEAKS, 2), dtype = numpy.complex)
         self.fits[:] = numpy.nan
         self.offsets = numpy.empty(samples, dtype = numpy.complex)
         self.offsets[:] = numpy.nan
@@ -208,8 +209,9 @@ class Fitter:
         print 'fit_tune', n
         self.n = n + 1
 
-        config = support.Config(max_peaks = self.max_peaks)
-        trace = tune_fit.fit_tune(config, scale, iq)
+        trace = tune_fit.fit_tune(self.config, scale, iq)
+        if trace.last_error:
+            print trace.last_error
 
         if self.plot_each:
             dd_traces = trace.dd
@@ -238,6 +240,11 @@ class Fitter:
 # f.savefig('foo.pdf', papertype = 'a4', orientation = 'portrait')
 
 
+def parse_option(name_value):
+    name, value = name_value.split('=', 1)
+    value_type = type(getattr(support.Config, name))
+    return (name, value_type(value))
+
 def parse_args():
     parser = argparse.ArgumentParser(description = 'Replay and plot')
     parser.add_argument('-n', '--peaks', default = 3, type = int,
@@ -248,6 +255,10 @@ def parse_args():
     parser.add_argument('-d', '--plot_dd',
         default = False, action = 'store_true',
         help = 'Plot derivative fits')
+    parser.add_argument('-o', '--config',
+        default = [], action = 'append', type = parse_option,
+        help = '''Add config option, of form <name>=<value>.  The possible
+            option names are %s.''' % ', '.join(support.Config._keys()))
     parser.add_argument('filename',
         help = 'Name of file to replay')
     parser.add_argument('samples', nargs = '?', default = 0, type = int,
@@ -268,8 +279,9 @@ def load_and_plot():
 
     plot_each = bool(args.subset) or args.plot_all
 
+    config = support.Config(args.peaks, **dict(args.config))
     fitter = Fitter(
-        len(s_iq), args.peaks, plot_each, args.plot_all, args.plot_dd)
+        len(s_iq), config, plot_each, args.plot_all, args.plot_dd)
     replay.replay_s_iq(s_iq, fitter.fit_tune)
 
     if not plot_each:

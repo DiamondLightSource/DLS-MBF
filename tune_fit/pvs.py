@@ -76,15 +76,17 @@ class PvSet:
 
     def Waveform(self, name, pv_name, length, FTVL = 'DOUBLE', **kargs):
         pv = builder.Waveform(pv_name, length = length, FTVL = FTVL, **kargs)
-        self.publish(name, pv)
+        self.publish_in_pv(name, pv)
 
     boolIn = make_in_pv_builder('boolIn')
     aIn    = make_in_pv_builder('aIn')
     longIn = make_in_pv_builder('longIn')
     mbbIn  = make_in_pv_builder('mbbIn')
+    stringIn = make_in_pv_builder('stringIn')
 
     aOut    = make_config_pv_builder('aOut', float)
     longOut = make_config_pv_builder('longOut', int)
+    mbbOut  = make_config_pv_builder('mbbOut', int)
 
 
 def publish_config(pvs):
@@ -93,19 +95,20 @@ def publish_config(pvs):
             DESC = 'Maximum number of peaks to fit')
         pvs.longOut('SMOOTHING', 8, 64, initial_value = 32,
             DESC = 'Degree of smoothing for 2D peak detect')
-        pvs.aOut('MINIMUM_WIDTH', 0, 1, initial_value = 1e-5, PREC = 5,
+        pvs.aOut('MINIMUM_WIDTH', 0, 1, initial_value = 1e-5, PREC = 2,
             DESC = 'Reject peaks narrower than this')
         pvs.aOut('MINIMUM_SPACING', 0, 2, initial_value = 1, PREC = 2,
             DESC = 'Reject peaks closer than this')
-        pvs.aOut('MAXIMUM_ANGLE', 0, 180, initial_value = 100, EGU = 'deg',
-            DESC = 'Reject phase range above this')
         pvs.aOut('MINIMUM_HEIGHT', 0, 1, initial_value = 0.1, PREC = 3,
             DESC = 'Reject peaks shorter than this')
+        pvs.aOut('MAXIMUM_FIT_ERROR', 0, 1, initial_value = 0.2, PREC = 3,
+            DESC = 'Reject overall fit if error this large')
 
 
 def publish_mux(pvs, mux):
-    builder.mbbOut('SELECT_S',
+    pvs.mbbOut('SELECT',
         *mux.mux_options, on_update = mux.update_selection,
+        initial_value = 0,
         DESC = 'Select which tune to use')
     mux.tune_pv = builder.aIn('TUNE', 0, 1,
         PREC = 5,
@@ -149,6 +152,30 @@ def publish_delta(pvs, name, pv_name):
         pvs.aIn('height', 'RHEIGHT', PREC = 3, DESC = 'Relative height')
 
 
+def publish_peaks(pvs):
+    publish_peak(pvs, 'tune.left', 'LEFT')
+    publish_peak(pvs, 'tune.centre', 'CENTRE')
+    publish_peak(pvs, 'tune.right', 'RIGHT')
+    publish_delta(pvs, 'tune.delta_left', 'LEFT')
+    publish_delta(pvs, 'tune.delta_right', 'RIGHT')
+
+
+def publish_graphs(pvs, length):
+    pvs.Waveform('input.scale', 'SCALE', length)
+    pvs.Waveform('input.power', 'POWER', length)
+    pvs.Waveform('input.iq.real', 'I', length)
+    pvs.Waveform('input.iq.imag', 'Q', length)
+    pvs.Waveform('output.model_power', 'MPOWER', length)
+    pvs.Waveform('output.model.real', 'MI', length)
+    pvs.Waveform('output.model.imag', 'MQ', length)
+    pvs.Waveform('output.residue', 'RESIDUE', length)
+
+
+def publish_info(pvs):
+    pvs.stringIn('last_error', 'LAST_ERROR')
+    pvs.aIn('output.fit_error', 'FIT_ERROR', PREC = 5)
+
+
 def publish_pvs(persist, target, mux, length):
     pvs = PvSet(persist)
     with pvs.name_prefix(target):
@@ -156,9 +183,7 @@ def publish_pvs(persist, target, mux, length):
 
         publish_mux(pvs, mux)
         publish_tune(pvs)
-        publish_peak(pvs, 'tune.left', 'LEFT')
-        publish_peak(pvs, 'tune.centre', 'CENTRE')
-        publish_peak(pvs, 'tune.right', 'RIGHT')
-        publish_delta(pvs, 'tune.delta_left', 'LEFT')
-        publish_delta(pvs, 'tune.delta_right', 'RIGHT')
+        publish_peaks(pvs)
+        publish_graphs(pvs, length)
+        publish_info(pvs)
     return pvs

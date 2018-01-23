@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 480
-y 108
+x 2267
+y 188
 w 370
-h 710
+h 608
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -35,7 +35,7 @@ release 0
 x 8
 y 136
 w 352
-h 280
+h 320
 lineColor index 14
 fill
 fillColor index 4
@@ -113,7 +113,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Measurement"
+  "Multiplexer"
 }
 endObjectProperties
 
@@ -794,7 +794,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Peaks"
+  "Tune Fit"
 }
 endObjectProperties
 
@@ -819,9 +819,9 @@ major 4
 minor 0
 release 0
 x 8
-y 432
+y 472
 w 352
-h 144
+h 96
 lineColor index 14
 fill
 fillColor index 4
@@ -834,7 +834,7 @@ major 4
 minor 1
 release 1
 x 8
-y 424
+y 464
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -853,7 +853,7 @@ major 4
 minor 0
 release 0
 x 8
-y 424
+y 464
 w 120
 h 16
 lineColor index 14
@@ -866,8 +866,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 104
-y 448
+x 96
+y 488
 w 64
 h 20
 controlPv "$(prefix):CONFIG:MAX_PEAKS_S"
@@ -895,7 +895,7 @@ major 4
 minor 1
 release 1
 x 16
-y 448
+y 488
 w 68
 h 14
 font "helvetica-bold-r-12.0"
@@ -915,7 +915,7 @@ major 4
 minor 1
 release 1
 x 16
-y 496
+y 512
 w 65
 h 14
 font "helvetica-bold-r-12.0"
@@ -934,10 +934,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 104
-y 496
+x 96
+y 512
 w 80
-h 20
+h 24
 controlPv "$(prefix):CONFIG:MINIMUM_HEIGHT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -956,34 +956,6 @@ objType "controls"
 noExecuteClipMask
 endObjectProperties
 
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 104
-y 472
-w 64
-h 20
-controlPv "$(prefix):CONFIG:MAXIMUM_ANGLE_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -991,27 +963,7 @@ major 4
 minor 1
 release 1
 x 16
-y 472
-w 65
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Max Angle:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 520
+y 536
 w 74
 h 14
 font "helvetica-bold-r-12.0"
@@ -1419,10 +1371,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 104
-y 520
+x 96
+y 536
 w 80
-h 20
+h 24
 controlPv "$(prefix):CONFIG:MINIMUM_SPACING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1566,7 +1518,7 @@ major 4
 minor 1
 release 0
 x 296
-y 584
+y 576
 w 64
 h 24
 fgColor index 46
@@ -1584,8 +1536,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 104
-y 544
+x 264
+y 488
 w 80
 h 20
 controlPv "$(prefix):CONFIG:SMOOTHING_S"
@@ -1612,8 +1564,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 16
-y 544
+x 184
+y 488
 w 67
 h 14
 font "helvetica-bold-r-12.0"
@@ -1755,5 +1707,216 @@ useHexPrefix
 newPos
 objType "monitors"
 noExecuteClipMask
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 264
+y 512
+w 80
+h 20
+controlPv "$(prefix):CONFIG:MINIMUM_WIDTH_S"
+format "exponential"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 184
+y 512
+w 62
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Min width:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 88
+y 416
+w 248
+h 16
+controlPv "$(prefix):LAST_ERROR"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 416
+w 45
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Fit info:"
+}
+autoSize
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 208
+y 576
+w 80
+h 24
+fgColor index 43
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Graphs"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "graphs.edl"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 88
+y 432
+w 248
+h 16
+controlPv "$(prefix):FIT_ERROR"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 432
+w 52
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Fit error:"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 264
+y 536
+w 80
+h 20
+controlPv "$(prefix):CONFIG:MAXIMUM_FIT_ERROR_S"
+format "exponential"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 184
+y 536
+w 62
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Max error:"
+}
+autoSize
 endObjectProperties
 

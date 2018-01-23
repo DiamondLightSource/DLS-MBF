@@ -138,4 +138,4 @@ def compute_fit_error(scale, iq, model):
     m2 = support.abs2(m)
     r2 = support.abs2(iq - m)
     iq2 = support.abs2(iq)
-    return numpy.sum(r2 * m2) / numpy.sum(iq2 * m2)
+    return m, r2, numpy.sum(r2 * m2) / numpy.sum(iq2 * m2)
