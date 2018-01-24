@@ -13,14 +13,23 @@ import pvs
 LENGTH = 4096
 
 
+# It normally doesn't help when we're warned about NaN and the like, we'll check
+# for them at the appropriate points in the code.
+numpy.seterr(all = 'ignore')
+
+
 class Gather:
-    def __init__(self, updates):
-        self.updates = updates
+    def __init__(self, updates, pv_i, pv_q, pv_s):
+        self.event = cothread.Event()
         self.timestamps = {}
         self.values = {}
 
-    def monitor(self, emit, key, pv):
-        self.emit = emit
+        self.updates = updates
+        self.monitor('I', pv_i)
+        self.monitor('Q', pv_q)
+        self.monitor('S', pv_s)
+
+    def monitor(self, key, pv):
         self.timestamps[key] = 0
         self.values[key] = 0
         camonitor(pv, lambda v: self.update(key, v), format = FORMAT_TIME)
@@ -33,6 +42,15 @@ class Gather:
             return
         if all(self.timestamps[u] == timestamp for u in self.updates):
             self.emit(timestamp, self.values)
+
+    def emit(self, timestamp, values):
+        iq = numpy.complex128(values['I'] + 1j * values['Q'])
+        s = numpy.float64(values['S'])
+        if len(iq) > 0:
+            self.event.Signal((timestamp, s, iq))
+
+    def wait(self):
+        return self.event.Wait()
 
 
 def get_mux_config(config, prefix):
@@ -102,32 +120,22 @@ class PvMux:
 
 class TuneFitLoop:
     def __init__(self, persist, config, source):
-        self.event = cothread.Event()
-
         pv_i    = config[source + '_i']
         pv_q    = config[source + '_q']
         pv_s    = config[source + '_s']
         target  = config[source + '_t']
         updates = config[source + '_u']
+        alias   = config.get(source + '_a')
 
-        gather = Gather(updates.split())
-        gather.monitor(self.update, 'I', pv_i)
-        gather.monitor(self.update, 'Q', pv_q)
-        gather.monitor(self.update, 'S', pv_s)
-
+        self.gather = Gather(updates.split(), pv_i, pv_q, pv_s)
         self.mux = PvMux(config, source)
-        self.pvs = pvs.publish_pvs(persist, target, self.mux, LENGTH)
-
-    def update(self, timestamp, values):
-        iq = numpy.complex128(values['I'] + 1j * values['Q'])
-        s = numpy.float64(values['S'])
-        self.event.Signal((timestamp, s, iq))
+        self.pvs = pvs.publish_pvs(persist, target, alias, self.mux, LENGTH)
 
     def fit_one_sweep(self):
-        t, s, iq = self.event.Wait()
+        timestamp, s, iq = self.gather.wait()
         config = self.pvs.get_config()
         trace = tune_fit.fit_tune(config, s, iq)
-        self.pvs.update(t, trace)
+        self.pvs.update(timestamp, trace)
         self.mux.update_tune(trace.tune.tune)
 
     def fit_thread(self):

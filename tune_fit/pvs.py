@@ -105,19 +105,6 @@ def publish_config(pvs):
             DESC = 'Reject overall fit if error this large')
 
 
-def publish_mux(pvs, mux):
-    pvs.mbbOut('SELECT',
-        *mux.mux_options, on_update = mux.update_selection,
-        initial_value = 0,
-        DESC = 'Select which tune to use')
-    mux.tune_pv = builder.aIn('TUNE', 0, 1,
-        PREC = 5,
-        DESC = 'Selected tune')
-    mux.phase_pv = builder.aIn('PHASE', -180, 180,
-        EGU = 'deg', PREC = 1,
-        DESC = 'Selected tune phase')
-
-
 def publish_tune(pvs):
     with pvs.name_prefix('PEAK', 'tune.tune'):
         pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5,
@@ -176,14 +163,34 @@ def publish_info(pvs):
     pvs.aIn('output.fit_error', 'FIT_ERROR', PREC = 5)
 
 
-def publish_pvs(persist, target, mux, length):
+def publish_mux(pvs, target, mux, alias):
+    pvs.mbbOut('SELECT',
+        *mux.mux_options, on_update = mux.update_selection,
+        initial_value = 0,
+        DESC = 'Select which tune to use')
+    mux.tune_pv = builder.aIn('TUNE', 0, 1,
+        PREC = 5,
+        DESC = 'Selected tune')
+    mux.phase_pv = builder.aIn('PHASE', -180, 180,
+        EGU = 'deg', PREC = 1,
+        DESC = 'Selected tune phase')
+
+    target_pv = builder.stringIn('PREFIX', VAL = target)
+    if alias:
+        mux.tune_pv.add_alias('%s:TUNE:TUNE' % alias)
+        mux.phase_pv.add_alias('%s:TUNE:PHASE' % alias)
+        target_pv.add_alias('%s:TUNE:PREFIX' % alias)
+
+
+def publish_pvs(persist, target, alias, mux, length):
     pvs = PvSet(persist)
     with pvs.name_prefix(target):
         publish_config(pvs)
 
-        publish_mux(pvs, mux)
         publish_tune(pvs)
         publish_peaks(pvs)
         publish_graphs(pvs, length)
         publish_info(pvs)
+
+        publish_mux(pvs, target, mux, alias)
     return pvs

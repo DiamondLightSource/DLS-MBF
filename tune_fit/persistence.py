@@ -14,7 +14,7 @@ class Persistence:
         self.state = {}
 
     # Computes snapshot of current state by reading all registered pvs
-    def compute_state(self):
+    def __compute_state(self):
         state = {}
         for name, (pv, _) in self.pvs.items():
             state[name] = pv.get()
@@ -22,7 +22,7 @@ class Persistence:
 
     # Loads persistent state from file.  Called at startup once PV
     # initialisation has completed
-    def load(self):
+    def __load(self):
         try:
             for line in open(self.persistence_file).readlines():
                 name, value = line.split('=', 1)
@@ -35,11 +35,11 @@ class Persistence:
             print 'Unable to load', self.persistence_file
             traceback.print_exc()
         else:
-            self.state = self.compute_state()
+            self.state = self.__compute_state()
 
     # Saves a new state file.  To avoid creating a half-written file, we use
     # rename after writing a temporary file.
-    def save(self, state):
+    def __save(self, state):
         try:
             new_file = self.persistence_file + '.new'
             with open(new_file, 'w') as state_file:
@@ -56,13 +56,13 @@ class Persistence:
     # Called periodically and on exit.  If the state has changed from what is in
     # the state file then update the state file.
     def check_save(self):
-        state = self.compute_state()
+        state = self.__compute_state()
         if state != self.state:
-            self.save(state)
+            self.__save(state)
 
     # Periodically check whether our saved state and our internal state are in
     # step, if not write a new state file.
-    def saver(self):
+    def __saver(self):
         while True:
             cothread.Sleep(self.persistence_interval)
             self.check_save()
@@ -72,5 +72,6 @@ class Persistence:
         self.pvs[pv.name] = (pv, type)
 
     def start(self):
+        self.__load()
         atexit.register(self.check_save)
-        cothread.Spawn(self.saver)
+        cothread.Spawn(self.__saver)
