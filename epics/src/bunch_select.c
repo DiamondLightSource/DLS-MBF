@@ -18,6 +18,7 @@
 #include "hardware.h"
 #include "common.h"
 #include "configs.h"
+#include "sequencer.h"
 
 #include "bunch_select.h"
 
@@ -168,6 +169,37 @@ static void update_gain_status(struct bunch_bank *bank, const int gain[])
 }
 
 
+static bool read_feedback_mode(void *context, EPICS_STRING *result)
+{
+    struct bunch_context *bunch = context;
+    unsigned int current_bank = get_seq_idle_bank(bunch->axis);
+    struct bunch_config *config = &bunch->banks[current_bank].config;
+
+    /* Evaluate DAC out and FIR waveforms. */
+    bool all_off = true;
+    bool all_fir = true;
+    bool same_fir = true;
+    for (unsigned int i = 0; i < system_config.bunches_per_turn; i ++)
+    {
+        if (config->fir_enable[i])
+            all_off = false;
+        if (config->nco0_enable[i]  ||  config->nco1_enable[i])
+            all_fir = false;
+        if (config->fir_select[i] != config->fir_select[0])
+            same_fir = false;
+    }
+
+    if (all_off)
+        snprintf(result->s, 40, "Feedback off");
+    else if (!all_fir)
+        snprintf(result->s, 40, "Feedback mixed mode");
+    else if (same_fir)
+        snprintf(result->s, 40, "Feedback on, FIR: #%d", config->fir_select[0]);
+    else
+        snprintf(result->s, 40, "Feedback on, FIR: mixed");
+    return true;
+}
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Bunch publish and control. */
@@ -281,6 +313,8 @@ error__t initialise_bunch_select(void)
             initialise_bank(axis, i, &bun->banks[i]);
             publish_bank(i, &bun->banks[i]);
         }
+
+        PUBLISH_C(stringin, "MODE", read_feedback_mode, bun);
     }
     return ERROR_OK;
 }

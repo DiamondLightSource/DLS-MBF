@@ -195,6 +195,12 @@ static bool set_state0_bunch_bank(void *context, unsigned int *bank)
 }
 
 
+unsigned int get_seq_idle_bank(int axis)
+{
+    return seq_context[axis].seq_config.bank0;
+}
+
+
 static bool update_capture_count(void *context, bool *value)
 {
     struct seq_context *seq = context;
