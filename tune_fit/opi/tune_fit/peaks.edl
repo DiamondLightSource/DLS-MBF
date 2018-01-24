@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2267
-y 188
+x 2268
+y 189
 w 370
 h 608
 font "helvetica-medium-r-18.0"
@@ -1822,7 +1822,7 @@ buttonLabel "Graphs"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "graphs.edl"
+  0 "tune_fit/graphs.edl"
 }
 endObjectProperties
 

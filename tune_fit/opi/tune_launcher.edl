@@ -64,7 +64,7 @@ buttonLabel "TMBF-02"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "peaks.edl"
+  0 "tune_fit/peaks.edl"
 }
 symbols {
   0 "prefix=SR23C-DI-TFIT-01:YOLD"
@@ -90,7 +90,7 @@ buttonLabel "TMBF-01"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "peaks.edl"
+  0 "tune_fit/peaks.edl"
 }
 symbols {
   0 "prefix=SR23C-DI-TFIT-01:XOLD"
@@ -116,7 +116,7 @@ buttonLabel "LMBF-01"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "peaks.edl"
+  0 "tune_fit/peaks.edl"
 }
 symbols {
   0 "prefix=SR23C-DI-TFIT-01:SYNC"
@@ -142,7 +142,7 @@ buttonLabel "TMBF-04:Y"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "peaks.edl"
+  0 "tune_fit/peaks.edl"
 }
 symbols {
   0 "prefix=SR23C-DI-TFIT-01:Y"
@@ -168,7 +168,7 @@ buttonLabel "TMBF-04:X"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "peaks.edl"
+  0 "tune_fit/peaks.edl"
 }
 symbols {
   0 "prefix=SR23C-DI-TFIT-01:X"
