@@ -22,7 +22,9 @@ from cothread import catools
 
 
 DEFAULT_CONFIG = '/home/ops/diagnostics/config/MBF_tune.config'
-DEFAULT_CONFIG = 'MBF_tune.config'
+import os
+DEFAULT_CONFIG = os.path.join(os.path.dirname(__file__), 'MBF_tune.config')
+
 
 DEVICE_TO_CONFIG_AXIS = {
     'SR23C-DI-TMBF-04:X': 'X',      # Temporary -04 until full commissioned
@@ -244,7 +246,7 @@ put('TRG:BLANKING_S', setup.blanking_interval)
 put('DET:0:ENABLE_S', 'Enabled')
 put('DET:0:SCALING_S', setup.det_gain)
 put('DET:SELECT_S', setup.detector_input)
-put('DET:FIR_DELAY_S', 0.5 * setup.length)
+put('DET:FIR_DELAY_S', 0.5 * (setup.length + 1))
 put('DET:0:BUNCHES_S', BUNCH_ENABLES)
 
 # Configure sequencer for tune measurement

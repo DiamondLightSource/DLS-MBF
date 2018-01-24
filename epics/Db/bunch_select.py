@@ -28,4 +28,5 @@ for a in axes('BUN', lmbf_mode):
 
     # Feedback mode.  This is aggregated from the sequencer state and the
     # selected DAC output status.
-    stringIn('MODE', SCAN = '1 second', DESC = 'Feedback mode')
+    stringIn('MODE', SCAN = '1 second', DESC = 'Feedback mode',
+        VAL = 'Not yet implemented')

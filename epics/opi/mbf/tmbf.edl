@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2753
-y 3
+x 2754
+y 4
 w 264
 h 313
 font "helvetica-medium-r-8.0"
@@ -602,6 +602,58 @@ numPvs 4
 numDsps 1
 displayFileName {
   0 "mbf/info.edl"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 16
+y 96
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Overview"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "axis=$(axis0)"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 16
+y 200
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Overview"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "axis=$(axis1)"
 }
 endObjectProperties
 

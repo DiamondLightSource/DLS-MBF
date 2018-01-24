@@ -1,7 +1,7 @@
 #!/bin/sh
 
-cd "$(dirname "$(readlink -f "$0")")"/opi
-PATH="scripts/:$PATH"
+# cd "$(dirname "$(readlink -f "$0")")"/opi
+HERE="$(dirname "$(readlink -f "$0")")"
 
 DEVICE="$1"
 if [[ -z $DEVICE ]]; then
@@ -30,4 +30,6 @@ else
     fi
 fi
 
+PATH="$HERE/opi/scripts/:$PATH"
+export EDMDATAFILES="$HERE"/opi/:"$HERE"/../tune_fit/opi
 edm -x -eolc "${MACROS[@]}" "$START" &
