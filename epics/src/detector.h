@@ -15,3 +15,6 @@ struct detector_info {
 
 /* Returns number of detector axes and samples for given axis. */
 void get_detector_info(int axis, struct detector_info *info);
+
+/* Returns the current configuration of the selected detector. */
+const struct detector_config *get_detector_config(int axis, int detector);

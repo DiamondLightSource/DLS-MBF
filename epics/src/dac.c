@@ -21,6 +21,7 @@
 
 static struct dac_context {
     int axis;
+    bool output_enable;
     bool mms_after_fir;
     bool dram_after_fir;
     bool overflow;
@@ -53,8 +54,16 @@ static bool write_dac_delay(void *context, unsigned int *value)
 static bool write_dac_output_enable(void *context, bool *value)
 {
     struct dac_context *dac = context;
-    hw_write_output_enable(dac->axis, *value);
+    dac->output_enable = *value;
+    hw_write_output_enable(dac->axis, dac->output_enable);
     return true;
+}
+
+
+bool get_dac_output_enable(int axis)
+{
+    struct dac_context *dac = &dac_context[axis];
+    return dac->output_enable;
 }
 
 

@@ -754,8 +754,8 @@ release 0
 x 16
 y 136
 w 216
-h 16
-controlPv "$(device):$(axis):TUNE:MODE"
+h 14
+controlPv "$(device):$(axis):SEQ:MODE"
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0

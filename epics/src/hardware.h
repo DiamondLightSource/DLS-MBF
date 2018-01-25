@@ -252,7 +252,7 @@ struct bunch_config {
     int *gain;              // Output gain for this bunch
     bool *fir_enable;       // Enable FIR output for this bunch
     bool *nco0_enable;      // Enable NCO0 output for this bunch
-    bool *nco1_enable;      // Enable NCO1 output for this bunch
+    bool *nco1_enable;      // Enable NCO1 output (swept NCO) for this bunch
 };
 
 /* Write bunch configuration. */

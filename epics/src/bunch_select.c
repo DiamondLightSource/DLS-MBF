@@ -18,6 +18,7 @@
 #include "hardware.h"
 #include "common.h"
 #include "configs.h"
+#include "dac.h"
 #include "sequencer.h"
 
 #include "bunch_select.h"
@@ -50,7 +51,7 @@ static unsigned int count_value(
     const int wf[], int value, unsigned int *diff_ix)
 {
     unsigned int count = 0;
-    for (unsigned int i = 0; i < system_config.bunches_per_turn; i ++)
+    FOR_BUNCHES(i)
         if (wf[i] == value)
             count += 1;
         else
@@ -179,7 +180,7 @@ static bool read_feedback_mode(void *context, EPICS_STRING *result)
     bool all_off = true;
     bool all_fir = true;
     bool same_fir = true;
-    for (unsigned int i = 0; i < system_config.bunches_per_turn; i ++)
+    FOR_BUNCHES(i)
     {
         if (config->fir_enable[i])
             all_off = false;
@@ -189,7 +190,14 @@ static bool read_feedback_mode(void *context, EPICS_STRING *result)
             same_fir = false;
     }
 
-    if (all_off)
+    /* Check whether the output is enabled. */
+    bool output_on = system_config.lmbf_mode ?
+        get_dac_output_enable(0)  &&  get_dac_output_enable(1) :
+        get_dac_output_enable(bunch->axis);
+
+    if (!output_on)
+        snprintf(result->s, 40, "Output off");
+    else if (all_off)
         snprintf(result->s, 40, "Feedback off");
     else if (!all_fir)
         snprintf(result->s, 40, "Feedback mixed mode");
@@ -258,6 +266,12 @@ static void write_gain_wf(void *context, float gain[], unsigned int *length)
     hw_write_bunch_config(bank->axis, bank->bank, &bank->config);
     if (system_config.lmbf_mode)
         hw_write_bunch_config(1, bank->bank, &bank->config);
+}
+
+
+const struct bunch_config *get_bunch_config(int axis, unsigned int bank)
+{
+    return &bunch_context[axis].banks[bank].config;
 }
 
 

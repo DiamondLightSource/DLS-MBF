@@ -457,6 +457,12 @@ void trigger_target_set_mode(
 }
 
 
+enum target_state trigger_target_get_state(struct trigger_target *target)
+{
+    return target->state;
+}
+
+
 /* Shared trigger. */
 
 void shared_trigger_target_arm(void)

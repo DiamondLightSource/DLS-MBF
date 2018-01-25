@@ -139,3 +139,6 @@ for a in axes('SEQ', lmbf_mode):
     window = WaveformOut('WINDOW', 1024, 'FLOAT', DESC = 'Detector window')
     Action('RESET_WIN', FLNK = window,
         DESC = 'Reset detector window to Hamming')
+
+    # Summary of sequencer setup
+    stringIn('MODE', SCAN = '1 second', DESC = 'Sequencer mode')

@@ -414,6 +414,14 @@ static void set_shared_targets(const char *value)
 }
 
 
+bool get_sequencer_trigger_active(int axis)
+{
+    struct trigger_target *target = axis_contexts[axis].target->target;
+    enum target_state state = trigger_target_get_state(target);
+    return state != TARGET_IDLE;
+}
+
+
 error__t initialise_triggers(void)
 {
     WITH_NAME_PREFIX("TRG")

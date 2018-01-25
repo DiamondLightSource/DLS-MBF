@@ -17,6 +17,9 @@
 #include "common.h"
 #include "configs.h"
 #include "hardware.h"
+#include "triggers.h"
+#include "detector.h"
+#include "bunch_select.h"
 
 #include "sequencer.h"
 
@@ -395,6 +398,103 @@ void read_detector_scale_info(
 }
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Sequencer mode computation. */
+
+
+static unsigned int count_bunches_equal_to(bool value, const bool bunches[])
+{
+    unsigned int count = 0;
+    FOR_BUNCHES(i)
+        if (bunches[i] == value)
+            count += 1;
+    return count;
+}
+
+
+static unsigned int count_bunches_equal(const bool b1[], const bool b2[])
+{
+    unsigned int count = 0;
+    FOR_BUNCHES(i)
+        if (b1[i] == b2[i])
+            count += 1;
+    return count;
+}
+
+
+static unsigned int find_first_index(bool value, const bool bunches[])
+{
+    unsigned int count = 0;
+    FOR_BUNCHES(i)
+        if (bunches[i] == value)
+            return count;
+        else
+            count += 1;
+    ASSERT_FAIL();
+}
+
+
+static bool read_sequencer_mode(void *context, EPICS_STRING *result)
+{
+    struct seq_context *seq = context;
+    struct seq_entry *entry0 = &seq->seq_config.entries[0];
+    int axis = seq->axis;
+    unsigned int bank = entry0->bunch_bank;
+
+    /* Both the detector and bunch configurations feed into the status. */
+    const struct detector_config *det_config = get_detector_config(axis, 0);
+    const struct bunch_config *bunch_config = get_bunch_config(axis, bank);
+
+    /* Cound how many bunches we're sweeping and overlap with detector. */
+    unsigned int sweeping =
+        count_bunches_equal_to(true, bunch_config->nco1_enable);
+    unsigned int overlap = count_bunches_equal(
+        bunch_config->nco1_enable, det_config->bunch_enables);
+
+    /* Start by evaluating the sequencer.  We expect a single sequencer state
+     * with data capture, sequencer enabled, and IQ buffer capture. */
+    const char *status = NULL;
+    if (!get_sequencer_trigger_active(axis))
+        status = "Trigger not enabled";
+    else if (seq->seq_config.super_seq_count > 1)
+        status = "Super sequencer active";
+    else if (seq->seq_config.sequencer_pc > 1)
+        status = "Multi-state sequencer";
+    else if (!entry0->nco_enable)
+        status = "Sequencer NCO off";
+    else if (!det_config->enable  ||
+             count_bunches_equal_to(true, det_config->bunch_enables) == 0)
+        status = "Detector 0 disabled";
+    else if (sweeping == 0)
+        status = "No tune sweep";
+    else if (overlap == 0)
+        status = "Not sweeping detector";
+    else
+    {
+        char gain[40];
+        sprintf(gain, "%ddB", -6 * (int) entry0->nco_gain);
+
+        if (sweeping == 1)
+        {
+            unsigned int single_bunch =
+                find_first_index(true, bunch_config->nco1_enable);
+            snprintf(result->s, 40, "Sweep: bunch %u (%s)", single_bunch, gain);
+        }
+        else if (sweeping == system_config.bunches_per_turn)
+            snprintf(result->s, 40, "Sweep: all bunches (%s)", gain);
+        else
+            snprintf(result->s, 40, "Sweep: %u bunches (%s)", sweeping, gain);
+        return true;
+    }
+
+    snprintf(result->s, 40, status);
+    return true;
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Initialisation. */
+
 error__t initialise_sequencer(void)
 {
     /* In LMBF mode we run with just one sequencer axis. */
@@ -438,6 +538,8 @@ error__t initialise_sequencer(void)
         PUBLISH_WAVEFORM_C(
             float, "WINDOW", DET_WINDOW_LENGTH, write_detector_window, seq);
         PUBLISH_C(bo, "RESET_WIN", reset_detector_window, seq);
+
+        PUBLISH_C(stringin, "MODE", read_sequencer_mode, seq);
     }
 
     return ERROR_OK;

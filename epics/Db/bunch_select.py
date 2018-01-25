@@ -26,6 +26,6 @@ for a in axes('BUN', lmbf_mode):
         with name_prefix('%d' % bank):
             bank_pvs(bank)
 
-    # Feedback mode.  This is aggregated from the sequencer state and the
-    # selected DAC output status.
+    # Feedback mode.  This summarises the quiescent state of the system, when
+    # the sequencer is not running.
     stringIn('MODE', SCAN = '1 second', DESC = 'Feedback mode')

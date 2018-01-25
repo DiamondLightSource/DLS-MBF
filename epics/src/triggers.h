@@ -7,3 +7,6 @@ error__t initialise_triggers(void);
  * these two methods. */
 struct trigger_target *get_memory_trigger_ready_lock(void);
 struct trigger_target *get_detector_trigger_ready_lock(int axis);
+
+/* Returns whether the trigger for the sequencer is active. */
+bool get_sequencer_trigger_active(int axis);

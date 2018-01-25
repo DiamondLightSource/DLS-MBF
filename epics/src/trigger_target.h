@@ -79,6 +79,9 @@ void trigger_target_complete(struct trigger_target *target);
 void trigger_target_set_mode(
     struct trigger_target *target, enum target_mode mode);
 
+/* Returns current arm state of the target. */
+enum target_state trigger_target_get_state(struct trigger_target *target);
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Shared trigger target actions. */

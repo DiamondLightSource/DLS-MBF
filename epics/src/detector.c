@@ -285,7 +285,7 @@ static void write_bunch_enables(
 
     /* Update the bunch count. */
     unsigned int bunch_count = 0;
-    for (unsigned int i = 0; i < system_config.bunches_per_turn; i ++)
+    FOR_BUNCHES(i)
         if (enables[i])
             bunch_count += 1;
     bank->bunch_count = bunch_count;
@@ -385,6 +385,12 @@ void prepare_detector(int axis)
 
     /* Compute the delay required for phase correction. */
     det->phase_delay = compute_detector_delay(det);
+}
+
+
+const struct detector_config *get_detector_config(int axis, int detector)
+{
+    return &detector_context[axis].banks[detector].config;
 }
 
 
