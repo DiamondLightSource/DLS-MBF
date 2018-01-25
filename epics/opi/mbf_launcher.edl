@@ -64,10 +64,10 @@ buttonLabel "TS-TMBF"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "mbf/tmbf.edl"
+  0 "mbf/TMBF.edl"
 }
 symbols {
-  0 "device=TS-DI-TMBF-02,axis0=X,axis1=Y,mode=TMBF"
+  0 "device=TS-DI-TMBF-02,axis0=X,axis1=Y,axis01=XY,mode=TMBF"
 }
 endObjectProperties
 
@@ -90,7 +90,7 @@ buttonLabel "TS-LMBF"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "mbf/lmbf.edl"
+  0 "mbf/LMBF.edl"
 }
 symbols {
   0 "device=TS-DI-LMBF-01,axis0=I,axis1=Q,axis01=IQ,mode=LMBF"
@@ -116,7 +116,7 @@ buttonLabel "SR23C-LMBF"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "mbf/lmbf.edl"
+  0 "mbf/LMBF.edl"
 }
 symbols {
   0 "device=SR23C-DI-LMBF-01,axis0=I,axis1=Q,axis01=IQ,mode=LMBF"

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 3123
-y 548
+x 3127
+y 552
 w 456
 h 473
 font "helvetica-medium-r-8.0"
@@ -267,7 +267,7 @@ y2Max 16600
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(axis):ADC:MMS:STD"
+  0 "$(device):$(adc_axis):ADC:MMS:STD"
 }
 plotUpdateMode {
   0 "y"
@@ -821,10 +821,10 @@ buttonLabel "System"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "mbf/tmbf.edl"
+  0 "mbf/$(mode).edl"
 }
 symbols {
-  0 "device=$(device),axis0=$(axis0),axis1=$(axis1),mode=$(mode)"
+  0 "device=$(device),axis0=$(axis0),axis1=$(axis1),axis01=$(axis01),mode=$(mode)"
 }
 replaceSymbols {
   0 1

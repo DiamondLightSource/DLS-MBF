@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2754
-y 4
+x 2756
+y 6
 w 264
-h 313
+h 345
 font "helvetica-medium-r-8.0"
 ctlFont "helvetica-medium-r-8.0"
 btnFont "helvetica-medium-r-8.0"
@@ -33,9 +33,9 @@ major 4
 minor 0
 release 0
 x 8
-y 152
+y 168
 w 248
-h 88
+h 104
 lineColor index 14
 fill
 fillColor index 4
@@ -48,7 +48,7 @@ major 4
 minor 0
 release 1
 x 40
-y 180
+y 220
 w 184
 h 0
 lineColor index 14
@@ -60,8 +60,8 @@ xPoints {
   1 224
 }
 yPoints {
-  0 180
-  1 180
+  0 220
+  1 220
 }
 endObjectProperties
 
@@ -74,7 +74,7 @@ release 0
 x 8
 y 48
 w 248
-h 88
+h 104
 lineColor index 14
 fill
 fillColor index 4
@@ -86,8 +86,8 @@ beginObjectProperties
 major 4
 minor 0
 release 1
-x 44
-y 76
+x 48
+y 100
 w 184
 h 0
 lineColor index 14
@@ -95,12 +95,12 @@ fillColor index 0
 lineWidth 3
 numPoints 2
 xPoints {
-  0 44
-  1 228
+  0 48
+  1 232
 }
 yPoints {
-  0 76
-  1 76
+  0 100
+  1 100
 }
 endObjectProperties
 
@@ -130,7 +130,7 @@ major 4
 minor 1
 release 0
 x 200
-y 280
+y 312
 w 56
 h 24
 fgColor index 46
@@ -172,7 +172,7 @@ major 4
 minor 4
 release 0
 x 16
-y 64
+y 88
 w 64
 h 24
 fgColor index 43
@@ -231,7 +231,7 @@ major 4
 minor 4
 release 0
 x 16
-y 168
+y 208
 w 64
 h 24
 fgColor index 43
@@ -257,7 +257,7 @@ major 4
 minor 1
 release 1
 x 8
-y 144
+y 160
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -276,7 +276,7 @@ major 4
 minor 0
 release 0
 x 8
-y 144
+y 160
 w 120
 h 16
 lineColor index 14
@@ -290,7 +290,7 @@ major 4
 minor 4
 release 0
 x 96
-y 96
+y 120
 w 72
 h 24
 fgColor index 43
@@ -316,7 +316,7 @@ major 4
 minor 4
 release 0
 x 96
-y 200
+y 240
 w 72
 h 24
 fgColor index 43
@@ -342,7 +342,7 @@ major 4
 minor 4
 release 0
 x 184
-y 64
+y 88
 w 64
 h 24
 fgColor index 43
@@ -368,7 +368,7 @@ major 4
 minor 4
 release 0
 x 184
-y 168
+y 208
 w 64
 h 24
 fgColor index 43
@@ -394,7 +394,7 @@ major 4
 minor 4
 release 0
 x 96
-y 248
+y 280
 w 72
 h 24
 fgColor index 43
@@ -417,7 +417,7 @@ major 4
 minor 4
 release 0
 x 176
-y 96
+y 120
 w 72
 h 24
 fgColor index 43
@@ -443,7 +443,7 @@ major 4
 minor 4
 release 0
 x 176
-y 200
+y 240
 w 72
 h 24
 fgColor index 43
@@ -469,7 +469,7 @@ major 4
 minor 4
 release 0
 x 96
-y 64
+y 88
 w 72
 h 24
 fgColor index 43
@@ -495,7 +495,7 @@ major 4
 minor 4
 release 0
 x 96
-y 168
+y 208
 w 72
 h 24
 fgColor index 43
@@ -521,7 +521,7 @@ major 4
 minor 4
 release 0
 x 176
-y 248
+y 280
 w 72
 h 24
 fgColor index 43
@@ -544,7 +544,7 @@ major 4
 minor 4
 release 0
 x 16
-y 248
+y 280
 w 72
 h 24
 fgColor index 43
@@ -567,7 +567,7 @@ major 4
 minor 0
 release 1
 x 88
-y 304
+y 336
 w 0
 h 0
 lineColor index 14
@@ -578,7 +578,7 @@ xPoints {
   0 88
 }
 yPoints {
-  0 304
+  0 336
 }
 endObjectProperties
 
@@ -589,7 +589,7 @@ major 4
 minor 4
 release 0
 x 16
-y 280
+y 312
 w 72
 h 24
 fgColor index 43
@@ -611,9 +611,9 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 16
-y 96
-w 72
+x 160
+y 56
+w 88
 h 24
 fgColor index 43
 bgColor index 4
@@ -627,7 +627,7 @@ displayFileName {
   0 "mbf/overview.edl"
 }
 symbols {
-  0 "axis=$(axis0)"
+  0 "axis=$(axis0),adc_axis=$(axis0)"
 }
 endObjectProperties
 
@@ -637,9 +637,9 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 16
-y 200
-w 72
+x 160
+y 176
+w 88
 h 24
 fgColor index 43
 bgColor index 4
@@ -653,7 +653,7 @@ displayFileName {
   0 "mbf/overview.edl"
 }
 symbols {
-  0 "axis=$(axis1)"
+  0 "axis=$(axis1),adc_axis=$(axis1)"
 }
 endObjectProperties
 
