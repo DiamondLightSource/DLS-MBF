@@ -175,10 +175,8 @@ def publish_mux(pvs, target, mux, alias):
         EGU = 'deg', PREC = 1,
         DESC = 'Selected tune phase')
 
-    target_pv = builder.stringIn('PREFIX', VAL = target)
     if alias:
-        mux.tune_pv.add_alias('%s:TUNE:TUNE' % alias)
-        mux.phase_pv.add_alias('%s:TUNE:PHASE' % alias)
+        target_pv = builder.stringIn('PREFIX', VAL = target)
         target_pv.add_alias('%s:TUNE:PREFIX' % alias)
 
 

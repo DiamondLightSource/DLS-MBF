@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 407
-y 366
+x 3123
+y 548
 w 456
 h 473
 font "helvetica-medium-r-8.0"
@@ -379,7 +379,7 @@ x 152
 y 408
 w 72
 h 21
-controlPv "$(device):$(axis):TUNE:TUNE"
+controlPv "$(tune_prefix):TUNE"
 font "helvetica-medium-r-18.0"
 fgColor index 14
 fgAlarm
@@ -424,7 +424,7 @@ x 304
 y 408
 w 72
 h 21
-controlPv "$(device):$(axis):TUNE:PHASE"
+controlPv "$(tune_prefix):PHASE"
 font "helvetica-medium-r-18.0"
 fontAlign "right"
 fgColor index 14
