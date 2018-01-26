@@ -78,15 +78,15 @@ static struct detector_context {
 
 
 static void gather_buffers(
-    struct detector_context *context,
+    struct detector_context *det,
     bool enables[DETECTOR_COUNT],
     float *wf_i[DETECTOR_COUNT], float *wf_q[DETECTOR_COUNT],
     float *wf_power[DETECTOR_COUNT], float *wf_phase[DETECTOR_COUNT])
 {
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
-        struct detector_bank *bank = &context->banks[i];
-        enables[i] = bank->config.enable;
+        struct detector_bank *bank = &det->banks[i];
+        enables[i] = (det->detector_mask >> i) & 1;
         wf_i[i] = bank->wf_i;
         wf_q[i] = bank->wf_q;
         wf_power[i] = bank->wf_power;
