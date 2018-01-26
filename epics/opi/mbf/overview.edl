@@ -141,7 +141,7 @@ font "helvetica-bold-r-14.0"
 buttonLabel "?"
 numCmds 1
 command {
-  0 "diagnostics-help TMBF_overview"
+  0 "mbf-help overview"
 }
 includeHelpIcon
 endObjectProperties
