@@ -147,7 +147,7 @@ LMBF_MODE = get('MODE')
 if LMBF_MODE:
     AXIS0 = get('AXIS0')
     AXIS1 = get('AXIS1')
-N_TAPS = get('%s:FIR:N_TAPS' % AXIS)
+N_TAPS = get('BUNCH_TAPS')
 BUNCH_COUNT = get('BUNCHES')
 
 

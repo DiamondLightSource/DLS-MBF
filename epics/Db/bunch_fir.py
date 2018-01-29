@@ -31,17 +31,13 @@ def bunch_fir_pvs():
         with name_prefix('%d' % bank):
             bank_pvs()
 
-    mbbOut('GAIN',
-        DESC = 'FIR gain select', *dBrange(16, -6, 48))
-    records.longin('N_TAPS', VAL = BUNCH_TAPS, PINI = 'YES',
-        DESC = 'FIR filter length')
+    mbbOut('GAIN', DESC = 'FIR gain select', *dBrange(16, -6, 48))
 
 
 for a in axes('FIR', lmbf_mode):
     bunch_fir_pvs()
     if lmbf_mode:
-        longOut('DECIMATION', 1, 128,
-            DESC = 'Bunch by bunch decimation')
+        longOut('DECIMATION', 1, 128, DESC = 'Bunch by bunch decimation')
 
 
 overflows = []
