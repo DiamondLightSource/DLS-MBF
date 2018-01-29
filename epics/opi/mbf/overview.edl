@@ -330,7 +330,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Tune Only"
 numCmds 1
 command {
-  0 "run-command 'Setup Tune Measurement only' setup_tunemeasurement $(device):$(axis) TUNE"
+  0 "run-command 'Setup Tune Measurement only' mbf-setup-tune $(device):$(axis) TUNE"
 }
 endObjectProperties
 
@@ -352,7 +352,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Feedback On & Tune"
 numCmds 1
 command {
-  0 "run-command 'Setup Close Loop + SB Tune Meas.' setup_tunemeasurement $(device):$(axis) FB"
+  0 "run-command 'Setup Closed Loop + SB Tune Meas.' mbf-setup-tune $(device):$(axis) FB"
 }
 endObjectProperties
 
@@ -374,7 +374,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Tune Special"
 numCmds 1
 command {
-  0 "run-command 'Setup Tune Measurement Special' setup_tunemeasurement $(device):$(axis) AP"
+  0 "run-command 'Setup Tune Measurement Special' mbf-setup-tune $(device):$(axis) AP"
 }
 endObjectProperties
 

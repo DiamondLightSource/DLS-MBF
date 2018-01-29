@@ -383,7 +383,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) one $(bunch) $(fir) $(out) $(gain)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) one $(bunch) $(fir) $(out) $(gain)"
 }
 endObjectProperties
 
@@ -498,7 +498,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) all $(fir) $(out) $(gain)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) all $(fir) $(out) $(gain)"
 }
 endObjectProperties
 
@@ -811,7 +811,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) fir_one $(bunch) $(fir)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) fir_one $(bunch) $(fir)"
 }
 endObjectProperties
 
@@ -866,7 +866,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) fir_all $(fir)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) fir_all $(fir)"
 }
 endObjectProperties
 
@@ -1116,7 +1116,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) out_one $(bunch) $(out)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) out_one $(bunch) $(out)"
 }
 endObjectProperties
 
@@ -1138,7 +1138,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) out_all $(out)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) out_all $(out)"
 }
 endObjectProperties
 
@@ -1188,7 +1188,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) gain_one $(bunch) $(gain)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) gain_one $(bunch) $(gain)"
 }
 endObjectProperties
 
@@ -1210,7 +1210,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_one_bunch $(device) $(axis) $(bank) gain_all $(gain)"
+  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) gain_all $(gain)"
 }
 endObjectProperties
 

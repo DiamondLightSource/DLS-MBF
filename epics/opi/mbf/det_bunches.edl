@@ -232,7 +232,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set One"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_waveform_pv $(device):$(axis):DET:$(det):BUNCHES_S $(enable) $(bunch)"
+  0 "run-command 'Set bunch' mbf-set-waveform $(device):$(axis):DET:$(det):BUNCHES_S $(enable) $(bunch)"
 }
 endObjectProperties
 
@@ -287,7 +287,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Set All"
 numCmds 1
 command {
-  0 "run-command 'Set bunch' set_waveform_pv $(device):$(axis):DET:$(det):BUNCHES_S $(enable)"
+  0 "run-command 'Set bunch' mbf-set-waveform $(device):$(axis):DET:$(det):BUNCHES_S $(enable)"
 }
 endObjectProperties
 
