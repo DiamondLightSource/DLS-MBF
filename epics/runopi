@@ -31,5 +31,5 @@ else
 fi
 
 PATH="$HERE/opi/scripts/:$PATH"
-export EDMDATAFILES="$HERE"/opi/:"$HERE"/../tune_fit/opi
+export EDMDATAFILES="$HERE"/opi/
 edm -x -eolc "${MACROS[@]}" "$START" &
