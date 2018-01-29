@@ -52,3 +52,17 @@ with name_prefix('STA'):
             clock_status('CLOCK', 'ADC clock status'),
             clock_status('VCO', 'VCO clock status'),
             clock_status('VCXO', 'VCXO clock status')))
+
+
+# Functions for aggregate severity support
+aggregate_pvs = {}
+def add_aggregate(axis, *pvs):
+    if lmbf_mode:
+        axis = AXIS01
+    aggregate_pvs.setdefault(axis, []).extend(pvs)
+
+def create_aggregate_pvs():
+    for axis, pvs in aggregate_pvs.items():
+        pvs = map(CP, pvs)
+        AggregateSeverity(
+            '%s:STATUS' % axis, 'Axis %s signal health' % axis, pvs)

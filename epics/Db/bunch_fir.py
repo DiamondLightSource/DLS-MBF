@@ -1,6 +1,7 @@
 # Bunch by bunch FIR
 
 from common import *
+from system import add_aggregate
 
 
 def bank_pvs():
@@ -48,8 +49,9 @@ for a in axes('FIR'):
             bank_waveforms()
 
     # Axis specific overflow detection
-    overflows.append(
-        overflow('OVF', 'Overflow in %s bunch-by-bunch filter' % a))
+    ovf = overflow('OVF', 'Overflow in %s bunch-by-bunch filter' % a)
+    overflows.append(ovf)
+    add_aggregate(a, ovf)
 
 with name_prefix('FIR'):
     Action('EVENTS',

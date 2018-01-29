@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 3127
-y 552
+x 1921
+y 348
 w 456
 h 473
 font "helvetica-medium-r-8.0"
@@ -25,6 +25,50 @@ snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 48
+w 232
+h 112
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 16
+y 62
+w 208
+h 20
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+invisible
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/status.edl"
+}
+symbols {
+  0 "device=$(device),axis0=$(axis0),axis1=$(axis1),axis01=$(axis01),mode=$(mode)"
+}
+replaceSymbols {
+  0 1
+}
+endObjectProperties
 
 # (Related Display)
 object relatedDisplayClass
@@ -53,21 +97,6 @@ symbols {
 replaceSymbols {
   0 1
 }
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 48
-w 232
-h 112
-lineColor index 14
-fill
-fillColor index 4
 endObjectProperties
 
 # (Rectangle)
@@ -476,8 +505,8 @@ release 0
 x 40
 y 64
 w 184
-h 16
-controlPv "$(device):$(axis):SE:OVF.DESC"
+h 14
+controlPv "$(device):$(axis):STATUS.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -505,89 +534,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(axis):SE:OVF"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 40
-y 88
-w 184
-h 14
-controlPv "$(device):$(axis):DET:OVF.DESC"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 16
-y 88
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):$(axis):DET:OVF"
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 16
-y 112
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):$(axis):SE:HEALTH"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 40
-y 112
-w 184
-h 14
-controlPv "$(device):$(axis):SE:HEALTH.DESC"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
+alarmPv "$(device):$(axis):STATUS"
 endObjectProperties
 
 # (Static Text)
@@ -621,84 +568,6 @@ w 120
 h 16
 lineColor index 14
 fillColor index 0
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 16
-y 112
-w 216
-h 16
-fgColor index 14
-bgColor index 0
-topShadowColor index 0
-botShadowColor index 14
-font "helvetica-medium-r-18.0"
-invisible
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "tmbf/sensors.edl"
-}
-setPosition {
-  0 "button"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 16
-y 64
-w 216
-h 16
-fgColor index 14
-bgColor index 0
-topShadowColor index 0
-botShadowColor index 14
-font "helvetica-medium-r-18.0"
-invisible
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "tmbf/tmbf_overview.edl"
-}
-setPosition {
-  0 "button"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 16
-y 88
-w 216
-h 16
-fgColor index 14
-bgColor index 0
-topShadowColor index 0
-botShadowColor index 14
-font "helvetica-medium-r-18.0"
-invisible
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "tmbf/tune.edl"
-}
-setPosition {
-  0 "button"
-}
 endObjectProperties
 
 # (Static Text)

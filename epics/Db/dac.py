@@ -1,6 +1,7 @@
 # PVs for DAC interface
 
 from common import *
+from system import add_aggregate
 
 import mms
 
@@ -14,18 +15,22 @@ for a in axes('DAC'):
 
     longOut('DELAY', DESC = 'DAC output delay')
 
-    boolOut('ENABLE', 'Off', 'On', ZSV = 'MAJOR', DESC = 'DAC output enable')
+    enable = boolOut('ENABLE', 'Off', 'On',
+        ZSV = 'MAJOR', DESC = 'DAC output enable')
     boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
         DESC = 'Source of min/max/sum data')
     boolOut('DRAM_SOURCE', 'Before FIR', 'After FIR',
         DESC = 'Source of memory data')
 
-    dac_events.extend([
+    overflows = [
         overflow('BUN_OVF', 'Bunch FIR overflow'),
         overflow('MUX_OVF', 'DAC output overflow'),
-        overflow('FIR_OVF', 'DAC FIR overflow'),
-        overflow('OVF', 'DAC overflow'),
-    ])
+        overflow('FIR_OVF', 'DAC FIR overflow'),]
+    ovf = overflow('OVF', 'DAC overflow')   # Aggregates BUN, MUX, FIR _OVF
+    dac_events.extend(overflows)
+    dac_events.append(ovf)
+
+    add_aggregate(a, ovf, enable)
 
     mms.mms_pvs('DAC')
 

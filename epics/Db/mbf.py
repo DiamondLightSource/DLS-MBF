@@ -10,4 +10,6 @@ import detector
 import memory
 import triggers
 
+system.create_aggregate_pvs()
+
 WriteRecords(sys.argv[1], Disclaimer(__file__))

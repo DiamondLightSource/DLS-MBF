@@ -1,6 +1,7 @@
 # ADC waveforms
 
 from common import *
+from system import add_aggregate
 
 import mms
 
@@ -14,7 +15,7 @@ for a in axes('ADC'):
 
     aOut('OVF_LIMIT', 0, 1, PREC = 4, DESC = 'Overflow limit threshold')
     aOut('EVENT_LIMIT', 0, 1, PREC = 4, DESC = 'ADC min/max event threshold')
-    boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
+    loopback = boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
         DESC = 'Enable DAC -> ADC loopback')
 
     boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
@@ -22,12 +23,17 @@ for a in axes('ADC'):
     boolOut('DRAM_SOURCE', 'Before FIR', 'After FIR',
         DESC = 'Source of memory data')
 
-    adc_events.extend([
+    overflows = [
         overflow('INP_OVF', 'ADC input overflow'),
-        overflow('FIR_OVF', 'ADC FIR overflow'),
-        overflow('OVF', 'ADC overflow'),
-        event('EVENT', 'ADC min/max event'),
-    ])
+        overflow('FIR_OVF', 'ADC FIR overflow'),]
+    ovf = overflow('OVF', 'ADC overflow')   # Aggregates INP_OVF and FIR_OVF
+    adc_events.extend(overflows)
+    adc_events.append(ovf)
+    adc_events.append(event('EVENT', 'ADC min/max event'))
+
+    if not lmbf_mode or a == AXIS0:
+        # In LMBF mode we only aggregate the channel 0 PVs
+        add_aggregate(a, loopback, ovf)
 
     mms.mms_pvs('ADC')
 
