@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device) Sequencer Setup"
+title "$(device):$(axis) Sequencer Setup"
 showGrid
 snapToGrid
 gridSize 8
@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device) Sequencer Setup"
+  "$(device):$(axis) Sequencer Setup"
 }
 endObjectProperties
 

@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "TMBF Simple Configuration"
+title "$(device):$(axis) Overview"
 showGrid
 snapToGrid
 gridSize 8
@@ -129,7 +129,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(axis) MultiBunch Feedback"
+  "$(device):$(axis) Overview"
 }
 endObjectProperties
 

@@ -19,7 +19,7 @@ ctlBgColor1 index 3
 ctlBgColor2 index 14
 topShadowColor index 1
 botShadowColor index 11
-title "$(device) Super Sequencer"
+title "$(device):$(axis) Super Sequencer"
 showGrid
 snapToGrid
 gridSize 8
@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device) Super Sequencer"
+  "$(device):$(axis) Super Sequencer"
 }
 endObjectProperties
 
