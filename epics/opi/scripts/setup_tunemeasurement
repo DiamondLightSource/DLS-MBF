@@ -237,7 +237,7 @@ TRIGGER_SOURCES = ['SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1']
 for source in TRIGGER_SOURCES:
     put('TRG:SEQ:%s:EN_S' % source, 'Ignore')
 put('TRG:SEQ:EXT:EN_S', 'Enable')
-put('TRG:SEQ:EXT:BL_S', 'Blanking')
+put('TRG:SEQ:EXT:BL_S', 'All')
 put('TRG:SEQ:MODE_S', 'Rearm')
 put('TRG:SEQ:DELAY_S', 0)
 put('TRG:BLANKING_S', setup.blanking_interval)
