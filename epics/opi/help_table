@@ -24,5 +24,9 @@ tmbf            https://confluence.diamond.ac.uk/x/yB5VB
 trigger_target  https://confluence.diamond.ac.uk/x/cx9VB
 triggers        https://confluence.diamond.ac.uk/x/dx9VB
 
+# The following pages are part of tune fitting
+tune_peaks      https://confluence.diamond.ac.uk/x/pbONB
+tune_waveforms  https://confluence.diamond.ac.uk/x/qLONB
+
 # The following default target is searched for if none of the above are valid
 *               https://confluence.diamond.ac.uk/x/eR5VB
