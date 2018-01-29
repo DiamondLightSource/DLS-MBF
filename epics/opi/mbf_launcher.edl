@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1924
-y 1065
-w 296
-h 113
+x 2094
+y 285
+w 240
+h 192
 font "helvetica-medium-r-14.0"
 ctlFont "helvetica-medium-r-14.0"
 btnFont "helvetica-bold-r-14.0"
@@ -34,7 +34,7 @@ minor 1
 release 1
 x 0
 y 0
-w 296
+w 240
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -51,8 +51,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 24
-y 40
+x 8
+y 128
 w 96
 h 24
 fgColor index 43
@@ -77,8 +77,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 176
-y 40
+x 8
+y 160
 w 96
 h 24
 fgColor index 43
@@ -103,8 +103,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 176
-y 72
+x 8
+y 64
 w 96
 h 24
 fgColor index 43
@@ -120,6 +120,228 @@ displayFileName {
 }
 symbols {
   0 "device=SR23C-DI-LMBF-01,axis0=I,axis1=Q,axis01=IQ,mode=LMBF"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 144
+y 64
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "IQ"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "device=SR23C-DI-LMBF-01,axis0=I,axis1=Q,axis01=IQ,mode=LMBF,axis=IQ,adc_axis=I"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 144
+y 160
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "IQ"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "device=TS-DI-LMBF-01,axis0=I,axis1=Q,axis01=IQ,mode=LMBF,axis=IQ,adc_axis=I"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 112
+y 128
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "X"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "device=TS-DI-TMBF-02,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=X,adc_axis=X"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 40
+w 96
+h 16
+font "helvetica-bold-r-14.0"
+fontAlign "center"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "System"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 176
+y 128
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Y"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "device=TS-DI-TMBF-02,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=Y,adc_axis=Y"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 112
+y 40
+w 120
+h 16
+font "helvetica-bold-r-14.0"
+fontAlign "center"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Axes"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 8
+y 96
+w 96
+h 24
+fgColor index 43
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "SR23C-TMBF"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/TMBF.edl"
+}
+symbols {
+  0 "device=SR23C-DI-TMBF-04,axis0=X,axis1=Y,axis01=XY,mode=TMBF"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 112
+y 96
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "X"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "device=SR23C-DI-TMBF-04,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=X,adc_axis=X"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 176
+y 96
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Y"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/overview.edl"
+}
+symbols {
+  0 "device=SR23C-DI-TMBF-04,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=Y,adc_axis=Y"
 }
 endObjectProperties
 
