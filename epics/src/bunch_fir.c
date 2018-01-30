@@ -41,6 +41,9 @@ static struct fir_context {
 } fir_context[AXIS_COUNT];
 
 
+static unsigned int fir_decimation = 1;
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Tap computation and update. */
 
@@ -216,8 +219,15 @@ static bool write_fir_gain(void *context, unsigned int *value)
 
 static void write_fir_decimation(unsigned int value)
 {
+    fir_decimation = value;
     for (int i = 0; i < AXIS_COUNT; i ++)
-        hw_write_bunch_decimation(i, value);
+        hw_write_bunch_decimation(i, fir_decimation);
+}
+
+
+unsigned int get_fir_decimation(void)
+{
+    return fir_decimation;
 }
 
 

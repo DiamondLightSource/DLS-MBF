@@ -22,6 +22,7 @@
 
 #include "events.h"
 #include "sequencer.h"
+#include "bunch_fir.h"
 
 #include "detector.h"
 
@@ -344,8 +345,8 @@ static int compute_detector_delay(struct detector_context *det)
             case true:      // FIR
                 return
                     hardware_delays.DET_FIR_DELAY +
-                    (int) lround(
-                        det->fir_group_delay * hardware_config.bunches);
+                    (int) lround(det->fir_group_delay *
+                        (get_fir_decimation() * hardware_config.bunches));
             case false:     // ADC
                 return
                     hardware_delays.DET_ADC_DELAY +
