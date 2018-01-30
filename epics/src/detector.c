@@ -199,7 +199,7 @@ static void compute_power_phase(
             float Q = wf_q[j][i];
             float power = 10 * log10f(SQR(I) + SQR(Q));
             wf_power[j][i] = power;
-            wf_phase[j][i] = 180.0F / (float) M_PI * atan2f(I, Q);
+            wf_phase[j][i] = 180.0F / (float) M_PI * atan2f(Q, I);
             if (power > max_power)
                 max_power = power;
         }
