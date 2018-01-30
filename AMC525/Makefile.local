@@ -10,7 +10,7 @@ include $(TOP)/Makefile.common
 RUN_VIVADO = source $(VIVADO) && vivado
 
 # List of local addresses (on 192.168.40.0/24 backplane) which will be loaded
-IPS = 199 200
+IPS = 199
 # Server to connect to for loading FPGA image
 AMC525_SERVER = ts-di-lmbf-01
 
