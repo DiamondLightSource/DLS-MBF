@@ -297,7 +297,7 @@ void hw_read_turn_clock_counts(
     *error_count = READL(ctrl_regs->trg_error_count).count;
 }
 
-void hw_write_turn_clock_offset(int axis, unsigned int offset)
+void hw_write_turn_clock_offset(unsigned int offset)
 {
     /* Note!  If offset >= bunches_per_turn then turn clocks will stop being
      * generated.  Unfortunately this will then cause reading mms.count to hang
@@ -305,15 +305,8 @@ void hw_write_turn_clock_offset(int axis, unsigned int offset)
     ASSERT_OK(offset < hardware_config.bunches);
     WITH_MUTEX(ctrl_lock)
     {
-        switch (axis)
-        {
-            case 0:
-                ctrl_mirror.trg_config_turn.dsp0_offset = offset & 0x3FF;
-                break;
-            case 1:
-                ctrl_mirror.trg_config_turn.dsp1_offset = offset & 0x3FF;
-                break;
-        }
+        ctrl_mirror.trg_config_turn.dsp0_offset = offset & 0x3FF;
+        ctrl_mirror.trg_config_turn.dsp1_offset = offset & 0x3FF;
         WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
     }
 }

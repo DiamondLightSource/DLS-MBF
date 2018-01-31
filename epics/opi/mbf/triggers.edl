@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 303
-y 317
+x 403
+y 314
 w 600
 h 352
 font "helvetica-medium-r-18.0"
@@ -361,7 +361,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 424
+x 544
 y 312
 w 40
 h 24
@@ -391,14 +391,14 @@ minor 1
 release 1
 x 200
 y 312
-w 72
+w 38
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Clock delay:"
+  "Delay:"
 }
 autoSize
 endObjectProperties
@@ -500,7 +500,7 @@ beginObjectProperties
 major 4
 minor 2
 release 0
-x 280
+x 400
 y 312
 w 136
 h 24
@@ -1292,5 +1292,53 @@ endGroup
 visPv "$(device):MODE"
 visMin "0"
 visMax "1"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 248
+y 312
+w 72
+h 24
+controlPv "$(device):TRG:TURN:OFFSET_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 360
+y 312
+w 38
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Skew:"
+}
+autoSize
 endObjectProperties
 

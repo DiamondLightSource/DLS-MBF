@@ -62,6 +62,7 @@ def turn_pvs():
             PREC = 3, EGU = '%',
             DESC = 'Clock error rate'),
     ]
+    longOut('OFFSET', DESC = 'Turn clock offset')
     Action('POLL',
         SCAN = '.2 second', FLNK = create_fanout('FAN', *turn_events),
         DESC = 'Update turn status')
@@ -71,7 +72,6 @@ for a in axes('TRG', lmbf_mode):
     target_pvs('SEQ')
 
     longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
-    longOut('TURN:OFFSET', DESC = 'Turn clock offset')
 
 
 with name_prefix('TRG'):

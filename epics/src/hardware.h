@@ -144,7 +144,7 @@ void hw_read_turn_clock_counts(
     unsigned int *turn_count, unsigned int *error_count);
 
 /* Delay from external turn clock to internal turn clock. */
-void hw_write_turn_clock_offset(int axis, unsigned int offset);
+void hw_write_turn_clock_offset(unsigned int offset);
 
 /* Returns which incoming trigger events have occurred since the last call. */
 void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);

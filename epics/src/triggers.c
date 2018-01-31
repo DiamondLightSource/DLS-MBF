@@ -155,7 +155,6 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
 static struct axis_context {
     int axis;
     struct trigger_target_state *target;
-    unsigned int turn_clock_offset;
 } axis_contexts[AXIS_COUNT] = {
     [0] = {
         .axis = 0,
@@ -372,23 +371,7 @@ static bool write_turn_offset(void *context, unsigned int *offset)
 {
     if (*offset < system_config.bunches_per_turn)
     {
-        struct axis_context *chan = context;
-        struct axis_context *other_chan =
-            system_config.lmbf_mode ? &axis_contexts[1] : NULL;
-
-        chan->turn_clock_offset = *offset;
-        hw_write_turn_clock_offset(chan->axis, *offset);
-        if (other_chan)
-        {
-            other_chan->turn_clock_offset = *offset;
-            hw_write_turn_clock_offset(other_chan->axis, *offset);
-        }
-
-        unsigned int offsets[AXIS_COUNT] = {
-            [0] = axis_contexts[0].turn_clock_offset,
-            [1] = axis_contexts[1].turn_clock_offset,
-        };
-        set_memory_turn_clock_offsets(offsets);
+        hw_write_turn_clock_offset(*offset);
         return true;
     }
     else
@@ -448,6 +431,7 @@ error__t initialise_triggers(void)
             PUBLISH_READ_VAR(mbbi, "STATUS", turn_clock_status);
             PUBLISH_READ_VAR(ulongin, "TURNS", turn_clock_turns);
             PUBLISH_READ_VAR(ulongin, "ERRORS", turn_clock_errors);
+            PUBLISH_P(ulongout, "OFFSET", write_turn_offset);
         }
     }
 
@@ -456,7 +440,6 @@ error__t initialise_triggers(void)
         struct axis_context *chan = &axis_contexts[axis];
         create_target("SEQ", chan->target);
         PUBLISH_C_P(ulongout, "BLANKING", write_blanking_window, chan);
-        PUBLISH_C_P(ulongout, "TURN:OFFSET", write_turn_offset, chan);
     }
 
     /* We're interested in the trigger and complete events for each trigger
