@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 173
-y 491
+x 2696
+y 367
 w 498
 h 281
 font "helvetica-medium-r-18.0"
@@ -34,7 +34,7 @@ release 0
 x 0
 y 8
 w 400
-h 112
+h 128
 lineColor index 14
 fill
 fillColor index 4
@@ -46,9 +46,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 40
-y 40
-w 96
+x 104
+y 104
+w 80
 h 20
 controlPv "$(device):$(axis01):TRG:BLANKING_S"
 font "helvetica-medium-r-14.0"
@@ -74,8 +74,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 0
-y 40
+x 64
+y 104
 w 32
 h 16
 font "helvetica-bold-r-12.0"
@@ -127,16 +127,16 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 296
-y 40
-w 96
+x 8
+y 24
+w 72
 h 22
 fgColor index 43
 bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "SEQ Trig"
+buttonLabel "SEQ $(axis01)"
 numPvs 4
 numDsps 1
 displayFileName {
@@ -153,16 +153,16 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 296
-y 88
-w 96
+x 8
+y 72
+w 72
 h 22
 fgColor index 43
 bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "MEM Trig"
+buttonLabel "MEM"
 numPvs 4
 numDsps 1
 displayFileName {
@@ -179,17 +179,198 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 40
-y 24
-w 97
-h 14
+x 8
+y 104
+w 50
+h 28
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Blanking (turns)"
+  "Blanking"
+  "(turns)"
 }
 autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 88
+y 24
+w 86
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis01):TRG:SEQ:MODE_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 176
+y 24
+w 54
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis01):TRG:SEQ:ARM_S.PROC"
+pressValue "0"
+onLabel "Arm"
+offLabel "Arm"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 232
+y 24
+w 54
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis01):TRG:SEQ:DISARM_S.PROC"
+pressValue "0"
+onLabel "Disarm"
+offLabel "Disarm"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 296
+y 24
+w 96
+h 16
+controlPv "$(device):$(axis01):TRG:SEQ:STATUS"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 88
+y 72
+w 86
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):TRG:MEM:MODE_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 176
+y 72
+w 54
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):TRG:MEM:ARM_S.PROC"
+pressValue "0"
+onLabel "Arm"
+offLabel "Arm"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 232
+y 72
+w 54
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):TRG:MEM:DISARM_S.PROC"
+pressValue "0"
+onLabel "Disarm"
+offLabel "Disarm"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 296
+y 72
+w 96
+h 16
+controlPv "$(device):TRG:MEM:STATUS"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
 endObjectProperties
 

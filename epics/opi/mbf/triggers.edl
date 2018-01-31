@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 403
-y 314
+x 729
+y 273
 w 600
-h 352
+h 368
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -35,7 +35,7 @@ release 0
 x 8
 y 48
 w 176
-h 296
+h 312
 lineColor index 14
 fill
 fillColor index 4
@@ -123,9 +123,9 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 24
-y 280
-w 72
+x 16
+y 328
+w 64
 h 22
 fgColor index 25
 onColor index 4
@@ -146,8 +146,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 16
-y 312
+x 88
+y 328
 w 88
 h 22
 fgColor index 14
@@ -289,7 +289,7 @@ major 4
 minor 0
 release 0
 x 192
-y 264
+y 280
 w 400
 h 80
 lineColor index 14
@@ -304,7 +304,7 @@ major 4
 minor 1
 release 1
 x 192
-y 256
+y 272
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -323,7 +323,7 @@ major 4
 minor 0
 release 0
 x 192
-y 256
+y 272
 w 120
 h 16
 lineColor index 14
@@ -337,7 +337,7 @@ major 4
 minor 6
 release 0
 x 328
-y 280
+y 296
 w 88
 h 16
 controlPv "$(device):TRG:TURN:STATUS"
@@ -362,7 +362,7 @@ major 4
 minor 6
 release 0
 x 544
-y 312
+y 328
 w 40
 h 24
 controlPv "$(device):TRG:TURN:DELAY_S"
@@ -390,7 +390,7 @@ major 4
 minor 1
 release 1
 x 200
-y 312
+y 328
 w 38
 h 14
 font "helvetica-bold-r-12.0"
@@ -410,7 +410,7 @@ major 4
 minor 1
 release 0
 x 200
-y 280
+y 296
 w 72
 h 22
 fgColor index 25
@@ -433,7 +433,7 @@ major 4
 minor 6
 release 0
 x 504
-y 280
+y 296
 w 64
 h 16
 controlPv "$(device):TRG:TURN:RATE"
@@ -461,7 +461,7 @@ major 4
 minor 1
 release 1
 x 424
-y 280
+y 296
 w 76
 h 14
 font "helvetica-bold-r-12.0"
@@ -481,7 +481,7 @@ major 4
 minor 1
 release 1
 x 280
-y 280
+y 296
 w 44
 h 14
 font "helvetica-bold-r-12.0"
@@ -501,7 +501,7 @@ major 4
 minor 2
 release 0
 x 400
-y 312
+y 328
 w 136
 h 24
 fgColor index 6
@@ -525,7 +525,7 @@ release 0
 x 192
 y 128
 w 408
-h 128
+h 144
 fgColor index 14
 bgColor index 3
 topShadowColor index 0
@@ -985,7 +985,7 @@ major 4
 minor 6
 release 0
 x 80
-y 248
+y 240
 w 32
 h 16
 controlPv "$(device):TRG:BLNK:IN"
@@ -1010,7 +1010,7 @@ major 4
 minor 0
 release 0
 x 56
-y 248
+y 240
 w 16
 h 16
 lineColor index 14
@@ -1027,7 +1027,7 @@ major 4
 minor 1
 release 1
 x 16
-y 248
+y 240
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1301,7 +1301,7 @@ major 4
 minor 6
 release 0
 x 248
-y 312
+y 328
 w 72
 h 24
 controlPv "$(device):TRG:TURN:OFFSET_S"
@@ -1329,7 +1329,7 @@ major 4
 minor 1
 release 1
 x 360
-y 312
+y 328
 w 38
 h 14
 font "helvetica-bold-r-12.0"
@@ -1338,6 +1338,26 @@ bgColor index 0
 useDisplayBg
 value {
   "Skew:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 312
+w 68
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Soft event:"
 }
 autoSize
 endObjectProperties
