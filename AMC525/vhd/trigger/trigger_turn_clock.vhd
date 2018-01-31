@@ -24,8 +24,8 @@ entity trigger_turn_clock is
 
         -- Input clock
         revolution_clock_i : in std_logic;
-        -- Generated turn clocks, one per channel
-        turn_clock_o : out std_logic_vector(CHANNELS)
+        -- Generated turn clocks
+        turn_clock_o : out std_logic
     );
 end;
 
@@ -39,7 +39,7 @@ architecture arch of trigger_turn_clock is
     signal bunch_counter_delay : bunch_count_t := (others => '0');
     signal zero_detect_delay : boolean := false;
     signal revolution_clock_delay : boolean := false;
-    signal turn_clock : std_logic_vector(CHANNELS) := (others => '0');
+    signal turn_clock : std_logic := '0';
 
     signal turn_counter : readback_o.turn_counter'SUBTYPE := (others => '0');
     signal turn_counter_out : readback_o.turn_counter'SUBTYPE;
@@ -88,11 +88,9 @@ begin
             zero_detect_delay <= zero_detect;
             revolution_clock_delay <= revolution_clock = '1';
 
-            -- Output of channel specific turn clocks
-            for c in CHANNELS loop
-                turn_clock(c) <= to_std_logic(
-                    bunch_counter_delay = setup_i.clock_offsets(c));
-            end loop;
+            -- Output of turn clock
+            turn_clock <= to_std_logic(
+                bunch_counter_delay = setup_i.clock_offset);
 
             -- Now count some turn statistics
             if read_sync then
@@ -122,11 +120,10 @@ begin
 
     -- Delay line for the turn clock to help with timing
     turn_clock_delay : entity work.dlyreg generic map (
-        DLY => 4,
-        DW => CHANNEL_COUNT
+        DLY => 4
     ) port map (
         clk_i => adc_clk_i,
-        data_i => turn_clock,
-        data_o => turn_clock_o
+        data_i(0) => turn_clock,
+        data_o(0) => turn_clock_o
     );
 end;

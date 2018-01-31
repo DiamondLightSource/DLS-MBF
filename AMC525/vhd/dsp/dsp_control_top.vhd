@@ -80,7 +80,7 @@ architecture arch of dsp_control_top is
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
     signal blanking_window : std_logic_vector(CHANNELS);
-    signal turn_clock : std_logic_vector(CHANNELS);
+    signal turn_clock : std_logic;
     signal seq_start : std_logic_vector(CHANNELS);
     signal seq_busy : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
@@ -235,7 +235,7 @@ begin
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
         seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
         control_to_dsp_o(c).blanking <= blanking_window(c);
-        control_to_dsp_o(c).turn_clock <= turn_clock(c);
+        control_to_dsp_o(c).turn_clock <= turn_clock;
         control_to_dsp_o(c).seq_start <= seq_start(c);
     end generate;
 

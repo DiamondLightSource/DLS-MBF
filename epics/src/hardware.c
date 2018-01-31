@@ -305,8 +305,7 @@ void hw_write_turn_clock_offset(unsigned int offset)
     ASSERT_OK(offset < hardware_config.bunches);
     WITH_MUTEX(ctrl_lock)
     {
-        ctrl_mirror.trg_config_turn.dsp0_offset = offset & 0x3FF;
-        ctrl_mirror.trg_config_turn.dsp1_offset = offset & 0x3FF;
+        ctrl_mirror.trg_config_turn.turn_offset = offset & 0x3FF;
         WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
     }
 }

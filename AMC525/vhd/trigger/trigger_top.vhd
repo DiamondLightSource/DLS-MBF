@@ -36,7 +36,7 @@ entity trigger_top is
 
         -- Trigger outputs
         blanking_window_o : out std_logic_vector(CHANNELS);
-        turn_clock_o : out std_logic_vector(CHANNELS);
+        turn_clock_o : out std_logic;
         seq_start_o : out std_logic_vector(CHANNELS);
         dram0_trigger_o : out std_logic;
         dram0_phase_o : out std_logic
@@ -51,7 +51,7 @@ architecture arch of trigger_top is
     -- Revolution clock control
     signal turn_setup : turn_clock_setup_t;
     signal turn_readback : turn_clock_readback_t;
-    signal turn_clock_dsp : std_logic_vector(CHANNELS);
+    signal turn_clock_dsp : std_logic;
 
     -- Blanking
     signal blanking_interval : unsigned_array(CHANNELS)(15 downto 0);
@@ -68,9 +68,6 @@ architecture arch of trigger_top is
     signal dram0_setup : trigger_setup_t;
     signal dram0_readback : trigger_readback_t;
 
-    signal dram0_turn_select : unsigned(0 downto 0);
-    signal dram0_turn_clock_dsp : std_logic;
-    signal dram0_turn_clock : std_logic;
     signal dram0_blanking_select : std_logic_vector(CHANNELS);
     signal dram0_blanking_window : std_logic;
     signal dram0_trigger : std_logic;
@@ -99,7 +96,6 @@ begin
         seq_setup_o => seq_setup,
         seq_readback_i => seq_readback,
 
-        dram0_turn_select_o => dram0_turn_select,
         dram0_blanking_select_o => dram0_blanking_select,
         dram0_setup_o => dram0_setup,
         dram0_readback_i => dram0_readback
@@ -127,7 +123,7 @@ begin
 
 
     -- Revolution clock
-    turn_clock : entity work.trigger_turn_clock port map (
+    turn_clock_e : entity work.trigger_turn_clock port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -136,6 +132,15 @@ begin
 
         revolution_clock_i => revolution_clock,
         turn_clock_o => turn_clock_o
+    );
+
+    -- We need a DSP clocked version of the turn clock for the rest of our
+    -- trigger processing
+    turn_clock_dsp_e : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => turn_clock_o,
+        pulse_o => turn_clock_dsp
     );
 
 
@@ -155,18 +160,9 @@ begin
         signal seq_start : std_logic;
 
     begin
-        -- We need a DSP clocked version of the turn clock for the rest of our
-        -- trigger processing
-        turn_clock : entity work.pulse_adc_to_dsp port map (
-            adc_clk_i => adc_clk_i,
-            dsp_clk_i => dsp_clk_i,
-            pulse_i => turn_clock_o(c),
-            pulse_o => turn_clock_dsp(c)
-        );
-
         seq_trigger : entity work.trigger_target port map (
             dsp_clk_i => dsp_clk_i,
-            turn_clock_i => turn_clock_dsp(c),
+            turn_clock_i => turn_clock_dsp,
 
             triggers_i => triggers,
             blanking_window_i => blanking_window_o(c),
@@ -187,15 +183,13 @@ begin
 
 
     -- For the DRAM0 trigger we need a choice of turn clock and blanking
-    dram0_turn_clock_dsp <= turn_clock_dsp(to_integer(dram0_turn_select));
-    dram0_turn_clock <= turn_clock_o(to_integer(dram0_turn_select));
     dram0_blanking_window <=
         vector_or(blanking_window_o and dram0_blanking_select);
 
     -- Memory capture trigger
     dram_trigger : entity work.trigger_target port map (
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => dram0_turn_clock_dsp,
+        turn_clock_i => turn_clock_dsp,
 
         triggers_i => triggers,
         blanking_window_i => dram0_blanking_window,
@@ -209,7 +203,7 @@ begin
     dram_phase : entity work.trigger_phase port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => dram0_turn_clock,
+        turn_clock_i => turn_clock_o,
         trigger_i => dram0_trigger,
         phase_o => dram0_phase_o
     );

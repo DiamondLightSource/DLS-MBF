@@ -10,7 +10,7 @@ package trigger_defs is
         start_sync : std_logic;             -- Start clock resynchronisation
         read_sync : std_logic;              -- Sample clock and error count
         max_bunch : bunch_count_t;          -- Maximum expected bunch count
-        clock_offsets : unsigned_array(CHANNELS)(BUNCH_NUM_BITS-1 downto 0);
+        clock_offset : unsigned(BUNCH_NUM_BITS-1 downto 0);
     end record;
 
     type turn_clock_readback_t is record

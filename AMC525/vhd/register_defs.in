@@ -342,7 +342,7 @@
 
         !CONFIG
             # Turn clock configuration setup.  Note that DSP0_OFFSET and
-            # DSP1_OFFSET *must* be less that MAX_BUNCH.  If not, the channel
+            # DSP1_OFFSET *must* be less than MAX_BUNCH.  If not, the channel
             # turn clocks will not be generated, and as a consequence reading
             # MMS.COUNT will never complete, which will in turn completely hang
             # the system.
@@ -350,10 +350,8 @@
                 # Configures the internal revolution clock frequency.  Set to
                 # the number of machine bunches-1
                 .MAX_BUNCH      10
-                # Turn clock offset for channel 0 from sync trigger
-                .DSP0_OFFSET    10
-                # Turn clock offset for channel 1 from sync trigger
-                .DSP1_OFFSET    10
+                # Turn clock offset from sync trigger
+                .TURN_OFFSET    10
 
             # Blanking windows
             BLANKING    RW
@@ -396,9 +394,6 @@
                 # Blanking enable mask
                 .BLANKING       7
                 -
-                # Turn clock selection: determines which channel's turn clock is
-                # used to synchronise the DRAM trigger
-                .TURN_SEL       1
                 # Blanking pulse selection mask: enables blanking from either or
                 # both channels.
                 .BLANKING_SEL   2
