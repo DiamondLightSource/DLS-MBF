@@ -371,7 +371,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Axes"
+  "Axis"
 }
 endObjectProperties
 
