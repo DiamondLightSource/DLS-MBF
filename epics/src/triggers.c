@@ -329,14 +329,6 @@ static void read_input_events(void)
 }
 
 
-static bool write_blanking_window(void *context, unsigned int *value)
-{
-    struct axis_context *chan = context;
-    hw_write_trigger_blanking_duration(chan->axis, *value);
-    return true;
-}
-
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Turn clock control. */
 
@@ -433,14 +425,13 @@ error__t initialise_triggers(void)
             PUBLISH_READ_VAR(ulongin, "ERRORS", turn_clock_errors);
             PUBLISH_P(ulongout, "OFFSET", write_turn_offset);
         }
+
+        PUBLISH_WRITER_P(ulongout, "BLANKING",
+            hw_write_trigger_blanking_duration);
     }
 
     FOR_AXIS_NAMES(axis, "TRG", system_config.lmbf_mode)
-    {
-        struct axis_context *chan = &axis_contexts[axis];
-        create_target("SEQ", chan->target);
-        PUBLISH_C_P(ulongout, "BLANKING", write_blanking_window, chan);
-    }
+        create_target("SEQ", axis_contexts[axis].target);
 
     /* We're interested in the trigger and complete events for each trigger
      * target, these are dispatched to the appropriate target. */

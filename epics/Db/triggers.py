@@ -71,8 +71,6 @@ def turn_pvs():
 for a in axes('TRG', lmbf_mode):
     target_pvs('SEQ')
 
-    longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
-
 
 with name_prefix('TRG'):
     target_pvs('MEM')
@@ -92,6 +90,8 @@ with name_prefix('TRG'):
         SCAN = 'I/O Intr',
         DESC = 'Shared trigger target status')
     stringIn('SHARED', SCAN = 'I/O Intr', DESC = 'List of shared targets')
+
+    longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
 
     with name_prefix('TURN'):
         turn_pvs()

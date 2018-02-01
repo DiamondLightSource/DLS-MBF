@@ -379,19 +379,12 @@ void hw_read_trigger_sources(
     bits_to_bools(TRIGGER_SOURCE_COUNT, source_mask, sources);
 }
 
-void hw_write_trigger_blanking_duration(int axis, unsigned int duration)
+void hw_write_trigger_blanking_duration(unsigned int duration)
 {
     WITH_MUTEX(ctrl_lock)
     {
-        switch (axis)
-        {
-            case 0:
-                ctrl_mirror.trg_config_blanking.dsp0 = duration & 0xFFFF;
-                break;
-            case 1:
-                ctrl_mirror.trg_config_blanking.dsp1 = duration & 0xFFFF;
-                break;
-        }
+        ctrl_mirror.trg_config_blanking.dsp0 = duration & 0xFFFF;
+        ctrl_mirror.trg_config_blanking.dsp1 = duration & 0xFFFF;
         WRITEL(ctrl_regs->trg_config_blanking, ctrl_mirror.trg_config_blanking);
     }
 }

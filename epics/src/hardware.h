@@ -170,7 +170,7 @@ void hw_read_trigger_sources(
     bool sources[TRIGGER_SOURCE_COUNT]);
 
 /* Program duration of blanking window. */
-void hw_write_trigger_blanking_duration(int axis, unsigned int duration);
+void hw_write_trigger_blanking_duration(unsigned int duration);
 
 /* Programs the delay in turns from internal firing of trigger to delivery. */
 void hw_write_trigger_delay(
