@@ -221,7 +221,10 @@ static void write_fir_wf(void *context, char fir_select[], unsigned int *length)
     update_fir_status(bank, fir_select);
 
     FOR_BUNCHES_OFFSET(i, j, hardware_delays.BUNCH_FIR_OFFSET)
+    {
+        fir_select[j] = fir_select[j] & 0x3;
         bank->config.fir_select[i] = fir_select[j];
+    }
 
     hw_write_bunch_config(bank->axis, bank->bank, &bank->config);
     if (system_config.lmbf_mode)
@@ -234,12 +237,11 @@ static void write_out_wf(void *context, char out_enable[], unsigned int *length)
     struct bunch_bank *bank = context;
     *length = hardware_config.bunches;
 
-    update_out_status(bank, out_enable);
-
     /* The output enables are the reference bunches, and the three outputs are
      * synchronous, so no offset conversion is required here. */
     FOR_BUNCHES(i)
     {
+        out_enable[i] = out_enable[i] & 0x3;
         bank->config.fir_enable[i] = out_enable[i] & 1;
         bank->config.nco0_enable[i] = (out_enable[i] >> 1) & 1;
         bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
@@ -247,6 +249,8 @@ static void write_out_wf(void *context, char out_enable[], unsigned int *length)
     hw_write_bunch_config(bank->axis, bank->bank, &bank->config);
     if (system_config.lmbf_mode)
         hw_write_bunch_config(1, bank->bank, &bank->config);
+
+    update_out_status(bank, out_enable);
 }
 
 

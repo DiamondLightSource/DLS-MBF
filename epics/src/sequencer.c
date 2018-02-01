@@ -263,7 +263,11 @@ static void write_super_offsets(
     }
 
     for (int i = 0; i < SUPER_SEQ_STATES; i ++)
-        seq->seq_config.super_offsets[i] = tune_to_freq(offsets[i]);
+    {
+        unsigned int freq = tune_to_freq(offsets[i]);
+        seq->seq_config.super_offsets[i] = freq;
+        offsets[i] = freq_to_tune(freq);
+    }
 }
 
 static bool reset_super_offsets(void *context, bool *value)

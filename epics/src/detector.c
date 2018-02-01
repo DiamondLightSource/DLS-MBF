@@ -284,11 +284,14 @@ static void write_bunch_enables(
     memcpy(bank->config.bunch_enables, enables, system_config.bunches_per_turn);
     *length = system_config.bunches_per_turn;
 
-    /* Update the bunch count. */
+    /* Update the bunch count and normalise each enable to 0/1. */
     unsigned int bunch_count = 0;
     FOR_BUNCHES(i)
+    {
+        enables[i] = (bool) enables[i];
         if (enables[i])
             bunch_count += 1;
+    }
     bank->bunch_count = bunch_count;
 }
 
