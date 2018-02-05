@@ -341,23 +341,14 @@ static void publish_detector(
 
 static int compute_detector_delay(struct detector_context *det)
 {
-    if (hardware_delays.valid)
-    {
-        switch (det->input_select)
-        {
-            case true:      // FIR
-                return
-                    hardware_delays.DET_FIR_DELAY +
-                    (int) lround(det->fir_group_delay *
-                        (get_fir_decimation() * hardware_config.bunches));
-            case false:     // ADC
-                return
-                    hardware_delays.DET_ADC_DELAY +
-                    (int) hardware_config.bunches;
-        }
-    }
+    if (det->input_select)
+        // FIR
+        return hardware_delays.DET_FIR_DELAY +
+            (int) lround(det->fir_group_delay *
+                (get_fir_decimation() * hardware_config.bunches));
     else
-        return 0;
+        // ADC
+        return hardware_delays.DET_ADC_DELAY + (int) hardware_config.bunches;
 }
 
 

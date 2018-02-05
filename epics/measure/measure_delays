@@ -271,7 +271,7 @@ def get_detector_delay(lmbf, source, pvs):
     wf_q = pvs.det_q
     s = pvs.scale
     iq = wf_i + 1j * wf_q
-    return compute_group_delay(lmbf, s, iq) - lmbf.bunches
+    return compute_group_delay(lmbf, s, iq)
 
 
 
@@ -388,7 +388,7 @@ def measure_detector_delay(lmbf, results):
     lmbf.state(1, start = 1, step = 0.001, dwell = 20, holdoff = 10)
     lmbf.bank_wf(1, 1, FIR_UNIT, DAC_OUT.SWEEP)
     lmbf.set('DET:0:BUNCHES_S', numpy.ones(lmbf.bunches))
-    lmbf.set('DET:SELECT_S', 'FIR')
+    lmbf.set('DET:FIR_DELAY_S', 1)
 
     pvs = PV_set(lmbf)
     pvs.det_i = 'DET:0:I'

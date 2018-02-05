@@ -255,10 +255,7 @@ static void write_super_offsets(
     if (seq->reset_offsets)
     {
         for (unsigned int i = 0; i < SUPER_SEQ_STATES; i ++)
-            if (i < hardware_config.bunches)
-                offsets[i] = i;
-            else
-                offsets[i] = 0;
+            offsets[i] = i;
         seq->reset_offsets = false;
     }
 
