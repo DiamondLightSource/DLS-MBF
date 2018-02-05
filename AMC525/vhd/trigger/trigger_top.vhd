@@ -35,7 +35,7 @@ entity trigger_top is
         seq_trigger_i : in std_logic_vector(CHANNELS);
 
         -- Trigger outputs
-        blanking_window_o : out std_logic_vector(CHANNELS);
+        blanking_window_o : out std_logic;
         turn_clock_o : out std_logic;
         seq_start_o : out std_logic_vector(CHANNELS);
         dram0_trigger_o : out std_logic;
@@ -54,7 +54,7 @@ architecture arch of trigger_top is
     signal turn_clock_dsp : std_logic;
 
     -- Blanking
-    signal blanking_interval : unsigned_array(CHANNELS)(15 downto 0);
+    signal blanking_interval : unsigned(15 downto 0);
 
     -- Triggers
     signal soft_trigger : std_logic;
@@ -68,8 +68,6 @@ architecture arch of trigger_top is
     signal dram0_setup : trigger_setup_t;
     signal dram0_readback : trigger_readback_t;
 
-    signal dram0_blanking_select : std_logic_vector(CHANNELS);
-    signal dram0_blanking_window : std_logic;
     signal dram0_trigger : std_logic;
 
 begin
@@ -96,7 +94,6 @@ begin
         seq_setup_o => seq_setup,
         seq_readback_i => seq_readback,
 
-        dram0_blanking_select_o => dram0_blanking_select,
         dram0_setup_o => dram0_setup,
         dram0_readback_i => dram0_readback
     );
@@ -165,7 +162,7 @@ begin
             turn_clock_i => turn_clock_dsp,
 
             triggers_i => triggers,
-            blanking_window_i => blanking_window_o(c),
+            blanking_window_i => blanking_window_o,
             setup_i => seq_setup(c),
 
             readback_o => seq_readback(c),
@@ -182,24 +179,21 @@ begin
     end generate;
 
 
-    -- For the DRAM0 trigger we need a choice of turn clock and blanking
-    dram0_blanking_window <=
-        vector_or(blanking_window_o and dram0_blanking_select);
-
     -- Memory capture trigger
     dram_trigger : entity work.trigger_target port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_dsp,
 
         triggers_i => triggers,
-        blanking_window_i => dram0_blanking_window,
+        blanking_window_i => blanking_window_o,
         setup_i => dram0_setup,
 
         readback_o => dram0_readback,
         trigger_o => dram0_trigger
     );
 
-    -- Convert trigger into an ADC synchronous version of the turn clock
+    -- For the DRAM trigger we also need to know in what phase of the DSP clock
+    -- the trigger occurred.
     dram_phase : entity work.trigger_phase port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,

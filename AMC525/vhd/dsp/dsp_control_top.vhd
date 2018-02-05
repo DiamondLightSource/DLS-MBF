@@ -79,7 +79,7 @@ architecture arch of dsp_control_top is
     -- Triggering and events interface
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
-    signal blanking_window : std_logic_vector(CHANNELS);
+    signal blanking_window : std_logic;
     signal turn_clock : std_logic;
     signal seq_start : std_logic_vector(CHANNELS);
     signal seq_busy : std_logic_vector(CHANNELS);
@@ -230,14 +230,21 @@ begin
     );
 
     -- Map events to individual DSP units
-    triggers_gen : for c in CHANNELS generate
-        adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
-        seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
-        seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
-        control_to_dsp_o(c).blanking <= blanking_window(c);
-        control_to_dsp_o(c).turn_clock <= turn_clock;
-        control_to_dsp_o(c).seq_start <= seq_start(c);
-    end generate;
+    process (dsp_clk_i) begin
+        for c in CHANNELS loop
+            adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
+            seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
+            seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
+            control_to_dsp_o(c).blanking <= blanking_window;
+            control_to_dsp_o(c).seq_start <= seq_start(c);
+        end loop;
+    end process;
+
+    process (adc_clk_i) begin
+        for c in CHANNELS loop
+            control_to_dsp_o(c).turn_clock <= turn_clock;
+        end loop;
+    end process;
 
 
     -- Generate appropriate interrupt signals

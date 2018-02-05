@@ -187,9 +187,6 @@ void hw_write_trigger_blanking_mask(
     enum trigger_target_id target,
     const bool sources[TRIGGER_SOURCE_COUNT]);
 
-/* Configure the blanking pulse(s) used for DRAM triggering. */
-void hw_write_trigger_dram_blanking(const bool blanking[AXIS_COUNT]);
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* DSP interface. */

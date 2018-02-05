@@ -31,14 +31,13 @@ entity trigger_registers is
         triggers_i : in std_logic_vector(TRIGGER_SET);
         blanking_trigger_i : in std_logic;
 
-        blanking_interval_o : out unsigned_array(CHANNELS);
+        blanking_interval_o : out unsigned;
 
         -- Sequencer triggering
         seq_setup_o : out trigger_setup_channels;
         seq_readback_i : in trigger_readback_channels;
 
         -- DRAM0 triggering
-        dram0_blanking_select_o : out std_logic_vector(CHANNELS);
         dram0_setup_o : out trigger_setup_t;
         dram0_readback_i : in trigger_readback_t
     );
@@ -169,10 +168,8 @@ begin
         bunch_count_t(config_turn_setup(CTRL_TRG_CONFIG_TURN_MAX_BUNCH_BITS));
     turn_setup_o.clock_offset <=
         bunch_count_t(config_turn_setup(CTRL_TRG_CONFIG_TURN_TURN_OFFSET_BITS));
-    blanking_interval_o(0) <=
-        unsigned(config_blanking(CTRL_TRG_CONFIG_BLANKING_DSP0_BITS));
-    blanking_interval_o(1) <=
-        unsigned(config_blanking(CTRL_TRG_CONFIG_BLANKING_DSP1_BITS));
+    blanking_interval_o <=
+        unsigned(config_blanking(CTRL_TRG_CONFIG_BLANKING_TURNS_BITS));
 
     seq_setup_o(0).delay <=
         unsigned(config_delay_seq_0(CTRL_TRG_CONFIG_SEQ0_DELAY_BITS));
@@ -193,6 +190,4 @@ begin
         config_trig_dram(CTRL_TRG_CONFIG_TRIG_DRAM_ENABLE_BITS);
     dram0_setup_o.blanking <=
         config_trig_dram(CTRL_TRG_CONFIG_TRIG_DRAM_BLANKING_BITS);
-    dram0_blanking_select_o <=
-        reverse(config_trig_dram(CTRL_TRG_CONFIG_TRIG_DRAM_BLANKING_SEL_BITS));
 end;

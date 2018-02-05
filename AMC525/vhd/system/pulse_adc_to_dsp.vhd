@@ -8,8 +8,10 @@
 --  dsp_clk         /       /       /       /       /       /       /
 --                   ___                 ___
 --  pulse_i    _____/   \_______________/   \___________________________
---                       _______             ___________
---  pulse      _________/       \___________/           \_______________
+--                       ___                 ___
+--  pulse_delay   ______/   \_______________/   \___________________________
+--                       _______             _______
+--  pulse_stretch ______/       \___________/       \_______________________
 --                           _______                 _______
 --  pulse_o    _____________/       \_______________/       \___________
 
@@ -28,22 +30,20 @@ entity pulse_adc_to_dsp is
 end;
 
 architecture arch of pulse_adc_to_dsp is
-    signal pulse : std_logic := '0';
+    signal pulse_delay : std_logic := '0';
+    signal pulse_stretch : std_logic := '0';
 
 begin
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            if pulse_i = '1' then
-                pulse <= '1';
-            elsif pulse_o = '1' then
-                pulse <= '0';
-            end if;
+            pulse_delay <= pulse_i;
+            pulse_stretch <= pulse_i or pulse_delay;
         end if;
     end process;
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            pulse_o <= pulse;
+            pulse_o <= pulse_stretch;
         end if;
     end process;
 end;

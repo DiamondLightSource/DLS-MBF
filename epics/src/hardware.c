@@ -381,12 +381,7 @@ void hw_read_trigger_sources(
 
 void hw_write_trigger_blanking_duration(unsigned int duration)
 {
-    WITH_MUTEX(ctrl_lock)
-    {
-        ctrl_mirror.trg_config_blanking.dsp0 = duration & 0xFFFF;
-        ctrl_mirror.trg_config_blanking.dsp1 = duration & 0xFFFF;
-        WRITEL(ctrl_regs->trg_config_blanking, ctrl_mirror.trg_config_blanking);
-    }
+    WRITE_FIELDS(ctrl_regs->trg_config_blanking, .turns = duration & 0xFFFF);
 }
 
 void hw_write_trigger_delay(
@@ -462,17 +457,6 @@ void hw_write_trigger_blanking_mask(
                     ctrl_mirror.trg_config_trig_dram);
                 break;
         }
-    }
-}
-
-void hw_write_trigger_dram_blanking(const bool blanking[AXIS_COUNT])
-{
-    uint32_t blanking_mask = bools_to_bits(AXIS_COUNT, blanking);
-    WITH_MUTEX(ctrl_lock)
-    {
-        ctrl_mirror.trg_config_trig_dram.blanking_sel = blanking_mask & 0x3;
-        WRITEL(
-            ctrl_regs->trg_config_trig_dram, ctrl_mirror.trg_config_trig_dram);
     }
 }
 

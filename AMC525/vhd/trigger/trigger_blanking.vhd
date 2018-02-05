@@ -12,32 +12,29 @@ entity trigger_blanking is
         dsp_clk_i : in std_logic;
 
         blanking_i : in std_logic;
-        blanking_interval_i : in unsigned_array(CHANNELS);
+        blanking_interval_i : in unsigned;
         turn_clock_i : in std_logic;
-        blanking_window_o : out std_logic_vector(CHANNELS) := (others => '0')
+        blanking_window_o : out std_logic := '0'
     );
 end;
 
 architecture arch of trigger_blanking is
-    signal blanking_counter : blanking_interval_i'SUBTYPE
-        := (others => (others => '0'));
-    signal blanking_window : std_logic_vector(CHANNELS) := (others => '0');
+    signal blanking_counter : blanking_interval_i'SUBTYPE := (others => '0');
+    signal blanking_window : std_logic := '0';
 
 begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            for c in CHANNELS loop
-                if blanking_i = '1' then
-                    blanking_counter(c) <= blanking_interval_i(c);
-                    blanking_window(c) <= '1';
-                elsif turn_clock_i = '1' then
-                    if blanking_counter(c) > 0 then
-                        blanking_counter(c) <= blanking_counter(c) - 1;
-                    else
-                        blanking_window(c) <= '0';
-                    end if;
+            if blanking_i = '1' then
+                blanking_counter <= blanking_interval_i;
+                blanking_window <= '1';
+            elsif turn_clock_i = '1' then
+                if blanking_counter > 0 then
+                    blanking_counter <= blanking_counter - 1;
+                else
+                    blanking_window <= '0';
                 end if;
-            end loop;
+            end if;
 
             blanking_window_o <= blanking_window;
         end if;
