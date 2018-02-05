@@ -241,7 +241,7 @@ static void write_out_wf(void *context, char out_enable[], unsigned int *length)
      * synchronous, so no offset conversion is required here. */
     FOR_BUNCHES(i)
     {
-        out_enable[i] = out_enable[i] & 0x3;
+        out_enable[i] = out_enable[i] & 0x7;
         bank->config.fir_enable[i] = out_enable[i] & 1;
         bank->config.nco0_enable[i] = (out_enable[i] >> 1) & 1;
         bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
