@@ -10,6 +10,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     register_defs.vhd \
+    version.vhd \
     $bench_dir/interconnect_wrapper.vhd \
     $bench_dir/dsp_main.vhd \
     top_entity.vhd \

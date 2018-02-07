@@ -72,4 +72,4 @@ begin
         wait;
     end process;
 
-end testbench;
+end;

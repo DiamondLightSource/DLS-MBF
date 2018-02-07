@@ -9,6 +9,7 @@ vlib msim/xil_defaultlib
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/util/block_memory.vhd \
+    $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/long_delay.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \

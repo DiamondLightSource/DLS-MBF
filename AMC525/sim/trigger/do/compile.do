@@ -42,7 +42,7 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 view wave
 
 add wave -group "Registers" /triggers/registers/*
-add wave -group "Turn Clock" /triggers/turn_clock/*
+add wave -group "Turn Clock" /triggers/turn_clock_e/*
 add wave -group "Blanking" /triggers/blanking/*
 add wave -group "SEQ0 Handler" /triggers/gen(0)/seq_trigger/trigger_handler/*
 add wave -group "SEQ0" /triggers/gen(0)/seq_trigger/*

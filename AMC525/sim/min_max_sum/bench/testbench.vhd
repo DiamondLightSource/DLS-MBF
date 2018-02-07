@@ -45,7 +45,6 @@ architecture arch of testbench is
     signal read_data : reg_data_array_t(0 to 1);
     signal read_ack : std_logic_vector(0 to 1);
     signal delta : unsigned(15 downto 0);
-    signal overflow : std_logic;
 
     constant BUNCH_COUNT : natural := 12;   -- A very small ring!
 
@@ -63,7 +62,6 @@ begin
         turn_clock_i => turn_clock,
         data_i => adc_data,
         delta_o => delta,
-        overflow_o => overflow,
         read_strobe_i => read_strobe,
         read_data_o => read_data,
         read_ack_o => read_ack

@@ -2,6 +2,9 @@
 
 include $(TOP)/Makefile.common
 
+# Command to run vivado
+RUN_VIVADO = source $(VIVADO) && vivado
+
 VPATH += $(PYTHONDIR)
 
 VHDDIR = $(TOP)/AMC525/vhd

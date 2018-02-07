@@ -31,8 +31,8 @@ architecture arch of testbench is
     signal blanking_trigger : std_logic;
     signal adc_trigger : std_logic_vector(CHANNELS);
     signal seq_trigger : std_logic_vector(CHANNELS);
-    signal blanking_window : std_logic_vector(CHANNELS);
-    signal turn_clock : std_logic_vector(CHANNELS);
+    signal blanking_window : std_logic;
+    signal turn_clock : std_logic;
     signal seq_start : std_logic_vector(CHANNELS);
     signal dram0_trigger : std_logic;
     signal dram0_phase : std_logic;

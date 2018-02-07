@@ -39,7 +39,7 @@ entity interconnect_wrapper is
         DSP_CLK : in std_logic;
         DSP_RESETN : in std_logic;
         FCLKA : in std_logic;
-        INTR : in std_logic_vector(7 downto 0);
+        INTR : in std_logic_vector(30 downto 0);
         M_DSP_REGS_araddr : out std_logic_vector(15 downto 0);
         M_DSP_REGS_arprot : out std_logic_vector(2 downto 0);
         M_DSP_REGS_arready : in std_logic;

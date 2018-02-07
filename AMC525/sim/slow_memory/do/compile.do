@@ -9,8 +9,8 @@ vlib msim/xil_defaultlib
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/axi/axi_lite_master.vhd \
-    $vhd_dir/memory/slow_memory_fifo.vhd \
-    $vhd_dir/memory/slow_memory_priority.vhd \
+    $vhd_dir/memory/memory_fifo.vhd \
+    $vhd_dir/memory/memory_mux_priority.vhd \
     $vhd_dir/memory/slow_memory_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
