@@ -136,7 +136,7 @@ static void release_lock(struct trigger_target *lock, struct lock_parse args)
 
 /* Supports command of the form:
  *
- *      M [R] count [O offset] [C channel] [L [W timeout]]
+ *      [R] M count [O offset] [C channel] [L [W timeout]]
  *
  * Returns memory captured into memory with the following options:
  *
@@ -284,7 +284,7 @@ struct detector_frame {
 /* This structure captures the parsed results of a detector request command of
  * the form:
  *
- *      D [R] axis [F] [S] [T] [L [W timeout]]
+ *      [R] D axis [F] [S] [T] [L [W timeout]]
  *
  * Returns detector readout with the following options:
  *
