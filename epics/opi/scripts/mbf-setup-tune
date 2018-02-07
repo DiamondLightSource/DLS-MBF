@@ -22,8 +22,6 @@ from cothread import catools
 
 
 DEFAULT_CONFIG = '/home/ops/diagnostics/config/MBF_tune.config'
-import os
-DEFAULT_CONFIG = os.path.join(os.path.dirname(__file__), 'MBF_tune.config')
 
 
 DEVICE_TO_CONFIG_AXIS = {
@@ -43,7 +41,10 @@ DAC_OUT_SWEEP = 4
 
 
 def _put(axis, pv, value):
-    target = '%s:%s:%s' % (DEVICE, axis, pv)
+    if axis:
+        target = '%s:%s:%s' % (DEVICE, axis, pv)
+    else:
+        target = '%s:%s' % (DEVICE, pv)
     if args.debug:
         print '%s <= %s' % (target, repr(value))
     if not args.dry_run:
@@ -211,6 +212,9 @@ put('SEQ:RESET_S', 0)
 put('SEQ:SUPER:COUNT_S', 1)
 put('SEQ:SUPER:RESET_S', 0)
 
+# Ensure the blanking interval is right (this is not axis specific)
+_put(None, 'TRG:BLANKING_S', setup.blanking_interval)
+
 
 # Configure FIR as selected
 put('FIR:0:LENGTH_S', setup.length)
@@ -240,7 +244,6 @@ put('TRG:SEQ:EXT:EN_S', 'Enable')
 put('TRG:SEQ:EXT:BL_S', 'All')
 put('TRG:SEQ:MODE_S', 'Rearm')
 put('TRG:SEQ:DELAY_S', 0)
-put('TRG:BLANKING_S', setup.blanking_interval)
 
 # Configure detector 0
 put('DET:0:ENABLE_S', 'Enabled')
