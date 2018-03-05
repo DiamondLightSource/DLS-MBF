@@ -231,7 +231,7 @@ static void readout_memory(void)
 static void write_dram_runout(unsigned int runout)
 {
     static const unsigned int runout_lookup[] = {
-        0x00000000,         // 0 %
+        0x02000000,         // 12.5 %
         0x04000000,         // 25 %
         0x08000000,         // 50 %
         0x0C000000,         // 75 %
