@@ -142,10 +142,10 @@ def plot_fits(fits, tunes, errors):
     pyplot.title('Peak centre')
 
     pyplot.subplot(512)
-    pyplot.title('Normalised peak area')
-    area = support.abs2(aa) / -bb.imag
-    max_area = numpy.nanmax(area, 1)
-    pyplot.semilogy(area / max_area[:, None], '.')
+    pyplot.title('Normalised peak power')
+    power = support.abs2(aa) / -bb.imag
+    max_power = numpy.nanmax(power, 1)
+    pyplot.semilogy(power / max_power[:, None], '.')
 
     pyplot.subplot(513)
     pyplot.plot(180 / numpy.pi * numpy.angle(aa), '.')

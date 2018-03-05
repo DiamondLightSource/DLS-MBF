@@ -391,7 +391,7 @@ x 72
 y 240
 w 80
 h 16
-controlPv "$(prefix):LEFT:AREA"
+controlPv "$(prefix):LEFT:POWER"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -423,7 +423,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Area:"
+  "Power:"
 }
 autoSize
 endObjectProperties
@@ -583,7 +583,7 @@ x 168
 y 240
 w 80
 h 16
-controlPv "$(prefix):CENTRE:AREA"
+controlPv "$(prefix):CENTRE:POWER"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -735,7 +735,7 @@ x 264
 y 240
 w 80
 h 16
-controlPv "$(prefix):RIGHT:AREA"
+controlPv "$(prefix):RIGHT:POWER"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1179,7 +1179,7 @@ x 104
 y 336
 w 80
 h 16
-controlPv "$(prefix):LEFT:RAREA"
+controlPv "$(prefix):LEFT:RPOWER"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1210,7 +1210,7 @@ fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Rel. Area:"
+  "Rel. Power:"
 }
 autoSize
 endObjectProperties
@@ -1323,7 +1323,7 @@ x 224
 y 336
 w 80
 h 16
-controlPv "$(prefix):RIGHT:RAREA"
+controlPv "$(prefix):RIGHT:RPOWER"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14

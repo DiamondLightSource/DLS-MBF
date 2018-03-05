@@ -123,7 +123,7 @@ def publish_peak(pvs, name, pv_name):
         pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5, DESC = 'Peak centre frequency')
         pvs.aIn('phase', 'PHASE', -180, 180, PREC = 1, EGU = 'deg',
             DESC = 'Peak phase')
-        pvs.aIn('area', 'AREA', PREC = 3, DESC = 'Peak area')
+        pvs.aIn('power', 'POWER', PREC = 3, DESC = 'Peak power')
         pvs.aIn('width', 'WIDTH', 0, 1, PREC = 3, DESC = 'Peak width')
         pvs.aIn('height', 'HEIGHT', PREC = 3, DESC = 'Peak height')
 
@@ -134,7 +134,7 @@ def publish_delta(pvs, name, pv_name):
             DESC = 'Delta tune')
         pvs.aIn('phase', 'DPHASE', -180, 180, PREC = 1, EGU = 'deg',
             DESC = 'Delta phase')
-        pvs.aIn('area', 'RAREA', PREC = 3, DESC = 'Relative area')
+        pvs.aIn('power', 'RPOWER', PREC = 3, DESC = 'Relative power')
         pvs.aIn('width', 'RWIDTH', 0, 1, PREC = 3, DESC = 'Relative width')
         pvs.aIn('height', 'RHEIGHT', PREC = 3, DESC = 'Relative height')
 

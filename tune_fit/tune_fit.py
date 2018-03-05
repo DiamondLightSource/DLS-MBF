@@ -92,7 +92,7 @@ def assess_model(config, scale, model):
     return ''
 
 
-def peaks_area(peaks):
+def peaks_power(peaks):
     aa, bb = peaks.T
     return support.abs2(aa) / -bb.imag
 
@@ -105,11 +105,11 @@ def find_three_peaks(peaks):
     if count == 0:
         return (None, None, None)
     else:
-        # Take the peak with the largest area as the tune, return the
+        # Take the peak with the largest power as the tune, return the
         # neighbouring peaks as the sidebands, or return empty peaks if none
         # available.
         peaks = sort_by_frequency(peaks)
-        maxix = numpy.argmax(peaks_area(peaks))
+        maxix = numpy.argmax(peaks_power(peaks))
         padded = [None] + list(peaks) + [None]
         return padded[maxix:maxix+3]
 
@@ -124,15 +124,15 @@ def compute_peak_info(peak):
         valid = True
 
     width = -b.imag
-    area = support.abs2(a) / width
-    height = area / width
+    power = support.abs2(a) / width
+    height = power / width
     return support.Trace(
         valid = valid,
         tune = numpy.mod(b.real, 1),
         phase = 180 / numpy.pi * numpy.angle(-1j * a),
         width = width,
-        area = area,
-        height = numpy.sqrt(area / width))
+        power = power,
+        height = numpy.sqrt(power / width))
 
 
 def compute_delta_info(centre, side):
@@ -144,7 +144,7 @@ def compute_delta_info(centre, side):
     return support.Trace(
         tune = numpy.abs(side.tune - centre.tune),
         phase = phase,
-        area = side.area / centre.area,
+        power = side.power / centre.power,
         width = side.width / centre.width,
         height = side.height / centre.height)
 
