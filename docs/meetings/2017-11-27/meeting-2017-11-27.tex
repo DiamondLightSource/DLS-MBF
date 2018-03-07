@@ -1,0 +1,68 @@
+\documentclass{beamer}
+
+\usepackage{textcomp}       % Text companion fonts
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{items}[circle]
+
+\hyphenpenalty 4000 \sloppy
+
+
+
+\begin{document}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Improved Capabilities of new LMBF/TMBF}
+
+The new LMBF is currently installed in the machine as \texttt{SR23C-DI-LMBF-01}
+and provides the following improved capabilities:
+\begin{itemize}
+\item
+    Much faster readout of bunch-by-bunch data: can read 100,000 turns in 1.6
+    seconds, can capture up to 500,000 turns and readout in 8 seconds.
+\item
+    Can now measure separate tune responses for up to four different bunch
+    patterns.
+\end{itemize}
+
+All functionality from the old TMBF is available except for the following which
+will be implemented shortly:
+\begin{itemize}
+\item
+    Automated setup scripts
+\item
+    Tune fitting to measured tune
+\item
+    Tune PLL
+\end{itemize}
+
+\end{frame}
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Future Capabilities of new LMBF/TMBF}
+
+First we need to replace the Libera TMBF with the new system.
+
+\bigskip
+
+Then, the following ideas for future capabilities are being considered:
+
+\begin{itemize}
+\item
+    Filtering out mode zero
+\item
+    Selective control of one or more selected individual modes
+\item
+    Simultaneous tune sweeping with multiple excitation frequencies
+\item
+    Tune PLL tracking of grow-damp experiments
+\end{itemize}
+
+There remains room in the firmware for numerous future ideas.
+
+\end{frame}
+
+\end{document}
