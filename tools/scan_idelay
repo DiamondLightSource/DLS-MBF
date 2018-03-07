@@ -2,10 +2,11 @@
 
 import argparse
 import math
+import time
 
 import numpy
 
-from lmbf.driver import driver
+from lmbf.driver import driver, setup_pll, setup_adc
 
 
 parser = argparse.ArgumentParser(description = 'Scan for best IDELAY setting')
@@ -21,6 +22,9 @@ parser.add_argument(
 parser.add_argument(
     '-n', dest = 'capture_count', default = 1024 * 1024, type = int,
     help = 'Number of data points captured for each sample')
+parser.add_argument(
+    '-m', dest = 'clock_mode', default = None,
+    help = 'Configure clock mode before running scan')
 args = parser.parse_args()
 
 # The IDELAY step size is 1/(32 * 2 * f_REF) with f_REF = 200 MHz, which comes
@@ -57,11 +61,19 @@ def assess(c):
     return v == 0 and (numpy.diff(c.mean(0)) == 0).all()
 
 
-# Configure checkerboard ADC capture
 if args.idelay is None:
     idelay = regs.SYS.ADC_IDELAY.VALUE
 else:
     idelay = args.idelay
+
+# Configure clock mode if requested, and set up the ADC
+if args.clock_mode:
+    setup_pll.setup_pll(regs, mode = args.clock_mode)
+    time.sleep(0.1)         # Give the PLL time to lock
+    setup_adc.setup_adc(regs, idelay)
+
+
+# Configure checkerboard ADC capture
 regs.ADC_SPI[0x550] = 4
 
 # Configure DRAM capture using unprocessed ADC channels

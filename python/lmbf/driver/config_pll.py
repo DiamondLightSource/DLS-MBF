@@ -1,5 +1,7 @@
 # Helper file for PLL configuration
 
+import copy
+
 
 # This rather convoluted code is concerned with providing a bridge between the
 # nearly 300 field and register definitions for this device so that at the end
@@ -10,7 +12,7 @@
 #   Each subclass must define a _Fields attribute.  This contains all the field
 # definitions as either single or multiple sub-fields, see the definitions of
 # OutputFields and AllFields below.
-class FieldWriter:
+class FieldWriter(object):
     _OutputNames = []
 
     # A field definition is either a single field definition:
@@ -59,14 +61,23 @@ class FieldWriter:
                 self.write_value(name, default)
 
         # Validate field assignments for this subclass
-        for name, value in self.__class__.__dict__.items():
-            setattr(self, name, value)
+        for name in dir(self):
+            if name in self.__fields:
+                setattr(self, name, getattr(self, name))
 
         # Use keyword arguments to set extra attributes
         for name, value in kargs.items():
             setattr(self, name, value)
 
         self._Outputs = [getattr(self, name) for name in self._OutputNames]
+
+
+    def clone(self):
+        result = self.__class__(PLL = self.__PLL, base = self.__base)
+        result._Fields = self._Fields
+        result.__fields = copy.deepcopy(self.__fields)
+        result.__registers = copy.deepcopy(self.__registers)
+        return result
 
 
     # Updates the registers associated with the given named field.
@@ -297,8 +308,42 @@ class Output(FieldWriter):
     _Fields = OutputFields
 
 
+
 class SettingsBase(FieldWriter):
     _Fields = AllFields
+
+    # Bases for output fields
+
+    #   0   LVDS        FMC GBTCLK1_M2C     Unused
+    #  S1   HSDS 8mA    ADC SYNC
+    out0_1 = Output(base = 0x100, SDCLK_FMT = Const.FMT_HSDS8)
+
+    #   2   LVDS        FMC HB[0]           pll_dclkout2
+    #  S3   LVDS        FMC LA[19]          pll_sdclkout3
+    # Temporary testing outputs, will be unused in working system.
+    out2_3 = Output(base = 0x108,
+        DCLK_FMT = Const.FMT_LVDS, SDCLK_FMT = Const.FMT_LVDS)
+
+    #   4   LVDS        DAC DACCLK
+    #  S5                                   Unused
+    out4_5 = Output(base = 0x110, DCLK_FMT = Const.FMT_LVDS)
+
+    #   6   LVDS        DAC REFCLK
+    #  S7                                   Unused
+    out6_7 = Output(base = 0x118, DCLK_FMT = Const.FMT_LVDS)
+
+    #   8   Used for internal 0-delay feedback
+    #  S9                                   Unused
+    out8_9 = Output(base = 0x120)
+
+    #   10  HSDS 8mA    J12
+    #  S11                                  Unused
+    out10_11 = Output(base = 0x128, DCLK_FMT = Const.FMT_HSDS8)
+
+    #   12  LVDS        FMC GBTCLK0_M2C     Unused
+    #  S13  HSDS 8mA    ADC CLK
+    out12_13 = Output(base = 0x130, SDCLK_FMT = Const.FMT_HSDS8)
+
 
     def __init__(self, PLL, **kargs):
         FieldWriter.__init__(self, PLL, **kargs)
@@ -336,35 +381,13 @@ class SettingsBase(FieldWriter):
     @classmethod
     def create_outputs(cls, result):
         outputs = dict(
-            #   0   LVDS        FMC GBTCLK1_M2C     Unused
-            #  S1   HSDS 8mA    ADC SYNC
-            out0_1 = Output(base = 0x100,
-                SDCLK_FMT = Const.FMT_HSDS8),
-            #   2   LVDS        FMC HB[0]           pll_dclkout2
-            #  S3   LVDS        FMC LA[19]          pll_sdclkout3
-            # Temporary testing outputs, will be unused in working system.
-            out2_3 = Output(base = 0x108,
-                DCLK_FMT = Const.FMT_LVDS,
-                SDCLK_FMT = Const.FMT_LVDS),
-            #   4   LVDS        DAC DACCLK
-            #  S5                                   Unused
-            out4_5 = Output(base = 0x110,
-                DCLK_FMT = Const.FMT_LVDS),
-            #   6   LVDS        DAC REFCLK
-            #  S7                                   Unused
-            out6_7 = Output(base = 0x118,
-                DCLK_FMT = Const.FMT_LVDS),
-            #   8   Used for internal 0-delay feedback
-            #  S9                                   Unused
-            out8_9 = Output(base = 0x120),
-            #   10  HSDS 8mA    J12
-            #  S11                                  Unused
-            out10_11 = Output(base = 0x128,
-                DCLK_FMT = Const.FMT_HSDS8),
-            #   12  LVDS        FMC GBTCLK0_M2C     Unused
-            #  S13  HSDS 8mA    ADC CLK
-            out12_13 = Output(base = 0x130,
-                SDCLK_FMT = Const.FMT_HSDS8))
+            out0_1 = cls.out0_1.clone(),
+            out2_3 = cls.out2_3.clone(),
+            out4_5 = cls.out4_5.clone(),
+            out6_7 = cls.out6_7.clone(),
+            out8_9 = cls.out8_9.clone(),
+            out10_11 = cls.out10_11.clone(),
+            out12_13 = cls.out12_13.clone())
 
         # Mark all these names to be excluded from name check.
         result.update(outputs)

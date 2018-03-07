@@ -195,6 +195,9 @@ class Settings(SettingsBase):
     PLL2_LF_C3 = 6
 
 
+# Mode specific subclasses of the definitions above
+class Mode_500MHz(Settings):
+    pass
     # Settings for ESRF.  Target frequency = 352.372.  For this we take
     #   R1 = N1 = 9
     #   VCO = 0
@@ -204,21 +207,23 @@ class Settings(SettingsBase):
 
 
 
-# To bypass all the above and pass CLKin1 straight through to clock path:
-#     CLKin1_OUT_MUX = 0          # Fin internal path
-#     VCO_MUX = 2                 # Use CLKin1 as output
-#     out4_5.DCLK_MUX = 2
-#     out4_5.DCLK_DIV = 1
-#     out10_11.DCLK_MUX = 2
-#     out10_11.DCLK_DIV = 1
-#     out12_13.DCLK_MUX = 2
-#     out12_13.DCLK_DIV = 1
 
 
-def setup_pll(regs):
-    s = Settings(regs.PLL_SPI)
+class Mode_Passthrough(Settings):
+    Settings.create_outputs(locals())
+
+    # To bypass all the above and pass CLKin1 straight through to clock path:
+    CLKin1_OUT_MUX = 0          # Fin internal path
+    VCO_MUX = 2                 # Use CLKin1 as output
+    out4_5.DCLK_MUX = 2
+    out4_5.DCLK_DIV = 1
+    out10_11.DCLK_MUX = 2
+    out10_11.DCLK_DIV = 1
+    out12_13.DCLK_MUX = 2
+    out12_13.DCLK_DIV = 1
+
+
+def setup_pll(regs, mode = '500MHz'):
+    SettingsMode = globals()['Mode_' + mode]
+    s = SettingsMode(regs.PLL_SPI)
     s.write_config()
-
-
-if __name__ == '__main__':
-    setup_pll()
