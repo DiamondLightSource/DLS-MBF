@@ -5,26 +5,17 @@ set -e
 # Script for loading FPGA into machine
 
 AMC525_IPS=(192.168.40.200 192.168.40.201)
-AMC525_SERVER=sr23c-di-mserv-01
 
 BIT_FILE=amc525_lmbf.bit
 
 
 HERE="$(cd "$(dirname "$0")"; pwd)"
 
-if [[ $(hostname -s) = $AMC525_SERVER ]]; then
-    # We're in the right place
+# First of all ensure that nobody is trying to use the hardware
+USERS="$(lsof -t /dev/amc525_lmbf.* 2>/dev/null)" || true
+[[ -n $USERS ]]  &&  kill -9 $USERS
 
-    # First of all ensure that nobody is trying to use the hardware
-    USERS="$(lsof -t /dev/amc525_lmbf.* 2>/dev/null)" || true
-    [[ -n $USERS ]]  &&  kill -9 $USERS
-
-    for ip in "${AMC525_IPS[@]}"; do
-        scp "$BIT_FILE" root@$ip:/tmp/amc525_lmbf.bit
-        ssh -x root@$ip amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
-    done
-else
-    # Try to connect to named server and run this script.  This is a bit dodgy
-    # as can get into a loop if the hostname comparison above goes wrong...
-    ssh -x "$AMC525_SERVER" "$HERE"/"$(basename "$0")"
-fi
+for ip in "${AMC525_IPS[@]}"; do
+    scp "$BIT_FILE" root@$ip:/tmp/amc525_lmbf.bit
+    ssh -x root@$ip amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
+done
