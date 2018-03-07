@@ -198,15 +198,29 @@ class Settings(SettingsBase):
 # Mode specific subclasses of the definitions above
 class Mode_500MHz(Settings):
     pass
+
+
+class Mode_352MHz(Settings):
+    Settings.create_outputs(locals())
+
     # Settings for ESRF.  Target frequency = 352.372.  For this we take
-    #   R1 = N1 = 9
-    #   VCO = 0
-    #   D = 7
-    #   N2 = 74 = 2 * 37
-    #   R2 = 3
+    # R1 = N1 = 9
+    # VCO = 0
+    # D = 7
+    # N2 = 2 * 37 = 72
+    # R2 = 3
+    CLKin1_R = 9
+    PLL1_N = 9
 
+    VCO_MUX = 0
+    PLL2_R = 3
+    PLL2_P = 2
+    PLL2_N = 37
+    PLL2_N_CAL = 37
 
-
+    out4_5.DCLK_DIV = 7
+    out8_9.DCLK_DIV = 7
+    out10_11.DCLK_DIV = 7
 
 
 class Mode_Passthrough(Settings):
