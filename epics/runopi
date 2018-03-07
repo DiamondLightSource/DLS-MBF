@@ -1,6 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-# cd "$(dirname "$(readlink -f "$0")")"/opi
 HERE="$(dirname "$(readlink -f "$0")")"
 
 DEVICE="$1"

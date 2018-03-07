@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 PYIOC_VERSION=2-11
 PYIOC=/dls_sw/prod/R3.14.12.3/support/pythonSoftIoc/$PYIOC_VERSION/pythonIoc
