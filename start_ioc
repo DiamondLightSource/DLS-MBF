@@ -31,4 +31,4 @@ PORT="$(sed -n '/^procserv_port *= */{s///;p}' "$IOC_PATH".config)"  &&
 [[ -n $PORT ]]  ||
     error Unable to read port
 
-"$PROCSERV" --allow $PORT "$IOC_PATH"
+"$PROCSERV" --allow --killsig=2 $PORT "$IOC_PATH"

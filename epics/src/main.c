@@ -201,6 +201,54 @@ static void stop_epics(void)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+
+/* Signal handler for orderly shutdown. */
+static void at_exit(int signum)
+{
+    log_message("Closing on signal %d", signum);
+    close(STDIN_FILENO);
+}
+
+
+static error__t initialise_signals(void)
+{
+    sigset_t signal_mask;
+    struct sigaction do_shutdown = {
+        .sa_handler = at_exit, .sa_flags = SA_RESTART };
+    struct sigaction do_ignore = {
+        .sa_handler = SIG_IGN, .sa_flags = SA_RESTART };
+    struct sigaction do_default = { .sa_handler = SIG_DFL, };
+    return
+        /* Make sure that we can actually see the signals we're going handle,
+         * and block everything else. */
+        TEST_IO(sigfillset(&signal_mask))  ?:
+        TEST_IO(sigdelset(&signal_mask, SIGHUP))  ?:
+        TEST_IO(sigdelset(&signal_mask, SIGINT))  ?:
+        TEST_IO(sigdelset(&signal_mask, SIGTERM))  ?:
+        TEST_IO(sigdelset(&signal_mask, SIGPIPE))  ?:
+        TEST_IO(sigdelset(&signal_mask, SIGQUIT))  ?:
+        TEST_IO(sigprocmask(SIG_SETMASK, &signal_mask, NULL))  ?:
+
+        /* Catch the usual interruption signals and use them to trigger an
+         * orderly shutdown.  As a reminder, these are the sources of these
+         * three signals:
+         *  1  HUP      Terminal hangup, also often used for config reload
+         *  2  INT      Keyboard interrupt (CTRL-C)
+         *  15 TERM     Normal termination request, default kill signal */
+        TEST_IO(sigfillset(&do_shutdown.sa_mask))  ?:
+        TEST_IO(sigaction(SIGHUP,  &do_shutdown, NULL))  ?:
+        TEST_IO(sigaction(SIGINT,  &do_shutdown, NULL))  ?:
+        TEST_IO(sigaction(SIGTERM, &do_shutdown, NULL))  ?:
+
+        /* When acting as a server we need to ignore SIGPIPE, of course. */
+        TEST_IO(sigaction(SIGPIPE, &do_ignore,   NULL))  ?:
+
+        /* Allow SIGQUIT to kill us unconditionally.  This is useful if the
+         * server has become stuck. */
+        TEST_IO(sigaction(SIGQUIT, &do_default,  NULL));
+}
+
+
 /* Initialises the various subsystems. */
 static error__t initialise_subsystems(void)
 {
@@ -240,7 +288,9 @@ int main(int argc, char *const argv[])
             system_config.persistence_file,
             system_config.persistence_interval, false)  ?:
         initialise_epics()  ?:
-        initialise_socket_server(system_config.data_port);
+        initialise_socket_server(system_config.data_port)  ?:
+
+        initialise_signals();
 
     if (!error)
     {
