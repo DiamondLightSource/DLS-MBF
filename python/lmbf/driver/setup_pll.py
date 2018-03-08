@@ -209,6 +209,7 @@ class Mode_352MHz(Settings):
     # D = 7
     # N2 = 2 * 37 = 72
     # R2 = 3
+
     CLKin1_R = 9
     PLL1_N = 9
 
@@ -221,6 +222,7 @@ class Mode_352MHz(Settings):
     out4_5.DCLK_DIV = 7
     out8_9.DCLK_DIV = 7
     out10_11.DCLK_DIV = 7
+    out12_13.DCLK_DIV = 7
 
 
 class Mode_Passthrough(Settings):
