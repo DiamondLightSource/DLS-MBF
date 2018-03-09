@@ -23,7 +23,7 @@ while getopts 'vltquzh' option; do
         z)  HW_CONFIG=() ;;
         h)  cat <<EOF
 Usage: runioc [options]
-Starts LMBF IOC with configured options.
+Starts MBF IOC with configured options.
     -v      Run with valgrind memory checker enabled
     -l      Add leak check to valgrind (must specify -v first)
     -t      Add track origins to valgrind (must specify -v first)

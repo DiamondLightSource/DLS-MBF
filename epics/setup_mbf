@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# This script initialises the given LMBF target
+# This script initialises the given MBF target
 
 import sys
 import os

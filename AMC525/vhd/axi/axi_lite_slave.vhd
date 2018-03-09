@@ -1,4 +1,4 @@
--- Implements register interface to LMBF system
+-- Implements register interface to MBF system
 
 -- This is an AXI-Lite slave which only accepts full 32-bit writes.  The
 -- incoming address is split into three parts, where ADDR_WIDTH is determined

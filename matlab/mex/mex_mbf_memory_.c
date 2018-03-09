@@ -1,4 +1,4 @@
-/* Matlab extension to support fast capture of fast memory data from the LMBF
+/* Matlab extension to support fast capture of fast memory data from the MBF
  * socket server.
  *
  * The function defined here must be called thus:
