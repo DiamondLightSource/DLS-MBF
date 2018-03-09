@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 705
-y 385
+x 424
+y 376
 w 345
-h 328
+h 345
 font "helvetica-medium-r-8.0"
 ctlFont "helvetica-medium-r-8.0"
 btnFont "helvetica-medium-r-8.0"
@@ -35,7 +35,7 @@ release 0
 x 8
 y 48
 w 328
-h 272
+h 288
 lineColor index 14
 fill
 fillColor index 4
@@ -494,7 +494,7 @@ major 4
 minor 1
 release 0
 x 264
-y 288
+y 304
 w 64
 h 24
 fgColor index 46
@@ -557,7 +557,7 @@ major 4
 minor 6
 release 0
 x 112
-y 224
+y 240
 w 200
 h 14
 controlPv "$(device):ADC_TAPS"
@@ -581,7 +581,7 @@ major 4
 minor 1
 release 1
 x 16
-y 224
+y 240
 w 59
 h 14
 font "helvetica-bold-r-12.0"
@@ -601,7 +601,7 @@ major 4
 minor 6
 release 0
 x 112
-y 240
+y 256
 w 200
 h 14
 controlPv "$(device):BUNCH_TAPS"
@@ -625,7 +625,7 @@ major 4
 minor 1
 release 1
 x 16
-y 240
+y 256
 w 52
 h 14
 font "helvetica-bold-r-12.0"
@@ -645,7 +645,7 @@ major 4
 minor 6
 release 0
 x 112
-y 256
+y 272
 w 200
 h 14
 controlPv "$(device):DAC_TAPS"
@@ -669,7 +669,7 @@ major 4
 minor 1
 release 1
 x 16
-y 256
+y 272
 w 59
 h 14
 font "helvetica-bold-r-12.0"
@@ -689,7 +689,7 @@ major 4
 minor 6
 release 0
 x 112
-y 280
+y 296
 w 200
 h 14
 controlPv "$(device):AXIS0"
@@ -713,7 +713,7 @@ major 4
 minor 1
 release 1
 x 16
-y 280
+y 296
 w 40
 h 14
 font "helvetica-bold-r-12.0"
@@ -733,7 +733,7 @@ major 4
 minor 6
 release 0
 x 112
-y 296
+y 312
 w 200
 h 14
 controlPv "$(device):AXIS1"
@@ -757,7 +757,7 @@ major 4
 minor 1
 release 1
 x 16
-y 296
+y 312
 w 40
 h 14
 font "helvetica-bold-r-12.0"
@@ -768,5 +768,49 @@ value {
   "Axis 1:"
 }
 autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 224
+w 55
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Bunches:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 112
+y 224
+w 200
+h 14
+controlPv "$(device):BUNCHES"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
 endObjectProperties
 

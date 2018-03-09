@@ -22,7 +22,7 @@ while getopts 'vltquzh' option; do
         u)  OPTS=("${OPTS[@]}" -u) ;;
         z)  HW_CONFIG=() ;;
         h)  cat <<EOF
-Usage: runioc [options]
+Usage: runioc [options] config-file
 Starts MBF IOC with configured options.
     -v      Run with valgrind memory checker enabled
     -l      Add leak check to valgrind (must specify -v first)
