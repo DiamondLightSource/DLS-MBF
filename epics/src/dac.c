@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"
@@ -116,6 +117,31 @@ static void scan_events(void)
 }
 
 
+static pthread_mutex_t delay_lock = PTHREAD_MUTEX_INITIALIZER;
+static unsigned int dac_delay = 0;
+
+static void set_dac_fine_delay(unsigned int delay)
+{
+    /* See section 9.7.2.3 of the LMK04828 documentation. */
+    hw_write_fmc500_spi(FMC500_SPI_PLL, 0x113,
+        (uint8_t) ((delay & 0x1F) << 3) | 3);
+}
+
+static void slew_dac_fine_delay(unsigned int delay)
+{
+    /* To avoid glitches, slew to the target delay rather than jumping there
+     * directly.  Single steps are guaranteed to be glitchless. */
+    if (dac_delay < delay)
+        for (unsigned int d = dac_delay + 1; d < delay; d ++)
+            set_dac_fine_delay(d);
+    else if (dac_delay > delay)
+        for (unsigned int d = dac_delay - 1; d > delay; d --)
+            set_dac_fine_delay(d);
+    set_dac_fine_delay(delay);
+    dac_delay = delay;
+}
+
+
 error__t initialise_dac(void)
 {
     FOR_AXIS_NAMES(axis, "DAC")
@@ -140,7 +166,13 @@ error__t initialise_dac(void)
         dac->mms = create_mms_handler(axis, hw_read_dac_mms);
     }
 
-    PUBLISH_ACTION("DAC:EVENTS", scan_events);
+    WITH_NAME_PREFIX("DAC")
+    {
+        PUBLISH_ACTION("EVENTS", scan_events);
+
+        PUBLISH_WRITER_P(ulongout, "FINE_DELAY",
+            slew_dac_fine_delay, .mutex = &delay_lock);
+    }
 
     return ERROR_OK;
 }

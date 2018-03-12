@@ -75,6 +75,15 @@ void hw_read_system_status(struct system_status *status);
 /* Writes delay for revolution clock. */
 void hw_write_turn_clock_idelay(unsigned int delay);
 
+/* Direct access to FMC500 SPI devices. */
+enum fmc500_spi {
+    FMC500_SPI_PLL,
+    FMC500_SPI_ADC,
+    FMC500_SPI_DAC,
+};
+void hw_write_fmc500_spi(enum fmc500_spi spi, unsigned int reg, uint8_t value);
+uint8_t hw_read_fmc500_spi(enum fmc500_spi spi, unsigned int reg);
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Shared Control interface. */

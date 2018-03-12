@@ -51,7 +51,10 @@ class Settings(SettingsBase):
     # DAC clock
     out4_5.CLK_PD = 0
     out4_5.DCLK_DIV = 5
-    out4_5.DCLK_MUX = 0
+    out4_5.DCLK_MUX = 3         # Allow analogue delay
+    out4_5.DCLK_ADLY_PD = 0     # Enable analogue delay and
+    out4_5.DCLK_ADLYg_PD = 0    # glitchless control
+    out4_5.DCLK_ADLY = 0        # Start with 0ps (extra) delay
 
     out6_7.CLK_PD = 0
     out6_7.DCLK_DIV = 10
@@ -68,11 +71,10 @@ class Settings(SettingsBase):
     # Front panel connector on DCLKout10
     out10_11.CLK_PD = 0
     out10_11.DCLK_DIV = 5
-    out10_11.DCLK_MUX = 0
-#     out10_11.DCLK_MUX = 3       # Allow analogue delay
-#     out10_11.DCLK_ADLY_PD = 0   # Enable analogue delay and
-#     out10_11.DCLK_ADLYg_PD = 0  # glitchless control
-#     out10_11.DCLK_ADLY = 0      # Start with 0ps (extra) delay
+    out10_11.DCLK_MUX = 3       # Allow analogue delay
+    out10_11.DCLK_ADLY_PD = 0   # Enable analogue delay and
+    out10_11.DCLK_ADLYg_PD = 0  # glitchless control
+    out10_11.DCLK_ADLY = 0      # Start with 0ps (extra) delay
 #     # Enable dynamic digital delay on this output
 #     out10_11.DCLK_DDLY_PD = 0
 #     out10_11.DCLK_DDLY_CNTH = 3 # Settings for one step delay
@@ -82,8 +84,11 @@ class Settings(SettingsBase):
     # ADC clock on SDCLKout13
     out12_13.CLK_PD = 0
     out12_13.DCLK_DIV = 5
-    out12_13.DCLK_MUX = 0
     out12_13.SDCLK_MUX = 0
+    out12_13.DCLK_MUX = 3       # Allow analogue delay
+    out12_13.DCLK_ADLY_PD = 0   # Enable analogue delay and
+    out12_13.DCLK_ADLYg_PD = 0  # glitchless control
+    out12_13.DCLK_ADLY = 0      # Start with 0ps (extra) delay
 
 
     SYSREF_CLR = 0              # Take SYSREF out of reset

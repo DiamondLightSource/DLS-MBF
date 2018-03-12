@@ -137,6 +137,7 @@ static error__t read_dma_memory(
 /* System registers. */
 
 static volatile struct sys *sys_regs;
+static pthread_mutex_t sys_lock = PTHREAD_MUTEX_INITIALIZER;
 
 
 void hw_read_fpga_version(struct fpga_version *version)
@@ -168,6 +169,30 @@ void hw_read_system_status(struct system_status *result)
 void hw_write_turn_clock_idelay(unsigned int delay)
 {
     WRITE_FIELDS(sys_regs->rev_idelay, .value = delay & 0x1F, .write = 1);
+}
+
+void hw_write_fmc500_spi(enum fmc500_spi spi, unsigned int reg, uint8_t value)
+{
+    WITH_MUTEX(sys_lock)
+    {
+        WRITE_FIELDS(sys_regs->fmc_spi,
+            .address = reg & 0x7FFF, .select = spi, .rw_n = 0, .data = value);
+        /* Need to read back to ensure write has completed.  Ought to fix this
+         * in the firmware one of these days. */
+        READL(sys_regs->fmc_spi);
+    }
+}
+
+uint8_t hw_read_fmc500_spi(enum fmc500_spi spi, unsigned int reg)
+{
+    uint8_t result;
+    WITH_MUTEX(sys_lock)
+    {
+        WRITE_FIELDS(sys_regs->fmc_spi,
+            .address = reg & 0x7FFF, .select = spi, .rw_n = 1);
+        result = READL(sys_regs->fmc_spi).data;
+    }
+    return result;
 }
 
 

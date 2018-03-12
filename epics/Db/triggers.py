@@ -48,7 +48,11 @@ def target_pvs(prefix):
 
 def turn_pvs():
     Action('SYNC', DESC = 'Synchronise turn clock')
-    longOut('DELAY', 0, 31, DESC = 'Turn clock input delay')
+
+    turn_delay = longOut('DELAY', 0, 31, DESC = 'Turn clock input delay')
+    turn_delay.FLNK = records.calc('DELAY_PS',
+        EGU  = 'ps', CALC = 'A*B',   INPA = turn_delay,  INPB = 78.125)
+
     turn_count = longIn('TURNS', DESC = 'Turns sampled')
     error_count = longIn('ERRORS',
         HIGH = 1, HSV = 'MINOR', DESC = 'Turn clock errors')

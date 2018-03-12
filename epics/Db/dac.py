@@ -39,4 +39,9 @@ with name_prefix('DAC'):
     Action('EVENTS',
         SCAN = '.1 second',
         FLNK = create_fanout('SCAN:FAN', *dac_events),
+
         DESC = 'DAC event detect scan')
+    dac_delay = longOut('FINE_DELAY', 0, 23, DESC = 'DAC clock fine delay')
+    dac_delay.FLNK = records.calc('FINE_DELAY_PS',
+        EGU  = 'ps', CALC = 'A*B',   INPA = dac_delay,  INPB = 25)
+
