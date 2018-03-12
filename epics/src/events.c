@@ -61,7 +61,7 @@ static void *events_thread(void *context)
         }
     }
     ERROR_REPORT(error, "Error reading events");
-    ASSERT_FAIL();                      // We're in trouble!
+    ASSERT_OK(hardware_config.no_hardware);     // Only allowed case!
     return NULL;
 }
 

@@ -27,12 +27,13 @@ extern const struct hardware_config {
     unsigned int adc_taps;
     unsigned int bunch_taps;
     unsigned int dac_taps;
+    bool no_hardware;
 } hardware_config;
 
 
 error__t initialise_hardware(
     const char *device_address, unsigned int bunches,
-    bool lock_registers, bool lmbf_mode);
+    bool lock_registers, bool lmbf_mode, bool no_hardware);
 void terminate_hardware(void);
 
 /* Toggles between locked and unlocked access to the control registers. */

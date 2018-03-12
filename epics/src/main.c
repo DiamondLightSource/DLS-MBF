@@ -58,6 +58,10 @@ static bool lock_registers = true;
 /* Can be reset for quiet operation. */
 static bool enable_pv_logging = true;
 
+/* Set for operation with hardware disabled.  Useful for standalone development
+ * of interfacing systems. */
+static bool no_hardware = false;
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Argument handling. */
@@ -70,6 +74,7 @@ static void usage(void)
 "   -C: Specify directory where EPICS files are found\n"
 "   -u  Startup with hardware registers unlocked (debug only)\n"
 "   -q  Disable PV logging\n"
+"   -n  Disable hardware\n"
     );
 }
 
@@ -78,12 +83,13 @@ static error__t process_options(int *argc, char *const *argv[])
 {
     while (true)
     {
-        switch (getopt(*argc, *argv, "+hC:uq"))
+        switch (getopt(*argc, *argv, "+hC:uqn"))
         {
             case 'h':   usage();                                exit(1);
             case 'C':   path_prefix = optarg;                   break;
             case 'u':   lock_registers = false;                 break;
             case 'q':   enable_pv_logging = false;              break;
+            case 'n':   no_hardware = true;                     break;
             default:
                 return FAIL_("Invalid command line option");
             case -1:
@@ -278,7 +284,7 @@ int main(int argc, char *const argv[])
         load_configs(hardware_config_file, system_config_file)  ?:
         initialise_hardware(
             system_config.device_address, system_config.bunches_per_turn,
-            lock_registers, system_config.lmbf_mode)  ?:
+            lock_registers, system_config.lmbf_mode, no_hardware)  ?:
         initialise_epics_device()  ?:
 
         initialise_subsystems()  ?:

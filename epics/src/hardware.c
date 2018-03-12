@@ -921,23 +921,30 @@ error__t hw_unlock_registers(void)
 }
 
 
-static error__t set_hardware_config(unsigned int bunches, bool lmbf_mode)
+static error__t set_hardware_config(
+    unsigned int bunches, bool lmbf_mode, bool no_hardware)
 {
     hw_write_bunch_count(bunches);
     hw_write_lmbf_mode(lmbf_mode);
 
+    struct sys_info sys_info = sys_regs->info;
+    if (no_hardware)
+        sys_info = (struct sys_info) {
+            .adc_taps = 10,
+            .bunch_taps = 10,
+            .dac_taps = 10,
+        };
+
     /* Here we update the "constant" hardware configuration.  This is constant
      * everywhere except for this one place where we initialise it. */
-    struct hardware_config *p_hardware_config =
-        CAST_TO(struct hardware_config *, &hardware_config);
-
-    struct sys_info sys_info = sys_regs->info;
-    *p_hardware_config = (struct hardware_config)
+    *CAST_TO(struct hardware_config *,
+        &hardware_config) = (struct hardware_config)
     {
         .bunches = bunches,
         .adc_taps   = sys_info.adc_taps,
         .bunch_taps = sys_info.bunch_taps,
         .dac_taps   = sys_info.dac_taps,
+        .no_hardware = no_hardware,
     };
 
     return ERROR_OK;
@@ -946,10 +953,13 @@ static error__t set_hardware_config(unsigned int bunches, bool lmbf_mode)
 
 error__t initialise_hardware(
     const char *device_address, unsigned int bunches,
-    bool lock_registers, bool lmbf_mode)
+    bool lock_registers, bool lmbf_mode, bool no_hardware)
 {
-    printf("initialise_hardware @%s %s\n",
-        device_address, lock_registers ? "" : "unlocked");
+    if (no_hardware)
+        printf("running with hardware disabled\n");
+    else
+        printf("initialise_hardware @%s %s\n",
+            device_address, lock_registers ? "" : "unlocked");
 
     /* Compute device node names from the device_address. */
     const char *device_template = "/dev/amc525_lmbf/%s/amc525_lmbf.%s";
@@ -961,25 +971,30 @@ error__t initialise_hardware(
     sprintf(dram1_device_name, device_template, device_address, "ddr1");
 
     return
-        TEST_IO_(reg_device = open(reg_device_name, O_RDWR | O_SYNC),
-            "Unable to open MBF device %s", reg_device_name)  ?:
-        TEST_IO(dram0_device = open(dram0_device_name, O_RDONLY))  ?:
-        TEST_IO(dram1_device = open(dram1_device_name, O_RDONLY))  ?:
-        IF(lock_registers,
-            hw_lock_registers())  ?:
-        TEST_IO(
-            config_regs_size = (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
-        TEST_IO(config_regs = mmap(
-            0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
-            reg_device, 0))  ?:
+        IF_ELSE(no_hardware,
+            DO( config_regs_size = 65536;
+                config_regs = calloc(config_regs_size, 1)),
+        //else
+            TEST_IO_(reg_device = open(reg_device_name, O_RDWR | O_SYNC),
+                "Unable to open MBF device %s", reg_device_name)  ?:
+            TEST_IO(dram0_device = open(dram0_device_name, O_RDONLY))  ?:
+            TEST_IO(dram1_device = open(dram1_device_name, O_RDONLY))  ?:
+            IF(lock_registers,
+                hw_lock_registers())  ?:
+            TEST_IO(
+                config_regs_size =
+                    (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
+            TEST_IO(config_regs = mmap(
+                0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
+                reg_device, 0)))  ?:
         map_config_regs()  ?:
-        set_hardware_config(bunches, lmbf_mode);
+        set_hardware_config(bunches, lmbf_mode, no_hardware);
 }
 
 
 void terminate_hardware(void)
 {
-    if (config_regs)
+    if (config_regs  &&  !hardware_config.no_hardware)
         munmap(config_regs, config_regs_size);
     if (reg_device != -1)
         close(reg_device);

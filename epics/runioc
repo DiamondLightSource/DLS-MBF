@@ -12,8 +12,9 @@ IOC="$HERE"/bin/linux-x86_64/mbf
 DEBUG=()
 OPTS=()
 HW_CONFIG=("$HERE"/hardware_delays)
+NO_HARDWARE=0
 
-while getopts 'vltquzh' option; do
+while getopts 'vltquznh' option; do
     case "$option" in
         v)  DEBUG=(valgrind) ;;
         l)  DEBUG=("${DEBUG[@]}" --leak-check=full) ;;
@@ -21,6 +22,8 @@ while getopts 'vltquzh' option; do
         q)  OPTS=("${OPTS[@]}" -q) ;;
         u)  OPTS=("${OPTS[@]}" -u) ;;
         z)  HW_CONFIG=() ;;
+        n)  NO_HARDWARE=1
+            OPTS=("${OPTS[@]}" -n) ;;
         h)  cat <<EOF
 Usage: runioc [options] config-file
 Starts MBF IOC with configured options.
@@ -30,6 +33,7 @@ Starts MBF IOC with configured options.
     -q      Disable PV logging
     -u      Don't lock hardware registers
     -z      Disable delay compensation
+    -n      Run without initialising hardware
 EOF
             exit 0;;
         *)  Error 'Invalid option: try -h for help' ;;
@@ -45,7 +49,7 @@ shift
 
 # Initialise the hardware.  This sets up the clock PLL, ADC and DAC.  The rest
 # of the system will be initialised by the IOC proper.
-"$HERE"/setup_mbf "$SYS_CONFIG"  &&
+if ((NO_HARDWARE == 0)); then "$HERE"/setup_mbf "$SYS_CONFIG"; fi  &&
 # Now run the IOC
 exec "${DEBUG[@]}" \
     "$IOC" -C "$HERE" "${OPTS[@]}" "$SYS_CONFIG" "${HW_CONFIG[@]}"
