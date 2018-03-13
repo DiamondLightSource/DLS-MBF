@@ -7,7 +7,7 @@ include $(TOP)/configure/CONFIG
 
 include $(EPICS_DEVICE)/src/Makefile.extra
 
-USR_CFLAGS += -Werror
+USR_CFLAGS +=
 
 
 # Compute the version information
