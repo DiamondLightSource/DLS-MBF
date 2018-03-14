@@ -111,6 +111,8 @@
         .DAC_RSTN
         # Digital IO terminations
         .DIO_TERM       3
+        # Optional selection of PLL SDCLKout3 to DIO output #5 for testing.
+        .DIO_SEL_SDCLK
 
     # ADC DCO IDELAY control
     :IDELAY     ADC_IDELAY

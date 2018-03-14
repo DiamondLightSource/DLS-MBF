@@ -191,6 +191,8 @@ architecture arch of top is
     signal blanking_trigger : std_logic;
     signal dsp_events : std_logic_vector(CHANNELS);
 
+    signal dio_output_5 : std_logic;
+
 begin
 
     -- -------------------------------------------------------------------------
@@ -760,9 +762,16 @@ begin
     blanking_trigger   <= dio_inputs(2);
 
     -- FMC0 outputs
+    process (control_data, fmc500_inputs, dsp_events) begin
+        if control_data(SYS_CONTROL_DIO_SEL_SDCLK_BIT) = '1' then
+            dio_output_5 <= fmc500_inputs.pll_sdclkout3;
+        else
+            dio_output_5 <= dsp_events(1);
+        end if;
+    end process;
     dio_outputs <= (
         3 => dsp_events(0),
-        4 => dsp_events(1),
+        4 => dio_output_5,      -- Front panel name is 5
         others => '0'
     );
     -- The top two IOs are configured as outputs, we control termination for the
