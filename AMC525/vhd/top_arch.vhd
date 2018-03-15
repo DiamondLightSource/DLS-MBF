@@ -745,13 +745,19 @@ begin
         SYS_STATUS_DAC_OK_BIT       => fmc500_inputs.dac_pwr_good,
         SYS_STATUS_PLL_LD1_BIT      => fmc500_inputs.pll_status_ld1,
         SYS_STATUS_PLL_LD2_BIT      => fmc500_inputs.pll_status_ld2,
+        SYS_STATUS_PLL_SEL0_BIT     => fmc500_inputs.pll_clkin_sel0_in,
+        SYS_STATUS_PLL_SEL1_BIT     => fmc500_inputs.pll_clkin_sel1_in,
         SYS_STATUS_DAC_IRQN_BIT     => fmc500_inputs.dac_irqn,
         SYS_STATUS_TEMP_ALERT_BIT   => not fmc500_inputs.temp_alert_n,
         others => '0'
     );
 
-    fmc500_outputs.pll_clkin_sel0 <= control_data(SYS_CONTROL_PLL_SEL0_BIT);
-    fmc500_outputs.pll_clkin_sel1 <= control_data(SYS_CONTROL_PLL_SEL1_BIT);
+    fmc500_outputs.pll_clkin_sel0_out <= control_data(SYS_CONTROL_PLL_SEL0_BIT);
+    fmc500_outputs.pll_clkin_sel1_out <= control_data(SYS_CONTROL_PLL_SEL1_BIT);
+    fmc500_outputs.pll_clkin_sel0_ena <=
+        control_data(SYS_CONTROL_PLL_SEL0_ENA_BIT);
+    fmc500_outputs.pll_clkin_sel1_ena <=
+        control_data(SYS_CONTROL_PLL_SEL1_ENA_BIT);
     fmc500_outputs.pll_sync <= control_data(SYS_CONTROL_PLL_SYNC_BIT);
     fmc500_outputs.adc_pdwn <= control_data(SYS_CONTROL_ADC_PDWN_BIT);
     fmc500_outputs.dac_rstn <= not control_data(SYS_CONTROL_DAC_RSTN_BIT);

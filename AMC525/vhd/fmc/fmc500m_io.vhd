@@ -26,7 +26,11 @@ entity fmc500m_io is
         -- Misc
         pll_status_ld1_o : out std_logic;
         pll_status_ld2_o : out std_logic;
+        pll_clkin_sel0_o : out std_logic;
+        pll_clkin_sel0_ena_i : in std_logic;
         pll_clkin_sel0_i : in std_logic;
+        pll_clkin_sel1_o : out std_logic;
+        pll_clkin_sel1_ena_i : in std_logic;
         pll_clkin_sel1_i : in std_logic;
         pll_sync_i : in std_logic;
         -- Internal clocks from PLL.  Probably will be discarded
@@ -139,13 +143,17 @@ begin
     );
 
     -- Miscellaneous control outputs
-    pll_clkin_sel0_inst : entity work.obuf_array port map (
+    pll_clkin_sel0_inst : entity work.iobuf_array port map (
         i_i(0) => pll_clkin_sel0_i,
-        o_o(0) => FMC_LA_P(31)
+        t_i(0) => not pll_clkin_sel0_ena_i,
+        o_o(0) => pll_clkin_sel0_o,
+        io(0) => FMC_LA_P(31)
     );
-    pll_clkin_sel1_inst : entity work.obuf_array port map (
+    pll_clkin_sel1_inst : entity work.iobuf_array port map (
         i_i(0) => pll_clkin_sel1_i,
-        o_o(0) => FMC_LA_N(31)
+        t_i(0) => not pll_clkin_sel1_ena_i,
+        o_o(0) => pll_clkin_sel1_o,
+        io(0) => FMC_LA_N(31)
     );
     pll_sync_inst : entity work.obuf_array port map (
         i_i(0) => pll_sync_i,

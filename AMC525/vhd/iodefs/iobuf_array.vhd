@@ -1,6 +1,6 @@
--- Array of IBUF
+-- Array of IOBUF
 --
--- Singled ended input buffers with 1.8V CMOS input standard
+-- Tristate I/O buffers with 1.8V CMOS input standard and tristate control
 
 library ieee;
 use ieee.std_logic_1164.all;
