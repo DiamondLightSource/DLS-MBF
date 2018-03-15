@@ -44,14 +44,18 @@ for a in axes('NCO', lmbf_mode):
 def clock_status(name, desc):
     return boolIn(name, 'Unlocked', 'Locked', ZSV = 'MAJOR', DESC = desc)
 
+def vco_status(name, desc):
+    return mbbIn(name,
+        'Unlocked', 'Locked', 'Passthrough',
+        ZRSV = 'MAJOR', DESC = desc)
 
 with name_prefix('STA'):
     Action('POLL',
         DESC = 'Poll system status',
         SCAN = '.2 second', FLNK = create_fanout('FAN',
             clock_status('CLOCK', 'ADC clock status'),
-            clock_status('VCO', 'VCO clock status'),
-            clock_status('VCXO', 'VCXO clock status')))
+            vco_status('VCO', 'VCO clock status'),
+            vco_status('VCXO', 'VCXO clock status')))
 
 
 # Functions for aggregate severity support
