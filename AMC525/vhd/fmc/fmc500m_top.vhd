@@ -31,6 +31,8 @@ entity fmc500m_top is
         adc_dco_o : out std_logic;      -- Raw data clock from ADC
         adc_data_a_o : out signed;
         adc_data_b_o : out signed;
+        adc_status_a_o : out std_logic;
+        adc_status_b_o : out std_logic;
 
         -- DAC clock and data (clocked by ADC clock)
         dac_data_a_i : in signed;
@@ -195,6 +197,12 @@ begin
         d_i => adc_data,
         signed(q1_o) => adc_data_a_o,
         signed(q2_o) => adc_data_b_o
+    );
+    adc_status_inst : entity work.iddr_array port map (
+        clk_i => adc_clk_i,
+        d_i(0) => adc_status,
+        q1_o(0) => adc_status_a_o,
+        q2_o(0) => adc_status_b_o
     );
 
     -- DDR data to DAC output
