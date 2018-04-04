@@ -1,0 +1,24 @@
+Multi-Bunch Feedback Processing at Diamond on MicroTCA
+
+Michael Abbott
+
+DEELS 2018, 18-19 April 2018, Diamond Light Source
+
+At Diamond we have been developing the control system for our multi-bunch
+feedback system for more than a decade, adding increasingly more functionality.
+Until recently the digital signal processing was limited by our use of the
+ageing Libera TMBF platform, but starting in 2016 we have been migrating to a
+platform based on MicroTCA and commercial off the shelf hardware.
+
+The new hardware provides the ability to capture and process large amounts of
+data: one second's worth of bunch by bunch data can be captured and transferred
+for offline processing in little more than a second.  Also there is a lot of
+unused FPGA capability which will be used for implementation of future high
+speed processing.
+
+The DLS MBF processor currently provides the ability to perform detailed
+experiments on individual bunches or selected groups of bunches, and provides
+live detailed statistics of the motion of each bunch.  Future work will include
+the ability to replay prepared data to facilitate prototype experiments.  We
+also plan to implement a method to measure tune spectra relative to the tune,
+which should reduce the impact of slow tune variations.
