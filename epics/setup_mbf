@@ -29,6 +29,8 @@ sys.path.append(os.path.join(HERE, '../python'))
 from lmbf.driver import driver, setup_pll, setup_adc, setup_dac
 
 
+if not device_address:
+    device_address = 0
 regs = driver.Registers(device_address)
 
 
