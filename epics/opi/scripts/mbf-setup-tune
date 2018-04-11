@@ -138,9 +138,9 @@ except:
 if MODE not in VALID_MODES:
     parser.error('Setup mode \'%s\' is invalid' % MODE)
 
-if args.ring_mode is None:
-    RING_MODE = catools.caget('SR-CS-RING-01:MODE', datatype = str)
-else:
+#if args.ring_mode is None:
+#    RING_MODE = catools.caget('SR-CS-RING-01:MODE', datatype = str)
+#else:
     RING_MODE = args.ring_mode
 
 # Read fundamental parameters from device
