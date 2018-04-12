@@ -267,7 +267,7 @@ class AllFields:
     PLL1_R_DLY          = (0x15E, 3, 3, 0)
     PLL1_N_DLY          = (0x15E, 3, 0, 0)
     PLL1_LD_MUX         = (0x15F, 5, 3, 1)  # Select output to Status_LD1 pin
-    PLL1_LD_TYPE        = (0x15F, 3, 0, 6)  # Open drain output
+    PLL1_LD_TYPE        = (0x15F, 3, 0, 3)  # Configure push-pull drive
     PLL2_P              = (0x162, 3, 5, 2)
     OSCin_FREQ          = (0x162, 3, 2, 7)
     PLL2_XTAL_EN        = (0x162, 1, 1, 0)
@@ -290,7 +290,7 @@ class AllFields:
     PLL2_LF_C4          = (0x16D, 4, 4, 0)
     PLL2_LF_C3          = (0x16D, 4, 0, 0)
     PLL2_LD_MUX         = (0x16E, 5, 3, 2)
-    PLL2_LD_TYPE        = (0x16E, 3, 0, 6)
+    PLL2_LD_TYPE        = (0x16E, 3, 0, 3)  # Configure push-pull drive
     PLL2_PRE_PD         = (0x173, 1, 6, 0)
     PLL2_PD             = (0x173, 1, 5, 1)
 
