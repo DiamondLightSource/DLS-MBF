@@ -55,8 +55,8 @@ F1 = 100.0
 FRACTION = 1e-4
 
 # Choice of internal VCOs
-NCO0 = ('NCO0', (2370., 2630.))     # 2.4 to 2.6 GHz
-NCO1 = ('NCO0', (2920., 3080.))     # 2.9 to 3.1 GHz
+VCO0 = ('VCO0', (2370., 2630.))     # 2.4 to 2.6 GHz
+VCO1 = ('VCO1', (2920., 3080.))     # 2.9 to 3.1 GHz
 
 
 # Returns small prime factor of n or 0 if not possible
@@ -73,10 +73,10 @@ def test_div(n):
     return factor(n) > 0
 
 
-# If f is accessible from nco returns list of appropriate divisors
-def check_nco(nco, f):
-    l = int(math.ceil(nco[0] / f))
-    r = int(math.floor(nco[1] / f))
+# If f is accessible from vco returns list of appropriate divisors
+def check_nco(vco, f):
+    l = int(math.ceil(vco[0] / f))
+    r = int(math.floor(vco[1] / f))
     if l > r:
         # Nope
         return []
@@ -116,7 +116,7 @@ def print_matches(matches):
 
 f_rf = float(sys.argv[1])
 
-for name, nco in [NCO0, NCO1]:
-    for d in check_nco(nco, f_rf):
+for name, vco in [VCO0, VCO1]:
+    for d in check_nco(vco, f_rf):
         print '%s D = %d' % (name, d)
         print_matches(find_matches(f_rf, d))
