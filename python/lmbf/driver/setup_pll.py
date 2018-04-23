@@ -230,6 +230,38 @@ class Mode_352MHz(Settings):
     out12_13.DCLK_DIV = 7
 
 
+class Mode_352_202MHz(Settings):
+    Settings.create_outputs(locals())
+
+    # Settings for ESRF before upgrade.  Target frequency = 352.202.  Take:
+    #   R1 = N1 = 9
+    #   VCO = 0
+    #   D = 7
+    #   N2 = 2 * 641
+    #   R2 = 52
+    # Margin here is 0.12e-4, ie 12% tunable range
+    #
+    # An alternate pair is
+    #   N2 = 5 * 143 = 715
+    #   R2 = 29
+    # The margin here is 0.42e-4 or 42% off center, which seems a little bit far
+    # for comfort.
+
+    CLKin1_R = 9
+    PLL1_N = 9
+
+    VCO_MUX = 0
+    PLL2_R = 52
+    PLL2_P = 2
+    PLL2_N = 641
+    PLL2_N_CAL = 641
+
+    out4_5.DCLK_DIV = 7
+    out8_9.DCLK_DIV = 7
+    out10_11.DCLK_DIV = 7
+    out12_13.DCLK_DIV = 7
+
+
 class Mode_Passthrough(Settings):
     Settings.create_outputs(locals())
 
