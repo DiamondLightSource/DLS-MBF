@@ -122,9 +122,18 @@ static unsigned int dac_delay = 0;
 
 static void set_dac_fine_delay(unsigned int delay)
 {
-    /* See section 9.7.2.3 of the LMK04828 documentation. */
-    hw_write_fmc500_spi(FMC500_SPI_PLL, 0x113,
-        (uint8_t) ((delay & 0x1F) << 3) | 3);
+    /* See section 9.7.2.3 of the LMK04828 documentation (or section 9.7.2.4 of
+     * the revised -EP manual).  Note that we read and update to ensure we keep
+     * the other configuration settings. */
+    struct pll_dly {
+        uint8_t DCLK_MUX : 2;
+        uint8_t DCLK_ADLY_MUX : 1;
+        uint8_t DCLK_ADLY : 5;
+    };
+    struct pll_dly reg = CAST_TO(struct pll_dly,
+        hw_read_fmc500_spi(FMC500_SPI_PLL, 0x113));
+    reg.DCLK_ADLY = delay & 0x1F;
+    hw_write_fmc500_spi(FMC500_SPI_PLL, 0x113, CAST_TO(uint8_t, reg));
 }
 
 static void slew_dac_fine_delay(unsigned int delay)
