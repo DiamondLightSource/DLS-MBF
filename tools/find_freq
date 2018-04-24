@@ -25,7 +25,7 @@
 #   (4)     f_in = f_out = f_RF
 #   (5)     f1 = 100 MHz +-10 kHz (10^-4)
 #   (6)     f2 = 2370 to 2630 MHz or 2920 to 3080 MHz (VCO0 or VCO1)
-#   (7)     d1 < 40 MHz, d2 < 155 MHz but otherwise as large as possible.
+#   (7)     d1 < 40 MHz, d2 < 500 MHz but otherwise as large as possible.
 #
 # From (1, 4) we get R1 = N1 and from (7) we get N1, R1 >= f_RF / 40 MHz, and
 # (3, 6) constrains the choice of VCO and defines D.  For our two target
@@ -52,6 +52,7 @@ import itertools
 
 # Fixed frequency crystal oscillator, centre frequency 100 MHz +- 10kHz
 F1 = 100.0
+F1 = 200.0
 FRACTION = 1e-4
 
 # Choice of internal VCOs
