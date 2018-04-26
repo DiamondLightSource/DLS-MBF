@@ -1,0 +1,7 @@
+export PATH=$PATH:/segfs/tango/contrib/debian9/epics/base-3.14.12.7/bin/linux-x86_64:/segfs/tango/contrib/debian9/epics/extensions/bin/linux-x86_64
+export PYTHONPATH=/segfs/tango/contrib/debian9/epics/cothread/dist/cothread-2.14-py2.7-linux-x86_64.egg
+export PATH=$PATH:/segfs/tango/contrib/debian9/epics
+export LD_LIBRARY_PATH=/segfs/tango/contrib/debian9/epics/base-3.14.12.7/lib/linux-x86_64:$LD_LIBRARY_PATH
+export CATOOLS_LIBCA_PATH=/segfs/tango/contrib/debian9/epics/base-3.14.12.7/lib/linux-x86_64
+export EPICS_CA_MAX_ARRAY_BYTES=1000000
+export EPICS_CA_ADDR_LIST=160.103.236.118
