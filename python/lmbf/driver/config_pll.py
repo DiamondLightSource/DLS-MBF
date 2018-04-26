@@ -7,7 +7,7 @@ import copy
 # nearly 300 field and register definitions for this device so that at the end
 # of this file we can simply concentrate on assigning values to named fields.
 #   There are two FieldWriter subclasses: the Output class used for defining
-# each of the 7 pairs of clock outpus, and the SettingsBase class used for all
+# each of the 7 pairs of clock outputs, and the SettingsBase class used for all
 # the remaining settings.
 #   Each subclass must define a _Fields attribute.  This contains all the field
 # definitions as either single or multiple sub-fields, see the definitions of
@@ -142,6 +142,8 @@ class OutputFields:
     DCLK_DIV            = (0, 5, 0, 0)      # Clock output divisor
     DCLK_DDLY_CNTH      = (1, 4, 4, 5)      # Digital delay high count
     DCLK_DDLY_CNTL      = (1, 4, 0, 5)      # Digital delay low count
+    DCLK_DDLYd_CNTH     = (2, 4, 4, 5)      # Digital delay high count
+    DCLK_DDLYd_CNTL     = (2, 4, 0, 5)      # Digital delay low count
     DCLK_ADLY           = (3, 5, 3, 0)      # Analogue delay
     DCLK_ADLY_MUX       = (3, 1, 2, 0)      # Enable duty cycle correction
     DCLK_MUX            = (3, 2, 0, 0)      # DCLK output mux
@@ -151,17 +153,17 @@ class OutputFields:
     SDCLK_HS            = (4, 1, 0, 0)      # SDCLK half step
     SDCLK_ADLY_EN       = (5, 1, 4, 0)      # Enable SDCLK analogue delay
     SDCLK_ADLY          = (5, 4, 0, 0)      # SDCLK analogue delay
-    DCLK_DDLY_PD        = (6, 1, 7, 1)
-    DCLK_HSg_PD         = (6, 1, 6, 1)
-    DCLK_ADLYg_PD       = (6, 1, 5, 1)
-    DCLK_ADLY_PD        = (6, 1, 4, 1)
-    CLK_PD              = (6, 1, 3, 1)
-    SDCLK_DIS_MODE      = (6, 2, 1, 0)
-    SDCLK_PD            = (6, 1, 0, 1)
-    SDCLK_POL           = (7, 1, 7, 0)
-    SDCLK_FMT           = (7, 3, 4, 0)
-    DCLK_PLL            = (7, 1, 3, 0)
-    DCLK_FMT            = (7, 3, 0, 0)
+    DCLK_DDLY_PD        = (6, 1, 7, 1)      # Digital delay power down
+    DCLK_HSg_PD         = (6, 1, 6, 1)      # Glitchless half step power down
+    DCLK_ADLYg_PD       = (6, 1, 5, 1)      # Glitchless analogue delay p/d
+    DCLK_ADLY_PD        = (6, 1, 4, 1)      # Analogue delay power down
+    CLK_PD              = (6, 1, 3, 1)      # Clock group power down
+    SDCLK_DIS_MODE      = (6, 2, 1, 0)      # Sysref power down output mode
+    SDCLK_PD            = (6, 1, 0, 1)      # Sysref power down
+    SDCLK_POL           = (7, 1, 7, 0)      # Invert sysref clock output
+    SDCLK_FMT           = (7, 3, 4, 0)      # Sysref clock output format
+    DCLK_PLL            = (7, 1, 3, 0)      # Invert device clock output
+    DCLK_FMT            = (7, 3, 0, 0)      # Device clock output format
 
 
 # This contains definitions of all the other fields.
@@ -267,7 +269,7 @@ class AllFields:
     PLL1_R_DLY          = (0x15E, 3, 3, 0)
     PLL1_N_DLY          = (0x15E, 3, 0, 0)
     PLL1_LD_MUX         = (0x15F, 5, 3, 1)  # Select output to Status_LD1 pin
-    PLL1_LD_TYPE        = (0x15F, 3, 0, 6)  # Open drain output
+    PLL1_LD_TYPE        = (0x15F, 3, 0, 3)  # Configure push-pull drive
     PLL2_P              = (0x162, 3, 5, 2)
     OSCin_FREQ          = (0x162, 3, 2, 7)
     PLL2_XTAL_EN        = (0x162, 1, 1, 0)
@@ -290,7 +292,7 @@ class AllFields:
     PLL2_LF_C4          = (0x16D, 4, 4, 0)
     PLL2_LF_C3          = (0x16D, 4, 0, 0)
     PLL2_LD_MUX         = (0x16E, 5, 3, 2)
-    PLL2_LD_TYPE        = (0x16E, 3, 0, 6)
+    PLL2_LD_TYPE        = (0x16E, 3, 0, 3)  # Configure push-pull drive
     PLL2_PRE_PD         = (0x173, 1, 6, 0)
     PLL2_PD             = (0x173, 1, 5, 1)
 
@@ -313,6 +315,9 @@ class SettingsBase(FieldWriter):
     _Fields = AllFields
 
     # Bases for output fields
+    #
+    # Output level definitions taken from Malibu Fmc_500_Mb.cpp, function
+    # Fmc500_Pll::OnInit().
 
     #   0   LVDS        FMC GBTCLK1_M2C     Unused
     #  S1   HSDS 8mA    ADC SYNC
@@ -374,9 +379,6 @@ class SettingsBase(FieldWriter):
 
     # This is called to populate the given dictionary with the default output
     # definitions.
-    #
-    # Output level definitions taken from Malibu Fmc_500_Mb.cpp, function
-    # Fmc500_Pll::OnInit().
     #
     @classmethod
     def create_outputs(cls, result):

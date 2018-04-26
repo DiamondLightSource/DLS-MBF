@@ -133,6 +133,7 @@ architecture arch of top is
     -- Connections to FMC500M on FMC0
     signal adc_dco : std_logic;
     signal dsp_adc_data : signed_array(CHANNELS)(13 downto 0);
+    signal dsp_adc_status : std_logic_vector(CHANNELS);
     signal dsp_dac_data : signed_array(CHANNELS)(15 downto 0);
     signal fast_ext_trigger : std_logic;
     signal fmc500_outputs : fmc500_outputs_t;
@@ -190,6 +191,8 @@ architecture arch of top is
     signal postmortem_trigger : std_logic;
     signal blanking_trigger : std_logic;
     signal dsp_events : std_logic_vector(CHANNELS);
+
+    signal dio_output_5 : std_logic;
 
 begin
 
@@ -576,6 +579,8 @@ begin
         adc_dco_o => adc_dco,
         adc_data_a_o => dsp_adc_data(0),
         adc_data_b_o => dsp_adc_data(1),
+        adc_status_a_o => dsp_adc_status(0),
+        adc_status_b_o => dsp_adc_status(1),
 
         dac_data_a_i => dsp_dac_data(0),
         dac_data_b_i => dsp_dac_data(1),
@@ -743,13 +748,19 @@ begin
         SYS_STATUS_DAC_OK_BIT       => fmc500_inputs.dac_pwr_good,
         SYS_STATUS_PLL_LD1_BIT      => fmc500_inputs.pll_status_ld1,
         SYS_STATUS_PLL_LD2_BIT      => fmc500_inputs.pll_status_ld2,
+        SYS_STATUS_PLL_SEL0_BIT     => fmc500_inputs.pll_clkin_sel0_in,
+        SYS_STATUS_PLL_SEL1_BIT     => fmc500_inputs.pll_clkin_sel1_in,
         SYS_STATUS_DAC_IRQN_BIT     => fmc500_inputs.dac_irqn,
         SYS_STATUS_TEMP_ALERT_BIT   => not fmc500_inputs.temp_alert_n,
         others => '0'
     );
 
-    fmc500_outputs.pll_clkin_sel0 <= control_data(SYS_CONTROL_PLL_SEL0_BIT);
-    fmc500_outputs.pll_clkin_sel1 <= control_data(SYS_CONTROL_PLL_SEL1_BIT);
+    fmc500_outputs.pll_clkin_sel0_out <= control_data(SYS_CONTROL_PLL_SEL0_BIT);
+    fmc500_outputs.pll_clkin_sel1_out <= control_data(SYS_CONTROL_PLL_SEL1_BIT);
+    fmc500_outputs.pll_clkin_sel0_ena <=
+        control_data(SYS_CONTROL_PLL_SEL0_ENA_BIT);
+    fmc500_outputs.pll_clkin_sel1_ena <=
+        control_data(SYS_CONTROL_PLL_SEL1_ENA_BIT);
     fmc500_outputs.pll_sync <= control_data(SYS_CONTROL_PLL_SYNC_BIT);
     fmc500_outputs.adc_pdwn <= control_data(SYS_CONTROL_ADC_PDWN_BIT);
     fmc500_outputs.dac_rstn <= not control_data(SYS_CONTROL_DAC_RSTN_BIT);
@@ -760,9 +771,16 @@ begin
     blanking_trigger   <= dio_inputs(2);
 
     -- FMC0 outputs
+    process (control_data, fmc500_inputs, dsp_events) begin
+        if control_data(SYS_CONTROL_DIO_SEL_SDCLK_BIT) = '1' then
+            dio_output_5 <= fmc500_inputs.pll_sdclkout3;
+        else
+            dio_output_5 <= dsp_events(1);
+        end if;
+    end process;
     dio_outputs <= (
         3 => dsp_events(0),
-        4 => dsp_events(1),
+        4 => dio_output_5,      -- Front panel name is 5
         others => '0'
     );
     -- The top two IOs are configured as outputs, we control termination for the

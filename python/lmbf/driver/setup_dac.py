@@ -21,7 +21,7 @@ def setup_dac(regs):
     DAC_SPI[0x0A] = 0x40        # PLL clock multiplier disabled
 
     # Datapath control, defaults are to disable everything, which is fine
-    DAC_SPI[0x1B] = 0xA4        # Enable sinc inverse filter
+    DAC_SPI[0x1B] = 0xE4        # Disable sinc inverse filter
 
     # Bypass the three half band filters
     DAC_SPI[0x1C] = 0x01

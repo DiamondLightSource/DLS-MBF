@@ -984,16 +984,26 @@ error__t initialise_hardware(
         printf("running with hardware disabled\n");
     else
         printf("initialise_hardware @%s %s\n",
-            device_address, lock_registers ? "" : "unlocked");
+            *device_address ? device_address : "/dev/amc525_lmbf.0.*",
+            lock_registers ? "" : "unlocked");
 
     /* Compute device node names from the device_address. */
-    const char *device_template = "/dev/amc525_lmbf/%s/amc525_lmbf.%s";
     char reg_device_name[PATH_MAX];
     char dram0_device_name[PATH_MAX];
     char dram1_device_name[PATH_MAX];
-    sprintf(reg_device_name,   device_template, device_address, "reg");
-    sprintf(dram0_device_name, device_template, device_address, "ddr0");
-    sprintf(dram1_device_name, device_template, device_address, "ddr1");
+    if (*device_address)
+    {
+        const char *device_template = "/dev/amc525_lmbf/%s/amc525_lmbf.%s";
+        sprintf(reg_device_name,   device_template, device_address, "reg");
+        sprintf(dram0_device_name, device_template, device_address, "ddr0");
+        sprintf(dram1_device_name, device_template, device_address, "ddr1");
+    }
+    else
+    {
+        strcpy(reg_device_name,   "/dev/amc525_lmbf.0.reg");
+        strcpy(dram0_device_name, "/dev/amc525_lmbf.0.ddr0");
+        strcpy(dram1_device_name, "/dev/amc525_lmbf.0.ddr1");
+    }
 
     return
         IF_ELSE(no_hardware,

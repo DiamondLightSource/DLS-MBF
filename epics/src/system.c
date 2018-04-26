@@ -59,10 +59,32 @@ static void publish_nco_pvs(void)
 
 
 static struct system_status system_status;
+static unsigned int vco_locked;
+static unsigned int vcxo_locked;
+static bool clock_passthrough;
+
+static void initialise_clock_passthrough(void)
+{
+    /* Read the clock VCO_MUX register and set clock_passthrough if we're
+     * configured to bypass the PLL VCO. */
+    uint8_t pll_0x138 = hw_read_fmc500_spi(FMC500_SPI_PLL, 0x138);
+    unsigned int vco_mux = (pll_0x138 >> 5) & 0x3;
+    clock_passthrough = vco_mux == 2;
+}
 
 static void read_system_status(void)
 {
     hw_read_system_status(&system_status);
+    if (clock_passthrough)
+    {
+        vco_locked = 2;     // Passthrough mode
+        vcxo_locked = 2;    // Passthrough mode
+    }
+    else
+    {
+        vco_locked = system_status.vco_locked;
+        vcxo_locked = system_status.vcxo_locked;
+    }
 }
 
 static void publish_status_pvs(void)
@@ -71,8 +93,8 @@ static void publish_status_pvs(void)
     {
         PUBLISH_ACTION("POLL", read_system_status);
         PUBLISH_READ_VAR(bi, "CLOCK", system_status.dsp_ok);
-        PUBLISH_READ_VAR(bi, "VCO",   system_status.vco_locked);
-        PUBLISH_READ_VAR(bi, "VCXO",  system_status.vcxo_locked);
+        PUBLISH_READ_VAR(mbbi, "VCO", vco_locked);
+        PUBLISH_READ_VAR(mbbi, "VCXO", vcxo_locked);
     }
 }
 
@@ -172,6 +194,8 @@ error__t initialise_system(void)
         hardware_config.adc_taps,
         hardware_config.bunch_taps,
         hardware_config.dac_taps);
+
+    initialise_clock_passthrough();
 
     publish_nco_pvs();
     publish_status_pvs();

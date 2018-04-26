@@ -31,6 +31,8 @@ entity fmc500m_top is
         adc_dco_o : out std_logic;      -- Raw data clock from ADC
         adc_data_a_o : out signed;
         adc_data_b_o : out signed;
+        adc_status_a_o : out std_logic;
+        adc_status_b_o : out std_logic;
 
         -- DAC clock and data (clocked by ADC clock)
         dac_data_a_i : in signed;
@@ -55,8 +57,12 @@ architecture arch of fmc500m_top is
     signal pll_spi_sdo : std_logic;
     signal pll_status_ld1 : std_logic;
     signal pll_status_ld2 : std_logic;
-    signal pll_clkin_sel0 : std_logic;
-    signal pll_clkin_sel1 : std_logic;
+    signal pll_clkin_sel0_in : std_logic;
+    signal pll_clkin_sel0_out : std_logic;
+    signal pll_clkin_sel0_ena : std_logic;
+    signal pll_clkin_sel1_in : std_logic;
+    signal pll_clkin_sel1_out : std_logic;
+    signal pll_clkin_sel1_ena : std_logic;
     signal pll_sync : std_logic;
     signal pll_dclkout2 : std_logic;     -- On CC pin
     signal pll_sdclkout3 : std_logic;
@@ -107,8 +113,12 @@ begin
         pll_spi_sdo_o => pll_spi_sdo,
         pll_status_ld1_o => pll_status_ld1,
         pll_status_ld2_o => pll_status_ld2,
-        pll_clkin_sel0_i => pll_clkin_sel0,
-        pll_clkin_sel1_i => pll_clkin_sel1,
+        pll_clkin_sel0_i => pll_clkin_sel0_out,
+        pll_clkin_sel0_ena_i => pll_clkin_sel0_ena,
+        pll_clkin_sel0_o => pll_clkin_sel0_in,
+        pll_clkin_sel1_i => pll_clkin_sel1_out,
+        pll_clkin_sel1_ena_i => pll_clkin_sel1_ena,
+        pll_clkin_sel1_o => pll_clkin_sel1_in,
         pll_sync_i => pll_sync,
         pll_dclkout2_o => pll_dclkout2,
         pll_sdclkout3_o => pll_sdclkout3,
@@ -188,6 +198,12 @@ begin
         signed(q1_o) => adc_data_a_o,
         signed(q2_o) => adc_data_b_o
     );
+    adc_status_inst : entity work.iddr_array port map (
+        clk_i => adc_clk_i,
+        d_i(0) => adc_status,
+        q1_o(0) => adc_status_a_o,
+        q2_o(0) => adc_status_b_o
+    );
 
     -- DDR data to DAC output
     dac_data_inst : entity work.oddr_array generic map (
@@ -214,8 +230,10 @@ begin
 
 
     -- Connection to I/O records
-    pll_clkin_sel0 <= misc_outputs_i.pll_clkin_sel0;
-    pll_clkin_sel1 <= misc_outputs_i.pll_clkin_sel1;
+    pll_clkin_sel0_out <= misc_outputs_i.pll_clkin_sel0_out;
+    pll_clkin_sel0_ena <= misc_outputs_i.pll_clkin_sel0_ena;
+    pll_clkin_sel1_out <= misc_outputs_i.pll_clkin_sel1_out;
+    pll_clkin_sel1_ena <= misc_outputs_i.pll_clkin_sel1_ena;
     pll_sync <= misc_outputs_i.pll_sync;
     adc_pdwn <= misc_outputs_i.adc_pdwn;
     dac_rstn <= misc_outputs_i.dac_rstn;
@@ -225,6 +243,8 @@ begin
     misc_inputs_o.dac_pwr_good <= dac_pwr_good;
     misc_inputs_o.pll_status_ld1 <= pll_status_ld1;
     misc_inputs_o.pll_status_ld2 <= pll_status_ld2;
+    misc_inputs_o.pll_clkin_sel0_in <= pll_clkin_sel0_in;
+    misc_inputs_o.pll_clkin_sel1_in <= pll_clkin_sel1_in;
     misc_inputs_o.pll_dclkout2 <= pll_dclkout2;
     misc_inputs_o.pll_sdclkout3 <= pll_sdclkout3;
     misc_inputs_o.dac_irqn <= dac_irqn;

@@ -10,29 +10,28 @@ from config_pll import SettingsBase
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-# Simple setup with input clock directly exported as system clock
-class SysclkSetup(SettingsBase):
-    SettingsBase.create_outputs(locals())
+def configure_output(output):
+    output.CLK_PD = 0           # Enable output
+    output.DCLK_MUX = 0         # Divider only
 
-    # Configure SDCLKout3 with a copy of SYSREF
-    out2_3.CLK_PD = 0           # Enable clock group
-    out2_3.SDCLK_PD = 0         # and enable SDCLK
-    out2_3.SDCLK_MUX = 1        # Output SYSREF to SDCLK
+def delayed_output(output):
+    output.CLK_PD = 0           # Enable output
+    output.DCLK_MUX = 3         # Allow analogue delay
 
-    # Route 100MHz input from CLKin0 to SYSREF clocking chain
-    CLKin0_OUT_MUX = 0          # CLIin0 to SYSREF mux
-    SYSREF_CLKin0_MUX = 1       # CLKin0 (100MHz) input
-    SYSREF_PD = 0               # Enable sysref
-    SYNC_EN = 1                 # Enable SYNC (needed for SYSREF)
-    SYSREF_CLR = 0              # Take SYSREF out of reset
+    output.DCLK_ADLY_PD = 0     # Enable analogue delay and
+    output.DCLK_ADLYg_PD = 0    # glitchless control
+    output.DCLK_ADLY = 0        # Start with 0ps (extra) delay
+    output.DCLK_ADLY_MUX = 1    # Enable duty cycle correction in divide
 
-# SysclkSetup().write_config(PLL)
-# sys.exit()
+def passthrough_output(output):
+    output.CLK_PD = 0           # Enable output group
+    output.DCLK_MUX = 2         # Bypass all divide and delay
 
 
 
 # The following clock connections are configured and used:
 #
+#   SDCLKout3   => FPGA => DIO #5 (optionally, for SCLK debugging)
 #   DCLKout4    => DAC CLK
 #   DCLKout8    => (internal clock feedback for PLL)
 #   DCLKout10   => Front panel connector
@@ -42,106 +41,28 @@ class SysclkSetup(SettingsBase):
 #
 #   SDCLKout1   => ADC SYNC (not used)
 #   DCLKout2    => FPGA (not used)
-#   SDCLKout3   => FPGA (not used)
-#   DCLKout6    => DAC REFCLK (not used?)
+#   DCLKout6    => DAC REFCLK (not used)
 #
 class Settings(SettingsBase):
     SettingsBase.create_outputs(locals())
 
-    # DAC clock
-    out4_5.CLK_PD = 0
-    out4_5.DCLK_DIV = 5
-    out4_5.DCLK_MUX = 3         # Allow analogue delay
-    out4_5.DCLK_ADLY_PD = 0     # Enable analogue delay and
-    out4_5.DCLK_ADLYg_PD = 0    # glitchless control
-    out4_5.DCLK_ADLY = 0        # Start with 0ps (extra) delay
+    configure_output(out2_3)    # Optional DIO #5 output on SDCLKout3
+    out2_3.SDCLK_MUX = 1        # Output SYSREF
 
-    out6_7.CLK_PD = 0
-    out6_7.DCLK_DIV = 10
-    out6_7.DCLK_MUX = 0
+    delayed_output(out4_5)      # DAC clock on DCLKout4 with delay control
+    configure_output(out8_9)    # PLL internal feedback on DCLKout8
+    configure_output(out10_11)  # Front panel connector on DCLKout10
 
-    # Internal feedback for PLLs on DCLKout8
-    out8_9.CLK_PD = 0
-    out8_9.DCLK_DIV = 5         # Reduce VCO = 2.5G to 500 MHz output
-    out8_9.DCLK_MUX = 3         # Allow analogue delay
-    out8_9.DCLK_ADLY_PD = 0     # Enable analogue delay and
-    out8_9.DCLK_ADLYg_PD = 0    # glitchless control
-    out8_9.DCLK_ADLY = 0        # Start with 0ps (extra) delay
-
-    # Front panel connector on DCLKout10
-    out10_11.CLK_PD = 0
-    out10_11.DCLK_DIV = 5
-    out10_11.DCLK_MUX = 3       # Allow analogue delay
-    out10_11.DCLK_ADLY_PD = 0   # Enable analogue delay and
-    out10_11.DCLK_ADLYg_PD = 0  # glitchless control
-    out10_11.DCLK_ADLY = 0      # Start with 0ps (extra) delay
-#     # Enable dynamic digital delay on this output
-#     out10_11.DCLK_DDLY_PD = 0
-#     out10_11.DCLK_DDLY_CNTH = 3 # Settings for one step delay
-#     out10_11.DCLK_DDLY_CNTL = 3
-#     DDLYd10_EN = 1
-
-    # ADC clock on SDCLKout13
-    out12_13.CLK_PD = 0
-    out12_13.DCLK_DIV = 5
-    out12_13.SDCLK_MUX = 0
-    out12_13.DCLK_MUX = 3       # Allow analogue delay
-    out12_13.DCLK_ADLY_PD = 0   # Enable analogue delay and
-    out12_13.DCLK_ADLYg_PD = 0  # glitchless control
-    out12_13.DCLK_ADLY = 0      # Start with 0ps (extra) delay
+    configure_output(out12_13)  # ADC clock on SDCLKout13
+    out12_13.SDCLK_MUX = 0      # Device clock on SD clock
 
 
-    SYSREF_CLR = 0              # Take SYSREF out of reset
-    SYNC_EN = 0
-
-
-    # We run the clock controller in Nested 0-delay Dual Loop mode: this means
-    # that the regenerated RF output clock is used as feedback to the input:
-    #
-    #   f_RF -- /R1 --|
-    #                 | PD1 >-- VCXO -- /R2 --|
-    #       +-- /N1 --|                       | PD2 >-- VCO --+-- /D --+-- f_RF
-    #       |                       +-- /N2 --|               |        |
-    #       |                       +-------------------------+        |
-    #       +----------------------------------------------------------+
-    #
-    # The governing equations of the system above (put f_in = f_RF, f_out =
-    # regenerated f_RF, f1 = VCXO frequency, f2 = VCO frequency, d1 = first
-    # Phase Detector frequency, d2 = second Phase Detector frequency) are:
-    #
-    #   (1)     d1 = f_in / R1 = f_out / N1
-    #   (2)     d2 = f1 / R2 = f2 / N2
-    #   (3)     f_out = f2 / D
-    #
-    # Our operating constraints are quite tight:
-    #
-    #   (4)     f_in = f_out = 499.655 to 499.681 MHz
-    #   (5)     f1 = 100 MHz +-10 kHz
-    #   (6)     f2 = 2.4 to 2.6 GHz or 2.9 to 3.1 GHz (VCO0 or VCO1)
-    #   (7)     d1 < 40 MHz, d2 < 155 MHz but otherwise as large as possible.
-    #
-    # From (1, 4) we get R1 = N1 and from (7) we get N1, R1 >= 13.  From (3, 6)
-    # we have D = 5 or 6 (depending on choice of VCO), and from the remaining
-    # constraints and equations we have
-    #
-    #       N2 / R2 = D * f_in / 100 MHz ~= 24.983 or 29.979
-    #
-    # We want R2 to be as small as possible, as this determines d2 = f1/R2, and
-    # there is also the constraint that N2 must be divisible by a small prime
-    # (2, 3, 5, or 7).  Examining the candidates we find:
-    #
-    #   N2 = 1524, R2 = 61 => f2 = 2498 MHz => f_out = 499.672 MHz
-    #
-    # This gives us an accessible range 499.622 to 499.722 MHz.  Our nominal
-    # operating points are 499.656 (pre DDBA) and 499.681 (post DBA).
-
-    # PLL1 R (reference) input, RF clock at 499.97 MHz
+    # PLL1 R (reference) input
     CLKin0_EN = 0
     CLKin1_EN = 1
     CLKin0_OUT_MUX = 3
     CLKin1_OUT_MUX = 2      # 500 MHz on CLKin1 routed to PLL1
     CLKin_SEL_MODE = 1      # Use CLKin1 as PLL1 reference
-    CLKin1_R = 30           # PDF1 = 500 / 15 = 33 +1/3 MHz
 
     # PLL1 N (feedback) input from DCLKout8 for Nested 0-delay
     # For Nested 0-delay Dual Loop Mode we take the PLL1 feedback from the
@@ -150,38 +71,19 @@ class Settings(SettingsBase):
     FB_MUX_EN = 1           # Enable feedback mux and
     FB_MUX = 1              # select DCLKout8 as feedback source
     PLL1_NCLK_MUX = 1       # Use feedback mux for PLL1 feedback
-    PLL1_N = 30             # PDF1 = 500 / 15 = 33 +1/3 MHz
 
     # PLL1 control.
-    PLL1_PD = 0                 # Ensure PLL1 is operating
-    OSCin_PD = 0                # Enable OSCin from external VCXO
-    PLL1_CP_GAIN = 15           # 1.55 mA charge pump current (from CD Tool)
-
+    PLL1_PD = 0             # Ensure PLL1 is operating
+    OSCin_PD = 0            # Enable OSCin from external VCXO
+    PLL1_CP_GAIN = 15       # 1.55 mA charge pump current (from CD Tool)
 
     # For PLL2 we have less choice once f1 has been determined, the only real
     # choice is between VCO0 running at 2.5GHz or VCO1 running at 3GHz.
-    VCO_MUX = 0                 # Use VCO0 running at 2.5GHz
-    OSCin_FREQ = 1              # OSCin running at 100 MHz (63 to 127 MHz)
-    PLL2_PD = 0                 # Ensure PLL2 and
-    PLL2_PRE_PD = 0             #  prescaler are enabled
-
-    # PLL2 reference R
-    PLL2_REF_2X_EN = 0          # No frequency doubling on f1
-    PLL2_R = 61                 # PDF2 = f1
-    PLL2_R = 59
-    PLL2_R = 2*59
-
-    # PLL2 feedback N
-    PLL2_NCLK_MUX = 0           # Use direct output feedback
-    PLL2_P = 4                  # Feedback N with prescale is 30 for PDF2
-    PLL2_N = 381                # equal to to f1
-    PLL2_N_CAL = 381
-
-    PLL2_P = 2
-    PLL2_P = 4
-    PLL2_N = 737
-    PLL2_N_CAL = 737
-
+    OSCin_FREQ = 1          # OSCin running at 100 MHz (63 to 127 MHz)
+    PLL2_PD = 0             # Ensure PLL2 and
+    PLL2_PRE_PD = 0         #  prescaler are enabled
+    PLL2_REF_2X_EN = 1      # Enable frequency doubling on VCXO
+    PLL2_NCLK_MUX = 0       # Use direct output feedback
 
     # Publish lock state of the two PLLs on the Status_LD{1,2} pins
     PLL1_LD_MUX = 1             # PLL1 DLD (Digital lock detect)
@@ -190,6 +92,7 @@ class Settings(SettingsBase):
     HOLDOVER_EN = 0
     CLKin_OVERRIDE = 1          # Force use of selected clock input
 
+    # The following settings are a bit haphazard.
     PLL2_LF_R4 = 4
     PLL2_LF_R3 = 4
     PLL2_LF_C4 = 13
@@ -200,51 +103,86 @@ class Settings(SettingsBase):
     PLL2_LF_C3 = 6
 
 
-# Mode specific subclasses of the definitions above
-class Mode_500MHz(Settings):
-    pass
+    # This sets up the given PLL ratios.  The basic parameters are:
+    #
+    #   n1r1    N1 = D1, inputs to VCXO phase detector
+    #   vco     VCO mux selector
+    #   d       VCO output divider
+    #   p2      VCO output frequency prescale divider
+    #   n2      VCO feedback divider
+    #   r2      VCO reference divider
+    #
+    # This must be called before writing the PLL configuration as otherwise the
+    # appropriate dividers will not be configured.
+    def setup_pll_ratios(self, n1r1, vco, d, p2, n2, r2):
+        self.CLKin1_R = n1r1
+        self.PLL1_N = n1r1
+
+        self.VCO_MUX = vco
+        self.PLL2_R = r2
+        self.PLL2_P = p2
+        self.PLL2_N = n2
+        self.PLL2_N_CAL = n2
+
+        self.out4_5.DCLK_DIV = d
+        self.out8_9.DCLK_DIV = d
+        self.out10_11.DCLK_DIV = d
+        self.out12_13.DCLK_DIV = d
 
 
-class Mode_352MHz(Settings):
-    Settings.create_outputs(locals())
+# Simpler configuration where the input clock is passed unmodified to the four
+# configured outputs.
+class Passthrough(SettingsBase):
+    SettingsBase.create_outputs(locals())
 
-    # Settings for ESRF.  Target frequency = 352.372.  For this we take
-    # R1 = N1 = 9
-    # VCO = 0
-    # D = 7
-    # N2 = 2 * 37 = 72
-    # R2 = 3
+    # Pass CLKin1 straight through to internal clock distribution path
+    CLKin1_OUT_MUX = 0          # Route to Fin path
+    VCO_MUX = 2                 # Route output from CLKin1
 
-    CLKin1_R = 9
-    PLL1_N = 9
-
-    VCO_MUX = 0
-    PLL2_R = 3
-    PLL2_P = 2
-    PLL2_N = 37
-    PLL2_N_CAL = 37
-
-    out4_5.DCLK_DIV = 7
-    out8_9.DCLK_DIV = 7
-    out10_11.DCLK_DIV = 7
-    out12_13.DCLK_DIV = 7
-
-
-class Mode_Passthrough(Settings):
-    Settings.create_outputs(locals())
-
-    # To bypass all the above and pass CLKin1 straight through to clock path:
-    CLKin1_OUT_MUX = 0          # Fin internal path
-    VCO_MUX = 2                 # Use CLKin1 as output
-    out4_5.DCLK_MUX = 2
+    delayed_output(out4_5)      # DAC
     out4_5.DCLK_DIV = 1
-    out10_11.DCLK_MUX = 2
-    out10_11.DCLK_DIV = 1
-    out12_13.DCLK_MUX = 2
-    out12_13.DCLK_DIV = 1
+
+    passthrough_output(out10_11)    # Front panel
+
+    passthrough_output(out12_13)    # ADC
+    out12_13.SDCLK_MUX = 0      # Device clock on SD clock
+
+    # Power down all the oscillator functions to reduce noise
+    PLL1_PD = 1
+    VCO_LDO_PD = 1
+    VCO_PD = 1
+    OSCin_PD = 1
+    SYSREF_GBL_PD = 1
+    SYSREF_PD = 1
+    SYSREF_DDLY_PD = 1
+    SYDREF_PLSR_PD = 1
 
 
-def setup_pll(regs, mode = '500MHz'):
-    SettingsMode = globals()['Mode_' + mode]
-    s = SettingsMode(regs.PLL_SPI)
+# PLL ratios for different frequencies.  These are designed to be passed through
+# to Settings.setup_pll_ratios above.
+PLL_ratios = {
+    # name        N1/R1 VCO D   P2  N2      R2
+    '499_682' : ( 13,   0,  5,  2,  381,    61 ),   # DLS (post DDBA)
+    '352_202' : ( 9,    0,  7,  2,  339,    55 ),   # ESRF (pre upgrade)
+    '352_372' : ( 9,    0,  7,  2,  37,     6 ),    # ESRF-EBS (post upgrade)
+}
+
+
+# The mode string is allowed to be either a name or a list of numbers separated
+# by spaces, corresponding to the arguments to setup_pll_ratios above.
+def decode_mode(mode):
+    array = mode.split()
+    if len(array) == 1:
+        return PLL_ratios[mode]
+    else:
+        return map(int, array)
+
+
+def setup_pll(regs, mode):
+    if mode == 'Passthrough':
+        s = Passthrough(regs.PLL_SPI)
+    else:
+        s = Settings(regs.PLL_SPI)
+        s.setup_pll_ratios(*decode_mode(mode))
+
     s.write_config()

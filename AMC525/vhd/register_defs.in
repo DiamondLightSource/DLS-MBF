@@ -96,6 +96,10 @@
         .DAC_IRQN
         # FMC500 temperature alert
         .TEMP_ALERT
+        # Input from PLL SEL0
+        .PLL_SEL0
+        # Input from PLL SEL1
+        .PLL_SEL1
 
     # Control register
     CONTROL     RW
@@ -111,6 +115,12 @@
         .DAC_RSTN
         # Digital IO terminations
         .DIO_TERM       3
+        # Optional selection of PLL SDCLKout3 to DIO output #5 for testing.
+        .DIO_SEL_SDCLK
+        # Output enable for PLL clkin sel0, if not set then output is tristate
+        .PLL_SEL0_ENA
+        # Output enable for PLL clkin sel1, if not set then output is tristate
+        .PLL_SEL1_ENA
 
     # ADC DCO IDELAY control
     :IDELAY     ADC_IDELAY
