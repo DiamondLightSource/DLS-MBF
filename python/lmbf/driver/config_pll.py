@@ -47,6 +47,7 @@ class FieldWriter(object):
         self.__PLL = PLL
         self.__base = base
         self.__live = False
+        self.__verbose = False
 
         # Gather list of valid field names in format for processing.
         self.__fields = {}      # Maps names to definitions
@@ -58,12 +59,13 @@ class FieldWriter(object):
                 self.__fields[name] = fields
 
                 # Fill in the initial register values from the default
-                self.write_value(name, default)
+                self._write_value(name, default)
 
-        # Validate field assignments for this subclass
-        for name in dir(self):
+        # Set values defined in class
+        for name in dir(self.__class__):
             if name in self.__fields:
-                setattr(self, name, getattr(self, name))
+                print 'setting override', name, getattr(self.__class__, name)
+                setattr(self, name, getattr(self.__class__, name))
 
         # Use keyword arguments to set extra attributes
         for name, value in kargs.items():
@@ -72,7 +74,7 @@ class FieldWriter(object):
         self._Outputs = [getattr(self, name) for name in self._OutputNames]
 
 
-    def clone(self):
+    def _clone(self):
         result = self.__class__(PLL = self.__PLL, base = self.__base)
         result._Fields = self._Fields
         result.__fields = copy.deepcopy(self.__fields)
@@ -81,48 +83,82 @@ class FieldWriter(object):
 
 
     # Updates the registers associated with the given named field.
-    def write_value(self, name, value):
+    def _write_value(self, name, value):
         for reg, width, offset in self.__fields[name]:
             field_mask = ((1 << width) - 1) << offset
             reg_value = self.__registers.setdefault(reg, 0) & ~field_mask
             field_value = (value << offset) & field_mask
-            self.__registers[reg] = reg_value | field_value
             value >>= width
+
+            self.__write_register(reg, reg_value | field_value)
         assert value == 0, 'Value for %s too large for field' % name
 
+        # Keep the local copy and underlying hardware up to date as appropriate
+        self.__dict__[name] = value
 
-    def write_pll(self, reg, value = None):
-        if value is None:
-            value = self.__registers[reg]
-#         print 'PLL[%03x] <= %02x' % (self.__base + reg, value)
+
+    # Reads given value directly from hardware
+    def read_value(self, name):
+        value = 0
+        for reg, width, offset in self.__fields[name]:
+            reg_value = self.__PLL[self.__base + reg]
+            if self.__verbose:
+                print 'PLL[%03x] => %02x' % (self.__base + reg, reg_value)
+
+            field_mask = ((1 << width) - 1) << offset
+            reg_value = (reg_value >> offset) & ~((1 << width) - 1)
+            value = (value << width) | reg_value
+        return value
+
+
+    # Enables verbose output
+    def _verbose(self, verbose):
+        self.__verbose = verbose
+
+    # Writes given value directly to hardware, bypasses local state
+    def _write_pll_register(self, reg, value):
+        if self.__verbose:
+            print 'PLL[%03x] <= %02x' % (self.__base + reg, value)
         self.__PLL[self.__base + reg] = value
 
-    # Writes current register values for named field to hardware.
-    def write_hardware(self, name):
-        for reg, _, _ in self.__fields[name]:
-            self.write_pll(reg)
+    # Writes single register to hardware
+    def __write_register(self, reg, value = None):
+        if value is None:
+            value = self.__registers[reg]
+        else:
+            self.__registers[reg] = value
+        if self.__live:
+            self._write_pll_register(reg, value)
 
 
-    def __setattr__(self, name, value):
-        output = name in self._OutputNames
-        assert name[0] == '_' or name in self.__fields or output, \
-            'Invalid attribute "%s"' % name
-        self.__dict__[name] = value
-        if name[0] != '_' and not output:
-            regs = self.write_value(name, value)
-            if self.__live:
-                # Also write updated registers to hardware.
-                self.write_hardware(name)
-
-
-    def set_pll(self, PLL):
+    # Need to bind output groups to this class.
+    def _set_pll(self, PLL):
         self.__PLL = PLL
 
-    def write_fields(self, first = 0, last = 0xFFF):
+    # Call this to enable writing to hardware
+    def _enable_write(self):
         self.__live = True
+
+
+    # This should be called after creation to write the initial state to
+    # hardware in the correct order.  All defined registers in range 0 to 0xFFF
+    # are written in sequence.
+    def _write_fields(self, first = 0, last = 0xFFF):
         for reg in sorted(self.__registers):
             if first <= reg <= last:
-                self.write_pll(reg)
+                self.__write_register(reg)
+
+
+    # Writes to field, writing to hardware if appropriate.
+    def __setattr__(self, name, value):
+        if name[0] == '_':
+            # Allow local attributes to be set directly
+            self.__dict__[name] = value
+        elif name in self.__fields:
+            # Named registers are written specially
+            self._write_value(name, value)
+        else:
+            assert False, 'Cannot write to attribute %s' % name
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -268,7 +304,7 @@ class AllFields:
     PLL1_DLD_CNT        = [(0x15C, 6, 0, 32),   (0x15D, 8, 0, 0)]
     PLL1_R_DLY          = (0x15E, 3, 3, 0)
     PLL1_N_DLY          = (0x15E, 3, 0, 0)
-    PLL1_LD_MUX         = (0x15F, 5, 3, 1)  # Select output to Status_LD1 pin
+    PLL1_LD_MUX         = (0x15F, 5, 3, 1)  # Output PLL1 lock to Status_LD1
     PLL1_LD_TYPE        = (0x15F, 3, 0, 3)  # Configure push-pull drive
     PLL2_P              = (0x162, 3, 5, 2)
     OSCin_FREQ          = (0x162, 3, 2, 7)
@@ -291,7 +327,7 @@ class AllFields:
     PLL2_LF_R3          = (0x16C, 3, 0, 0)
     PLL2_LF_C4          = (0x16D, 4, 4, 0)
     PLL2_LF_C3          = (0x16D, 4, 0, 0)
-    PLL2_LD_MUX         = (0x16E, 5, 3, 2)
+    PLL2_LD_MUX         = (0x16E, 5, 3, 2)  # Output PLL2 lock to Status_LD2
     PLL2_LD_TYPE        = (0x16E, 3, 0, 3)  # Configure push-pull drive
     PLL2_PRE_PD         = (0x173, 1, 6, 0)
     PLL2_PD             = (0x173, 1, 5, 1)
@@ -353,28 +389,39 @@ class SettingsBase(FieldWriter):
     def __init__(self, PLL, **kargs):
         FieldWriter.__init__(self, PLL, **kargs)
         for output in self._Outputs:
-            output.set_pll(PLL)
+            output._set_pll(PLL)
+
+    def verbose(self, verbose = True):
+        self._verbose(verbose)
+        for output in self._Outputs:
+            output._verbose(verbose)
+
+    def enable_write(self):
+        self._enable_write()
+        for output in self._Outputs:
+            output._enable_write()
 
     def __fixed_setup(self):
         # Completion programming sequence according to page 49 9.5.1
-        self.write_pll(0x171, 0xAA)
-        self.write_pll(0x172, 0x02)
-        self.write_pll(0x17C, 21)
-        self.write_pll(0x17D, 51)
+        self._write_pll_register(0x171, 0xAA)
+        self._write_pll_register(0x172, 0x02)
+        self._write_pll_register(0x17C, 21)
+        self._write_pll_register(0x17D, 51)
 
     # Writes PLL configuration as described on Page 49 9.5.1
     def write_config(self):
+        self.enable_write()
         # 1. Reset the device
-        self.write_pll(0, 0x80)
+        self._write_pll_register(0, 0x80)
         # 2. Program outputs (registers 0x100 to 0x137)
         for output in self._Outputs:
-            output.write_fields()
+            output._write_fields()
         #    Program first block of registers (0x138 to 0x165)
-        self.write_fields(last = 0x165)
+        self._write_fields(last = 0x165)
         # 3-5. Program special registers with fixed values
         self.__fixed_setup()
         # 6. Program remaining registers
-        self.write_fields(first = 0x166)
+        self._write_fields(first = 0x166)
 
 
     # This is called to populate the given dictionary with the default output
@@ -383,13 +430,13 @@ class SettingsBase(FieldWriter):
     @classmethod
     def create_outputs(cls, result):
         outputs = dict(
-            out0_1 = cls.out0_1.clone(),
-            out2_3 = cls.out2_3.clone(),
-            out4_5 = cls.out4_5.clone(),
-            out6_7 = cls.out6_7.clone(),
-            out8_9 = cls.out8_9.clone(),
-            out10_11 = cls.out10_11.clone(),
-            out12_13 = cls.out12_13.clone())
+            out0_1 = cls.out0_1._clone(),
+            out2_3 = cls.out2_3._clone(),
+            out4_5 = cls.out4_5._clone(),
+            out6_7 = cls.out6_7._clone(),
+            out8_9 = cls.out8_9._clone(),
+            out10_11 = cls.out10_11._clone(),
+            out12_13 = cls.out12_13._clone())
 
         # Mark all these names to be excluded from name check.
         result.update(outputs)

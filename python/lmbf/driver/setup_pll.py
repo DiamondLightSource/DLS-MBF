@@ -4,15 +4,47 @@
 # Revision SNAS605AR dated December 2015 was used for this script.
 
 from config_pll import SettingsBase
+import time
 
+
+# PLL ratios for different frequencies.  These are designed to be passed through
+# to Settings.setup_pll_ratios().
+#
+#   N1/R1   This should be the ceiling of f_RF / 40 MHz
+#   VCO     Choose between VCO 0 and VCO 1
+#   D       Divisor for VCO output
+#   P2      VCO PLL2 prescaler, in range 2..7
+#   N2      Feedback factor from output
+#   R2      Feedback factor from VCXO
+#
+# Note that
+#   D * f_RF = f_VCO
+#   R2 * f_VCO = P2 * N2 * 200 MHz
+#
+# Use tools/find_freq to find a list of candidate values.
+PLL_ratios = {
+    # name        N1/R1 VCO D   P2  N2      R2
+    '499_682' : ( 13,   0,  5,  2,  381,    61 ),   # DLS (post DDBA)
+    '352_202' : ( 9,    0,  7,  2,  339,    55 ),   # ESRF (pre upgrade)
+    '352_372' : ( 9,    0,  7,  2,  37,     6 ),    # ESRF-EBS (post upgrade)
+}
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-def configure_output(output):
+def divided_output(output):
     output.CLK_PD = 0           # Enable output
     output.DCLK_MUX = 0         # Divider only
+
+def sysref_output(output):
+    output.CLK_PD = 0
+    output.SDCLK_MUX = 1        # Output SYSREF
+    output.SDCLK_PD = 0
+
+def passthrough_output(output):
+    output.CLK_PD = 0           # Enable output group
+    output.DCLK_MUX = 2         # Bypass all divide and delay
 
 def delayed_output(output):
     output.CLK_PD = 0           # Enable output
@@ -23,18 +55,13 @@ def delayed_output(output):
     output.DCLK_ADLY = 0        # Start with 0ps (extra) delay
     output.DCLK_ADLY_MUX = 1    # Enable duty cycle correction in divide
 
-def passthrough_output(output):
-    output.CLK_PD = 0           # Enable output group
-    output.DCLK_MUX = 2         # Bypass all divide and delay
-
-
 
 # The following clock connections are configured and used:
 #
 #   SDCLKout3   => FPGA => DIO #5 (optionally, for SCLK debugging)
 #   DCLKout4    => DAC CLK
 #   DCLKout8    => (internal clock feedback for PLL)
-#   DCLKout10   => Front panel connector
+#   DCLKout10   => CLK OUT front panel connector
 #   SDCLKout13  => ADC CLK
 #
 # The following clock connections are wired but are left unused:
@@ -43,19 +70,39 @@ def passthrough_output(output):
 #   DCLKout2    => FPGA (not used)
 #   DCLKout6    => DAC REFCLK (not used)
 #
+# The following clock connections go to the AMC525 clocking network and are not
+# used:
+#
+#   DCLKout0    => CLK1_M2C
+#   DCLKout12   => CLK0_M2C
+#
 class Settings(SettingsBase):
     SettingsBase.create_outputs(locals())
 
-    configure_output(out2_3)    # Optional DIO #5 output on SDCLKout3
-    out2_3.SDCLK_MUX = 1        # Output SYSREF
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Output configuration
 
-    delayed_output(out4_5)      # DAC clock on DCLKout4 with delay control
-    configure_output(out8_9)    # PLL internal feedback on DCLKout8
-    configure_output(out10_11)  # Front panel connector on DCLKout10
+    # Put SYSREF on SDCLKout3.  This is routed through to DIO #5 when control
+    # bit SYS.CONTROL.DIO_SEL_SDCLK = 1, used for SYSREF debugging
+    sysref_output(out2_3)
 
-    configure_output(out12_13)  # ADC clock on SDCLKout13
+    # DAC clock on DCLKout4 with fully controllable output delay
+    delayed_output(out4_5)
+
+    # PLL internal feedback on DCLKout8
+    divided_output(out8_9)
+
+    # Front panel connector on DCLKout10
+    delayed_output(out10_11)
+
+    # ADC clock on SDCLKout13.  Unusually this output uses the SDCLK output pin,
+    # but is otherwise a normal data clock.
+    divided_output(out12_13)
     out12_13.SDCLK_MUX = 0      # Device clock on SD clock
 
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # PLL setup.  This must be completed by calling setup_pll_ratios at end.
 
     # PLL1 R (reference) input
     CLKin0_EN = 0
@@ -85,22 +132,11 @@ class Settings(SettingsBase):
     PLL2_REF_2X_EN = 1      # Enable frequency doubling on VCXO
     PLL2_NCLK_MUX = 0       # Use direct output feedback
 
-    # Publish lock state of the two PLLs on the Status_LD{1,2} pins
-    PLL1_LD_MUX = 1             # PLL1 DLD (Digital lock detect)
-    PLL2_LD_MUX = 2             # PLL2 DLD (Digital lock detect)
 
-    HOLDOVER_EN = 0
-    CLKin_OVERRIDE = 1          # Force use of selected clock input
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Remaining state
 
-    # The following settings are a bit haphazard.
-    PLL2_LF_R4 = 4
-    PLL2_LF_R3 = 4
-    PLL2_LF_C4 = 13
-    PLL2_LF_C3 = 13
-    PLL2_LF_R4 = 2
-    PLL2_LF_R3 = 2
-    PLL2_LF_C4 = 6
-    PLL2_LF_C3 = 6
+    CLKin_OVERRIDE = 1      # Force use of selected clock input
 
 
     # This sets up the given PLL ratios.  The basic parameters are:
@@ -124,10 +160,10 @@ class Settings(SettingsBase):
         self.PLL2_N = n2
         self.PLL2_N_CAL = n2
 
-        self.out4_5.DCLK_DIV = d
-        self.out8_9.DCLK_DIV = d
-        self.out10_11.DCLK_DIV = d
-        self.out12_13.DCLK_DIV = d
+        self.out4_5.DCLK_DIV = d    # DAC CLK
+        self.out8_9.DCLK_DIV = d    # Feedback clock
+        self.out10_11.DCLK_DIV = d  # CLK OUT (front panel)
+        self.out12_13.DCLK_DIV = d  # ADC CLK
 
 
 # Simpler configuration where the input clock is passed unmodified to the four
@@ -136,16 +172,17 @@ class Passthrough(SettingsBase):
     SettingsBase.create_outputs(locals())
 
     # Pass CLKin1 straight through to internal clock distribution path
-    CLKin1_OUT_MUX = 0          # Route to Fin path
-    VCO_MUX = 2                 # Route output from CLKin1
+    CLKin1_OUT_MUX = 0      # Route to Fin path
+    VCO_MUX = 2             # Route output from CLKin1
+    CLKin_OVERRIDE = 1      # Force use of selected clock input
 
-    delayed_output(out4_5)      # DAC
+    delayed_output(out4_5)  # DAC
     out4_5.DCLK_DIV = 1
 
     passthrough_output(out10_11)    # Front panel
 
     passthrough_output(out12_13)    # ADC
-    out12_13.SDCLK_MUX = 0      # Device clock on SD clock
+    out12_13.SDCLK_MUX = 0  # Device clock on SD clock
 
     # Power down all the oscillator functions to reduce noise
     PLL1_PD = 1
@@ -156,16 +193,6 @@ class Passthrough(SettingsBase):
     SYSREF_PD = 1
     SYSREF_DDLY_PD = 1
     SYDREF_PLSR_PD = 1
-
-
-# PLL ratios for different frequencies.  These are designed to be passed through
-# to Settings.setup_pll_ratios above.
-PLL_ratios = {
-    # name        N1/R1 VCO D   P2  N2      R2
-    '499_682' : ( 13,   0,  5,  2,  381,    61 ),   # DLS (post DDBA)
-    '352_202' : ( 9,    0,  7,  2,  339,    55 ),   # ESRF (pre upgrade)
-    '352_372' : ( 9,    0,  7,  2,  37,     6 ),    # ESRF-EBS (post upgrade)
-}
 
 
 # The mode string is allowed to be either a name or a list of numbers separated
@@ -179,6 +206,7 @@ def decode_mode(mode):
 
 
 def setup_pll(regs, mode):
+    print 'Setting clock mode', mode
     if mode == 'Passthrough':
         s = Passthrough(regs.PLL_SPI)
     else:
@@ -186,3 +214,5 @@ def setup_pll(regs, mode):
         s.setup_pll_ratios(*decode_mode(mode))
 
     s.write_config()
+    time.sleep(0.01)        # Give the PLL time to lock
+    return s
