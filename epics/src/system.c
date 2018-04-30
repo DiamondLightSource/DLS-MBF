@@ -24,10 +24,12 @@ static struct nco_context {
     int axis;
 } nco_context[AXIS_COUNT];
 
-static bool set_nco_frequency(void *context, double *freq)
+static bool set_nco_frequency(void *context, double *tune)
 {
     struct nco_context *nco = context;
-    hw_write_nco0_frequency(nco->axis, tune_to_freq(*freq));
+    unsigned int frequency = tune_to_freq(*tune);
+    *tune = freq_to_tune(frequency);
+    hw_write_nco0_frequency(nco->axis, frequency);
     return true;
 }
 
