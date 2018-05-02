@@ -40,7 +40,7 @@ def divided_output(output):
 def sysref_output(output):
     output.CLK_PD = 0
     output.SDCLK_MUX = 1        # Output SYSREF
-    output.SDCLK_PD = 0
+    output.SDCLK_PD = 0         # Enable sysref clock
 
 def passthrough_output(output):
     output.CLK_PD = 0           # Enable output group
@@ -90,7 +90,7 @@ def setup_reclocked(pll):
     # PLL internal feedback on DCLKout8
     divided_output(pll.out8_9)
 
-    # Front panel connector on DCLKout10
+    # Front panel connector on DCLKout10, also fully controlled delay
     delayed_output(pll.out10_11)
 
     # ADC clock on SDCLKout13.  Unusually this output uses the SDCLK output pin,
@@ -105,7 +105,7 @@ def setup_reclocked(pll):
     # PLL1 R (reference) input
     pll.CLKin0_EN = 0
     pll.CLKin1_EN = 1
-    pll.CLKin0_OUT_MUX = 3
+    pll.CLKin0_OUT_MUX = 3      # Disable CLKin0 input
     pll.CLKin1_OUT_MUX = 2      # 500 MHz on CLKin1 routed to PLL1
     pll.CLKin_SEL_MODE = 1      # Use CLKin1 as PLL1 reference
 
@@ -188,7 +188,7 @@ def setup_passthrough(pll):
     pll.SYSREF_GBL_PD = 1
     pll.SYSREF_PD = 1
     pll.SYSREF_DDLY_PD = 1
-    pll.SYDREF_PLSR_PD = 1
+    pll.SYSREF_PLSR_PD = 1
 
 
 # The mode string is allowed to be either a name or a list of numbers separated
@@ -210,7 +210,6 @@ def setup_pll(regs, mode):
         setup_reclocked(pll)
         setup_pll_ratios(pll, *decode_mode(mode))
 
-    pll.verbose()
     pll.write_config()
     time.sleep(0.01)        # Give the PLL time to lock
     return pll

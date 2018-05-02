@@ -124,7 +124,7 @@ class FieldWriter(object):
     # Reads given value directly from hardware
     def __read_value(self, name):
         value = 0
-        for reg, width, offset in self.__fields[name]:
+        for reg, width, offset in reversed(self.__fields[name]):
             reg_value = self._read_register(reg)
             field_mask = ((1 << width) - 1) << offset
             reg_value = (reg_value >> offset) & ((1 << width) - 1)
@@ -155,10 +155,10 @@ class FieldWriter(object):
     # hardware in the correct order.  All defined registers in range 0 to 0xFFF
     # are written in sequence.
     def _write_fields(self, first = 0, last = 0xFFF):
-        for reg in sorted(self.__registers):
+        assert self.__live
+        for reg in sorted(self.__dirty):
             if first <= reg <= last:
-                if reg in self.__dirty:
-                    self._write_register(reg, self.__registers[reg])
+                self._write_register(reg, self.__registers[reg])
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -405,10 +405,22 @@ class SettingsBase(FieldWriter):
         for output in self._Outputs:
             output._verbose(verbose)
 
-    def enable_write(self):
-        self._enable_write()
+    def enable_write(self, live = True):
+        self._enable_write(live)
         for output in self._Outputs:
-            output._enable_write()
+            output._enable_write(live)
+
+    # Context manager support
+    def __enter__(self):
+        self.enable_write(False)
+
+    def __exit__(self, *args):
+        self.enable_write(True)
+
+        # Flush all dirty registers
+        for output in self._Outputs:
+            output._write_fields()
+        self._write_fields()
 
 
     def __fixed_setup(self):
@@ -433,3 +445,7 @@ class SettingsBase(FieldWriter):
         self.__fixed_setup()
         # 6. Program remaining registers
         self._write_fields(first = 0x166)
+
+        # Finally looks like we need to reset SYSREF_CLR
+        with self:
+            self.SYSREF_CLR = 0
