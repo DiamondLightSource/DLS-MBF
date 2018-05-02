@@ -2,6 +2,7 @@
 
 HERE="$(dirname "$(readlink -f "$0")")"
 
+TUNE_FIT="$2"
 DEVICE="$1"
 if [[ -z $DEVICE ]]; then
     MACROS=()
@@ -13,8 +14,8 @@ else
         exit 1
 
     case "$MODE" in
-        TMBF)   START=mbf/tmbf.edl ;;
-        LMBF)   START=mbf/lmbf.edl ;;
+        TMBF)   START=mbf/TMBF.edl ;;
+        LMBF)   START=mbf/LMBF.edl ;;
         *)      echo >&2 "Unknown MODE: $MODE"
                 exit 2 ;;
     esac
@@ -23,7 +24,8 @@ else
         -m device="$DEVICE"
         -m mode="$MODE"
         -m axis0="$AXIS0"
-        -m axis1="$AXIS1")
+        -m axis1="$AXIS1"
+        -m tune_fit="$TUNE_FIT")
     if [[ "$MODE" = LMBF ]]; then
         MACROS=("${MACROS[@]}" -m axis01="$AXIS0$AXIS1")
     fi

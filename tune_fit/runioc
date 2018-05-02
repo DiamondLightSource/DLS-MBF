@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PYIOC_VERSION=2-11
-PYIOC=/dls_sw/prod/R3.14.12.3/support/pythonSoftIoc/$PYIOC_VERSION/pythonIoc
+PYIOC=/segfs/tango/cppserver/machine/diagnostic/MBF/tmp/pythonIoc/pythonIoc
 
 
 # This is copied from the MBF runioc command; this is only appropriate if we're

@@ -4,7 +4,7 @@ from pkg_resources import require
 import sys, os
 
 require('cothread==2.14')
-require('numpy==1.11.1')
+require('numpy>=1.11.1')
 require('epicsdbbuilder==1.2')
 
 # Import the basic framework components.
