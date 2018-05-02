@@ -6,9 +6,6 @@ import time
 import os
 import sys
 
-HERE = os.path.dirname(__file__)
-sys.path.append(os.path.join(HERE, '../python'))
-
 from lmbf.driver import driver, setup_pll, config_pll
 
 

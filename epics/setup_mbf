@@ -18,7 +18,6 @@ config = dict([
 # Read required configuration parameters
 device_address = config['device_address']
 clock_mode = config['clock_mode']
-adc_idelay = int(config['adc_idelay'])
 dio_termination = int(config['dio_termination'])
 
 
@@ -26,7 +25,7 @@ dio_termination = int(config['dio_termination'])
 HERE = os.path.dirname(__file__)
 sys.path.append(os.path.join(HERE, '../python'))
 
-from lmbf.driver import driver, setup_pll, setup_adc, setup_dac
+from lmbf.driver import driver, setup_pll, setup_adc, setup_dac, scan_idelay
 
 # If no device address specifed then default to card zero.
 if not device_address:
@@ -36,7 +35,8 @@ regs = driver.Registers(device_address)
 
 # Hardware initialisation
 setup_pll.setup_pll(regs, clock_mode)
-setup_adc.setup_adc(regs, adc_idelay)
+setup_adc.setup_adc(regs)
+scan_idelay.scan_idelay(regs, 0, 10240)
 setup_dac.setup_dac(regs)
 
 # Set the digital IO termination
