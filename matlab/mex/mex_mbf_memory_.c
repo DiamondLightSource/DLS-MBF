@@ -29,10 +29,10 @@
 #include "socket.h"
 
 
-/* Convert samples into doubles for matlab and transpose so that the layout is
+/* Convert samples into floats for matlab and transpose so that the layout is
  * appropriate for matlab. */
 static void convert_samples(
-    int16_t buffer[], int samples, double *data0, double *data1,
+    int16_t buffer[], int samples, float *data0, float *data1,
     int channel_count)
 {
     /* There's no need to optimise this loop beyond the default: it works very
@@ -90,9 +90,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
      * server so that matlab can clean up our memory if we fail. */
     int channel_count = channel >= 0 ? 1 : 2;
     int raw_samples = bunches * count;
-    double *data0;
-    plhs[0] = create_array(raw_samples, channel_count, &data0, NULL);
-    double *data1 = data0 + raw_samples;
+    float *data0;
+    plhs[0] = create_single_array(raw_samples, channel_count, &data0, NULL);
+    float *data1 = data0 + raw_samples;
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions!

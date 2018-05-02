@@ -15,10 +15,22 @@
 #include "socket.h"
 
 
-mxArray *create_array(int rows, int cols, double **reals, double **imags)
+mxArray *create_double_array(int rows, int cols, double **reals, double **imags)
 {
     mxComplexity type = imags ? mxCOMPLEX : mxREAL;
-    mxArray *array = mxCreateDoubleMatrix(rows, cols, type);
+    mwSize dims[2] = { rows, cols };
+    mxArray *array = mxCreateNumericArray(2, dims, mxDOUBLE_CLASS, type);
+    *reals = mxGetData(array);
+    if (imags)
+        *imags = mxGetImagData(array);
+    return array;
+}
+
+mxArray *create_single_array(int rows, int cols, float **reals, float **imags)
+{
+    mxComplexity type = imags ? mxCOMPLEX : mxREAL;
+    mwSize dims[2] = { rows, cols };
+    mxArray *array = mxCreateNumericArray(2, dims, mxSINGLE_CLASS, type);
     *reals = mxGetData(array);
     if (imags)
         *imags = mxGetImagData(array);

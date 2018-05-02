@@ -82,7 +82,7 @@ static void read_and_convert_samples(
     mxArray **lhs, int sock, int samples, int channels)
 {
     double *reals[4], *imags[4];
-    *lhs = create_array(samples, channels, &reals[0], &imags[0]);
+    *lhs = create_double_array(samples, channels, &reals[0], &imags[0]);
     for (int i = 1; i < channels; i ++)
     {
         reals[i] = reals[0] + i * samples;
@@ -106,7 +106,7 @@ static void read_and_convert_frequency(
     mxArray **lhs, int sock, int samples, int bunches)
 {
     double *frequency;
-    *lhs = create_array(samples, 1, &frequency, NULL);
+    *lhs = create_double_array(samples, 1, &frequency, NULL);
     while (samples > 0)
     {
         uint32_t buffer[BUFFER_SIZE];
@@ -122,7 +122,7 @@ static void read_and_convert_frequency(
 static void read_and_convert_timebase(mxArray **lhs, int sock, int samples)
 {
     double *timebase;
-    *lhs = create_array(samples, 1, &timebase, NULL);
+    *lhs = create_double_array(samples, 1, &timebase, NULL);
     while (samples > 0)
     {
         uint32_t buffer[BUFFER_SIZE];
@@ -138,7 +138,7 @@ static void read_and_convert_timebase(mxArray **lhs, int sock, int samples)
 static void send_group_delay(mxArray **lhs, int sock, int bunches, int delay)
 {
     double *group_delay;
-    *lhs = create_array(1, 1, &group_delay, NULL);
+    *lhs = create_double_array(1, 1, &group_delay, NULL);
     *group_delay = 2.0 * M_PI * delay / bunches;
 }
 
