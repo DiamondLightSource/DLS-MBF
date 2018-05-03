@@ -17,7 +17,7 @@ LM_LICENSE_FILE = \
 PYTHON = python
 
 # Tool for building matlab
-MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
+MEX = /sware/com/matlab_2017a/bin/mex
 
 
 -include $(TOP)/CONFIG
