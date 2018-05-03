@@ -28,9 +28,9 @@ DEVICE_TO_CONFIG_AXIS = {
     'SR23C-DI-TMBF-04:X': 'X',      # Temporary -04 until full commissioned
     'SR23C-DI-TMBF-04:Y': 'Y',
     'SR23C-DI-LMBF-01:IQ': 'L',
-    'TS-DI-TMBF-02:X': 'TX',
-    'TS-DI-TMBF-02:Y': 'TY',
-    'TS-DI-LMBF-01:IQ': 'TL',
+    'TS-DI-TMBF-02:X': 'X',
+    'TS-DI-TMBF-02:Y': 'Y',
+    'TS-DI-LMBF-01:IQ': 'L',
 }
 
 VALID_MODES = ['TUNE', 'AP', 'FB']
@@ -249,7 +249,10 @@ put('TRG:SEQ:DELAY_S', 0)
 put('DET:0:ENABLE_S', 'Enabled')
 put('DET:0:SCALING_S', setup.det_gain)
 put('DET:SELECT_S', setup.detector_input)
-put('DET:FIR_DELAY_S', 0.5 * (setup.length + 1))
+# The correct default FIR delay is actually not very clear, as our filters are
+# not very flat.  Putting an integer delay ensures that all modes see the same
+# delay.
+put('DET:FIR_DELAY_S', int(0.5 * (setup.length + 1)))
 put('DET:0:BUNCHES_S', BUNCH_ENABLES)
 
 # Configure sequencer for tune measurement
