@@ -32,12 +32,12 @@
 /* Convert samples into floats for matlab and transpose so that the layout is
  * appropriate for matlab. */
 static void convert_samples(
-    int16_t buffer[], int samples, float *data0, float *data1,
-    int channel_count)
+    int16_t buffer[], size_t samples, float *data0, float *data1,
+    unsigned int channel_count)
 {
     /* There's no need to optimise this loop beyond the default: it works very
      * nicely. */
-    for (int i = 0; i < samples; i ++)
+    for (size_t i = 0; i < samples; i ++)
     {
         *data0++ = *buffer++;
         if (channel_count > 1)
@@ -51,7 +51,7 @@ static void convert_samples(
 
 
 static void do_send_command(
-    int sock, int count, int offset, int channel, int locking)
+    int sock, unsigned int count, int offset, int channel, double locking)
 {
     char command[64];
     char *command_in = command;
@@ -62,7 +62,8 @@ static void do_send_command(
     if (locking >= 0)
         command_in += sprintf(command_in, "L");
     if (locking > 0)
-        command_in += sprintf(command_in, "W%d", locking);
+        command_in += sprintf(command_in, "W%u",
+            (unsigned int) (locking * 1e3));
 
     send_command(sock, "%s\n", command);
     check_result(sock);
@@ -80,16 +81,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
     int port    = (int) mxGetScalar(prhs[1]);
-    int bunches = (int) mxGetScalar(prhs[2]);
-    int count   = (int) mxGetScalar(prhs[3]);
+    unsigned int bunches = (unsigned int) mxGetScalar(prhs[2]);
+    unsigned int count   = (unsigned int) mxGetScalar(prhs[3]);
     int offset  = (int) mxGetScalar(prhs[4]);
     int channel = (int) mxGetScalar(prhs[5]);
-    int locking = (int) (mxGetScalar(prhs[6]) * 1e3);
+    double locking = mxGetScalar(prhs[6]);
 
     /* Allocate array to receive the result.  Do this before connecting to the
      * server so that matlab can clean up our memory if we fail. */
-    int channel_count = channel >= 0 ? 1 : 2;
-    int raw_samples = bunches * count;
+    unsigned int channel_count = channel >= 0 ? 1 : 2;
+    size_t raw_samples = bunches * count;
     float *data0;
     plhs[0] = create_single_array(raw_samples, channel_count, &data0, NULL);
     float *data1 = data0 + raw_samples;
@@ -105,7 +106,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     while (raw_samples > 0)
     {
         int16_t buffer[2 * BUFFER_SIZE];
-        int samples_read = fill_buffer(
+        size_t samples_read = fill_buffer(
             sock, buffer, channel_count * sizeof(int16_t),
             BUFFER_SIZE, raw_samples);
         convert_samples(buffer, samples_read, data0, data1, channel_count);

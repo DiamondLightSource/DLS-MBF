@@ -32,9 +32,9 @@
 /* Creates and returns matlab array and returns pointers to real and imaginary
  * parts.  If imags is NULL then a real array is created. */
 mxArray *create_double_array(
-    int rows, int cols, double **reals, double **imags);
+    size_t rows, size_t cols, double **reals, double **imags);
 mxArray *create_single_array(
-    int rows, int cols, float **reals, float **imags);
+    size_t rows, size_t cols, float **reals, float **imags);
 
 /* Connects to socket server, if possible, returning connected socket if
  * successful.  If this function returns the caller MUST close the returned
@@ -61,5 +61,6 @@ void check_result(int sock);
  *      Number of samples requested, can be larger than buffer_samples.
  *
  * The result is no greater than samples or buffer_samples.*/
-int fill_buffer(
-    int sock, void *buffer, int sample_size, int buffer_samples, int samples);
+size_t fill_buffer(
+    int sock, void *buffer, size_t sample_size,
+    size_t buffer_samples, size_t samples);

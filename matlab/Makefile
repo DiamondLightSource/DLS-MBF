@@ -13,6 +13,10 @@ CFLAGS += -Wall
 CFLAGS += -Wextra
 CFLAGS += -Werror
 
+CFLAGS += -Wconversion
+CFLAGS += -Wsign-compare
+CFLAGS += -Wstrict-prototypes
+
 # Suppress a couple of annoying errors
 CFLAGS += -Wno-missing-field-initializers
 CFLAGS += -Wno-unused-parameter

@@ -61,12 +61,12 @@ struct detector_result {
  * appropriate for matlab. */
 static void convert_samples(
     struct detector_result buffer[],
-    unsigned int samples, unsigned int channels,
+    size_t samples, unsigned int channels,
     double *reals[], double *imags[])
 {
     /* There's no need to optimise this loop beyond the default: it works very
      * nicely. */
-    for (unsigned int i = 0; i < samples; i ++)
+    for (size_t i = 0; i < samples; i ++)
     {
         for (unsigned int j = 0; j < channels; j ++)
         {
@@ -79,11 +79,11 @@ static void convert_samples(
 
 
 static void read_and_convert_samples(
-    mxArray **lhs, int sock, int samples, int channels)
+    mxArray **lhs, int sock, size_t samples, unsigned int channels)
 {
     double *reals[4], *imags[4];
     *lhs = create_double_array(samples, channels, &reals[0], &imags[0]);
-    for (int i = 1; i < channels; i ++)
+    for (unsigned int i = 1; i < channels; i ++)
     {
         reals[i] = reals[0] + i * samples;
         imags[i] = imags[0] + i * samples;
@@ -92,9 +92,9 @@ static void read_and_convert_samples(
     /* Process data in reasonably sized chunks. */
     while (samples > 0)
     {
-        int sample_size = sizeof(struct detector_result) * channels;
+        size_t sample_size = sizeof(struct detector_result) * channels;
         struct detector_result buffer[BUFFER_SIZE * channels];
-        int samples_read = fill_buffer(
+        size_t samples_read = fill_buffer(
             sock, buffer, sample_size, BUFFER_SIZE, samples);
         convert_samples(buffer, samples_read, channels, reals, imags);
         samples -= samples_read;
@@ -103,39 +103,40 @@ static void read_and_convert_samples(
 
 
 static void read_and_convert_frequency(
-    mxArray **lhs, int sock, int samples, int bunches)
+    mxArray **lhs, int sock, size_t samples, unsigned int bunches)
 {
     double *frequency;
     *lhs = create_double_array(samples, 1, &frequency, NULL);
     while (samples > 0)
     {
         uint32_t buffer[BUFFER_SIZE];
-        int samples_read = fill_buffer(
+        size_t samples_read = fill_buffer(
             sock, buffer, sizeof(uint32_t), BUFFER_SIZE, samples);
-        for (int i = 0; i < samples_read; i ++)
+        for (size_t i = 0; i < samples_read; i ++)
             *frequency++ = ldexp(buffer[i], -32) * bunches;
         samples -= samples_read;
     }
 }
 
 
-static void read_and_convert_timebase(mxArray **lhs, int sock, int samples)
+static void read_and_convert_timebase(mxArray **lhs, int sock, size_t samples)
 {
     double *timebase;
     *lhs = create_double_array(samples, 1, &timebase, NULL);
     while (samples > 0)
     {
         uint32_t buffer[BUFFER_SIZE];
-        int samples_read = fill_buffer(
+        size_t samples_read = fill_buffer(
             sock, buffer, sizeof(uint32_t), BUFFER_SIZE, samples);
-        for (int i = 0; i < samples_read; i ++)
+        for (size_t i = 0; i < samples_read; i ++)
             *timebase++ = buffer[i];
         samples -= samples_read;
     }
 }
 
 
-static void send_group_delay(mxArray **lhs, int sock, int bunches, int delay)
+static void send_group_delay(
+    mxArray **lhs, int sock, unsigned int bunches, unsigned int delay)
 {
     double *group_delay;
     *lhs = create_double_array(1, 1, &group_delay, NULL);
@@ -144,18 +145,19 @@ static void send_group_delay(mxArray **lhs, int sock, int bunches, int delay)
 
 
 static void do_send_command(
-    int sock, int axis, bool timebase, int locking)
+    int sock, unsigned int axis, bool timebase, double locking)
 {
     char command[64];
     char *command_in = command;
-    command_in += sprintf(command_in, "D%dFS", axis);
+    command_in += sprintf(command_in, "D%uFS", axis);
     if (timebase)
         command_in += sprintf(command_in, "T");
 
     if (locking >= 0)
         command_in += sprintf(command_in, "L");
     if (locking > 0)
-        command_in += sprintf(command_in, "W%d", locking);
+        command_in += sprintf(command_in, "W%d",
+            (unsigned int) (locking * 1e3));
 
     send_command(sock, "%s\n", command);
     check_result(sock);
@@ -174,9 +176,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
     int port    = (int) mxGetScalar(prhs[1]);
-    int bunches = (int) mxGetScalar(prhs[2]);
-    int axis    = (int) mxGetScalar(prhs[3]);
-    int locking = (int) (mxGetScalar(prhs[4]) * 1e3);
+    unsigned int bunches = (unsigned int) mxGetScalar(prhs[2]);
+    unsigned int axis    = (unsigned int) mxGetScalar(prhs[3]);
+    double locking = mxGetScalar(prhs[4]);
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions! */
