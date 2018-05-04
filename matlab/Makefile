@@ -22,7 +22,7 @@ CFLAGS += -Wno-missing-field-initializers
 CFLAGS += -Wno-unused-parameter
 
 %.mexa64: mex/%.c mex/socket.c
-	$(MEX) $(MEX_OPTS) CFLAGS='$$CFLAGS $(CFLAGS)' $^
+	$(MEX) $(MEX_OPTS) CFLAGS='$$CFLAGS $(CFLAGS)' LDFLAGS=-lut $^
 
 default: $(MEX_FILES:%=%.mexa64)
 

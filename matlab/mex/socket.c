@@ -14,6 +14,15 @@
 
 #include "socket.h"
 
+/* This function is an undocumented Matlab API: calling this returns true if a
+ * Ctrl-C interrupt has been signalled.  As well as this declaration, it is also
+ * necessary to add -lut to the link step.
+ *    Documentation of this can be found at the following links:
+ *      http://www.caam.rice.edu/~wy1/links/mex_ctrl_c_trick/
+ *      http://undocumentedmatlab.com/blog/mex-ctrl-c-interrupt
+ */
+extern bool utIsInterruptPending(void);
+
 
 mxArray *create_double_array(
     size_t rows, size_t cols, double **reals, double **imags)
@@ -86,6 +95,7 @@ static size_t read_buffer(int sock, void *buffer, size_t length)
         TEST_SOCK(sock, bytes_read >= 0);
         if (bytes_read == 0)
             break;
+        TEST_SOCK_(sock, !utIsInterruptPending(), "interrupt", "Interrupted");
         total  += (size_t) bytes_read;
         buffer += (size_t) bytes_read;
         length -= (size_t) bytes_read;
