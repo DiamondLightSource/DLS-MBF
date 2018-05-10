@@ -1,5 +1,6 @@
 % d = mbf_read_mem(mbf, turns ...
-%       [, 'offset', offset] [, 'channel', channel], [, 'lock', timeout])
+%       [, 'offset', offset] [, 'channel', channel], [, 'lock', timeout] ...
+%       [, 'tune', tune] [, 'decimate', decimate])
 %
 % Reads the specified number of turns from fast memory from given device.  If
 % offset is not specified it defaults to 0, otherwise data is read starting from
@@ -12,6 +13,11 @@
 % idle, and the caller will wait timeout seconds for the trigger to become
 % ready.  A timeout of zero means no waiting, the call will fail if the trigger
 % is not ready.
+%
+% If 'tune' is specified then the captured data will be frequency shifted to the
+% specified tune and will be returned as complex numbers.  If 'decimate' is
+% specified then data will be averaged bunch by bunch to reduce the amount of
+% transmitted data.  Note that the number of turns will still be read.
 
 function a = mbf_read_mem(mbf, turns, varargin)
     % Argument parsing
@@ -19,10 +25,15 @@ function a = mbf_read_mem(mbf, turns, varargin)
     addParamValue(p, 'offset', 0);
     addParamValue(p, 'channel', -1);
     addParamValue(p, 'lock', -1);
+    addParamValue(p, 'tune', 0);
+    addParamValue(p, 'decimate', 1);
     parse(p, varargin{:});
+
     offset = p.Results.offset;
     channel = p.Results.channel;
     locking = p.Results.lock;
+    tune = p.Results.tune;
+    decimate = p.Results.decimate;
 
     % Pick up server address and machine parameters
     server = deblank(char(lcaGet([mbf ':HOSTNAME'])));
@@ -30,5 +41,5 @@ function a = mbf_read_mem(mbf, turns, varargin)
     bunches = lcaGet([mbf ':BUNCHES']);
 
     a = mex_mbf_memory_( ...
-        server, port, bunches, turns, offset, channel, locking);
+        server, port, bunches, turns, offset, channel, locking, tune, decimate);
 end

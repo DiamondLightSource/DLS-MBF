@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
+#include <math.h>
+#include <complex.h>
 
 #include "error.h"
 
@@ -39,7 +41,7 @@ static error__t fixup_parse_error(
 }
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*****************************************************************************/
 /* Locking. */
 
 struct lock_parse {
@@ -117,7 +119,7 @@ static void release_lock(struct trigger_target *lock, struct lock_parse args)
 }
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*****************************************************************************/
 /* MEM capture readout. */
 
 /* The correct read buffer size is slightly delicate.  We want all reads from
@@ -134,9 +136,27 @@ static void release_lock(struct trigger_target *lock, struct lock_parse args)
 #define WRITE_BUFFER_BYTES      (1 << 16)
 
 
+/* The precise returned memory format depends on the capture options selected,
+ * see below for details. */
+enum memory_data_format {
+    FORMAT_INT16,           // Default state, D and T not specified
+    FORMAT_FLOAT32,         // D specified, T not specified
+    FORMAT_COMPLEX64,       // T specified
+};
+
+/* This is the information that will be sent at the start of memory read
+ * response if requested. */
+struct memory_frame {
+    uint32_t samples;       // Number of samples that will be sent
+    uint16_t channels;      // Number of channels per sample (1 or 2)
+    uint16_t format;        // 0 => int16, 1 => float32, 2 => complex
+};
+
+
 /* Supports command of the form:
  *
- *      [R] M count [O offset] [C channel] [L [W timeout]]
+ *      [R] M count [F] [O offset] [C channel]
+ *          [D decimation] [T tune] [L [W timeout]]
  *
  * Returns memory captured into memory with the following options:
  *
@@ -146,9 +166,19 @@ static void release_lock(struct trigger_target *lock, struct lock_parse args)
  *          Number of turns of data to capture.
  *      O offset
  *          Starting offset in turns, default to 0.
+ *      F   Request that number of samples and format be sent at start.
  *      C channel
  *          If requested, only the one channel will be transmitted, halving the
  *          data transmitted.
+ *      D decimation
+ *          Data can be reduced by averaging each turn over a number of turns.
+ *          If this option is selected the data is returned as single precision
+ *          floats, unless T tune is also selected, in which case see below.
+ *      T tune
+ *          Optionally the data can be frequency shifted by the specifed tune
+ *          (specified as phase advance in hardware units per bunch).  If this
+ *          option is selected then data is transmitted as single precision
+ *          complex numbers.
  *      L   If set then lock readout
  *      W timeout
  *          If locking then optionally wait timeout milliseconds for lock to
@@ -156,9 +186,13 @@ static void release_lock(struct trigger_target *lock, struct lock_parse args)
  */
 struct memory_args {
     unsigned int count;             //      Number of turns to send
+    bool framed;                    // F
     int offset;                     // O    Start offset
     int channel;                    // C    Channel selection
+    unsigned int decimation;        // D    Data decimation factor
+    unsigned int tune;              // T    Selected frequency shift
     struct lock_parse locking;      // L,W  Locking request
+    enum memory_data_format format;
 };
 
 
@@ -168,15 +202,25 @@ static error__t parse_memory_args(
     const char *command_in = command;
     *args = (struct memory_args) {
         .channel = -1,
+        .decimation = 1,
+        .format = FORMAT_INT16,
     };
     error__t error =
         parse_uint(&command, &args->count)  ?:
+        DO(args->framed = read_char(&command, 'F'))  ?:
         IF(read_char(&command, 'O'),
             parse_int(&command, &args->offset))  ?:
         IF(read_char(&command, 'C'),
             parse_int(&command, &args->channel)  ?:
             TEST_OK_(0 <= args->channel  &&  args->channel < MEM_CHANNEL_COUNT,
                 "Invalid channel number"))  ?:
+        IF(read_char(&command, 'D'),
+            DO(args->format = FORMAT_FLOAT32)  ?:
+            parse_uint(&command, &args->decimation)  ?:
+            TEST_OK_(args->decimation > 0, "Invalid decimation"))  ?:
+        IF(read_char(&command, 'T'),
+            DO(args->format = FORMAT_COMPLEX64)  ?:
+            parse_uint(&command, &args->tune))  ?:
         parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
 
@@ -184,28 +228,72 @@ static error__t parse_memory_args(
 }
 
 
-static void send_converted_memory_data(
-    struct buffered_file *file, size_t read_samples,
-    unsigned int d0, unsigned int d1, const uint32_t read_buffer[],
-    const bool channels[2])
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Channel extraction and alignment. */
 
+/* Context for channel field extraction. */
+struct channels_context {
+    unsigned int d0;        // Offset correction for channel 0
+    unsigned int d1;        // Offset correction for channel 1
+    bool channels[2];       // Records which channels are to be captured
+    unsigned int count;     // Number of channels (1 or 2)
+};
+
+
+/* Returns filled in channels_context structure. */
+static struct channels_context make_channels_context(int channel)
 {
+    struct channels_context context = {
+        .channels = { true, true },
+        .count = channel >= 0 ? 1 : 2,
+    };
+    if (channel >= 0)
+        context.channels[1 - channel] = false;
+    get_memory_channel_delays(&context.d0, &context.d1);
+    return context;
+}
+
+
+/* Extracts selected channels from raw data with bunch offset correction.
+ * Returns number of samples extracted. */
+static size_t extract_channels(
+    const uint32_t read_buffer[], size_t samples,
+    const struct channels_context *channels,
+    int16_t channel_buffer[])
+{
+    int16_t *write_buf = channel_buffer;
+    for (size_t i = 0; i < samples; i ++)
+    {
+        if (channels->channels[0])
+            *write_buf++ = (int16_t) read_buffer[i + channels->d0];
+        if (channels->channels[1])
+            *write_buf++ = (int16_t) (read_buffer[i + channels->d1] >> 16);
+    }
+    return (size_t) (write_buf - channel_buffer);
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* int16 format.
+ *
+ * In this mode we send the basic data. */
+
+
+/* Perform simple channel extraction and send block. */
+static void send_int16_memory_data(
+    struct buffered_file *file, const struct channels_context *channels,
+    const uint32_t read_buffer[], size_t read_samples)
+{
+    size_t write_buffer_size = WRITE_BUFFER_BYTES / sizeof(int16_t);
+    size_t max_samples = write_buffer_size / channels->count;
     while (read_samples > 0)
     {
-        int16_t write_buffer[WRITE_BUFFER_BYTES / sizeof(int16_t)];
-        size_t write_samples = MIN(read_samples, ARRAY_SIZE(write_buffer) / 2);
-        int16_t *write_buf = write_buffer;
-        for (size_t i = 0; i < write_samples; i ++)
-        {
-            if (channels[0])
-                *write_buf++ = (int16_t) read_buffer[i + d0];
-            if (channels[1])
-                *write_buf++ = (int16_t) (read_buffer[i + d1] >> 16);
-        }
+        int16_t write_buffer[write_buffer_size];
+        size_t write_samples = MIN(read_samples, max_samples);
+        size_t samples = extract_channels(
+            read_buffer, write_samples, channels, write_buffer);
 
-        write_block(
-            file, write_buffer,
-            sizeof(int16_t) * (size_t) (write_buf - write_buffer));
+        write_block(file, write_buffer, sizeof(int16_t) * samples);
 
         read_samples -= write_samples;
         read_buffer += write_samples;
@@ -213,55 +301,330 @@ static void send_converted_memory_data(
 }
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* float32 format.
+ *
+ * In this mode we average over a specified number of turns and send the
+ * resulting averages in floating point format. */
+
+/* Computes a single decimated turn.  The turn buffer must be large enough to
+ * accomodate a single turn (one or two channels).  Returns number samples
+ * written to turn_buffer[]. */
+static size_t compute_float32_turn_data(
+    const uint32_t read_buffer[], float turn_buffer[],
+    const struct channels_context *channels,
+    unsigned int decimation)
+{
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    unsigned int sample_count = bunches_per_turn * channels->count;
+    memset(turn_buffer, 0, sample_count * sizeof(float));
+
+    /* Accumulate totals over decimation interval from the selected channels. */
+    for (unsigned int d = 0; d < decimation; d ++)
+    {
+        int16_t channel_buffer[sample_count];
+        extract_channels(
+            read_buffer, bunches_per_turn, channels, channel_buffer);
+        read_buffer += bunches_per_turn;
+
+        for (unsigned int i = 0; i < sample_count; i ++)
+            turn_buffer[i] += (float) channel_buffer[i];
+    }
+
+    /* Convert totals into averages. */
+    for (unsigned int i = 0; i < sample_count; i ++)
+        turn_buffer[i] /= (float) decimation;
+    return sample_count;
+}
+
+
+/* This is called when no tune has been set but decimation has been requested.
+ * We have already ensured that read_samples is an integer number of decimated
+ * turns in length. */
+static void send_float32_memory_data(
+    struct buffered_file *file,
+    const struct memory_args *args,
+    const struct channels_context *channels,
+    const uint32_t read_buffer[], size_t read_samples)
+{
+    /* Figure out how many incoming turns of data we have and the size of each
+     * undecimated block of turns.  These are in units of read samples, or
+     * blocks of uint32_t. */
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    unsigned int read_turn_samples = bunches_per_turn * args->decimation;
+    size_t read_turns = read_samples / read_turn_samples;
+
+    /* Similarly figure out the the write buffer size.  Again, this must be a
+     * whole number of complete turns, and we truncate things to fit into the
+     * maximum buffer size. */
+    size_t samples_per_turn = bunches_per_turn * channels->count;
+    size_t turns_per_buffer =
+        WRITE_BUFFER_BYTES / sizeof(float) / samples_per_turn;
+
+    while (read_turns > 0)
+    {
+        float write_buffer[WRITE_BUFFER_BYTES / sizeof(float)];
+        size_t write_turns = MIN(read_turns, turns_per_buffer);
+
+        float *write_buf = write_buffer;
+        size_t write_samples = 0;
+        for (size_t turn = 0; turn < write_turns; turn ++)
+        {
+            write_samples += compute_float32_turn_data(
+                read_buffer, write_buf, channels, args->decimation);
+            read_buffer += read_turn_samples;
+            write_buf += samples_per_turn;
+        }
+
+        write_block(file, write_buffer, sizeof(float) * write_samples);
+        read_turns -= write_turns;
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* complex64 format.
+ *
+ * In this mode we average over the specified number of turns after frequency
+ * shifting the data by the given tune offset.  The resulting data is sent in IQ
+ * format as 64-bit complex numbers (dual 32-bit floats). */
+
+
+/* Holds the evolving state required to perform tune shifted decimation. */
+struct tune_decimate_state {
+    /* Copies of relevant parameters. */
+    unsigned int tune;
+    unsigned int decimation;
+
+    /* Current rotation angle, in units of rotation per 2^32. */
+    unsigned int angle;
+    /* Angle advance per turn. */
+    unsigned int turn_advance;
+    /* Fixup buffer. */
+    float complex *turn_fixup;
+};
+
+
+static float complex cisf(float angle)
+{
+    return cosf(angle) + I * sinf(angle);
+}
+
+
+static float complex angle_to_rotate(unsigned int angle)
+{
+    /* The angle is in units of rotation per 2^32, so multiply by 2 pi. */
+    return cisf((float) (M_PI * ldexp(angle, -31)));
+}
+
+
+static void prepare_tune_decimate(
+    struct tune_decimate_state *state,
+    float complex turn_fixup[],
+    const struct memory_args *args,
+    const struct channels_context *channels)
+{
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    *state = (struct tune_decimate_state) {
+        .tune = args->tune,
+        .decimation = args->decimation,
+        .angle = 0,
+        .turn_advance = args->tune * bunches_per_turn,
+        .turn_fixup = turn_fixup,
+    };
+
+    /* Compute the turn fixup array. */
+    unsigned int angle = 0;
+    for (unsigned int i = 0; i < bunches_per_turn; i ++)
+    {
+        float complex rotate = angle_to_rotate(angle);
+        for (unsigned int c = 0; c < channels->count; c ++)
+            *turn_fixup++ = rotate / (float) args->decimation;
+        angle += args->tune;
+    }
+}
+
+
+static size_t compute_complex64_turn_data(
+    const uint32_t read_buffer[], float complex turn_buffer[],
+    const struct channels_context *channels,
+    struct tune_decimate_state *state)
+{
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    unsigned int sample_count = bunches_per_turn * channels->count;
+    memset(turn_buffer, 0, sample_count * sizeof(float complex));
+
+    /* Accumulate totals over decimation interval from the selected channels. */
+    for (unsigned int d = 0; d < state->decimation; d ++)
+    {
+        int16_t channel_buffer[sample_count];
+        extract_channels(
+            read_buffer, bunches_per_turn, channels, channel_buffer);
+        read_buffer += bunches_per_turn;
+
+        float complex rotate = angle_to_rotate(state->angle);
+        for (unsigned int i = 0; i < sample_count; i ++)
+            turn_buffer[i] += rotate * (float) channel_buffer[i];
+        state->angle += state->turn_advance;
+    }
+
+    /* Fix up final result by scaling and rotating as appropriate. */
+    for (unsigned int i = 0; i < sample_count; i ++)
+        turn_buffer[i] *= state->turn_fixup[i];
+    return sample_count;
+}
+
+
+static void send_complex64_memory_data(
+    struct buffered_file *file,
+    const struct channels_context *channels,
+    struct tune_decimate_state *state,
+    const uint32_t read_buffer[], size_t read_samples)
+{
+    /* Same underlying logic as for float32. */
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    unsigned int read_turn_samples = bunches_per_turn * state->decimation;
+    size_t read_turns = read_samples / read_turn_samples;
+    size_t samples_per_turn = bunches_per_turn * channels->count;
+    size_t turns_per_buffer =
+        WRITE_BUFFER_BYTES / sizeof(float complex) / samples_per_turn;
+
+    while (read_turns > 0)
+    {
+        float complex write_buffer[WRITE_BUFFER_BYTES / sizeof(float complex)];
+        size_t write_turns = MIN(read_turns, turns_per_buffer);
+
+        float complex *write_buf = write_buffer;
+        size_t write_samples = 0;
+        for (size_t turn = 0; turn < write_turns; turn ++)
+        {
+            write_samples += compute_complex64_turn_data(
+                read_buffer, write_buf, channels, state);
+            read_buffer += read_turn_samples;
+            write_buf += samples_per_turn;
+        }
+
+        write_block(file, write_buffer, sizeof(float complex) * write_samples);
+        read_turns -= write_turns;
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Send memory data. */
+
 static void send_memory_data(
-    struct buffered_file *file, unsigned int count, int offset_turns,
-    const bool channels[2])
+    struct buffered_file *file, size_t read_buffer_size,
+    const struct memory_args *args,
+    const struct channels_context *channels)
 {
     /* Convert count and offset into a byte offset from the trigger and a number
      * of samples. */
     unsigned int bunches_per_turn = system_config.bunches_per_turn;
-    size_t samples = count * bunches_per_turn;
-    size_t offset = compute_dram_offset(offset_turns);
-    /* Pick up the channel skew factors. */
-    unsigned int d0, d1;
-    get_memory_channel_delays(&d0, &d1);
+    size_t samples = args->count * bunches_per_turn * args->decimation;
+    size_t offset = compute_dram_offset(args->offset);
+
+    struct tune_decimate_state complex_state;
+    float complex turn_fixup[bunches_per_turn * channels->count];
+    if (args->format == FORMAT_COMPLEX64)
+        prepare_tune_decimate(&complex_state, turn_fixup, args, channels);
 
     while (samples > 0)
     {
+        size_t read_samples = MIN(samples, read_buffer_size);
+
         /* To allow for offset compensation, we need to read one extra turn
          * which we don't include in the sample count. */
-        uint32_t read_buffer[READ_BUFFER_BYTES / sizeof(uint32_t)];
-        size_t samples_extra = samples + bunches_per_turn;
-        size_t read_samples = MIN(samples_extra, ARRAY_SIZE(read_buffer));
-        hw_read_dram_memory(offset, read_samples, read_buffer);
+        uint32_t read_buffer[read_buffer_size + bunches_per_turn];
+        hw_read_dram_memory(
+            offset, read_samples + bunches_per_turn, read_buffer);
 
-        read_samples -= bunches_per_turn;
-        send_converted_memory_data(
-            file, read_samples, d0, d1, read_buffer, channels);
-        samples -= read_samples;
+        switch (args->format)
+        {
+            case FORMAT_INT16:
+                send_int16_memory_data(
+                    file, channels, read_buffer, read_samples);
+                break;
+            case FORMAT_FLOAT32:
+                send_float32_memory_data(
+                    file, args, channels, read_buffer, read_samples);
+                break;
+            case FORMAT_COMPLEX64:
+                send_complex64_memory_data(
+                    file, channels, &complex_state, read_buffer, read_samples);
+                break;
+        }
+
         offset += read_samples * sizeof(uint32_t);
+        samples -= read_samples;
     }
+}
+
+
+/* Compute size of read buffer (in 32-bit samples) to fit within the maximum
+ * read buffer size.  If data reduction is requested then also computes read
+ * buffer to be an integer multiple of the decimated sample size.
+ *    A second complication is that one extra turn of data needs to be added to
+ * the memory read to allow for delay compensation.  This is *not* included in
+ * the value returned by this function but is allowed for in the buffer size. */
+static error__t compute_read_buffer_size(
+    struct memory_args *args, size_t *buffer_size)
+{
+    size_t bunches_per_turn = system_config.bunches_per_turn;
+    *buffer_size = READ_BUFFER_BYTES / sizeof(uint32_t) - bunches_per_turn;
+    if (args->format != FORMAT_INT16)
+    {
+        /* For averaged samples we need to read an integer number of decimated
+         * turns at a time to simplify processing. */
+        size_t sample_size = bunches_per_turn * args->decimation;
+        *buffer_size = (*buffer_size / sample_size) * sample_size;
+        return TEST_OK_(*buffer_size > 0, "Decimation too large");
+    }
+    else
+        return ERROR_OK;
+}
+
+
+/* Writes (optional) header containing format information about sent data. */
+static void write_memory_info(
+    struct buffered_file *file, struct memory_args *args)
+{
+    struct memory_frame frame = {
+        .samples = args->count * system_config.bunches_per_turn,
+        .channels = args->channel >= 0 ? 1 : 2,
+        .format = args->format,
+    };
+    write_block(file, &frame, sizeof(frame));
 }
 
 
 error__t process_memory_command(
     struct buffered_file *file, bool raw_mode, const char *command)
 {
+    size_t bunches_per_turn = system_config.bunches_per_turn;
     struct memory_args args;
+    size_t read_buffer_size;
     struct trigger_target *lock = get_memory_trigger_ready_lock();
     error__t error =
         parse_memory_args(command, &args, raw_mode)  ?:
+        TEST_OK_(
+            args.count <= DRAM0_LENGTH / sizeof(int32_t) /
+                bunches_per_turn / args.decimation,
+            "Too many turns requested")  ?:
+        compute_read_buffer_size(&args, &read_buffer_size)  ?:
+
+        /* Make sure we always do this one last! */
         wait_for_lock(lock, file, args.locking);
 
     if (!error)
     {
         if (!raw_mode)
             write_char(file, '\0');
+        if (args.framed)
+            write_memory_info(file, &args);
 
-        bool channels[2] = { true, true };
-        if (args.channel >= 0)
-            channels[1 - args.channel] = false;
-        send_memory_data(file, args.count, args.offset, channels);
+        struct channels_context channels = make_channels_context(args.channel);
+        send_memory_data(file, read_buffer_size, &args, &channels);
 
         release_lock(lock, args.locking);
     }
@@ -269,7 +632,7 @@ error__t process_memory_command(
 }
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*****************************************************************************/
 /* DET detector readout. */
 
 /* Same content as detector_info, but fixed size words. */
