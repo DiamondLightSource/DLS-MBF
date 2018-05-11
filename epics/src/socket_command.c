@@ -179,8 +179,8 @@ struct memory_frame {
  *          floats, unless T tune is also selected, in which case see below.
  *      T tune
  *          Optionally the data can be frequency shifted by the specifed tune
- *          (specified as phase advance in hardware units per bunch).  If this
- *          option is selected then data is transmitted as single precision
+ *          (specified as a floating point number in revolutions per turn).  If
+ *          this option is selected then data is transmitted as single precision
  *          complex numbers.
  *      L   If set then lock readout
  *      W timeout
@@ -194,7 +194,7 @@ struct memory_args {
     int channel;                    // C    Channel selection
     int bunch;                      // B    Single bunch selection
     unsigned int decimation;        // D    Data decimation factor
-    unsigned int tune;              // T    Selected frequency shift
+    double tune;                    // T    Selected frequency shift
     struct lock_parse locking;      // L,W  Locking request
     enum memory_data_format format;
 };
@@ -231,7 +231,7 @@ static error__t parse_memory_args(
                 TEST_OK_(args->decimation > 0, "Invalid decimation"))  ?:
             IF(read_char(&command, 'T'),
                 DO(args->format = FORMAT_COMPLEX64)  ?:
-                parse_uint(&command, &args->tune)))  ?:
+                parse_double(&command, &args->tune)))  ?:
         parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
 
@@ -454,7 +454,7 @@ static void send_float32_memory_data(
 /* Holds the evolving state required to perform tune shifted decimation. */
 struct tune_decimate_state {
     /* Copies of relevant parameters. */
-    unsigned int tune;
+    unsigned int tune;          /* Converted into 2^32 revolutions per bunch. */
     unsigned int decimation;
 
     /* Current rotation angle, in units of rotation per 2^32. */
@@ -486,11 +486,12 @@ static void prepare_tune_decimate(
     const struct channels_context *channels)
 {
     unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    unsigned int tune = tune_to_freq(args->tune);
     *state = (struct tune_decimate_state) {
-        .tune = args->tune,
+        .tune = tune,
         .decimation = args->decimation,
         .angle = 0,
-        .turn_advance = args->tune * bunches_per_turn,
+        .turn_advance = tune * bunches_per_turn,
         .turn_fixup = turn_fixup,
     };
 
@@ -501,7 +502,7 @@ static void prepare_tune_decimate(
         float complex rotate = angle_to_rotate(angle);
         for (unsigned int c = 0; c < channels->count; c ++)
             *turn_fixup++ = rotate / (float) args->decimation;
-        angle += args->tune;
+        angle += tune;
     }
 }
 
@@ -710,12 +711,14 @@ error__t process_memory_command(
 /*****************************************************************************/
 /* DET detector readout. */
 
-/* Same content as detector_info, but fixed size words. */
+/* Information to send at the start of a detector readout.  Is much the same
+ * content as detector_info, but with fixed sized words. */
 struct detector_frame {
     uint8_t detector_count;
     uint8_t detector_mask;
     uint16_t delay;
     uint32_t samples;
+    uint32_t bunches;
 };
 
 
@@ -778,6 +781,7 @@ static void write_detector_info(
         .detector_mask = (uint8_t) info->detector_mask,
         .delay = (uint16_t) info->delay,
         .samples = (uint32_t) info->samples,
+        .bunches = (uint32_t) system_config.bunches_per_turn,
     };
     write_block(file, &frame, sizeof(frame));
 }

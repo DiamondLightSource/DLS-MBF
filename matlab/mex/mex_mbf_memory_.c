@@ -4,7 +4,7 @@
  * The function defined here must be called thus:
  *
  *      d = mex_mbf_memory_( ...
- *          hostname, port, bunches, count, offset, channel, locking, ...
+ *          hostname, port, count, offset, channel, locking, ...
  *          tune, decimate, bunch);
  *
  * Data is captured from hostname:port starting from offset from trigger, and
@@ -183,27 +183,9 @@ static void read_and_convert_complex64(
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/* Convert fractional tune in cycles per machine revolution to phase advance per
- * bunch in hardware units.
- *
- * This code is lifted from epics/src/common.c. */
-unsigned int tune_to_freq(unsigned int bunches, double tune)
-{
-    /* Convert the incoming tune in cycles per machine revolution into phase
-     * advance per bunch by scaling and reducing to the half open interval
-     * [0, 1). */
-    double integral;
-    double fraction = modf(tune / bunches, &integral);
-    if (fraction < 0.0)
-        fraction += 1.0;
-    /* Can now scale up to hardware units. */
-    return (unsigned int) round(ldexp(fraction, 32));
-}
-
-
 static void do_send_command(
     int sock, unsigned int count, int offset, int channel, double locking,
-    unsigned int bunches, double tune, unsigned int decimate, int bunch)
+    double tune, unsigned int decimate, int bunch)
 {
     char command[64];
     char *command_in = command;
@@ -215,7 +197,7 @@ static void do_send_command(
     if (decimate > 1)
         command_in += sprintf(command_in, "D%u", decimate);
     if (tune != 0)
-        command_in += sprintf(command_in, "T%u", tune_to_freq(bunches, tune));
+        command_in += sprintf(command_in, "T%.10f", tune);
 
     if (bunch >= 0)
         command_in += sprintf(command_in, "B%d", bunch);
@@ -234,22 +216,22 @@ static void do_send_command(
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     /* We expect an exact list of arguments. */
-    TEST_OK_(nrhs == 10, "args", "Wrong number of arguments");
+    TEST_OK_(nrhs == 9, "args", "Wrong number of arguments");
     /* We only assign one result. */
     TEST_OK_(nlhs <= 1, "result", "Wrong number of results");
 
+    /* Read out arguments in precise order. */
     char hostname[256];
-    TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
+    TEST_OK_(mxGetString(*prhs++, hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
-    int port    = (int) mxGetScalar(prhs[1]);
-    unsigned int bunches = (unsigned int) mxGetScalar(prhs[2]);
-    unsigned int count   = (unsigned int) mxGetScalar(prhs[3]);
-    int offset  = (int) mxGetScalar(prhs[4]);
-    int channel = (int) mxGetScalar(prhs[5]);
-    double locking = mxGetScalar(prhs[6]);
-    double tune = mxGetScalar(prhs[7]);
-    unsigned int decimate = (unsigned int) mxGetScalar(prhs[8]);
-    int bunch = (int) mxGetScalar(prhs[9]);
+    int port = (int) mxGetScalar(*prhs++);
+    unsigned int count = (unsigned int) mxGetScalar(*prhs++);
+    int offset = (int) mxGetScalar(*prhs++);
+    int channel = (int) mxGetScalar(*prhs++);
+    double locking = mxGetScalar(*prhs++);
+    double tune = mxGetScalar(*prhs++);
+    unsigned int decimate = (unsigned int) mxGetScalar(*prhs++);
+    int bunch = (int) mxGetScalar(*prhs++);
 
     TEST_OK_(decimate > 0, "decimate", "Invalid decimation");
     TEST_OK_(bunch < 0  ||  (tune == 0  &&  decimate == 1),
@@ -261,7 +243,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
      * fail), so we're in control. */
     int sock = connect_server(hostname, port);
     do_send_command(
-        sock, count, offset, channel, locking, bunches, tune, decimate, bunch);
+        sock, count, offset, channel, locking, tune, decimate, bunch);
 
     struct memory_frame frame;
     fill_buffer(sock, &frame, sizeof(frame), 1, 1);

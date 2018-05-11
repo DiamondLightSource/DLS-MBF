@@ -3,8 +3,7 @@
  *
  * The function defined here must be called thus:
  *
- *      [d,s,g,t] = mex_mbf_detector_( ...
- *          hostname, port, bunches, axis, locking);
+ *      [d,s,g,t] = mex_mbf_detector_(hostname, port, axis, locking);
  *
  * Data is captured from hostname:port and returned in an array of size
  *
@@ -47,6 +46,7 @@ struct detector_frame {
     uint8_t detector_mask;
     uint16_t delay;
     uint32_t samples;
+    uint32_t bunches;
 };
 
 /* Single detector sample: (I,Q). */
@@ -166,19 +166,19 @@ static void do_send_command(
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    /* We expect four arguments: hostname, port, bunches, axis. */
-    TEST_OK_(nrhs == 5, "args", "Wrong number of arguments");
+    /* We expect a fixed number of arguments. */
+    TEST_OK_(nrhs == 4, "args", "Wrong number of arguments");
     /* Can assign up to four results, expect three. */
     TEST_OK_(nlhs >= 3, "result", "Too few results requested");
     TEST_OK_(nlhs <= 4, "result", "Too many results requested");
 
+    /* Read out arguments in precise order. */
     char hostname[256];
-    TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
+    TEST_OK_(mxGetString(*prhs++, hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
-    int port    = (int) mxGetScalar(prhs[1]);
-    unsigned int bunches = (unsigned int) mxGetScalar(prhs[2]);
-    unsigned int axis    = (unsigned int) mxGetScalar(prhs[3]);
-    double locking = mxGetScalar(prhs[4]);
+    int port = (int) mxGetScalar(*prhs++);
+    unsigned int axis = (unsigned int) mxGetScalar(*prhs++);
+    double locking = mxGetScalar(*prhs++);
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions! */
@@ -192,9 +192,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     read_and_convert_samples(
         &plhs[0], sock, frame.samples, frame.detector_count);
     if (nlhs >= 2)
-        read_and_convert_frequency(&plhs[1], sock, frame.samples, bunches);
+        read_and_convert_frequency(
+            &plhs[1], sock, frame.samples, frame.bunches);
     if (nlhs >= 3)
-        send_group_delay(&plhs[2], sock, bunches, frame.delay);
+        send_group_delay(&plhs[2], sock, frame.bunches, frame.delay);
     if (nlhs >= 4)
         read_and_convert_timebase(&plhs[3], sock, frame.samples);
 
