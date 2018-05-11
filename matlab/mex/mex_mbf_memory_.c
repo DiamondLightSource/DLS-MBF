@@ -4,8 +4,8 @@
  * The function defined here must be called thus:
  *
  *      d = mex_mbf_memory_( ...
- *          hostname, port, bunches, count, offset, channel, locking, tune,
- *          decimate);
+ *          hostname, port, bunches, count, offset, channel, locking, ...
+ *          tune, decimate, bunch);
  *
  * Data is captured from hostname:port starting from offset from trigger, and
  * the returned data is in an array of size
@@ -203,10 +203,11 @@ unsigned int tune_to_freq(unsigned int bunches, double tune)
 
 static void do_send_command(
     int sock, unsigned int count, int offset, int channel, double locking,
-    unsigned int bunches, double tune, unsigned int decimate)
+    unsigned int bunches, double tune, unsigned int decimate, int bunch)
 {
     char command[64];
     char *command_in = command;
+
     command_in += sprintf(command_in, "M%dFO%d", count, offset);
     if (channel >= 0)
         command_in += sprintf(command_in, "C%d", channel);
@@ -215,6 +216,9 @@ static void do_send_command(
         command_in += sprintf(command_in, "D%u", decimate);
     if (tune != 0)
         command_in += sprintf(command_in, "T%u", tune_to_freq(bunches, tune));
+
+    if (bunch >= 0)
+        command_in += sprintf(command_in, "B%d", bunch);
 
     if (locking >= 0)
         command_in += sprintf(command_in, "L");
@@ -229,8 +233,8 @@ static void do_send_command(
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    /* We expect five arguments: hostname, port, bunches, count, offset. */
-    TEST_OK_(nrhs == 9, "args", "Wrong number of arguments");
+    /* We expect an exact list of arguments. */
+    TEST_OK_(nrhs == 10, "args", "Wrong number of arguments");
     /* We only assign one result. */
     TEST_OK_(nlhs <= 1, "result", "Wrong number of results");
 
@@ -245,8 +249,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     double locking = mxGetScalar(prhs[6]);
     double tune = mxGetScalar(prhs[7]);
     unsigned int decimate = (unsigned int) mxGetScalar(prhs[8]);
+    int bunch = (int) mxGetScalar(prhs[9]);
 
     TEST_OK_(decimate > 0, "decimate", "Invalid decimation");
+    TEST_OK_(bunch < 0  ||  (tune == 0  &&  decimate == 1),
+        "bunch", "Cannot combine single bunch with decimation or tune shift");
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions!
@@ -254,7 +261,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
      * fail), so we're in control. */
     int sock = connect_server(hostname, port);
     do_send_command(
-        sock, count, offset, channel, locking, bunches, tune, decimate);
+        sock, count, offset, channel, locking, bunches, tune, decimate, bunch);
 
     struct memory_frame frame;
     fill_buffer(sock, &frame, sizeof(frame), 1, 1);

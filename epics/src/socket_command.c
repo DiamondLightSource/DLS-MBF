@@ -156,7 +156,7 @@ struct memory_frame {
 /* Supports command of the form:
  *
  *      [R] M count [F] [O offset] [C channel]
- *          [D decimation] [T tune] [L [W timeout]]
+ *          [B bunch | [D decimation] [T tune]] [L [W timeout]]
  *
  * Returns memory captured into memory with the following options:
  *
@@ -170,6 +170,9 @@ struct memory_frame {
  *      C channel
  *          If requested, only the one channel will be transmitted, halving the
  *          data transmitted.
+ *      B bunch
+ *          Request that only the one bunch be transmitted.  This option cannot
+ *          be combined with D or T options.
  *      D decimation
  *          Data can be reduced by averaging each turn over a number of turns.
  *          If this option is selected the data is returned as single precision
@@ -189,6 +192,7 @@ struct memory_args {
     bool framed;                    // F
     int offset;                     // O    Start offset
     int channel;                    // C    Channel selection
+    int bunch;                      // B    Single bunch selection
     unsigned int decimation;        // D    Data decimation factor
     unsigned int tune;              // T    Selected frequency shift
     struct lock_parse locking;      // L,W  Locking request
@@ -199,9 +203,11 @@ struct memory_args {
 static error__t parse_memory_args(
     const char *command, struct memory_args *args, bool raw_mode)
 {
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
     const char *command_in = command;
     *args = (struct memory_args) {
         .channel = -1,
+        .bunch = -1,
         .decimation = 1,
         .format = FORMAT_INT16,
     };
@@ -214,13 +220,18 @@ static error__t parse_memory_args(
             parse_int(&command, &args->channel)  ?:
             TEST_OK_(0 <= args->channel  &&  args->channel < MEM_CHANNEL_COUNT,
                 "Invalid channel number"))  ?:
-        IF(read_char(&command, 'D'),
-            DO(args->format = FORMAT_FLOAT32)  ?:
-            parse_uint(&command, &args->decimation)  ?:
-            TEST_OK_(args->decimation > 0, "Invalid decimation"))  ?:
-        IF(read_char(&command, 'T'),
-            DO(args->format = FORMAT_COMPLEX64)  ?:
-            parse_uint(&command, &args->tune))  ?:
+        IF_ELSE(read_char(&command, 'B'),
+            parse_int(&command, &args->bunch)  ?:
+            TEST_OK_(0 <= args->bunch  &&  args->bunch < (int) bunches_per_turn,
+                "Invalid bunch number"),
+        //else (not 'B')
+            IF(read_char(&command, 'D'),
+                DO(args->format = FORMAT_FLOAT32)  ?:
+                parse_uint(&command, &args->decimation)  ?:
+                TEST_OK_(args->decimation > 0, "Invalid decimation"))  ?:
+            IF(read_char(&command, 'T'),
+                DO(args->format = FORMAT_COMPLEX64)  ?:
+                parse_uint(&command, &args->tune)))  ?:
         parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
 
@@ -235,8 +246,8 @@ static error__t parse_memory_args(
 struct channels_context {
     unsigned int d0;        // Offset correction for channel 0
     unsigned int d1;        // Offset correction for channel 1
-    bool channels[2];       // Records which channels are to be captured
     unsigned int count;     // Number of channels (1 or 2)
+    bool channels[2];       // Records which channels are to be captured
 };
 
 
@@ -254,6 +265,17 @@ static struct channels_context make_channels_context(int channel)
 }
 
 
+static void extract_channels_one_bunch(
+    const uint32_t read_buffer[], const struct channels_context *channels,
+    int16_t **write_buf)
+{
+    if (channels->channels[0])
+        *(*write_buf)++ = (int16_t) read_buffer[channels->d0];
+    if (channels->channels[1])
+        *(*write_buf)++ = (int16_t) (read_buffer[channels->d1] >> 16);
+}
+
+
 /* Extracts selected channels from raw data with bunch offset correction.
  * Returns number of samples extracted. */
 static size_t extract_channels(
@@ -263,13 +285,53 @@ static size_t extract_channels(
 {
     int16_t *write_buf = channel_buffer;
     for (size_t i = 0; i < samples; i ++)
-    {
-        if (channels->channels[0])
-            *write_buf++ = (int16_t) read_buffer[i + channels->d0];
-        if (channels->channels[1])
-            *write_buf++ = (int16_t) (read_buffer[i + channels->d1] >> 16);
-    }
+        extract_channels_one_bunch(&read_buffer[i], channels, &write_buf);
     return (size_t) (write_buf - channel_buffer);
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* single bunch format.
+ *
+ * In this mode we send a single bunch. */
+
+static size_t compute_bunch_turn_data(
+    const uint32_t read_buffer[], size_t write_turns, int16_t write_buffer[],
+    const struct channels_context *channels)
+{
+    int16_t *write_buf = write_buffer;
+    for (size_t i = 0; i < write_turns; i ++)
+    {
+        extract_channels_one_bunch(read_buffer, channels, &write_buf);
+        read_buffer += system_config.bunches_per_turn;
+    }
+    return (size_t) (write_buf - write_buffer);
+}
+
+
+/* We assume here that read_samples is an integer multiple of turns. */
+static void send_bunch_memory_data(
+    struct buffered_file *file, const struct channels_context *channels,
+    unsigned int bunch, const uint32_t read_buffer[], size_t read_samples)
+{
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    size_t read_turns = read_samples / bunches_per_turn;
+
+    size_t write_buffer_size = WRITE_BUFFER_BYTES / sizeof(int16_t);
+    size_t max_samples = write_buffer_size / channels->count;
+
+    while (read_turns > 0)
+    {
+        size_t write_turns = MIN(read_turns, max_samples);
+        int16_t write_buffer[write_buffer_size];
+
+        size_t write_samples = compute_bunch_turn_data(
+            &read_buffer[bunch], write_turns, write_buffer, channels);
+        write_block(file, write_buffer, sizeof(int16_t) * write_samples);
+
+        read_buffer += write_turns * bunches_per_turn;
+        read_turns -= write_turns;
+    }
 }
 
 
@@ -277,7 +339,6 @@ static size_t extract_channels(
 /* int16 format.
  *
  * In this mode we send the basic data. */
-
 
 /* Perform simple channel extraction and send block. */
 static void send_int16_memory_data(
@@ -539,21 +600,27 @@ static void send_memory_data(
         hw_read_dram_memory(
             offset, read_samples + bunches_per_turn, read_buffer);
 
-        switch (args->format)
-        {
-            case FORMAT_INT16:
-                send_int16_memory_data(
-                    file, channels, read_buffer, read_samples);
-                break;
-            case FORMAT_FLOAT32:
-                send_float32_memory_data(
-                    file, args, channels, read_buffer, read_samples);
-                break;
-            case FORMAT_COMPLEX64:
-                send_complex64_memory_data(
-                    file, channels, &complex_state, read_buffer, read_samples);
-                break;
-        }
+        if (args->bunch >= 0)
+            send_bunch_memory_data(
+                file, channels, (unsigned int) args->bunch,
+                read_buffer, read_samples);
+        else
+            switch (args->format)
+            {
+                case FORMAT_INT16:
+                    send_int16_memory_data(
+                        file, channels, read_buffer, read_samples);
+                    break;
+                case FORMAT_FLOAT32:
+                    send_float32_memory_data(
+                        file, args, channels, read_buffer, read_samples);
+                    break;
+                case FORMAT_COMPLEX64:
+                    send_complex64_memory_data(
+                        file, channels, &complex_state,
+                        read_buffer, read_samples);
+                    break;
+            }
 
         offset += read_samples * sizeof(uint32_t);
         samples -= read_samples;
@@ -572,7 +639,13 @@ static error__t compute_read_buffer_size(
 {
     size_t bunches_per_turn = system_config.bunches_per_turn;
     *buffer_size = READ_BUFFER_BYTES / sizeof(uint32_t) - bunches_per_turn;
-    if (args->format != FORMAT_INT16)
+    if (args->bunch >= 0)
+    {
+        /* Ensure buffer size is an integer number of turns. */
+        *buffer_size = (*buffer_size / bunches_per_turn) * bunches_per_turn;
+        return ERROR_OK;
+    }
+    else if (args->format != FORMAT_INT16)
     {
         /* For averaged samples we need to read an integer number of decimated
          * turns at a time to simplify processing. */
@@ -590,7 +663,9 @@ static void write_memory_info(
     struct buffered_file *file, struct memory_args *args)
 {
     struct memory_frame frame = {
-        .samples = args->count * system_config.bunches_per_turn,
+        .samples = args->bunch >= 0 ?
+            args->count :
+            args->count * system_config.bunches_per_turn,
         .channels = args->channel >= 0 ? 1 : 2,
         .format = args->format,
     };
