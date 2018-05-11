@@ -55,6 +55,9 @@ def delayed_output(output):
     output.DCLK_ADLY = 0        # Start with 0ps (extra) delay
     output.DCLK_ADLY_MUX = 1    # Enable duty cycle correction in divide
 
+    output.DCLK_DDLY_PD = 0     # Enable dynamic digital delay
+    output.DCLK_HSg_PD = 0      # Not sure about this one
+
 
 # The following clock connections are configured and used:
 #
@@ -129,12 +132,6 @@ def setup_reclocked(pll):
     pll.PLL2_PRE_PD = 0         #  prescaler are enabled
     pll.PLL2_REF_2X_EN = 1      # Enable frequency doubling on VCXO
     pll.PLL2_NCLK_MUX = 0       # Use direct output feedback
-
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Remaining state
-
-    pll.CLKin_OVERRIDE = 1      # Force use of selected clock input
 
 
 # This sets up the given PLL ratios.  The basic parameters are:
