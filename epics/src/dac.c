@@ -117,40 +117,6 @@ static void scan_events(void)
 }
 
 
-static pthread_mutex_t delay_lock = PTHREAD_MUTEX_INITIALIZER;
-static unsigned int dac_delay = 0;
-
-static void set_dac_fine_delay(unsigned int delay)
-{
-    /* See section 9.7.2.3 of the LMK04828 documentation (or section 9.7.2.4 of
-     * the revised -EP manual).  Note that we read and update to ensure we keep
-     * the other configuration settings. */
-    struct pll_dly {
-        uint8_t DCLK_MUX : 2;
-        uint8_t DCLK_ADLY_MUX : 1;
-        uint8_t DCLK_ADLY : 5;
-    };
-    struct pll_dly reg = CAST_TO(struct pll_dly,
-        hw_read_fmc500_spi(FMC500_SPI_PLL, 0x113));
-    reg.DCLK_ADLY = delay & 0x1F;
-    hw_write_fmc500_spi(FMC500_SPI_PLL, 0x113, CAST_TO(uint8_t, reg));
-}
-
-static void slew_dac_fine_delay(unsigned int delay)
-{
-    /* To avoid glitches, slew to the target delay rather than jumping there
-     * directly.  Single steps are guaranteed to be glitchless. */
-    if (dac_delay < delay)
-        for (unsigned int d = dac_delay + 1; d < delay; d ++)
-            set_dac_fine_delay(d);
-    else if (dac_delay > delay)
-        for (unsigned int d = dac_delay - 1; d > delay; d --)
-            set_dac_fine_delay(d);
-    set_dac_fine_delay(delay);
-    dac_delay = delay;
-}
-
-
 error__t initialise_dac(void)
 {
     FOR_AXIS_NAMES(axis, "DAC")
@@ -176,12 +142,7 @@ error__t initialise_dac(void)
     }
 
     WITH_NAME_PREFIX("DAC")
-    {
         PUBLISH_ACTION("EVENTS", scan_events);
-
-        PUBLISH_WRITER_P(ulongout, "FINE_DELAY",
-            slew_dac_fine_delay, .mutex = &delay_lock);
-    }
 
     return ERROR_OK;
 }

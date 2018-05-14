@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2756
-y 6
+x 2757
+y 7
 w 264
 h 345
 font "helvetica-medium-r-8.0"
@@ -654,6 +654,29 @@ displayFileName {
 }
 symbols {
   0 "axis=$(axis1),adc_axis=$(axis1)"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 96
+y 312
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Delays"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/delay.edl"
 }
 endObjectProperties
 

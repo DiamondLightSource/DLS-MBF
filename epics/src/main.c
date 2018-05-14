@@ -37,6 +37,7 @@
 #include "triggers.h"
 #include "detector.h"
 #include "socket_server.h"
+#include "delay.h"
 
 
 /* External declaration of DBD binding. */
@@ -260,6 +261,7 @@ static error__t initialise_subsystems(void)
 {
     return
         initialise_system()  ?:
+        initialise_delay()  ?:
         initialise_adc()  ?:
         initialise_dac()  ?:
         initialise_bunch_fir()  ?:

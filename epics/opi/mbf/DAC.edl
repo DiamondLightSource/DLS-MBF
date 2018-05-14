@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1987
-y 838
+x 1988
+y 839
 w 641
 h 337
 font "helvetica-medium-r-18.0"
@@ -494,104 +494,5 @@ displayFileName {
 symbols {
   0 "part=DAC"
 }
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 200
-y 304
-w 32
-h 20
-controlPv "$(device):DAC:FINE_DELAY_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Motif Slider)
-object activeMotifSliderClass
-beginObjectProperties
-major 4
-minor 2
-release 0
-x 64
-y 304
-w 128
-h 24
-fgColor index 6
-bgColor index 4
-2ndBgColor index 3
-topShadowColor index 0
-botShadowColor index 14
-increment 1
-controlPv "$(device):DAC:FINE_DELAY_S"
-controlLabelType "pvName"
-font "helvetica-medium-r-18.0"
-limitsFromDb
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 304
-w 51
-h 28
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "DAC fine"
-  "delay:"
-}
-autoSize
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 232
-y 308
-w 48
-h 14
-controlPv "$(device):DAC:FINE_DELAY_PS"
-font "helvetica-medium-r-12.0"
-fontAlign "right"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-showUnits
-newPos
-objType "monitors"
 endObjectProperties
 

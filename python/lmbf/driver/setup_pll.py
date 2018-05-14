@@ -56,7 +56,7 @@ def delayed_output(output):
     output.DCLK_ADLY_MUX = 1    # Enable duty cycle correction in divide
 
     output.DCLK_DDLY_PD = 0     # Enable dynamic digital delay
-    output.DCLK_HSg_PD = 0      # Not sure about this one
+    output.DCLK_HSg_PD = 0      # and half step control
 
 
 # The following clock connections are configured and used:
@@ -83,6 +83,10 @@ def setup_reclocked(pll):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Output configuration
 
+    # We enable full delay control (fine delay, half step, digital delay) on the
+    # DAC clock and Internal Feedback signals (and on CLK OUT for debug) but
+    # not on the ADC clock.
+
     # Put SYSREF on SDCLKout3.  This is routed through to DIO #5 when control
     # bit SYS.CONTROL.DIO_SEL_SDCLK = 1, used for SYSREF debugging
     sysref_output(pll.out2_3)
@@ -91,7 +95,7 @@ def setup_reclocked(pll):
     delayed_output(pll.out4_5)
 
     # PLL internal feedback on DCLKout8
-    divided_output(pll.out8_9)
+    delayed_output(pll.out8_9)
 
     # Front panel connector on DCLKout10, also fully controlled delay
     delayed_output(pll.out10_11)
