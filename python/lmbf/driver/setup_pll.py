@@ -83,31 +83,47 @@ def setup_reclocked(pll):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Output configuration
 
-    # We enable full delay control (fine delay, half step, digital delay) on the
-    # DAC clock and Internal Feedback signals (and on CLK OUT for debug) but
-    # not on the ADC clock.
+    # Enable full delay control (fine delay, half step, digital delay) on all
+    # our signals.
 
     # Put SYSREF on SDCLKout3.  This is routed through to DIO #5 when control
     # bit SYS.CONTROL.DIO_SEL_SDCLK = 1, used for SYSREF debugging
     sysref_output(pll.out2_3)
 
-    # DAC clock on DCLKout4 with fully controllable output delay
+    # DAC clock on DCLKout4 with fully controllable output delay.  It seems that
+    # the DAC analogue output is agile enough to cope with steps on this clock.
     delayed_output(pll.out4_5)
 
-    # PLL internal feedback on DCLKout8
-    delayed_output(pll.out8_9)
+    # PLL internal feedback on DCLKout8.  Although the inner VCO loop cannot
+    # unlock, the VCXO can if we move this too much, so we leave it alone.
+    divided_output(pll.out8_9)
 
-    # Front panel connector on DCLKout10, also fully controlled delay
+    # CLK OUT front panel connector on DCLKout10, fully controlled delay for
+    # debug only.
     delayed_output(pll.out10_11)
 
     # ADC clock on SDCLKout13.  Unusually this output uses the SDCLK output pin,
     # but is otherwise a normal data clock.
+    #    Note that any kind of dynamic delay on this clock output is unsafe, as
+    # phase steps (even fine adjustments) can cause the FPGA PLL to unlock and
+    # drop clock pulses.
     divided_output(pll.out12_13)
     pll.out12_13.SDCLK_MUX = 0      # Device clock on SD clock
 
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # PLL setup.  This must be completed by calling setup_pll_ratios at end.
+    # PLL setup.  This must be completed by calling setup_pll_ratios at end.  We
+    # are configured to run in Nested 0-delay Dual Loop Mode (section 9.4.2,
+    # figure 14, p.36 of SNAS703, figure 19, p.48 of SNAS605AR):
+    #
+    #   f_RF -- /R1 --|
+    #                 | PD1 >-- VCXO -- /R2 --|
+    #       +-- /N1 --|                       | PD2 >-- VCO --+-- /D --+-- f_RF
+    #       |                       +-- /N2 --|               |        |
+    #       |                       +-------------------------+        |
+    #       +----------------------------------------------------------+
+    #
+    # See tools/find_freq for annotation of this figure.
 
     # PLL1 R (reference) input
     pll.CLKin0_EN = 0
@@ -137,6 +153,13 @@ def setup_reclocked(pll):
     pll.PLL2_REF_2X_EN = 1      # Enable frequency doubling on VCXO
     pll.PLL2_NCLK_MUX = 0       # Use direct output feedback
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Set up for manual sync
+
+    pll.SYNC_POL = 0
+    pll.SYNC_MODE = 1
+    pll.SYSREF_MUX = 0
+
 
 # This sets up the given PLL ratios.  The basic parameters are:
 #
@@ -159,10 +182,18 @@ def setup_pll_ratios(pll, n1r1, vco, d, p2, n2, r2):
     pll.PLL2_N = n2
     pll.PLL2_N_CAL = n2
 
-    pll.out4_5.DCLK_DIV = d    # DAC CLK
-    pll.out8_9.DCLK_DIV = d    # Feedback clock
-    pll.out10_11.DCLK_DIV = d  # CLK OUT (front panel)
-    pll.out12_13.DCLK_DIV = d  # ADC CLK
+    pll.out4_5.DCLK_DIV = d     # DAC CLK
+    pll.out8_9.DCLK_DIV = d     # Feedback clock
+    pll.out10_11.DCLK_DIV = d   # CLK OUT (front panel)
+    pll.out12_13.DCLK_DIV = d   # ADC CLK
+
+    # Set up dividers for phase advance for DAC, only.
+    cntl = (d + 1) / 2
+    cnth = d + 1 - cntl
+    pll.out4_5.DCLK_DDLY_CNTL = cntl
+    pll.out4_5.DCLK_DDLYd_CNTL = cntl
+    pll.out4_5.DCLK_DDLY_CNTH = cnth
+    pll.out4_5.DCLK_DDLYd_CNTH = cnth
 
 
 # Simpler configuration where the input clock is passed unmodified to the four

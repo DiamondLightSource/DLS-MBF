@@ -129,7 +129,7 @@ error__t initialise_dac(void)
         PUBLISH_C_P(ulongout, "FILTER:DELAY", write_filter_delay, dac);
 
         PUBLISH_C_P(ulongout, "DELAY", write_dac_delay, dac);
-        PUBLISH_C(bo, "ENABLE",      write_dac_output_enable, dac);
+        PUBLISH_C_P(bo, "ENABLE",      write_dac_output_enable, dac);
         PUBLISH_C_P(bo, "MMS_SOURCE",  write_dac_mms_source, dac);
         PUBLISH_C_P(bo, "DRAM_SOURCE", write_dac_dram_source, dac);
 

@@ -260,8 +260,8 @@ static error__t initialise_signals(void)
 static error__t initialise_subsystems(void)
 {
     return
-        initialise_system()  ?:
         initialise_delay()  ?:
+        initialise_system()  ?:
         initialise_adc()  ?:
         initialise_dac()  ?:
         initialise_bunch_fir()  ?:

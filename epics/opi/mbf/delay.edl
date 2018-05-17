@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2884
-y 535
+x 810
+y 212
 w 352
-h 169
+h 241
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -19,12 +19,27 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(axis) DAC Setup"
+title "$(device) Delays"
 showGrid
 snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 48
+w 336
+h 152
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
 
 # (Static Text)
 object activeXTextClass
@@ -52,7 +67,7 @@ major 4
 minor 1
 release 0
 x 280
-y 136
+y 208
 w 64
 h 24
 fgColor index 46
@@ -93,8 +108,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 200
-y 40
+x 72
+y 64
 w 32
 h 20
 controlPv "$(device):DLY:DAC:FINE_DELAY_S"
@@ -121,8 +136,8 @@ beginObjectProperties
 major 4
 minor 2
 release 0
-x 64
-y 40
+x 112
+y 64
 w 128
 h 24
 fgColor index 6
@@ -143,47 +158,18 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 8
-y 40
-w 51
-h 28
+x 16
+y 64
+w 28
+h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "DAC fine"
-  "delay:"
+  "Fine:"
 }
 autoSize
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 232
-y 48
-w 48
-h 14
-controlPv "$(device):DLY:DAC:FINE_DELAY_PS"
-font "helvetica-medium-r-12.0"
-fontAlign "right"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-showUnits
-newPos
-objType "monitors"
 endObjectProperties
 
 # (Text Control)
@@ -192,11 +178,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 200
-y 80
+x 72
+y 96
 w 32
 h 20
-controlPv "$(device):DLY:ADC:FINE_DELAY_S"
+controlPv "$(device):DLY:DAC:COARSE_DELAY_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -214,45 +200,22 @@ objType "controls"
 noExecuteClipMask
 endObjectProperties
 
-# (Motif Slider)
-object activeMotifSliderClass
-beginObjectProperties
-major 4
-minor 2
-release 0
-x 64
-y 80
-w 128
-h 24
-fgColor index 6
-bgColor index 4
-2ndBgColor index 3
-topShadowColor index 0
-botShadowColor index 14
-increment 1
-controlPv "$(device):DLY:ADC:FINE_DELAY_S"
-controlLabelType "pvName"
-font "helvetica-medium-r-18.0"
-limitsFromDb
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
 major 4
 minor 1
 release 1
-x 8
-y 80
-w 51
-h 28
+x 16
+y 96
+w 45
+h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "ADC fine"
-  "delay:"
+  "Coarse:"
 }
 autoSize
 endObjectProperties
@@ -263,13 +226,12 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 232
-y 88
-w 48
-h 14
-controlPv "$(device):DLY:ADC:FINE_DELAY_PS"
+x 72
+y 152
+w 64
+h 16
+controlPv "$(device):DLY:DAC:DELAY_PS"
 font "helvetica-medium-r-12.0"
-fontAlign "right"
 fgColor index 14
 fgAlarm
 bgColor index 0
@@ -283,5 +245,182 @@ useHexPrefix
 showUnits
 newPos
 objType "monitors"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 112
+y 96
+w 62
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):DLY:DAC:STEP_S"
+pressValue "0"
+onLabel "Step"
+offLabel "Step"
+3d
+useEnumNumeric
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 112
+y 120
+w 96
+h 22
+fgColor index 14
+bgColor index 4
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):DLY:DAC:HALF_STEP_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 176
+y 96
+w 64
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):DLY:DAC:RESET_S"
+pressValue "0"
+onLabel "Reset"
+offLabel "Reset"
+3d
+useEnumNumeric
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Byte)
+object ByteClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 112
+y 176
+w 128
+h 16
+controlPv "$(device):DLY:DAC:FIFO"
+lineColor index 14
+onColor index 15
+offColor index 19
+numBits 8
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 176
+w 32
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "FIFO:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 152
+w 34
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Total:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 128
+w 60
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Half Step:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 40
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "DAC Delay"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 40
+w 120
+h 16
+lineColor index 14
+fillColor index 0
 endObjectProperties
 
