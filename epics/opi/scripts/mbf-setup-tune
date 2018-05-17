@@ -249,10 +249,7 @@ put('TRG:SEQ:DELAY_S', 0)
 put('DET:0:ENABLE_S', 'Enabled')
 put('DET:0:SCALING_S', setup.det_gain)
 put('DET:SELECT_S', setup.detector_input)
-# The correct default FIR delay is actually not very clear, as our filters are
-# not very flat.  Putting an integer delay ensures that all modes see the same
-# delay.
-put('DET:FIR_DELAY_S', int(0.5 * (setup.length + 1)))
+put('DET:FIR_DELAY_S', 0)       # Safer than any other setting!
 put('DET:0:BUNCHES_S', BUNCH_ENABLES)
 
 # Configure sequencer for tune measurement
