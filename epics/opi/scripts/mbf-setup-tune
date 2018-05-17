@@ -21,16 +21,16 @@ import argparse
 from cothread import catools
 
 
-DEFAULT_CONFIG = '/home/ops/diagnostics/config/MBF_tune.config'
+DEFAULT_CONFIG = '/segfs/tango/cppserver/machine/diagnostic/MBF/epics/opi/scripts/MBF_tune.config'
 
 
 DEVICE_TO_CONFIG_AXIS = {
-    'SR23C-DI-TMBF-04:X': 'X',      # Temporary -04 until full commissioned
-    'SR23C-DI-TMBF-04:Y': 'Y',
-    'SR23C-DI-LMBF-01:IQ': 'L',
-    'TS-DI-TMBF-02:X': 'TX',
-    'TS-DI-TMBF-02:Y': 'TY',
-    'TS-DI-LMBF-01:IQ': 'TL',
+    'SR-TMBF:X': 'X',
+    'SR-TMBF:Y': 'Y',
+    'SR-LMBF:IQ': 'L',     # not installed
+    'LAB-TMBF:X': 'TX',    # not installed
+    'LAB-TMBF:Y': 'TY',    # not installed
+    'LAB-LMBF:IQ': 'TL',   # not installed
 }
 
 VALID_MODES = ['TUNE', 'AP', 'FB']
@@ -138,10 +138,13 @@ except:
 if MODE not in VALID_MODES:
     parser.error('Setup mode \'%s\' is invalid' % MODE)
 
+"""
 if args.ring_mode is None:
     RING_MODE = catools.caget('SR-CS-RING-01:MODE', datatype = str)
 else:
     RING_MODE = args.ring_mode
+"""
+RING_MODE = 'ESRF'
 
 # Read fundamental parameters from device
 LMBF_MODE = get('MODE')
@@ -235,6 +238,12 @@ put('BUN:1:FIRWF_S', BUNCH_ZEROS)
 put('BUN:1:OUTWF_S', SWEEP_OUT)
 put('BUN:1:GAINWF_S', BUNCH_ONES)
 
+# Configure bank #2 for bunch cleaning (NCO)
+# gain is set by an external program depending on the filling pattern
+SWEEP_OUT = BUNCH_ONES * DAC_OUT_NCO
+put('BUN:2:FIRWF_S', BUNCH_ZEROS)
+put('BUN:2:OUTWF_S', SWEEP_OUT)
+put('BUN:2:GAINWF_S', BUNCH_ZEROS)
 
 # Disable all sequencer triggers and configure triggering on external trigger
 TRIGGER_SOURCES = ['SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1']
