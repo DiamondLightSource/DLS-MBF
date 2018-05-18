@@ -19,6 +19,50 @@
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Turn clock control. */
+
+static pthread_mutex_t turn_clock_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+enum turn_clock_status {
+    TURN_CLOCK_UNSYNC,
+    TURN_CLOCK_ARMED,
+    TURN_CLOCK_SYNCED
+};
+static unsigned int turn_clock_status = TURN_CLOCK_UNSYNC;
+static unsigned int turn_clock_turns;
+static unsigned int turn_clock_errors;
+
+static void start_turn_sync(void)
+{
+    hw_write_turn_clock_sync();
+    turn_clock_status = TURN_CLOCK_ARMED;
+}
+
+static void poll_turn_state(void)
+{
+    hw_read_turn_clock_counts(&turn_clock_turns, &turn_clock_errors);
+    struct trigger_status status;
+    hw_read_trigger_status(&status);
+    if (turn_clock_status == TURN_CLOCK_ARMED  &&  !status.sync_busy)
+        turn_clock_status = TURN_CLOCK_SYNCED;
+}
+
+
+static bool write_turn_offset(void *context, unsigned int *offset)
+{
+    if (*offset < system_config.bunches_per_turn)
+    {
+        hw_write_turn_clock_offset(*offset);
+        return true;
+    }
+    else
+        /* Can't do this.  Actually, *really* can't do this, we'll freeze the
+         * system if we try! */
+        return false;
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* PLL interface. */
 
 /* When the LMK04828 PLL is operating in phase locked mode (rather than in
@@ -162,7 +206,7 @@ static void pll_sync(void)
     struct pll_0x143 value = READ_PLL(0x143, struct pll_0x143);
     value.SYNC_POL = 1;
     WRITE_PLL(0x143, value);
-    usleep(50000);              // Allow enough time
+    usleep(10000);              // Allow enough time
     value.SYNC_POL = 0;
     WRITE_PLL(0x143, value);
 }
@@ -305,11 +349,16 @@ static void step_coarse_delay(void)
 
 static void reset_coarse_delay(void)
 {
-    printf("reset required\n");
     pll_sync();
     reset_dac_pll();
     WRITE_OUT_RECORD(ulongout, coarse_delay_pv, 0, false);
     dac_coarse_delay = 0;
+
+    /* After this reset trigger a turn resync.  Need to wait a little for the
+     * dust to settle first! */
+    usleep(10000);
+    WITH_MUTEX(turn_clock_mutex)
+        start_turn_sync();
 }
 
 
@@ -346,6 +395,17 @@ error__t initialise_delay(void)
             PUBLISH_ACTION("RESET", reset_coarse_delay, .mutex = &delay_lock);
 
             PUBLISH_READER(longin, "FIFO", read_dac_fifo);
+        }
+
+        WITH_NAME_PREFIX("TURN")
+        {
+            PUBLISH_ACTION("SYNC", start_turn_sync, .mutex = &turn_clock_mutex);
+            PUBLISH_ACTION("POLL", poll_turn_state, .mutex = &turn_clock_mutex);
+            PUBLISH_WRITER_P(ulongout, "DELAY", hw_write_turn_clock_idelay);
+            PUBLISH_READ_VAR(mbbi, "STATUS", turn_clock_status);
+            PUBLISH_READ_VAR(ulongin, "TURNS", turn_clock_turns);
+            PUBLISH_READ_VAR(ulongin, "ERRORS", turn_clock_errors);
+            PUBLISH_P(ulongout, "OFFSET", write_turn_offset);
         }
     }
     return ERROR_OK;
