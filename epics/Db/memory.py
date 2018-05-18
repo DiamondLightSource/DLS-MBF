@@ -74,5 +74,5 @@ with name_prefix('MEM'):
     Action('CAPTURE', DESC = 'Untriggered immediate capture')
     boolIn('BUSY', 'Ready', 'Busy',
         OSV = 'MINOR', SCAN = 'I/O Intr', DESC = 'Capture status')
-    mbbOut('RUNOUT', '12.5%', '25%', '50%', '75%', '100%',
+    mbbOut('RUNOUT', '12.5%', '25%', '50%', '75%', '99.5%',
         DESC = 'Post trigger capture count')

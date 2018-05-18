@@ -33,7 +33,7 @@ extern const struct system_config {
     unsigned int bunches_per_turn;      // Fundamental machine parameter
     bool lmbf_mode;                     // Set if running in longitudinal mode
     double lmbf_fir_offset;             // Phase offset between FIR filters
-    double revolution_frequency;        // Machine RF in MHz for time delays
+    double revolution_frequency;        // Revolution freq in Hz for time delays
     unsigned int mms_poll_interval;     // Frequency of MMS readouts
     const char *persistence_file;       // Where to save the persistent state
     int persistence_interval;           // How often to update state (in secs)

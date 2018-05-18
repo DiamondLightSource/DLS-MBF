@@ -6,7 +6,7 @@ import time
 
 import numpy
 
-from lmbf.driver import driver, setup_pll, setup_adc
+from lmbf.driver import driver, setup_pll, setup_adc, scan_idelay
 
 
 parser = argparse.ArgumentParser(description = 'Scan for best IDELAY setting')
@@ -27,69 +27,30 @@ parser.add_argument(
     help = 'Configure clock mode before running scan')
 args = parser.parse_args()
 
-# The IDELAY step size is 1/(32 * 2 * f_REF) with f_REF = 200 MHz, which comes
-# to 78.125 ps, so 25 steps covers the 2ns input clock
-idelay_step = 78.125
-N = int(math.ceil(1e6 / args.f_rf / idelay_step))
-if N > 32:
-    print 'Only scanning 32 of %d steps' % N
-    N = 32
+def show(a):
+    return '%04x %04x %04x %04x' % (a[0, 0], a[0, 1], a[1, 0], a[1, 1])
 
 
 regs = driver.Registers(args.addr)
 
-
-def set_idelay(delay):
-    regs.SYS.ADC_IDELAY._write_fields_wo(VALUE = delay, WRITE = 1)
-
-def capture(count):
-    # Each counted capture corresponds to 8 captured bytes
-    bytes = 8 * count
-    regs.CTRL.MEM.COUNT = count + 32
-    regs.CTRL.MEM.COMMAND._write_fields_wo(START = 1, STOP = 1)
-    while regs.CTRL.MEM.STATUS.ENABLE:
-        pass
-    with open(regs.DDR0_NAME) as ddr0:
-        buf = numpy.frombuffer(ddr0.read(bytes), dtype = numpy.uint16)
-    return buf.reshape((-1, 2, 2))
-
-def show(a):
-    return '%04x %04x %04x %04x' % (a[0, 0], a[0, 1], a[1, 0], a[1, 1])
-
-def assess(c):
-    v = c.std(0).mean()
-    return v == 0 and (numpy.diff(c.mean(0)) == 0).all()
-
-
-if args.idelay is None:
-    idelay = regs.SYS.ADC_IDELAY.VALUE
-else:
-    idelay = args.idelay
+old_idelay = scan_idelay.setup_scan(regs)
+if args.idelay is not None:
+    old_idelay = args.idelay
 
 # Configure clock mode if requested, and set up the ADC
 if args.clock_mode:
     setup_pll.setup_pll(regs, mode = args.clock_mode)
     time.sleep(0.1)         # Give the PLL time to lock
-    setup_adc.setup_adc(regs, idelay)
+    setup_adc.setup_adc(regs)
 
-
-# Configure checkerboard ADC capture
-regs.ADC_SPI[0x550] = 4
-
-# Configure DRAM capture using unprocessed ADC channels
-regs.DSP0.ADC.CONFIG.DRAM_SOURCE = 0
-regs.DSP1.ADC.CONFIG.DRAM_SOURCE = 0
-regs.CTRL.MEM.CONFIG.MUX_SELECT = 0
-
-
-good = numpy.zeros(N, dtype = bool)
+# Performs scan and report
+N = scan_idelay.scan_length(args.f_rf)
 for delay in range(N):
-    set_idelay(delay)
-    c = capture(args.capture_count)
+    scan_idelay.set_idelay(regs, delay)
+    c = scan_idelay.capture(regs, args.capture_count)
     m = c.std(0).mean()
-    good[delay] = assess(c)
-    print '%02x' % delay, show(c.mean(0)), m == 0.0, good[delay]
+    print '%02x' % delay, show(c.mean(0)), m == 0.0, scan_idelay.assess(c)
 
 # Restore previous state
-regs.ADC_SPI[0x550] = 0
-set_idelay(idelay)
+scan_idelay.complete_scan(regs)
+scan_idelay.set_idelay(regs, old_idelay)

@@ -3,8 +3,7 @@
  *
  * The function defined here must be called thus:
  *
- *      [d,s,g,t] = mex_mbf_detector_( ...
- *          hostname, port, bunches, axis, locking);
+ *      [d,s,g,t] = mex_mbf_detector_(hostname, port, axis, locking);
  *
  * Data is captured from hostname:port and returned in an array of size
  *
@@ -47,6 +46,7 @@ struct detector_frame {
     uint8_t detector_mask;
     uint16_t delay;
     uint32_t samples;
+    uint32_t bunches;
 };
 
 /* Single detector sample: (I,Q). */
@@ -61,12 +61,12 @@ struct detector_result {
  * appropriate for matlab. */
 static void convert_samples(
     struct detector_result buffer[],
-    unsigned int samples, unsigned int channels,
+    size_t samples, unsigned int channels,
     double *reals[], double *imags[])
 {
     /* There's no need to optimise this loop beyond the default: it works very
      * nicely. */
-    for (unsigned int i = 0; i < samples; i ++)
+    for (size_t i = 0; i < samples; i ++)
     {
         for (unsigned int j = 0; j < channels; j ++)
         {
@@ -79,11 +79,11 @@ static void convert_samples(
 
 
 static void read_and_convert_samples(
-    mxArray **lhs, int sock, int samples, int channels)
+    mxArray **lhs, int sock, size_t samples, unsigned int channels)
 {
     double *reals[4], *imags[4];
-    *lhs = create_array(samples, channels, &reals[0], &imags[0]);
-    for (int i = 1; i < channels; i ++)
+    *lhs = create_double_array(samples, channels, &reals[0], &imags[0]);
+    for (unsigned int i = 1; i < channels; i ++)
     {
         reals[i] = reals[0] + i * samples;
         imags[i] = imags[0] + i * samples;
@@ -92,9 +92,9 @@ static void read_and_convert_samples(
     /* Process data in reasonably sized chunks. */
     while (samples > 0)
     {
-        int sample_size = sizeof(struct detector_result) * channels;
+        size_t sample_size = sizeof(struct detector_result) * channels;
         struct detector_result buffer[BUFFER_SIZE * channels];
-        int samples_read = fill_buffer(
+        size_t samples_read = fill_buffer(
             sock, buffer, sample_size, BUFFER_SIZE, samples);
         convert_samples(buffer, samples_read, channels, reals, imags);
         samples -= samples_read;
@@ -103,59 +103,61 @@ static void read_and_convert_samples(
 
 
 static void read_and_convert_frequency(
-    mxArray **lhs, int sock, int samples, int bunches)
+    mxArray **lhs, int sock, size_t samples, unsigned int bunches)
 {
     double *frequency;
-    *lhs = create_array(samples, 1, &frequency, NULL);
+    *lhs = create_double_array(samples, 1, &frequency, NULL);
     while (samples > 0)
     {
         uint32_t buffer[BUFFER_SIZE];
-        int samples_read = fill_buffer(
+        size_t samples_read = fill_buffer(
             sock, buffer, sizeof(uint32_t), BUFFER_SIZE, samples);
-        for (int i = 0; i < samples_read; i ++)
+        for (size_t i = 0; i < samples_read; i ++)
             *frequency++ = ldexp(buffer[i], -32) * bunches;
         samples -= samples_read;
     }
 }
 
 
-static void read_and_convert_timebase(mxArray **lhs, int sock, int samples)
+static void read_and_convert_timebase(mxArray **lhs, int sock, size_t samples)
 {
     double *timebase;
-    *lhs = create_array(samples, 1, &timebase, NULL);
+    *lhs = create_double_array(samples, 1, &timebase, NULL);
     while (samples > 0)
     {
         uint32_t buffer[BUFFER_SIZE];
-        int samples_read = fill_buffer(
+        size_t samples_read = fill_buffer(
             sock, buffer, sizeof(uint32_t), BUFFER_SIZE, samples);
-        for (int i = 0; i < samples_read; i ++)
+        for (size_t i = 0; i < samples_read; i ++)
             *timebase++ = buffer[i];
         samples -= samples_read;
     }
 }
 
 
-static void send_group_delay(mxArray **lhs, int sock, int bunches, int delay)
+static void send_group_delay(
+    mxArray **lhs, int sock, unsigned int bunches, unsigned int delay)
 {
     double *group_delay;
-    *lhs = create_array(1, 1, &group_delay, NULL);
+    *lhs = create_double_array(1, 1, &group_delay, NULL);
     *group_delay = 2.0 * M_PI * delay / bunches;
 }
 
 
 static void do_send_command(
-    int sock, int axis, bool timebase, int locking)
+    int sock, unsigned int axis, bool timebase, double locking)
 {
     char command[64];
     char *command_in = command;
-    command_in += sprintf(command_in, "D%dFS", axis);
+    command_in += sprintf(command_in, "D%uFS", axis);
     if (timebase)
         command_in += sprintf(command_in, "T");
 
     if (locking >= 0)
         command_in += sprintf(command_in, "L");
     if (locking > 0)
-        command_in += sprintf(command_in, "W%d", locking);
+        command_in += sprintf(command_in, "W%d",
+            (unsigned int) (locking * 1e3));
 
     send_command(sock, "%s\n", command);
     check_result(sock);
@@ -164,19 +166,19 @@ static void do_send_command(
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    /* We expect four arguments: hostname, port, bunches, axis. */
-    TEST_OK_(nrhs == 5, "args", "Wrong number of arguments");
+    /* We expect a fixed number of arguments. */
+    TEST_OK_(nrhs == 4, "args", "Wrong number of arguments");
     /* Can assign up to four results, expect three. */
     TEST_OK_(nlhs >= 3, "result", "Too few results requested");
     TEST_OK_(nlhs <= 4, "result", "Too many results requested");
 
+    /* Read out arguments in precise order. */
     char hostname[256];
-    TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
+    TEST_OK_(mxGetString(*prhs++, hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
-    int port    = (int) mxGetScalar(prhs[1]);
-    int bunches = (int) mxGetScalar(prhs[2]);
-    int axis    = (int) mxGetScalar(prhs[3]);
-    int locking = (int) (mxGetScalar(prhs[4]) * 1e3);
+    int port = (int) mxGetScalar(*prhs++);
+    unsigned int axis = (unsigned int) mxGetScalar(*prhs++);
+    double locking = mxGetScalar(*prhs++);
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions! */
@@ -190,9 +192,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     read_and_convert_samples(
         &plhs[0], sock, frame.samples, frame.detector_count);
     if (nlhs >= 2)
-        read_and_convert_frequency(&plhs[1], sock, frame.samples, bunches);
+        read_and_convert_frequency(
+            &plhs[1], sock, frame.samples, frame.bunches);
     if (nlhs >= 3)
-        send_group_delay(&plhs[2], sock, bunches, frame.delay);
+        send_group_delay(&plhs[2], sock, frame.bunches, frame.delay);
     if (nlhs >= 4)
         read_and_convert_timebase(&plhs[3], sock, frame.samples);
 

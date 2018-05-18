@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 3128
-y 422
+x 2387
+y 22
 w 600
 h 369
 font "helvetica-medium-r-18.0"
@@ -282,240 +282,6 @@ lineColor index 14
 fillColor index 0
 endObjectProperties
 
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 192
-y 248
-w 400
-h 80
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 192
-y 240
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Turn Clock"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 192
-y 240
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 328
-y 264
-w 88
-h 16
-controlPv "$(device):TRG:TURN:STATUS"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 488
-y 296
-w 40
-h 24
-controlPv "$(device):TRG:TURN:DELAY_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 200
-y 300
-w 38
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Delay:"
-}
-autoSize
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 200
-y 264
-w 72
-h 22
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):TRG:TURN:SYNC_S.PROC"
-pressValue "0"
-onLabel "Sync"
-offLabel "Sync"
-3d
-font "helvetica-bold-r-12.0"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 504
-y 264
-w 64
-h 16
-controlPv "$(device):TRG:TURN:RATE"
-font "helvetica-medium-r-12.0"
-fontAlign "right"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-showUnits
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 424
-y 264
-w 76
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Clock errors:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 280
-y 264
-w 44
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Status:"
-}
-autoSize
-endObjectProperties
-
-# (Motif Slider)
-object activeMotifSliderClass
-beginObjectProperties
-major 4
-minor 2
-release 0
-x 344
-y 296
-w 136
-h 24
-fgColor index 6
-bgColor index 4
-2ndBgColor index 3
-topShadowColor index 0
-botShadowColor index 14
-increment 1
-controlPv "$(device):TRG:TURN:DELAY_S"
-controlLabelType "pvName"
-font "helvetica-medium-r-18.0"
-limitsFromDb
-endObjectProperties
-
 # (Embedded Window)
 object activePipClass
 beginObjectProperties
@@ -525,7 +291,7 @@ release 0
 x 192
 y 128
 w 408
-h 112
+h 200
 fgColor index 14
 bgColor index 3
 topShadowColor index 0
@@ -1294,54 +1060,6 @@ visMin "0"
 visMax "1"
 endObjectProperties
 
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 240
-y 296
-w 48
-h 24
-controlPv "$(device):TRG:TURN:OFFSET_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 304
-y 300
-w 38
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Skew:"
-}
-autoSize
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -1409,33 +1127,5 @@ value {
   "turns"
 }
 autoSize
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 528
-y 300
-w 56
-h 14
-controlPv "$(device):TRG:TURN:DELAY_PS"
-font "helvetica-medium-r-12.0"
-fontAlign "right"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-smartRefresh
-fastUpdate
-useHexPrefix
-showUnits
-newPos
-objType "monitors"
 endObjectProperties
 

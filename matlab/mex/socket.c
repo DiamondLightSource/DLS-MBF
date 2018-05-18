@@ -14,11 +14,34 @@
 
 #include "socket.h"
 
+/* This function is an undocumented Matlab API: calling this returns true if a
+ * Ctrl-C interrupt has been signalled.  As well as this declaration, it is also
+ * necessary to add -lut to the link step.
+ *    Documentation of this can be found at the following links:
+ *      http://www.caam.rice.edu/~wy1/links/mex_ctrl_c_trick/
+ *      http://undocumentedmatlab.com/blog/mex-ctrl-c-interrupt
+ */
+extern bool utIsInterruptPending(void);
 
-mxArray *create_array(int rows, int cols, double **reals, double **imags)
+
+mxArray *create_double_array(
+    size_t rows, size_t cols, double **reals, double **imags)
 {
     mxComplexity type = imags ? mxCOMPLEX : mxREAL;
-    mxArray *array = mxCreateDoubleMatrix(rows, cols, type);
+    mwSize dims[2] = { rows, cols };
+    mxArray *array = mxCreateNumericArray(2, dims, mxDOUBLE_CLASS, type);
+    *reals = mxGetData(array);
+    if (imags)
+        *imags = mxGetImagData(array);
+    return array;
+}
+
+mxArray *create_single_array(
+    size_t rows, size_t cols, float **reals, float **imags)
+{
+    mxComplexity type = imags ? mxCOMPLEX : mxREAL;
+    mwSize dims[2] = { rows, cols };
+    mxArray *array = mxCreateNumericArray(2, dims, mxSINGLE_CLASS, type);
     *reals = mxGetData(array);
     if (imags)
         *imags = mxGetImagData(array);
@@ -40,7 +63,7 @@ int connect_server(const char *hostname, int port)
         .sin_family = AF_INET,
         .sin_port = htons(port),
     };
-    memcpy(&s_in.sin_addr.s_addr, hostent->h_addr, hostent->h_length);
+    memcpy(&s_in.sin_addr.s_addr, hostent->h_addr, (size_t) hostent->h_length);
 
     TEST_SOCK_(sock,
         connect(sock, (struct sockaddr *) &s_in, sizeof(s_in)) == 0,
@@ -63,18 +86,19 @@ void send_command(int sock, const char *format, ...)
 
 
 /* Reads bytes until buffer is full or EOF, returns bytes read. */
-static int read_buffer(int sock, void *buffer, int length)
+static size_t read_buffer(int sock, void *buffer, size_t length)
 {
-    int total = 0;
+    size_t total = 0;
     while (length > 0)
     {
         ssize_t bytes_read = read(sock, buffer, length);
         TEST_SOCK(sock, bytes_read >= 0);
         if (bytes_read == 0)
             break;
-        total += bytes_read;
-        buffer += bytes_read;
-        length -= bytes_read;
+        TEST_SOCK_(sock, !utIsInterruptPending(), "interrupt", "Interrupted");
+        total  += (size_t) bytes_read;
+        buffer += (size_t) bytes_read;
+        length -= (size_t) bytes_read;
     }
     return total;
 }
@@ -87,7 +111,7 @@ void check_result(int sock)
     if (message[0] != '\0')
     {
         /* Whoops, we have an error message to read. */
-        int bytes_read = read_buffer(sock, message + 1, sizeof(message) - 1);
+        size_t bytes_read = read_buffer(sock, message + 1, sizeof(message) - 1);
         close(sock);
 
         TEST_OK(message[bytes_read] == '\n');
@@ -97,11 +121,13 @@ void check_result(int sock)
 }
 
 
-int fill_buffer(
-    int sock, void *buffer, int sample_size, int buffer_samples, int samples)
+size_t fill_buffer(
+    int sock, void *buffer, size_t sample_size,
+    size_t buffer_samples, size_t samples)
 {
-    int samples_to_read = samples > buffer_samples ? buffer_samples : samples;
-    int bytes_to_read = sample_size * samples_to_read;
+    size_t samples_to_read =
+        samples > buffer_samples ? buffer_samples : samples;
+    size_t bytes_to_read = sample_size * samples_to_read;
     TEST_SOCK_(sock, read_buffer(sock, buffer, bytes_to_read) == bytes_to_read,
         "read", "Unexpected end of input");
     return samples_to_read;
