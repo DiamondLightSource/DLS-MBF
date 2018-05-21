@@ -81,7 +81,7 @@ void terminate_events(void)
 {
     if (events_thread_id)
     {
-        printf("Waiting for events thread\n");
+        log_message("Waiting for events thread");
         pthread_cancel(events_thread_id);
         pthread_join(events_thread_id, NULL);
     }

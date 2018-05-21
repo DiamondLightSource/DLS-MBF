@@ -181,7 +181,7 @@ static error__t register_iocsh_commands(void)
 
 error__t initialise_system(void)
 {
-    printf("%u bunches, %u ADC taps, %u bunch taps, %u DAC taps\n",
+    log_message("%u bunches, %u ADC taps, %u bunch taps, %u DAC taps",
         hardware_config.bunches,
         hardware_config.adc_taps,
         hardware_config.bunch_taps,

@@ -982,9 +982,9 @@ error__t initialise_hardware(
     bool lock_registers, bool lmbf_mode, bool no_hardware)
 {
     if (no_hardware)
-        printf("running with hardware disabled\n");
+        log_message("running with hardware disabled");
     else
-        printf("initialise_hardware @%s %s\n",
+        log_message("initialise_hardware @%s %s",
             *device_address ? device_address : "/dev/amc525_lmbf.0.*",
             lock_registers ? "" : "unlocked");
 

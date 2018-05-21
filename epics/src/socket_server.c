@@ -195,7 +195,7 @@ void terminate_socket_server(void)
          * and wait for termination before closing everything. */
         server_shutdown = true;
         shutdown(listen_socket, SHUT_RDWR);
-        printf("Waiting for socket server\n");
+        log_message("Waiting for socket server");
         pthread_join(server_thread_id, NULL);
         close(listen_socket);
     }

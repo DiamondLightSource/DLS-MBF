@@ -307,7 +307,7 @@ void stop_mms_handlers(void)
 {
     if (mms_thread_id)
     {
-        printf("Waiting for MMS thread\n");
+        log_message("Waiting for MMS thread");
         running = false;
         pthread_join(mms_thread_id, NULL);
     }

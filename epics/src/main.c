@@ -302,9 +302,9 @@ int main(int argc, char *const argv[])
 
     if (!error)
     {
-        printf("EPICS MBF Driver, Version %s.  Built: %s.\n",
+        log_message("EPICS MBF Driver, Version %s.  Built: %s.",
             MBF_VERSION, BUILD_DATE_TIME);
-        printf("Running in %s mode\n",
+        log_message("Running in %s mode",
             system_config.lmbf_mode ? "LMBF" : "TMBF");
 
         error = TEST_OK(iocsh(NULL) == 0);

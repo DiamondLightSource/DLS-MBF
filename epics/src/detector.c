@@ -250,7 +250,7 @@ static void detector_readout_event(struct detector_context *det)
 
     /* The underrun flag gets set and stays set. */
     if (underrun)
-        printf("Unexpected detector readout underrun\n");
+        log_message("Unexpected detector readout underrun");
     det->underrun |= underrun;
 
     read_detector_scale_info(
