@@ -13,8 +13,8 @@ else
         exit 1
 
     case "$MODE" in
-        TMBF)   START=mbf/tmbf.edl ;;
-        LMBF)   START=mbf/lmbf.edl ;;
+        TMBF)   START=mbf/TMBF.edl ;;
+        LMBF)   START=mbf/LMBF.edl ;;
         *)      echo >&2 "Unknown MODE: $MODE"
                 exit 2 ;;
     esac
