@@ -627,7 +627,7 @@ displayFileName {
   0 "mbf/overview.edl"
 }
 symbols {
-  0 "axis=$(axis0),adc_axis=$(axis0),tune_prefix=$(tune_fit):$(axis0)"
+  0 "axis=$(axis0),adc_axis=$(axis0)"
 }
 endObjectProperties
 
@@ -653,7 +653,7 @@ displayFileName {
   0 "mbf/overview.edl"
 }
 symbols {
-  0 "axis=$(axis1),adc_axis=$(axis1),tune_prefix=$(tune_fit):$(axis1)"
+  0 "axis=$(axis1),adc_axis=$(axis1)"
 }
 endObjectProperties
 
