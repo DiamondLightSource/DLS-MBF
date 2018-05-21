@@ -143,5 +143,5 @@ error__t load_configs(
                 ARRAY_SIZE(hardware_delays_entries), false)  ?:
             DO(convert_hardware_config()),
         // else
-            DO(printf("Disabling delay compensation\n")));
+            DO(log_message("Disabling delay compensation")));
 }
