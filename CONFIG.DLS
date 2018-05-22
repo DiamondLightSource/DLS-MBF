@@ -20,4 +20,7 @@ EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 # Location of Matlab compiler
 MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
 
+# Path to Python Soft IOC
+PYTHON_IOC = /dls_sw/prod/R3.14.12.3/support/pythonSoftIoc/2-11/pythonIoc
+
 # vim: set filetype=make:

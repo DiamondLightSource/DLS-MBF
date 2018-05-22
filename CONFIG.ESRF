@@ -8,4 +8,7 @@ EPICS_BASE = /segfs/tango/contrib/debian9/epics/base-3.14.12.7
 # Location of Matlab compiler
 MEX = /sware/com/matlab_2017a/bin/mex
 
+# Path to Python Soft IOC
+PYTHON_IOC = /segfs/tango/contrib/debian9/epics/pythonIoc/pythonIoc
+
 # vim: set filetype=make:
