@@ -1,7 +1,7 @@
 # This is the configuration part of the makefile designed to be shared among
 # other makefiles as required.
 
-BUILD_DIR = $(TOP)/build
+BUILD_DIR = $(MBF_TOP)/build
 VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.4/settings64.sh
 VSIM = /dls_sw/FPGA/Questa/10.6/questasim/bin/vsim
 
@@ -20,10 +20,10 @@ PYTHON = python
 MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
 
 
--include $(TOP)/CONFIG
+include $(MBF_TOP)/CONFIG
 
 
-PYTHONDIR = $(TOP)/AMC525/python
+PYTHONDIR = $(MBF_TOP)/AMC525/python
 
 
 # Convert license file from space separate to : separated list

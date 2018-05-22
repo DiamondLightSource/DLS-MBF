@@ -1,5 +1,5 @@
-TOP = ..
-include $(TOP)/Makefile.common
+MBF_TOP = ..
+include $(MBF_TOP)/Makefile.common
 
 MEX_FILES = mex_mbf_detector_ mex_mbf_memory_
 

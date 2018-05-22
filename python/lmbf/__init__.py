@@ -1,4 +1,4 @@
-from defs_path import TOP, DEFS
+from defs_path import MBF_TOP, DEFS
 
 import parse
 

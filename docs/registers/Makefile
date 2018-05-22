@@ -1,6 +1,6 @@
-TOP = ../..
+MBF_TOP = ../..
 
-DEPENDS += $(TOP)/AMC525/vhd/register_defs.in
+DEPENDS += $(MBF_TOP)/AMC525/vhd/register_defs.in
 DEPENDS += register_docs.py
 
 default: registers.pdf

@@ -1,6 +1,6 @@
 # Top level makefile for building VHDL project
 
-TOP := $(CURDIR)
+MBF_TOP := $(CURDIR)
 
 include Makefile.common
 
@@ -12,8 +12,8 @@ include VERSION
 GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)
 
 MAKE_LOCAL = \
-    $(MAKE) -C $< -f $(TOP)/$1/Makefile.local \
-        TOP=$(TOP) GIT_VERSION=$(GIT_VERSION) $(MAKECMDGOALS)
+    $(MAKE) -C $< -f $(MBF_TOP)/$1/Makefile.local \
+        MBF_TOP=$(MBF_TOP) GIT_VERSION=$(GIT_VERSION) $(MAKECMDGOALS)
 
 
 default:
