@@ -10,7 +10,8 @@ def dac_delays():
         DESC = 'DAC clock fine delay')
 
     # Half step control
-    half_step = boolOut('HALF_STEP', '0', '-0.5')
+    half_step = boolOut('HALF_STEP', '0', '-0.5',
+        DESC = 'DAC clock half step control')
 
     # Simlarly coarse delay control with readback
     coarse_delay = longOut('COARSE_DELAY',
@@ -33,7 +34,7 @@ def dac_delays():
     fine_delay.FLNK = delay_ps
 
     # Monitor of DAC FIFO
-    longIn('FIFO', SCAN = '.2 second')
+    longIn('FIFO', SCAN = '.2 second', DESC = 'DAC output FIFO depth')
 
 
 def turn_sync():
@@ -63,7 +64,8 @@ def turn_sync():
 
 
 with name_prefix('DLY'):
-    step_size = aIn('STEP_SIZE', PINI = 'YES', EGU = 'ps')
+    step_size = aIn('STEP_SIZE', PINI = 'YES', EGU = 'ps',
+        DESC = 'Duration of coarse step')
 
     with name_prefix('DAC'):
         dac_delays()
