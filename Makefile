@@ -83,6 +83,11 @@ matlab:
 	make -C $@
 .PHONY: matlab
 
+tune_fit:
+	make -C $@
+.PHONY: tune_fit
+
+
 print_version:
 	@echo VERSION_EXTRA=$(VERSION_EXTRA)
 	@echo VERSION_MAJOR=$(VERSION_MAJOR)
@@ -91,12 +96,13 @@ print_version:
 .PHONY: print_version
 
 
-install: epics matlab
+install: epics matlab tune_fit
 	make driver-rpm
 
 clean:
 	rm -rf $(BUILD_DIR)
 	make -C matlab clean
+	make -C tune_fit clean
 	make -C epics clean uninstall
 	rm -f epics/configure/RELEASE
 
