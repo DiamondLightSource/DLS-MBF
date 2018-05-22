@@ -28,7 +28,7 @@ sweep_dwell_time = 100
 sweep_gain = '-48dB'
 
 blanking_interval = 10000
-keep_feedback = False           # Set to true to enable feedback during sweep
+keep_feedback = False           # Set to keep feedback ON during sweep
 
 detector_input = 'FIR'
 det_gain = '0dB'
