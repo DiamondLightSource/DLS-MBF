@@ -1,38 +1,56 @@
 # This is the configuration part of the makefile designed to be shared among
 # other makefiles as required.
 
-BUILD_DIR = $(TOP)/build
-VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.4/settings64.sh
-VSIM = /dls_sw/FPGA/Questa/10.6/questasim/bin/vsim
+# ------------------------------------------------------------------------------
+# List of symbols which can be defined in the CONFIG file
 
+# FPGA build and simulation tools
+MUST_DEFINE += VIVADO
+MUST_DEFINE += VSIM
+
+# Matlab C extension compiler
+MUST_DEFINE += MEX
+
+# EPICS support tools
+MUST_DEFINE += EPICS_BASE
+MUST_DEFINE += EPICS_DEVICE
+
+
+# The following defaults can be overridden in the CONFIG file
+
+# Identifies license server for FPGA tools
+LM_LICENSE_FILE =
+
+PYTHON = python2
+
+BUILD_DIR = $(MBF_TOP)/build
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
 SIM_BUILD_DIR = $(BUILD_DIR)/sim
 
 
-LM_LICENSE_FILE = \
-    2100@diamcslicserv01.dc.diamond.ac.uk \
-    1717@diamcslicserv01.dc.diamond.ac.uk
+# ------------------------------------------------------------------------------
 
-PYTHON = python
+# The following extremly tricksy makefile code converts the list of MUST_DEFINE
+# names into symbols which will generate a suitable error when an attempt is
+# made to expand them.  These will be defined in the CONFIG file.
+define _MUST_DEFINE
+    $1 = $$(error Must define symbol $1 in CONFIG file)
+endef
+_EVAL_MUST_DEFINE = $(eval $(_MUST_DEFINE))
+$(foreach var,$(MUST_DEFINE),$(call _EVAL_MUST_DEFINE,$(var)))
 
-# Tool for building matlab
-MEX = /sware/com/matlab_2017a/bin/mex
+include $(MBF_TOP)/CONFIG
 
 
--include $(TOP)/CONFIG
-
-
-PYTHONDIR = $(TOP)/AMC525/python
-
+PYTHONDIR = $(MBF_TOP)/AMC525/python
 
 # Convert license file from space separate to : separated list
 SPACE := $(subst ,, )
 export LM_LICENSE_FILE := $(subst $(SPACE),:,$(LM_LICENSE_FILE))
 
-
 # The default shell used by make is sh, but we may want to use the bash pipefail
 # option.  On most systems this still works because sh is now usually linked to
 # bash, but on Ubuntu sh is linked to dash which doesn't support pipefail.
-# Setting this option is always safe, just makes bash a dependency.
+# Setting this option is always safe, just makes bash an explicit dependency.
 SHELL = bash

@@ -1,6 +1,6 @@
 # Make file for running vsim
 
-ifndef TOP
+ifndef MBF_TOP
 include ../common/SET_TOP
 
 else

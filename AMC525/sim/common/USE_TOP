@@ -1,13 +1,13 @@
 # Common makefile definitions for simulation.
 
-include $(TOP)/Makefile.common
+include $(MBF_TOP)/Makefile.common
 
 # Command to run vivado
 RUN_VIVADO = source $(VIVADO) && vivado
 
 VPATH += $(PYTHONDIR)
 
-VHDDIR = $(TOP)/AMC525/vhd
+VHDDIR = $(MBF_TOP)/AMC525/vhd
 
 RUN_VSIM = VHD_DIR=$(VHDDIR) BENCH_DIR=$(SIMDIR)/bench MTI_VCO_MODE=64 $(VSIM)
 

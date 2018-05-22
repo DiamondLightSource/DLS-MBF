@@ -9,7 +9,7 @@ while getopts 'f:h' option; do
     case "$option" in
         f)  BIT_FILE="$OPTARG" ;;
         h)  cat <<'EOF'
-Usage: load_fpga [-f bit-file] [addresses]
+Usage: load_fpga [-f bit-file] addresses
     -f bit-file
         Optionally specify location of bit file, otherwise $BIT_FILE will
         be loaded from the current directory
@@ -21,14 +21,15 @@ EOF
 done
 shift $((OPTIND-1))
 
-if (($# > 0)); then
-    AMC525_IPS=("$@")
-else
-    AMC525_IPS=(199)
+if (($# == 0)); then
+    echo >&2 'Must specify addresses to load'
+    exit 1
 fi
+AMC525_IPS=("$@")
 
 
-# First of all ensure that nobody is trying to use the hardware
+# First of all ensure that nobody is trying to use the hardware before reloading
+# the FPGA.  This avoids trouble during reset, as hot-plug is a bit fragile...
 USERS="$(lsof -t /dev/amc525_lmbf.* 2>/dev/null)" || true
 [[ -n $USERS ]]  &&  kill -9 $USERS
 

@@ -1,18 +1,18 @@
 # Makefile for building kernel driver and associated RPM
 
-ifndef TOP
+ifndef MBF_TOP
 $(error Do not call this file directly)
 endif
 
-SRCDIR = $(TOP)/driver
+SRCDIR = $(MBF_TOP)/driver
 VPATH += $(SRCDIR)
 
 kernelver = $(shell uname -r)
 KERNEL_DIR = /lib/modules/$(kernelver)/build
 
-include $(TOP)/Makefile.common
+include $(MBF_TOP)/Makefile.common
 
-SRCDIR = $(TOP)/driver
+SRCDIR = $(MBF_TOP)/driver
 KBUILD_DIR = $(CURDIR)/kbuild-$(kernelver)
 
 DRIVER_NAME = amc525_lmbf

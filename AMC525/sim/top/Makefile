@@ -1,21 +1,21 @@
 # Make file for running vsim
 
-ifndef TOP
+ifndef MBF_TOP
 include ../common/SET_TOP
 
 else
 include $(COMMON_DIR)/USE_TOP
 
 VPATH += $(VHDDIR)
-VPATH += $(TOP)/AMC525/constr
+VPATH += $(MBF_TOP)/AMC525/constr
 
-TCLDIR = $(TOP)/AMC525/tcl
+TCLDIR = $(MBF_TOP)/AMC525/tcl
 
 
 top_entity.vhd: signals pins used
 	$(PYTHON) $(PYTHONDIR)/make_entity.py $^ top
 
-version.vhd: $(TOP)/VERSION
+version.vhd: $(MBF_TOP)/VERSION
 	$(TCLDIR)/make_version.sh $@
 
 vsim: register_defs.vhd top_entity.vhd version.vhd

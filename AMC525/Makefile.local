@@ -1,10 +1,10 @@
 # This makefile is designed to be called after setting the working directory to
 # the target build directory.
-ifndef TOP
+ifndef MBF_TOP
 $(error Do not call this file directly)
 endif
 
-include $(TOP)/Makefile.common
+include $(MBF_TOP)/Makefile.common
 
 # Command to run vivado
 RUN_VIVADO = source $(VIVADO) && vivado
@@ -15,7 +15,7 @@ IPS = 199
 AMC525_SERVER = ts-di-lmbf-01
 
 
-SRCDIR = $(TOP)/AMC525
+SRCDIR = $(MBF_TOP)/AMC525
 TCLDIR = $(SRCDIR)/tcl
 BDDIR = $(SRCDIR)/bd
 
@@ -58,7 +58,7 @@ built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
 	cd built  &&  $(PYTHON) $(PYTHONDIR)/make_entity.py $^ top
 
-built/version.vhd: $(TOP)/VERSION
+built/version.vhd: $(MBF_TOP)/VERSION
 	$(TCLDIR)/make_version.sh $@
 
 # Other generated vhd files
@@ -105,17 +105,8 @@ fpga_built: $(BUILT_FILES)
 # ------------------------------------------------------------------------------
 # Upload image to target
 
-define load_target
-ssh $(AMC525_SERVER) scp /tmp/amc525_lmbf.bit root@$1:/tmp
-ssh $(AMC525_SERVER) ssh root@$1 \
-    amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
-
-endef
-
-# Note that we make sure that nobody is using our device before reloading the
-# FPGA.  This avoids trouble during reset, as hot-plug is a bit fragile...
+# Let the load_fpga tool do the work on the target system
 load_fpga:
-	scp amc525_lmbf.bit $(AMC525_SERVER):/tmp
-	-ssh $(AMC525_SERVER) 'kill -9 $$(lsof -t /dev/amc525_lmbf.*)'
-	$(foreach IP,$(IPS),$(call load_target,192.168.40.$(IP)))
+	scp amc525_lmbf.bit $(MBF_TOP)/load_fpga $(AMC525_SERVER):/tmp
+	ssh $(AMC525_SERVER) /tmp/load_fpga -f /tmp/amc525_lmbf.bit $(IPS)
 .PHONY: load_fpga

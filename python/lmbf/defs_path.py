@@ -4,6 +4,6 @@ import os
 import sys
 
 HERE = os.path.realpath(os.path.dirname(__file__))
-TOP = os.path.abspath(os.path.join(HERE, '../..'))
+MBF_TOP = os.path.abspath(os.path.join(HERE, '../..'))
 
-DEFS = os.path.join(TOP, 'AMC525/vhd/register_defs.in')
+DEFS = os.path.join(MBF_TOP, 'AMC525/vhd/register_defs.in')

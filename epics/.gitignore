@@ -4,3 +4,6 @@
 /dbd
 /bin
 O.*
+
+# This file is specially built by the top Makefile
+/configure/RELEASE

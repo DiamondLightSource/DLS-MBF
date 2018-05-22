@@ -1,20 +1,20 @@
-# Makefile fragment for simulation to be included before TOP is defined
+# Makefile fragment for simulation to be included before MBF_TOP is defined
 
 # The following is concerned with setting up the build directory and moving the
 # rest of the make process over to the build directory.
 
-TOP := $(shell cd ../../..; pwd)
+MBF_TOP := $(shell cd ../../..; pwd)
 COMMON_DIR := $(shell cd ../common; pwd)
 SIMNAME := $(shell basename '$(CURDIR)')
 
-include $(TOP)/Makefile.common
+include $(MBF_TOP)/Makefile.common
 
 SIM_BUILD_DIR := $(SIM_BUILD_DIR)/$(SIMNAME)
 
 
 default $(filter-out clean,$(MAKECMDGOALS)): $(SIM_BUILD_DIR)
 	VPATH=$(CURDIR) $(MAKE) -f $(CURDIR)/Makefile -C $< \
-            SIMDIR=$(CURDIR) TOP=$(TOP) COMMON_DIR=$(COMMON_DIR) $@
+            SIMDIR=$(CURDIR) MBF_TOP=$(MBF_TOP) COMMON_DIR=$(COMMON_DIR) $@
 
 $(SIM_BUILD_DIR):
 	mkdir -p $@

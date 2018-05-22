@@ -179,7 +179,7 @@ class register_docs_file(rst.Directive):
         return result
 
     def load_groups(self, filename):
-        full_filename = os.path.join(lmbf.TOP, filename)
+        full_filename = os.path.join(lmbf.MBF_TOP, filename)
         defs = lmbf.parse.register_defs.parse(
             lmbf.parse.indent.parse_file(file(full_filename)))
         defs = lmbf.parse.register_defs.flatten(defs)
