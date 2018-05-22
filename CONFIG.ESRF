@@ -1,0 +1,11 @@
+# Config settings for building at ESRF
+
+# Definitions needed for EPICS driver build
+#
+EPICS_DEVICE = /segfs/tango/contrib/debian9/epics/epics_device
+EPICS_BASE = /segfs/tango/contrib/debian9/epics/base-3.14.12.7
+
+# Location of Matlab compiler
+MEX = /sware/com/matlab_2017a/bin/mex
+
+# vim: set filetype=make:
