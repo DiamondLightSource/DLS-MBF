@@ -4,7 +4,8 @@
  * The function defined here must be called thus:
  *
  *      d = mex_mbf_memory_( ...
- *          hostname, port, bunches, count, offset, channel, locking);
+ *          hostname, port, count, offset, channel, locking, ...
+ *          tune, decimate, bunch);
  *
  * Data is captured from hostname:port starting from offset from trigger, and
  * the returned data is in an array of size
@@ -22,6 +23,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <math.h>
+#include <complex.h>
 
 #include "mex.h"
 #include "matrix.h"
@@ -29,40 +33,180 @@
 #include "socket.h"
 
 
-/* Convert samples into doubles for matlab and transpose so that the layout is
- * appropriate for matlab. */
-static void convert_samples(
-    int16_t buffer[], int samples, double *data0, double *data1,
-    int channel_count)
+/* This is chosen to match the output buffer size in socket_command.c */
+#define BUFFER_SIZE     (1 << 14)
+
+
+/* These two definitions are copied from epics/src/socket_command.c */
+struct memory_frame {
+    uint32_t samples;       // Number of samples that will be sent
+    uint16_t channels;      // Number of channels per sample (1 or 2)
+    uint16_t format;        // 0 => int16, 1 => float32, 2 => complex
+};
+
+enum memory_data_format {
+    FORMAT_INT16,
+    FORMAT_FLOAT32,
+    FORMAT_COMPLEX64,
+};
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Read and convert. */
+
+/* Convert samples into floats for matlab and transpose so that the layout is
+ * appropriate for Matlab.  Note that the time taken to do the transpose here,
+ * rather than afterwards in Matlab, does actually pay off. */
+
+static void convert_int16_samples(
+    int16_t buffer[], size_t samples, float *data0, float *data1,
+    unsigned int channels)
 {
-    /* There's no need to optimise this loop beyond the default: it works very
-     * nicely. */
-    for (int i = 0; i < samples; i ++)
+    for (size_t i = 0; i < samples; i ++)
     {
         *data0++ = *buffer++;
-        if (channel_count > 1)
+        if (channels > 1)
             *data1++ = *buffer++;
     }
 }
 
 
-/* This is chosen to match the output buffer size in socket_command.c */
-#define BUFFER_SIZE     (1 << 14)
+static void read_and_convert_int16(
+    mxArray **lhs, int sock, size_t samples, unsigned int channels)
+{
+    /* Create array of floats for result. */
+    float *data0;
+    *lhs = create_single_array(samples, channels, &data0, NULL);
+    float *data1 = data0 + samples;
 
+    /* Read and convert samples. */
+    /* Process data in reasonably sized chunks. */
+    while (samples > 0)
+    {
+        int16_t buffer[2 * BUFFER_SIZE];
+        size_t samples_read = fill_buffer(
+            sock, buffer, channels * sizeof(int16_t), BUFFER_SIZE, samples);
+        convert_int16_samples(buffer, samples_read, data0, data1, channels);
+
+        data0 += samples_read;
+        data1 += samples_read;
+        samples -= samples_read;
+    }
+}
+
+
+static void convert_float32_samples(
+    float buffer[], size_t samples, float *data0, float *data1,
+    unsigned int channels)
+{
+    for (size_t i = 0; i < samples; i ++)
+    {
+        *data0++ = *buffer++;
+        if (channels > 1)
+            *data1++ = *buffer++;
+    }
+}
+
+
+static void read_and_convert_float32(
+    mxArray **lhs, int sock, size_t samples, unsigned int channels)
+{
+    /* Create array of floats for result. */
+    float *data0;
+    *lhs = create_single_array(samples, channels, &data0, NULL);
+    float *data1 = data0 + samples;
+
+    /* Read and convert samples. */
+    /* Process data in reasonably sized chunks. */
+    while (samples > 0)
+    {
+        float buffer[2 * BUFFER_SIZE];
+        size_t samples_read = fill_buffer(
+            sock, buffer, channels * sizeof(float), BUFFER_SIZE, samples);
+        convert_float32_samples(buffer, samples_read, data0, data1, channels);
+
+        data0 += samples_read;
+        data1 += samples_read;
+        samples -= samples_read;
+    }
+}
+
+
+static void convert_complex64_samples(
+    float complex buffer[], size_t samples,
+    float *real0, float *real1, float *imag0, float *imag1,
+    unsigned int channels)
+{
+    for (size_t i = 0; i < samples; i ++)
+    {
+        *real0++ = crealf(*buffer);
+        *imag0++ = cimagf(*buffer);
+        buffer += 1;
+        if (channels > 1)
+        {
+            *real1++ = crealf(*buffer);
+            *imag1++ = cimagf(*buffer);
+            buffer += 1;
+        }
+    }
+}
+
+
+static void read_and_convert_complex64(
+    mxArray **lhs, int sock, size_t samples, unsigned int channels)
+{
+    /* Create array of floats for result. */
+    float *real0, *imag0;
+    *lhs = create_single_array(samples, channels, &real0, &imag0);
+    float *real1 = real0 + samples;
+    float *imag1 = imag0 + samples;
+
+    /* Read and convert samples. */
+    /* Process data in reasonably sized chunks. */
+    while (samples > 0)
+    {
+        float complex buffer[2 * BUFFER_SIZE];
+        size_t samples_read = fill_buffer(
+            sock, buffer, channels * sizeof(float complex),
+            BUFFER_SIZE, samples);
+        convert_complex64_samples(
+            buffer, samples_read, real0, real1, imag0, imag1, channels);
+
+        real0 += samples_read;
+        real1 += samples_read;
+        imag0 += samples_read;
+        imag1 += samples_read;
+        samples -= samples_read;
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 static void do_send_command(
-    int sock, int count, int offset, int channel, int locking)
+    int sock, unsigned int count, int offset, int channel, double locking,
+    double tune, unsigned int decimate, int bunch)
 {
     char command[64];
     char *command_in = command;
-    command_in += sprintf(command_in, "M%dO%d", count, offset);
+
+    command_in += sprintf(command_in, "M%dFO%d", count, offset);
     if (channel >= 0)
         command_in += sprintf(command_in, "C%d", channel);
+
+    if (decimate > 1)
+        command_in += sprintf(command_in, "D%u", decimate);
+    if (tune != 0)
+        command_in += sprintf(command_in, "T%.10f", tune);
+
+    if (bunch >= 0)
+        command_in += sprintf(command_in, "B%d", bunch);
 
     if (locking >= 0)
         command_in += sprintf(command_in, "L");
     if (locking > 0)
-        command_in += sprintf(command_in, "W%d", locking);
+        command_in += sprintf(command_in, "W%u",
+            (unsigned int) (locking * 1e3));
 
     send_command(sock, "%s\n", command);
     check_result(sock);
@@ -71,48 +215,55 @@ static void do_send_command(
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    /* We expect five arguments: hostname, port, bunches, count, offset. */
-    TEST_OK_(nrhs == 7, "args", "Wrong number of arguments");
+    /* We expect an exact list of arguments. */
+    TEST_OK_(nrhs == 9, "args", "Wrong number of arguments");
     /* We only assign one result. */
     TEST_OK_(nlhs <= 1, "result", "Wrong number of results");
 
+    /* Read out arguments in precise order. */
     char hostname[256];
-    TEST_OK_(mxGetString(prhs[0], hostname, sizeof(hostname)) == 0,
+    TEST_OK_(mxGetString(*prhs++, hostname, sizeof(hostname)) == 0,
         "hostname", "Error reading hostname");
-    int port    = (int) mxGetScalar(prhs[1]);
-    int bunches = (int) mxGetScalar(prhs[2]);
-    int count   = (int) mxGetScalar(prhs[3]);
-    int offset  = (int) mxGetScalar(prhs[4]);
-    int channel = (int) mxGetScalar(prhs[5]);
-    int locking = (int) (mxGetScalar(prhs[6]) * 1e3);
+    int port = (int) mxGetScalar(*prhs++);
+    unsigned int count = (unsigned int) mxGetScalar(*prhs++);
+    int offset = (int) mxGetScalar(*prhs++);
+    int channel = (int) mxGetScalar(*prhs++);
+    double locking = mxGetScalar(*prhs++);
+    double tune = mxGetScalar(*prhs++);
+    unsigned int decimate = (unsigned int) mxGetScalar(*prhs++);
+    int bunch = (int) mxGetScalar(*prhs++);
 
-    /* Allocate array to receive the result.  Do this before connecting to the
-     * server so that matlab can clean up our memory if we fail. */
-    int channel_count = channel >= 0 ? 1 : 2;
-    int raw_samples = bunches * count;
-    double *data0;
-    plhs[0] = create_array(raw_samples, channel_count, &data0, NULL);
-    double *data1 = data0 + raw_samples;
+    TEST_OK_(decimate > 0, "decimate", "Invalid decimation");
+    TEST_OK_(bunch < 0  ||  (tune == 0  &&  decimate == 1),
+        "bunch", "Cannot combine single bunch with decimation or tune shift");
 
     /* Connect to server and send command.  Once we've allocated the socket we
      * have to make sure we close it before calling any error functions!
      * Fortunately after this point we don't call into Matlab anymore (except to
      * fail), so we're in control. */
     int sock = connect_server(hostname, port);
-    do_send_command(sock, count, offset, channel, locking);
+    do_send_command(
+        sock, count, offset, channel, locking, tune, decimate, bunch);
 
-    /* Process data in reasonably sized chunks. */
-    while (raw_samples > 0)
+    struct memory_frame frame;
+    fill_buffer(sock, &frame, sizeof(frame), 1, 1);
+
+    switch (frame.format)
     {
-        int16_t buffer[2 * BUFFER_SIZE];
-        int samples_read = fill_buffer(
-            sock, buffer, channel_count * sizeof(int16_t),
-            BUFFER_SIZE, raw_samples);
-        convert_samples(buffer, samples_read, data0, data1, channel_count);
-
-        data0 += samples_read;
-        data1 += samples_read;
-        raw_samples -= samples_read;
+        case FORMAT_INT16:
+            read_and_convert_int16(
+                &plhs[0], sock, frame.samples, frame.channels);
+            break;
+        case FORMAT_FLOAT32:
+            read_and_convert_float32(
+                &plhs[0], sock, frame.samples, frame.channels);
+            break;
+        case FORMAT_COMPLEX64:
+            read_and_convert_complex64(
+                &plhs[0], sock, frame.samples, frame.channels);
+            break;
+        default:
+            FAIL();     // Really should not happen!
     }
 
     close(sock);

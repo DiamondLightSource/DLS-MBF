@@ -28,9 +28,9 @@ DEVICE_TO_CONFIG_AXIS = {
     'SR-TMBF:X': 'X',
     'SR-TMBF:Y': 'Y',
     'SR-LMBF:IQ': 'L',     # not installed
-    'LAB-TMBF:X': 'TX',    # not installed
-    'LAB-TMBF:Y': 'TY',    # not installed
-    'LAB-LMBF:IQ': 'TL',   # not installed
+    'LAB-TMBF:X': 'X',    # not installed
+    'LAB-TMBF:Y': 'Y',    # not installed
+    'LAB-LMBF:IQ': 'L',   # not installed
 }
 
 VALID_MODES = ['TUNE', 'AP', 'FB']
@@ -258,7 +258,7 @@ put('TRG:SEQ:DELAY_S', 0)
 put('DET:0:ENABLE_S', 'Enabled')
 put('DET:0:SCALING_S', setup.det_gain)
 put('DET:SELECT_S', setup.detector_input)
-put('DET:FIR_DELAY_S', 0.5 * (setup.length + 1))
+put('DET:FIR_DELAY_S', 0)       # Safer than any other setting!
 put('DET:0:BUNCHES_S', BUNCH_ENABLES)
 
 # Configure sequencer for tune measurement

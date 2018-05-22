@@ -235,7 +235,7 @@ static void write_dram_runout(unsigned int runout)
         0x04000000,         // 25 %
         0x08000000,         // 50 %
         0x0C000000,         // 75 %
-        0x0FFFFFFF          // 100 %
+        0x0FF00000,         // 99.5 %
     };
     hw_write_dram_runout(runout_lookup[runout]);
 }

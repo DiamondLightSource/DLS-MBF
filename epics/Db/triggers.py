@@ -46,32 +46,6 @@ def target_pvs(prefix):
             DESC = 'Trigger target status')
 
 
-def turn_pvs():
-    Action('SYNC', DESC = 'Synchronise turn clock')
-
-    turn_delay = longOut('DELAY', 0, 31, DESC = 'Turn clock input delay')
-    turn_delay.FLNK = records.calc('DELAY_PS',
-        EGU  = 'ps', CALC = 'A*B',   INPA = turn_delay,  INPB = 78.125)
-
-    turn_count = longIn('TURNS', DESC = 'Turns sampled')
-    error_count = longIn('ERRORS',
-        HIGH = 1, HSV = 'MINOR', DESC = 'Turn clock errors')
-    turn_events = [
-        mbbIn('STATUS', 'Unsynced', 'Armed', 'Synced',
-            DESC = 'Turn clock synchronisation status'),
-        turn_count,
-        error_count,
-        records.calc('RATE',
-            CALC = '100*A/B', INPA = MS(error_count), INPB = turn_count,
-            PREC = 3, EGU = '%',
-            DESC = 'Clock error rate'),
-    ]
-    longOut('OFFSET', DESC = 'Turn clock offset')
-    Action('POLL',
-        SCAN = '.2 second', FLNK = create_fanout('FAN', *turn_events),
-        DESC = 'Update turn status')
-
-
 for a in axes('TRG', lmbf_mode):
     target_pvs('SEQ')
 
@@ -96,6 +70,3 @@ with name_prefix('TRG'):
     stringIn('SHARED', SCAN = 'I/O Intr', DESC = 'List of shared targets')
 
     longOut('BLANKING', 0, 2**16-1, EGU = 'turns', DESC = 'Blanking duration')
-
-    with name_prefix('TURN'):
-        turn_pvs()

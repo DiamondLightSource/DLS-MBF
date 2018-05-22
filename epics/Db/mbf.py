@@ -9,6 +9,7 @@ import sequencer
 import detector
 import memory
 import triggers
+import delay
 
 system.create_aggregate_pvs()
 
