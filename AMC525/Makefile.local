@@ -105,17 +105,8 @@ fpga_built: $(BUILT_FILES)
 # ------------------------------------------------------------------------------
 # Upload image to target
 
-define load_target
-ssh $(AMC525_SERVER) scp /tmp/amc525_lmbf.bit root@$1:/tmp
-ssh $(AMC525_SERVER) ssh root@$1 \
-    amc525_lbtool fpga_load /tmp/amc525_lmbf.bit
-
-endef
-
-# Note that we make sure that nobody is using our device before reloading the
-# FPGA.  This avoids trouble during reset, as hot-plug is a bit fragile...
+# Let the load_fpga tool do the work on the target system
 load_fpga:
-	scp amc525_lmbf.bit $(AMC525_SERVER):/tmp
-	-ssh $(AMC525_SERVER) 'kill -9 $$(lsof -t /dev/amc525_lmbf.*)'
-	$(foreach IP,$(IPS),$(call load_target,192.168.40.$(IP)))
+	scp amc525_lmbf.bit $(TOP)/load_fpga $(AMC525_SERVER):/tmp
+	ssh $(AMC525_SERVER) /tmp/load_fpga -f /tmp/amc525_lmbf.bit $(IPS)
 .PHONY: load_fpga
