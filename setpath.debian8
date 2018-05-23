@@ -4,4 +4,5 @@ export PATH=$PATH:/segfs/tango/contrib/debian8/epics
 export LD_LIBRARY_PATH=/segfs/tango/contrib/debian8/epics/base-3.14.12.7/lib/linux-x86_64:$LD_LIBRARY_PATH
 export CATOOLS_LIBCA_PATH=/segfs/tango/contrib/debian8/epics/base-3.14.12.7/lib/linux-x86_64
 export EPICS_CA_MAX_ARRAY_BYTES=1000000
-export EPICS_CA_ADDR_LIST=172.24.10.0
+export EPICS_CA_ADDR_LIST=172.24.192.255
+#export EPICS_CA_ADDR_LIST=l-c31-3
