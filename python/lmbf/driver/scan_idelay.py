@@ -80,14 +80,14 @@ def capture_scan(regs, N, count):
 
 # Given an assessed scan result probes for the best eye position
 def find_idelay(scan):
-    diffs = numpy.diff(numpy.int8(scan))
+    diffs = numpy.diff(numpy.int8(numpy.concatenate(([0], scan, [0]))))
     starts = numpy.where(diffs == 1)[0]
     ends = numpy.where(diffs == -1)[0]
 
     # Here we assume that a complete eye will fit into the scan and we don't
     # need to consider looping around.
-    start = starts[0] + 1
-    end = ends[0]
+    start = starts[0]
+    end = ends[0] - 1
     if end < start:
         end = ends[1]
 
