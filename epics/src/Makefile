@@ -1,3 +1,5 @@
+include $(MBF_TOP)/Makefile.common
+
 TOP = ..
 include $(TOP)/configure/CONFIG
 
@@ -7,7 +9,8 @@ include $(TOP)/configure/CONFIG
 
 include $(EPICS_DEVICE)/src/Makefile.extra
 
-USR_CFLAGS += -Werror
+# Pick up extra C flags from the top level config file
+USR_CFLAGS += $(CFLAGS_EXTRA)
 
 
 # Compute the version information

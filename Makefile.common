@@ -15,6 +15,9 @@ MUST_DEFINE += MEX
 MUST_DEFINE += EPICS_BASE
 MUST_DEFINE += EPICS_DEVICE
 
+# Path to Python Soft IOC
+MUST_DEFINE += PYTHON_IOC
+
 
 # The following defaults can be overridden in the CONFIG file
 
@@ -27,6 +30,9 @@ BUILD_DIR = $(MBF_TOP)/build
 FPGA_BUILD_DIR = $(BUILD_DIR)/fpga
 DRIVER_BUILD_DIR = $(BUILD_DIR)/driver
 SIM_BUILD_DIR = $(BUILD_DIR)/sim
+
+# Extra C compiler flags
+CFLAGS_EXTRA =
 
 
 # ------------------------------------------------------------------------------
