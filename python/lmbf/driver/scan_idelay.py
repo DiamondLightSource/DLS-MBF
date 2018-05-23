@@ -102,7 +102,6 @@ def scan_idelay(regs, f_rf, count):
     setup_scan(regs)
     N = scan_length(f_rf)
     scan = capture_scan(regs, N, count)
-    print scan
     complete_scan(regs)
 
     idelay, eye = find_idelay(scan)
