@@ -17,6 +17,8 @@ LM_LICENSE_FILE = \
 EPICS_DEVICE = /dls_sw/prod/R3.14.12.3/support/epics_device/1-4
 EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 
+CFLAGS_EXTRA += -Werror
+
 # Location of Matlab compiler
 MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
 

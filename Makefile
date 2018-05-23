@@ -104,6 +104,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 	make -C matlab clean
 	make -C tune_fit clean
+	touch epics/configure/RELEASE
 	make -C epics clean uninstall
 	rm -f epics/configure/RELEASE
 .PHONY: clean
