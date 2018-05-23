@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 #include "mex.h"
 
@@ -68,6 +69,13 @@ int connect_server(const char *hostname, int port)
     TEST_SOCK_(sock,
         connect(sock, (struct sockaddr *) &s_in, sizeof(s_in)) == 0,
         "connect", "Unable to connect to server %s:%d", hostname, port);
+
+    /* Set timeout so we can catch interruption while waiting for the lock. */
+    struct timeval timeval = { .tv_sec = 1, .tv_usec = 0 };
+    TEST_SOCK(sock,
+        setsockopt(
+            sock, SOL_SOCKET, SO_RCVTIMEO, &timeval, sizeof(timeval)) == 0);
+
     return sock;
 }
 
@@ -92,13 +100,21 @@ static size_t read_buffer(int sock, void *buffer, size_t length)
     while (length > 0)
     {
         ssize_t bytes_read = read(sock, buffer, length);
-        TEST_SOCK(sock, bytes_read >= 0);
-        if (bytes_read == 0)
-            break;
-        TEST_SOCK_(sock, !utIsInterruptPending(), "interrupt", "Interrupted");
-        total  += (size_t) bytes_read;
-        buffer += (size_t) bytes_read;
-        length -= (size_t) bytes_read;
+        /* Check for timeout, retry if no interrupt. */
+        if (bytes_read == -1  &&  errno == EAGAIN)
+            TEST_SOCK_(sock,
+                !utIsInterruptPending(), "interrupt", "Interrupted");
+        else
+        {
+            TEST_SOCK(sock, bytes_read >= 0);
+            if (bytes_read == 0)
+                break;
+            TEST_SOCK_(sock,
+                !utIsInterruptPending(), "interrupt", "Interrupted");
+            total  += (size_t) bytes_read;
+            buffer += (size_t) bytes_read;
+            length -= (size_t) bytes_read;
+        }
     }
     return total;
 }
@@ -107,7 +123,7 @@ static size_t read_buffer(int sock, void *buffer, size_t length)
 void check_result(int sock)
 {
     char message[256];
-    TEST_SOCK(sock, read(sock, message, 1) == 1);
+    TEST_SOCK(sock, read_buffer(sock, message, 1) == 1);
     if (message[0] != '\0')
     {
         /* Whoops, we have an error message to read. */
