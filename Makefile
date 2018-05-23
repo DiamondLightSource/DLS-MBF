@@ -17,8 +17,6 @@ MAKE_LOCAL = \
 
 
 default:
-	echo Need to specify a build target
-	false
 .PHONY: default
 
 
@@ -96,8 +94,11 @@ print_version:
 .PHONY: print_version
 
 
-install: epics matlab tune_fit
+default: epics matlab tune_fit
+
+install: default
 	make driver-rpm
+.PHONY: install
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -105,5 +106,4 @@ clean:
 	make -C tune_fit clean
 	make -C epics clean uninstall
 	rm -f epics/configure/RELEASE
-
-.PHONY: install clean
+.PHONY: clean
