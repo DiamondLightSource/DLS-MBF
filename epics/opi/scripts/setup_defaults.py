@@ -15,6 +15,8 @@ Y_tune = 0.39
 # dac_out only apply to feedback and does not prevent tune measurement
 # nor cleaning
 dac_output = 0                  # By default Feedback is off
+feedback_gain = '-42dB'
+feedback_fine_gain = 1.0
 
 # -- Tune sweep --
 # sweep: harmonic-sweep_range -> harmonic+sweep_range
@@ -35,6 +37,11 @@ det_gain = '0dB'
 
 single_bunch = False            # Set to true for single bunch mode
 bunch = 450
+
+# -- Cleaning parameters --
+#
+cleaning_gain = '0dB'
+cleaning_fine_gain = 1.0
 
 # -- Tune fit --
 # The following tune fit management parameters are currently not implemented

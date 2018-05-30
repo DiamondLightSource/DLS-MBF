@@ -1,0 +1,83 @@
+#!/usr/bin/env dls-python
+#-*- coding: utf-8 -*-
+
+from pkg_resources import require
+require('cothread')
+
+import argparse
+
+from cothread import catools
+
+
+def _put(axis, pv, value):
+    if axis:
+        target = '%s:%s:%s' % (DEVICE, axis, pv)
+    else:
+        target = '%s:%s' % (DEVICE, pv)
+    if args.debug:
+        print '%s <= %s' % (target, repr(value))
+    if not args.dry_run:
+        catools.caput(target, value)
+
+def put(pv, value):
+    _put(AXIS, pv, value)
+
+def get(pv, **kargs):
+    return catools.caget('%s:%s' % (DEVICE, pv), **kargs)
+
+
+# ------------------------------------------------------------------------------
+# Argument parsing
+
+parser = argparse.ArgumentParser(
+    description = 'Do feedback, tune sweep and cleaning ON/OFF.')
+parser.add_argument(
+    '-d', dest = 'debug', default = False, action = 'store_true',
+    help = 'Enable debug mode')
+parser.add_argument(
+    '-n', dest = 'dry_run', default = False, action = 'store_true',
+    help = 'Dry run, don\'t actually write to device')
+parser.add_argument(
+    '-f', dest = 'feedback_status', default = None, type = int,
+    help = 'Enable Feedback')
+parser.add_argument(
+    '-t', dest = 'sweep_status', default = None, type = int,
+    help = 'Enable Tune sweep')
+parser.add_argument(
+    '-c', dest = 'cleaning_status', default = None, type = int,
+    help = 'Enable Cleaning')
+parser.add_argument('device', help = 'TMBF device name to configure')
+args = parser.parse_args()
+
+sweep_status = args.sweep_status
+cleaning_status = args.cleaning_status
+feedback_status = args.feedback_status
+DEVICE, AXIS = args.device.split(':')
+
+
+if feedback_status:
+    put('SEQ:1:BANK_S', 2)
+    put('SEQ:0:BANK_S', 3)
+elif feedback_status == 0:
+    print "feedback off"
+    put('SEQ:1:BANK_S', 0)
+    put('SEQ:0:BANK_S', 1)
+
+if cleaning_status:
+    put('NCO:ENABLE_S', 1)
+elif cleaning_status == 0:
+    put('NCO:ENABLE_S', 0)
+else:
+    cleaning_status = get(AXIS + ':NCO:ENABLE_S')
+
+# Stop Tune sweep during a cleaning
+if cleaning_status:
+    sweep_status = 0
+
+if sweep_status:
+    put('TRG:SEQ:ARM_S', 0)
+elif sweep_status == 0:
+    put('TRG:SEQ:DISARM_S', 0)
+    put('SEQ:RESET_S', 0)
+
+# vim: set filetype=python:
