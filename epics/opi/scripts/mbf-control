@@ -6,7 +6,7 @@ require('cothread')
 
 import argparse
 
-from cothread import catools
+from cothread import catools, Sleep
 
 
 def _put(axis, pv, value):
@@ -64,20 +64,18 @@ elif feedback_status == 0:
     put('SEQ:0:BANK_S', 1)
 
 if cleaning_status:
-    put('NCO:ENABLE_S', 1)
-elif cleaning_status == 0:
-    put('NCO:ENABLE_S', 0)
-else:
-    cleaning_status = get(AXIS + ':NCO:ENABLE_S')
-
-# Stop Tune sweep during a cleaning
-if cleaning_status:
-    sweep_status = 0
-
-if sweep_status:
-    put('TRG:SEQ:ARM_S', 0)
-elif sweep_status == 0:
+    # Stop Tune sweep during a cleaning
     put('TRG:SEQ:DISARM_S', 0)
     put('SEQ:RESET_S', 0)
+    put('NCO:ENABLE_S', 1)
+    print "Cleaning in progress..."
+    Sleep(5)
+    put('NCO:ENABLE_S', 0)
+    put('TRG:SEQ:ARM_S', 0)
+
+if sweep_status:
+    put('SEQ:1:ENABLE_S', 1)
+elif sweep_status == 0:
+    put('SEQ:1:ENABLE_S', 0)
 
 # vim: set filetype=python:

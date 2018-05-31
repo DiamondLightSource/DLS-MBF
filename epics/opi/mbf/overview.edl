@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 57
-y 204
+x 65
+y 94
 w 456
 h 648
 font "helvetica-medium-r-8.0"
@@ -778,7 +778,7 @@ major 4
 minor 3
 release 0
 x 312
-y 440
+y 456
 w 136
 h 24
 fgColor index 25
@@ -786,32 +786,10 @@ bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "Cleaning On"
+buttonLabel "Cleaning!"
 numCmds 1
 command {
-  0 "run-command 'Cleaning On' mbf-control -c 1 $(device):$(axis)"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 312
-y 472
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Cleaning Off"
-numCmds 1
-command {
-  0 "run-command 'Cleaning Off' mbf-control -c 0 $(device):$(axis)"
+  0 "run-command 'Bunch cleaning' mbf-control -c 1 $(device):$(axis)"
 }
 endObjectProperties
 
