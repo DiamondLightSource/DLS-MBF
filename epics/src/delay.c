@@ -24,18 +24,17 @@
 static pthread_mutex_t turn_clock_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 enum turn_clock_status {
-    TURN_CLOCK_UNSYNC,
     TURN_CLOCK_ARMED,
-    TURN_CLOCK_SYNCED
+    TURN_CLOCK_SYNCED,
+    TURN_CLOCK_ERRORS,
 };
-static unsigned int turn_clock_status = TURN_CLOCK_UNSYNC;
+static unsigned int turn_clock_status;
 static unsigned int turn_clock_turns;
 static unsigned int turn_clock_errors;
 
 static void start_turn_sync(void)
 {
     hw_write_turn_clock_sync();
-    turn_clock_status = TURN_CLOCK_ARMED;
 }
 
 static void poll_turn_state(void)
@@ -43,7 +42,12 @@ static void poll_turn_state(void)
     hw_read_turn_clock_counts(&turn_clock_turns, &turn_clock_errors);
     struct trigger_status status;
     hw_read_trigger_status(&status);
-    if (turn_clock_status == TURN_CLOCK_ARMED  &&  !status.sync_busy)
+
+    if (status.sync_busy)
+        turn_clock_status = TURN_CLOCK_ARMED;
+    else if (turn_clock_errors > 0)
+        turn_clock_status = TURN_CLOCK_ERRORS;
+    else
         turn_clock_status = TURN_CLOCK_SYNCED;
 }
 
@@ -375,6 +379,7 @@ static int read_dac_fifo(void)
 error__t initialise_delay(void)
 {
     read_pll_setup();
+    start_turn_sync();
 
     WITH_NAME_PREFIX("DLY")
     {

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2091
-y 180
+x 1921
+y 341
 w 352
 h 359
 font "helvetica-medium-r-18.0"
@@ -481,10 +481,11 @@ release 0
 x 248
 y 240
 w 88
-h 16
+h 14
 controlPv "$(device):DLY:TURN:STATUS"
 font "helvetica-medium-r-12.0"
 fgColor index 14
+fgAlarm
 bgColor index 0
 useDisplayBg
 autoHeight
@@ -694,8 +695,8 @@ minor 1
 release 1
 x 16
 y 272
-w 40
-h 16
+w 38
+h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0

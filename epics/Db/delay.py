@@ -48,8 +48,11 @@ def turn_sync():
     error_count = longIn('ERRORS',
         HIGH = 1, HSV = 'MINOR', DESC = 'Turn clock errors')
     turn_events = [
-        mbbIn('STATUS', 'Unsynced', 'Armed', 'Synced',
-            DESC = 'Turn clock synchronisation status'),
+        mbbIn('STATUS',
+            ('Armed', 0, 'MINOR'),
+            ('Synced', 1),
+            ('Sync Errors', 2, 'MAJOR'),
+            DESC = 'Turn clock status'),
         turn_count,
         error_count,
         records.calc('RATE',
