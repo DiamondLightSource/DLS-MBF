@@ -1,4 +1,4 @@
-/* DAC readout and control. */
+/* EPICS interface to DAC readout and control. */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -6,7 +6,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <math.h>
-#include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"

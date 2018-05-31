@@ -1,4 +1,4 @@
-# ADC waveforms
+# PVs for ADC interface
 
 from common import *
 from system import add_aggregate

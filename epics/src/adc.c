@@ -105,7 +105,6 @@ static bool write_filter_delay(void *context, unsigned int *delay)
 }
 
 
-
 static void scan_events(void)
 {
     for (int i = 0; i < AXIS_COUNT; i ++)
@@ -142,7 +141,8 @@ error__t initialise_adc(void)
         adc->mms = create_mms_handler(axis, hw_read_adc_mms);
     }
 
-    PUBLISH_ACTION("ADC:EVENTS", scan_events);
+    WITH_NAME_PREFIX("ADC")
+        PUBLISH_ACTION("EVENTS", scan_events);
 
     return ERROR_OK;
 }
