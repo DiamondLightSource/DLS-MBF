@@ -2,7 +2,6 @@
 
 from common import *
 
-COARSE_LIMIT = 7
 
 def dac_delays():
     # Fine delay control with readback

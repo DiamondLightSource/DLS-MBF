@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1988
-y 839
+x 879
+y 710
 w 641
 h 337
 font "helvetica-medium-r-18.0"
@@ -198,6 +198,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties

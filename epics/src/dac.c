@@ -46,6 +46,7 @@ static void write_dac_taps(void *context, float array[], unsigned int *length)
 static bool write_dac_delay(void *context, unsigned int *value)
 {
     struct dac_context *dac = context;
+    *value = MIN(*value, 0x3FFU);
     hw_write_dac_delay(dac->axis, *value);
     return true;
 }

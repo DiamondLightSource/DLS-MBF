@@ -18,6 +18,11 @@
 #include "delay.h"
 
 
+/* This is a somewhat arbitrary upper bound on the delay.  Needs to be no more
+ * than one bunch interval, which at 352 MHz is 7 ticks. */
+#define MAX_COARSE_DELAY    7
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Turn clock control. */
 
@@ -303,8 +308,6 @@ static void slew_dac_fine_delay(unsigned int delay)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Coarse delay control (Dynamic Digital Delay). */
-
-#define MAX_COARSE_DELAY    7
 
 static unsigned int dac_coarse_delay = 0;
 
