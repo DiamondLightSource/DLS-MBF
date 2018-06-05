@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2088
-y 427
+x 1922
+y 2
 w 512
 h 338
 font "helvetica-medium-r-8.0"
@@ -212,7 +212,7 @@ minor 0
 release 0
 x 8
 y 240
-w 328
+w 232
 h 88
 lineColor index 14
 fill
@@ -330,7 +330,7 @@ minor 6
 release 0
 x 120
 y 256
-w 160
+w 128
 h 16
 controlPv "$(device):STA:CLOCK.DESC"
 font "helvetica-medium-r-12.0"
@@ -397,8 +397,8 @@ minor 6
 release 0
 x 120
 y 280
-w 160
-h 14
+w 128
+h 16
 controlPv "$(device):STA:VCO.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
@@ -464,8 +464,8 @@ minor 6
 release 0
 x 120
 y 304
-w 160
-h 14
+w 128
+h 16
 controlPv "$(device):STA:VCXO.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
@@ -1354,5 +1354,120 @@ fill
 fillColor index 16
 fillAlarm
 alarmPv "$(device):$(axis1):FIR:OVF"
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 248
+y 240
+w 256
+h 40
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 256
+y 256
+w 80
+h 16
+controlPv "$(device):DLY:TURN:STATUS"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 336
+y 256
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):DLY:TURN:STATUS"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 360
+y 256
+w 152
+h 16
+controlPv "$(device):DLY:TURN:STATUS.DESC"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 248
+y 232
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Turn Clock"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 248
+y 232
+w 120
+h 16
+lineColor index 14
+fillColor index 0
 endObjectProperties
 

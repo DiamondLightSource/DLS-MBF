@@ -38,5 +38,5 @@ for a in axes('DAC'):
 with name_prefix('DAC'):
     Action('EVENTS',
         SCAN = '.1 second',
-        FLNK = create_fanout('SCAN:FAN', *dac_events),
+        FLNK = create_fanout('EVENTS:FAN', *dac_events),
         DESC = 'DAC event detect scan')

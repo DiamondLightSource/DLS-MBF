@@ -1,4 +1,4 @@
-# ADC waveforms
+# PVs for ADC interface
 
 from common import *
 from system import add_aggregate
@@ -14,7 +14,7 @@ for a in axes('ADC'):
     longOut('FILTER:DELAY', 0, 7, DESC = 'Compensation filter group delay')
 
     aOut('OVF_LIMIT', 0, 1, PREC = 4, DESC = 'Overflow limit threshold')
-    aOut('EVENT_LIMIT', 0, 1, PREC = 4, DESC = 'ADC min/max event threshold')
+    aOut('EVENT_LIMIT', 0, 2, PREC = 4, DESC = 'ADC min/max event threshold')
     loopback = boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
         DESC = 'Enable DAC -> ADC loopback')
 

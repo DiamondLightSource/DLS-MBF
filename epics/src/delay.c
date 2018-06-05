@@ -18,24 +18,28 @@
 #include "delay.h"
 
 
+/* This is a somewhat arbitrary upper bound on the delay.  Needs to be no more
+ * than one bunch interval, which at 352 MHz is 7 ticks. */
+#define MAX_COARSE_DELAY    7
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Turn clock control. */
 
 static pthread_mutex_t turn_clock_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 enum turn_clock_status {
-    TURN_CLOCK_UNSYNC,
     TURN_CLOCK_ARMED,
-    TURN_CLOCK_SYNCED
+    TURN_CLOCK_SYNCED,
+    TURN_CLOCK_ERRORS,
 };
-static unsigned int turn_clock_status = TURN_CLOCK_UNSYNC;
+static unsigned int turn_clock_status;
 static unsigned int turn_clock_turns;
 static unsigned int turn_clock_errors;
 
 static void start_turn_sync(void)
 {
     hw_write_turn_clock_sync();
-    turn_clock_status = TURN_CLOCK_ARMED;
 }
 
 static void poll_turn_state(void)
@@ -43,7 +47,12 @@ static void poll_turn_state(void)
     hw_read_turn_clock_counts(&turn_clock_turns, &turn_clock_errors);
     struct trigger_status status;
     hw_read_trigger_status(&status);
-    if (turn_clock_status == TURN_CLOCK_ARMED  &&  !status.sync_busy)
+
+    if (status.sync_busy)
+        turn_clock_status = TURN_CLOCK_ARMED;
+    else if (turn_clock_errors > 0)
+        turn_clock_status = TURN_CLOCK_ERRORS;
+    else
         turn_clock_status = TURN_CLOCK_SYNCED;
 }
 
@@ -113,15 +122,6 @@ struct pll_0x3 {
     uint8_t DCLK_MUX : 2;
     uint8_t DCLK_ADLY_MUX : 1;
     uint8_t DCLK_ADLY : 5;          // Analogue delay
-};
-
-/* Section 9.7.2.5. */
-struct pll_0x4 {
-    uint8_t SDCLK_HS : 1;
-    uint8_t SDCLK_DDLY : 4;
-    uint8_t SDCLK_MUX : 1;
-    uint8_t DCLK_HS : 1;            // DCLK half step value
-    uint8_t _unused : 1;
 };
 
 /* Section 9.7.3.1. */
@@ -300,25 +300,9 @@ static void slew_dac_fine_delay(unsigned int delay)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Coarse delay control (Dynamic Digital Delay). */
 
-#define MAX_COARSE_DELAY    7
-
 static unsigned int dac_coarse_delay = 0;
 
 static struct epics_record *coarse_delay_pv;
-
-
-static bool set_half_step(bool half_step)
-{
-    if (clock_passthrough)
-        return false;
-    else
-    {
-        struct pll_0x4 value = READ_PLL(PLL_OUT_DAC + 4, struct pll_0x4);
-        value.DCLK_HS = half_step;
-        WRITE_PLL(PLL_OUT_DAC + 4, value);
-        return true;
-    }
-}
 
 
 static bool set_coarse_delay(unsigned int target)
@@ -375,6 +359,7 @@ static int read_dac_fifo(void)
 error__t initialise_delay(void)
 {
     read_pll_setup();
+    start_turn_sync();
 
     WITH_NAME_PREFIX("DLY")
     {
@@ -384,9 +369,6 @@ error__t initialise_delay(void)
         {
             PUBLISH_WRITER_P(ulongout, "FINE_DELAY",
                 slew_dac_fine_delay, .mutex = &delay_lock);
-
-            PUBLISH_WRITER_B_P(bo, "HALF_STEP",
-                set_half_step, .mutex = &delay_lock);
 
             coarse_delay_pv = PUBLISH_WRITER_B_P(ulongout, "COARSE_DELAY",
                 set_coarse_delay, .mutex = &delay_lock);

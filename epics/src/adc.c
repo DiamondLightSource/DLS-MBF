@@ -45,8 +45,7 @@ static void write_adc_taps(void *context, float array[], unsigned int *length)
 static bool set_adc_overflow_threshold(void *context, double *value)
 {
     struct adc_context *adc = context;
-    hw_write_adc_overflow_threshold(
-        adc->axis, (unsigned int) ldexp(*value, 13));
+    hw_write_adc_overflow_threshold(adc->axis, double_to_uint(value, 13, 0));
     return true;
 }
 
@@ -54,8 +53,7 @@ static bool set_adc_overflow_threshold(void *context, double *value)
 static bool set_adc_delta_threshold(void *context, double *value)
 {
     struct adc_context *adc = context;
-    hw_write_adc_delta_threshold(
-        adc->axis, (unsigned int) ldexp(*value, 15));
+    hw_write_adc_delta_threshold(adc->axis, double_to_uint(value, 16, 1));
     return true;
 }
 
@@ -105,7 +103,6 @@ static bool write_filter_delay(void *context, unsigned int *delay)
 }
 
 
-
 static void scan_events(void)
 {
     for (int i = 0; i < AXIS_COUNT; i ++)
@@ -142,7 +139,8 @@ error__t initialise_adc(void)
         adc->mms = create_mms_handler(axis, hw_read_adc_mms);
     }
 
-    PUBLISH_ACTION("ADC:EVENTS", scan_events);
+    WITH_NAME_PREFIX("ADC")
+        PUBLISH_ACTION("EVENTS", scan_events);
 
     return ERROR_OK;
 }
