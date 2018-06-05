@@ -1,17 +1,5 @@
 # Config settings for building at ESRF
 
-# Set require environment variables
-#
-PATH:=${PATH}:/segfs/tango/contrib/debian9/epics/base-3.14.12.7/bin/linux-x86_64:/segfs/tango/contrib/debian9/epics/extensions/bin/linux-x86_64
-PATH:=${PATH}:/segfs/tango/contrib/debian9/epics
-
-PYTHONPATH=/segfs/tango/contrib/debian9/epics/cothread/dist/cothread-2.14-py2.7-linux-x86_64.egg
-
-LD_LIBRARY_PATH:=/segfs/tango/contrib/debian9/epics/base-3.14.12.7/lib/linux-x86_64:${LD_LIBRARY_PATH}
-
-CATOOLS_LIBCA_PATH=/segfs/tango/contrib/debian9/epics/base-3.14.12.7/lib/linux-x86_64
-
-
 # Definitions needed for EPICS driver build
 #
 EPICS_DEVICE = /segfs/tango/contrib/debian9/epics/epics_device
