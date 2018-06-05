@@ -124,15 +124,6 @@ struct pll_0x3 {
     uint8_t DCLK_ADLY : 5;          // Analogue delay
 };
 
-/* Section 9.7.2.5. */
-struct pll_0x4 {
-    uint8_t SDCLK_HS : 1;
-    uint8_t SDCLK_DDLY : 4;
-    uint8_t SDCLK_MUX : 1;
-    uint8_t DCLK_HS : 1;            // DCLK half step value
-    uint8_t _unused : 1;
-};
-
 /* Section 9.7.3.1. */
 struct pll_0x138 {
     uint8_t OSCout_FMT : 4;
@@ -314,20 +305,6 @@ static unsigned int dac_coarse_delay = 0;
 static struct epics_record *coarse_delay_pv;
 
 
-static bool set_half_step(bool half_step)
-{
-    if (clock_passthrough)
-        return false;
-    else
-    {
-        struct pll_0x4 value = READ_PLL(PLL_OUT_DAC + 4, struct pll_0x4);
-        value.DCLK_HS = half_step;
-        WRITE_PLL(PLL_OUT_DAC + 4, value);
-        return true;
-    }
-}
-
-
 static bool set_coarse_delay(unsigned int target)
 {
     if (clock_passthrough)
@@ -392,9 +369,6 @@ error__t initialise_delay(void)
         {
             PUBLISH_WRITER_P(ulongout, "FINE_DELAY",
                 slew_dac_fine_delay, .mutex = &delay_lock);
-
-            PUBLISH_WRITER_B_P(bo, "HALF_STEP",
-                set_half_step, .mutex = &delay_lock);
 
             coarse_delay_pv = PUBLISH_WRITER_B_P(ulongout, "COARSE_DELAY",
                 set_coarse_delay, .mutex = &delay_lock);

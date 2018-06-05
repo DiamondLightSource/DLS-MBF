@@ -56,7 +56,6 @@ def delayed_output(output):
     output.DCLK_ADLY_MUX = 1    # Enable duty cycle correction in divide
 
     output.DCLK_DDLY_PD = 0     # Enable dynamic digital delay
-    output.DCLK_HSg_PD = 0      # and half step control
 
 
 # The following clock connections are configured and used:
