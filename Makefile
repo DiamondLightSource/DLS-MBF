@@ -73,6 +73,12 @@ epics: epics/configure/RELEASE
 	make -C $@
 .PHONY: epics
 
+clean-epics:
+	touch epics/configure/RELEASE
+	make -C epics clean uninstall
+	rm -f epics/configure/RELEASE
+.PHONY: clean-epics
+
 
 # ------------------------------------------------------------------------------
 # Miscellanous other targets
@@ -100,11 +106,8 @@ install: default
 	make driver-rpm
 .PHONY: install
 
-clean:
+clean: clean-epics
 	rm -rf $(BUILD_DIR)
 	make -C matlab clean
 	make -C tune_fit clean
-	touch epics/configure/RELEASE
-	make -C epics clean uninstall
-	rm -f epics/configure/RELEASE
 .PHONY: clean
