@@ -100,7 +100,7 @@ print_version:
 .PHONY: print_version
 
 
-default: epics matlab tune_fit
+default: epics matlab tune_fit driver
 
 install: default
 	make driver-rpm
