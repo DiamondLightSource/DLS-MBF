@@ -223,16 +223,8 @@ put('NCO:ENABLE_S', 0)
 put('FIR:0:LENGTH_S', setup.length)
 put('FIR:0:CYCLES_S', setup.cycles)
 put('FIR:0:USEWF_S', 'Settings')
+put('FIR:0:PHASE_S', setup.feedback_phase)
 put('FIR:GAIN_S', setup.feedback_gain)
-
-
-
-
-
-
-
-
-
 
 # Configure banks #1, #2, #3 and #4
 #
@@ -293,11 +285,6 @@ if feedback_status:
 else:
     put('SEQ:1:BANK_S', 0)
     put('SEQ:0:BANK_S', 1)
-
-
-
-
-
 
 # Disable all sequencer triggers and configure triggering on external trigger
 TRIGGER_SOURCES = ['SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1']
