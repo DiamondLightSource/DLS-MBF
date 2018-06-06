@@ -14,9 +14,9 @@ Y_tune = 0.39
 
 # dac_out only apply to feedback and does not prevent tune measurement
 # nor cleaning
-dac_output = 0                  # By default Feedback is off
 feedback_gain = '-42dB'
 feedback_fine_gain = 1.0
+feedback_phase = 124
 
 # -- Tune sweep --
 # sweep: harmonic-sweep_range -> harmonic+sweep_range
@@ -30,7 +30,6 @@ sweep_dwell_time = 100
 sweep_gain = '-48dB'
 
 blanking_interval = 10000
-keep_feedback = False           # Set to keep feedback ON during sweep
 
 detector_input = 'FIR'
 det_gain = '0dB'
@@ -42,31 +41,6 @@ bunch = 450
 #
 cleaning_gain = '0dB'
 cleaning_fine_gain = 1.0
-
-# -- Tune fit --
-# The following tune fit management parameters are currently not implemented
-tune_select = 'Peak Fit'
-alarm_range = 0.01
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Mode specific settings
-
-# Multibunch tune measurement
-TUNE_sweep_gain = '-42dB'
-
-# Accelerator physics mode
-AP_sweep_gain = '0dB'
-AP_tune = 0.25
-AP_sweep_range = 0.245
-AP_detector_input = 'ADC'
-
-# Feedback on
-FB_dac_output = 1               # Enable FIR output in this mode
-FB_keep_feedback = True
-FB_sweep_gain = '-48dB'
-
-# Lab setup
-T_tune = 0.7885
-T_harmonic = 37
-T_detector_input = 'ADC'
+cleaning_freq_min = 43.12
+cleaning_freq_max = 43.22
+cleaning_sweeptime = 20.0
