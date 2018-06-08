@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# This script will program the given FPGA .bit file onto the specified AMC525
+# machines.
+
+HERE="$(dirname "$0")"
+
+BIT_FILE="${1?:Specify FPGA .bit file to program}"
+shift
+if (($# == 0)); then
+    echo >&2 'Specify list of AMC525 addresses to program (last part only)'
+    exit 1
+fi
+
+IMG_FILE="$(mktemp)"
+trap 'rm -f "$IMG_FILE"' EXIT
+
+"$HERE"/mkfpga_img "$BIT_FILE" "$IMG_FILE"
+
+for ip; do
+    ip=192.168.40.$ip
+    echo Copying to $ip
+    scp "$IMG_FILE" root@$ip:/tmp/fpga.img  &&
+    ssh -x root@$ip /usr/local/bin/upgrader fpga-a /tmp/fpga.img  ||
+        break
+done
