@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+# Converts FPGA bit stream file into a U-Boot loadable image suitable for
+# writing to the AMC525 flash.
+
+import sys
+import numpy
+import binascii
+import time
+
+
+# The u-boot header is defined in u-boot/include/image.h and is fixed.
+IH_MAGIC = 0x27051956           # Image Magic Number
+image_header_dtype = [
+    ('ih_magic', '>u4'),        # Image Header Magic Number
+    ('ih_hcrc',  '>u4'),        # Image Header CRC Checksum
+    ('ih_time',  '>u4'),        # Image Creation Timestamp
+    ('ih_size',  '>u4'),        # Image Data Size
+    ('ih_load',  '>u4'),        # Data  Load  Address
+    ('ih_ep',    '>u4'),        # Entry Point Address
+    ('ih_dcrc',  '>u4'),        # Image Data CRC Checksum
+    ('ih_os',    'B'),          # Operating System
+    ('ih_arch',  'B'),          # CPU architecture
+    ('ih_type',  'B'),          # Image Type
+    ('ih_comp',  'B'),          # Compression Type
+    ('ih_name',  'S32'),        # Image Name
+]
+
+# Definitions of codes we need to use, also from u-boot/include/image.h.
+IH_OS_U_BOOT     =  17          # Firmware
+IH_ARCH_PPC      =  7           # PowerPC
+IH_TYPE_FIRMWARE =  5           # Firmware Image
+IH_COMP_NONE     =  0           # No Compression Used
+
+
+# Read file to convert into memory
+assert len(sys.argv) == 3, 'Usage: %s input.bit output.img' % sys.argv[0]
+file_data = open(sys.argv[1]).read()
+
+# Create U-Boot header.  This corresponds to calling u-boot mkimage thus:
+#
+# mkimage -A ppc -C none -O u-boot -T firmware \
+#      -a 0x200000 -e 0x200000 -n FPGA -d fpga.bin fpga.img
+#
+header = numpy.zeros((), dtype = image_header_dtype)
+header['ih_magic'] = IH_MAGIC
+header['ih_hcrc']  = 0
+header['ih_time']  = time.time()
+header['ih_size']  = len(file_data)
+header['ih_load']  = 0x200000
+header['ih_ep']    = 0x200000
+header['ih_dcrc']  = binascii.crc32(file_data)
+header['ih_os']    = IH_OS_U_BOOT
+header['ih_arch']  = IH_ARCH_PPC
+header['ih_type']  = IH_TYPE_FIRMWARE
+header['ih_comp']  = IH_COMP_NONE
+header['ih_name']  = "FPGA"
+
+# Fill in header CRC
+header['ih_hcrc']  = binascii.crc32(header.tostring())
+
+# Finally write image file to destination
+output = open(sys.argv[2], 'w')
+output.write(header.tostring())
+output.write(file_data)
+output.close()
