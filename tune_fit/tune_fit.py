@@ -73,8 +73,7 @@ def assess_model(config, scale, model):
 
     # Ensure that peak separations are sensible
     ix1, ix2 = numpy.triu_indices(len(peaks), 1)
-    max_width = config.MINIMUM_SPACING * numpy.maximum(widths[ix1], widths[ix2])
-    if (numpy.abs(bb[ix1] - bb[ix2]) < max_width).any():
+    if (numpy.abs(centres[ix1] - centres[ix2]) < config.MINIMUM_SPACING).any():
         return 'Peaks too close'
 
     # Check for peak phases: if one peak is out of place reject

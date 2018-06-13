@@ -61,10 +61,15 @@ const char *get_axis_name(int axis, bool lmbf_mode);
  * determined by bits.
  *    The parameter bits determines the total number of bits available, so the
  * output will be in the range [-2^(bits-1)..2^(bits-1)-1].  The parameter
- * high_bits determines the range of valid input values, so the input should be
- * in the range [-2^high_bits..2^high_bits). */
+ * high_bits determines the range of valid input values, so the input will be
+ * forced into the range [-2^high_bits..2^high_bits).
+ *    This function rewrites in[] to correspond to the values written to out[].
+ */
 void float_array_to_int(
     size_t count, float in[], int out[], int bits, int high_bits);
+/* Similar to float_array_to_int, but for a single double argument and producing
+ * an unsigned result. */
+unsigned int double_to_uint(double *in, int bits, int high_bits);
 
 /* Convert fractional tune in cycles per machine revolution to phase advance per
  * bunch in hardware units. */

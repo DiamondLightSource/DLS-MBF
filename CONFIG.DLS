@@ -1,8 +1,8 @@
 # Configuration settings for building at DLS
 
 # Place the FPGA build in /scratch
-FPGA_BUILD_DIR = /scratch/tmp/LMBF/build/fpga
-SIM_BUILD_DIR = /scratch/tmp/LMBF/build/sim
+FPGA_BUILD_DIR = /scratch/mga83/tmp/LMBF/build/fpga
+SIM_BUILD_DIR = /scratch/mga83/tmp/LMBF/build/sim
 
 # Definitions needed for FPGA build
 VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.4/settings64.sh

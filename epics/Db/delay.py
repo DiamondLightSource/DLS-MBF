@@ -2,16 +2,11 @@
 
 from common import *
 
-COARSE_LIMIT = 7
 
 def dac_delays():
     # Fine delay control with readback
     fine_delay = longOut('FINE_DELAY', 0, 23,
         DESC = 'DAC clock fine delay')
-
-    # Half step control
-    half_step = boolOut('HALF_STEP', '0', '-0.5',
-        DESC = 'DAC clock half step control')
 
     # Simlarly coarse delay control with readback
     coarse_delay = longOut('COARSE_DELAY',
@@ -23,14 +18,12 @@ def dac_delays():
 
     # Compute the overall delay
     delay_ps = records.calc('DELAY_PS',
-        EGU  = 'ps', CALC = '(A-0.5*B)*C+D*E',
+        EGU  = 'ps', CALC = 'A*C+D*E',
         INPA = coarse_delay,
-        INPB = half_step,
         INPC = step_size,
         INPD = fine_delay,
         INPE = 25)
     coarse_delay.FLNK = delay_ps
-    half_step.FLNK = delay_ps
     fine_delay.FLNK = delay_ps
 
     # Monitor of DAC FIFO
@@ -48,8 +41,11 @@ def turn_sync():
     error_count = longIn('ERRORS',
         HIGH = 1, HSV = 'MINOR', DESC = 'Turn clock errors')
     turn_events = [
-        mbbIn('STATUS', 'Unsynced', 'Armed', 'Synced',
-            DESC = 'Turn clock synchronisation status'),
+        mbbIn('STATUS',
+            ('Armed', 0, 'MINOR'),
+            ('Synced', 1),
+            ('Sync Errors', 2, 'MAJOR'),
+            DESC = 'Turn clock status'),
         turn_count,
         error_count,
         records.calc('RATE',

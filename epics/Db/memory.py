@@ -67,8 +67,7 @@ with name_prefix('MEM'):
             overflow('FIR1_OVF', 'FIR 1 capture will overflow')),
         DESC = 'Poll overflow events')
 
-    longOut('OFFSET', -(1 << 29), (1 << 29) - 1, EGU = 'turns',
-        DESC = 'Offset of readout')
+    longOut('OFFSET', EGU = 'turns', DESC = 'Offset of readout')
 
     # Capture control
     Action('CAPTURE', DESC = 'Untriggered immediate capture')

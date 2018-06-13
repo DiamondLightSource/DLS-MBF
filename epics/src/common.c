@@ -22,8 +22,6 @@ static const char *const *axis_names[] = {
     &system_config.axis1_name,
 };
 
-
-
 const char *get_axis_name(int axis, bool lmbf_mode)
 {
     static char *iq_axis_name = NULL;
@@ -83,6 +81,23 @@ void float_array_to_int(
         out[i] = (int) lroundf(ldexpf(in[i], fraction_bits));
         in[i] = ldexpf((float) out[i], -fraction_bits);
     }
+}
+
+/* Much as above, but double, unsigned, one result. */
+unsigned int double_to_uint(double *in, int bits, int high_bits)
+{
+    int fraction_bits = bits - high_bits;
+    double top_bit = ldexp(1, high_bits);
+    double min_val = 0;
+    double max_val = nextafter(top_bit, 0) - ldexp(1, -fraction_bits);
+
+    if (*in > max_val)
+        *in = max_val;
+    else if (*in < min_val)
+        *in = min_val;
+    unsigned int out = (unsigned int) lround(ldexp(*in, fraction_bits));
+    *in = ldexp((double) out, -fraction_bits);
+    return out;
 }
 
 

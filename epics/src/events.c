@@ -61,8 +61,7 @@ static void *events_thread(void *context)
         }
     }
     ERROR_REPORT(error, "Error reading events");
-    ASSERT_OK(hardware_config.no_hardware);     // Only allowed case!
-    return NULL;
+    ASSERT_FAIL();
 }
 
 
@@ -71,9 +70,9 @@ static pthread_t events_thread_id;
 
 error__t initialise_events(void)
 {
-    return
+    return IF(!hardware_config.no_hardware,
         TEST_PTHREAD(
-            pthread_create(&events_thread_id, NULL, events_thread, NULL));
+            pthread_create(&events_thread_id, NULL, events_thread, NULL)));
 }
 
 

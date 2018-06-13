@@ -1,4 +1,4 @@
-/* DAC readout and control. */
+/* EPICS interface to DAC readout and control. */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -6,7 +6,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <math.h>
-#include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"
@@ -47,6 +46,7 @@ static void write_dac_taps(void *context, float array[], unsigned int *length)
 static bool write_dac_delay(void *context, unsigned int *value)
 {
     struct dac_context *dac = context;
+    *value = MIN(*value, 0x3FFU);
     hw_write_dac_delay(dac->axis, *value);
     return true;
 }

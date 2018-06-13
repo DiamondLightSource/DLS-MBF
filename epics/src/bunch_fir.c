@@ -27,8 +27,8 @@ struct fir_bank {
     unsigned int cycles;
     unsigned int length;
     double phase;
-    float *current_taps;
-    float *set_taps;
+    int *current_taps;
+    int *set_taps;
     struct epics_record *taps_waveform;
     bool use_waveform;
     bool waveform_set;
@@ -54,9 +54,12 @@ static void compute_fir_taps(struct fir_bank *bank)
     double tune = (double) bank->cycles / bank->length;
 
     /* Calculate FIR coeffs and the mean value. */
-    float *taps = bank->current_taps;
+    int *taps = bank->current_taps;
     for (unsigned int i = 0; i < bank->length; i++)
-        taps[i] = (float) sin(2*M_PI * (tune * (i+0.5) + bank->phase / 360.0));
+    {
+        double tap = sin(2*M_PI * (tune * (i+0.5) + bank->phase / 360.0));
+        taps[i] = (int) lround(INT32_MAX * tap);
+    }
     /* Pad end of filter with zeros. */
     for (size_t i = bank->length; i < hardware_config.bunch_taps; i++)
         taps[i] = 0;
@@ -65,25 +68,18 @@ static void compute_fir_taps(struct fir_bank *bank)
 
 /* After any update to current_taps ensures that the hardware and readback
  * record are in step. */
-static void update_taps(struct fir_bank *bank) {
-    int taps[hardware_config.bunch_taps];
-    float_array_to_int(
-        hardware_config.bunch_taps, bank->current_taps, taps, 32, 0);
-    hw_write_bunch_fir_taps(bank->axis, bank->index, taps);
-    trigger_record(bank->taps_waveform);
-}
-
-
-static void copy_taps(const float taps_in[], float taps_out[])
+static void update_taps(struct fir_bank *bank)
 {
-    memcpy(taps_out, taps_in, hardware_config.bunch_taps * sizeof(float));
+    hw_write_bunch_fir_taps(bank->axis, bank->index, bank->current_taps);
+    trigger_record(bank->taps_waveform);
 }
 
 
 static void update_bank_taps(struct fir_bank *bank)
 {
     if (bank->use_waveform)
-        copy_taps(bank->set_taps, bank->current_taps);
+        memcpy(bank->current_taps, bank->set_taps,
+            hardware_config.bunch_taps * sizeof(int));
     else
         compute_fir_taps(bank);
     update_taps(bank);
@@ -154,9 +150,19 @@ static void set_fir_taps(void *context, float *taps, unsigned int *length)
     struct fir_bank *bank = context;
     *length = hardware_config.bunch_taps;
 
-    copy_taps(taps, bank->set_taps);
+    float_array_to_int(*length, taps, bank->set_taps, 32, 0);
     if (bank->use_waveform)
         update_bank_taps(bank);
+}
+
+
+static void get_fir_taps(void *context, float *taps, unsigned int *length)
+{
+    struct fir_bank *bank = context;
+    *length = hardware_config.bunch_taps;
+
+    for (unsigned int i = 0; i < *length; i ++)
+        taps[i] = (float) ldexp(bank->current_taps[i], -31);
 }
 
 
@@ -165,8 +171,8 @@ static void publish_bank_waveforms(
 {
     bank->axis = axis;
     bank->index = ix;
-    bank->current_taps = CALLOC(float, hardware_config.bunch_taps);
-    bank->set_taps     = CALLOC(float, hardware_config.bunch_taps);
+    bank->current_taps = CALLOC(int, hardware_config.bunch_taps);
+    bank->set_taps     = CALLOC(int, hardware_config.bunch_taps);
 
     char prefix[4];
     sprintf(prefix, "%d", ix);
@@ -174,8 +180,9 @@ static void publish_bank_waveforms(
     {
         PUBLISH_WAVEFORM_C_P(
             float, "TAPS_S", hardware_config.bunch_taps, set_fir_taps, bank);
-        bank->taps_waveform = PUBLISH_WF_READ_VAR_I(
-            float, "TAPS", hardware_config.bunch_taps, bank->current_taps);
+        bank->taps_waveform = PUBLISH_WAVEFORM_C(
+            float, "TAPS", hardware_config.bunch_taps, get_fir_taps, bank,
+            .io_intr = true);
     }
 }
 

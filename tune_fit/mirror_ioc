@@ -1,0 +1,63 @@
+#! /dls_sw/prod/R3.14.12.3/support/pythonSoftIoc/2-11/pythonIoc
+
+# PV mirror IOC
+
+from pkg_resources import require
+import sys, os
+
+require('cothread==2.14')
+require('numpy==1.11.1')
+require('epicsdbbuilder==1.2')
+
+import numpy
+import time
+
+from softioc import softioc, builder, alarm
+from cothread.catools import *
+
+
+class MirrorPv:
+    Fields = ['EGU', 'PREC']
+
+    def __init__(self, from_pv, to_pv, alias):
+        camonitor(from_pv, self.on_update,
+            format = FORMAT_TIME, notify_disconnect = True)
+        self.pv = builder.aIn(to_pv, TSE = -2)
+        for field in self.Fields:
+            setattr(self.pv, field, caget('%s.%s' % (from_pv, field)))
+        if alias:
+            self.pv.add_alias(alias)
+
+    def on_update(self, value):
+        if value.ok:
+            self.pv.set(value,
+                severity = value.severity, alarm = value.status,
+                timestamp = value.timestamp)
+        else:
+            self.pv.set(numpy.nan,
+                severity = alarm.INVALID_ALARM, alarm = alarm.UDF_ALARM,
+                timestamp = time.time())
+
+
+mirror_pvs = [
+    ('SR23C-DI-TFIT-01:X:TUNE',
+     'SR23C-DI-TMBF-01:TUNE:TUNE', 'SR23C-DI-TMBF-01:TUNE',),
+    ('SR23C-DI-TFIT-01:X:PHASE',
+     'SR23C-DI-TMBF-01:TUNE:PHASE', None),
+    ('SR23C-DI-TFIT-01:Y:TUNE',
+     'SR23C-DI-TMBF-02:TUNE:TUNE', 'SR23C-DI-TMBF-02:TUNE',),
+    ('SR23C-DI-TFIT-01:Y:PHASE',
+     'SR23C-DI-TMBF-02:TUNE:PHASE', None),
+]
+
+for from_pv, to_pv, alias in mirror_pvs:
+    MirrorPv(from_pv, to_pv, alias)
+
+
+# Now get the IOC started
+builder.LoadDatabase()
+softioc.iocInit()
+
+softioc.interactive_ioc(globals())
+
+# vim: set filetype=python:
