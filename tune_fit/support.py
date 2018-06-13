@@ -59,7 +59,7 @@ def read_config(filename):
 class Config:
     MAX_PEAKS = 3
     MINIMUM_WIDTH = 1e-5
-    MINIMUM_SPACING = 1.0
+    MINIMUM_SPACING = 1e-3
     MINIMUM_HEIGHT = 0.1
     MAXIMUM_FIT_ERROR = 0.2
 
