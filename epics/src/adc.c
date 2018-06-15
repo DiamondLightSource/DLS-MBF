@@ -24,7 +24,6 @@ static struct adc_context {
     bool mms_after_fir;
     bool dram_after_fir;
     bool overflow;
-    unsigned int filter_delay;
     struct adc_events events;
     struct mms_handler *mms;
 } adc_context[AXIS_COUNT];
@@ -70,10 +69,10 @@ static void update_delays(struct adc_context *adc)
 {
     set_mms_offset(adc->mms, adc->mms_after_fir ?
         hardware_delays.MMS_ADC_FIR_DELAY :
-        hardware_delays.MMS_ADC_DELAY - adc->filter_delay);
+        hardware_delays.MMS_ADC_DELAY);
     set_memory_adc_offset(adc->axis, adc->dram_after_fir ?
         hardware_delays.DRAM_ADC_FIR_DELAY :
-        hardware_delays.DRAM_ADC_DELAY - adc->filter_delay);
+        hardware_delays.DRAM_ADC_DELAY);
 }
 
 static bool write_adc_mms_source(void *context, bool *after_fir)
@@ -90,14 +89,6 @@ static bool write_adc_dram_source(void *context, bool *after_fir)
     struct adc_context *adc = context;
     adc->dram_after_fir = *after_fir;
     hw_write_adc_dram_source(adc->axis, *after_fir);
-    update_delays(adc);
-    return true;
-}
-
-static bool write_filter_delay(void *context, unsigned int *delay)
-{
-    struct adc_context *adc = context;
-    adc->filter_delay = *delay;
     update_delays(adc);
     return true;
 }
@@ -123,7 +114,6 @@ error__t initialise_adc(void)
 
         PUBLISH_WAVEFORM_C_P(float, "FILTER",
             hardware_config.adc_taps, write_adc_taps, adc);
-        PUBLISH_C_P(ulongout, "FILTER:DELAY", write_filter_delay, adc);
 
         PUBLISH_C_P(ao, "OVF_LIMIT", set_adc_overflow_threshold, adc);
         PUBLISH_C_P(ao, "EVENT_LIMIT", set_adc_delta_threshold, adc);

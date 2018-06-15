@@ -78,9 +78,7 @@ def configure_timing_test(lmbf, compensate = False):
 
     # Configure ADC and DAC filters with identity filters.
     lmbf.set('ADC:FILTER_S', unit_fir(lmbf.adc_taps))
-    lmbf.set('ADC:FILTER:DELAY_S', 0)
     lmbf.set('DAC:FILTER_S', unit_fir(lmbf.dac_taps))
-    lmbf.set('DAC:FILTER:DELAY_S', 0)
 
 
     # For a sensible starting state, disable the sequencer and select bank 0.
