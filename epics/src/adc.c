@@ -126,7 +126,7 @@ error__t initialise_adc(void)
         PUBLISH_READ_VAR(bi, "OVF",     adc->overflow);
         PUBLISH_READ_VAR(bi, "EVENT",   adc->events.delta_event);
 
-        adc->mms = create_mms_handler(axis, hw_read_adc_mms);
+        adc->mms = create_mms_handler("ADC", axis, hw_read_adc_mms);
     }
 
     WITH_NAME_PREFIX("ADC")

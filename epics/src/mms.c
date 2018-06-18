@@ -53,6 +53,7 @@ struct mms_epics {
 
 
 struct mms_handler {
+    const char *source;
     int axis;
     void (*read_mms)(int, struct mms_result*);
     unsigned int bunch_offset;
@@ -132,6 +133,11 @@ static void read_raw_mms(struct mms_handler *mms)
 
     /* Read an update from hardware. */
     mms->read_mms(mms->axis, &result);
+    /* If any of the overflow bits are set log an error. */
+    if (result.turns_ovfl || result.sum_ovfl || result.sum2_ovfl)
+        log_message("MMS %s:%d overflow: %d %d %d %u",
+            mms->source, mms->axis,
+            result.turns_ovfl, result.sum_ovfl, result.sum2_ovfl, result.turns);
 
     /* Accumulate result into the accumulator. */
     struct mms_accum *accum = &mms->accum;
@@ -226,13 +232,14 @@ static bool reset_mms_fault(void *context, bool *value)
 
 
 struct mms_handler *create_mms_handler(
-    int axis, void (*read_mms)(int, struct mms_result*))
+    const char *source, int axis, void (*read_mms)(int, struct mms_result*))
 {
     struct mms_handler *mms = &mms_handlers.handlers[mms_handlers.count];
     mms_handlers.count += 1;
 
     unsigned int bunches = hardware_config.bunches;
     *mms = (struct mms_handler) {
+        .source = source,
         .axis = axis,
         .read_mms = read_mms,
         .bunch_offset = 0,          // Will be set separately
@@ -285,10 +292,10 @@ static void *read_mms_thread(void *context)
 {
     while (running)
     {
-        usleep(system_config.mms_poll_interval);
         for (unsigned int i = 0; i < mms_handlers.count; i ++)
             WITH_MUTEX(mms_handlers.handlers[i].mutex)
                 read_raw_mms(&mms_handlers.handlers[i]);
+        usleep(system_config.mms_poll_interval);
     }
     return NULL;
 }

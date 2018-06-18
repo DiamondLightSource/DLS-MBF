@@ -128,7 +128,7 @@ error__t initialise_dac(void)
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
         PUBLISH_READ_VAR(bi, "OVF",     dac->overflow);
 
-        dac->mms = create_mms_handler(axis, hw_read_dac_mms);
+        dac->mms = create_mms_handler("DAC", axis, hw_read_dac_mms);
     }
 
     WITH_NAME_PREFIX("DAC")
