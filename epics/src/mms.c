@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include "error.h"
 #include "epics_device.h"
@@ -117,9 +118,53 @@ static int64_t add_overflow_int64_t(int64_t a, int64_t b, bool *overflow)
 }
 
 
+static void reset_accum(struct mms_handler *mms, bool reset_overflow)
+{
+    struct mms_accum *accum = &mms->accum;
+    FOR_BUNCHES(i)
+    {
+        accum->raw_min[i] = 0x7FFF;
+        accum->raw_max[i] = (int16_t) 0x8000;
+        accum->raw_sum[i] = 0;
+        accum->raw_sum2[i] = 0;
+    }
+    accum->raw_turns = 0;
+    if (reset_overflow)
+        accum->mms_overflow = 0;
+}
+
+
+static void update_accum(
+    struct mms_handler *mms, const struct mms_result *result)
+{
+    /* Accumulate result into the accumulator. */
+    struct mms_accum *accum = &mms->accum;
+    bool sum_ovfl = result->sum_ovfl;
+    bool sum2_ovfl = result->sum2_ovfl;
+    FOR_BUNCHES_OFFSET(j, i, mms->bunch_offset)
+    {
+        accum->raw_min[j] = MIN(accum->raw_min[j], result->minimum[i]);
+        accum->raw_max[j] = MAX(accum->raw_max[j], result->maximum[i]);
+        accum->raw_sum[j] = add_overflow_int64_t(
+            accum->raw_sum[j], result->sum[i], &sum_ovfl);
+        accum->raw_sum2[j] = add_overflow_uint64_t(
+            accum->raw_sum2[j], result->sum2[i], &sum2_ovfl);
+    }
+
+    /* Accumulate turns and overflow flags. */
+    bool turns_ovfl = result->turns_ovfl;
+    accum->raw_turns =
+        add_overflow_uint(accum->raw_turns, result->turns, &turns_ovfl);
+
+    /* Convert individual overflow bits into encoding. */
+    accum->mms_overflow |=
+        (unsigned int) (turns_ovfl | sum_ovfl << 1 | sum2_ovfl << 2);
+}
+
+
 /* This is called at a regular interval to ensure that the MMS waveforms are up
  * to date and have not overflowed. */
-static void read_raw_mms(struct mms_handler *mms)
+static void read_raw_mms(struct mms_handler *mms, bool initialise)
 {
     /* Create somewhere to receive the hardware results.  We put this on the
      * stack to make life simpler. */
@@ -134,47 +179,19 @@ static void read_raw_mms(struct mms_handler *mms)
     /* Read an update from hardware. */
     mms->read_mms(mms->axis, &result);
     /* If any of the overflow bits are set log an error. */
-    if (result.turns_ovfl || result.sum_ovfl || result.sum2_ovfl)
+    if (!initialise  &&
+            (result.turns_ovfl || result.sum_ovfl || result.sum2_ovfl))
         log_message("MMS %s:%d overflow: %d %d %d %u",
             mms->source, mms->axis,
             result.turns_ovfl, result.sum_ovfl, result.sum2_ovfl, result.turns);
 
-    /* Accumulate result into the accumulator. */
-    struct mms_accum *accum = &mms->accum;
-    bool sum_ovfl = result.sum_ovfl;
-    bool sum2_ovfl = result.sum2_ovfl;
-    FOR_BUNCHES_OFFSET(j, i, mms->bunch_offset)
-    {
-        accum->raw_min[j] = MIN(accum->raw_min[j], minimum[i]);
-        accum->raw_max[j] = MAX(accum->raw_max[j], maximum[i]);
-        accum->raw_sum[j] =
-            add_overflow_int64_t(accum->raw_sum[j], sum[i], &sum_ovfl);
-        accum->raw_sum2[j] =
-            add_overflow_uint64_t(accum->raw_sum2[j], sum2[i], &sum2_ovfl);
-    }
-
-    /* Accumulate turns and overflow flags. */
-    bool turns_ovfl = result.turns_ovfl;
-    accum->raw_turns =
-        add_overflow_uint(accum->raw_turns, result.turns, &turns_ovfl);
-
-    /* Convert individual overflow bits into encoding. */
-    accum->mms_overflow |=
-        (unsigned int) (turns_ovfl | sum_ovfl << 1 | sum2_ovfl << 2);
-}
-
-
-static void reset_accum(struct mms_handler *mms)
-{
-    struct mms_accum *accum = &mms->accum;
-    FOR_BUNCHES(i)
-    {
-        accum->raw_min[i] = 0x7FFF;
-        accum->raw_max[i] = (int16_t) 0x8000;
-        accum->raw_sum[i] = 0;
-        accum->raw_sum2[i] = 0;
-    }
-    accum->raw_turns = 0;
+    if (initialise)
+        /* On first call we throw all our data away.  This gives us a clean
+         * start in preparation for normal operation. */
+        reset_accum(mms, true);
+    else
+        /* Normally accumulate results until ready for readout. */
+        update_accum(mms, &result);
 }
 
 
@@ -216,9 +233,9 @@ static bool start_mms_readback(void *context, bool *value)
 
     /* Bring ourself up to date.  It's reasonably harmless if these happen
      * back-to-back, just a trifle wasteful. */
-    read_raw_mms(mms);
+    read_raw_mms(mms, false);
     process_mms_waveforms(mms);
-    reset_accum(mms);
+    reset_accum(mms, false);
     return true;
 }
 
@@ -288,14 +305,24 @@ void set_mms_offset(struct mms_handler *mms, unsigned int bunch_offset)
 
 static volatile bool running = true;
 
+static void read_mms_handlers(bool initialise)
+{
+    for (unsigned int i = 0; i < mms_handlers.count; i ++)
+    {
+        WITH_MUTEX(mms_handlers.handlers[i].mutex)
+        {
+            struct mms_handler *mms = &mms_handlers.handlers[i];
+            read_raw_mms(mms, initialise);
+        }
+    }
+}
+
 static void *read_mms_thread(void *context)
 {
     while (running)
     {
-        for (unsigned int i = 0; i < mms_handlers.count; i ++)
-            WITH_MUTEX(mms_handlers.handlers[i].mutex)
-                read_raw_mms(&mms_handlers.handlers[i]);
         usleep(system_config.mms_poll_interval);
+        read_mms_handlers(false);
     }
     return NULL;
 }
@@ -305,6 +332,9 @@ static pthread_t mms_thread_id;
 
 error__t start_mms_handlers(void)
 {
+    /* Perform first initialisation read of MMS before starting thread. */
+    read_mms_handlers(true);
+
     return TEST_PTHREAD(
         pthread_create(&mms_thread_id, NULL, read_mms_thread, NULL));
 }
