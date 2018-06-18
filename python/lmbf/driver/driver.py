@@ -2,6 +2,8 @@ import sys
 import os
 import mmap
 import fcntl
+import select
+import struct
 import numpy
 
 from register_defs import register_groups
@@ -55,6 +57,13 @@ class RawRegisters:
     def __del__(self):
         if hasattr(self, 'reg_file'):
             os.close(self.reg_file)
+
+    def read_events(self, wait):
+        if not wait:
+            r, w, x = select.select([self.reg_file], [], [], 0)
+            if not r:
+                return 0
+        return struct.unpack('I', os.read(self.reg_file, 4))[0]
 
 
 class RegisterMap:
@@ -123,6 +132,9 @@ class Registers:
             with os.open(self.DDR0_NAME, os.O_RDONLY) as ddr0:
                 self.DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, LMBF_BUF_SIZE)
         return self._DDR0_BUF_LEN
+
+    def read_events(self, wait = True):
+        return self.raw_registers.read_events(wait)
 
 
 __all__ = ['Registers']
