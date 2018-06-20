@@ -30,7 +30,7 @@ AMC525_IPS=("$@")
 
 # First of all ensure that nobody is trying to use the hardware before reloading
 # the FPGA.  This avoids trouble during reset, as hot-plug is a bit fragile...
-USERS="$(lsof -t /dev/amc525_lmbf.* 2>/dev/null)" || true
+USERS="$(lsof -t /dev/amc525_mbf.* 2>/dev/null)" || true
 [[ -n $USERS ]]  &&  kill -9 $USERS
 
 for ip in "${AMC525_IPS[@]}"; do

@@ -15,7 +15,7 @@ include $(MBF_TOP)/Makefile.common
 SRCDIR = $(MBF_TOP)/driver
 KBUILD_DIR = $(CURDIR)/kbuild-$(kernelver)
 
-DRIVER_NAME = amc525_lmbf
+DRIVER_NAME = amc525_mbf
 
 # The set valid characters in an rpm version string is a bit restricted, so go
 # with the valid rules: only letters, digits, and periods.
@@ -95,10 +95,10 @@ install-dkms: dkms-files
 	dkms add amc525_mbf/$(RPM_VERSION)
 	dkms build amc525_mbf/$(RPM_VERSION)
 	dkms install amc525_mbf/$(RPM_VERSION)
-	modprobe amc525_lmbf
+	modprobe amc525_mbf
 
 # To remove dkms run
-#       dkms remove amc525_lmbf/$(RPM_VERSION) --all
+#       dkms remove amc525_mbf/$(RPM_VERSION) --all
 
 .PHONY: dkms-files install-dkms
 
@@ -106,7 +106,7 @@ install-dkms: dkms-files
 # ------------------------------------------------------------------------------
 # Build dkms RPM
 
-RPM_FILE = amc525_lmbf-$(RPM_VERSION)-1dkms.noarch.rpm
+RPM_FILE = amc525_mbf-$(RPM_VERSION)-1dkms.noarch.rpm
 
 amc525_mbf.spec: amc525_mbf.spec.in
 	sed s/@@VERSION@@/$(RPM_VERSION)/g $< >$@

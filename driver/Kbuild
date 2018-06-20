@@ -22,13 +22,13 @@ EXTRA_CFLAGS += -Wno-sign-compare
 EXTRA_CFLAGS += -DVERSION=$(VERSION)
 
 
-obj-m := amc525_lmbf.o
+obj-m := amc525_mbf.o
 
-amc525_lmbf-objs += amc525_mbf_core.o
-amc525_lmbf-objs += dma_control.o
-amc525_lmbf-objs += interrupts.o
-amc525_lmbf-objs += memory.o
-amc525_lmbf-objs += registers.o
-amc525_lmbf-objs += debug.o
+amc525_mbf-objs += amc525_mbf_core.o
+amc525_mbf-objs += dma_control.o
+amc525_mbf-objs += interrupts.o
+amc525_mbf-objs += memory.o
+amc525_mbf-objs += registers.o
+amc525_mbf-objs += debug.o
 
 # vim: set filetype=make:

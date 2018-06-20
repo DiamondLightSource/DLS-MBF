@@ -1,5 +1,5 @@
 Summary: Kernel driver for AMC525 MBF FPGA card
-Name: amc525_lmbf
+Name: amc525_mbf
 Version: @@VERSION@@
 Release: 1dkms
 License: GPL

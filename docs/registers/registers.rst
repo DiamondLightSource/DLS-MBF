@@ -17,7 +17,7 @@ Word Address    Name    Controlled bank
 0x3800..0x3FFF  DSP1    DSP 1 control
 =============== ======= ============================================
 
-This address space is available by memory mapping ``/dev/amc525_lmbf.0.reg``.
+This address space is available by memory mapping ``/dev/amc525_mbf.0.reg``.
 To obtain the byte address for each register multiply the corresponding word
 address by 4.
 

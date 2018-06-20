@@ -22,13 +22,13 @@ MBF_BUF_SIZE = MBF_IOCTL(1)
 def device_name(part, prefix = 0):
     if isinstance(prefix, int):
         # Assume the prefix is just a device number identification
-        return '/dev/amc525_lmbf.%d.%s' % (prefix, part)
+        return '/dev/amc525_mbf.%d.%s' % (prefix, part)
     else:
         # All string prefixes are PCI addresses.  In this case we'll allow a
         # full form (starting 'pci-') and a short form (nn).
         if not prefix.startswith('pci-'):
             prefix = 'pci-0000:%s:00.0' % prefix
-        return '/dev/amc525_lmbf/%s/amc525_lmbf.%s' % (prefix, part)
+        return '/dev/amc525_mbf/%s/amc525_mbf.%s' % (prefix, part)
 
 
 

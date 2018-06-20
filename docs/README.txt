@@ -338,7 +338,7 @@ Capture is triggered by writing the capture length to 1:2:
 
 A length of 0xFFFFFFE will fill the entire 2GB buffer.
 
-Data can be read out by reading /dev/amc525_lmbf.0.ddr0
+Data can be read out by reading /dev/amc525_mbf.0.ddr0
 
 
 A note on the ADC clock
