@@ -4,7 +4,7 @@ import os
 import sys
 import numpy
 
-import lmbf
+import mbf
 
 
 # Reads and writes a bit-field in a register
@@ -209,7 +209,7 @@ def make_top(group, attributes):
     return Top
 
 
-class GenerateMethods(lmbf.parse.register_defs.WalkParse):
+class GenerateMethods(mbf.parse.register_defs.WalkParse):
     def walk_field(self, context, field):
         return Field(field)
 
@@ -248,7 +248,7 @@ generate = GenerateMethods()
 
 
 # Read the definitions in parsed form
-defs = lmbf.parsed_defs(flatten = True)
+defs = mbf.parsed_defs(flatten = True)
 
 register_groups = {}
 for group in defs.groups:

@@ -6,7 +6,7 @@ import time
 import os
 import sys
 
-from lmbf.driver import driver, config_pll, setup_pll
+from mbf.driver import driver, config_pll, setup_pll
 
 regs = driver.Registers(0)
 pll = config_pll.SettingsBase(regs.PLL_SPI)

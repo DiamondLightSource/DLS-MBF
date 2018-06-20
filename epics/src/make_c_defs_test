@@ -3,9 +3,9 @@
 # Generates C file using generated definitions
 
 import sys
-from lmbf.defs_path import DEFS
+from mbf.defs_path import DEFS
 
-from lmbf import parse
+from mbf import parse
 
 
 def make_name(context, name):
