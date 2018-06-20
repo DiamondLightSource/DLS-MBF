@@ -1,4 +1,4 @@
-Summary: Kernel driver for AMC525 LMBF FPGA card
+Summary: Kernel driver for AMC525 MBF FPGA card
 Name: amc525_lmbf
 Version: @@VERSION@@
 Release: 1dkms
@@ -15,7 +15,7 @@ Packager: Michael Abbott <michael.abbott@diamond.ac.uk>
 %define udevdir /etc/udev/rules.d
 
 %description
-Installs the kernel driver for interfacing to the LMBF firmware running
+Installs the kernel driver for interfacing to the MBF firmware running
 on an AMC525 FPGA card.  The driver is installed using dkms.
 
 %install

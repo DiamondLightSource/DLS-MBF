@@ -937,13 +937,13 @@ static error__t map_config_regs(void)
 
 error__t hw_lock_registers(void)
 {
-    return TEST_IO_(ioctl(reg_device, LMBF_REG_LOCK),
+    return TEST_IO_(ioctl(reg_device, MBF_REG_LOCK),
         "Unable to lock MBF registers");
 }
 
 error__t hw_unlock_registers(void)
 {
-    return TEST_IO_(ioctl(reg_device, LMBF_REG_UNLOCK),
+    return TEST_IO_(ioctl(reg_device, MBF_REG_UNLOCK),
         "Unable to unlock MBF registers");
 }
 
@@ -1020,7 +1020,7 @@ error__t initialise_hardware(
                 hw_lock_registers())  ?:
             TEST_IO(
                 config_regs_size =
-                    (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
+                    (size_t) ioctl(reg_device, MBF_MAP_SIZE))  ?:
             TEST_IO(config_regs = mmap(
                 0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
                 reg_device, 0)))  ?:

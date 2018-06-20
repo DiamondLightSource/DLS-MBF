@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <math.h>
 #include <pthread.h>
-#include <semaphore.h>
 
 #include "error.h"
 #include "epics_device.h"

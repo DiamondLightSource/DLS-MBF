@@ -1,15 +1,15 @@
-Notes on testing LMBF.
-======================
+Notes on testing MBF.
+=====================
 
 Starting and loading
 --------------------
 
-The FPGA image is built on pc0073 and is in /scratch/tmp/LMBF/build/fpga.  After
+The FPGA image is built on pc0073 and is in /scratch/tmp/MBF/build/fpga.  After
 power-cycling the AMC card the FPGA must be loaded.  This is automated by a
 makefile rule::
 
     $ ssh pc0073
-    $ cd ~mga83/targetOS/LMBF
+    $ cd ~mga83/targetOS/MBF
     $ make load_fpga
 
 If this is the first loading of the FPGA since the MTCA PC was booted then it
@@ -17,14 +17,14 @@ must be rebooted to correctly pick up the PCIe registers, after which the driver
 must be installed::
 
     $ ssh ts-di-lmbf-02
-    $ cd ~mga83/targetOS/LMBF
+    $ cd ~mga83/targetOS/MBF
     $ make insmod
 
 Alternatively, if the PC already recognises the module and the driver has been
 loaded, the permissions of the (newly recreated) device nodes must be set::
 
     $ ssh ts-di-lmbf-02
-    $ cd ~mga83/targetOS/LMBF
+    $ cd ~mga83/targetOS/MBF
     $ make modperm
 
 
@@ -34,7 +34,7 @@ Initialising system
 For the rest of this note I'll assume the following preamble::
 
     $ ssh ts-di-lmbf-02
-    $ cd ~mga83/targetOS/LMBF/tools
+    $ cd ~mga83/targetOS/MBF/tools
 
 After rebooting initialise by running the following scripts::
 

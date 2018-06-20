@@ -1,4 +1,4 @@
-# This file contains the global version definition for the LMBF project.
+# This file contains the global version definition for the MBF project.
 
 VERSION_EXTRA =
 VERSION_MAJOR = 1

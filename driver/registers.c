@@ -24,7 +24,7 @@ struct register_context {
 };
 
 
-int lmbf_reg_open(
+int mbf_reg_open(
     struct file *file, struct pci_dev *dev,
     struct interrupt_control *interrupts,
     struct register_locking *locking)
@@ -59,7 +59,7 @@ no_context:
 }
 
 
-static int lmbf_reg_release(struct inode *inode, struct file *file)
+static int mbf_reg_release(struct inode *inode, struct file *file)
 {
     struct register_context *context = file->private_data;
     struct register_locking *locking = context->locking;
@@ -72,12 +72,12 @@ static int lmbf_reg_release(struct inode *inode, struct file *file)
 
     kfree(context);
 
-    amc525_lmbf_release(inode);
+    amc525_mbf_release(inode);
     return 0;
 }
 
 
-static int lmbf_reg_mmap(struct file *file, struct vm_area_struct *vma)
+static int mbf_reg_mmap(struct file *file, struct vm_area_struct *vma)
 {
     struct register_context *context = file->private_data;
 
@@ -141,17 +141,17 @@ static long unlock_register(struct register_context *context)
 }
 
 
-static long lmbf_reg_ioctl(
+static long mbf_reg_ioctl(
     struct file *file, unsigned int cmd, unsigned long arg)
 {
     struct register_context *context = file->private_data;
     switch (cmd)
     {
-        case LMBF_MAP_SIZE:
+        case MBF_MAP_SIZE:
             return context->length;
-        case LMBF_REG_LOCK:
+        case MBF_REG_LOCK:
             return lock_register(context);
-        case LMBF_REG_UNLOCK:
+        case MBF_REG_UNLOCK:
             return unlock_register(context);
         default:
             return -EINVAL;
@@ -160,7 +160,7 @@ static long lmbf_reg_ioctl(
 
 
 /* This will return one byte with the next available event mask. */
-static ssize_t lmbf_reg_read(
+static ssize_t mbf_reg_read(
     struct file *file, char __user *buf, size_t count, loff_t *f_pos)
 {
     struct register_context *context = file->private_data;
@@ -191,7 +191,7 @@ static ssize_t lmbf_reg_read(
 }
 
 
-static unsigned int lmbf_reg_poll(
+static unsigned int mbf_reg_poll(
     struct file *file, struct poll_table_struct *poll)
 {
     struct register_context *context = file->private_data;
@@ -204,11 +204,11 @@ static unsigned int lmbf_reg_poll(
 }
 
 
-struct file_operations lmbf_reg_fops = {
+struct file_operations mbf_reg_fops = {
     .owner = THIS_MODULE,
-    .release = lmbf_reg_release,
-    .unlocked_ioctl = lmbf_reg_ioctl,
-    .mmap = lmbf_reg_mmap,
-    .read = lmbf_reg_read,
-    .poll = lmbf_reg_poll,
+    .release = mbf_reg_release,
+    .unlocked_ioctl = mbf_reg_ioctl,
+    .mmap = mbf_reg_mmap,
+    .read = mbf_reg_read,
+    .poll = mbf_reg_poll,
 };

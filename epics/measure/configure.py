@@ -1,4 +1,4 @@
-# LMBF configuration functions
+# MBF configuration functions
 
 import numpy
 import time
@@ -41,8 +41,8 @@ class PV:
 
 
 class PV_set(object):
-    def __init__(self, lmbf):
-        self.__lmbf = lmbf
+    def __init__(self, mbf):
+        self.__mbf = mbf
         self.__pv_set = {}
 
     def __del__(self):
@@ -54,17 +54,17 @@ class PV_set(object):
         if name[:7] == '_PV_set':
             self.__dict__[name] = value
         else:
-            self.__pv_set[name] = self.__lmbf.PV(value)
+            self.__pv_set[name] = self.__mbf.PV(value)
 
     def __getattr__(self, name):
         return self.__pv_set[name].get()
 
 
-class LMBF:
+class MBF:
     CHANNELS = range(2)
 
     def __init__(self, name):
-        self.lmbf = name
+        self.mbf = name
 
         self.adc_taps = self.get_shared('ADC_TAPS')
         self.dac_taps = self.get_shared('DAC_TAPS')
@@ -75,9 +75,9 @@ class LMBF:
 
     def pv(self, name, axis = 0):
         if axis is None:
-            return '%s:%s' % (self.lmbf, name)
+            return '%s:%s' % (self.mbf, name)
         else:
-            return '%s:%s:%s' % (self.lmbf, self.axes[axis], name)
+            return '%s:%s:%s' % (self.mbf, self.axes[axis], name)
 
     def PV(self, name, axis = 0):
         return PV(self.pv(name, axis))
@@ -102,7 +102,7 @@ class LMBF:
         return [self.set(name, value, c) for c in self.CHANNELS]
 
 
-    # Adds given function as an LMBF method
+    # Adds given function as an MBF method
     @classmethod
     def method(cls, method):
         setattr(cls, method.__name__, method)
@@ -111,23 +111,23 @@ class LMBF:
 
 # Wraps access to DRAM buffer
 class DRAM:
-    def __init__(self, lmbf):
-        self.lmbf = lmbf
-        self.wf0 = lmbf.PV('MEM:WF0', None)
-        self.wf1 = lmbf.PV('MEM:WF1', None)
+    def __init__(self, mbf):
+        self.mbf = mbf
+        self.wf0 = mbf.PV('MEM:WF0', None)
+        self.wf1 = mbf.PV('MEM:WF1', None)
 
     def get(self, sources, length = None):
-        self.lmbf.set_shared('MEM:SELECT_S', sources)
-        self.lmbf.set_shared('MEM:CAPTURE_S.PROC', 0)
+        self.mbf.set_shared('MEM:SELECT_S', sources)
+        self.mbf.set_shared('MEM:CAPTURE_S.PROC', 0)
         if length is None:
-            length = self.lmbf.bunches
+            length = self.mbf.bunches
         a = self.wf0.get()[:length]
         b = self.wf1.get()[:length]
         return a, b
 
     def get_peaks(self, sources):
         a, b = self.get(sources)
-        return self.lmbf.find_one_peak(a), self.lmbf.find_one_peak(b)
+        return self.mbf.find_one_peak(a), self.mbf.find_one_peak(b)
 
     def __del__(self):
         self.wf0.close()
@@ -139,15 +139,15 @@ class DRAM:
 
 trigger_inputs = ['SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1']
 
-@LMBF.method
-def set_trigger_inputs(lmbf, target, axis, *sources):
+@MBF.method
+def set_trigger_inputs(mbf, target, axis, *sources):
     def pv(input, group):
         return 'TRG:%s:%s:%s_S' % (target, input, group)
 
     for input in trigger_inputs:
-        lmbf.set(pv(input, 'EN'),
+        mbf.set(pv(input, 'EN'),
             'Enable' if input in sources else 'Ignore', axis)
-        lmbf.set(pv(input, 'BL'), 'All', axis)
+        mbf.set(pv(input, 'BL'), 'All', axis)
 
 
 # ------------------------------------------------------------------------------
@@ -155,20 +155,20 @@ def set_trigger_inputs(lmbf, target, axis, *sources):
 
 # Configure selected bank for waveform control with given gain, fir and output
 # waveform or constant values.
-@LMBF.method
-def bank_wf(lmbf, bank, gain, fir, output):
+@MBF.method
+def bank_wf(mbf, bank, gain, fir, output):
     # A bunch configuration can be either a single value or else an array of the
     # correct length.
     def bunches(value):
         value = numpy.array(value)
         if value.size == 1:
-            value = numpy.repeat(value, lmbf.bunches)
-        assert value.size == lmbf.bunches, 'Invalid array length'
+            value = numpy.repeat(value, mbf.bunches)
+        assert value.size == mbf.bunches, 'Invalid array length'
         return value
 
-    lmbf.set('BUN:%d:GAINWF_S' % bank, bunches(gain))
-    lmbf.set('BUN:%d:FIRWF_S' % bank, bunches(fir))
-    lmbf.set('BUN:%d:OUTWF_S' % bank, bunches(output))
+    mbf.set('BUN:%d:GAINWF_S' % bank, bunches(gain))
+    mbf.set('BUN:%d:FIRWF_S' % bank, bunches(fir))
+    mbf.set('BUN:%d:OUTWF_S' % bank, bunches(output))
 
 
 
@@ -176,23 +176,23 @@ def bank_wf(lmbf, bank, gain, fir, output):
 # Sequencer setup
 
 # Configures bunch bank for quiescent sequencer state
-@LMBF.method
-def state0(lmbf, bank = 0):
-    lmbf.set('SEQ:0:BANK_S', bank)
+@MBF.method
+def state0(mbf, bank = 0):
+    mbf.set('SEQ:0:BANK_S', bank)
 
 # Programs a single sequencer state
-@LMBF.method
-def state(lmbf, state = 1,
+@MBF.method
+def state(mbf, state = 1,
         start = 0, step = 0, dwell = 20, gain = '0dB', enable = True,
         count = 4096, bank = 1, window = True, holdoff = 0, capture = True):
-    lmbf.set('SEQ:%d:START_FREQ_S' % state, start)
-    lmbf.set('SEQ:%d:STEP_FREQ_S' % state, step)
-    lmbf.set('SEQ:%d:DWELL_S' % state, dwell)
-    lmbf.set('SEQ:%d:COUNT_S' % state, count)
-    lmbf.set('SEQ:%d:BANK_S' % state, bank)
-    lmbf.set('SEQ:%d:GAIN_S' % state, gain)
-    lmbf.set('SEQ:%d:ENABLE_S' % state, enable)
-    lmbf.set('SEQ:%d:ENWIN_S' % state, window)
-    lmbf.set('SEQ:%d:HOLDOFF_S' % state, holdoff)
-    lmbf.set('SEQ:%d:CAPTURE_S' % state, capture)
-    lmbf.set('SEQ:%d:BLANK_S' % state, 'Off')
+    mbf.set('SEQ:%d:START_FREQ_S' % state, start)
+    mbf.set('SEQ:%d:STEP_FREQ_S' % state, step)
+    mbf.set('SEQ:%d:DWELL_S' % state, dwell)
+    mbf.set('SEQ:%d:COUNT_S' % state, count)
+    mbf.set('SEQ:%d:BANK_S' % state, bank)
+    mbf.set('SEQ:%d:GAIN_S' % state, gain)
+    mbf.set('SEQ:%d:ENABLE_S' % state, enable)
+    mbf.set('SEQ:%d:ENWIN_S' % state, window)
+    mbf.set('SEQ:%d:HOLDOFF_S' % state, holdoff)
+    mbf.set('SEQ:%d:CAPTURE_S' % state, capture)
+    mbf.set('SEQ:%d:BLANK_S' % state, 'Off')

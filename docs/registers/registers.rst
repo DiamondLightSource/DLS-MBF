@@ -1,5 +1,5 @@
-LMBF Register Reference
-=======================
+MBF Register Reference
+======================
 
 .. footer::
     Page ###Page###. ###Section###

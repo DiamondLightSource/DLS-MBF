@@ -28,7 +28,7 @@ struct memory_context {
 };
 
 
-int lmbf_dma_open(
+int mbf_dma_open(
     struct file *file, struct dma_control *dma, size_t base, size_t length)
 {
     int rc = 0;
@@ -50,15 +50,15 @@ no_context:
 }
 
 
-static int lmbf_dma_release(struct inode *inode, struct file *file)
+static int mbf_dma_release(struct inode *inode, struct file *file)
 {
     kfree(file->private_data);
-    amc525_lmbf_release(inode);
+    amc525_mbf_release(inode);
     return 0;
 }
 
 
-static ssize_t lmbf_dma_read(
+static ssize_t mbf_dma_read(
     struct file *file, char __user *buf, size_t count, loff_t *f_pos)
 {
     struct memory_context *context = file->private_data;
@@ -96,7 +96,7 @@ static ssize_t lmbf_dma_read(
 }
 
 
-static loff_t lmbf_dma_llseek(struct file *file, loff_t f_pos, int whence)
+static loff_t mbf_dma_llseek(struct file *file, loff_t f_pos, int whence)
 {
     struct memory_context *context = file->private_data;
     return generic_file_llseek_size(
@@ -104,13 +104,13 @@ static loff_t lmbf_dma_llseek(struct file *file, loff_t f_pos, int whence)
 }
 
 
-static long lmbf_mem_ioctl(
+static long mbf_mem_ioctl(
     struct file *file, unsigned int cmd, unsigned long arg)
 {
     struct memory_context *context = file->private_data;
     switch (cmd)
     {
-        case LMBF_BUF_SIZE:
+        case MBF_BUF_SIZE:
             return dma_buffer_size(context->dma);
         default:
             return -EINVAL;
@@ -118,10 +118,10 @@ static long lmbf_mem_ioctl(
 }
 
 
-struct file_operations lmbf_dma_fops = {
+struct file_operations mbf_dma_fops = {
     .owner = THIS_MODULE,
-    .release = lmbf_dma_release,
-    .read = lmbf_dma_read,
-    .llseek = lmbf_dma_llseek,
-    .unlocked_ioctl = lmbf_mem_ioctl,
+    .release = mbf_dma_release,
+    .read = mbf_dma_read,
+    .llseek = mbf_dma_llseek,
+    .unlocked_ioctl = mbf_mem_ioctl,
 };

@@ -10,10 +10,10 @@ from register_defs import register_groups
 
 
 # Register area size ioctl code
-def LMBF_IOCTL(n):
+def MBF_IOCTL(n):
     return (1 << 30) | (ord('L') << 8) | n
-LMBF_MAP_SIZE = LMBF_IOCTL(0)
-LMBF_BUF_SIZE = LMBF_IOCTL(1)
+MBF_MAP_SIZE = MBF_IOCTL(0)
+MBF_BUF_SIZE = MBF_IOCTL(1)
 
 
 
@@ -38,7 +38,7 @@ class RawRegisters:
 
         # Open register file and map into memory.
         self.reg_file = os.open(regs_device, os.O_RDWR | os.O_SYNC)
-        reg_size = fcntl.ioctl(self.reg_file, LMBF_MAP_SIZE)
+        reg_size = fcntl.ioctl(self.reg_file, MBF_MAP_SIZE)
         self.reg_map = mmap.mmap(self.reg_file, reg_size)
         regs = numpy.frombuffer(self.reg_map, dtype = numpy.uint32)
 
@@ -130,7 +130,7 @@ class Registers:
     def DDR_BUF_LEN(self):
         if self._DDR0_BUF_LEN is None:
             with os.open(self.DDR0_NAME, os.O_RDONLY) as ddr0:
-                self.DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, LMBF_BUF_SIZE)
+                self.DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, MBF_BUF_SIZE)
         return self._DDR0_BUF_LEN
 
     def read_events(self, wait = True):

@@ -1,6 +1,6 @@
-=============================
-Kernel Driver for AMC525 LMBF
-=============================
+============================
+Kernel Driver for AMC525 MBF
+============================
 
 .. default-role:: literal
 
@@ -34,7 +34,7 @@ This file performs the following actions during the loading of the driver:
 
 2.  A subdirectory `/dev/amc525_lmbf` is created with a geographical device name
     containing aliases for each device node.  This is designed to be used when
-    more than one AMC525 LMBF card is present in a system.
+    more than one AMC525 MBF card is present in a system.
 
 Note that the syntax for udev rules seems to change from system to system, our
 set up is for Red Hat Enterprise Linux 7 (RHEL7).  For debugging, the following
