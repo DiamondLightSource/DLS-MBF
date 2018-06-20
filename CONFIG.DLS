@@ -11,6 +11,10 @@ LM_LICENSE_FILE = \
     2100@diamcslicserv01.dc.diamond.ac.uk \
     1717@diamcslicserv01.dc.diamond.ac.uk
 
+# Server to connect to for loading FPGA image followed by IP of card
+AMC525_SERVER = ts-di-lmbf-01 199
+
+
 # Definitions needed for EPICS driver build
 #
 # EPICS_DEVICE = /home/mga83/epics/epics_device
