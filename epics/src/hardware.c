@@ -16,7 +16,7 @@
 
 #include "error.h"
 
-#include "amc525_lmbf_device.h"
+#include "amc525_mbf_device.h"
 #include "register_defs.h"
 
 #include "common.h"

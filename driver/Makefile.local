@@ -58,7 +58,7 @@ $(DRIVER_KO): $(DRIVER_BUILD_FILES)
 # Standalone testing
 
 udev:
-	sudo install -m0644 -t /etc/udev/rules.d $(SRCDIR)/11-amc525_lmbf.rules
+	sudo install -m0644 -t /etc/udev/rules.d $(SRCDIR)/11-amc525_mbf.rules
 
 # We need to go via /tmp before invoking insmod at DLS due to our configuration.
 insmod: $(DRIVER_KO)
@@ -75,7 +75,7 @@ rmmod:
 # ------------------------------------------------------------------------------
 # Install dkms in target system
 
-DKMS_SRC_DIR = $(DESTDIR)/usr/src/amc525_lmbf-$(RPM_VERSION)/
+DKMS_SRC_DIR = $(DESTDIR)/usr/src/amc525_mbf-$(RPM_VERSION)/
 
 # We substitute the version information into dkms.conf
 dkms.conf: dkms.conf.in
@@ -85,16 +85,16 @@ dkms.conf: dkms.conf.in
 dkms-files: dkms.conf Makefile $(DRIVER_FILES)
 	install -d $(DESTDIR)/etc/udev/rules.d/
 	install -m0644 -t $(DESTDIR)/etc/udev/rules.d/ \
-            $(SRCDIR)/11-amc525_lmbf.rules
+            $(SRCDIR)/11-amc525_mbf.rules
 	install -d $(DKMS_SRC_DIR)
 	install -m0644 -t $(DKMS_SRC_DIR) $^
 
 # This rule needs to be run as root
 install-dkms: dkms-files
 	[ $$(id -u) = 0 ]    # Must be run as root
-	dkms add amc525_lmbf/$(RPM_VERSION)
-	dkms build amc525_lmbf/$(RPM_VERSION)
-	dkms install amc525_lmbf/$(RPM_VERSION)
+	dkms add amc525_mbf/$(RPM_VERSION)
+	dkms build amc525_mbf/$(RPM_VERSION)
+	dkms install amc525_mbf/$(RPM_VERSION)
 	modprobe amc525_lmbf
 
 # To remove dkms run
@@ -108,15 +108,15 @@ install-dkms: dkms-files
 
 RPM_FILE = amc525_lmbf-$(RPM_VERSION)-1dkms.noarch.rpm
 
-amc525_lmbf.spec: amc525_lmbf.spec.in
+amc525_mbf.spec: amc525_mbf.spec.in
 	sed s/@@VERSION@@/$(RPM_VERSION)/g $< >$@
 
-driver-rpm: dkms.conf amc525_lmbf.spec
+driver-rpm: dkms.conf amc525_mbf.spec
 	mkdir -p rpmbuild/RPMS rpmbuild/BUILD
 	rpmbuild -bb \
             --define '_curdir $(CURDIR)' \
             --define '_topdir %{_curdir}/rpmbuild' \
             --define '_sourcedir $(SRCDIR)' \
             --define '_tmppath %{_topdir}/BUILD' \
-            amc525_lmbf.spec
+            amc525_mbf.spec
 	ln -sf rpmbuild/RPMS/noarch/$(RPM_FILE) .

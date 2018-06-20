@@ -7,8 +7,8 @@
 #include <linux/pci.h>
 
 #include "error.h"
-#include "amc525_lmbf_core.h"
-#include "amc525_lmbf_device.h"
+#include "amc525_mbf_core.h"
+#include "amc525_mbf_device.h"
 #include "dma_control.h"
 
 #include "memory.h"
