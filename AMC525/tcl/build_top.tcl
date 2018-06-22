@@ -20,6 +20,8 @@ set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
 # Ensure undriven pins are treated as errors
 set_msg_config -id "Synth 8-3295" -new_severity ERROR
 set_msg_config -id "Synth 8-3848" -new_severity ERROR
+# Similarly catch sensitivity list errors
+set_msg_config -id "Synth 8-614" -new_severity ERROR
 
 
 # Add our files and set them to VHDL 2008.  This needs to be done before reading
