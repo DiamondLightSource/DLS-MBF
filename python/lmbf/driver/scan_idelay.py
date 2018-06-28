@@ -18,6 +18,7 @@ def setup_scan(regs):
     regs.DSP0.ADC.CONFIG.DRAM_SOURCE = 0    # Before FIR
     regs.DSP1.ADC.CONFIG.DRAM_SOURCE = 0
     regs.CTRL.MEM.CONFIG.MUX_SELECT = 0     # ADC0/ADC1
+    regs.CTRL.CONTROL.LOOPBACK = 0          # Ensure loopback not set
 
     # Return current idelay value
     return regs.SYS.ADC_IDELAY.VALUE
