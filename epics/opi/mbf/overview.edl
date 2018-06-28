@@ -92,7 +92,7 @@ displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "prefix=$(tune_prefix)"
+  0 "tune_prefix=$(tune_prefix)"
 }
 replaceSymbols {
   0 1
