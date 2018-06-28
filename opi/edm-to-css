@@ -4,10 +4,11 @@ HERE="$(dirname "$0")"
 
 INPUT="${1:?Specify input file}"
 OUTPUT="${2:?Specify output file}"
+shift 2
 
 java -Dedm2xml.colorsFile="$HERE"/converter/colours.list \
     -cp "$HERE"/converter/converter.jar \
     org.csstudio.opibuilder.converter.EdmConverter \
     "$INPUT" "$OUTPUT"  &&
 
-dls-python fixup-css.py "$OUTPUT"
+dls-python fixup-css.py "$OUTPUT" "$@"

@@ -21,12 +21,8 @@ clean:
 	rm -rf css
 .PHONY: clean
 
-$(CSS_FILES): css
-
-css:
-	mkdir -p $@
-# 	# Install dummy project file to avoid strange CSS behaviour
-# 	cp css.project $@/.project
+css/overview.opi: EXTRA_OPTS = convert_tune_prefix_macro
 
 css/%.opi: %.edl
-	./edm-to-css $< $@
+	mkdir -p css
+	./edm-to-css $< $@ $(EXTRA_OPTS)
