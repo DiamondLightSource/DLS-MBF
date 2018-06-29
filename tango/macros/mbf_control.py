@@ -11,15 +11,8 @@ DAC_OUT_FIR = 1
 DAC_OUT_NCO = 2
 DAC_OUT_SWEEP = 4
 
-def set_banks(Mbf, mode, cleaning_fine_gain, feedback_fine_gain, single_bunch, bunch):
+def set_banks(Mbf, mode, cleaning_fine_gain, feedback_fine_gain, BUNCH_ENABLES):
     BUNCH_COUNT = Mbf.bunch_count
-
-    # Compute desired bunch enable pattern.
-    BUNCH_ENABLES = zeros(BUNCH_COUNT, dtype = int)
-    if single_bunch:
-        BUNCH_ENABLES[bunch] = 1
-    else:
-        BUNCH_ENABLES[:] = 1
 
     BUNCH_ONES = ones(BUNCH_COUNT, dtype = int)
     BUNCH_ZEROS = zeros(BUNCH_COUNT, dtype = int)
@@ -89,6 +82,14 @@ class mbf_control(Macro):
             single_bunch = mbfCtrl.TuneOnSingleBunch
             bunch = mbfCtrl.TuneBunch
 
+	    # Compute desired pattern for tune sweep.
+	    BUNCH_COUNT = Mbf.bunch_count
+	    BUNCH_ENABLES = zeros(BUNCH_COUNT, dtype = int)
+	    if single_bunch:
+		BUNCH_ENABLES[bunch] = 1
+	    else:
+		BUNCH_ENABLES[:] = 1
+
             if command=="on" :
 
                 Mbf.put('SEQ:1:BANK_S', 2)
@@ -130,7 +131,7 @@ class mbf_control(Macro):
                 Mbf.put('TRG:SEQ:DISARM_S', 0)
                 Mbf.put('SEQ:RESET_S', 0)
 
-                set_banks(Mbf, mode, cleaning_fine_gain, feedback_fine_gain, single_bunch, bunch)
+                set_banks(Mbf, mode, cleaning_fine_gain, feedback_fine_gain, BUNCH_ENABLES)
 
                 # Set Cleaning Gain
                 Mbf.put('NCO:GAIN_S', '0dB')
@@ -249,7 +250,7 @@ class mbf_control(Macro):
                     Mbf.put('FIR:GAIN_S', mbfCtrl.FeedbackGain)
 
                 if 'set_banks' in actions:
-                    set_banks(Mbf, mode, cleaning_fine_gain, feedback_fine_gain, single_bunch, bunch)
+                    set_banks(Mbf, mode, cleaning_fine_gain, feedback_fine_gain, BUNCH_ENABLES)
 
                 if 'reset_mbf' in actions:
                     # Disable all sequencer triggers and configure triggering on external trigger
