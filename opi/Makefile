@@ -21,8 +21,6 @@ clean:
 	rm -rf css
 .PHONY: clean
 
-css/overview.opi: EXTRA_OPTS = convert_tune_prefix_macro
-
 css/%.opi: %.edl
 	mkdir -p css
-	./edm-to-css $< $@ $(EXTRA_OPTS)
+	./edm-to-css $< $@

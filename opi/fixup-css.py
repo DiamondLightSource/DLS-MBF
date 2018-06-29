@@ -128,41 +128,6 @@ def convert_xygraph_traces(root, name):
             field.text = subst_to_pv(name, field.text)
 
 
-# Very special treatment is needed for the tune_prefix macro in the overview
-# screen.
-def convert_tune_prefix_macro(root):
-    path = '''
-        widget[@typeId='org.csstudio.opibuilder.widgets.TextUpdate']
-    '''
-    tune_prefix_pv = '$(device):$(axis):TUNE:PREFIX'
-
-    # For each widget using the $(tune_prefix) macro replace this with the
-    # appropriate CSS code.  This uses a combination of the =pv() function
-    # together with concat() to join strings and a rather tricksy feature where
-    # single quoted strings turn into PV fetched values.
-    for widget in find_widgets(root, path):
-        pv_name = widget.find('pv_name')
-        match = re.match('\$\(tune_prefix\)(.*)', pv_name.text)
-        if match:
-            pv_name.text = '=pv(concat(\'%s\', "%s"))' % (
-                tune_prefix_pv, match.groups()[0])
-
-    # Ensure the tune_prefix macro is defined
-    root.append(create_element('macros', '', [
-        create_element('include_parent_macros', 'true'),
-        create_element('tune_prefix', 'unknown'),
-    ]))
-
-    # Ensure the tune_prefix macro is updated when the PV changes
-    root.append(create_element('scripts', '', [
-        create_element('path', '', [
-            create_element('pv', tune_prefix_pv, trig = 'true'),
-        ],
-            pathString = '../opi_tune_prefix_linker.js',
-            checkConnect = 'true', sfe = 'false', seoe = 'false')
-    ]))
-
-
 # ------------------------------------------------------------------------------
 # Convert and update
 
