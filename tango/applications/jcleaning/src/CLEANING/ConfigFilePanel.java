@@ -128,7 +128,6 @@ public class ConfigFilePanel extends JPanel implements IResultListener, ActionLi
 
       Object src = e.getSource();
       if( src==gfilePathModel ) {
-        System.out.println("Get Res Path=" + e.getResult());
         setDirPath(e);
       }
 

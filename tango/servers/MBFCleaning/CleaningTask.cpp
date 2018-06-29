@@ -30,11 +30,6 @@ void CleaningTask::scrapper_up(bool updateState) {
 
   Tango::DeviceAttribute val;
   struct timespec nanotime;
-  Tango::DeviceProxy *upp5Ds = NULL;
-  Tango::DeviceProxy *low5Ds = NULL;
-  Tango::DeviceProxy *upp25Ds = NULL;
-  Tango::DeviceProxy *low25Ds = NULL;
-  Tango::DeviceProxy *upp22Ds = NULL;
   Tango::DevState upp5_state;
   Tango::DevState low5_state;
   Tango::DevState upp25_state;
@@ -50,18 +45,16 @@ void CleaningTask::scrapper_up(bool updateState) {
 
       case USE_UPP5LOW5:
 
-        upp5Ds = new Tango::DeviceProxy(ds->scrUpp5Device);
-        upp5Ds->set_source(Tango::DEV);
+        ds->upp5Ds->set_source(Tango::DEV);
         val.set_name("Position");
         val << ds->Upp5_initpos;
-        upp5Ds->write_attribute(val);
+        ds->upp5Ds->write_attribute(val);
         cout << "ScraperUpThread: Write upp5 position " << ds->Upp5_initpos << endl;
 
-        low5Ds = new Tango::DeviceProxy(ds->scrLow5Device);
-        low5Ds->set_source(Tango::DEV);
+        ds->low5Ds->set_source(Tango::DEV);
         val.set_name("Position");
         val << ds->Low5_initpos;
-        low5Ds->write_attribute(val);
+        ds->low5Ds->write_attribute(val);
         cout << "ScraperUpThread: Write low5 position " << ds->Low5_initpos << endl;
 
         // Wait while moving
@@ -74,9 +67,9 @@ void CleaningTask::scrapper_up(bool updateState) {
           nanotime.tv_nsec = 0;
           nanosleep(&nanotime, NULL);
 
-          val = upp5Ds->read_attribute("State");
+          val = ds->upp5Ds->read_attribute("State");
           val >> upp5_state;
-          val = low5Ds->read_attribute("State");
+          val = ds->low5Ds->read_attribute("State");
           val >> low5_state;
 
         }
@@ -85,18 +78,16 @@ void CleaningTask::scrapper_up(bool updateState) {
 
       case USE_UPP25LOW25:
 
-        upp25Ds = new Tango::DeviceProxy(ds->scrUpp25Device);
-        upp25Ds->set_source(Tango::DEV);
+        ds->upp25Ds->set_source(Tango::DEV);
         val.set_name("Position");
         val << ds->Upp25_initpos;
-        upp25Ds->write_attribute(val);
+        ds->upp25Ds->write_attribute(val);
         cout << "ScraperUpThread: Write upp25 position " << ds->Upp25_initpos << endl;
 
-        low25Ds = new Tango::DeviceProxy(ds->scrLow25Device);
-        low25Ds->set_source(Tango::DEV);
+        ds->low25Ds->set_source(Tango::DEV);
         val.set_name("Position");
         val << ds->Low25_initpos;
-        low25Ds->write_attribute(val);
+        ds->low25Ds->write_attribute(val);
         cout << "ScraperUpThread: Write low25 position " << ds->Low25_initpos << endl;
 
         // Wait while moving
@@ -109,9 +100,9 @@ void CleaningTask::scrapper_up(bool updateState) {
           nanotime.tv_nsec = 0;
           nanosleep(&nanotime, NULL);
 
-          val = upp25Ds->read_attribute("State");
+          val = ds->upp25Ds->read_attribute("State");
           val >> upp25_state;
-          val = low25Ds->read_attribute("State");
+          val = ds->low25Ds->read_attribute("State");
           val >> low25_state;
 
         }
@@ -120,11 +111,10 @@ void CleaningTask::scrapper_up(bool updateState) {
 
       case USE_UPP22:
 
-        upp22Ds = new Tango::DeviceProxy(ds->scrUpp22Device);
-        upp22Ds->set_source(Tango::DEV);
+        ds->upp22Ds->set_source(Tango::DEV);
         val.set_name("Position");
         val << ds->Upp22_initpos;
-        upp22Ds->write_attribute(val);
+        ds->upp22Ds->write_attribute(val);
         cout << "ScraperUpThread: Write upp22 position " << ds->Upp22_initpos << endl;
 
         // Wait while moving
@@ -136,7 +126,7 @@ void CleaningTask::scrapper_up(bool updateState) {
           nanotime.tv_nsec = 0;
           nanosleep(&nanotime, NULL);
 
-          val = upp22Ds->read_attribute("State");
+          val = ds->upp22Ds->read_attribute("State");
           val >> upp22_state;
 
         }
@@ -149,11 +139,6 @@ void CleaningTask::scrapper_up(bool updateState) {
     cout << "SweepThread: Received DevFailed exception while moving scraper." << endl;
     Tango::Except::print_exception(e);
 
-    if (upp5Ds) delete upp5Ds;
-    if (low5Ds) delete low5Ds;
-    if (upp25Ds) delete upp25Ds;
-    if (low25Ds) delete low25Ds;
-    if (upp22Ds) delete upp22Ds;
     {
       omni_mutex_lock l(mutex);
       string tmp;
@@ -165,11 +150,6 @@ void CleaningTask::scrapper_up(bool updateState) {
 
   }
 
-  if (upp5Ds) delete upp5Ds;
-  if (low5Ds) delete low5Ds;
-  if (upp25Ds) delete upp25Ds;
-  if (low25Ds) delete low25Ds;
-  if (upp22Ds) delete upp22Ds;
   {
     omni_mutex_lock l(mutex);
     if (updateState) {
@@ -187,11 +167,6 @@ void CleaningTask::scrapper_down(bool updateState) {
 
   Tango::DeviceAttribute val;
   struct timespec nanotime;
-  Tango::DeviceProxy *upp5Ds = NULL;
-  Tango::DeviceProxy *low5Ds = NULL;
-  Tango::DeviceProxy *upp25Ds = NULL;
-  Tango::DeviceProxy *low25Ds = NULL;
-  Tango::DeviceProxy *upp22Ds = NULL;
   Tango::DevState upp5_state;
   Tango::DevState low5_state;
   Tango::DevState upp25_state;
@@ -206,15 +181,13 @@ void CleaningTask::scrapper_down(bool updateState) {
 
       case USE_UPP5LOW5:
 
-        upp5Ds = new Tango::DeviceProxy(ds->scrUpp5Device);
-        upp5Ds->set_source(Tango::DEV);
-        val = upp5Ds->read_attribute("Position");
+        ds->upp5Ds->set_source(Tango::DEV);
+        val = ds->upp5Ds->read_attribute("Position");
         val >> ds->Upp5_initpos;
         cout << "ScraperDownThread: Read upp5 position " << ds->Upp5_initpos << endl;
 
-        low5Ds = new Tango::DeviceProxy(ds->scrLow5Device);
-        low5Ds->set_source(Tango::DEV);
-        val = low5Ds->read_attribute("Position");
+        ds->low5Ds->set_source(Tango::DEV);
+        val = ds->low5Ds->read_attribute("Position");
         val >> ds->Low5_initpos;
         cout << "ScraperDownThread: Read low5 position " << ds->Low5_initpos << endl;
 
@@ -222,15 +195,13 @@ void CleaningTask::scrapper_down(bool updateState) {
 
       case USE_UPP25LOW25:
 
-        upp25Ds = new Tango::DeviceProxy(ds->scrUpp25Device);
-        upp25Ds->set_source(Tango::DEV);
-        val = upp25Ds->read_attribute("Position");
+        ds->upp25Ds->set_source(Tango::DEV);
+        val = ds->upp25Ds->read_attribute("Position");
         val >> ds->Upp25_initpos;
         cout << "ScraperDownThread: Read upp25 position " << ds->Upp25_initpos << endl;
 
-        low25Ds = new Tango::DeviceProxy(ds->scrLow25Device);
-        low25Ds->set_source(Tango::DEV);
-        val = low25Ds->read_attribute("Position");
+        ds->low25Ds->set_source(Tango::DEV);
+        val = ds->low25Ds->read_attribute("Position");
         val >> ds->Low25_initpos;
         cout << "ScraperDownThread: Read low25 position " << ds->Low25_initpos << endl;
 
@@ -238,9 +209,8 @@ void CleaningTask::scrapper_down(bool updateState) {
 
       case USE_UPP22:
 
-        upp22Ds = new Tango::DeviceProxy(ds->scrUpp22Device);
-        upp22Ds->set_source(Tango::DEV);
-        val = upp22Ds->read_attribute("Position");
+        ds->upp22Ds->set_source(Tango::DEV);
+        val = ds->upp22Ds->read_attribute("Position");
         val >> ds->Upp22_initpos;
         cout << "ScraperDownThread: Read upp22 position " << ds->Upp22_initpos << endl;
 
@@ -251,12 +221,6 @@ void CleaningTask::scrapper_down(bool updateState) {
 
     cout << "ScraperDownThread: Received DevFailed exception while getting scraper values." << endl;
     Tango::Except::print_exception(e);
-
-    if (upp5Ds) delete upp5Ds;
-    if (low5Ds) delete low5Ds;
-    if (upp25Ds) delete upp25Ds;
-    if (low25Ds) delete low25Ds;
-    if (upp22Ds) delete upp22Ds;
 
     {
       omni_mutex_lock l(mutex);
@@ -285,12 +249,12 @@ void CleaningTask::scrapper_down(bool updateState) {
 
         val.set_name("Position");
         val << ds->attr_Upp5_read[0];
-        upp5Ds->write_attribute(val);
+        ds->upp5Ds->write_attribute(val);
         cout << "ScraperDownThread: Write upp5 position " << ds->attr_Upp5_read[0] << endl;
 
         val.set_name("Position");
         val << ds->attr_Low5_read[0];
-        low5Ds->write_attribute(val);
+        ds->low5Ds->write_attribute(val);
         cout << "ScraperDownThread: Write low5 position " << ds->attr_Low5_read[0] << endl;
 
         // Wait while moving
@@ -303,9 +267,9 @@ void CleaningTask::scrapper_down(bool updateState) {
           nanotime.tv_nsec = 0;
           nanosleep(&nanotime, NULL);
 
-          val = upp5Ds->read_attribute("State");
+          val = ds->upp5Ds->read_attribute("State");
           val >> upp5_state;
-          val = low5Ds->read_attribute("State");
+          val = ds->low5Ds->read_attribute("State");
           val >> low5_state;
 
         }
@@ -316,12 +280,12 @@ void CleaningTask::scrapper_down(bool updateState) {
 
         val.set_name("Position");
         val << ds->attr_Upp25_read[0];
-        upp25Ds->write_attribute(val);
+        ds->upp25Ds->write_attribute(val);
         cout << "ScraperDownThread: Write upp25 position " << ds->attr_Upp25_read[0] << endl;
 
         val.set_name("Position");
         val << ds->attr_Low25_read[0];
-        low25Ds->write_attribute(val);
+        ds->low25Ds->write_attribute(val);
         cout << "ScraperDownThread: Write low25 position " << ds->attr_Low25_read[0] << endl;
 
         // Wait while moving
@@ -334,9 +298,9 @@ void CleaningTask::scrapper_down(bool updateState) {
           nanotime.tv_nsec = 0;
           nanosleep(&nanotime, NULL);
 
-          val = upp25Ds->read_attribute("State");
+          val = ds->upp25Ds->read_attribute("State");
           val >> upp25_state;
-          val = low25Ds->read_attribute("State");
+          val = ds->low25Ds->read_attribute("State");
           val >> low25_state;
 
         }
@@ -347,7 +311,7 @@ void CleaningTask::scrapper_down(bool updateState) {
 
         val.set_name("Position");
         val << ds->attr_Upp22_read[0];
-        upp22Ds->write_attribute(val);
+        ds->upp22Ds->write_attribute(val);
         cout << "ScraperDownThread: Write upp22 position " << ds->attr_Upp22_read[0] << endl;
 
         // Wait while moving
@@ -359,7 +323,7 @@ void CleaningTask::scrapper_down(bool updateState) {
           nanotime.tv_nsec = 0;
           nanosleep(&nanotime, NULL);
 
-          val = upp22Ds->read_attribute("State");
+          val = ds->upp22Ds->read_attribute("State");
           val >> upp22_state;
 
         }
@@ -372,11 +336,6 @@ void CleaningTask::scrapper_down(bool updateState) {
     cout << "SweepThread: Received DevFailed exception while moving scraper." << endl;
     Tango::Except::print_exception(e);
 
-    if (upp5Ds) delete upp5Ds;
-    if (low5Ds) delete low5Ds;
-    if (upp25Ds) delete upp25Ds;
-    if (low25Ds) delete low25Ds;
-    if (upp22Ds) delete upp22Ds;
     {
       omni_mutex_lock l(mutex);
       string tmp;
@@ -388,11 +347,6 @@ void CleaningTask::scrapper_down(bool updateState) {
 
   }
 
-  if (upp5Ds) delete upp5Ds;
-  if (low5Ds) delete low5Ds;
-  if (upp25Ds) delete upp25Ds;
-  if (low25Ds) delete low25Ds;
-  if (upp22Ds) delete upp22Ds;
   {
     if (updateState) {
       omni_mutex_lock l(mutex);

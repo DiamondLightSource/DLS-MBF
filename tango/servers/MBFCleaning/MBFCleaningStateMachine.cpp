@@ -394,6 +394,21 @@ bool MBFCleaning::is_DoAll_allowed(TANGO_UNUSED(const CORBA::Any &any))
 	return true;
 }
 
+//--------------------------------------------------------
+/**
+ *	Method      : MBFCleaning::is_Stop_allowed()
+ *	Description : Execution allowed for Stop attribute
+ */
+//--------------------------------------------------------
+bool MBFCleaning::is_Stop_allowed(TANGO_UNUSED(const CORBA::Any &any))
+{
+	//	Not any excluded states for Stop command.
+	/*----- PROTECTED REGION ID(MBFCleaning::StopStateAllowed) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFCleaning::StopStateAllowed
+	return true;
+}
+
 
 /*----- PROTECTED REGION ID(MBFCleaning::MBFCleaningStateAllowed.AdditionalMethods) ENABLED START -----*/
 

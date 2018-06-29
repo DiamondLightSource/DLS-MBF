@@ -19,10 +19,28 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu2">
+        <Menu class="javax.swing.JMenu" name="viewMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit"/>
           </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="errorMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Errors..."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="errorMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="diagMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Diagnostics..."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="diagMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
         </Menu>
       </SubComponents>
     </Menu>
@@ -562,13 +580,10 @@
                     <Property name="text" type="java.lang.String" value="Do All"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JButton" name="exitButton">
+                <Component class="fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer" name="stopCommand">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Exit"/>
+                    <Property name="label" type="java.lang.String" value="Stop"/>
                   </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exitButtonActionPerformed"/>
-                  </Events>
                 </Component>
               </SubComponents>
             </Container>

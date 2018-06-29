@@ -401,6 +401,29 @@ public:
 	{return (static_cast<MBFCleaning *>(dev))->is_DoAll_allowed(any);}
 };
 
+//	Command Stop class definition
+class StopClass : public Tango::Command
+{
+public:
+	StopClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	StopClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~StopClass() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<MBFCleaning *>(dev))->is_Stop_allowed(any);}
+};
+
 
 /**
  *	The MBFCleaningClass singleton definition

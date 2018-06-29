@@ -13,8 +13,12 @@ import fr.esrf.tangoatk.core.AttributeList;
 import fr.esrf.tangoatk.core.AttributeStateEvent;
 import fr.esrf.tangoatk.core.CommandList;
 import fr.esrf.tangoatk.core.ConnectionException;
+import fr.esrf.tangoatk.core.DevStateScalarEvent;
+import fr.esrf.tangoatk.core.DeviceFactory;
 import fr.esrf.tangoatk.core.EnumScalarEvent;
 import fr.esrf.tangoatk.core.ErrorEvent;
+import fr.esrf.tangoatk.core.IDevStateScalarListener;
+import fr.esrf.tangoatk.core.IDevice;
 import fr.esrf.tangoatk.core.IEnumScalarListener;
 import fr.esrf.tangoatk.core.attribute.BooleanScalar;
 import fr.esrf.tangoatk.core.attribute.DevStateScalar;
@@ -45,7 +49,7 @@ import jpll.PllFrame;
  *
  * @author pons
  */
-public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener {
+public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener,IDevStateScalarListener {
   
   final static String APP_RELEASE = "1.0";
   final static String cleaningDevName = "sr/d-mfdbk/cleaning";
@@ -93,7 +97,7 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
     splash = new Splash();
     splash.setTitle("Cleaning " + APP_RELEASE);
     splash.setCopyright("(c) ESRF & DLS 2018");
-    splash.setMaxProgress(20);
+    splash.setMaxProgress(25);
     splash.progress(0);
 
     initComponents();
@@ -213,8 +217,17 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
       doAllCommand.setModel(doAll);
       doAllCommand.setText("Do All");
       splash.progress(nbDevice++);
+
+      VoidVoidCommand stop = (VoidVoidCommand)cmdList.add(cleaningDevName+"/Stop");
+      stopCommand.setModel(stop);
+      stopCommand.setText("Abort");
+      splash.progress(nbDevice++);
       
-      
+      DevStateScalar state = (DevStateScalar)attList.add(cleaningDevName+"/State");
+      state.addDevStateScalarListener(this);
+      splash.progress(nbDevice++);
+      state.refresh();
+            
     } catch (ConnectionException e) {
       
     }
@@ -235,6 +248,7 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
     cleaningStatusViewer.setBorder(null);
     attList.setRefreshInterval(1000);
     attList.startRefresher();
+    DeviceFactory.getInstance().stopRefresher();
     splash.setVisible(false);
     setTitle("SR Cleaning [" + APP_RELEASE + "]");
     innerPanel.setPreferredSize(new Dimension(480,640));
@@ -337,6 +351,31 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
     }
     
   }
+  
+  @Override
+  public void devStateScalarChange(DevStateScalarEvent dsse) {
+
+    String state = dsse.getValue();
+
+    if( state.compareToIgnoreCase(IDevice.ON)==0 ) {
+      // Ready to sweep (scrapper are positioned)
+      cleanCommand.setEnabled(false);
+      sweepCommand.setEnabled(true);
+      doneCommand.setEnabled(true);
+      doAllCommand.setEnabled(false);
+    } else if ( state.compareToIgnoreCase(IDevice.OFF)==0 ) {
+      cleanCommand.setEnabled(true);
+      sweepCommand.setEnabled(false);
+      doneCommand.setEnabled(false);
+      doAllCommand.setEnabled(true);
+    } else {
+      cleanCommand.setEnabled(false);
+      sweepCommand.setEnabled(false);
+      doneCommand.setEnabled(false);
+      doAllCommand.setEnabled(false);
+    }
+    
+  }
 
   @Override
   public void stateChange(AttributeStateEvent ase) {
@@ -393,12 +432,14 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
     sweepCommand = new fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer();
     doneCommand = new fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer();
     doAllCommand = new fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer();
-    exitButton = new javax.swing.JButton();
+    stopCommand = new fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer();
     configFileContainer = new javax.swing.JPanel();
     jMenuBar1 = new javax.swing.JMenuBar();
     fileMenu = new javax.swing.JMenu();
     exitMenuItem = new javax.swing.JMenuItem();
-    jMenu2 = new javax.swing.JMenu();
+    viewMenu = new javax.swing.JMenu();
+    errorMenuItem = new javax.swing.JMenuItem();
+    diagMenuItem = new javax.swing.JMenuItem();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -706,13 +747,8 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
     doAllCommand.setText("Do All");
     btnPanel.add(doAllCommand);
 
-    exitButton.setText("Exit");
-    exitButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        exitButtonActionPerformed(evt);
-      }
-    });
-    btnPanel.add(exitButton);
+    stopCommand.setLabel("Stop");
+    btnPanel.add(stopCommand);
 
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
@@ -752,8 +788,25 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
 
     jMenuBar1.add(fileMenu);
 
-    jMenu2.setText("Edit");
-    jMenuBar1.add(jMenu2);
+    viewMenu.setText("Edit");
+
+    errorMenuItem.setText("Errors...");
+    errorMenuItem.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        errorMenuItemActionPerformed(evt);
+      }
+    });
+    viewMenu.add(errorMenuItem);
+
+    diagMenuItem.setText("Diagnostics...");
+    diagMenuItem.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        diagMenuItemActionPerformed(evt);
+      }
+    });
+    viewMenu.add(diagMenuItem);
+
+    jMenuBar1.add(viewMenu);
 
     setJMenuBar(jMenuBar1);
 
@@ -764,10 +817,6 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
     exitForm();
   }//GEN-LAST:event_exitMenuItemActionPerformed
 
-  private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
-    exitForm();
-  }//GEN-LAST:event_exitButtonActionPerformed
-
   private void shakerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shakerButtonActionPerformed
     createShakerFrame();
     if(extShakerFrame!=null) {
@@ -775,6 +824,15 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
       extShakerFrame.setVisible(true);
     }    
   }//GEN-LAST:event_shakerButtonActionPerformed
+
+  private void errorMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorMenuItemActionPerformed
+    ATKGraphicsUtils.centerFrameOnScreen(errWin);
+    errWin.setVisible(true);
+  }//GEN-LAST:event_errorMenuItemActionPerformed
+
+  private void diagMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_diagMenuItemActionPerformed
+    fr.esrf.tangoatk.widget.util.ATKDiagnostic.showDiagnostic();
+  }//GEN-LAST:event_diagMenuItemActionPerformed
 
   /**
    * @param args the command line arguments
@@ -789,9 +847,10 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
   private fr.esrf.tangoatk.widget.attribute.StatusViewer cleaningStatusViewer;
   private javax.swing.JPanel commandPanel;
   private javax.swing.JPanel configFileContainer;
+  private javax.swing.JMenuItem diagMenuItem;
   private fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer doAllCommand;
   private fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer doneCommand;
-  private javax.swing.JButton exitButton;
+  private javax.swing.JMenuItem errorMenuItem;
   private javax.swing.JMenuItem exitMenuItem;
   private fr.esrf.tangoatk.widget.attribute.BooleanScalarCheckBoxViewer externalSweepEditor;
   private javax.swing.JMenu fileMenu;
@@ -802,7 +861,6 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
   private fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor gainEditor;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel gainLabel;
   private javax.swing.JPanel innerPanel;
-  private javax.swing.JMenu jMenu2;
   private javax.swing.JMenuBar jMenuBar1;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
@@ -818,6 +876,7 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
   private javax.swing.JPanel scraperSettingsPanel;
   private javax.swing.JButton shakerButton;
   private javax.swing.JPanel shakerSettingsPanel;
+  private fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer stopCommand;
   private fr.esrf.tangoatk.widget.command.VoidVoidCommandViewer sweepCommand;
   private fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor sweepTimeEditor;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel sweepTimeLabel;
@@ -827,6 +886,7 @@ public class MainPanel extends javax.swing.JFrame implements IEnumScalarListener
   private fr.esrf.tangoatk.widget.util.JSmoothLabel upp25Label;
   private fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor upp5Editor;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel upp5Label;
+  private javax.swing.JMenu viewMenu;
   // End of variables declaration//GEN-END:variables
   
 }

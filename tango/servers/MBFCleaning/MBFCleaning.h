@@ -75,6 +75,11 @@ public:
 
 		Tango::DeviceProxy *shakerDS;
 		Tango::DeviceProxy *mbfDS;
+		Tango::DeviceProxy *upp5Ds;
+		Tango::DeviceProxy *low5Ds;
+		Tango::DeviceProxy *upp25Ds;
+		Tango::DeviceProxy *low25Ds;
+		Tango::DeviceProxy *upp22Ds;
 
 		double Upp5_initpos;
 		double Low5_initpos;
@@ -86,6 +91,8 @@ public:
 		int  configurationLoadFailed;
 
 		omni_mutex mutexsweep;
+
+		void get_scr_open_pos(string scraperName,double *pos);
 
 /*----- PROTECTED REGION END -----*/	//	MBFCleaning::Data Members
 
@@ -376,6 +383,13 @@ public:
 	 */
 	virtual void do_all();
 	virtual bool is_DoAll_allowed(const CORBA::Any &any);
+	/**
+	 *	Command Stop related method
+	 *	Description: Stops the cleaning
+	 *
+	 */
+	virtual void stop();
+	virtual bool is_Stop_allowed(const CORBA::Any &any);
 
 
 	//--------------------------------------------------------

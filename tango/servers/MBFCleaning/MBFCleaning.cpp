@@ -67,6 +67,7 @@
 //  Sweep                     |  sweep
 //  EndCleaning               |  end_cleaning
 //  DoAll                     |  do_all
+//  Stop                      |  stop
 //================================================================
 
 //================================================================
@@ -91,6 +92,8 @@ namespace MBFCleaning_ns
 /*----- PROTECTED REGION ID(MBFCleaning::namespace_starting) ENABLED START -----*/
 
 //	static initializations
+
+#define SF_DELETE(x) if(x) { delete x; x=NULL; }
 
 /*----- PROTECTED REGION END -----*/	//	MBFCleaning::namespace_starting
 
@@ -140,7 +143,13 @@ void MBFCleaning::delete_device()
 	/*----- PROTECTED REGION ID(MBFCleaning::delete_device) ENABLED START -----*/
 	
 	//	Delete device allocated objects
-	
+	SF_DELETE(low5Ds);
+	SF_DELETE(upp25Ds);
+	SF_DELETE(low25Ds);
+	SF_DELETE(upp22Ds);
+	SF_DELETE(mbfDS);
+	SF_DELETE(shakerDS);
+
 	/*----- PROTECTED REGION END -----*/	//	MBFCleaning::delete_device
 	delete[] attr_FreqMin_read;
 	delete[] attr_FreqMax_read;
@@ -168,7 +177,14 @@ void MBFCleaning::init_device()
 	/*----- PROTECTED REGION ID(MBFCleaning::init_device_before) ENABLED START -----*/
 	
 	//	Initialization before get_device_property() call
-	
+	upp5Ds = NULL;
+	low5Ds = NULL;
+	upp25Ds = NULL;
+	low25Ds = NULL;
+	upp22Ds = NULL;
+	mbfDS = NULL;
+	shakerDS = NULL;
+
 	/*----- PROTECTED REGION END -----*/	//	MBFCleaning::init_device_before
 	
 
@@ -221,7 +237,19 @@ void MBFCleaning::init_device()
     }
   }
 
-  // Initialise default value
+	// Connect to scrapers
+	try {
+  	upp5Ds = new Tango::DeviceProxy(scrUpp5Device);
+		low5Ds = new Tango::DeviceProxy(scrLow5Device);
+		upp25Ds = new Tango::DeviceProxy(scrUpp25Device);
+		low25Ds = new Tango::DeviceProxy(scrLow25Device);
+		upp22Ds = new Tango::DeviceProxy(scrUpp22Device);
+	} catch (Tango::DevFailed &e) {
+		cerr << "ERROR: cannot import scraper device " << e.errors[0].desc << endl;
+		exit(0);
+	}
+
+	// Initialise default value
   attr_FreqMin_read[0] = 0.0;
   attr_FreqMax_read[0] = 0.0;
   attr_SweepTime_read[0] = 0.0;
@@ -233,12 +261,12 @@ void MBFCleaning::init_device()
   attr_Upp25_read[0] = 0.0;
   attr_Low25_read[0] = 0.0;
   attr_Upp22_read[0] = 0.0;
-  Upp5_initpos = 7.0;
-  Low5_initpos = 7.0;
-  Upp25_initpos = 15.0;
-  Low25_initpos = 15.0;
-  Upp22_initpos = 13.0;
-  configurationLoadFailed = false;
+	get_scr_open_pos(scrUpp5Device,&Upp5_initpos);
+	get_scr_open_pos(scrLow5Device,&Low5_initpos);
+	get_scr_open_pos(scrUpp25Device,&Upp25_initpos);
+	get_scr_open_pos(scrLow25Device,&Low25_initpos);
+	get_scr_open_pos(scrUpp22Device,&Upp22_initpos);
+	configurationLoadFailed = false;
   attr_ExternalSweep_read[0] = false;
 
   set_state(Tango::OFF);
@@ -1267,6 +1295,38 @@ void MBFCleaning::do_all()
 }
 //--------------------------------------------------------
 /**
+ *	Command Stop related method
+ *	Description: Stops the cleaning
+ *
+ */
+//--------------------------------------------------------
+void MBFCleaning::stop()
+{
+	DEBUG_STREAM << "MBFCleaning::Stop()  - " << device_name << endl;
+	/*----- PROTECTED REGION ID(MBFCleaning::stop) ENABLED START -----*/
+
+	// Abort scraper motion
+	switch(attr_Scrapers_read[0]) {
+		case USE_UPP5LOW5:
+			upp5Ds->command_inout("Abort");
+			low5Ds->command_inout("Abort");
+			break;
+		case USE_UPP25LOW25:
+			upp25Ds->command_inout("Abort");
+			low25Ds->command_inout("Abort");
+			break;
+		case USE_UPP22:
+			upp22Ds->command_inout("Abort");
+			break;
+	}
+
+	// Abort cleaning
+	mbfDS->command_inout("Reset");
+
+	/*----- PROTECTED REGION END -----*/	//	MBFCleaning::stop
+}
+//--------------------------------------------------------
+/**
  *	Method      : MBFCleaning::add_dynamic_commands()
  *	Description : Create the dynamic commands if any
  *                for specified device.
@@ -1284,6 +1344,19 @@ void MBFCleaning::add_dynamic_commands()
 /*----- PROTECTED REGION ID(MBFCleaning::namespace_ending) ENABLED START -----*/
 
 //	Additional Methods
+
+void MBFCleaning::get_scr_open_pos(string scraperName,double *pos) {
+
+  Tango::Database *db =Tango::Util::instance()->get_database();
+	Tango::DbData dbData;
+	Tango::DbDatum dbDatum("OpenPos");
+	dbData.push_back(dbDatum);
+	db->get_device_property(scraperName,dbData);
+  if( dbData[0].is_empty() )
+    RAISE_EXCEPTION("OpenPos not specified for scraper "+scraperName);
+  dbData[0] >> *pos;
+
+}
 
 /*----- PROTECTED REGION END -----*/	//	MBFCleaning::namespace_ending
 } //	namespace

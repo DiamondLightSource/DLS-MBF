@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="MBFCleaning" pogoRevision="9.6">
-    <description description="A class for the bunch by bunch cleaning in the SR" title="MBFCleaning" sourcePath="/mntdirect/_segfs/tango/cppserver/machine/diagnostic/MBF/tango/MBFCleaning" language="Cpp" filestogenerate="XMI   file,Code files,Makefile,CMakeLists,Protected Regions" license="GPL" copyright="Copyright (C): 2018&#xA;               European Synchrotron Radiation Facility&#xA;               BP 220, Grenoble 38043&#xA;               France" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A class for the bunch by bunch cleaning in the SR" title="MBFCleaning" sourcePath="/mntdirect/_segfs/tango/cppserver/machine/diagnostic/MBF/tango/servers/MBFCleaning" language="Cpp" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="Copyright (C): 2018&#xA;               European Synchrotron Radiation Facility&#xA;               BP 220, Grenoble 38043&#xA;               France" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <identification contact="at esrf.fr - pons" author="pons" emailDomain="esrf.fr" classFamily="BeamDiagnostics" siteSpecific="ESRF" platform="Unix Like" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
@@ -110,6 +110,15 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <commands name="DoAll" description="Perform cleaning task (move scraper and sweep)" execMethod="do_all" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="Stop" description="Stops the cleaning" execMethod="stop" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
