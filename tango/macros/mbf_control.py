@@ -5,6 +5,7 @@ from numpy import *
 from time import *
 
 import setup_mbf
+import external_devices
 
 
 DAC_OUT_FIR = 1
@@ -76,6 +77,7 @@ class mbf_control(Macro):
             mbfCtrl = setup_mbf.get_mbfCtrl(mbfCtrlDevName)
             #Mbf = setup_mbf.TangoMBF(mbfDevName, mbfGDevName)
             Mbf = setup_mbf.get_Mbf(mbfDevName, mbfGDevName)
+            db = Database()
 
             modeList = mbfCtrl.ModeList
             mode = modeList[mbfCtrl.mode]
@@ -113,7 +115,6 @@ class mbf_control(Macro):
                 if "vertical" not in mbfDevName:
                     raise ValueError("Cleaning allowed only on vertical device")
 
-                db = Database()
                 d = db.get_property('Mfdbk', 'Cleaning_Device')
                 SRCleaning_device_name = d['Cleaning_Device'][0]
                 
@@ -178,7 +179,8 @@ class mbf_control(Macro):
                 actions = []
                 if attName in ['All', 'BlankingInterval']:
                     actions += ['reset_mbf']
-                if attName in ['All', 'Mode', 'FeedbackFineGain', 'TuneOnSingleBunch', 'TuneBunch']:
+                if attName in ['All', 'Mode', 'FeedbackFineGain',
+                        'TuneOnSingleBunch', 'TuneBunch']:
                     actions += ['set_banks']
                 if attName in ['All', 'Tune']:
                     actions += ['set_fir']
@@ -186,23 +188,28 @@ class mbf_control(Macro):
                     actions += ['set_fir_gain']
                 if attName in ['All', 'FeedbackPhase']:
                     actions += ['set_fir_phase']
-                if attName in ['All', 'Tune', 'Harmonic', 'SweepDwellTime', 'SweepRange', 'SweepGain']:
+                if attName in ['All', 'Tune', 'Harmonic', 'SweepDwellTime',
+                        'SweepRange', 'SweepGain']:
                     actions += ['set_sweep']
                 
                 sweep_status = mbfCtrl.SweepState == DevState.ON
                 feedback_status = mbfCtrl.State() == DevState.ON
-                tune_reverse = False
                 sweep_holdoff = 0
                 detector_input = 0      # Detector input is ADC (0)
                 det_gain = 0            # Don't use the -48 dB scaling (0)
                 cleaning_fine_gain = 0.0
                 
-                
-                
-                tune = mbfCtrl.Tune
+                tune_fb = mbfCtrl.Tune
+                tune_sweep = mbfCtrl.Tune
+                tune_reverse = False
                 feedback_fine_gain = mbfCtrl.FeedbackFineGain
                 blanking_interval = mbfCtrl.BlankingInterval
                 N_TAPS = Mbf.n_taps
+
+                # Configure external devices
+                # --------------------------
+                if 'reset_mbf' in actions:
+                    external_devices.set_config(mode)
 
                 # ------------------------------------------------------------------------------
                 # Write computed configuration
@@ -239,7 +246,8 @@ class mbf_control(Macro):
                         Mbf.put('SEQ:0:BANK_S', 1)
 
                 if 'set_fir' in actions:
-                    fir_cycles, fir_length = setup_mbf.compute_filter_size(tune, N_TAPS)
+                    fir_cycles, fir_length = setup_mbf.compute_filter_size(
+                            tune_fb, N_TAPS)
                     # Configure FIR as selected
                     Mbf.put('FIR:0:LENGTH_S', fir_length)
                     Mbf.put('FIR:0:CYCLES_S', fir_cycles)
@@ -272,8 +280,12 @@ class mbf_control(Macro):
 
                 if 'set_sweep' in actions:
                     # Configure sequencer for tune measurement
+                    Harmonic = mbfCtrl.Harmonic
+                    if Harmonic < 0:
+                        Harmonic = abs(Harmonic)
+                        tune_sweep += 0.5
                     sweep_range = mbfCtrl.SweepRange
-                    sweep_start = mbfCtrl.Harmonic + tune - sweep_range
+                    sweep_start = Harmonic + tune_sweep - sweep_range
                     sweep_end = sweep_start + 2 * sweep_range
                     if tune_reverse:
                         sweep_start, sweep_end = sweep_end, sweep_start
