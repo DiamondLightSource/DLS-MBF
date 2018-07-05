@@ -209,7 +209,11 @@ class mbf_control(Macro):
                 # Configure external devices
                 # --------------------------
                 if 'reset_mbf' in actions:
-                    external_devices.set_config(mode)
+                    try:
+                        external_devices.set_config(mode)
+                    except:
+                        self.warning("Error while calling external_device (external_device.py)")
+                        self.warning("Continue anyway...")
 
                 # ------------------------------------------------------------------------------
                 # Write computed configuration
