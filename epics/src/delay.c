@@ -340,7 +340,7 @@ static void reset_coarse_delay(void)
 
     /* After this reset trigger a turn resync.  Need to wait a little for the
      * dust to settle first! */
-    usleep(10000);
+    usleep(50000);
     WITH_MUTEX(turn_clock_mutex)
         start_turn_sync();
 }
