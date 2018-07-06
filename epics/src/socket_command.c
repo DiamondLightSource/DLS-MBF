@@ -680,7 +680,7 @@ error__t process_memory_command(
     size_t bunches_per_turn = system_config.bunches_per_turn;
     struct memory_args args;
     size_t read_buffer_size;
-    struct trigger_target *lock = get_memory_trigger_ready_lock();
+    struct trigger_target *lock = get_memory_trigger_target();
     error__t error =
         parse_memory_args(command, &args, raw_mode)  ?:
         TEST_OK_(
@@ -868,7 +868,7 @@ error__t process_detector_command(
         parse_detector_args(command, &args, raw_mode)  ?:
         TEST_OK_(0 <= args.axis  &&  args.axis < axis_count,
             "Invalid axis number")  ?:
-        DO(lock = get_detector_trigger_ready_lock(args.axis))  ?:
+        DO(lock = get_sequencer_trigger_target(args.axis))  ?:
         wait_for_lock(lock, file, args.locking);
 
     if (!error)
