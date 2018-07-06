@@ -59,9 +59,12 @@ static void poll_turn_state(void)
 
 static bool write_turn_offset(void *context, unsigned int *offset)
 {
-    if (*offset < system_config.bunches_per_turn)
+    unsigned int bunches_per_turn = system_config.bunches_per_turn;
+    if (*offset < bunches_per_turn)
     {
-        hw_write_turn_clock_offset(*offset);
+        /* Negate the offset so that the operator can simply look at the offset
+         * of the target bunch and add its current offset to correct it. */
+        hw_write_turn_clock_offset(bunches_per_turn - 1 - *offset);
         return true;
     }
     else
