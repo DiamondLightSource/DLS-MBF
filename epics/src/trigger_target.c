@@ -619,13 +619,15 @@ void unlock_trigger_ready(struct trigger_target *target)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Special. */
 
-void immediate_memory_capture(void)
+bool immediate_memory_capture(bool ignored)
 {
     struct trigger_target *target = &targets[TRIGGER_DRAM];
     bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
+    bool ready;
     WITH_MUTEX(trigger_mutex)
     {
-        if (target->lock_count == 0  &&  target->state == TARGET_IDLE)
+        ready = target->lock_count == 0  &&  target->state == TARGET_IDLE;
+        if (ready)
         {
             hw_write_dram_capture_command(true, false);
             hw_write_trigger_fire(fire);
@@ -637,6 +639,7 @@ void immediate_memory_capture(void)
         else
             log_message("Ignoring memory capture while busy");
     }
+    return ready;
 }
 
 
