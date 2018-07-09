@@ -26,8 +26,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Turn clock control. */
 
-static pthread_mutex_t turn_clock_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 enum turn_clock_status {
     TURN_CLOCK_ARMED,
     TURN_CLOCK_SYNCED,
@@ -37,10 +35,22 @@ static unsigned int turn_clock_status;
 static unsigned int turn_clock_turns;
 static unsigned int turn_clock_errors;
 
-static void start_turn_sync(void)
+
+static void write_turn_clock_idelay(unsigned int delay)
 {
-    hw_write_turn_clock_sync();
+    hw_write_turn_clock_idelay(delay);
+
+    /* During startup we want to synchronise the turn clock, but we can't
+     * sensibly do this until the turn clock delay is set.  Hence we have a
+     * static flag that we check for this. */
+    static bool turn_sync_set = false;
+    if (!turn_sync_set)
+    {
+        turn_sync_set = true;
+        hw_write_turn_clock_sync();
+    }
 }
+
 
 static void poll_turn_state(void)
 {
@@ -344,8 +354,7 @@ static void reset_coarse_delay(void)
     /* After this reset trigger a turn resync.  Need to wait a little for the
      * dust to settle first! */
     usleep(50000);
-    WITH_MUTEX(turn_clock_mutex)
-        start_turn_sync();
+    hw_write_turn_clock_sync();
 }
 
 
@@ -362,7 +371,6 @@ static int read_dac_fifo(void)
 error__t initialise_delay(void)
 {
     read_pll_setup();
-    start_turn_sync();
 
     WITH_NAME_PREFIX("DLY")
     {
@@ -384,9 +392,9 @@ error__t initialise_delay(void)
 
         WITH_NAME_PREFIX("TURN")
         {
-            PUBLISH_ACTION("SYNC", start_turn_sync, .mutex = &turn_clock_mutex);
-            PUBLISH_ACTION("POLL", poll_turn_state, .mutex = &turn_clock_mutex);
-            PUBLISH_WRITER_P(ulongout, "DELAY", hw_write_turn_clock_idelay);
+            PUBLISH_ACTION("SYNC", hw_write_turn_clock_sync);
+            PUBLISH_ACTION("POLL", poll_turn_state);
+            PUBLISH_WRITER_P(ulongout, "DELAY", write_turn_clock_idelay);
             PUBLISH_READ_VAR(mbbi, "STATUS", turn_clock_status);
             PUBLISH_READ_VAR(ulongin, "TURNS", turn_clock_turns);
             PUBLISH_READ_VAR(ulongin, "ERRORS", turn_clock_errors);
