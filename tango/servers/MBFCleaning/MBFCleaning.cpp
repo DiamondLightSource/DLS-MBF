@@ -177,13 +177,13 @@ void MBFCleaning::init_device()
 	/*----- PROTECTED REGION ID(MBFCleaning::init_device_before) ENABLED START -----*/
 	
 	//	Initialization before get_device_property() call
-	upp5Ds = NULL;
-	low5Ds = NULL;
-	upp25Ds = NULL;
-	low25Ds = NULL;
-	upp22Ds = NULL;
-	mbfDS = NULL;
-	shakerDS = NULL;
+	upp5Ds = nullptr;
+	low5Ds = nullptr;
+	upp25Ds = nullptr;
+	low25Ds = nullptr;
+	upp22Ds = nullptr;
+	mbfDS = nullptr;
+	shakerDS = nullptr;
 
 	/*----- PROTECTED REGION END -----*/	//	MBFCleaning::init_device_before
 	
@@ -1056,46 +1056,57 @@ void MBFCleaning::load_configuration_file(Tango::DevString argin)
 				ss >> attr_FreqMin_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("FreqMin");
 				att.set_write_value(attr_FreqMin_read[0]);
+				save_attribute_property("FreqMin","__value",attr_FreqMin_read[0]);
 			} else if (att_name=="FreqMax") {
 				ss >> attr_FreqMax_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("FreqMax");
 				att.set_write_value(attr_FreqMax_read[0]);
+				save_attribute_property("FreqMax","__value",attr_FreqMax_read[0]);
 			} else if (att_name=="SweepTime") {
 				ss >> attr_SweepTime_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("SweepTime");
 				att.set_write_value(attr_SweepTime_read[0]);
+				save_attribute_property("SweepTime","__value",attr_SweepTime_read[0]);
 			} else if (att_name=="Gain") {
 				ss >> attr_Gain_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("Gain");
 				att.set_write_value(attr_Gain_read[0]);
+				save_attribute_property("Gain","__value",attr_Gain_read[0]);
 			} else if (att_name=="Scrapers") {
 				ss >> attr_Scrapers_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("Scrapers");
 				att.set_write_value(attr_Scrapers_read[0]);
+				save_attribute_property("Scrapers","__value",attr_Scrapers_read[0]);
 			} else if (att_name=="ExternalSweep") {
 				ss >> attr_ExternalSweep_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("ExternalSweep");
 				att.set_write_value(attr_ExternalSweep_read[0]);
+				save_attribute_property("ExternalSweep","__value",attr_ExternalSweep_read[0]);
 			} else if (att_name=="Upp22") {
 				ss >> attr_Upp22_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("Upp22");
 				att.set_write_value(attr_Upp22_read[0]);
+				save_attribute_property("Upp22","__value",attr_Upp22_read[0]);
 			} else if (att_name=="Low5") {
 				ss >> attr_Low5_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("Low5");
 				att.set_write_value(attr_Low5_read[0]);
+				save_attribute_property("Low5","__value",attr_Low5_read[0]);
 			} else if (att_name=="Upp5") {
 				ss >> attr_Upp5_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("Upp5");
 				att.set_write_value(attr_Upp5_read[0]);
+				save_attribute_property("Upp5","__value",attr_Upp5_read[0]);
 			} else if (att_name=="Low25") {
 				ss >> attr_Low25_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("Low25");
 				att.set_write_value(attr_Low25_read[0]);
+				save_attribute_property("Low25","__value",attr_Low25_read[0]);
 			} else if (att_name=="Upp25") {
 				ss >> attr_Upp5_read[0];
 				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("Upp25");
 				att.set_write_value(attr_Upp5_read[0]);
+				save_attribute_property("Upp25","__value",attr_Upp5_read[0]);
 			}
 
 		}
@@ -1357,6 +1368,21 @@ void MBFCleaning::get_scr_open_pos(string scraperName,double *pos) {
   dbData[0] >> *pos;
 
 }
+
+void MBFCleaning::save_attribute_property(string attName,string propName,double value) {
+
+	Tango::DbDatum dbAtt(attName);
+	Tango::DbDatum dbProp(propName);
+	Tango::DbData dbData;
+
+	dbAtt << 1; // One property
+	dbProp << value;
+	dbData.push_back(dbAtt);
+	dbData.push_back(dbProp);
+	get_db_device()->put_attribute_property(dbData);
+
+}
+
 
 /*----- PROTECTED REGION END -----*/	//	MBFCleaning::namespace_ending
 } //	namespace

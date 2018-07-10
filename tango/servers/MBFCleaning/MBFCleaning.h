@@ -93,6 +93,7 @@ public:
 		omni_mutex mutexsweep;
 
 		void get_scr_open_pos(string scraperName,double *pos);
+		void save_attribute_property(string attName,string propName,double value);
 
 /*----- PROTECTED REGION END -----*/	//	MBFCleaning::Data Members
 
