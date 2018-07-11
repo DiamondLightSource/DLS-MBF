@@ -36,8 +36,6 @@ architecture arch of testbench is
 
     signal phase_advance : angle_t;
     signal unscaled : cos_sin_18_t;
-    signal gain : unsigned(3 downto 0);
-    signal scaled : cos_sin_16_t;
 
     signal reference : cos_sin_18_t;
     signal difference : cos_sin_18_t;
@@ -50,13 +48,6 @@ begin
         clk_i => clk,
         phase_advance_i => phase_advance,
         cos_sin_o => unscaled
-    );
-
-    nco_scaling : entity work.nco_scaling port map (
-        clk_i => clk,
-        gain_i => gain,
-        unscaled_i => unscaled,
-        scaled_o => scaled
     );
 
 
@@ -83,16 +74,6 @@ begin
         phase_advance <= X"00000000";
         tick_wait;
         phase_advance <= X"00147AE1";
-        wait;
-    end process;
-
-
-    -- Gain control
-    process begin
-        for g in 0 to 15 loop
-            gain <= to_unsigned(g, 4);
-            tick_wait(50);
-        end loop;
         wait;
     end process;
 end;
