@@ -9,7 +9,8 @@ include VERSION
 
 # Get our version from git.  The name of the most recent parent tag is
 # optionally followed by a commit count and a git code.
-GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)
+GIT_VERSION = $(shell \
+    git describe --abbrev=7 --dirty --always --tags 2>/dev/null)
 
 MAKE_LOCAL = \
     $(MAKE) -C $< -f $(MBF_TOP)/$1/Makefile.local \
