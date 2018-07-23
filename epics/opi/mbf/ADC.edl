@@ -185,7 +185,7 @@ release 0
 x 456
 y 256
 w 80
-h 20
+h 22
 controlPv "$(device):$(axis):ADC:OVF_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
@@ -273,7 +273,7 @@ release 0
 x 456
 y 280
 w 80
-h 20
+h 22
 controlPv "$(device):$(axis):ADC:EVENT_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14

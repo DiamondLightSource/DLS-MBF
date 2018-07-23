@@ -220,7 +220,7 @@ release 0
 x 184
 y 448
 w 104
-h 24
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -259,7 +259,7 @@ release 0
 x 464
 y 424
 w 96
-h 20
+h 22
 controlPv "$(device):MEM:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -415,7 +415,7 @@ release 0
 x 456
 y 456
 w 104
-h 24
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0

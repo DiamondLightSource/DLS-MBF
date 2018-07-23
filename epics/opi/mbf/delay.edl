@@ -111,7 +111,7 @@ release 0
 x 72
 y 64
 w 32
-h 20
+h 22
 controlPv "$(device):DLY:DAC:FINE_DELAY_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -181,7 +181,7 @@ release 0
 x 72
 y 96
 w 32
-h 20
+h 22
 controlPv "$(device):DLY:DAC:COARSE_DELAY_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -468,7 +468,7 @@ release 0
 x 64
 y 248
 w 40
-h 24
+h 22
 controlPv "$(device):DLY:TURN:DELAY_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -629,7 +629,7 @@ release 0
 x 144
 y 216
 w 48
-h 24
+h 22
 controlPv "$(device):DLY:TURN:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 654
-y 43
+x 655
+y 44
 w 544
 h 433
 font "helvetica-medium-r-18.0"
@@ -729,7 +729,7 @@ release 0
 x 56
 y 392
 w 88
-h 24
+h 22
 controlPv "$(device):$(axis):NCO:FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -853,7 +853,7 @@ release 0
 x 56
 y 152
 w 24
-h 24
+h 22
 controlPv "$(device):$(axis):SEQ:PC_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -925,7 +925,7 @@ release 0
 x 56
 y 176
 w 56
-h 20
+h 22
 controlPv "$(device):$(axis):SEQ:SUPER:COUNT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1178,7 +1178,7 @@ release 0
 x 464
 y 368
 w 72
-h 24
+h 22
 fgColor index 43
 bgColor index 4
 topShadowColor index 1
@@ -1204,7 +1204,7 @@ release 0
 x 424
 y 368
 w 32
-h 20
+h 22
 controlPv "$(device):$(axis):SEQ:TRIGGER_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"

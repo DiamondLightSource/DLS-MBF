@@ -185,7 +185,7 @@ release 0
 x 456
 y 232
 w 80
-h 20
+h 22
 controlPv "$(device):$(axis):DAC:DELAY_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14

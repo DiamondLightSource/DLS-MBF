@@ -449,7 +449,7 @@ release 0
 x 272
 y 320
 w 48
-h 20
+h 22
 controlPv "$(device):$(axis):DET:FIR_DELAY_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -517,7 +517,7 @@ release 0
 x 264
 y 368
 w 96
-h 24
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
