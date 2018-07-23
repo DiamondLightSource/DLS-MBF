@@ -82,11 +82,23 @@ def convert_linked_paths(root):
 # Convert editable input fields to Lowered Style border for visibility
 def convert_editable_fields(root):
     path = '''
-        widget[@typeId='org.csstudio.opibuilder.widgets.TextInput']
+        .//widget[@typeId='org.csstudio.opibuilder.widgets.TextInput']
         border_style
     '''
     for widget in find_widgets(root, path):
         widget.text = '3'
+
+
+# Convert long string display type to String display type.  Fortunately this
+# only occurs once
+def convert_hostname_field(root):
+    path = '''
+        widget[@typeId='org.csstudio.opibuilder.widgets.TextUpdate']\
+[pv_name='$(device):HOSTNAME']
+        format_type
+    '''
+    for widget in find_widgets(root, path):
+        widget.text = '4'
 
 
 # Convert commands to use path to scripts dir and special CSS flag
@@ -137,12 +149,10 @@ root = tree.getroot()
 convert_button_paths(root)
 convert_linked_paths(root)
 convert_editable_fields(root)
+convert_hostname_field(root)
 convert_command_script(root)
 menumux_name = convert_menumux_pv(root)
 if menumux_name:
     convert_xygraph_traces(root, menumux_name)
-
-for extra_action in sys.argv[2:]:
-    globals()[extra_action](root)
 
 tree.write(sys.argv[1], encoding = 'utf-8', xml_declaration = True)
