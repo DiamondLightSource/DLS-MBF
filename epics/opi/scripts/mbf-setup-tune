@@ -25,8 +25,8 @@ DEFAULT_CONFIG = '/home/ops/diagnostics/config/MBF_tune.config'
 
 
 DEVICE_TO_CONFIG_AXIS = {
-    'SR23C-DI-TMBF-04:X': 'X',      # Temporary -04 until full commissioned
-    'SR23C-DI-TMBF-04:Y': 'Y',
+    'SR23C-DI-TMBF-01:X': 'X',
+    'SR23C-DI-TMBF-01:Y': 'Y',
     'SR23C-DI-LMBF-01:IQ': 'L',
     'TS-DI-TMBF-02:X': 'X',
     'TS-DI-TMBF-02:Y': 'Y',
