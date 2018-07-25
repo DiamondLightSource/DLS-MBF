@@ -408,7 +408,7 @@ x 152
 y 408
 w 72
 h 21
-controlPv "$(device):$(axis):TUNE"
+controlPv "$(device):$(axis):TUNE:TUNE"
 font "helvetica-medium-r-18.0"
 fgColor index 14
 fgAlarm
@@ -453,7 +453,7 @@ x 304
 y 408
 w 72
 h 21
-controlPv "$(device):$(axis):PHASE"
+controlPv "$(device):$(axis):TUNE:PHASE"
 font "helvetica-medium-r-18.0"
 fontAlign "right"
 fgColor index 14
