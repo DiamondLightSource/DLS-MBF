@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2268
-y 189
+x 2269
+y 190
 w 370
 h 608
 font "helvetica-medium-r-18.0"
@@ -113,7 +113,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Multiplexer"
+  "Tune"
 }
 endObjectProperties
 
@@ -137,8 +137,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 80
-y 64
+x 88
+y 72
 w 64
 h 21
 controlPv "$(tune_prefix):TUNE"
@@ -163,8 +163,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 160
-y 64
+x 168
+y 72
 w 55
 h 21
 font "helvetica-medium-r-18.0"
@@ -183,8 +183,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 16
-y 64
+x 24
+y 72
 w 47
 h 21
 font "helvetica-medium-r-18.0"
@@ -203,8 +203,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 232
-y 64
+x 240
+y 72
 w 64
 h 21
 controlPv "$(tune_prefix):PHASE"
@@ -230,7 +230,7 @@ major 4
 minor 6
 release 0
 x 72
-y 208
+y 184
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:TUNE"
@@ -256,7 +256,7 @@ major 4
 minor 1
 release 1
 x 16
-y 208
+y 184
 w 33
 h 14
 font "helvetica-bold-r-12.0"
@@ -276,7 +276,7 @@ major 4
 minor 1
 release 1
 x 16
-y 192
+y 168
 w 32
 h 14
 font "helvetica-bold-r-12.0"
@@ -296,7 +296,7 @@ major 4
 minor 6
 release 0
 x 72
-y 192
+y 168
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:VALID"
@@ -322,7 +322,7 @@ major 4
 minor 1
 release 1
 x 128
-y 176
+y 152
 w 24
 h 14
 font "helvetica-bold-r-12.0"
@@ -342,7 +342,7 @@ major 4
 minor 6
 release 0
 x 72
-y 224
+y 200
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:PHASE"
@@ -368,7 +368,7 @@ major 4
 minor 1
 release 1
 x 16
-y 224
+y 200
 w 40
 h 14
 font "helvetica-bold-r-12.0"
@@ -388,7 +388,7 @@ major 4
 minor 6
 release 0
 x 72
-y 240
+y 216
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:POWER"
@@ -415,8 +415,8 @@ major 4
 minor 1
 release 1
 x 16
-y 240
-w 31
+y 216
+w 42
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
@@ -435,7 +435,7 @@ major 4
 minor 6
 release 0
 x 72
-y 256
+y 232
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:WIDTH"
@@ -462,7 +462,7 @@ major 4
 minor 1
 release 1
 x 16
-y 256
+y 232
 w 36
 h 14
 font "helvetica-bold-r-12.0"
@@ -482,7 +482,7 @@ major 4
 minor 6
 release 0
 x 168
-y 208
+y 184
 w 80
 h 16
 controlPv "$(tune_prefix):CENTRE:TUNE"
@@ -508,7 +508,7 @@ major 4
 minor 6
 release 0
 x 168
-y 192
+y 168
 w 80
 h 16
 controlPv "$(tune_prefix):CENTRE:VALID"
@@ -534,7 +534,7 @@ major 4
 minor 1
 release 1
 x 208
-y 176
+y 152
 w 39
 h 14
 font "helvetica-bold-r-12.0"
@@ -554,7 +554,7 @@ major 4
 minor 6
 release 0
 x 168
-y 224
+y 200
 w 80
 h 16
 controlPv "$(tune_prefix):CENTRE:PHASE"
@@ -580,7 +580,7 @@ major 4
 minor 6
 release 0
 x 168
-y 240
+y 216
 w 80
 h 16
 controlPv "$(tune_prefix):CENTRE:POWER"
@@ -607,7 +607,7 @@ major 4
 minor 6
 release 0
 x 168
-y 256
+y 232
 w 80
 h 16
 controlPv "$(tune_prefix):CENTRE:WIDTH"
@@ -634,7 +634,7 @@ major 4
 minor 6
 release 0
 x 264
-y 208
+y 184
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:TUNE"
@@ -660,7 +660,7 @@ major 4
 minor 6
 release 0
 x 264
-y 192
+y 168
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:VALID"
@@ -686,7 +686,7 @@ major 4
 minor 1
 release 1
 x 312
-y 176
+y 152
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -706,7 +706,7 @@ major 4
 minor 6
 release 0
 x 264
-y 224
+y 200
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:PHASE"
@@ -732,7 +732,7 @@ major 4
 minor 6
 release 0
 x 264
-y 240
+y 216
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:POWER"
@@ -759,7 +759,7 @@ major 4
 minor 6
 release 0
 x 264
-y 256
+y 232
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:WIDTH"
@@ -983,7 +983,7 @@ major 4
 minor 6
 release 0
 x 72
-y 272
+y 248
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:HEIGHT"
@@ -1010,7 +1010,7 @@ major 4
 minor 1
 release 1
 x 16
-y 272
+y 248
 w 42
 h 14
 font "helvetica-bold-r-12.0"
@@ -1030,7 +1030,7 @@ major 4
 minor 6
 release 0
 x 168
-y 272
+y 248
 w 80
 h 16
 controlPv "$(tune_prefix):CENTRE:HEIGHT"
@@ -1057,7 +1057,7 @@ major 4
 minor 6
 release 0
 x 264
-y 272
+y 248
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:HEIGHT"
@@ -1084,7 +1084,7 @@ major 4
 minor 6
 release 0
 x 104
-y 304
+y 280
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:DTUNE"
@@ -1110,7 +1110,7 @@ major 4
 minor 1
 release 1
 x 16
-y 304
+y 280
 w 68
 h 14
 font "helvetica-bold-r-12.0"
@@ -1130,7 +1130,7 @@ major 4
 minor 6
 release 0
 x 104
-y 320
+y 296
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:DPHASE"
@@ -1156,7 +1156,7 @@ major 4
 minor 1
 release 1
 x 16
-y 320
+y 296
 w 75
 h 14
 font "helvetica-bold-r-12.0"
@@ -1176,7 +1176,7 @@ major 4
 minor 6
 release 0
 x 104
-y 336
+y 312
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:RPOWER"
@@ -1202,8 +1202,8 @@ major 4
 minor 1
 release 1
 x 16
-y 336
-w 58
+y 312
+w 69
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
@@ -1222,7 +1222,7 @@ major 4
 minor 6
 release 0
 x 104
-y 368
+y 344
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:RHEIGHT"
@@ -1248,7 +1248,7 @@ major 4
 minor 1
 release 1
 x 16
-y 368
+y 344
 w 69
 h 14
 font "helvetica-bold-r-12.0"
@@ -1268,7 +1268,7 @@ major 4
 minor 6
 release 0
 x 224
-y 304
+y 280
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:DTUNE"
@@ -1294,7 +1294,7 @@ major 4
 minor 6
 release 0
 x 224
-y 320
+y 296
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:DPHASE"
@@ -1320,7 +1320,7 @@ major 4
 minor 6
 release 0
 x 224
-y 336
+y 312
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:RPOWER"
@@ -1346,7 +1346,7 @@ major 4
 minor 6
 release 0
 x 224
-y 368
+y 344
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:RHEIGHT"
@@ -1400,10 +1400,10 @@ major 4
 minor 6
 release 0
 x 160
-y 392
+y 376
 w 80
 h 16
-controlPv "$(tune_prefix):PEAK:SYNCTUNE"
+controlPv "$(tune_prefix):SYNCTUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1426,7 +1426,7 @@ major 4
 minor 1
 release 1
 x 16
-y 392
+y 376
 w 108
 h 14
 font "helvetica-bold-r-12.0"
@@ -1446,7 +1446,7 @@ major 4
 minor 6
 release 0
 x 104
-y 352
+y 328
 w 80
 h 16
 controlPv "$(tune_prefix):LEFT:RWIDTH"
@@ -1472,7 +1472,7 @@ major 4
 minor 1
 release 1
 x 16
-y 352
+y 328
 w 63
 h 14
 font "helvetica-bold-r-12.0"
@@ -1492,7 +1492,7 @@ major 4
 minor 6
 release 0
 x 224
-y 352
+y 328
 w 80
 h 16
 controlPv "$(tune_prefix):RIGHT:RWIDTH"
@@ -1576,137 +1576,6 @@ value {
   "Smoothing:"
 }
 autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 96
-w 77
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Tune source:"
-}
-autoSize
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 104
-y 88
-w 88
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(tune_prefix):SELECT_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 80
-y 152
-w 64
-h 16
-controlPv "$(tune_prefix):PEAK:TUNE"
-font "helvetica-bold-r-14.0"
-fontAlign "right"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 160
-y 152
-w 48
-h 16
-font "helvetica-bold-r-14.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Phase:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 152
-w 39
-h 16
-font "helvetica-bold-r-14.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Tune:"
-}
-autoSize
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 232
-y 152
-w 64
-h 16
-controlPv "$(tune_prefix):PEAK:PHASE"
-font "helvetica-bold-r-14.0"
-fontAlign "right"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
 endObjectProperties
 
 # (Text Control)
