@@ -19,12 +19,15 @@ numpy.seterr(all = 'ignore')
 
 
 class Gather:
-    def __init__(self, updates, pv_i, pv_q, pv_s):
+    # At present we expect all three waveforms to always update before we send a
+    # gathered updated on for processing.
+    updates = ['I', 'Q', 'S']
+
+    def __init__(self, pv_i, pv_q, pv_s):
         self.event = cothread.Event()
         self.timestamps = {}
         self.values = {}
 
-        self.updates = updates
         self.monitor('I', pv_i)
         self.monitor('Q', pv_q)
         self.monitor('S', pv_s)
@@ -75,10 +78,9 @@ class TuneFitLoop:
         pv_q    = config[source + '_q']
         pv_s    = config[source + '_s']
         target  = config[source + '_t']
-        updates = config[source + '_u']
         tune_aliases = config.get(source + '_a', '')
 
-        self.gather = Gather(updates.split(), pv_i, pv_q, pv_s)
+        self.gather = Gather(pv_i, pv_q, pv_s)
         self.pvs = pvs.publish_pvs(
             persist, target, tune_aliases.split(), LENGTH)
 
