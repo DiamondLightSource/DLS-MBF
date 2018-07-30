@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 879
-y 710
+x 880
+y 711
 w 641
 h 337
 font "helvetica-medium-r-18.0"
@@ -230,7 +230,7 @@ major 4
 minor 0
 release 0
 x 8
-y 256
+y 280
 w 16
 h 16
 lineColor index 14
@@ -247,7 +247,7 @@ major 4
 minor 6
 release 0
 x 32
-y 256
+y 280
 w 168
 h 16
 controlPv "$(device):$(axis):DAC:FIR_OVF.DESC"
@@ -271,7 +271,7 @@ major 4
 minor 0
 release 0
 x 8
-y 280
+y 256
 w 16
 h 16
 lineColor index 14
@@ -288,7 +288,7 @@ major 4
 minor 6
 release 0
 x 32
-y 280
+y 256
 w 168
 h 16
 controlPv "$(device):$(axis):DAC:MUX_OVF.DESC"

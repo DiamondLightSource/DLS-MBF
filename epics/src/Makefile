@@ -12,6 +12,9 @@ include $(EPICS_DEVICE)/src/Makefile.extra
 # Pick up extra C flags from the top level config file
 USR_CFLAGS += $(CFLAGS_EXTRA)
 
+# Our processor has AVX support.
+USR_CFLAGS += -mavx
+
 
 # Compute the version information
 include $(TOP)/../VERSION

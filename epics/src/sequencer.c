@@ -491,7 +491,7 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
         return true;
     }
 
-    snprintf(result->s, 40, status);
+    snprintf(result->s, 40, "%s", status);
     return true;
 }
 
