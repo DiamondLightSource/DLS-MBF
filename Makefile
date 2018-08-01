@@ -2,6 +2,18 @@
 
 MBF_TOP := $(CURDIR)
 
+
+# We define two sets of targets which can be overridden in the CONFIG file.
+
+# This defines the targets which are built when `make` is run with no target.
+# This target is defined for developer convenience.
+DEFAULT_TARGETS = epics matlab tune_fit
+
+# These targets are built when `make install` is run, and should define all the
+# targets which are expected to be built as part of the system installation.
+INSTALL_TARGETS = epics matlab tune_fit driver-rpm css
+
+
 include Makefile.common
 
 include VERSION
@@ -14,11 +26,14 @@ GIT_VERSION = $(shell \
 
 MAKE_LOCAL = \
     $(MAKE) -C $< -f $(MBF_TOP)/$1/Makefile.local \
-        MBF_TOP=$(MBF_TOP) GIT_VERSION=$(GIT_VERSION) $(MAKECMDGOALS)
+        MBF_TOP=$(MBF_TOP) GIT_VERSION=$(GIT_VERSION) $@
 
 
-default:
+default: $(DEFAULT_TARGETS)
 .PHONY: default
+
+install: $(INSTALL_TARGETS)
+.PHONY: install
 
 
 
@@ -92,6 +107,10 @@ tune_fit:
 	make -C $@
 .PHONY: tune_fit
 
+opi:
+	make -C $@
+.PHONY: opi
+
 
 print_version:
 	@echo VERSION_EXTRA=$(VERSION_EXTRA)
@@ -101,14 +120,9 @@ print_version:
 .PHONY: print_version
 
 
-default: epics matlab tune_fit
-
-install: default
-	make driver-rpm
-.PHONY: install
-
 clean: clean-epics
 	rm -rf $(BUILD_DIR)
 	make -C matlab clean
 	make -C tune_fit clean
+	make -C opi clean
 .PHONY: clean
