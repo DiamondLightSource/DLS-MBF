@@ -110,8 +110,11 @@ def convert_command_script(root):
         command
     '''
     for widget in find_widgets(root, path):
+        # If command is run-command add the special -P flag
         widget.text = re.sub(
-            '^run-command', '../scripts/run-command -P', widget.text)
+            '^run-command', 'run-command -P', widget.text)
+        # Add explicit path to script
+        widget.text = re.sub('^', '../scripts/', widget.text)
 
 
 # The menumux result needs to be converted into a local pv, and we'll need to
