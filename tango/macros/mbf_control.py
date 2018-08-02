@@ -75,6 +75,7 @@ class mbf_control(Macro):
 
             #mbfCtrl = DeviceProxy(mbfCtrlDevName)
             mbfCtrl = setup_mbf.get_mbfCtrl(mbfCtrlDevName)
+            mbfCtrl.set_source(DevSource.DEV)
             #Mbf = setup_mbf.TangoMBF(mbfDevName, mbfGDevName)
             Mbf = setup_mbf.get_Mbf(mbfDevName, mbfGDevName)
             db = Database()
