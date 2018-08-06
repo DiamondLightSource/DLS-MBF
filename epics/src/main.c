@@ -302,8 +302,8 @@ int main(int argc, char *const argv[])
 
     if (!error)
     {
-        log_message("EPICS MBF Driver, Version %s.  Built: %s.",
-            MBF_VERSION, BUILD_DATE_TIME);
+        log_message("EPICS MBF Driver, Version %s (%s).  Built: %s.",
+            MBF_VERSION, GIT_VERSION, BUILD_DATE_TIME);
         log_message("Running in %s mode",
             system_config.lmbf_mode ? "LMBF" : "TMBF");
 
