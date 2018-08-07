@@ -11,7 +11,7 @@ DEFAULT_TARGETS = epics matlab tune_fit
 
 # These targets are built when `make install` is run, and should define all the
 # targets which are expected to be built as part of the system installation.
-INSTALL_TARGETS = epics matlab tune_fit driver-rpm css
+INSTALL_TARGETS = epics matlab tune_fit driver-rpm opi
 
 
 include Makefile.common
