@@ -4,7 +4,7 @@
 
 
 import sys
-from lmbf.driver import driver
+from mbf.driver import driver
 
 regs = driver.Registers(0)
 

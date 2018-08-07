@@ -13,7 +13,7 @@ stringIn('FPGA_GIT_VERSION', PINI = 'YES', DESC = 'Firmware git version')
 stringIn('DRIVER_VERSION', PINI = 'YES', DESC = 'Kernel driver version')
 
 Waveform('HOSTNAME', 256,
-    PINI = 'YES', FTVL = 'CHAR', DESC = 'Host name of LMBF IOC')
+    PINI = 'YES', FTVL = 'CHAR', DESC = 'Host name of MBF IOC')
 longIn('SOCKET', PINI = 'YES', DESC = 'Socket number for data server')
 stringIn('DEVICE', PINI = 'YES', DESC = 'Name of AMC525 device')
 boolIn('MODE', 'TMBF', 'LMBF', PINI = 'YES', DESC = 'Operational mode')

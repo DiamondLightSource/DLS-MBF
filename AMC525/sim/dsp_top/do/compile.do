@@ -22,7 +22,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/short_delay.vhd \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/util/long_delay.vhd \
-    $vhd_dir/registers/pulsed_bits.vhd \
     $vhd_dir/registers/all_pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
@@ -87,7 +86,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_bunch_select.vhd \
     $vhd_dir/detector/detector_dsp96.vhd \
     $vhd_dir/detector/detector_core.vhd \
-    $vhd_dir/detector/detector_gain_control.vhd \
     $vhd_dir/detector/detector_output.vhd \
     $vhd_dir/detector/detector_body.vhd \
     $vhd_dir/detector/detector_input.vhd \

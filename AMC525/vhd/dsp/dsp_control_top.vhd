@@ -230,21 +230,17 @@ begin
     );
 
     -- Map events to individual DSP units
-    process (dsp_clk_i) begin
-        for c in CHANNELS loop
-            adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
-            seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
-            seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
-            control_to_dsp_o(c).blanking <= blanking_window;
-            control_to_dsp_o(c).seq_start <= seq_start(c);
-        end loop;
-    end process;
+    gen_channels: for c in CHANNELS generate
+        -- ADC clocked signals
+        adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
+        seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
+        seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
+        control_to_dsp_o(c).blanking <= blanking_window;
+        control_to_dsp_o(c).seq_start <= seq_start(c);
 
-    process (adc_clk_i) begin
-        for c in CHANNELS loop
-            control_to_dsp_o(c).turn_clock <= turn_clock;
-        end loop;
-    end process;
+        -- DSP clocked signals
+        control_to_dsp_o(c).turn_clock <= turn_clock;
+    end generate;
 
 
     -- Generate appropriate interrupt signals

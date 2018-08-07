@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2393
-y 516
+x 2232
+y 225
 w 641
-h 594
+h 592
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -25,6 +25,21 @@ snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 360
+y 424
+w 272
+h 128
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
 
 # (Rectangle)
 object activeRectangleClass
@@ -220,7 +235,7 @@ release 0
 x 184
 y 448
 w 104
-h 24
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -236,16 +251,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 392
-y 424
-w 43
+x 368
+y 464
+w 73
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Offset:"
+  "View offset:"
 }
 autoSize
 endObjectProperties
@@ -256,10 +271,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 464
-y 424
+x 448
+y 464
 w 96
-h 20
+h 22
 controlPv "$(device):MEM:OFFSET_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -303,8 +318,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 408
-y 488
+x 472
+y 520
 w 72
 h 24
 fgColor index 25
@@ -326,13 +341,12 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 376
-y 528
+x 368
+y 496
 w 96
-h 16
+h 14
 controlPv "$(device):MEM:BUSY.DESC"
 font "helvetica-bold-r-12.0"
-fontAlign "right"
 fgColor index 14
 bgColor index 0
 useDisplayBg
@@ -351,8 +365,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 480
-y 528
+x 472
+y 496
 w 16
 h 16
 lineColor index 14
@@ -368,9 +382,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 504
-y 528
-w 128
+x 496
+y 496
+w 56
 h 16
 controlPv "$(device):MEM:BUSY"
 font "helvetica-medium-r-12.0"
@@ -392,10 +406,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 392
-y 456
-w 46
-h 14
+x 368
+y 440
+w 48
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -412,10 +426,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 456
-y 456
-w 104
-h 24
+x 448
+y 440
+w 96
+h 22
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
@@ -548,7 +562,7 @@ minor 1
 release 1
 x 16
 y 528
-w 108
+w 104
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
@@ -568,7 +582,7 @@ minor 1
 release 1
 x 16
 y 552
-w 108
+w 104
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
@@ -716,8 +730,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 568
-y 424
+x 552
+y 464
 w 33
 h 16
 font "helvetica-medium-r-14.0"
@@ -736,8 +750,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 496
-y 488
+x 552
+y 520
 w 72
 h 24
 fgColor index 43
@@ -754,5 +768,38 @@ displayFileName {
 symbols {
   0 "dest=TRG:MEM"
 }
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 360
+y 416
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Capture"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 360
+y 416
+w 120
+h 16
+lineColor index 14
+fillColor index 0
 endObjectProperties
 

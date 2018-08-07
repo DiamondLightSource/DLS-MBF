@@ -12,9 +12,9 @@ MBF_TOP="$(dirname "$0")"/../..
 set -o pipefail
 
 # First pick up the git information
-if GIT_SHA=$(cd "$MBF_TOP"; git rev-parse HEAD | cut -b -7); then
+if GIT_SHA=$(cd "$MBF_TOP"; git rev-parse HEAD 2>/dev/null | cut -b -7); then
     # Ok, we have a valid git repository
-    GIT_DIRTY=$(cd "$MBF_TOP"; git diff-index --quiet HEAD; echo $?)
+    GIT_DIRTY=$(cd "$MBF_TOP"; git diff --shortstat --quiet HEAD; echo $?)
 else
     # No git repository, create default values instead
     GIT_SHA=0000000

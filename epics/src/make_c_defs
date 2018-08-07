@@ -3,9 +3,9 @@
 # Script to compute C definitions from register_defs
 
 import sys
-from lmbf.defs_path import DEFS
+from mbf.defs_path import DEFS
 
-from lmbf import parse
+from mbf import parse
 
 
 def make_field(context, base, field):

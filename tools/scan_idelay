@@ -6,7 +6,7 @@ import time
 
 import numpy
 
-from lmbf.driver import driver, setup_pll, setup_adc, scan_idelay
+from mbf.driver import driver, setup_pll, setup_adc, scan_idelay
 
 
 parser = argparse.ArgumentParser(description = 'Scan for best IDELAY setting')

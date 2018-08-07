@@ -2,15 +2,40 @@
 
 # Runs the given command in a fresh xterm and prompts when done before closing.
 
-sep='||'
-if [[ $1 = -w ]]; then
-    sep=\;
-    shift
+HERE="$(dirname "$0")"
+
+SEP='||'
+PATH_FIXUP=0
+
+while getopts 'wPh' option; do
+    case "$option" in
+    w)  SEP=\; ;;
+    P)  PATH_FIXUP=1 ;;
+    h)  cat <<'EOF'
+Usage: run-command [-w] [-P] <title> <command> ...
+Runs given command in an xterm, optionally waits for user before closing.
+    -w  wait for user action before closing xterm, otherwise only waits if
+        command exited with non zero exit code
+    -P  fix up the command path to run command from this directory
+EOF
+        exit 0 ;;
+    *)  echo >&2 'Invalid option: try -h for help'
+        exit 1 ;;
+    esac
+done
+shift $((OPTIND-1))
+
+
+title="${1:?Must specify xterm title}"
+command="${2:?Must specify command to execute}"
+shift 2
+
+# If -P flag given then fixup the command by prefixing with path to this
+# directory.  This is a special trick to help with CSS path behaviour.
+if ((PATH_FIXUP)); then
+    command="$HERE/$command"
 fi
 
-title="$1"
-shift
 
-command="$* $sep read -p 'press return'"
-
-xterm -T "$title" -e "$command"
+action="$command $* $SEP read -p 'press return'"
+xterm -T "$title" -e "$action"

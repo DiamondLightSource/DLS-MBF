@@ -323,7 +323,7 @@ error__t initialise_memory(void)
         PUBLISH_READ_VAR(bi, "FIR1_OVF", fir_overflow[1]);
 
         /* Capture triggering. */
-        PUBLISH_ACTION("CAPTURE", immediate_memory_capture);
+        PUBLISH_WRITER_B(bo, "CAPTURE", immediate_memory_capture);
         busy_status = PUBLISH_IN_VALUE_I(bi, "BUSY");
         PUBLISH_WRITER_P(mbbo, "RUNOUT", write_dram_runout);
     }

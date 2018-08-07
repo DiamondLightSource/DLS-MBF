@@ -11,7 +11,6 @@ adc_events = []
 for a in axes('ADC'):
     WaveformOut('FILTER', ADC_TAPS, 'FLOAT',
         DESC = 'Input compensation filter')
-    longOut('FILTER:DELAY', 0, 7, DESC = 'Compensation filter group delay')
 
     aOut('OVF_LIMIT', 0, 1, PREC = 4, DESC = 'Overflow limit threshold')
     aOut('EVENT_LIMIT', 0, 2, PREC = 4, DESC = 'ADC min/max event threshold')

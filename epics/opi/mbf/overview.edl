@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1921
-y 348
+x 2003
+y 596
 w 456
 h 473
 font "helvetica-medium-r-8.0"
@@ -92,7 +92,7 @@ displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "prefix=$(tune_prefix)"
+  0 "tune_prefix=$(device):$(axis)"
 }
 replaceSymbols {
   0 1
@@ -181,7 +181,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 304
+x 296
 y 64
 w 80
 h 24
@@ -201,7 +201,7 @@ major 4
 minor 1
 release 1
 x 256
-y 72
+y 70
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -245,7 +245,7 @@ y 104
 w 136
 h 24
 fgColor index 6
-bgColor index 2
+bgColor index 4
 2ndBgColor index 3
 topShadowColor index 0
 botShadowColor index 14
@@ -408,7 +408,7 @@ x 152
 y 408
 w 72
 h 21
-controlPv "$(tune_prefix):TUNE"
+controlPv "$(device):$(axis):TUNE:TUNE"
 font "helvetica-medium-r-18.0"
 fgColor index 14
 fgAlarm
@@ -453,7 +453,7 @@ x 304
 y 408
 w 72
 h 21
-controlPv "$(tune_prefix):PHASE"
+controlPv "$(device):$(axis):TUNE:PHASE"
 font "helvetica-medium-r-18.0"
 fontAlign "right"
 fgColor index 14
@@ -697,33 +697,6 @@ symbols {
 }
 replaceSymbols {
   0 1
-}
-endObjectProperties
-
-# (Menu Mux PV)
-object menuMuxPVClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 16
-y 480
-w 112
-h 32
-fgColour index 14
-bgColour index 0
-topShadowColour index 0
-botShadowColour index 14
-font "helvetica-medium-r-8.0"
-numItems 1
-symbolTag {
-  0 "tune-prefix"
-}
-symbol0 {
-  0 "tune_prefix"
-}
-PV0 {
-  0 "$(device):$(axis):TUNE:PREFIX"
 }
 endObjectProperties
 

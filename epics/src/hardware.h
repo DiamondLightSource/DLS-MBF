@@ -1,4 +1,4 @@
-/* Hardware interfacing to LMBF system. */
+/* Hardware interfacing to MBF system. */
 
 #define AXIS_COUNT          2       // Two independent processing axes
 #define FIR_BANKS           4       // Four bunch-by-bunch selectable FIRs

@@ -1,4 +1,5 @@
 include $(MBF_TOP)/Makefile.common
+include $(MBF_TOP)/VERSION
 
 TOP = ..
 include $(TOP)/configure/CONFIG
@@ -12,15 +13,12 @@ include $(EPICS_DEVICE)/src/Makefile.extra
 # Pick up extra C flags from the top level config file
 USR_CFLAGS += $(CFLAGS_EXTRA)
 
-
-# Compute the version information
-include $(TOP)/../VERSION
-MBF_VERSION = \
-    $(VERSION_EXTRA)$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
-GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)
+# Our processor has AVX support.
+USR_CFLAGS += -mavx
 
 
-USR_CFLAGS += -DMBF_VERSION='"$(MBF_VERSION)"'
+# Pass version information through to build
+USR_CFLAGS += -DMBF_VERSION='"$(VERSION_EXTRA)$(MBF_VERSION)"'
 USR_CFLAGS += -DGIT_VERSION='"$(GIT_VERSION)"'
 
 # Compute a sensible format of build date
@@ -105,9 +103,9 @@ include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
 
-# Force main to be rebuilt every time so that the build date and time is
-# current.
-main.o: EMPTY
+# Force main and system to be rebuilt every time so that the build date and time
+# and version strings are current.
+main.o system.o: EMPTY
 EMPTY:
 
 # Build register_defs.h

@@ -26,6 +26,7 @@ def make_in_pv_builder(pv_type):
     def publish_in_pv(self, name, pv_name, *args, **kargs):
         pv = getattr(builder, pv_type)(pv_name, *args, **kargs)
         self.publish_in_pv(name, pv)
+        return pv
     return publish_in_pv
 
 
@@ -33,6 +34,7 @@ def make_config_pv_builder(pv_type, record_type):
     def publish_config_pv(self, name, *args, **kargs):
         pv = getattr(builder, pv_type)(name + '_S', *args, **kargs)
         self.publish_config_pv(name, pv, record_type)
+        return pv
     return publish_config_pv
 
 
@@ -105,10 +107,12 @@ def publish_config(pvs):
             DESC = 'Reject overall fit if error this large')
 
 
-def publish_tune(pvs):
-    with pvs.name_prefix('PEAK', 'tune.tune'):
-        pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5,
+def publish_tune(pvs, tune_aliases):
+    with pvs.name_prefix(None, 'tune.tune'):
+        tune = pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5,
             DESC = 'Measured tune')
+        for alias in tune_aliases:
+            tune.add_alias(alias)
         pvs.aIn('phase', 'PHASE', -180, 180,
             EGU = 'deg', PREC = 1,
             DESC = 'Measured tune phase')
@@ -163,32 +167,13 @@ def publish_info(pvs):
     pvs.aIn('output.fit_error', 'FIT_ERROR', PREC = 5)
 
 
-def publish_mux(pvs, target, mux, alias):
-    pvs.mbbOut('SELECT',
-        *mux.mux_options, on_update = mux.update_selection,
-        initial_value = 0,
-        DESC = 'Select which tune to use')
-    mux.tune_pv = builder.aIn('TUNE', 0, 1,
-        PREC = 5,
-        DESC = 'Selected tune')
-    mux.phase_pv = builder.aIn('PHASE', -180, 180,
-        EGU = 'deg', PREC = 1,
-        DESC = 'Selected tune phase')
-
-    if alias:
-        target_pv = builder.stringIn('PREFIX', VAL = target)
-        target_pv.add_alias('%s:TUNE:PREFIX' % alias)
-
-
-def publish_pvs(persist, target, alias, mux, length):
+def publish_pvs(persist, target, tune_aliases, length):
     pvs = PvSet(persist)
-    with pvs.name_prefix(target):
+    with pvs.name_prefix(target + ':TUNE'):
         publish_config(pvs)
 
-        publish_tune(pvs)
+        publish_tune(pvs, tune_aliases)
         publish_peaks(pvs)
         publish_graphs(pvs, length)
         publish_info(pvs)
-
-        publish_mux(pvs, target, mux, alias)
     return pvs

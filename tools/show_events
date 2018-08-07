@@ -8,7 +8,7 @@ import struct
 
 
 # Just using non-blocking as a test of select behaviour in the driver.
-f = os.open('/dev/amc525_lmbf.0.reg', os.O_NONBLOCK)
+f = os.open('/dev/amc525_mbf.0.reg', os.O_NONBLOCK)
 
 while True:
     r, w, x = select.select([f], [], [])

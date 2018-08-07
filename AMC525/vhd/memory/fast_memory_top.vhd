@@ -58,6 +58,7 @@ architecture arch of fast_memory_top is
     signal start : std_logic;
     signal stop : std_logic;
     signal reset_errors : std_logic;
+    signal snapshot_address : std_logic;
 
     signal capture_address : capture_address_i'SUBTYPE;
 
@@ -152,6 +153,7 @@ begin
     start <= command_bits(CTRL_MEM_COMMAND_START_BIT);
     stop  <= command_bits(CTRL_MEM_COMMAND_STOP_BIT);
     reset_errors <= command_bits(CTRL_MEM_COMMAND_RESET_BIT);
+    snapshot_address <= command_bits(CTRL_MEM_COMMAND_ADDRESS_BIT);
 
     pulsed_bits <= (
         CTRL_MEM_PULSED_FIR_OVF_BITS => reverse(fir_overflow),
@@ -223,6 +225,7 @@ begin
         dsp_clk_i => dsp_clk_i,
         start_i => start,
         stop_i => stop,
+        snapshot_address_i => snapshot_address,
         count_i => count,
         trigger_i => memory_trigger_i,
         trigger_phase_i => memory_phase_i,

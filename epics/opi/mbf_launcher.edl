@@ -289,7 +289,7 @@ displayFileName {
   0 "mbf/TMBF.edl"
 }
 symbols {
-  0 "device=SR23C-DI-TMBF-04,axis0=X,axis1=Y,axis01=XY,mode=TMBF"
+  0 "device=SR23C-DI-TMBF-01,axis0=X,axis1=Y,axis01=XY,mode=TMBF"
 }
 endObjectProperties
 
@@ -315,7 +315,7 @@ displayFileName {
   0 "mbf/overview.edl"
 }
 symbols {
-  0 "device=SR23C-DI-TMBF-04,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=X,adc_axis=X"
+  0 "device=SR23C-DI-TMBF-01,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=X,adc_axis=X"
 }
 endObjectProperties
 
@@ -341,7 +341,7 @@ displayFileName {
   0 "mbf/overview.edl"
 }
 symbols {
-  0 "device=SR23C-DI-TMBF-04,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=Y,adc_axis=Y"
+  0 "device=SR23C-DI-TMBF-01,axis0=X,axis1=Y,axis01=XY,mode=TMBF,axis=Y,adc_axis=Y"
 }
 endObjectProperties
 

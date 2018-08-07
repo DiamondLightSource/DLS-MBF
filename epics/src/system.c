@@ -108,7 +108,7 @@ static error__t get_driver_version(EPICS_STRING *version)
     return
         TEST_IO(uname(&utsname))  ?:
         DO(strncpy(hostname, utsname.nodename, sizeof(hostname)))  ?:
-        TEST_OK(file = fopen("/sys/module/amc525_lmbf/version", "r"))  ?:
+        TEST_OK(file = fopen("/sys/module/amc525_mbf/version", "r"))  ?:
         DO_FINALLY(
             TEST_OK(fgets(version->s, sizeof(version->s), file))  ?:
             DO(*strchrnul(version->s, '\n') = '\0'),

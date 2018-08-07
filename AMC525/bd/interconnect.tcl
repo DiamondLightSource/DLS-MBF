@@ -1186,13 +1186,13 @@ CONFIG.axi_data_width {256_bit} \
 CONFIG.axisten_freq {250} \
 CONFIG.en_axi_slave_if {true} \
 CONFIG.pcie_blk_locn {X0Y1} \
-CONFIG.pciebar2axibar_0 {0x0000200000000000} \
+CONFIG.pciebar2axibar_0 {0x0000000000010000} \
 CONFIG.pciebar2axibar_1 {0x0000000000000000} \
-CONFIG.pciebar2axibar_2 {0x0000400000000000} \
+CONFIG.pciebar2axibar_2 {0x0000000000020000} \
 CONFIG.pf0_Use_Class_Code_Lookup_Assistant {false} \
 CONFIG.pf0_bar0_64bit {true} \
-CONFIG.pf0_bar0_scale {Megabytes} \
-CONFIG.pf0_bar0_size {1} \
+CONFIG.pf0_bar0_scale {Kilobytes} \
+CONFIG.pf0_bar0_size {64} \
 CONFIG.pf0_bar1_enabled {false} \
 CONFIG.pf0_bar2_64bit {true} \
 CONFIG.pf0_bar2_enabled {true} \
@@ -1246,9 +1246,9 @@ CONFIG.pl_link_cap_max_link_width {X8} \
   connect_bd_net -net refclk_1 [get_bd_ports FCLKA] [get_bd_pins axi_pcie3_bridge/refclk]
 
   # Create address segments
-  create_bd_addr_seg -range 0x00010000 -offset 0x200000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x400000000000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x400000001000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/S_AXI/Reg] SEG_axi_intc_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x00010000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg
+  create_bd_addr_seg -range 0x00001000 -offset 0x00020000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
+  create_bd_addr_seg -range 0x00001000 -offset 0x00021000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/S_AXI/Reg] SEG_axi_intc_Reg
   create_bd_addr_seg -range 0x800000000000 -offset 0x00000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs axi_pcie3_bridge/S_AXI/BAR0] SEG_axi_pcie3_bridge_BAR0
   create_bd_addr_seg -range 0x80000000 -offset 0x800000000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
   create_bd_addr_seg -range 0x08000000 -offset 0x800080000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr

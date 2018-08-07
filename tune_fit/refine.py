@@ -127,7 +127,6 @@ def add_one_pole(config, scale, iq, model):
     fit = numpy.append(fit, numpy.array(peak).reshape((1, 2)), 0)
     model, refine_trace = refine_fits(scale, iq, fit)
 
-    if model is None: print 'returning failure'
     return (model, dd_trace, refine_trace)
 
 

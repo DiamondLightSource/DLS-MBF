@@ -13,6 +13,7 @@ entity fast_memory_control is
 
         start_i : in std_logic;
         stop_i : in std_logic;
+        snapshot_address_i : in std_logic;
         count_i : in unsigned;
 
         trigger_i : in std_logic;
@@ -77,6 +78,8 @@ begin
                         end if;
                     elsif stop_i = '1' then
                         state <= IDLE;
+                    elsif snapshot_address_i = '1' then
+                        capture_address_o <= capture_address_in;
                     end if;
                 when RUNOUT =>
                     if counter = 0 then

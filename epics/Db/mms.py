@@ -39,11 +39,8 @@ def do_mms_pvs(source):
         FLNK = create_fanout('FAN', *pvs),
         DESC = '%s min/max scanning' % source)
 
-    # We reset the MMS fault bits on startup because the very first readout
-    # tends to have lots of overflow bits set!
-    boolOut('RESET_FAULT',
-        PINI = 'YES',
-        DESC = 'Resets MMS fault accumulation')
+    # If an MMS fault is detected this will reset
+    boolOut('RESET_FAULT', DESC = 'Resets MMS fault accumulation')
 
 
 def mms_pvs(source):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-from lmbf import parse
+from mbf import parse
 
 
 head_template = '''\

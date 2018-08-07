@@ -43,7 +43,6 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/register_cc.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/system/adc_dsp_phase.vhd \
-    $vhd_dir/system/dac_test_pattern.vhd \
     $vhd_dir/system/idelay_control.vhd \
     $vhd_dir/system/clocking.vhd \
     $vhd_dir/system/register_top.vhd \

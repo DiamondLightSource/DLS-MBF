@@ -152,18 +152,9 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
 };
 
 
-static struct axis_context {
-    int axis;
-    struct trigger_target_state *target;
-} axis_contexts[AXIS_COUNT] = {
-    [0] = {
-        .axis = 0,
-        .target = &targets[TRIGGER_SEQ0],
-    },
-    [1] = {
-        .axis = 1,
-        .target = &targets[TRIGGER_SEQ1],
-    },
+static struct trigger_target_state *sequencer_targets[AXIS_COUNT] = {
+    [0] = &targets[TRIGGER_SEQ0],
+    [1] = &targets[TRIGGER_SEQ1],
 };
 
 
@@ -299,14 +290,14 @@ static void create_target(
 /* Shared configuration. */
 
 
-struct trigger_target *get_memory_trigger_ready_lock(void)
+struct trigger_target *get_memory_trigger_target(void)
 {
     return targets[TRIGGER_DRAM].target;
 }
 
-struct trigger_target *get_detector_trigger_ready_lock(int axis)
+struct trigger_target *get_sequencer_trigger_target(int axis)
 {
-    return axis_contexts[axis].target->target;
+    return sequencer_targets[axis]->target;
 }
 
 
@@ -347,7 +338,7 @@ static void set_shared_targets(const char *value)
 
 bool get_sequencer_trigger_active(int axis)
 {
-    struct trigger_target *target = axis_contexts[axis].target->target;
+    struct trigger_target *target = get_sequencer_trigger_target(axis);
     enum target_state state = trigger_target_get_state(target);
     return state != TARGET_IDLE;
 }
@@ -376,7 +367,7 @@ error__t initialise_triggers(void)
     }
 
     FOR_AXIS_NAMES(axis, "TRG", system_config.lmbf_mode)
-        create_target("SEQ", axis_contexts[axis].target);
+        create_target("SEQ", sequencer_targets[axis]);
 
     /* We're interested in the trigger and complete events for each trigger
      * target, these are dispatched to the appropriate target. */

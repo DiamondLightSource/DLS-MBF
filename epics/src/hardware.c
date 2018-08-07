@@ -16,7 +16,7 @@
 
 #include "error.h"
 
-#include "amc525_lmbf_device.h"
+#include "amc525_mbf_device.h"
 #include "register_defs.h"
 
 #include "common.h"
@@ -937,13 +937,13 @@ static error__t map_config_regs(void)
 
 error__t hw_lock_registers(void)
 {
-    return TEST_IO_(ioctl(reg_device, LMBF_REG_LOCK),
+    return TEST_IO_(ioctl(reg_device, MBF_REG_LOCK),
         "Unable to lock MBF registers");
 }
 
 error__t hw_unlock_registers(void)
 {
-    return TEST_IO_(ioctl(reg_device, LMBF_REG_UNLOCK),
+    return TEST_IO_(ioctl(reg_device, MBF_REG_UNLOCK),
         "Unable to unlock MBF registers");
 }
 
@@ -986,7 +986,7 @@ error__t initialise_hardware(
         log_message("running with hardware disabled");
     else
         log_message("initialise_hardware @%s %s",
-            *device_address ? device_address : "/dev/amc525_lmbf.0.*",
+            *device_address ? device_address : "/dev/amc525_mbf.0.*",
             lock_registers ? "" : "unlocked");
 
     /* Compute device node names from the device_address. */
@@ -995,16 +995,16 @@ error__t initialise_hardware(
     char dram1_device_name[PATH_MAX];
     if (*device_address)
     {
-        const char *device_template = "/dev/amc525_lmbf/%s/amc525_lmbf.%s";
+        const char *device_template = "/dev/amc525_mbf/%s/amc525_mbf.%s";
         sprintf(reg_device_name,   device_template, device_address, "reg");
         sprintf(dram0_device_name, device_template, device_address, "ddr0");
         sprintf(dram1_device_name, device_template, device_address, "ddr1");
     }
     else
     {
-        strcpy(reg_device_name,   "/dev/amc525_lmbf.0.reg");
-        strcpy(dram0_device_name, "/dev/amc525_lmbf.0.ddr0");
-        strcpy(dram1_device_name, "/dev/amc525_lmbf.0.ddr1");
+        strcpy(reg_device_name,   "/dev/amc525_mbf.0.reg");
+        strcpy(dram0_device_name, "/dev/amc525_mbf.0.ddr0");
+        strcpy(dram1_device_name, "/dev/amc525_mbf.0.ddr1");
     }
 
     return
@@ -1020,7 +1020,7 @@ error__t initialise_hardware(
                 hw_lock_registers())  ?:
             TEST_IO(
                 config_regs_size =
-                    (size_t) ioctl(reg_device, LMBF_MAP_SIZE))  ?:
+                    (size_t) ioctl(reg_device, MBF_MAP_SIZE))  ?:
             TEST_IO(config_regs = mmap(
                 0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
                 reg_device, 0)))  ?:

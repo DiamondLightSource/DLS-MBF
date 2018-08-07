@@ -110,7 +110,8 @@ static void maybe_reset_dma(struct dma_control *dma)
     bool idle = status & CDMASR_Idle;
     if (error || !idle)
     {
-        printk(KERN_INFO "Forcing reset of DMA controller\n");
+        printk(KERN_INFO "Forcing reset of DMA controller (status = %08x)\n",
+            status);
         reset_dma_controller(dma);
     }
     reinit_completion(&dma->dma_done);
