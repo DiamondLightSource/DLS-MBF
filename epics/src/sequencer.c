@@ -18,6 +18,7 @@
 #include "configs.h"
 #include "hardware.h"
 #include "triggers.h"
+#include "trigger_target.h"
 #include "detector.h"
 #include "bunch_select.h"
 
@@ -225,6 +226,8 @@ static bool update_capture_count(void *context, bool *value)
 static bool write_seq_reset(void *context, bool *value)
 {
     struct seq_context *seq = context;
+    struct trigger_target *target = get_sequencer_trigger_target(seq->axis);
+    trigger_target_disarm(target);
     hw_write_seq_abort(seq->axis);
     return true;
 }
