@@ -1,5 +1,9 @@
 # Config settings for building at ESRF
 
+# Server to connect to for loading FPGA image followed by IP of card
+AMC525_SERVER = l-c31-3 199
+
+
 # Definitions needed for EPICS driver build
 #
 EPICS_DEVICE = /segfs/tango/contrib/debian9/epics/epics_device
