@@ -18,6 +18,9 @@ MUST_DEFINE += EPICS_DEVICE
 # Path to Python Soft IOC
 MUST_DEFINE += PYTHON_IOC
 
+# MTCA server followed by list of AMC IPs
+MUST_DEFINE += AMC525_SERVER
+
 
 # The following defaults can be overridden in the CONFIG file
 

@@ -11,7 +11,7 @@ proc check_timing {timingreport} {
     }
 }
 
-create_project amc525_lmbf amc525_lmbf -part xc7vx690tffg1761-2
+create_project amc525_mbf amc525_mbf -part xc7vx690tffg1761-2
 
 set_param project.enableVHDL2008 1
 set_property target_language VHDL [current_project]
