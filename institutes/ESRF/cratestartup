@@ -1,0 +1,132 @@
+#! /bin/sh
+#
+# cratestartup:    Loading/Unloading drivers,
+#                  Starting/Stopping device servers
+#
+# chkconfig:    3 99 8
+# description:  Tango/Taco device servers, drivers start/stop
+#
+ 
+# Setting the environmnent
+
+# New:    Next environment variable is used in individual drivers scripts
+#         (except rocket and ieee1394) so that they do not run udevstart
+#         when invoked from this cratestartup script, but they do it when
+#         invoked individually from the interactive shell.
+# Remark: Although in this crate only rocketport driver is used, whose
+#         script does not use CRATESTARTUP, leave next 2 lines uncommented
+#         in case some ESRF driver (whose script uses CRATESTARTUP) is 
+#         added later.
+CRATESTARTUP=1
+export CRATESTARTUP
+
+DATE=`date`
+HOSTNAME=`hostname`
+DRIVERSPATH=/opt/dserver/driver
+MBF_DRIVER=amc525_lmbf
+export DRIVERSPATH
+DSHOME="/opt/dserver"
+. /operation/dserver/.environ
+		
+echo "$DATE cratestartup running on $HOSTNAME" >>/tmp/start.log
+
+# New:    Set driver module path (as seen from crate) which is used
+#         in individual drivers scripts (except rocket where this path
+#         is hardwired). In those scripts this path is defined only
+#         if it is not yet defined (= in case the scripts are used
+#         independently i.e. not called from this one).
+# Remark: Although in this crate only rocketport driver is used, whose
+#         script does not use MODULE_PATH, leave next 2 lines uncommented
+#         in case some ESRF driver (whose script uses MODULE_PATH) is
+#         added later.
+MODULE_PATH=$DRIVERSPATH/modules/`uname -r`
+export MODULE_PATH
+
+case "$1" in
+   start)
+    /operation/dserver/crates/common_scripts/cratestartup $1 2>> /tmp/start.log
+
+# Wait for FPGA to be loaded
+for i in `seq 1 120` 
+do
+  if ! lspci -v | grep -q "Xilinx"; then
+    sleep 2
+  fi
+done
+
+
+if ! lspci -v | grep -q "Xilinx"; then
+  echo "ERROR: FPGA not detected on PCIe port. Exiting..."
+  exit 2
+fi
+
+    # Load the AMC525 FPGA and driver
+    
+    export MBFHOME=/users/dserver/mbf
+    # For some reason load_fpga doesn't work during startup,
+    # it comes from ssh which refuse to work (without any error message).
+    #
+    #$MBFHOME/load_fpga -f $MBFHOME/amc525_lmbf.bit 199 2>&1 >/tmp/fpga.log
+    sleep 2
+    if ! lsmod | grep -q "$MBF_DRIVER"; then
+	insmod $MBFHOME/build/driver/kbuild-$(uname -r)/$MBF_DRIVER.ko
+        sleep 1
+    else
+        echo "MBF driver $MBF_DRIVER already loaded"
+    fi
+
+    # Start EPICS IOCs
+
+    . ~dserver/setpath_mbf
+    #screen -dmS SRTMBF $MBFHOME/mbf -C $MBFHOME $MBFHOME/SR-TMBF.config $MBFHOME/hardware_delays
+    if ! screen -ls | grep -q SRTMBF; then
+        screen -dmS SRTMBF $MBFHOME/epics/runioc $MBFHOME/iocs/SR-TMBF.config
+        sleep 4
+    else
+        echo "EPICS IOC SRTMBF is already running"
+    fi
+    # python interactive_ioc failed to run in screen so launch it in background
+    #$HERE/bin/$EPICS_HOST_ARCH/softIoc $MBFHOME/tune_fit/tune_fit_ioc_noshell $MBFHOME/SR-TFIT.config&
+    #$MBFHOME/iocs/SR-TFIT&
+    if ! screen -ls | grep -q SRTFIT; then
+        screen -dmS SRTFIT $MBFHOME/../screen_tfit
+        sleep 4
+    else
+        echo "EPICS IOC SRTFIT is already running"
+    fi
+
+    # Issue a Sync request (IOC already do it, but with wrong value for Skew)
+    caput SR-TMBF:DLY:TURN:SYNC_S 0
+
+    ########### start control system services
+    #
+    su dserver -c "/operation/dserver/crates/common_scripts/taco start" 2>> /tmp/start.log
+    ;;
+ 
+   stop)
+    /operation/dserver/crates/common_scripts/cratestartup $1 2>> /tmp/stop.log
+
+    # Stop EPICS IOCs
+    screen -X -S SRTMBF quit
+    screen -X -S SRTFIT quit
+    sleep 2
+
+    rmmod $MBF_DRIVER
+
+    ########### stop control system services
+    #
+    su dserver -c "/operation/dserver/crates/common_scripts/taco stop" 2>> /tmp/stop.log
+
+    # Unload the Rocket port driver (Serial lines)
+    # Dont append to /tmp/start.log for errors from rocketport,
+    # since it uses its own log file.
+    #$DRIVERSPATH/scripts/rocket stop
+    #
+    ;;
+
+   *) echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit 0
+
