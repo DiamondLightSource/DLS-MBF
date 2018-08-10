@@ -1,0 +1,35 @@
+There are a number of unresolved problems in the current implementation of the
+kernel driver.
+
+Hot plug management
+-------------------
+
+I am told that when removal of the AMC525 is initiated through the front panel
+switch the kernel driver should be automatically unloaded.  We do not see this
+behaviour.  One theory is that our kernel (RHEL7) does not support this event,
+another is that our MCH (Vadatech) does not.
+
+In either case, if the AMC525 is unloaded while a PCIe transation is in progress
+then the CPU card is likely to generate a kernel panic.
+
+Device detection on startup
+---------------------------
+
+At DLS we find that either the CPU must be rebooted at least once after the FPGA
+has been loaded, or the rescan-pcie program must be run.  At the ESRF (running
+Debian) this behaviour is not observed, so this may be a kernel issue.
+
+The rescan-pcie command is not altogether save, I have observed it leaving the
+FPGA in a state where a reload was required.
+
+Upgrading the Kernel Driver
+---------------------------
+
+Alas, it would seem that dkms and rpm work together to make upgrading the kernel
+driver an unreliable procedure.  I am finding that `rpm -U` leaves the
+installation in an inconsistent state, where the new driver source is installed,
+but the old version of the driver is left installed in /lib/modules.
+
+A little bit of digging into dkms reveals that the version check during upgrade
+ignores the actual version info if the sources are identical, which is not
+really what we want.

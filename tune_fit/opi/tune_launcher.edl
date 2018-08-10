@@ -67,7 +67,7 @@ displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "tune_prefix=SR23C-DI-TFIT-01:SYNC"
+  0 "tune_prefix=SR23C-DI-LMBF-01:IQ"
 }
 endObjectProperties
 
@@ -93,7 +93,7 @@ displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "tune_prefix=SR23C-DI-TFIT-01:Y"
+  0 "tune_prefix=SR23C-DI-TMBF-01:Y"
 }
 endObjectProperties
 
@@ -119,7 +119,7 @@ displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "tune_prefix=SR23C-DI-TFIT-01:X"
+  0 "tune_prefix=SR23C-DI-TMBF-01:X"
 }
 endObjectProperties
 

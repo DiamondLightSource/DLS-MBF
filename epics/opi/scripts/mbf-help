@@ -4,7 +4,7 @@
 
 HERE="$(dirname "$0")"
 
-TABLE="$HERE"/../help_table
+TABLE="$HERE"/help_table
 
 # Searches for given key in $TABLE, assigns result to URL, fails if not found
 search_for()

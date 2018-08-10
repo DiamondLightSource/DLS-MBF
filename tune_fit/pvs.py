@@ -169,7 +169,7 @@ def publish_info(pvs):
 
 def publish_pvs(persist, target, tune_aliases, length):
     pvs = PvSet(persist)
-    with pvs.name_prefix(target):
+    with pvs.name_prefix(target + ':TUNE'):
         publish_config(pvs)
 
         publish_tune(pvs, tune_aliases)

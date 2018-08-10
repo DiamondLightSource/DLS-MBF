@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2602
-y 381
+x 669
+y 692
 w 447
 h 409
 font "helvetica-medium-r-18.0"
@@ -545,5 +545,60 @@ value {
   "Waveforms:"
 }
 autoSize
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 376
+y 328
+w 64
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "SEQ Trig"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/trigger_target.edl"
+}
+symbols {
+  0 "dest=$(axis):TRG:SEQ"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 376
+y 304
+w 64
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Tune"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "tune_fit/peaks.edl"
+}
+symbols {
+  0 "tune_prefix=$(device):$(axis)"
+}
+replaceSymbols {
+  0 1
+}
 endObjectProperties
 

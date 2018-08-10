@@ -121,12 +121,12 @@ y2Max 1
 # Trace Properties
 numTraces 2
 xPv {
-  0 "$(tune_prefix):I"
-  1 "$(tune_prefix):MI"
+  0 "$(tune_prefix):TUNE:I"
+  1 "$(tune_prefix):TUNE:MI"
 }
 yPv {
-  0 "$(tune_prefix):Q"
-  1 "$(tune_prefix):MQ"
+  0 "$(tune_prefix):TUNE:Q"
+  1 "$(tune_prefix):TUNE:MQ"
 }
 plotStyle {
   0 "point"
@@ -180,10 +180,10 @@ y2Max 1
 # Trace Properties
 numTraces 1
 xPv {
-  0 "$(tune_prefix):SCALE"
+  0 "$(tune_prefix):TUNE:SCALE"
 }
 yPv {
-  0 "$(tune_prefix):RESIDUE"
+  0 "$(tune_prefix):TUNE:RESIDUE"
 }
 ySigned {
   0 1
@@ -227,12 +227,12 @@ y2Max 1
 # Trace Properties
 numTraces 2
 xPv {
-  0 "$(tune_prefix):SCALE"
-  1 "$(tune_prefix):SCALE"
+  0 "$(tune_prefix):TUNE:SCALE"
+  1 "$(tune_prefix):TUNE:SCALE"
 }
 yPv {
-  0 "$(tune_prefix):POWER"
-  1 "$(tune_prefix):MPOWER"
+  0 "$(tune_prefix):TUNE:POWER"
+  1 "$(tune_prefix):TUNE:MPOWER"
 }
 ySigned {
   0 1
