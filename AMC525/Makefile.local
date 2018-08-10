@@ -102,7 +102,6 @@ fpga_built: $(BUILT_FILES)
 # Let the load_fpga tool do the work on the target system
 SERVER_NAME = $(firstword $(AMC525_SERVER))
 IPS = $(wordlist 2, $(words $(AMC525_SERVER)), $(AMC525_SERVER))
-$(warning SERVER_NAME = $(SERVER_NAME) IPS = $(IPS))
 load_fpga:
 	scp amc525_mbf.bit $(MBF_TOP)/load_fpga $(SERVER_NAME):/tmp
 	ssh $(SERVER_NAME) /tmp/load_fpga -f /tmp/amc525_mbf.bit $(IPS)

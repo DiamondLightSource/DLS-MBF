@@ -92,7 +92,7 @@ displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "prefix=$(tune_prefix)"
+  0 "tune_prefix=$(device):$(axis)"
 }
 replaceSymbols {
   0 1
@@ -364,7 +364,7 @@ x 152
 y 408
 w 72
 h 21
-controlPv "$(tune_prefix):TUNE"
+controlPv "$(device):$(axis):TUNE"
 font "helvetica-medium-r-18.0"
 fgColor index 14
 fgAlarm
@@ -409,7 +409,7 @@ x 304
 y 408
 w 72
 h 21
-controlPv "$(tune_prefix):PHASE"
+controlPv "$(device):$(axis):PHASE"
 font "helvetica-medium-r-18.0"
 fontAlign "right"
 fgColor index 14

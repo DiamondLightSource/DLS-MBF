@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(prefix) Tune"
+title "$(tune_prefix) Tune"
 showGrid
 snapToGrid
 gridSize 8
@@ -56,7 +56,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(prefix) Tune"
+  "$(tune_prefix) Tune"
 }
 endObjectProperties
 
@@ -141,7 +141,7 @@ x 80
 y 64
 w 64
 h 21
-controlPv "$(prefix):TUNE"
+controlPv "$(tune_prefix):TUNE"
 font "helvetica-medium-r-18.0"
 fontAlign "right"
 fgColor index 14
@@ -207,7 +207,7 @@ x 232
 y 64
 w 64
 h 21
-controlPv "$(prefix):PHASE"
+controlPv "$(tune_prefix):PHASE"
 font "helvetica-medium-r-18.0"
 fontAlign "right"
 fgColor index 14
@@ -233,7 +233,7 @@ x 72
 y 208
 w 80
 h 16
-controlPv "$(prefix):LEFT:TUNE"
+controlPv "$(tune_prefix):LEFT:TUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -299,7 +299,7 @@ x 72
 y 192
 w 80
 h 16
-controlPv "$(prefix):LEFT:VALID"
+controlPv "$(tune_prefix):LEFT:VALID"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -345,7 +345,7 @@ x 72
 y 224
 w 80
 h 16
-controlPv "$(prefix):LEFT:PHASE"
+controlPv "$(tune_prefix):LEFT:PHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -391,7 +391,7 @@ x 72
 y 240
 w 80
 h 16
-controlPv "$(prefix):LEFT:POWER"
+controlPv "$(tune_prefix):LEFT:POWER"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -438,7 +438,7 @@ x 72
 y 256
 w 80
 h 16
-controlPv "$(prefix):LEFT:WIDTH"
+controlPv "$(tune_prefix):LEFT:WIDTH"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -485,7 +485,7 @@ x 168
 y 208
 w 80
 h 16
-controlPv "$(prefix):CENTRE:TUNE"
+controlPv "$(tune_prefix):CENTRE:TUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -511,7 +511,7 @@ x 168
 y 192
 w 80
 h 16
-controlPv "$(prefix):CENTRE:VALID"
+controlPv "$(tune_prefix):CENTRE:VALID"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -557,7 +557,7 @@ x 168
 y 224
 w 80
 h 16
-controlPv "$(prefix):CENTRE:PHASE"
+controlPv "$(tune_prefix):CENTRE:PHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -583,7 +583,7 @@ x 168
 y 240
 w 80
 h 16
-controlPv "$(prefix):CENTRE:POWER"
+controlPv "$(tune_prefix):CENTRE:POWER"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -610,7 +610,7 @@ x 168
 y 256
 w 80
 h 16
-controlPv "$(prefix):CENTRE:WIDTH"
+controlPv "$(tune_prefix):CENTRE:WIDTH"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -637,7 +637,7 @@ x 264
 y 208
 w 80
 h 16
-controlPv "$(prefix):RIGHT:TUNE"
+controlPv "$(tune_prefix):RIGHT:TUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -663,7 +663,7 @@ x 264
 y 192
 w 80
 h 16
-controlPv "$(prefix):RIGHT:VALID"
+controlPv "$(tune_prefix):RIGHT:VALID"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -709,7 +709,7 @@ x 264
 y 224
 w 80
 h 16
-controlPv "$(prefix):RIGHT:PHASE"
+controlPv "$(tune_prefix):RIGHT:PHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -735,7 +735,7 @@ x 264
 y 240
 w 80
 h 16
-controlPv "$(prefix):RIGHT:POWER"
+controlPv "$(tune_prefix):RIGHT:POWER"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -762,7 +762,7 @@ x 264
 y 256
 w 80
 h 16
-controlPv "$(prefix):RIGHT:WIDTH"
+controlPv "$(tune_prefix):RIGHT:WIDTH"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -870,7 +870,7 @@ x 96
 y 488
 w 64
 h 20
-controlPv "$(prefix):CONFIG:MAX_PEAKS_S"
+controlPv "$(tune_prefix):CONFIG:MAX_PEAKS_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -938,7 +938,7 @@ x 96
 y 512
 w 80
 h 24
-controlPv "$(prefix):CONFIG:MINIMUM_HEIGHT_S"
+controlPv "$(tune_prefix):CONFIG:MINIMUM_HEIGHT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -986,7 +986,7 @@ x 72
 y 272
 w 80
 h 16
-controlPv "$(prefix):LEFT:HEIGHT"
+controlPv "$(tune_prefix):LEFT:HEIGHT"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1033,7 +1033,7 @@ x 168
 y 272
 w 80
 h 16
-controlPv "$(prefix):CENTRE:HEIGHT"
+controlPv "$(tune_prefix):CENTRE:HEIGHT"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1060,7 +1060,7 @@ x 264
 y 272
 w 80
 h 16
-controlPv "$(prefix):RIGHT:HEIGHT"
+controlPv "$(tune_prefix):RIGHT:HEIGHT"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1087,7 +1087,7 @@ x 104
 y 304
 w 80
 h 16
-controlPv "$(prefix):LEFT:DTUNE"
+controlPv "$(tune_prefix):LEFT:DTUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1133,7 +1133,7 @@ x 104
 y 320
 w 80
 h 16
-controlPv "$(prefix):LEFT:DPHASE"
+controlPv "$(tune_prefix):LEFT:DPHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1179,7 +1179,7 @@ x 104
 y 336
 w 80
 h 16
-controlPv "$(prefix):LEFT:RPOWER"
+controlPv "$(tune_prefix):LEFT:RPOWER"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1225,7 +1225,7 @@ x 104
 y 368
 w 80
 h 16
-controlPv "$(prefix):LEFT:RHEIGHT"
+controlPv "$(tune_prefix):LEFT:RHEIGHT"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1271,7 +1271,7 @@ x 224
 y 304
 w 80
 h 16
-controlPv "$(prefix):RIGHT:DTUNE"
+controlPv "$(tune_prefix):RIGHT:DTUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1297,7 +1297,7 @@ x 224
 y 320
 w 80
 h 16
-controlPv "$(prefix):RIGHT:DPHASE"
+controlPv "$(tune_prefix):RIGHT:DPHASE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1323,7 +1323,7 @@ x 224
 y 336
 w 80
 h 16
-controlPv "$(prefix):RIGHT:RPOWER"
+controlPv "$(tune_prefix):RIGHT:RPOWER"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1349,7 +1349,7 @@ x 224
 y 368
 w 80
 h 16
-controlPv "$(prefix):RIGHT:RHEIGHT"
+controlPv "$(tune_prefix):RIGHT:RHEIGHT"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1375,7 +1375,7 @@ x 96
 y 536
 w 80
 h 24
-controlPv "$(prefix):CONFIG:MINIMUM_SPACING_S"
+controlPv "$(tune_prefix):CONFIG:MINIMUM_SPACING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1403,7 +1403,7 @@ x 160
 y 392
 w 80
 h 16
-controlPv "$(prefix):PEAK:SYNCTUNE"
+controlPv "$(tune_prefix):PEAK:SYNCTUNE"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1449,7 +1449,7 @@ x 104
 y 352
 w 80
 h 16
-controlPv "$(prefix):LEFT:RWIDTH"
+controlPv "$(tune_prefix):LEFT:RWIDTH"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1495,7 +1495,7 @@ x 224
 y 352
 w 80
 h 16
-controlPv "$(prefix):RIGHT:RWIDTH"
+controlPv "$(tune_prefix):RIGHT:RWIDTH"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1540,7 +1540,7 @@ x 264
 y 488
 w 80
 h 20
-controlPv "$(prefix):CONFIG:SMOOTHING_S"
+controlPv "$(tune_prefix):CONFIG:SMOOTHING_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1613,7 +1613,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(prefix):SELECT_S"
+controlPv "$(tune_prefix):SELECT_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -1627,7 +1627,7 @@ x 80
 y 152
 w 64
 h 16
-controlPv "$(prefix):PEAK:TUNE"
+controlPv "$(tune_prefix):PEAK:TUNE"
 font "helvetica-bold-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1693,7 +1693,7 @@ x 232
 y 152
 w 64
 h 16
-controlPv "$(prefix):PEAK:PHASE"
+controlPv "$(tune_prefix):PEAK:PHASE"
 font "helvetica-bold-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1719,7 +1719,7 @@ x 264
 y 512
 w 80
 h 20
-controlPv "$(prefix):CONFIG:MINIMUM_WIDTH_S"
+controlPv "$(tune_prefix):CONFIG:MINIMUM_WIDTH_S"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -1768,7 +1768,7 @@ x 88
 y 416
 w 248
 h 16
-controlPv "$(prefix):LAST_ERROR"
+controlPv "$(tune_prefix):LAST_ERROR"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -1836,7 +1836,7 @@ x 88
 y 432
 w 248
 h 16
-controlPv "$(prefix):FIT_ERROR"
+controlPv "$(tune_prefix):FIT_ERROR"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -1881,7 +1881,7 @@ x 264
 y 536
 w 80
 h 20
-controlPv "$(prefix):CONFIG:MAXIMUM_FIT_ERROR_S"
+controlPv "$(tune_prefix):CONFIG:MAXIMUM_FIT_ERROR_S"
 format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"

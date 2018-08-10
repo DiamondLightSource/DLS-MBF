@@ -163,7 +163,7 @@ def publish_info(pvs):
     pvs.aIn('output.fit_error', 'FIT_ERROR', PREC = 5)
 
 
-def publish_mux(pvs, target, mux, alias):
+def publish_mux(pvs, target, mux):
     pvs.mbbOut('SELECT',
         *mux.mux_options, on_update = mux.update_selection,
         initial_value = 0,
@@ -175,12 +175,8 @@ def publish_mux(pvs, target, mux, alias):
         EGU = 'deg', PREC = 1,
         DESC = 'Selected tune phase')
 
-    if alias:
-        target_pv = builder.stringIn('PREFIX', VAL = target)
-        target_pv.add_alias('%s:TUNE:PREFIX' % alias)
 
-
-def publish_pvs(persist, target, alias, mux, length):
+def publish_pvs(persist, target, mux, length):
     pvs = PvSet(persist)
     with pvs.name_prefix(target):
         publish_config(pvs)
@@ -190,5 +186,5 @@ def publish_pvs(persist, target, alias, mux, length):
         publish_graphs(pvs, length)
         publish_info(pvs)
 
-        publish_mux(pvs, target, mux, alias)
+        publish_mux(pvs, target, mux)
     return pvs

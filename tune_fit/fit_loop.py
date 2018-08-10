@@ -125,11 +125,10 @@ class TuneFitLoop:
         pv_s    = config[source + '_s']
         target  = config[source + '_t']
         updates = config[source + '_u']
-        alias   = config.get(source + '_a')
 
         self.gather = Gather(updates.split(), pv_i, pv_q, pv_s)
         self.mux = PvMux(config, source)
-        self.pvs = pvs.publish_pvs(persist, target, alias, self.mux, LENGTH)
+        self.pvs = pvs.publish_pvs(persist, target, self.mux, LENGTH)
 
     def fit_one_sweep(self):
         timestamp, s, iq = self.gather.wait()
