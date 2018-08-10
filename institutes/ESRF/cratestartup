@@ -95,9 +95,6 @@ fi
         echo "EPICS IOC SRTFIT is already running"
     fi
 
-    # Issue a Sync request (IOC already do it, but with wrong value for Skew)
-    caput SR-TMBF:DLY:TURN:SYNC_S 0
-
     ########### start control system services
     #
     su dserver -c "/operation/dserver/crates/common_scripts/taco start" 2>> /tmp/start.log
