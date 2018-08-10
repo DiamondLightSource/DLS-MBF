@@ -23,7 +23,7 @@ export CRATESTARTUP
 DATE=`date`
 HOSTNAME=`hostname`
 DRIVERSPATH=/opt/dserver/driver
-MBF_DRIVER=amc525_lmbf
+MBF_DRIVER=amc525_mbf
 export DRIVERSPATH
 DSHOME="/opt/dserver"
 . /operation/dserver/.environ
