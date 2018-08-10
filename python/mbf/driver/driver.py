@@ -2,16 +2,18 @@ import sys
 import os
 import mmap
 import fcntl
+import select
+import struct
 import numpy
 
 from register_defs import register_groups
 
 
 # Register area size ioctl code
-def LMBF_IOCTL(n):
+def MBF_IOCTL(n):
     return (1 << 30) | (ord('L') << 8) | n
-LMBF_MAP_SIZE = LMBF_IOCTL(0)
-LMBF_BUF_SIZE = LMBF_IOCTL(1)
+MBF_MAP_SIZE = MBF_IOCTL(0)
+MBF_BUF_SIZE = MBF_IOCTL(1)
 
 
 
@@ -20,13 +22,13 @@ LMBF_BUF_SIZE = LMBF_IOCTL(1)
 def device_name(part, prefix = 0):
     if isinstance(prefix, int):
         # Assume the prefix is just a device number identification
-        return '/dev/amc525_lmbf.%d.%s' % (prefix, part)
+        return '/dev/amc525_mbf.%d.%s' % (prefix, part)
     else:
         # All string prefixes are PCI addresses.  In this case we'll allow a
         # full form (starting 'pci-') and a short form (nn).
         if not prefix.startswith('pci-'):
             prefix = 'pci-0000:%s:00.0' % prefix
-        return '/dev/amc525_lmbf/%s/amc525_lmbf.%s' % (prefix, part)
+        return '/dev/amc525_mbf/%s/amc525_mbf.%s' % (prefix, part)
 
 
 
@@ -36,7 +38,7 @@ class RawRegisters:
 
         # Open register file and map into memory.
         self.reg_file = os.open(regs_device, os.O_RDWR | os.O_SYNC)
-        reg_size = fcntl.ioctl(self.reg_file, LMBF_MAP_SIZE)
+        reg_size = fcntl.ioctl(self.reg_file, MBF_MAP_SIZE)
         self.reg_map = mmap.mmap(self.reg_file, reg_size)
         regs = numpy.frombuffer(self.reg_map, dtype = numpy.uint32)
 
@@ -55,6 +57,13 @@ class RawRegisters:
     def __del__(self):
         if hasattr(self, 'reg_file'):
             os.close(self.reg_file)
+
+    def read_events(self, wait):
+        if not wait:
+            r, w, x = select.select([self.reg_file], [], [], 0)
+            if not r:
+                return 0
+        return struct.unpack('I', os.read(self.reg_file, 4))[0]
 
 
 class RegisterMap:
@@ -121,8 +130,11 @@ class Registers:
     def DDR_BUF_LEN(self):
         if self._DDR0_BUF_LEN is None:
             with os.open(self.DDR0_NAME, os.O_RDONLY) as ddr0:
-                self.DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, LMBF_BUF_SIZE)
+                self.DDR0_BUF_LEN = fcntl.ioctl(ddr0_file, MBF_BUF_SIZE)
         return self._DDR0_BUF_LEN
+
+    def read_events(self, wait = True):
+        return self.raw_registers.read_events(wait)
 
 
 __all__ = ['Registers']

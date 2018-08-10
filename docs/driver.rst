@@ -1,6 +1,6 @@
-=============================
-Kernel Driver for AMC525 LMBF
-=============================
+============================
+Kernel Driver for AMC525 MBF
+============================
 
 .. default-role:: literal
 
@@ -25,16 +25,16 @@ that the permissions are set up correctly.
 udev Configuration
 ~~~~~~~~~~~~~~~~~~
 
-The file `driver/11-amc525_lmbf.rules` needs to be installed under
+The file `driver/11-amc525_mbf.rules` needs to be installed under
 `/etc/udev/rules.d`, and may need to be modified to suit the local environment.
 This file performs the following actions during the loading of the driver:
 
 1.  The access permissions and ownership are set so that group `dcs` (a DLS
     specific role) has full access to the device.
 
-2.  A subdirectory `/dev/amc525_lmbf` is created with a geographical device name
+2.  A subdirectory `/dev/amc525_mbf` is created with a geographical device name
     containing aliases for each device node.  This is designed to be used when
-    more than one AMC525 LMBF card is present in a system.
+    more than one AMC525 MBF card is present in a system.
 
 Note that the syntax for udev rules seems to change from system to system, our
 set up is for Red Hat Enterprise Linux 7 (RHEL7).  For debugging, the following
@@ -45,12 +45,12 @@ commands are helpful:
 
 `$ udevadm test /path/to/device`
     Triggers and logs test activation of udev rules for specified device name,
-    for example `/class/amc525_lmbf/amc525_lmbf.0.reg`.
+    for example `/class/amc525_mbf/amc525_mbf.0.reg`.
 
 `# udevadm control --reload`
     Sometimes it is necessary to force the udev database to be reloaded.
 
-`# udevadm trigger --attr-match=subsystem=amc525_lmbf`
+`# udevadm trigger --attr-match=subsystem=amc525_mbf`
     Retriggers udev rules.
 
 

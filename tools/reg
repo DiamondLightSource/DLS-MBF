@@ -3,7 +3,7 @@
 import sys
 import argparse
 
-from lmbf.driver import driver
+from mbf.driver import driver
 
 def to_int(s):
     return int(s, 0)

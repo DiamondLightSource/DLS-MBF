@@ -6,7 +6,7 @@ import time
 import os
 import sys
 
-from lmbf.driver import driver, setup_pll, config_pll
+from mbf.driver import driver, setup_pll, config_pll
 
 
 regs = driver.Registers(0)

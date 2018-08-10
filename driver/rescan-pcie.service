@@ -1,0 +1,19 @@
+# Systemd service file to force a rescan of the PCI express bus before any IOCs
+# are started.  This is used instead of a reboot to ensure that the FPGA AMC
+# cards are present and programmable.
+#
+# Note that at present there may a hazard in using this tool, as the kernel
+# driver doesn't seem to always cope with the PCI bus being bounced like this,
+# and certainly this will hang if the driver is in use.
+
+[Unit]
+Description=Rescan PCIe bus
+Before=epics-soft-iocs.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/rescan-pcie
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

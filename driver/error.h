@@ -1,4 +1,4 @@
-#define DEVICE_NAME     "amc525_lmbf"
+#define DEVICE_NAME     "amc525_mbf"
 
 /* If test is false then do on_error, print message and goto target. */
 #define TEST_OK(test, on_error, target, message) \
