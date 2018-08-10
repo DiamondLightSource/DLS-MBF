@@ -142,8 +142,10 @@ static void update_accum(
     bool sum2_ovfl = result->sum2_ovfl;
     FOR_BUNCHES_OFFSET(j, i, mms->bunch_offset)
     {
-        accum->raw_min[j] = MIN(accum->raw_min[j], result->minimum[i]);
-        accum->raw_max[j] = MAX(accum->raw_max[j], result->maximum[i]);
+        accum->raw_min[j] =
+            (int16_t) MIN(accum->raw_min[j], result->minimum[i]);
+        accum->raw_max[j] =
+            (int16_t) MAX(accum->raw_max[j], result->maximum[i]);
         accum->raw_sum[j] = add_overflow_int64_t(
             accum->raw_sum[j], result->sum[i], &sum_ovfl);
         accum->raw_sum2[j] = add_overflow_uint64_t(

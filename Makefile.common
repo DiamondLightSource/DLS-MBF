@@ -44,7 +44,9 @@ CFLAGS_EXTRA =
 # names into symbols which will generate a suitable error when an attempt is
 # made to expand them.  These will be defined in the CONFIG file.
 define _MUST_DEFINE
+ifndef $1
     $1 = $$(error Must define symbol $1 in CONFIG file)
+endif
 endef
 _EVAL_MUST_DEFINE = $(eval $(_MUST_DEFINE))
 $(foreach var,$(MUST_DEFINE),$(call _EVAL_MUST_DEFINE,$(var)))

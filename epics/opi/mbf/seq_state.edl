@@ -34,7 +34,7 @@ release 0
 x 24
 y 0
 w 72
-h 20
+h 22
 controlPv "$(device):$(axis):SEQ:$(state):START_FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -62,7 +62,7 @@ release 0
 x 104
 y 0
 w 80
-h 24
+h 22
 controlPv "$(device):$(axis):SEQ:$(state):STEP_FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -90,7 +90,7 @@ release 0
 x 168
 y 24
 w 72
-h 24
+h 22
 controlPv "$(device):$(axis):SEQ:$(state):DWELL_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -118,7 +118,7 @@ release 0
 x 24
 y 24
 w 56
-h 20
+h 22
 controlPv "$(device):$(axis):SEQ:$(state):COUNT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -223,7 +223,7 @@ release 0
 x 192
 y 0
 w 72
-h 20
+h 22
 controlPv "$(device):$(axis):SEQ:$(state):END_FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -271,7 +271,7 @@ release 0
 x 104
 y 24
 w 56
-h 20
+h 22
 controlPv "$(device):$(axis):SEQ:$(state):HOLDOFF_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
