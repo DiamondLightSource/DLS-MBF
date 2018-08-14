@@ -101,19 +101,26 @@ static char hostname[256];
 static EPICS_STRING device_name;
 
 
-static error__t get_driver_version(EPICS_STRING *version)
+static error__t get_hostname(char name[], size_t length)
 {
     struct utsname utsname;
-    FILE *file;
     return
         TEST_IO(uname(&utsname))  ?:
-        DO(strncpy(hostname, utsname.nodename, sizeof(hostname)))  ?:
-        TEST_OK(file = fopen("/sys/module/amc525_mbf/version", "r"))  ?:
+        DO(strncpy(name, utsname.nodename, length));
+}
+
+
+static error__t get_driver_version(EPICS_STRING *version)
+{
+    FILE *file = fopen("/sys/module/amc525_mbf/version", "r");
+    return
+        TEST_OK(file)  ?:
         DO_FINALLY(
             TEST_OK(fgets(version->s, sizeof(version->s), file))  ?:
             DO(*strchrnul(version->s, '\n') = '\0'),
         // finally
-            fclose(file));
+            fclose(file))  ?:
+        DO(log_message("Driver version %s", version->s));
 }
 
 
@@ -135,9 +142,12 @@ static error__t initialise_constants(void)
     sprintf(fpga_git_version.s, "%07x%s",
         fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
     strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
+    log_message("FPGA version %s, git %s", fpga_version.s, fpga_git_version.s);
 
-    return IF(!hardware_config.no_hardware,
-        get_driver_version(&driver_version));
+    return
+        get_hostname(hostname, sizeof(hostname))  ?:
+        IF(!hardware_config.no_hardware,
+            get_driver_version(&driver_version));
 }
 
 
