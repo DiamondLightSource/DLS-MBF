@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# The following commands (run as root) force the PCI bus to be rescanned so that
+# I/O memory windows can be successfully assigned to the PCI device.  Procedure
+# reported here:
+# https://www.linuxquestions.org/questions/linux-kernel-70/\
+#   kernel-fails-to-assign-memory-to-pcie-device-4175487043/
+
+# This PCIe node seems to cover the entire AMC bus on our hardware.  To get a
+# proper rescan we need to remove this node first.
+BRIDGE_NODE='/sys/bus/pci/devices/0000:00:01.1'
+
+echo 1 > "$BRIDGE_NODE"/remove
+
+# It can take some time for the bridge node to disappear.  Wait for this before
+# forcing the rescan.
+while [[ -e "$BRIDGE_NODE" ]]; do
+    echo -n .
+    sleep 0.2
+done
+echo
+
+# Finally rescan the bus.
+echo 1 > /sys/bus/pci/rescan

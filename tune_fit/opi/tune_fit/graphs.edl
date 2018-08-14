@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(prefix) Waveforms"
+title "$(tune_prefix) Waveforms"
 showGrid
 snapToGrid
 gridSize 8
@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(prefix) Waveforms"
+  "$(tune_prefix) Waveforms"
 }
 endObjectProperties
 
@@ -121,12 +121,12 @@ y2Max 1
 # Trace Properties
 numTraces 2
 xPv {
-  0 "$(prefix):I"
-  1 "$(prefix):MI"
+  0 "$(tune_prefix):TUNE:I"
+  1 "$(tune_prefix):TUNE:MI"
 }
 yPv {
-  0 "$(prefix):Q"
-  1 "$(prefix):MQ"
+  0 "$(tune_prefix):TUNE:Q"
+  1 "$(tune_prefix):TUNE:MQ"
 }
 plotStyle {
   0 "point"
@@ -180,10 +180,10 @@ y2Max 1
 # Trace Properties
 numTraces 1
 xPv {
-  0 "$(prefix):SCALE"
+  0 "$(tune_prefix):TUNE:SCALE"
 }
 yPv {
-  0 "$(prefix):RESIDUE"
+  0 "$(tune_prefix):TUNE:RESIDUE"
 }
 ySigned {
   0 1
@@ -227,12 +227,12 @@ y2Max 1
 # Trace Properties
 numTraces 2
 xPv {
-  0 "$(prefix):SCALE"
-  1 "$(prefix):SCALE"
+  0 "$(tune_prefix):TUNE:SCALE"
+  1 "$(tune_prefix):TUNE:SCALE"
 }
 yPv {
-  0 "$(prefix):POWER"
-  1 "$(prefix):MPOWER"
+  0 "$(tune_prefix):TUNE:POWER"
+  1 "$(tune_prefix):TUNE:MPOWER"
 }
 ySigned {
   0 1

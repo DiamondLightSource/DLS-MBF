@@ -92,7 +92,7 @@ static void event_interrupt(struct interrupt_control *control, uint32_t events)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-static irqreturn_t lmbf_isr(int ireq, void *context)
+static irqreturn_t mbf_isr(int ireq, void *context)
 {
     struct interrupt_control *control = context;
     struct axi_interrupt_controller *intc = control->intc;
@@ -142,7 +142,7 @@ int initialise_interrupt_control(
     writel(0xFFFFFFFF, &intc->iar);     // Ensure no pending interrupts
     writel(0xFFFFFFFF, &intc->ier);     // Enable all interrupts
 
-    rc = request_irq(pdev->irq, lmbf_isr, 0, DEVICE_NAME, control);
+    rc = request_irq(pdev->irq, mbf_isr, 0, DEVICE_NAME, control);
     TEST_RC(rc, no_irq, "Unable to request irq");
 
     /* Put the controller in normal operating mode. */

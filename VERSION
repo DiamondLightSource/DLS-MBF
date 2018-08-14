@@ -1,6 +1,22 @@
-# This file contains the global version definition for the LMBF project.
+# This file contains the global version definition for the MBF project.
 
 VERSION_EXTRA =
 VERSION_MAJOR = 1
-VERSION_MINOR = 0
-VERSION_PATCH = 1
+VERSION_MINOR = 1
+VERSION_PATCH = 0
+
+
+# Compute the git version string
+GIT_VERSION = $(shell \
+    set -o pipefail; \
+    if VERSION=$$(git rev-parse HEAD 2>/dev/null | cut -b -7); then \
+        git diff --shortstat --quiet HEAD  ||  VERSION=$$VERSION-dirty; \
+    else \
+        VERSION=0000000; \
+    fi; \
+    echo $$VERSION)
+
+# Compute full dotted version name
+MBF_VERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
+
+# vim: set filetype=make:

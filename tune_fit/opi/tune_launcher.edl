@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2587
-y 487
+x 2588
+y 488
 w 296
-h 152
+h 105
 font "helvetica-medium-r-14.0"
 ctlFont "helvetica-medium-r-14.0"
 btnFont "helvetica-bold-r-14.0"
@@ -51,58 +51,6 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 176
-y 40
-w 96
-h 24
-fgColor index 43
-bgColor index 3
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "TMBF-02"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "tune_fit/peaks.edl"
-}
-symbols {
-  0 "prefix=SR23C-DI-TFIT-01:YOLD"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
-x 24
-y 40
-w 96
-h 24
-fgColor index 43
-bgColor index 3
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "TMBF-01"
-numPvs 4
-numDsps 1
-displayFileName {
-  0 "tune_fit/peaks.edl"
-}
-symbols {
-  0 "prefix=SR23C-DI-TFIT-01:XOLD"
-}
-endObjectProperties
-
-# (Related Display)
-object relatedDisplayClass
-beginObjectProperties
-major 4
-minor 4
-release 0
 x 24
 y 72
 w 96
@@ -119,7 +67,7 @@ displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "prefix=SR23C-DI-TFIT-01:SYNC"
+  0 "tune_prefix=SR23C-DI-LMBF-01:IQ"
 }
 endObjectProperties
 
@@ -130,7 +78,7 @@ major 4
 minor 4
 release 0
 x 176
-y 104
+y 40
 w 96
 h 24
 fgColor index 43
@@ -138,14 +86,14 @@ bgColor index 3
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "TMBF-04:Y"
+buttonLabel "TMBF-01:Y"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "prefix=SR23C-DI-TFIT-01:Y"
+  0 "tune_prefix=SR23C-DI-TMBF-01:Y"
 }
 endObjectProperties
 
@@ -156,7 +104,7 @@ major 4
 minor 4
 release 0
 x 24
-y 104
+y 40
 w 96
 h 24
 fgColor index 43
@@ -164,14 +112,14 @@ bgColor index 3
 topShadowColor index 1
 botShadowColor index 11
 font "helvetica-bold-r-12.0"
-buttonLabel "TMBF-04:X"
+buttonLabel "TMBF-01:X"
 numPvs 4
 numDsps 1
 displayFileName {
   0 "tune_fit/peaks.edl"
 }
 symbols {
-  0 "prefix=SR23C-DI-TFIT-01:X"
+  0 "tune_prefix=SR23C-DI-TMBF-01:X"
 }
 endObjectProperties
 

@@ -97,7 +97,7 @@ release 0
 x 16
 y 0
 w 32
-h 20
+h 22
 controlPv "$(device):$(axis):FIR:$(fir):CYCLES_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -125,7 +125,7 @@ release 0
 x 72
 y 0
 w 32
-h 20
+h 22
 controlPv "$(device):$(axis):FIR:$(fir):LENGTH_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -172,8 +172,8 @@ minor 6
 release 0
 x 264
 y 0
-w 40
-h 20
+w 44
+h 22
 controlPv "$(device):$(axis):FIR:$(fir):PHASE_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -208,8 +208,6 @@ topShadowColor index 0
 botShadowColor index 14
 increment 10
 controlPv "$(device):$(axis):FIR:$(fir):PHASE_S"
-controlLabel "$(device):$(axis):FIRPHASE_S"
-controlLabelType "pvName"
 font "helvetica-medium-r-8.0"
 scaleMin -360
 scaleMax 360

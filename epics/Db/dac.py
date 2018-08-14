@@ -11,7 +11,6 @@ dac_events = []
 for a in axes('DAC'):
     WaveformOut('FILTER', DAC_TAPS, 'FLOAT',
         DESC = 'Output preemphasis filter')
-    longOut('FILTER:DELAY', 0, 7, DESC = 'Preemphasis filter group delay')
 
     longOut('DELAY', DESC = 'DAC output delay')
 

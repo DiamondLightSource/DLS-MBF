@@ -121,5 +121,6 @@ void unlock_trigger_ready(struct trigger_target *lock);
 
 
 /* Special hook for memory capture: needs to interact with trigger state
- * control, so we do the control internally. */
-void immediate_memory_capture(void);
+ * control, so we do the control internally.  This is called in response to
+ * processing MEM:CAPTURE_S. */
+bool immediate_memory_capture(bool);

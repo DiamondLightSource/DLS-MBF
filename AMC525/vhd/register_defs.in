@@ -218,8 +218,8 @@
             # Number of words to capture to memory after STOP event
             .COUNT          28
 
-        # Only valid after STOP has been triggered, returns the write address in
-        # bytes at the time of the trigger event
+        # Only valid after COMMAND.STOP or COMMAND.ADDRESS has been triggered,
+        # returns the write address in bytes at the time of the trigger event
         ADDRESS     R
 
         *RW
@@ -238,6 +238,9 @@
                 .STOP
                 # Resets all error bits
                 .RESET
+                # If running updates CTRL.MEM.ADDRESS with snapshot of current
+                # address.
+                .ADDRESS
 
         # Active status bits
         STATUS      R

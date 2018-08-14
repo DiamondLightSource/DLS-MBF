@@ -1,0 +1,9 @@
+#! /bin/bash
+
+cd ~dserver
+ln -sf institutes/ESRF/CONFIG.ESRF mbf/CONFIG
+ln -sf mbf/institutes/ESRF/cratestartup cratestartup
+ln -sf mbf/institutes/ESRF/setpath_mbf setpath_mbf
+ln -sf mbf/institutes/ESRF/screen_tfit screen_tfit
+ln -sf ../mbf/institutes/ESRF/cron_daily_backup.sh autosave/cron_daily_backup.sh
+
