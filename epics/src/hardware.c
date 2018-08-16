@@ -957,9 +957,9 @@ static error__t set_hardware_config(
     struct sys_info sys_info = sys_regs->info;
     if (no_hardware)
         sys_info = (struct sys_info) {
-            .adc_taps = 10,
-            .bunch_taps = 10,
-            .dac_taps = 10,
+            .adc_taps = 20,
+            .bunch_taps = 16,
+            .dac_taps = 20,
         };
 
     /* Here we update the "constant" hardware configuration.  This is constant
