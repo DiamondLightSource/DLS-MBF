@@ -1,5 +1,12 @@
 # Config settings for building at ESRF
 
+# Place the FPGA build in /scratch
+FPGA_BUILD_DIR = /segfs/tango/cppserver/machine/diagnostic/MBF/build/fpga
+
+# Definitions needed for FPGA build
+VIVADO = /cae/soft/viv174/Vivado/2017.4/settings64.sh
+LM_LICENSE_FILE = 2100@licsrv-el
+
 # Server to connect to for loading FPGA image followed by IP of card
 AMC525_SERVER = l-c31-3 199
 
