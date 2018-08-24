@@ -23,6 +23,9 @@ EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 
 CFLAGS_EXTRA += -Werror
 
+# Permissions for the driver
+DRV_GROUP = 500
+
 # Location of Matlab compiler
 MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
 
