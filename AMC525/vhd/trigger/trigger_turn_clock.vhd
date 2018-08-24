@@ -77,7 +77,7 @@ begin
             end if;
 
             -- Bunch counter
-            if zero_detect or (sync_request and revolution_clock = '1') then
+            if zero_detect or (revolution_clock = '1') then
                 bunch_counter <= setup_i.max_bunch;
             else
                 bunch_counter <= bunch_counter - 1;
@@ -104,6 +104,13 @@ begin
                     error_counter <= error_counter + 1;
                 end if;
             end if;
+
+            -- Only check for an error when a revolution clock pulse occurs
+            if revolution_clock_delay then
+                if revolution_clock_delay /= zero_detect_delay then
+                    error_counter <= error_counter + 1;
+                end if;
+            end if;
         end if;
     end process;
 
@@ -111,7 +118,7 @@ begin
     -- Bring register readbacks onto DSP clock
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            readback_o.sync_busy <= to_std_logic(sync_request);
+            readback_o.sync_busy <= to_std_logic(false);
             readback_o.turn_counter <= turn_counter_out;
             readback_o.error_counter <= error_counter_out;
         end if;
