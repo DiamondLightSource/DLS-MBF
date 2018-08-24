@@ -16,6 +16,9 @@ AMC525_SERVER = l-c31-3 199
 EPICS_DEVICE = /segfs/tango/contrib/debian9/epics/epics_device
 EPICS_BASE = /segfs/tango/contrib/debian9/epics/base-3.14.12.7
 
+# Permissions for the driver
+DRV_GROUP = comp
+
 # Location of Matlab compiler
 MEX = /sware/com/matlab_2017a/bin/mex
 
