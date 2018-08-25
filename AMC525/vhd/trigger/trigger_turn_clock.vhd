@@ -100,9 +100,6 @@ begin
                 error_counter <= (others => '0');
             elsif zero_detect_delay then
                 turn_counter <= turn_counter + 1;
-                if revolution_clock_delay /= zero_detect_delay then
-                    error_counter <= error_counter + 1;
-                end if;
             end if;
 
             -- Only check for an error when a revolution clock pulse occurs
