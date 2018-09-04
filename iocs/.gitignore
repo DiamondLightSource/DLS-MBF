@@ -1,2 +1,8 @@
 # During development we have state files here.  Ignore them.
 *.state
+
+# IOCs can basically have any name, so we exclude everything but
+# the known files
+/*
+!/start-ioc
+!/start-fitter

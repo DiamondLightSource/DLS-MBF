@@ -5,15 +5,15 @@ cd ../..
 
 ln -sf sites/DLS/CONFIG CONFIG
 
-ln -sf sites/DLS/iocs/SR23C-DI-LMBF-01 iocs/SR23C-DI-LMBF-01.config
+ln -sf ../sites/DLS/iocs/SR23C-DI-LMBF-01 iocs/SR23C-DI-LMBF-01.config
 ln -sf start-ioc iocs/SR23C-DI-LMBF-01
-ln -sf sites/DLS/iocs/SR23C-DI-TFIT-01 iocs/SR23C-DI-TFIT-01.config
+ln -sf ../sites/DLS/iocs/SR23C-DI-TFIT-01 iocs/SR23C-DI-TFIT-01.config
 ln -sf start-fitter iocs/SR23C-DI-TFIT-01
-ln -sf sites/DLS/iocs/SR23C-DI-TMBF-01 iocs/SR23C-DI-TMBF-01.config
+ln -sf ../sites/DLS/iocs/SR23C-DI-TMBF-01 iocs/SR23C-DI-TMBF-01.config
 ln -sf start-ioc iocs/SR23C-DI-TMBF-01
-ln -sf sites/DLS/iocs/TS-DI-LMBF-01 iocs/TS-DI-LMBF-01.config
+ln -sf ../sites/DLS/iocs/TS-DI-LMBF-01 iocs/TS-DI-LMBF-01.config
 ln -sf start-ioc iocs/TS-DI-LMBF-01
-ln -sf sites/DLS/iocs/TS-DI-TFIT-01 iocs/TS-DI-TFIT-01.config
+ln -sf ../sites/DLS/iocs/TS-DI-TFIT-01 iocs/TS-DI-TFIT-01.config
 ln -sf start-fitter iocs/TS-DI-TFIT-01
-ln -sf sites/DLS/iocs/TS-DI-TMBF-02 iocs/TS-DI-TMBF-02.config
+ln -sf ../sites/DLS/iocs/TS-DI-TMBF-02 iocs/TS-DI-TMBF-02.config
 ln -sf start-ioc iocs/TS-DI-TMBF-02
