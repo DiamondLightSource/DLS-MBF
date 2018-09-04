@@ -11,34 +11,34 @@ use work.trigger_defs.all;
 
 entity trigger_setup is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- External trigger sources, all asynchronous
-        revolution_clock_i : in std_logic;
-        event_trigger_i : in std_logic;
-        postmortem_trigger_i : in std_logic;
-        blanking_trigger_i : in std_logic;
+        revolution_clock_i : in std_ulogic;
+        event_trigger_i : in std_ulogic;
+        postmortem_trigger_i : in std_ulogic;
+        blanking_trigger_i : in std_ulogic;
 
         -- Internal trigger sources, all on DSP clock
-        soft_trigger_i : in std_logic;
-        adc_trigger_i : in std_logic_vector(CHANNELS);
-        seq_trigger_i : in std_logic_vector(CHANNELS);
+        soft_trigger_i : in std_ulogic;
+        adc_trigger_i : in std_ulogic_vector(CHANNELS);
+        seq_trigger_i : in std_ulogic_vector(CHANNELS);
 
         -- Results
-        revolution_clock_o : out std_logic;     -- On ADC clock
-        blanking_trigger_o : out std_logic;
-        trigger_set_o : out std_logic_vector(TRIGGER_SET)
+        revolution_clock_o : out std_ulogic;     -- On ADC clock
+        blanking_trigger_o : out std_ulogic;
+        trigger_set_o : out std_ulogic_vector(TRIGGER_SET)
     );
 end;
 
 architecture arch of trigger_setup is
     -- Input signals converted to synchronous rising edge pulse
-    signal event_trigger : std_logic;
-    signal postmortem_trigger : std_logic;
+    signal event_trigger : std_ulogic;
+    signal postmortem_trigger : std_ulogic;
 
     -- Delayed soft trigger
-    signal soft_trigger_delay : std_logic;
+    signal soft_trigger_delay : std_ulogic;
 
     -- Pipelined internal triggers
     signal adc_trigger_in : adc_trigger_i'SUBTYPE;

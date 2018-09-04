@@ -12,7 +12,7 @@ entity nco_delay is
         DELAY : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         cos_sin_i : in cos_sin_t;
         cos_sin_o : out cos_sin_t
     );
@@ -34,7 +34,7 @@ begin
         DW => WIDTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin_i.cos),
+        data_i => std_ulogic_vector(cos_sin_i.cos),
         signed(data_o) => cos_sin_out.cos
     );
 
@@ -43,7 +43,7 @@ begin
         DW => WIDTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin_i.sin),
+        data_i => std_ulogic_vector(cos_sin_i.sin),
         signed(data_o) => cos_sin_out.sin
     );
 

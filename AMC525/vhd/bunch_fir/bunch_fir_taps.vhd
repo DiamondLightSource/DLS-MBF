@@ -13,17 +13,17 @@ entity bunch_fir_taps is
         SELECT_BUFFER_LENGTH : natural := 4
     );
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Register write interface for writing taps
         -- Taps write interface
-        write_start_i : in std_logic;
+        write_start_i : in std_ulogic;
         write_fir_i : in unsigned;      -- Selects which FIR group to write
 
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic := '0';
+        write_ack_o : out std_ulogic := '0';
 
         -- Taps output
         fir_select_i : in unsigned;
@@ -57,7 +57,7 @@ begin
             DW => fir_select_i'LENGTH
         ) port map (
             clk_i => adc_clk_i,
-            data_i => std_logic_vector(fir_select_i),
+            data_i => std_ulogic_vector(fir_select_i),
             unsigned(data_o) => fir_select
         );
 
@@ -73,17 +73,16 @@ begin
     -- Writing of individual taps
     write_taps : for tap in TAPS_RANGE generate
         write_banks : for bank in BANKS_RANGE generate
-            signal write_strobe : std_logic := '0';
+            signal write_strobe : std_ulogic := '0';
 
         begin
             process (dsp_clk_i) begin
                 if rising_edge(dsp_clk_i) then
-                    write_strobe <= to_std_logic(
+                    write_strobe <= to_std_ulogic(
                         write_strobe_i = '1' and
                         to_integer(tap_index) = tap and
                         to_integer(write_fir_i) = bank);
 
-                    write_ack_o <= write_strobe_i;
                 end if;
             end process;
 
@@ -92,8 +91,8 @@ begin
             ) port map (
                 clk_i => dsp_clk_i,
                 write_i => write_strobe,
-                data_i =>
-                    std_logic_vector(write_data_i(31 downto 32-TAP_WIDTH)),
+                data_i => std_ulogic_vector(
+                    write_data_i(31 downto 32-TAP_WIDTH)),
                 signed(data_o) => taps_table(bank)(tap)
             );
         end generate;
@@ -103,6 +102,9 @@ begin
     -- Manage taps write counter
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
+            -- One clock tick delay for write ack is enough
+            write_ack_o <= write_strobe_i;
+
             if write_start_i = '1' then
                 tap_index <= (others => '0');
             elsif write_strobe_i = '1' then

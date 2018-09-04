@@ -30,22 +30,22 @@ use work.sequencer_defs.all;
 
 entity sequencer_dwell is
     port (
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
-        reset_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
+        reset_i : in std_ulogic;
 
         dwell_count_i : in dwell_count_t;   -- Dwell duration
         holdoff_count_i : in dwell_count_t; -- Holdoff duration
-        blanking_i : in std_logic;          -- Forces blanking if set
+        blanking_i : in std_ulogic;          -- Forces blanking if set
 
-        first_turn_o : out std_logic := '0'; -- Start capture and reset detector
-        last_turn_o : out std_logic := '0'  -- Set during last turn of a dwell
+        first_turn_o : out std_ulogic := '0'; -- Start capture, reset detector
+        last_turn_o : out std_ulogic := '0'  -- Set during last turn of a dwell
     );
 end;
 
 architecture arch of sequencer_dwell is
     -- Set during holdoff period
-    signal in_holdoff : std_logic := '0';
+    signal in_holdoff : std_ulogic := '0';
     -- Counts turns during holdoff
     signal holdoff_ctr : dwell_count_t := (others => '0');
     -- Counts turns during normal dwell
@@ -96,7 +96,7 @@ begin
             if turn_clock_i = '1' then
                 last_turn_o <= '0';
             else
-                last_turn_o <= not in_holdoff and to_std_logic(dwell_ctr = 0);
+                last_turn_o <= not in_holdoff and to_std_ulogic(dwell_ctr = 0);
             end if;
         end if;
     end process;

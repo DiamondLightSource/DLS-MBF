@@ -10,11 +10,11 @@ entity long_delay is
         PIPELINE_DELAY : natural := 0
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         delay_i : in unsigned;
-        data_i : in std_logic_vector(WIDTH-1 downto 0);
-        data_o : out std_logic_vector(WIDTH-1 downto 0)
+        data_i : in std_ulogic_vector(WIDTH-1 downto 0);
+        data_o : out std_ulogic_vector(WIDTH-1 downto 0)
     );
 end;
 

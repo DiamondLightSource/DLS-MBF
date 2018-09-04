@@ -10,20 +10,20 @@ use work.bunch_defs.all;
 
 entity bunch_store is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Write interface
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
-        write_start_i : in std_logic;   -- Reset write address
+        write_ack_o : out std_ulogic;
+        write_start_i : in std_ulogic;   -- Reset write address
         write_bank_i : in unsigned;     -- Selects which bank to write
 
         -- Bunch readout
         bank_select_i : in unsigned;
         bunch_index_i : in unsigned;
-        config_o : out std_logic_vector
+        config_o : out std_ulogic_vector
     );
 end;
 
@@ -34,12 +34,12 @@ architecture arch of bunch_store is
     signal read_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
     signal write_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
 
-    subtype data_t is std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    subtype data_t is std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
     signal read_data : data_t;
     signal write_data : data_t;
 
     signal write_bunch : bunch_index_i'SUBTYPE;
-    signal write_strobe : std_logic := '0';
+    signal write_strobe : std_ulogic := '0';
 
     signal config : data_t := (others => '0');
     signal config_out : data_t := (others => '0');

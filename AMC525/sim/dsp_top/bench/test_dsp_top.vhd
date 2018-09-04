@@ -14,25 +14,25 @@ end testbench;
 
 
 architecture arch of testbench is
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
 
     constant TURN_COUNT : natural := 64;
-    signal turn_clock : std_logic;
+    signal turn_clock : std_ulogic;
 
     signal adc_data : signed(13 downto 0) := (others => '0');
     signal dac_data : signed(15 downto 0);
 
-    signal write_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal write_strobe : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
     signal write_data : reg_data_t := (others => '0');
-    signal write_ack : std_logic_vector(DSP_REGS_RANGE);
-    signal read_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal write_ack : std_ulogic_vector(DSP_REGS_RANGE);
+    signal read_strobe : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
     signal read_data : reg_data_array_t(DSP_REGS_RANGE);
-    signal read_ack : std_logic_vector(DSP_REGS_RANGE);
+    signal read_ack : std_ulogic_vector(DSP_REGS_RANGE);
 
     signal control_to_dsp : control_to_dsp_t := control_to_dsp_reset;
     signal dsp_to_control : dsp_to_control_t;
-    signal dsp_event : std_logic;
+    signal dsp_event : std_ulogic;
 
 begin
     adc_clk <= not adc_clk after 1 ns;

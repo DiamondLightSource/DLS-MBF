@@ -11,8 +11,8 @@ use work.support.all;
 
 entity dsp_to_adc is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         dsp_data_i : in signed_array;
         adc_data_o : out signed
@@ -20,7 +20,7 @@ entity dsp_to_adc is
 end;
 
 architecture arch of dsp_to_adc is
-    signal adc_phase : std_logic;
+    signal adc_phase : std_ulogic;
     signal dsp_data : dsp_data_i'SUBTYPE := (others => (others => '0'));
     signal adc_data : adc_data_o'SUBTYPE := (others => '0');
 

@@ -31,13 +31,13 @@ entity fast_fir is
         TAP_COUNT : natural
     );
     port (
-        adc_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
 
         taps_i : in reg_data_array_t(0 to TAP_COUNT-1);
 
         data_i : in signed;
         data_o : out signed;
-        overflow_o : out std_logic
+        overflow_o : out std_ulogic
     );
 end;
 

@@ -12,15 +12,15 @@ entity mms_dram_data_source is
         PIPELINE_IN : natural := 4
     );
     port (
-        adc_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
 
         unfiltered_data_i : in signed;
         filtered_data_i : in signed;
 
-        mms_source_i : in std_logic;
+        mms_source_i : in std_ulogic;
         mms_data_o : out signed;
 
-        dram_source_i : in std_logic;
+        dram_source_i : in std_ulogic;
         dram_data_o : out signed
     );
 end;
@@ -36,7 +36,7 @@ begin
         DW => unfiltered_data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(unfiltered_data_i),
+        data_i => std_ulogic_vector(unfiltered_data_i),
         signed(data_o) => unfiltered_data_in
     );
 
@@ -45,7 +45,7 @@ begin
         DW => filtered_data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(filtered_data_i),
+        data_i => std_ulogic_vector(filtered_data_i),
         signed(data_o) => filtered_data_in
     );
 

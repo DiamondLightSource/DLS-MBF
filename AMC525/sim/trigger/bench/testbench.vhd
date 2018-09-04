@@ -14,28 +14,28 @@ end testbench;
 
 
 architecture arch of testbench is
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
 
     constant TURN_COUNT : natural := 31;
 
-    signal write_strobe : std_logic_vector(CTRL_TRG_REGS);
+    signal write_strobe : std_ulogic_vector(CTRL_TRG_REGS);
     signal write_data : reg_data_t;
-    signal write_ack : std_logic_vector(CTRL_TRG_REGS);
-    signal read_strobe : std_logic_vector(CTRL_TRG_REGS);
+    signal write_ack : std_ulogic_vector(CTRL_TRG_REGS);
+    signal read_strobe : std_ulogic_vector(CTRL_TRG_REGS);
     signal read_data : reg_data_array_t(CTRL_TRG_REGS);
-    signal read_ack : std_logic_vector(CTRL_TRG_REGS);
-    signal revolution_clock : std_logic := '0';
-    signal event_trigger : std_logic := '0';
-    signal postmortem_trigger : std_logic;
-    signal blanking_trigger : std_logic;
-    signal adc_trigger : std_logic_vector(CHANNELS);
-    signal seq_trigger : std_logic_vector(CHANNELS);
-    signal blanking_window : std_logic;
-    signal turn_clock : std_logic;
-    signal seq_start : std_logic_vector(CHANNELS);
-    signal dram0_trigger : std_logic;
-    signal dram0_phase : std_logic;
+    signal read_ack : std_ulogic_vector(CTRL_TRG_REGS);
+    signal revolution_clock : std_ulogic := '0';
+    signal event_trigger : std_ulogic := '0';
+    signal postmortem_trigger : std_ulogic;
+    signal blanking_trigger : std_ulogic;
+    signal adc_trigger : std_ulogic_vector(CHANNELS);
+    signal seq_trigger : std_ulogic_vector(CHANNELS);
+    signal blanking_window : std_ulogic;
+    signal turn_clock : std_ulogic;
+    signal seq_start : std_ulogic_vector(CHANNELS);
+    signal dram0_trigger : std_ulogic;
+    signal dram0_phase : std_ulogic;
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -90,7 +90,8 @@ begin
             read_reg(dsp_clk, read_data, read_strobe, read_ack, reg);
         end;
 
-        procedure arm(seq0 : std_logic; seq1 : std_logic; dram : std_logic) is
+        procedure arm(seq0 : std_ulogic; seq1 : std_ulogic; dram : std_ulogic)
+        is
             variable command : reg_data_t;
         begin
             command := (

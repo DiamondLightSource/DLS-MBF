@@ -11,82 +11,82 @@ use ieee.numeric_std.all;
 entity fmc500m_io is
     port (
         -- FMC -----------------------------------------------------------------
-        FMC_LA_P : inout std_logic_vector(0 to 33);
-        FMC_LA_N : inout std_logic_vector(0 to 33);
-        FMC_HB_P : inout std_logic_vector(0 to 21);
-        FMC_HB_N : inout std_logic_vector(0 to 21);
+        FMC_LA_P : inout std_ulogic_vector(0 to 33);
+        FMC_LA_N : inout std_ulogic_vector(0 to 33);
+        FMC_HB_P : inout std_ulogic_vector(0 to 21);
+        FMC_HB_N : inout std_ulogic_vector(0 to 21);
 
 
         -- PLL -----------------------------------------------------------------
         -- SPI
-        pll_spi_csn_i : in std_logic;
-        pll_spi_sclk_i : in std_logic;
-        pll_spi_sdi_i : in std_logic;
-        pll_spi_sdo_o : out std_logic;
+        pll_spi_csn_i : in std_ulogic;
+        pll_spi_sclk_i : in std_ulogic;
+        pll_spi_sdi_i : in std_ulogic;
+        pll_spi_sdo_o : out std_ulogic;
         -- Misc
-        pll_status_ld1_o : out std_logic;
-        pll_status_ld2_o : out std_logic;
-        pll_clkin_sel0_o : out std_logic;
-        pll_clkin_sel0_ena_i : in std_logic;
-        pll_clkin_sel0_i : in std_logic;
-        pll_clkin_sel1_o : out std_logic;
-        pll_clkin_sel1_ena_i : in std_logic;
-        pll_clkin_sel1_i : in std_logic;
-        pll_sync_i : in std_logic;
+        pll_status_ld1_o : out std_ulogic;
+        pll_status_ld2_o : out std_ulogic;
+        pll_clkin_sel0_o : out std_ulogic;
+        pll_clkin_sel0_ena_i : in std_ulogic;
+        pll_clkin_sel0_i : in std_ulogic;
+        pll_clkin_sel1_o : out std_ulogic;
+        pll_clkin_sel1_ena_i : in std_ulogic;
+        pll_clkin_sel1_i : in std_ulogic;
+        pll_sync_i : in std_ulogic;
         -- Internal clocks from PLL.  Probably will be discarded
-        pll_dclkout2_o : out std_logic;     -- On CC pin
-        pll_sdclkout3_o : out std_logic;
+        pll_dclkout2_o : out std_ulogic;     -- On CC pin
+        pll_sdclkout3_o : out std_ulogic;
 
         -- ADC -----------------------------------------------------------------
         -- Data and clocking
-        adc_dco_o : out std_logic;          -- Will be master DSP clock
-        adc_data_o : out std_logic_vector(13 downto 0);
-        adc_status_o : out std_logic;
-        adc_fd_a_o : out std_logic;
-        adc_fd_b_o : out std_logic;
+        adc_dco_o : out std_ulogic;          -- Will be master DSP clock
+        adc_data_o : out std_ulogic_vector(13 downto 0);
+        adc_status_o : out std_ulogic;
+        adc_fd_a_o : out std_ulogic;
+        adc_fd_b_o : out std_ulogic;
         -- SPI
-        adc_spi_csn_i : in std_logic;
-        adc_spi_sclk_i : in std_logic;
-        adc_spi_sdio_i : in std_logic;
-        adc_spi_sdio_o : out std_logic;
-        adc_spi_sdio_en_i : in std_logic;
+        adc_spi_csn_i : in std_ulogic;
+        adc_spi_sclk_i : in std_ulogic;
+        adc_spi_sdio_i : in std_ulogic;
+        adc_spi_sdio_o : out std_ulogic;
+        adc_spi_sdio_en_i : in std_ulogic;
         -- Misc
-        adc_pdwn_i : in std_logic;
+        adc_pdwn_i : in std_ulogic;
 
         -- DAC -----------------------------------------------------------------
         -- Data
-        dac_data_i : in std_logic_vector(15 downto 0);
-        dac_dci_i : in std_logic;
-        dac_frame_i : in std_logic;
+        dac_data_i : in std_ulogic_vector(15 downto 0);
+        dac_dci_i : in std_ulogic;
+        dac_frame_i : in std_ulogic;
         -- SPI
-        dac_spi_csn_i : in std_logic;
-        dac_spi_sclk_i : in std_logic;
-        dac_spi_sdi_i : in std_logic;
-        dac_spi_sdo_o : out std_logic;
+        dac_spi_csn_i : in std_ulogic;
+        dac_spi_sclk_i : in std_ulogic;
+        dac_spi_sdi_i : in std_ulogic;
+        dac_spi_sdo_o : out std_ulogic;
         -- Misc
-        dac_rstn_i : in std_logic;
-        dac_irqn_o : out std_logic;
+        dac_rstn_i : in std_ulogic;
+        dac_irqn_o : out std_ulogic;
 
         -- Misc ----------------------------------------------------------------
         -- Power management
-        adc_pwr_en_i : in std_logic;
-        dac_pwr_en_i : in std_logic;
-        adc_pwr_good_o : out std_logic;
-        dac_pwr_good_o : out std_logic;
-        vcxo_pwr_good_o : out std_logic;
+        adc_pwr_en_i : in std_ulogic;
+        dac_pwr_en_i : in std_ulogic;
+        adc_pwr_good_o : out std_ulogic;
+        dac_pwr_good_o : out std_ulogic;
+        vcxo_pwr_good_o : out std_ulogic;
         -- External trigger
-        ext_trig_o : out std_logic;
+        ext_trig_o : out std_ulogic;
         -- Temperature alert
-        temp_alert_o : out std_logic
+        temp_alert_o : out std_ulogic
     );
 end;
 
 architecture arch of fmc500m_io is
-    signal adc_spi_sdio_tri : std_logic;
-    signal adc_data_p : std_logic_vector(13 downto 0);
-    signal adc_data_n : std_logic_vector(13 downto 0);
-    signal dac_data_p : std_logic_vector(15 downto 0);
-    signal dac_data_n : std_logic_vector(15 downto 0);
+    signal adc_spi_sdio_tri : std_ulogic;
+    signal adc_data_p : std_ulogic_vector(13 downto 0);
+    signal adc_data_n : std_ulogic_vector(13 downto 0);
+    signal dac_data_p : std_ulogic_vector(15 downto 0);
+    signal dac_data_n : std_ulogic_vector(15 downto 0);
 
 begin
     -- These lines for simulation only, they quell rather a lot of error
