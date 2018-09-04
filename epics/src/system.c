@@ -142,7 +142,8 @@ static error__t initialise_constants(void)
     sprintf(fpga_git_version.s, "%07x%s",
         fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
     strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
-    log_message("FPGA version %s, git %s", fpga_version.s, fpga_git_version.s);
+    log_message("FPGA version %s, git %s, API %d",
+        fpga_version.s, fpga_git_version.s, fpga.firmware);
 
     return
         get_hostname(hostname, sizeof(hostname))  ?:

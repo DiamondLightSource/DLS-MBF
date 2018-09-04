@@ -254,6 +254,12 @@ register_groups = {}
 for group in defs.groups:
     register_groups[group.name] = generate.walk_top(group)
 
+class Constants:
+    def __init__(self):
+        for constant in defs.constants.values():
+            setattr(self, constant.name, constant.value)
+constants = Constants()
+
 
 class BaseAddress:
     def __init__(self, base_address):

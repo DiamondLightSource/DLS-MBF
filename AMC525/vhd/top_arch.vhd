@@ -722,7 +722,8 @@ begin
         SYS_VERSION_PATCH_BITS => to_std_ulogic_vector(VERSION_PATCH, 8),
         SYS_VERSION_MINOR_BITS => to_std_ulogic_vector(VERSION_MINOR, 8),
         SYS_VERSION_MAJOR_BITS => to_std_ulogic_vector(VERSION_MAJOR, 8),
-        others => '0'
+        SYS_VERSION_FIRMWARE_BITS =>
+            to_std_ulogic_vector(FIRMWARE_COMPAT_VERSION, 8)
     );
 
     git_version_data <= (

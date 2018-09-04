@@ -150,6 +150,7 @@ void hw_read_fpga_version(struct fpga_version *version)
         .major = sys_version.major,
         .minor = sys_version.minor,
         .patch = sys_version.patch,
+        .firmware = sys_version.firmware,
         .git_sha = git_version.sha,
         .git_dirty = git_version.dirty,
     };
@@ -935,6 +936,20 @@ static error__t map_config_regs(void)
 }
 
 
+static error__t check_firmware_version(bool no_hardware)
+{
+    if (no_hardware)
+        return ERROR_OK;
+    else
+    {
+        struct sys_version sys_version = READL(sys_regs->version);
+        return TEST_OK_(sys_version.firmware == FIRMWARE_COMPAT_VERSION,
+            "Firmware version mismatch: read %u, expected %u",
+            sys_version.firmware, FIRMWARE_COMPAT_VERSION);
+    }
+}
+
+
 error__t hw_lock_registers(void)
 {
     return TEST_IO_(ioctl(reg_device, MBF_REG_LOCK),
@@ -1025,6 +1040,7 @@ error__t initialise_hardware(
                 0, config_regs_size, PROT_READ | PROT_WRITE, MAP_SHARED,
                 reg_device, 0)))  ?:
         map_config_regs()  ?:
+        check_firmware_version(no_hardware)  ?:
         set_hardware_config(bunches, lmbf_mode, no_hardware);
 }
 
