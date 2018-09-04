@@ -89,15 +89,6 @@ architecture arch of fmc500m_io is
     signal dac_data_n : std_ulogic_vector(15 downto 0);
 
 begin
-    -- These lines for simulation only, they quell rather a lot of error
-    -- messages from the simulation!
-    -- synthesis translate_off
-    FMC_LA_P <= (others => 'Z');
-    FMC_LA_N <= (others => 'Z');
-    FMC_HB_P <= (others => 'Z');
-    FMC_HB_N <= (others => 'Z');
-    -- synthesis translate_on
-
     -- Unused pins
     FMC_HB_P(2) <= 'Z';     -- dac_ext_sync, unused input
     FMC_HB_N(2) <= 'Z';
