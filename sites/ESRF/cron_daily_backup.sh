@@ -1,7 +1,7 @@
 #!/bin/bash
 
 save_state () {
-	diff state `find . -iname "state_*" -print | sort | tail -n 1` > /dev/null
+	diff -I '#.*' state `find . -iname "state_*" -print | sort | tail -n 1` > /dev/null
 	if [ $? -ne 0 ]
 	then
 		cp state state_`date +%Y-%m-%d_%H%M`
