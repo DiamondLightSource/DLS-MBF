@@ -94,10 +94,7 @@ if ! lspci -v | grep -q "Xilinx"; then
 fi
 
     # Load the driver
-    # For some reason load_fpga doesn't work during startup,
-    # it comes from ssh which refuse to work (without any error message).
     #
-    #$MBFHOME/load_fpga -f $MBFHOME/amc525_mbf.bit 199 2>&1 >/tmp/fpga.log
     sleep 2
     if ! lsmod | grep -q "$MBF_DRIVER"; then
 	printf "Loading driver... "
@@ -108,12 +105,13 @@ fi
     fi
 
     # Start EPICS IOCs
-
+    #
     . ~dserver/setpath_mbf
-    #screen -dmS SRTMBF $MBFHOME/mbf -C $MBFHOME $MBFHOME/SR-TMBF.config $MBFHOME/hardware_delays
     printf "Starting SR-TMBF ioc\n"
-    if ! screen -ls | grep -q SRTMBF; then
-        screen -dmS SRTMBF $MBFHOME/epics/runioc $MBFHOME/iocs/SR-TMBF.config
+    if ! su dserver -c "screen -ls" | grep -q SRTMBF; then
+        CMD="screen -dmS SRTMBF $MBFHOME/epics/runioc \
+                $MBFHOME/iocs/SR-TMBF.config"
+        su dserver -c "$CMD"
         sleep 4
     else
         echo "EPICS IOC SRTMBF is already running"
@@ -121,8 +119,9 @@ fi
     # python interactive_ioc failed to run in screen so launch it in background
     #$HERE/bin/$EPICS_HOST_ARCH/softIoc $MBFHOME/tune_fit/tune_fit_ioc_noshell $MBFHOME/SR-TFIT.config&
     #$MBFHOME/iocs/SR-TFIT&
-    if ! screen -ls | grep -q SRTFIT; then
-        screen -dmS SRTFIT $MBFHOME/../screen_tfit
+    if ! su dserver -c "screen -ls" | grep -q SRTFIT; then
+        CMD="screen -dmS SRTFIT $MBFHOME/../screen_tfit"
+        su dserver -c "$CMD"
         sleep 4
     else
         echo "EPICS IOC SRTFIT is already running"
@@ -139,8 +138,8 @@ fi
     /operation/dserver/crates/common_scripts/cratestartup $1 2>> /tmp/stop.log
 
     # Stop EPICS IOCs
-    screen -X -S SRTMBF quit
-    screen -X -S SRTFIT quit
+    su dserver -c "screen -X -S SRTMBF quit"
+    su dserver -c "screen -X -S SRTFIT quit"
     sleep 2
 
     rmmod $MBF_DRIVER
