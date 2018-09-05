@@ -1,0 +1,5 @@
+#!/bin/bash
+
+python epics_to_tango.py global > e2t_global.res
+python epics_to_tango.py horizontal > e2t_horizontal.res
+python epics_to_tango.py vertical > e2t_vertical.res

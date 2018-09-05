@@ -124,7 +124,7 @@ nPts 2
 showXAxis
 xAxisSrc "fromUser"
 xMin -10
-xMax 940
+xMax 1000
 # Y axis properties
 showYAxis
 yAxisSrc "fromUser"
@@ -233,7 +233,7 @@ nPts 2
 showXAxis
 xAxisSrc "fromUser"
 xMin -10
-xMax 940
+xMax 1000
 # Y axis properties
 showYAxis
 yAxisSrc "fromUser"
@@ -284,7 +284,7 @@ nPts 2
 showXAxis
 xAxisSrc "fromUser"
 xMin -10
-xMax 940
+xMax 1000
 # Y axis properties
 showYAxis
 yAxisSrc "fromUser"
