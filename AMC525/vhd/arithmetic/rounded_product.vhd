@@ -13,7 +13,7 @@ entity rounded_product is
         DISCARD_TOP : natural := 0
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         a_i : in signed;            -- Narrow term
         b_i : in signed;            -- Wider term

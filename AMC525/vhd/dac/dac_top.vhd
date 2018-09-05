@@ -20,9 +20,9 @@ entity dac_top is
     );
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;       -- start of machine revolution
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;       -- start of machine revolution
 
         -- Data inputs
         bunch_config_i : in bunch_config_t;
@@ -32,19 +32,19 @@ entity dac_top is
 
         -- Gain controls to multiplexer
         nco_0_gain_o : out unsigned;
-        nco_0_enable_o : out std_logic;
+        nco_0_enable_o : out std_ulogic;
 
         -- Outputs and overflow detection
         data_store_o : out signed;          -- Data from intermediate processing
         data_o : out signed;                -- at ADC data rate
 
         -- General register interface
-        write_strobe_i : in std_logic_vector(DSP_DAC_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_DAC_REGS);
-        read_strobe_i : in std_logic_vector(DSP_DAC_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
         read_data_o : out reg_data_array_t(DSP_DAC_REGS);
-        read_ack_o : out std_logic_vector(DSP_DAC_REGS)
+        read_ack_o : out std_ulogic_vector(DSP_DAC_REGS)
     );
 end;
 
@@ -54,18 +54,18 @@ architecture arch of dac_top is
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(3 downto 0);
     signal nco_0_gain : unsigned(3 downto 0);
-    signal nco_0_enable : std_logic;
-    signal nco_1_enable : std_logic;
-    signal mms_source : std_logic;
-    signal store_source : std_logic;
+    signal nco_0_enable : std_ulogic;
+    signal nco_1_enable : std_ulogic;
+    signal mms_source : std_ulogic;
+    signal store_source : std_ulogic;
 
     signal command_bits : reg_data_t;
-    signal write_start : std_logic;
+    signal write_start : std_ulogic;
 
     signal event_bits : reg_data_t;
-    signal fir_overflow : std_logic;
-    signal mux_overflow : std_logic;
-    signal preemph_overflow : std_logic;
+    signal fir_overflow : std_ulogic;
+    signal mux_overflow : std_ulogic;
+    signal preemph_overflow : std_ulogic;
 
     -- Pipelined input
     signal fir_data_in : fir_data_i'SUBTYPE;
@@ -73,7 +73,7 @@ architecture arch of dac_top is
     signal nco_1_data_in : nco_1_data_i'SUBTYPE;
 
     -- Overflow detection
-    signal fir_overflow_in : std_logic;
+    signal fir_overflow_in : std_ulogic;
 
     subtype DATA_RANGE is natural range data_o'RANGE;
 
@@ -145,7 +145,7 @@ begin
         DW => fir_data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(fir_data_i),
+        data_i => std_ulogic_vector(fir_data_i),
         signed(data_o) => fir_data_in
     );
 
@@ -290,7 +290,7 @@ begin
     ) port map (
         clk_i => adc_clk_i,
         delay_i => dac_delay,
-        data_i => std_logic_vector(filtered_data),
+        data_i => std_ulogic_vector(filtered_data),
         signed(data_o) => data_o
     );
 end;

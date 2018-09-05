@@ -16,25 +16,25 @@ end testbench;
 
 
 architecture arch of testbench is
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
-    signal turn_clock : std_logic;
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
+    signal turn_clock : std_ulogic;
 
     -- This is pretty well the shortest turn if the sequencer is to have enough
     -- time to load its next state
     constant TURN_COUNT : natural := 29;
 
-    signal blanking : std_logic;
-    signal write_strobe : std_logic_vector(DSP_SEQ_REGS);
+    signal blanking : std_ulogic;
+    signal write_strobe : std_ulogic_vector(DSP_SEQ_REGS);
     signal write_data : reg_data_t;
-    signal write_ack : std_logic_vector(DSP_SEQ_REGS);
-    signal read_strobe : std_logic_vector(DSP_SEQ_REGS);
+    signal write_ack : std_ulogic_vector(DSP_SEQ_REGS);
+    signal read_strobe : std_ulogic_vector(DSP_SEQ_REGS);
     signal read_data : reg_data_array_t(DSP_SEQ_REGS);
-    signal read_ack : std_logic_vector(DSP_SEQ_REGS);
-    signal trigger : std_logic;
-    signal state_trigger : std_logic;
-    signal seq_start : std_logic;
-    signal seq_write : std_logic;
+    signal read_ack : std_ulogic_vector(DSP_SEQ_REGS);
+    signal trigger : std_ulogic;
+    signal state_trigger : std_ulogic;
+    signal seq_start : std_ulogic;
+    signal seq_write : std_ulogic;
     signal hom_freq : angle_t;
     signal hom_gain : unsigned(3 downto 0);
     signal hom_window : hom_win_t;

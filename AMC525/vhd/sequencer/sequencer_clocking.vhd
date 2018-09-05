@@ -10,22 +10,22 @@ use work.support.all;
 
 entity sequencer_clocking is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
-        turn_clock_adc_i : in std_logic;
-        turn_clock_dsp_o : out std_logic;
+        turn_clock_adc_i : in std_ulogic;
+        turn_clock_dsp_o : out std_ulogic;
 
-        seq_start_dsp_i : in std_logic;
-        seq_start_adc_o : out std_logic;
+        seq_start_dsp_i : in std_ulogic;
+        seq_start_adc_o : out std_ulogic;
 
-        seq_write_dsp_i : in std_logic;
-        seq_write_adc_o : out std_logic;
+        seq_write_dsp_i : in std_ulogic;
+        seq_write_adc_o : out std_ulogic;
 
         hom_gain_dsp_i : in unsigned;
-        hom_enable_dsp_i : in std_logic;
+        hom_enable_dsp_i : in std_ulogic;
         hom_gain_adc_o : out unsigned;
-        hom_enable_adc_o : out std_logic;
+        hom_enable_adc_o : out std_ulogic;
 
         hom_window_dsp_i : in signed;
         hom_window_adc_o : out signed;
@@ -72,7 +72,7 @@ begin
         DW => bunch_bank_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(bunch_bank_i),
+        data_i => std_ulogic_vector(bunch_bank_i),
         unsigned(data_o) => bunch_bank
     );
 

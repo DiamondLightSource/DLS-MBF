@@ -11,21 +11,21 @@ use work.register_defs.all;
 
 entity dsp_interrupts is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
         -- Interrupt sources
-        dram0_capture_enable_i : in std_logic;
-        dram0_trigger_i : in std_logic;
-        seq_start_i : in std_logic_vector(CHANNELS);
-        seq_busy_i : in std_logic_vector(CHANNELS);
+        dram0_capture_enable_i : in std_ulogic;
+        dram0_trigger_i : in std_ulogic;
+        seq_start_i : in std_ulogic_vector(CHANNELS);
+        seq_busy_i : in std_ulogic_vector(CHANNELS);
 
-        interrupts_o : out std_logic_vector
+        interrupts_o : out std_ulogic_vector
     );
 end;
 
 architecture arch of dsp_interrupts is
-    signal dram0_trigger : std_logic;
-    signal seq_start : std_logic_vector(CHANNELS);
+    signal dram0_trigger : std_ulogic;
+    signal seq_start : std_ulogic_vector(CHANNELS);
     signal interrupts : interrupts_o'SUBTYPE;
 
     constant INTERRUPT_PIPELINE : natural := 8;

@@ -12,14 +12,14 @@ use work.defines.all;
 
 entity detector_bunch_mem is
     port (
-        write_clk_i : in std_logic;
+        write_clk_i : in std_ulogic;
         write_addr_i : in unsigned;
         write_data_i : in reg_data_t;
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
 
-        read_clk_i : in std_logic;
+        read_clk_i : in std_ulogic;
         read_addr_i : in unsigned;
-        read_data_o : out std_logic := '0'
+        read_data_o : out std_ulogic := '0'
     );
 end;
 
@@ -61,7 +61,7 @@ begin
         DW => read_addr_bit'LENGTH
     ) port map (
         clk_i => read_clk_i,
-        data_i => std_logic_vector(read_addr_bit_in),
+        data_i => std_ulogic_vector(read_addr_bit_in),
         unsigned(data_o) => read_addr_bit
     );
 

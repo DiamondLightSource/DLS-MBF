@@ -13,25 +13,25 @@ entity dac_output_mux is
         PIPELINE_OUT : natural := 4
     );
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- output selection and gain
         bunch_config_i : in bunch_config_t;
 
         -- Input signals with individual enable controls
         fir_data_i : in signed;
-        fir_overflow_i : in std_logic;
-        nco_0_enable_i : in std_logic;
+        fir_overflow_i : in std_ulogic;
+        nco_0_enable_i : in std_ulogic;
         nco_0_i : in signed;
-        nco_1_enable_i : in std_logic;
+        nco_1_enable_i : in std_ulogic;
         nco_1_i : in signed;
 
         -- Generated outputs.  Note that the FIR overflow is pipelined through
         -- so that we know whether to ignore it, if the output was unused.
         data_o : out signed;
-        fir_overflow_o : out std_logic := '0';
-        mux_overflow_o : out std_logic
+        fir_overflow_o : out std_ulogic := '0';
+        mux_overflow_o : out std_ulogic
     );
 end;
 
@@ -42,9 +42,9 @@ architecture arch of dac_output_mux is
     constant ACCUM_WIDTH : natural := data_o'LENGTH + 2;
 
     -- Computed input enables
-    signal fir_enable : std_logic;
-    signal nco_0_enable : std_logic;
-    signal nco_1_enable : std_logic;
+    signal fir_enable : std_ulogic;
+    signal nco_0_enable : std_ulogic;
+    signal nco_1_enable : std_ulogic;
 
     -- Selected data, widened for accumulator
     signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
@@ -70,12 +70,12 @@ architecture arch of dac_output_mux is
     -- multiplication which we now want to discard.
     constant OUTPUT_OFFSET : natural := GAIN_WIDTH - 1;
 
-    signal fir_overflow : std_logic := '0';
-    signal mux_overflow : std_logic;
+    signal fir_overflow : std_ulogic := '0';
+    signal mux_overflow : std_ulogic;
     signal data_out : data_o'SUBTYPE;
 
     -- If enable, widens data to required width, otherwise returns 0.
-    function prepare(data : signed; enable : std_logic) return signed
+    function prepare(data : signed; enable : std_ulogic) return signed
     is
         variable result : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     begin
@@ -95,7 +95,7 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(prepare(fir_data_i, fir_enable)),
+        data_i => std_ulogic_vector(prepare(fir_data_i, fir_enable)),
         signed(data_o) => fir_data
     );
 
@@ -104,7 +104,7 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(prepare(nco_0_i, nco_0_enable)),
+        data_i => std_ulogic_vector(prepare(nco_0_i, nco_0_enable)),
         signed(data_o) => nco_0_data
     );
 
@@ -113,7 +113,7 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(prepare(nco_1_i, nco_1_enable)),
+        data_i => std_ulogic_vector(prepare(nco_1_i, nco_1_enable)),
         signed(data_o) => nco_1_data
     );
 
@@ -153,7 +153,7 @@ begin
         DW => data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_out),
+        data_i => std_ulogic_vector(data_out),
         signed(data_o) => data_o
     );
 

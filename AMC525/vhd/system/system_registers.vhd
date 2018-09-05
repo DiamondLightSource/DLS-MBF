@@ -11,17 +11,17 @@ use work.register_defs.all;
 
 entity system_registers is
     port (
-        reg_clk_i : in std_logic;       -- Register clock
-        ref_clk_i : in std_logic;       -- Timing reference clock
-        ref_clk_ok_i : in std_logic;
+        reg_clk_i : in std_ulogic;       -- Register clock
+        ref_clk_i : in std_ulogic;       -- Timing reference clock
+        ref_clk_ok_i : in std_ulogic;
 
         -- System register interface on REG clock
-        write_strobe_i : in std_logic_vector(SYS_REGS_RANGE);
+        write_strobe_i : in std_ulogic_vector(SYS_REGS_RANGE);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(SYS_REGS_RANGE);
-        read_strobe_i : in std_logic_vector(SYS_REGS_RANGE);
+        write_ack_o : out std_ulogic_vector(SYS_REGS_RANGE);
+        read_strobe_i : in std_ulogic_vector(SYS_REGS_RANGE);
         read_data_o : out reg_data_array_t(SYS_REGS_RANGE);
-        read_ack_o : out std_logic_vector(SYS_REGS_RANGE);
+        read_ack_o : out std_ulogic_vector(SYS_REGS_RANGE);
 
         -- General system status bits
         version_read_data_i : in reg_data_t;
@@ -34,21 +34,21 @@ entity system_registers is
 
         -- ADC IDELAY control register on REF clock.  No ack on this interface,
         -- no read strobe required.
-        adc_idelay_write_strobe_o : out std_logic;
+        adc_idelay_write_strobe_o : out std_ulogic;
         adc_idelay_write_data_o : out reg_data_t;
         adc_idelay_read_data_i : in reg_data_t;
         -- Revolution clock IDELAY control, same as above
-        rev_idelay_write_strobe_o : out std_logic;
+        rev_idelay_write_strobe_o : out std_ulogic;
         rev_idelay_write_data_o : out reg_data_t;
         rev_idelay_read_data_i : in reg_data_t;
 
         -- FMC500 SPI control
-        fmc500m_spi_write_strobe_o : out std_logic;
+        fmc500m_spi_write_strobe_o : out std_ulogic;
         fmc500m_spi_write_data_o : out reg_data_t;
-        fmc500m_spi_write_ack_i : in std_logic;
-        fmc500m_spi_read_strobe_o : out std_logic;
+        fmc500m_spi_write_ack_i : in std_ulogic;
+        fmc500m_spi_read_strobe_o : out std_ulogic;
         fmc500m_spi_read_data_i : in reg_data_t;
-        fmc500m_spi_read_ack_i : in std_logic
+        fmc500m_spi_read_ack_i : in std_ulogic
     );
 end;
 

@@ -13,7 +13,7 @@ entity fast_memory_pipeline is
         DELAY : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         dsp_to_control_i : in dsp_to_control_array_t;
         adc_o : out signed_array;
@@ -36,7 +36,7 @@ begin
             DW => adc_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_logic_vector(dsp_to_control_i(c).store_adc_data),
+            data_i => std_ulogic_vector(dsp_to_control_i(c).store_adc_data),
             signed(data_o) => adc
         );
         adc_o(c) <= adc;
@@ -46,7 +46,7 @@ begin
             DW => dac_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_logic_vector(dsp_to_control_i(c).dac_data),
+            data_i => std_ulogic_vector(dsp_to_control_i(c).dac_data),
             signed(data_o) => dac
         );
         dac_o(c) <= dac;
@@ -56,7 +56,7 @@ begin
             DW => fir_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_logic_vector(dsp_to_control_i(c).fir_data),
+            data_i => std_ulogic_vector(dsp_to_control_i(c).fir_data),
             signed(data_o) => fir
         );
         fir_o(c) <= fir;

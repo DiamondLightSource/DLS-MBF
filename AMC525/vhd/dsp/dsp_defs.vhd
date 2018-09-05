@@ -20,13 +20,13 @@ package dsp_defs is
     type dsp_nco_to_mux_t is record
         nco : cos_sin_18_t;
         gain : unsigned(3 downto 0);
-        enable : std_logic;
+        enable : std_ulogic;
     end record;
 
     type dsp_nco_from_mux_t is record
         nco : signed(NCO_DATA_RANGE);
         gain : unsigned(3 downto 0);
-        enable : std_logic;
+        enable : std_ulogic;
     end record;
 
     type dsp_to_control_t is record
@@ -45,14 +45,14 @@ package dsp_defs is
         nco_1_data : dsp_nco_to_mux_t;
 
         -- Data out to DRAM1
-        dram1_valid : std_logic;
+        dram1_valid : std_ulogic;
         dram1_address : unsigned(DRAM1_ADDR_RANGE);
-        dram1_data : std_logic_vector(63 downto 0);
+        dram1_data : std_ulogic_vector(63 downto 0);
 
         -- Internally generated events
-        adc_trigger : std_logic;
-        seq_trigger : std_logic;
-        seq_busy : std_logic;
+        adc_trigger : std_ulogic;
+        seq_trigger : std_ulogic;
+        seq_busy : std_ulogic;
     end record;
 
     type control_to_dsp_t is record
@@ -65,12 +65,12 @@ package dsp_defs is
         bank_select : unsigned(1 downto 0);
 
         -- DRAM1 write ready
-        dram1_ready : std_logic;
+        dram1_ready : std_ulogic;
 
         -- Events from triggering system
-        blanking : std_logic;
-        turn_clock : std_logic;             -- On ADC clock
-        seq_start : std_logic;
+        blanking : std_ulogic;
+        turn_clock : std_ulogic;             -- On ADC clock
+        seq_start : std_ulogic;
     end record;
 
     -- Convenient reset value for simulation

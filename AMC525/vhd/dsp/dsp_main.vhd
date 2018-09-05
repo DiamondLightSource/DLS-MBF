@@ -14,48 +14,48 @@ use work.dsp_defs.all;
 entity dsp_main is
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- External data in and out (on ADC clock)
         adc_data_i : in signed_array;
         dac_data_o : out signed_array;
 
         -- Register control interface (on DSP clock)
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_address_i : in unsigned;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
-        read_strobe_i : in std_logic;
+        write_ack_o : out std_ulogic;
+        read_strobe_i : in std_ulogic;
         read_address_i : in unsigned;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic;
+        read_ack_o : out std_ulogic;
 
         -- DRAM0 data and control (on DSP clock)
-        dram0_capture_enable_o : out std_logic;
-        dram0_data_ready_i : in std_logic;
-        dram0_capture_address_i : in std_logic_vector;
-        dram0_data_o : out std_logic_vector;
-        dram0_data_valid_o : out std_logic;
-        dram0_data_error_i : in std_logic;
-        dram0_addr_error_i : in std_logic;
-        dram0_brsp_error_i : in std_logic;
+        dram0_capture_enable_o : out std_ulogic;
+        dram0_data_ready_i : in std_ulogic;
+        dram0_capture_address_i : in std_ulogic_vector;
+        dram0_data_o : out std_ulogic_vector;
+        dram0_data_valid_o : out std_ulogic;
+        dram0_data_error_i : in std_ulogic;
+        dram0_addr_error_i : in std_ulogic;
+        dram0_brsp_error_i : in std_ulogic;
 
         -- DRAM1 data and control (on DSP clock)
         dram1_address_o : out unsigned;
-        dram1_data_o : out std_logic_vector;
-        dram1_data_valid_o : out std_logic;
-        dram1_data_ready_i : in std_logic;
-        dram1_brsp_error_i : in std_logic;
+        dram1_data_o : out std_ulogic_vector;
+        dram1_data_valid_o : out std_ulogic;
+        dram1_data_ready_i : in std_ulogic;
+        dram1_brsp_error_i : in std_ulogic;
 
         -- External hardware events
-        revolution_clock_i : in std_logic;
-        event_trigger_i : in std_logic;
-        postmortem_trigger_i : in std_logic;
-        blanking_trigger_i : in std_logic;
-        dsp_events_o : out std_logic_vector;
+        revolution_clock_i : in std_ulogic;
+        event_trigger_i : in std_ulogic;
+        postmortem_trigger_i : in std_ulogic;
+        blanking_trigger_i : in std_ulogic;
+        dsp_events_o : out std_ulogic_vector;
 
-        interrupts_o : out std_logic_vector
+        interrupts_o : out std_ulogic_vector
     );
 end;
 
@@ -72,28 +72,28 @@ architecture arch of dsp_main is
     subtype MAIN_REG_RANGE is natural range 0 to 3;
 
     -- Incoming registers decoded into our four main blocks
-    signal main_write_strobe : std_logic_vector(MAIN_REG_RANGE);
+    signal main_write_strobe : std_ulogic_vector(MAIN_REG_RANGE);
     signal main_write_address : unsigned(MAIN_ADDR_RANGE);
     signal main_write_data : reg_data_t;
-    signal main_write_ack : std_logic_vector(MAIN_REG_RANGE);
-    signal main_read_strobe : std_logic_vector(MAIN_REG_RANGE);
+    signal main_write_ack : std_ulogic_vector(MAIN_REG_RANGE);
+    signal main_read_strobe : std_ulogic_vector(MAIN_REG_RANGE);
     signal main_read_address : unsigned(MAIN_ADDR_RANGE);
     signal main_read_data : reg_data_array_t(MAIN_REG_RANGE);
-    signal main_read_ack : std_logic_vector(MAIN_REG_RANGE);
+    signal main_read_ack : std_ulogic_vector(MAIN_REG_RANGE);
 
     -- Control block registers
-    signal ctrl_write_strobe : std_logic_vector(CTRL_REGS_RANGE);
+    signal ctrl_write_strobe : std_ulogic_vector(CTRL_REGS_RANGE);
     signal ctrl_write_data : reg_data_t;
-    signal ctrl_write_ack : std_logic_vector(CTRL_REGS_RANGE);
-    signal ctrl_read_strobe : std_logic_vector(CTRL_REGS_RANGE);
+    signal ctrl_write_ack : std_ulogic_vector(CTRL_REGS_RANGE);
+    signal ctrl_read_strobe : std_ulogic_vector(CTRL_REGS_RANGE);
     signal ctrl_read_data : reg_data_array_t(CTRL_REGS_RANGE);
-    signal ctrl_read_ack : std_logic_vector(CTRL_REGS_RANGE);
+    signal ctrl_read_ack : std_ulogic_vector(CTRL_REGS_RANGE);
 
     -- DSP control interface
     signal dsp_to_control : dsp_to_control_array_t;
     signal control_to_dsp : control_to_dsp_array_t;
-    signal loopback : std_logic_vector(CHANNELS);
-    signal output_enable : std_logic_vector(CHANNELS);
+    signal loopback : std_ulogic_vector(CHANNELS);
+    signal output_enable : std_ulogic_vector(CHANNELS);
 
     signal dsp_events : dsp_events_o'SUBTYPE;
 
@@ -195,12 +195,12 @@ begin
 
     -- DSP control blocks
     dsp_gen : for c in CHANNELS generate
-        signal dsp_write_strobe : std_logic_vector(DSP_REGS_RANGE);
+        signal dsp_write_strobe : std_ulogic_vector(DSP_REGS_RANGE);
         signal dsp_write_data : reg_data_t;
-        signal dsp_write_ack : std_logic_vector(DSP_REGS_RANGE);
-        signal dsp_read_strobe : std_logic_vector(DSP_REGS_RANGE);
+        signal dsp_write_ack : std_ulogic_vector(DSP_REGS_RANGE);
+        signal dsp_read_strobe : std_ulogic_vector(DSP_REGS_RANGE);
         signal dsp_read_data : reg_data_array_t(DSP_REGS_RANGE);
-        signal dsp_read_ack : std_logic_vector(DSP_REGS_RANGE);
+        signal dsp_read_ack : std_ulogic_vector(DSP_REGS_RANGE);
 
         signal adc_data_in : adc_data_i(c)'SUBTYPE;
         signal dac_data_out : dac_data_o(c)'SUBTYPE;

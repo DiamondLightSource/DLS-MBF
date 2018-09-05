@@ -16,9 +16,9 @@ package bunch_defs is
         -- Selects FIR filter
         fir_select : unsigned(FIR_BANK_BITS-1 downto 0);
         -- Output enables
-        fir_enable : std_logic;
-        nco_0_enable : std_logic;
-        nco_1_enable : std_logic;
+        fir_enable : std_ulogic;
+        nco_0_enable : std_ulogic;
+        nco_1_enable : std_ulogic;
         -- Final output gain
         gain : signed(12 downto 0);
     end record;

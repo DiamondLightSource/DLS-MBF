@@ -14,8 +14,8 @@ entity obuf_array is
         COUNT : natural := 1
     );
     port (
-        i_i : in std_logic_vector(COUNT-1 downto 0);
-        o_o : out std_logic_vector(COUNT-1 downto 0)
+        i_i : in std_ulogic_vector(COUNT-1 downto 0);
+        o_o : out std_ulogic_vector(COUNT-1 downto 0)
     );
 end;
 

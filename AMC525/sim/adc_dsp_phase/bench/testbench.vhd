@@ -7,10 +7,10 @@ end testbench;
 
 
 architecture arch of testbench is
-    signal dsp_clk : std_logic := '1';
-    signal adc_clk : std_logic := '1';
+    signal dsp_clk : std_ulogic := '1';
+    signal adc_clk : std_ulogic := '1';
 
-    signal adc_phase : std_logic;
+    signal adc_phase : std_ulogic;
     signal ok : boolean;
 
 begin

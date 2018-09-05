@@ -16,16 +16,16 @@ use ieee.numeric_std.all;
 
 entity pulse_dsp_to_adc is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
-        pulse_i : in std_logic;             -- On DSP clock
-        pulse_o : out std_logic := '0'      -- On ADC clock
+        pulse_i : in std_ulogic;             -- On DSP clock
+        pulse_o : out std_ulogic := '0'      -- On ADC clock
     );
 end;
 
 architecture arch of pulse_dsp_to_adc is
-    signal pulse_in : std_logic := '0';
+    signal pulse_in : std_ulogic := '0';
 
 begin
     process (adc_clk_i) begin

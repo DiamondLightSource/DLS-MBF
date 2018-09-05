@@ -14,10 +14,10 @@ entity iddr_array is
         COUNT : natural := 1
     );
     port (
-        clk_i : in std_logic;
-        d_i : in std_logic_vector(COUNT-1 downto 0);
-        q1_o : out std_logic_vector(COUNT-1 downto 0);
-        q2_o : out std_logic_vector(COUNT-1 downto 0)
+        clk_i : in std_ulogic;
+        d_i : in std_ulogic_vector(COUNT-1 downto 0);
+        q1_o : out std_ulogic_vector(COUNT-1 downto 0);
+        q2_o : out std_ulogic_vector(COUNT-1 downto 0)
     );
 end;
 

@@ -17,27 +17,27 @@ use work.register_defs.all;
 entity dsp_top is
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- External data in and out
         adc_data_i : in signed;
         dac_data_o : out signed;
 
         -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in std_logic_vector(DSP_REGS_RANGE);
+        write_strobe_i : in std_ulogic_vector(DSP_REGS_RANGE);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_REGS_RANGE);
-        read_strobe_i : in std_logic_vector(DSP_REGS_RANGE);
+        write_ack_o : out std_ulogic_vector(DSP_REGS_RANGE);
+        read_strobe_i : in std_ulogic_vector(DSP_REGS_RANGE);
         read_data_o : out reg_data_array_t(DSP_REGS_RANGE);
-        read_ack_o : out std_logic_vector(DSP_REGS_RANGE);
+        read_ack_o : out std_ulogic_vector(DSP_REGS_RANGE);
 
         -- External control: data multiplexing and shared control
         control_to_dsp_i : in control_to_dsp_t;
         dsp_to_control_o : out dsp_to_control_t;
 
         -- Front panel event generated from sequencer
-        dsp_event_o : out std_logic
+        dsp_event_o : out std_ulogic
     );
 end;
 
@@ -49,8 +49,8 @@ architecture arch of dsp_top is
     signal detector_window : hom_win_t;
 
     -- Sequencer and detector
-    signal sequencer_start : std_logic;
-    signal sequencer_write : std_logic;
+    signal sequencer_start : std_ulogic;
+    signal sequencer_write : std_ulogic;
 
     -- Oscillator control
     signal nco_0_phase_advance : angle_t;
@@ -65,7 +65,9 @@ begin
     -- -------------------------------------------------------------------------
     -- General register handling
 
-    register_file : entity work.register_file port map (
+    register_file : entity work.register_file generic map (
+        UNTIMED => false
+    ) port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_NCO0_FREQ_REG),
         write_data_i => write_data_i,

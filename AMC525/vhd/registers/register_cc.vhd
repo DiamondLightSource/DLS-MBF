@@ -13,34 +13,34 @@ use work.support.all;
 entity register_cc is
     port (
         -- Clocks
-        reg_clk_i : in std_logic;       -- Incoming register clock
-        out_clk_i : in std_logic;       -- Converted clock
-        out_clk_ok_i : in std_logic;
+        reg_clk_i : in std_ulogic;       -- Incoming register clock
+        out_clk_i : in std_ulogic;       -- Converted clock
+        out_clk_ok_i : in std_ulogic;
 
         -- Write interface
-        reg_write_strobe_i : in std_logic;
+        reg_write_strobe_i : in std_ulogic;
         reg_write_data_i : in reg_data_t;
-        reg_write_ack_o : out std_logic;
+        reg_write_ack_o : out std_ulogic;
 
-        out_write_strobe_o : out std_logic;
+        out_write_strobe_o : out std_ulogic;
         out_write_data_o : out reg_data_t;
-        out_write_ack_i : in std_logic;
+        out_write_ack_i : in std_ulogic;
 
         -- Read interface
-        reg_read_strobe_i : in std_logic;
+        reg_read_strobe_i : in std_ulogic;
         reg_read_data_o : out reg_data_t;
-        reg_read_ack_o : out std_logic;
+        reg_read_ack_o : out std_ulogic;
 
-        out_read_strobe_o : out std_logic;
+        out_read_strobe_o : out std_ulogic;
         out_read_data_i : in reg_data_t;
-        out_read_ack_i : in std_logic
+        out_read_ack_i : in std_ulogic
     );
 end;
 
 architecture arch of register_cc is
-    signal reading : std_logic;
-    signal out_read_strobe : std_logic;
-    signal read_pending : std_logic := '0';
+    signal reading : std_ulogic;
+    signal out_read_strobe : std_ulogic;
+    signal read_pending : std_ulogic := '0';
 
 begin
 

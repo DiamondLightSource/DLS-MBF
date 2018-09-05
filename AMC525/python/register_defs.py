@@ -28,7 +28,10 @@ range_templates = {
 
 
 def prefix_name(prefix, name, suffix):
-    return '%s%s_%s' % ('_'.join(prefix + ['']), name, suffix)
+    result = '%s%s' % ('_'.join(prefix + ['']), name)
+    if suffix:
+        result = '%s_%s' % (result, suffix)
+    return result
 
 # Emits a range of register values
 def emit_range(prefix, name, range, suffix, direction):
@@ -76,6 +79,9 @@ class Generate(parse.register_defs.WalkParse):
             emit_constant(prefix, union.name, union.range[0], 'REG')
         self.walk_subgroups(prefix, union)
 
+    def walk_constant(self, prefix, constant):
+        emit_constant(prefix, constant.name, constant.value, '')
+
 
 def generate_list(walk, values):
     for value in values:
@@ -83,10 +89,17 @@ def generate_list(walk, values):
         walk([], value)
         print
 
+def generate_constants(walk, constants):
+    print '    -- Constants'
+    for constant in constants.values():
+        walk([], constant)
+    print
+
 # Generates complete package definition
 def generate_package(package, parse):
     generate = Generate()
     print head_template % package
+    generate_constants(generate.walk_constant, parse.constants)
     generate_list(generate.walk_register, parse.register_defs)
     generate_list(generate.walk_group, parse.group_defs)
     generate_list(generate.walk_group, parse.groups)
@@ -96,5 +109,5 @@ def generate_package(package, parse):
 if __name__ == '__main__':
     package = sys.argv[2] if len(sys.argv) > 2 else 'register_defs'
     indent = parse.indent.parse_file(file(sys.argv[1]))
-    parse = parse.register_defs.parse(indent)
+    parse = parse.register_defs.parse_defs(indent)
     generate_package(package, parse)

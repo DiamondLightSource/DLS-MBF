@@ -15,10 +15,10 @@ entity detector_input is
         BUFFER_LENGTH : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Control
-        data_select_i : in std_logic;
+        data_select_i : in std_ulogic;
 
         -- Data in
         adc_data_i : in signed;
@@ -48,7 +48,7 @@ begin
         DW => fir_data_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(fir_data_i),
+        data_i => std_ulogic_vector(fir_data_i),
         signed(data_o) => fir_data_in
     );
 
@@ -57,7 +57,7 @@ begin
         DW => adc_data_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(adc_data_i),
+        data_i => std_ulogic_vector(adc_data_i),
         signed(data_o) => adc_data_in
     );
 
@@ -66,7 +66,7 @@ begin
         DW => window_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(window_i),
+        data_i => std_ulogic_vector(window_i),
         signed(data_o) => window_in
     );
 

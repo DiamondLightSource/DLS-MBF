@@ -19,10 +19,10 @@ package sequencer_defs is
         capture_count : capture_count_t;    -- Number of captures in state
         bunch_bank : unsigned(1 downto 0);  -- Bunch bank selection
         hom_gain : unsigned(3 downto 0);    -- Sweep NCO gain select
-        hom_enable : std_logic;         -- Enable sweep output
-        enable_window : std_logic;      -- Enable detector window
-        enable_write : std_logic;       -- Enable data capture for this sweep
-        enable_blanking : std_logic;    -- Observe blanking input signal
+        hom_enable : std_ulogic;         -- Enable sweep output
+        enable_window : std_ulogic;      -- Enable detector window
+        enable_write : std_ulogic;       -- Enable data capture for this sweep
+        enable_blanking : std_ulogic;    -- Observe blanking input signal
         window_rate : angle_t;          -- Detector window advance rate
         holdoff_count : dwell_count_t;  -- Holdoff count before each dwell
     end record;

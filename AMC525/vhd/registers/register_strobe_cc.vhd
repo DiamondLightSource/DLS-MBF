@@ -12,34 +12,34 @@ use work.support.all;
 entity register_strobe_cc is
     port (
         -- Clocks plus reset for out clock
-        reg_clk_i : in std_logic;
-        out_clk_i : in std_logic;
-        out_clk_ok_i : in std_logic;
+        reg_clk_i : in std_ulogic;
+        out_clk_i : in std_ulogic;
+        out_clk_ok_i : in std_ulogic;
 
         -- Strobe from REG to OUT clock
-        reg_strobe_i : in std_logic;
-        out_strobe_o : out std_logic;
+        reg_strobe_i : in std_ulogic;
+        out_strobe_o : out std_ulogic;
 
         -- Acknowledge from OUT to REG clock
-        out_ack_i : in std_logic;
-        reg_ack_o : out std_logic
+        out_ack_i : in std_ulogic;
+        reg_ack_o : out std_ulogic
     );
 end;
 
 architecture arch of register_strobe_cc is
     -- REG clock
-    signal reg_request : std_logic;
-    signal reg_response : std_logic;
-    signal reg_ack : std_logic;
-    signal reg_dsp_rst_n : std_logic;
-    signal reg_dsp_reset_n : std_logic;
+    signal reg_request : std_ulogic;
+    signal reg_response : std_ulogic;
+    signal reg_ack : std_ulogic;
+    signal reg_dsp_rst_n : std_ulogic;
+    signal reg_dsp_reset_n : std_ulogic;
     type reg_state_t is (REG_IDLE, REG_BUSY, REG_DONE);
     signal reg_state : reg_state_t := REG_IDLE;
 
     -- OUT clock
-    signal out_reset_n : std_logic;
-    signal out_request : std_logic;
-    signal out_response : std_logic;
+    signal out_reset_n : std_ulogic;
+    signal out_request : std_ulogic;
+    signal out_response : std_ulogic;
     type out_state_t is (OUT_IDLE, OUT_BUSY, OUT_DONE);
     signal out_state : out_state_t := OUT_IDLE;
 
@@ -84,8 +84,8 @@ begin
             end if;
         end if;
     end process;
-    reg_request <= to_std_logic(reg_state = REG_BUSY);
-    reg_ack     <= to_std_logic(reg_state = REG_IDLE);
+    reg_request <= to_std_ulogic(reg_state = REG_BUSY);
+    reg_ack     <= to_std_ulogic(reg_state = REG_IDLE);
 
     reg_ack_inst : entity work.edge_detect port map (
         clk_i => reg_clk_i,
@@ -129,7 +129,7 @@ begin
             end case;
         end if;
     end process;
-    out_response <= to_std_logic(out_state = OUT_DONE);
+    out_response <= to_std_ulogic(out_state = OUT_DONE);
 
     out_strobe_inst : entity work.edge_detect port map (
         clk_i => out_clk_i,

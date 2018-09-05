@@ -16,17 +16,17 @@ use work.sequencer_defs.all;
 
 entity sequencer_counter is
     port (
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
-        reset_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
+        reset_i : in std_ulogic;
 
         freq_base_i : in angle_t;       -- Frequency base
         start_freq_i : in angle_t;      -- Initial output frequency
         delta_freq_i : in angle_t;      -- Output frequency step
         capture_count_i : in capture_count_t;   -- Number of dwells to generate
-        last_turn_i : in std_logic;     -- Dwell is in its last turn
+        last_turn_i : in std_ulogic;     -- Dwell is in its last turn
 
-        state_end_o : out std_logic := '0';  -- Set during last turn of state
+        state_end_o : out std_ulogic := '0';  -- Set during last turn of state
         hom_freq_o : out angle_t := (others => '0')  -- Output frequency
     );
 end;
@@ -40,14 +40,14 @@ architecture arch of sequencer_counter is
 
     signal next_hom_freq : angle_t;
     signal next_capture_cntr : capture_count_t;
-    signal capture_cntr_zero : std_logic;   -- Set when capture_cntr is zero
+    signal capture_cntr_zero : std_ulogic;   -- Set when capture_cntr is zero
 
-    signal turn_clock_delay : std_logic;
+    signal turn_clock_delay : std_ulogic;
 
 begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            capture_cntr_zero <= to_std_logic(capture_cntr = 0);
+            capture_cntr_zero <= to_std_ulogic(capture_cntr = 0);
 
             -- Because most of the state transitions happen on turn_clock_i and
             -- most of the state has already been stable for a while before that

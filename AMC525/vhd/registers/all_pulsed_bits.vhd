@@ -13,12 +13,12 @@ entity all_pulsed_bits is
         BUFFER_LENGTH : natural := 4
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Control register interface
-        read_strobe_i : in std_logic;
+        read_strobe_i : in std_ulogic;
         read_data_o : out reg_data_t := (others => '0');
-        read_ack_o : out std_logic := '0';
+        read_ack_o : out std_ulogic := '0';
 
         -- Input pulsed bits
         pulsed_bits_i : in reg_data_t

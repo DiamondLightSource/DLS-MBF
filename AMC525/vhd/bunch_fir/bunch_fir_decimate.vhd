@@ -10,15 +10,15 @@ use work.bunch_defs.all;
 
 entity bunch_fir_decimate is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
-        turn_clock_i : in std_logic;
+        turn_clock_i : in std_ulogic;
         decimation_shift_i : in unsigned;
         decimation_limit_i : in unsigned;
 
         data_i : in signed;
         data_o : out signed;
-        data_valid_o : out std_logic := '0'
+        data_valid_o : out std_ulogic := '0'
     );
 end;
 
@@ -45,7 +45,7 @@ architecture arch of bunch_fir_decimate is
     signal write_data : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     signal data_out : signed(ACCUM_BITS-1 downto 0) := (others => '0');
     -- The data valid is derived from last_turn with a two tick delay
-    signal data_valid : std_logic := '0';
+    signal data_valid : std_ulogic := '0';
 
 begin
     -- Bunch memory for accumulator
@@ -87,7 +87,7 @@ begin
             data_out <= shift_right(write_data, to_integer(decimation_shift_i));
 
             -- Delay last turn to match data delay
-            data_valid <= to_std_logic(last_turn);
+            data_valid <= to_std_ulogic(last_turn);
             data_valid_o <= data_valid;
         end if;
     end process;

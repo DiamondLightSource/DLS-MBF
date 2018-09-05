@@ -9,15 +9,15 @@ use work.support.all;
 
 entity sync_reset is
     port (
-        clk_i : in std_logic;
-        clk_ok_i : in std_logic;        -- Asynchronous reset
-        sync_clk_ok_o : out std_logic   -- Synchronised reset
+        clk_i : in std_ulogic;
+        clk_ok_i : in std_ulogic;        -- Asynchronous reset
+        sync_clk_ok_o : out std_ulogic   -- Synchronised reset
     );
 end;
 
 architecture arch of sync_reset is
-    signal clk_ok_meta : std_logic;
-    signal clk_ok_delay : std_logic;    -- Delay to help with reset distribution
+    signal clk_ok_meta : std_ulogic;
+    signal clk_ok_delay : std_ulogic;   -- Delay to help with reset distribution
 
     -- Not sure if this requires metastability management: we can come out of
     -- reset at an entirely unpredictable time relative to the clock, so I'm
