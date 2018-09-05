@@ -24,6 +24,7 @@ DATE=`date`
 HOSTNAME=`hostname`
 DRIVERSPATH=/opt/dserver/driver
 MBF_DRIVER=amc525_mbf
+export MBFHOME=/users/dserver/mbf
 export DRIVERSPATH
 DSHOME="/opt/dserver"
 . /operation/dserver/.environ
@@ -46,31 +47,62 @@ case "$1" in
    start)
     /operation/dserver/crates/common_scripts/cratestartup $1 2>> /tmp/start.log
 
-# Wait for FPGA to be loaded
-for i in `seq 1 120` 
-do
-  if ! lspci -v | grep -q "Xilinx"; then
-    sleep 2
-  fi
-done
-
-
 if ! lspci -v | grep -q "Xilinx"; then
-  echo "ERROR: FPGA not detected on PCIe port. Exiting..."
-  exit 2
+  # Wait for the network interface with AMC525 to be ready
+  printf "Waiting for network connection with AMC525... "
+  for i in `seq 1 120` 
+  do
+    ping -c 1 -W 1 192.168.40.199 > /dev/null
+    if [ $? = 1 ] ; then
+      sleep 2
+    else break
+    fi
+  done
+
+  echo "Network connection waiting time: i=$i" >> /tmp/start_amc525.log
+
+  if [ $i = 120 ] ; then
+    printf "Failed!\n"
+    exit 2
+    else printf "Ok\n"
+  fi
+
+  printf "Loading FPGA image... "
+
+  # Load the AMC525 FPGA
+  $MBFHOME/load_fpga -f $MBFHOME/../firmwares/amc525_mbf.bit 199
+
+  printf "Ok\n"
+
+  # Wait for FPGA to be loaded
+  for i in `seq 1 120` 
+  do
+    if ! lspci -v | grep -q "Xilinx"; then
+      sleep 2
+    else break
+    fi
+  done
+
+  echo "AMC525 on PCIe waiting time: i=$i" >> /tmp/start_amc525.log
+
+  if ! lspci -v | grep -q "Xilinx"; then
+    echo "ERROR: FPGA not detected on PCIe port. Exiting..."
+    exit 2
+  fi
+
+  else echo "AMC525 already detected on PCIe." >> /tmp/start_amc525.log
 fi
 
-    # Load the AMC525 FPGA and driver
-    
-    export MBFHOME=/users/dserver/mbf
+    # Load the driver
     # For some reason load_fpga doesn't work during startup,
     # it comes from ssh which refuse to work (without any error message).
     #
-    #$MBFHOME/load_fpga -f $MBFHOME/amc525_lmbf.bit 199 2>&1 >/tmp/fpga.log
+    #$MBFHOME/load_fpga -f $MBFHOME/amc525_mbf.bit 199 2>&1 >/tmp/fpga.log
     sleep 2
     if ! lsmod | grep -q "$MBF_DRIVER"; then
+	printf "Loading driver... "
 	insmod $MBFHOME/build/driver/kbuild-$(uname -r)/$MBF_DRIVER.ko
-        sleep 1
+	printf "Ok\n"
     else
         echo "MBF driver $MBF_DRIVER already loaded"
     fi
@@ -79,6 +111,7 @@ fi
 
     . ~dserver/setpath_mbf
     #screen -dmS SRTMBF $MBFHOME/mbf -C $MBFHOME $MBFHOME/SR-TMBF.config $MBFHOME/hardware_delays
+    printf "Starting SR-TMBF ioc\n"
     if ! screen -ls | grep -q SRTMBF; then
         screen -dmS SRTMBF $MBFHOME/epics/runioc $MBFHOME/iocs/SR-TMBF.config
         sleep 4
@@ -94,6 +127,8 @@ fi
     else
         echo "EPICS IOC SRTFIT is already running"
     fi
+
+    echo "" >> /tmp/start_amc525.log
 
     ########### start control system services
     #
