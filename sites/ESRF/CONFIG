@@ -23,6 +23,6 @@ DRV_GROUP = comp
 MEX = /sware/com/matlab_2017a/bin/mex
 
 # Path to Python Soft IOC
-PYTHON_IOC = /segfs/tango/contrib/debian9/epics/pythonIoc/pythonIoc
+PYTHON_IOC = /opt/dserver/epics/pythonIoc/pythonIoc
 
 # vim: set filetype=make:
