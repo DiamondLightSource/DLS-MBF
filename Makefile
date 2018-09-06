@@ -7,7 +7,7 @@ MBF_TOP := $(CURDIR)
 
 # This defines the targets which are built when `make` is run with no target.
 # This target is defined for developer convenience.
-DEFAULT_TARGETS = epics matlab tune_fit iocs
+DEFAULT_TARGETS = python epics matlab tune_fit iocs
 
 # These targets are built when `make install` is run, and should define all the
 # targets which are expected to be built as part of the system installation.
@@ -109,6 +109,10 @@ iocs:
 	make -C $@
 .PHONY: iocs
 
+python:
+	make -C $@
+.PHONY: python
+
 
 print_version:
 	@echo VERSION_EXTRA=$(VERSION_EXTRA)
@@ -126,4 +130,5 @@ clean: clean-epics
 	make -C tune_fit clean
 	make -C opi clean
 	make -C iocs clean
+	make -C python clean
 .PHONY: clean
