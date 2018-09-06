@@ -5,7 +5,7 @@ FPGA_BUILD_DIR = /scratch/mga83/tmp/MBF/build/fpga
 SIM_BUILD_DIR = /scratch/mga83/tmp/MBF/build/sim
 
 # Definitions needed for FPGA build
-VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.4/settings64.sh
+VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2017.4/settings64.sh
 VSIM = /dls_sw/FPGA/Questa/10.6/questasim/bin/vsim
 LM_LICENSE_FILE = \
     2100@diamcslicserv01.dc.diamond.ac.uk \
