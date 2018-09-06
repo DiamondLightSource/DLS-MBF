@@ -1,5 +1,7 @@
 # Config settings for building at ESRF
 
+SITE = ESRF
+
 # Place the FPGA build in /scratch
 FPGA_BUILD_DIR = /segfs/tango/cppserver/machine/diagnostic/MBF/build/fpga
 

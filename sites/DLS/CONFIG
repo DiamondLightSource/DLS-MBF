@@ -1,5 +1,7 @@
 # Configuration settings for building at DLS
 
+SITE = DLS
+
 # Place the FPGA build in /scratch
 FPGA_BUILD_DIR = /scratch/mga83/tmp/MBF/build/fpga
 SIM_BUILD_DIR = /scratch/mga83/tmp/MBF/build/sim
