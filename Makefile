@@ -7,11 +7,11 @@ MBF_TOP := $(CURDIR)
 
 # This defines the targets which are built when `make` is run with no target.
 # This target is defined for developer convenience.
-DEFAULT_TARGETS = epics matlab tune_fit
+DEFAULT_TARGETS = epics matlab tune_fit iocs
 
 # These targets are built when `make install` is run, and should define all the
 # targets which are expected to be built as part of the system installation.
-INSTALL_TARGETS = epics matlab tune_fit driver-rpm opi
+INSTALL_TARGETS = $(DEFAULT_TARGETS) driver-rpm opi
 
 
 include Makefile.common
@@ -105,6 +105,10 @@ opi:
 	make -C $@
 .PHONY: opi
 
+iocs:
+	make -C $@
+.PHONY: iocs
+
 
 print_version:
 	@echo VERSION_EXTRA=$(VERSION_EXTRA)
@@ -121,4 +125,5 @@ clean: clean-epics
 	make -C matlab clean
 	make -C tune_fit clean
 	make -C opi clean
+	make -C iocs clean
 .PHONY: clean

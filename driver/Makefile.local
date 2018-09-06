@@ -62,17 +62,18 @@ $(DRIVER_KO): $(DRIVER_BUILD_FILES)
 # ------------------------------------------------------------------------------
 # Generate 11-amc525_mbf.rules file
 
-# We use the /tmp folder because make is supposed to be called by root
-# who may not be allowed to write in MBF directory
-/tmp/11-amc525_mbf.rules: $(SRCDIR)/11-amc525_mbf.rules.in
-	sed s/@@DRV_GROUP@@/$(DRV_GROUP)/g $< >$@
+11-amc525_mbf.rules: 11-amc525_mbf.rules.in
+	sed 's/@@DRV_GROUP@@/$(DRV_GROUP)/g' $< >$@
 
 
 # ------------------------------------------------------------------------------
 # Standalone testing
 
-udev: /tmp/11-amc525_mbf.rules
-	sudo install -m0644 -t /etc/udev/rules.d /tmp/11-amc525_mbf.rules
+# We copy to the /tmp folder because make is supposed to be called by root
+# who may not be allowed to write in MBF directory
+udev: 11-amc525_mbf.rules
+	cp $< /tmp
+	echo sudo install -m0644 -t /etc/udev/rules.d /tmp/$<
 
 # We need to go via /tmp before invoking insmod at DLS due to our configuration.
 insmod: $(DRIVER_KO)
@@ -98,10 +99,9 @@ dkms.conf: dkms.conf.in $(MBF_TOP)/VERSION
 	sed $(VERSION_SUBST) $< >$@
 
 # Install files where dkms needs them.  Supports DESTDIR for local install
-dkms-files: dkms.conf Makefile /tmp/11-amc525_mbf.rules $(DRIVER_FILES)
+dkms-files: dkms.conf Makefile 11-amc525_mbf.rules $(DRIVER_FILES)
 	install -d $(DESTDIR)/etc/udev/rules.d/
-	install -m0644 -t $(DESTDIR)/etc/udev/rules.d/ \
-            /tmp/11-amc525_mbf.rules
+	install -m0644 -t $(DESTDIR)/etc/udev/rules.d/ 11-amc525_mbf.rules
 	install -d $(DKMS_SRC_DIR)
 	install -m0644 -t $(DKMS_SRC_DIR) $^
 
@@ -132,7 +132,7 @@ RPM_FILE = amc525_mbf-$(RPM_VERSION)-1dkms.noarch.rpm
 amc525_mbf.spec: amc525_mbf.spec.in $(MBF_TOP)/VERSION
 	sed s/@@VERSION@@/$(RPM_VERSION)/g $< >$@
 
-driver-rpm: dkms.conf amc525_mbf.spec
+driver-rpm: dkms.conf amc525_mbf.spec 11-amc525_mbf.rules
 	mkdir -p rpmbuild/RPMS rpmbuild/BUILD
 	rpmbuild -bb \
             --define '_curdir $(CURDIR)' \

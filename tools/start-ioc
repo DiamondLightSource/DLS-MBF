@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Helper script for launching an IOC via a soft-link from the IOC name.
+#
+# The IOC name is used to locate the configuration file, and the configuration
+# file is read to determine which launcher application to use to run the IOC.
+
+# Simple minded error handling: all steps in this script must succeed.
+set -e
+
+# Reads key from given config file.  Called thus:
+#
+#   read_key file key
+read_key()
+{
+    sed -n "/^$2 *= */{s///; p; q;}" "$1"
+}
+
+TOP="$(dirname "$(readlink -f "$0")")"/..
+IOC_NAME="$(basename "$0")"
+
+# Figure out the path to the config directory
+SITE=$(read_key $TOP/CONFIG SITE)
+CONFIG="$TOP"/sites/$SITE/iocs/"$IOC_NAME".config
+
+# Determine the IOC launcher and run it
+RUNIOC="$(read_key "$CONFIG" ioc)"
+exec "$TOP/$RUNIOC" "$@" "$CONFIG"
