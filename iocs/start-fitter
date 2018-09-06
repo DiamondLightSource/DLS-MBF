@@ -1,6 +1,0 @@
-#!/bin/bash
-
-cd "$(dirname "$0")"
-IOC="$(basename "$0")"
-
-exec ../tune_fit/runioc "$IOC".config "$@"
