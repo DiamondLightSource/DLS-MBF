@@ -13,7 +13,7 @@ use work.support.all;
 use work.defines.all;
 
 architecture arch of interconnect_tb is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -22,68 +22,68 @@ architecture arch of interconnect_tb is
     end procedure;
 
 
-    signal DSP_DDR0_araddr : std_logic_vector(47 downto 0);
-    signal DSP_DDR0_arburst : std_logic_vector(1 downto 0);
-    signal DSP_DDR0_arcache : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_arid : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_arlen : std_logic_vector(7 downto 0);
-    signal DSP_DDR0_arlock : std_logic_vector(0 to 0);
-    signal DSP_DDR0_arprot : std_logic_vector(2 downto 0);
-    signal DSP_DDR0_arqos : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_arready : std_logic;
-    signal DSP_DDR0_arregion : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_arsize : std_logic_vector(2 downto 0);
-    signal DSP_DDR0_arvalid : std_logic;
-    signal DSP_DDR0_awaddr : std_logic_vector(47 downto 0);
-    signal DSP_DDR0_awburst : std_logic_vector(1 downto 0);
-    signal DSP_DDR0_awcache : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_awid : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_awlen : std_logic_vector(7 downto 0);
-    signal DSP_DDR0_awlock : std_logic_vector(0 to 0);
-    signal DSP_DDR0_awprot : std_logic_vector(2 downto 0);
-    signal DSP_DDR0_awqos : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_awready : std_logic;
-    signal DSP_DDR0_awregion : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_awsize : std_logic_vector(2 downto 0);
-    signal DSP_DDR0_awvalid : std_logic;
-    signal DSP_DDR0_bid : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_bready : std_logic;
-    signal DSP_DDR0_bresp : std_logic_vector(1 downto 0);
-    signal DSP_DDR0_bvalid : std_logic;
-    signal DSP_DDR0_rdata : std_logic_vector(63 downto 0);
-    signal DSP_DDR0_rid : std_logic_vector(3 downto 0);
-    signal DSP_DDR0_rlast : std_logic;
-    signal DSP_DDR0_rready : std_logic;
-    signal DSP_DDR0_rresp : std_logic_vector(1 downto 0);
-    signal DSP_DDR0_rvalid : std_logic;
-    signal DSP_DDR0_wdata : std_logic_vector(63 downto 0);
-    signal DSP_DDR0_wlast : std_logic;
-    signal DSP_DDR0_wready : std_logic;
-    signal DSP_DDR0_wstrb : std_logic_vector(7 downto 0);
-    signal DSP_DDR0_wvalid : std_logic;
+    signal DSP_DDR0_araddr : std_ulogic_vector(47 downto 0);
+    signal DSP_DDR0_arburst : std_ulogic_vector(1 downto 0);
+    signal DSP_DDR0_arcache : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_arid : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_arlen : std_ulogic_vector(7 downto 0);
+    signal DSP_DDR0_arlock : std_ulogic_vector(0 to 0);
+    signal DSP_DDR0_arprot : std_ulogic_vector(2 downto 0);
+    signal DSP_DDR0_arqos : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_arready : std_ulogic;
+    signal DSP_DDR0_arregion : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_arsize : std_ulogic_vector(2 downto 0);
+    signal DSP_DDR0_arvalid : std_ulogic;
+    signal DSP_DDR0_awaddr : std_ulogic_vector(47 downto 0);
+    signal DSP_DDR0_awburst : std_ulogic_vector(1 downto 0);
+    signal DSP_DDR0_awcache : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_awid : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_awlen : std_ulogic_vector(7 downto 0);
+    signal DSP_DDR0_awlock : std_ulogic_vector(0 to 0);
+    signal DSP_DDR0_awprot : std_ulogic_vector(2 downto 0);
+    signal DSP_DDR0_awqos : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_awready : std_ulogic;
+    signal DSP_DDR0_awregion : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_awsize : std_ulogic_vector(2 downto 0);
+    signal DSP_DDR0_awvalid : std_ulogic;
+    signal DSP_DDR0_bid : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_bready : std_ulogic;
+    signal DSP_DDR0_bresp : std_ulogic_vector(1 downto 0);
+    signal DSP_DDR0_bvalid : std_ulogic;
+    signal DSP_DDR0_rdata : std_ulogic_vector(63 downto 0);
+    signal DSP_DDR0_rid : std_ulogic_vector(3 downto 0);
+    signal DSP_DDR0_rlast : std_ulogic;
+    signal DSP_DDR0_rready : std_ulogic;
+    signal DSP_DDR0_rresp : std_ulogic_vector(1 downto 0);
+    signal DSP_DDR0_rvalid : std_ulogic;
+    signal DSP_DDR0_wdata : std_ulogic_vector(63 downto 0);
+    signal DSP_DDR0_wlast : std_ulogic;
+    signal DSP_DDR0_wready : std_ulogic;
+    signal DSP_DDR0_wstrb : std_ulogic_vector(7 downto 0);
+    signal DSP_DDR0_wvalid : std_ulogic;
 
-    signal adc_clk : std_logic := '0';
-    signal dsp_clk : std_logic := '0';
-    signal dsp_reset_n : std_logic := '0';
+    signal adc_clk : std_ulogic := '0';
+    signal dsp_clk : std_ulogic := '0';
+    signal dsp_reset_n : std_ulogic := '0';
 
     signal adc_data_a : unsigned(13 downto 0) := (others => '0');
     signal adc_data_b : unsigned(13 downto 0) := (others => '0');
 
     -- Data from DSP to burst master
-    signal DSP_DDR0_capture_enable : std_logic;
-    signal DSP_DDR0_data_ready : std_logic;
-    signal DSP_DDR0_capture_address : std_logic_vector(30 downto 0);
-    signal DSP_DDR0_data : std_logic_vector(63 downto 0);
-    signal DSP_DDR0_data_valid : std_logic;
-    signal DSP_DDR0_data_error : std_logic;
-    signal DSP_DDR0_addr_error : std_logic;
-    signal DSP_DDR0_brsp_error : std_logic;
+    signal DSP_DDR0_capture_enable : std_ulogic;
+    signal DSP_DDR0_data_ready : std_ulogic;
+    signal DSP_DDR0_capture_address : std_ulogic_vector(30 downto 0);
+    signal DSP_DDR0_data : std_ulogic_vector(63 downto 0);
+    signal DSP_DDR0_data_valid : std_ulogic;
+    signal DSP_DDR0_data_error : std_ulogic;
+    signal DSP_DDR0_addr_error : std_ulogic;
+    signal DSP_DDR0_brsp_error : std_ulogic;
 
     -- Signals for delaying {w,aw}{valid,ready}
-    signal DSP_awready : std_logic;
-    signal DSP_awvalid : std_logic;
-    signal DSP_wready : std_logic;
-    signal DSP_wvalid : std_logic;
+    signal DSP_awready : std_ulogic;
+    signal DSP_awvalid : std_ulogic;
+    signal DSP_wready : std_ulogic;
+    signal DSP_wvalid : std_ulogic;
     signal wdelay : unsigned(1 downto 0) := "00";
 
 
@@ -203,9 +203,9 @@ begin
 
     process (adc_clk)
         function sign_extend(data : unsigned; width : natural)
-            return std_logic_vector is
+            return std_ulogic_vector is
         begin
-            return sign_extend(std_logic_vector(data), width);
+            return sign_extend(std_ulogic_vector(data), width);
         end;
 
     begin

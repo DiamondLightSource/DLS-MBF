@@ -11,37 +11,37 @@ use work.support.all;
 entity register_top is
     port (
         -- Clocking
-        reg_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        dsp_clk_ok_i : in std_logic;
+        reg_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        dsp_clk_ok_i : in std_ulogic;
 
         -- Register interface from AXI
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_address_i : in unsigned;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
-        read_strobe_i : in std_logic;
+        write_ack_o : out std_ulogic;
+        read_strobe_i : in std_ulogic;
         read_address_i : in unsigned;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic;
+        read_ack_o : out std_ulogic;
 
         -- System registers on REG clk.
-        system_write_strobe_o : out std_logic_vector;
+        system_write_strobe_o : out std_ulogic_vector;
         system_write_data_o : out reg_data_t;
-        system_write_ack_i : in std_logic_vector;
-        system_read_strobe_o : out std_logic_vector;
+        system_write_ack_i : in std_ulogic_vector;
+        system_read_strobe_o : out std_ulogic_vector;
         system_read_data_i : in reg_data_array_t;
-        system_read_ack_i : in std_logic_vector;
+        system_read_ack_i : in std_ulogic_vector;
 
         -- DSP control registers (without address decoding) on DSP clk.
-        dsp_write_strobe_o : out std_logic;
+        dsp_write_strobe_o : out std_ulogic;
         dsp_write_address_o : out unsigned;
         dsp_write_data_o : out reg_data_t;
-        dsp_write_ack_i : in std_logic;
-        dsp_read_strobe_o : out std_logic;
+        dsp_write_ack_i : in std_ulogic;
+        dsp_read_strobe_o : out std_ulogic;
         dsp_read_address_o : out unsigned;
         dsp_read_data_i : in reg_data_t;
-        dsp_read_ack_i : in std_logic
+        dsp_read_ack_i : in std_ulogic
     );
 end;
 
@@ -50,15 +50,15 @@ architecture arch of register_top is
     constant DSP_MOD : natural := 1;
 
     subtype TOP_ADDR_RANGE is natural range write_address_i'LEFT-1 downto 0;
-    signal top_write_strobe : std_logic_vector(0 to 1);
+    signal top_write_strobe : std_ulogic_vector(0 to 1);
     signal top_write_address : unsigned(TOP_ADDR_RANGE);
     signal top_write_data : reg_data_t;
-    signal top_write_ack : std_logic_vector(0 to 1);
+    signal top_write_ack : std_ulogic_vector(0 to 1);
 
-    signal top_read_strobe : std_logic_vector(0 to 1);
+    signal top_read_strobe : std_ulogic_vector(0 to 1);
     signal top_read_address : unsigned(TOP_ADDR_RANGE);
     signal top_read_data : reg_data_array_t(0 to 1);
-    signal top_read_ack : std_logic_vector(0 to 1);
+    signal top_read_ack : std_ulogic_vector(0 to 1);
 
 begin
     -- Start by multiplexing between the system and DSP registers on the top bit

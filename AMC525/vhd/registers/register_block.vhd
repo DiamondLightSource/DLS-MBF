@@ -9,14 +9,14 @@ use work.defines.all;
 
 entity register_block is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Register interface (write only)
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_ulogic;
         -- Write start
-        write_start_i : in std_logic;
+        write_start_i : in std_ulogic;
 
         -- The register array
         registers_o : out reg_data_array_t

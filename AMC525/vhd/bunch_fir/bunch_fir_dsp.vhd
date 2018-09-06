@@ -21,14 +21,14 @@ entity bunch_fir_dsp is
         ACCUM_DELAY : natural       -- Delay accum_i => accum_o
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         tap_i : in signed;
         data_i : in signed;
         accum_i : in signed;
 
         accum_o : out signed;       -- accum_o <= accum_i + tap_i * data_i
-        overflow_o : out std_logic := '0'
+        overflow_o : out std_ulogic := '0'
     );
 end;
 

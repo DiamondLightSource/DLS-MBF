@@ -9,25 +9,25 @@ use work.defines.all;
 
 entity fast_memory_control is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
-        start_i : in std_logic;
-        stop_i : in std_logic;
-        snapshot_address_i : in std_logic;
+        start_i : in std_ulogic;
+        stop_i : in std_ulogic;
+        snapshot_address_i : in std_ulogic;
         count_i : in unsigned;
 
-        trigger_i : in std_logic;
-        trigger_phase_i : in std_logic;
+        trigger_i : in std_ulogic;
+        trigger_phase_i : in std_ulogic;
 
-        capture_enable_o : out std_logic := '0';
-        capture_address_i : in std_logic_vector;
-        capture_address_o : out std_logic_vector
+        capture_enable_o : out std_ulogic := '0';
+        capture_address_i : in std_ulogic_vector;
+        capture_address_o : out std_ulogic_vector
     );
 end;
 
 architecture arch of fast_memory_control is
-    signal trigger : std_logic := '0';
-    signal capture_phase : std_logic := '0';
+    signal trigger : std_ulogic := '0';
+    signal capture_phase : std_ulogic := '0';
     signal capture_address_in : capture_address_i'SUBTYPE;
 
     signal counter : count_i'SUBTYPE;
@@ -39,8 +39,8 @@ architecture arch of fast_memory_control is
     -- We are capturing 4 bytes per ADC tick, so we need to insert the ADC
     -- phase as bit 2.
     function insert_phase_bit(
-        word : std_logic_vector;
-        phase : std_logic) return std_logic_vector
+        word : std_ulogic_vector;
+        phase : std_ulogic) return std_ulogic_vector
     is
         variable result : word'SUBTYPE := word;
     begin
@@ -91,7 +91,7 @@ begin
                     end if;
             end case;
 
-            capture_enable_o <= to_std_logic(state /= IDLE);
+            capture_enable_o <= to_std_ulogic(state /= IDLE);
         end if;
     end process;
 end;

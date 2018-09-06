@@ -12,14 +12,14 @@ use work.defines.all;
 
 entity trigger_condition is
     port (
-        clk_i : in std_logic;
-        trigger_i : in std_logic;
-        trigger_o : out std_logic
+        clk_i : in std_ulogic;
+        trigger_i : in std_ulogic;
+        trigger_o : out std_ulogic
     );
 end;
 
 architecture arch of trigger_condition is
-    signal trigger : std_logic;
+    signal trigger : std_ulogic;
 
 begin
     -- Stabilise the incoming turn clock relative to the clock

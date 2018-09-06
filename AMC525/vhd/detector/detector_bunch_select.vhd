@@ -9,22 +9,22 @@ use work.defines.all;
 
 entity detector_bunch_select is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
         -- Register write interface
-        start_write_i : in std_logic;
-        write_strobe_i : in std_logic;
+        start_write_i : in std_ulogic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
 
         -- Bunch enable output
-        bunch_enable_o : out std_logic
+        bunch_enable_o : out std_ulogic
     );
 end;
 
 architecture arch of detector_bunch_select is
-    signal bunch_enable : std_logic;
+    signal bunch_enable : std_ulogic;
 
     -- We read a bit at a time, but write 32 bits at a time, so there are 5
     -- fewer write than read addresses

@@ -13,7 +13,7 @@ use work.nco_defs.all;
 
 entity nco_core is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );

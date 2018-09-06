@@ -14,23 +14,23 @@ use work.sequencer_defs.all;
 
 entity sequencer_window is
     port (
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_addr_i : in unsigned;
         write_data_i : in reg_data_t;
 
         -- Settings for current state
         window_rate_i : in angle_t;         -- Window phase advance per tick
-        enable_window_i : in std_logic;     -- Window or rectangle
-        write_enable_i : in std_logic;
+        enable_window_i : in std_ulogic;     -- Window or rectangle
+        write_enable_i : in std_ulogic;
 
-        first_turn_i : in std_logic;
-        last_turn_i : in std_logic;
+        first_turn_i : in std_ulogic;
+        last_turn_i : in std_ulogic;
 
-        seq_start_o : out std_logic;
-        seq_write_o : out std_logic;
+        seq_start_o : out std_ulogic;
+        seq_write_o : out std_ulogic;
         hom_window_o : out hom_win_t := (others => '0') -- Generated window
     );
 end;
@@ -49,15 +49,15 @@ architecture arch of sequencer_window is
     -- The rate and enable parameters are loaded early, but need to be valid
     -- during the entire turn, so load working copies at start of each turn.
     signal window_rate : angle_t := (others => '0');
-    signal enable_window : std_logic := '0';
-    signal write_enable : std_logic := '0';
+    signal enable_window : std_ulogic := '0';
+    signal write_enable : std_ulogic := '0';
 
     -- Generate window from appropriate triggered start.
-    signal start_window : std_logic;
+    signal start_window : std_ulogic;
     signal window_phase : angle_t := (others => '0');
-    signal enable_window_delay : std_logic := '0';
+    signal enable_window_delay : std_ulogic := '0';
 
-    signal seq_write_in : std_logic;
+    signal seq_write_in : std_ulogic;
     -- Extra register to help with flow
     signal hom_window : hom_win_t := (others => '0');
     signal hom_window_read : hom_win_t := (others => '0');

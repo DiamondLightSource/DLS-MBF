@@ -6,7 +6,7 @@ import select
 import struct
 import numpy
 
-from register_defs import register_groups
+from register_defs import register_groups, constants
 
 
 # Register area size ioctl code

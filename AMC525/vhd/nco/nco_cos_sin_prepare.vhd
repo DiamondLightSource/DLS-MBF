@@ -14,7 +14,7 @@ entity nco_cos_sin_prepare is
         REFINE_DELAY : natural      -- Delay for final octant correction
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         angle_i : in angle_t;
 
         -- Table lookup
@@ -67,7 +67,7 @@ begin
         DW => octant_t'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(octant),
+        data_i => std_ulogic_vector(octant),
         unsigned(data_o) => octant_o
     );
 

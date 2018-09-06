@@ -29,6 +29,14 @@ written.
     :file:      AMC525/vhd/register_defs.in
 
 
+Constant Definitions
+--------------------
+
+The following constants are defined as part of the firmware build.
+
+..  constant_docs::
+
+
 System Registers
 ----------------
 

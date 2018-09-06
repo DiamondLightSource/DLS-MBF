@@ -15,9 +15,9 @@ entity min_max_sum is
         ADDR_BITS : natural := BUNCH_NUM_BITS
     );
     port (
-        dsp_clk_i : in std_logic;
-        adc_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        adc_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
         data_i : in signed(15 downto 0);
         delta_o : out unsigned(15 downto 0);
@@ -25,9 +25,9 @@ entity min_max_sum is
         -- Two register readout interface:
         -- First returns the accumulated event count and swaps buffers
         -- Read second repeatedly to return and reset memory bank
-        read_strobe_i : in std_logic_vector(MMS_REGS_RANGE);
+        read_strobe_i : in std_ulogic_vector(MMS_REGS_RANGE);
         read_data_o : out reg_data_array_t(MMS_REGS_RANGE);
-        read_ack_o : out std_logic_vector(MMS_REGS_RANGE)
+        read_ack_o : out std_ulogic_vector(MMS_REGS_RANGE)
     );
 end;
 
@@ -38,14 +38,14 @@ architecture arch of min_max_sum is
     -- Delay from update_data_read to update_data_write.
     constant UPDATE_DELAY : natural := 2;
 
-    signal turn_clock : std_logic;
+    signal turn_clock : std_ulogic;
     signal data : signed(15 downto 0);
 
-    signal read_strobe : std_logic_vector(MMS_REGS_RANGE);
+    signal read_strobe : std_ulogic_vector(MMS_REGS_RANGE);
     signal read_data : reg_data_array_t(MMS_REGS_RANGE);
-    signal read_ack : std_logic_vector(MMS_REGS_RANGE);
+    signal read_ack : std_ulogic_vector(MMS_REGS_RANGE);
 
-    signal bank_select : std_logic;
+    signal bank_select : std_ulogic;
     signal update_addr : unsigned(ADDR_BITS-1 downto 0);
     signal readout_addr : unsigned(ADDR_BITS-1 downto 0);
 
@@ -54,12 +54,12 @@ architecture arch of min_max_sum is
 
     signal readout_data_read : mms_row_t;
 
-    signal sum_overflow : std_logic;
-    signal sum2_overflow : std_logic;
+    signal sum_overflow : std_ulogic;
+    signal sum2_overflow : std_ulogic;
     signal delta : unsigned(15 downto 0);
 
-    signal readout_strobe : std_logic;
-    signal readout_ack : std_logic;
+    signal readout_strobe : std_ulogic;
+    signal readout_ack : std_ulogic;
 
     -- Pipeline delays
     constant TURN_CLOCK_PIPELINE : natural := 4;
@@ -83,7 +83,7 @@ begin
         DW => 16
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_i),
+        data_i => std_ulogic_vector(data_i),
         signed(data_o) => data
     );
 
@@ -92,7 +92,7 @@ begin
         DW => 16
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(delta),
+        data_i => std_ulogic_vector(delta),
         unsigned(data_o) => delta_o
     );
 

@@ -204,11 +204,11 @@ def load_used_pins(signals, used_file):
 # Returns the appropriate type for the given range
 def range_type(range):
     if range is None:
-        return 'std_logic'
+        return 'std_ulogic'
     else:
         low, high = range
         updown = 'to' if low <= high else 'downto'
-        return 'std_logic_vector(%d %s %d)' % (low, updown, high)
+        return 'std_ulogic_vector(%d %s %d)' % (low, updown, high)
 
 
 def map_pin_range(mapping):

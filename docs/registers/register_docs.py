@@ -166,8 +166,8 @@ class register_docs_file(rst.Directive):
     def run(self):
         filename = self.options['file']
 
-        global register_groups, group_defs, register_defs
-        register_groups, group_defs, register_defs = \
+        global register_groups, group_defs, register_defs, constant_defs
+        register_groups, group_defs, register_defs, constant_defs = \
             self.load_groups(filename)
 
         return []
@@ -180,24 +180,34 @@ class register_docs_file(rst.Directive):
 
     def load_groups(self, filename):
         full_filename = os.path.join(mbf.MBF_TOP, filename)
-        defs = mbf.parse.register_defs.parse(
+        defs = mbf.parse.register_defs.parse_defs(
             mbf.parse.indent.parse_file(file(full_filename)))
         defs = mbf.parse.register_defs.flatten(defs)
         groups = self.list_to_dict(defs.groups)
         group_defs = self.list_to_dict(defs.group_defs)
         register_defs = self.list_to_dict(defs.register_defs)
-        return groups, group_defs, register_defs
+        return groups, group_defs, register_defs, defs.constants.values()
 
 register_groups = {}
 
 
-class register_docs(rst.Directive):
+class RegisterDocs(rst.Directive):
+    # This dance appears to be how we parse arbitrary RST text.  Note that the
+    # Element is just a placeholder for doing the parse, and in fact we return
+    # the list of children from the parse.
+    def parse_text(self, text):
+        text = statemachine.ViewList(initlist = text)
+        node = nodes.Element()
+        self.state.nested_parse(text, self.content_offset, node)
+        return node.children
+
+
+class register_docs(RegisterDocs):
     option_spec = {
         'section' : str,
         'group' : str,
         'register' : str,
     }
-
 
     def lookup_option(self):
         if 'section' in self.options:
@@ -227,33 +237,17 @@ class register_docs(rst.Directive):
         text = [s[1:] for s in entity.doc]
         return self.parse_text(text)
 
-    # This dance appears to be how we parse arbitrary RST text.  Note that the
-    # Element is just a placeholder for doing the parse, and in fact we return
-    # the list of children from the parse.
-    def parse_text(self, text):
-        text = statemachine.ViewList(initlist = text)
-        node = nodes.Element()
-        self.state.nested_parse(text, self.content_offset, node)
-        return node.children
 
-    def create_table(self):
-        col_widths = [1, 2, 3, 4]
-        table = Table(self, col_widths)
-
-        table.add_header(test_line)
-
-        table.add_row(test_line)
-        table.add_row(test_line[:2])
-        table.add_row(
-            [['short'], paragraph_text, long_text],
-            more_rows = [0, 1, 0], more_cols = [0, 1, 0])
-        table.add_row([['one'], ['two']])
-        table.add_row(
-            test_line[1:], more_cols = [1, 0, 0])
-        table.add_row(
-            test_line[0:2] + [compound_table, paragraph_text])
-        return table.table
+class constant_docs(RegisterDocs):
+    def run(self):
+        table = Table(self, [50, 15])
+        table.add_header([['Name'], ['Value']])
+        for constant in constant_defs:
+            table.add_row([trim_text(constant.doc)], more_cols = [1])
+            table.add_row([format_name(constant), ['%d' % constant.value]])
+        return [table.table]
 
 
 rst.directives.register_directive('register_docs_file', register_docs_file)
 rst.directives.register_directive('register_docs', register_docs)
+rst.directives.register_directive('constant_docs', constant_docs)

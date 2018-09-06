@@ -16,16 +16,16 @@ entity memory_fifo is
         FIFO_BITS : natural := 5            -- log2 FIFO depth
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
-        write_valid_i : in std_logic;
-        write_ready_o : out std_logic;
-        write_data_i : in std_logic_vector;
+        write_valid_i : in std_ulogic;
+        write_ready_o : out std_ulogic;
+        write_data_i : in std_ulogic_vector;
         write_addr_i : in unsigned;
 
-        read_valid_o : out std_logic;
-        read_ready_i : in std_logic;
-        read_data_o : out std_logic_vector;
+        read_valid_o : out std_ulogic;
+        read_ready_i : in std_ulogic;
+        read_data_o : out std_ulogic_vector;
         read_addr_o : out unsigned
     );
 end;
@@ -56,14 +56,14 @@ architecture arch of memory_fifo is
     -- INPUT: we register the incoming data and the write ready state.
     signal write_data_valid : boolean := false;
     signal write_ready : boolean := true;
-    signal write_data : std_logic_vector(FIFO_RANGE);
+    signal write_data : std_ulogic_vector(FIFO_RANGE);
     signal do_write : boolean;
     signal write_enable : boolean;
 
     -- OUTPUT: register read valid state
     signal read_valid : boolean := false;
     signal do_read : boolean;
-    signal read_data : std_logic_vector(FIFO_RANGE);
+    signal read_data : std_ulogic_vector(FIFO_RANGE);
 
 begin
     -- STATE
@@ -103,7 +103,7 @@ begin
             if write_enable then
                 write_data_valid <= true;
                 write_data(DATA_RANGE) <= write_data_i;
-                write_data(ADDR_RANGE) <= std_logic_vector(write_addr_i);
+                write_data(ADDR_RANGE) <= std_ulogic_vector(write_addr_i);
             elsif do_write then
                 write_data_valid <= false;
             end if;
@@ -117,8 +117,8 @@ begin
         end if;
     end process;
 
-    write_ready_o <= to_std_logic(write_ready);
-    read_valid_o  <= to_std_logic(read_valid);
+    write_ready_o <= to_std_ulogic(write_ready);
+    read_valid_o  <= to_std_ulogic(read_valid);
     read_data_o <= read_data(DATA_RANGE);
     read_addr_o <= unsigned(read_data(ADDR_RANGE));
 end;

@@ -12,17 +12,17 @@ use work.bunch_defs.all;
 
 entity bunch_select is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;       -- Revolution clock
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;       -- Revolution clock
 
         -- Bunch configuration SBC interface for writing configuration
-        write_strobe_i : in std_logic_vector(DSP_BUNCH_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_BUNCH_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_BUNCH_REGS);
-        read_strobe_i : in std_logic_vector(DSP_BUNCH_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_BUNCH_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_BUNCH_REGS);
         read_data_o : out reg_data_array_t(DSP_BUNCH_REGS);
-        read_ack_o : out std_logic_vector(DSP_BUNCH_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_BUNCH_REGS);
 
         -- Bunch configuration readout
         bank_select_i : in unsigned(1 downto 0);       -- Current bunch bank
@@ -33,12 +33,12 @@ end;
 architecture arch of bunch_select is
     signal config_register : reg_data_t;
 
-    signal write_start : std_logic;
+    signal write_start : std_ulogic;
     signal write_bank : unsigned(BUNCH_BANK_BITS-1 downto 0);
 
     signal bunch_index : bunch_count_t := (others => '0');
-    signal bunch_config : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
-    signal config_out : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal bunch_config : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal config_out : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
 
 begin
     -- Register management

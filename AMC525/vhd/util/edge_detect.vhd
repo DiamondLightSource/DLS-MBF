@@ -8,15 +8,15 @@ entity edge_detect is
         REGISTER_EDGE : boolean := false
     );
     port (
-        clk_i : in std_logic;
-        data_i : in std_logic;
-        edge_o : out std_logic := '0'
+        clk_i : in std_ulogic;
+        data_i : in std_ulogic;
+        edge_o : out std_ulogic := '0'
     );
 end;
 
 architecture arch of edge_detect is
-    signal last_data : std_logic := '0';
-    signal edge : std_logic;
+    signal last_data : std_ulogic := '0';
+    signal edge : std_ulogic;
 
 begin
     edge <= data_i and not last_data;

@@ -62,6 +62,7 @@ struct fpga_version {
     unsigned int major;
     unsigned int minor;
     unsigned int patch;
+    unsigned int firmware;
     unsigned int git_sha;
     bool git_dirty;
 };

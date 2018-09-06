@@ -13,14 +13,14 @@ entity stretch_pulse is
         WIDTH : natural := 1
     );
     port (
-        clk_i : in std_logic;
-        pulse_i : in std_logic_vector(WIDTH-1 downto 0);
-        pulse_o : out std_logic_vector(WIDTH-1 downto 0) := (others => '0')
+        clk_i : in std_ulogic;
+        pulse_i : in std_ulogic_vector(WIDTH-1 downto 0);
+        pulse_o : out std_ulogic_vector(WIDTH-1 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of stretch_pulse is
-    signal pulse_delay : std_logic_vector(WIDTH-1 downto 0);
+    signal pulse_delay : std_ulogic_vector(WIDTH-1 downto 0);
 
 begin
     delayline : entity work.dlyline generic map (

@@ -9,14 +9,14 @@ use work.support.all;
 
 entity bunch_counter is
     port (
-        clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
         bunch_index_o : out bunch_count_t   -- Current bunch number
     );
 end;
 
 architecture arch of bunch_counter is
-    signal turn_clock : std_logic;
+    signal turn_clock : std_ulogic;
     signal bunch_index : bunch_count_t := (others => '0');
 
 begin
