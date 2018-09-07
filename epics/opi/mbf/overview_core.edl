@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2003
-y 596
+x 86
+y 386
 w 456
 h 473
 font "helvetica-medium-r-8.0"
@@ -150,6 +150,7 @@ botShadowColor index 11
 label "EXIT"
 font "helvetica-bold-r-12.0"
 3d
+controlParent
 endObjectProperties
 
 # (Shell Command)
@@ -309,72 +310,6 @@ ySigned {
 }
 plotColor {
   0 index 27
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 8
-y 440
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Tune Only"
-numCmds 1
-command {
-  0 "run-command 'Setup Tune Measurement only' mbf-setup-tune $(device):$(axis) TUNE"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 312
-y 440
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Feedback On & Tune"
-numCmds 1
-command {
-  0 "run-command 'Setup Closed Loop + SB Tune Meas.' mbf-setup-tune $(device):$(axis) FB"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 160
-y 440
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Tune Special"
-numCmds 1
-command {
-  0 "run-command 'Setup Tune Measurement Special' mbf-setup-tune $(device):$(axis) AP"
 }
 endObjectProperties
 
