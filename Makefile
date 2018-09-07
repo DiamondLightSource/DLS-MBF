@@ -97,7 +97,7 @@ clean-epics:
 # Miscellanous other targets
 
 # All the targets below are implemented by simple recursive calls to make.
-DIR_TARGETS = epics matlab tune_fit opi iocs python
+DIR_TARGETS = epics matlab tune_fit opi iocs python tango
 
 $(DEFS_PATH):
 	make -C python
