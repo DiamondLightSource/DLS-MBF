@@ -5,6 +5,7 @@
 *.html
 
 /matlab/*.mexa64
+/python/mbf/defs_path.py
 
 # Put stuff we want to ignore here
 /ignore

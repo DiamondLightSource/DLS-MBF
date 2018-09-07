@@ -2,10 +2,7 @@
 
 # Plotting of fits
 
-from pkg_resources import require
-require('numpy')
-require('matplotlib')
-
+import mbf.requires
 import sys
 import argparse
 from matplotlib import pyplot
