@@ -82,7 +82,12 @@ epics/configure/RELEASE: CONFIG
 	echo EPICS_DEVICE = $(EPICS_DEVICE) >>$@
 	echo EPICS_BASE = $(EPICS_BASE) >>$@
 
-epics: epics/configure/RELEASE $(DEFS_PATH)
+epics: epics/configure/RELEASE $(DEFS_PATH) epics/opi/mbf/overview.edl
+
+opi: epics/opi/mbf/overview.edl
+
+epics/opi/mbf/overview.edl: sites/$(SITE)/edm/overview.edl
+	ln -sf ../../../$< $@
 
 # For the clean-epics target we need to manage the built configure/RELEASE file
 # as otherwise the EPICS build script becomes confused.
@@ -90,6 +95,7 @@ clean-epics:
 	touch epics/configure/RELEASE
 	make -C epics clean uninstall
 	rm -f epics/configure/RELEASE
+	rm -f epics/opi/mbf/overview.edl
 .PHONY: clean-epics
 
 
