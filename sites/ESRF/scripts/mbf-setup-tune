@@ -19,18 +19,19 @@ import numpy
 import argparse
 
 from cothread import catools
+from cleaning_pattern import gen_cleaning_pattern
 
 
-DEFAULT_CONFIG = '/home/ops/diagnostics/config/MBF_tune.config'
+DEFAULT_CONFIG = '/segfs/tango/cppserver/machine/diagnostic/MBF/epics/opi/scripts/MBF_tune.config'
 
 
 DEVICE_TO_CONFIG_AXIS = {
-    'SR23C-DI-TMBF-01:X': 'X',
-    'SR23C-DI-TMBF-01:Y': 'Y',
-    'SR23C-DI-LMBF-01:IQ': 'L',
-    'TS-DI-TMBF-02:X': 'X',
-    'TS-DI-TMBF-02:Y': 'Y',
-    'TS-DI-LMBF-01:IQ': 'L',
+    'SR-TMBF:X': 'X',
+    'SR-TMBF:Y': 'Y',
+    'SR-LMBF:IQ': 'L',    # not installed
+    'LAB-TMBF:X': 'X',    # not installed
+    'LAB-TMBF:Y': 'Y',    # not installed
+    'LAB-LMBF:IQ': 'L',   # not installed
 }
 
 VALID_MODES = ['TUNE', 'AP', 'FB']
@@ -139,7 +140,8 @@ if MODE not in VALID_MODES:
     parser.error('Setup mode \'%s\' is invalid' % MODE)
 
 if args.ring_mode is None:
-    RING_MODE = catools.caget('SR-CS-RING-01:MODE', datatype = str)
+    RING_MODE = '78'
+    #RING_MODE = catools.caget('SR-CS-RING-01:MODE', datatype = str)
 else:
     RING_MODE = args.ring_mode
 
@@ -201,7 +203,6 @@ put_axes('DAC:ENABLE_S', 'Off')        # Turn off while we mess with settings
 
 # Make sure we're sane.
 put_axes('ADC:LOOPBACK_S', 'Normal')
-put('SEQ:0:BANK_S', 'Bank 0')
 put('SEQ:RESET_WIN_S', 0)
 
 # Ensure no triggers are running and the sequencer is stopped
@@ -215,26 +216,75 @@ put('SEQ:SUPER:RESET_S', 0)
 # Ensure the blanking interval is right (this is not axis specific)
 _put(None, 'TRG:BLANKING_S', setup.blanking_interval)
 
+# Ensure NCO is stopped
+put('NCO:ENABLE_S', 0)
 
 # Configure FIR as selected
 put('FIR:0:LENGTH_S', setup.length)
 put('FIR:0:CYCLES_S', setup.cycles)
 put('FIR:0:USEWF_S', 'Settings')
-put('FIR:GAIN_S', '-42dB')
+put('FIR:0:PHASE_S', setup.feedback_phase)
+put('FIR:GAIN_S', setup.feedback_gain)
 
-# Configure bunch bank #0 for FIR and selected operation
+# Configure banks #1, #2, #3 and #4
+#
+clean_pattern = gen_cleaning_pattern(RING_MODE)
+
+all_bucket = numpy.ones((BUNCH_COUNT,))
+bunches = clean_pattern == 0
+
+outwf_fb = DAC_OUT_FIR*bunches
+outwf_clean = DAC_OUT_NCO*numpy.logical_not(bunches)
+outwf_sweep = DAC_OUT_SWEEP*all_bucket
+gainwf_clean = setup.cleaning_fine_gain*clean_pattern
+gainwf_fb = setup.feedback_fine_gain*bunches
+gainwf_fb_sweep = setup.feedback_fine_gain*all_bucket
+
+# Bank1: Tune sweep
 put('BUN:0:FIRWF_S', BUNCH_ZEROS)
-put('BUN:0:OUTWF_S', setup.dac_output * BUNCH_ONES)
-put('BUN:0:GAINWF_S', BUNCH_ONES)
+put('BUN:0:OUTWF_S', outwf_sweep)
+put('BUN:0:GAINWF_S', gainwf_fb_sweep)
 
-# Similarly configure bank #1 for sweep as appropriate
-SWEEP_OUT = BUNCH_ENABLES * DAC_OUT_SWEEP
-if setup.keep_feedback:
-    SWEEP_OUT |= setup.dac_output
+# Bank2: Idle + Cleaning 
 put('BUN:1:FIRWF_S', BUNCH_ZEROS)
-put('BUN:1:OUTWF_S', SWEEP_OUT)
-put('BUN:1:GAINWF_S', BUNCH_ONES)
+put('BUN:1:OUTWF_S', outwf_clean)
+put('BUN:1:GAINWF_S', gainwf_clean)
 
+# Bank3: Feedback + Tune sweep
+put('BUN:2:FIRWF_S', BUNCH_ZEROS)
+put('BUN:2:OUTWF_S', outwf_fb + outwf_sweep)
+put('BUN:2:GAINWF_S', gainwf_fb_sweep)
+
+# Bank4: Feedback + Cleaning
+put('BUN:3:FIRWF_S', BUNCH_ZEROS)
+put('BUN:3:OUTWF_S', outwf_fb + outwf_clean)
+put('BUN:3:GAINWF_S', gainwf_fb + gainwf_clean)
+
+# Configure NCO for cleaning
+#
+put('NCO:GAIN_S', setup.cleaning_gain)
+
+
+# Activate Feedback and Tune sweep depending on MODE
+#
+if MODE == 'TUNE':
+    feedback_status = False
+    sweep_status = True
+elif MODE == 'FB':
+    feedback_status = True
+    sweep_status = True
+elif MODE == 'AP':
+    feedback_status = False
+    sweep_status = False
+else:
+    raise NameError('Invalid mode: ' + MODE)
+
+if feedback_status:
+    put('SEQ:1:BANK_S', 2)
+    put('SEQ:0:BANK_S', 3)
+else:
+    put('SEQ:1:BANK_S', 0)
+    put('SEQ:0:BANK_S', 1)
 
 # Disable all sequencer triggers and configure triggering on external trigger
 TRIGGER_SOURCES = ['SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1']
@@ -261,7 +311,6 @@ put('SEQ:1:COUNT_S', 4096)
 put('SEQ:1:START_FREQ_S', sweep_start)
 put('SEQ:1:END_FREQ_S', sweep_end)
 put('SEQ:1:CAPTURE_S', 'Capture')
-put('SEQ:1:BANK_S', 'Bank 1')
 put('SEQ:1:HOLDOFF_S', setup.sweep_holdoff)
 put('SEQ:1:DWELL_S', setup.sweep_dwell_time)
 put('SEQ:1:GAIN_S', setup.sweep_gain)
@@ -273,7 +322,10 @@ put('SEQ:PC_S', 1)
 
 # Now we can go!
 put_axes('DAC:ENABLE_S', 'On')
-put('TRG:SEQ:ARM_S', 0)
 
+if sweep_status:
+    put('TRG:SEQ:ARM_S', 0)
+else:
+    put('TRG:SEQ:DISARM_S', 0)
 
 # vim: set filetype=python:
