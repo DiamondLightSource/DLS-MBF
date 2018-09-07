@@ -1,0 +1,12 @@
+#! /bin/bash
+
+cd "$(dirname "$0")"
+cd ../..
+
+ln -sf sites/ESRF/CONFIG CONFIG
+
+ln -sf mbf/sites/ESRF/cratestartup ../cratestartup
+ln -sf mbf/sites/ESRF/setpath_mbf ../setpath_mbf
+ln -sf mbf/sites/ESRF/screen_tfit ../screen_tfit
+ln -sf ../mbf/sites/ESRF/cron_daily_backup.sh ../autosave/cron_daily_backup.sh
+ln -sf ../mbf/sites/ESRF/cron_daily_backup.sh ../autosave/cron_daily_backup.sh
