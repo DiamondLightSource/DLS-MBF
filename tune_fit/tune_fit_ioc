@@ -1,7 +1,8 @@
 # Tune fitting IOC
 
 import mbf.requires
-import sys, os
+import os
+import sys
 
 # Import the basic framework components.
 from softioc import softioc, builder
@@ -13,8 +14,16 @@ import persistence
 import support
 
 
+import argparse
+parser = argparse.ArgumentParser(description = 'Tune Fitter IOC')
+parser.add_argument('config', help = 'Configuration for IOC')
+parser.add_argument('-d', '--output-database',
+    help = 'Output database to specified file')
+args = parser.parse_args()
+
+
 # Start by loading the configuration file
-config = support.read_config(sys.argv[1])
+config = support.read_config(args.config)
 
 # Read the required configuration parameters
 ioc_name = config['ioc_name']
@@ -31,6 +40,14 @@ builder.UnsetDevice()
 # Create the fitters
 persist = persistence.Persistence(config)
 fitters = [fit_loop.TuneFitLoop(persist, config, source) for source in sources]
+
+
+# If -d option specified then just save the database to the specified file and
+# do nothing further.
+if args.output_database:
+    builder.WriteRecords(args.output_database, '')
+    sys.exit()
+
 
 # Now get the IOC started
 builder.LoadDatabase()
