@@ -36,6 +36,8 @@ if ((PATH_FIXUP)); then
     command="$HERE/$command"
 fi
 
+# Add the site subdirectory for site specific commands.
+PATH="$HERE"/site:"$PATH"
 
 action="$command $* $SEP read -p 'press return'"
 xterm -T "$title" -e "$action"
