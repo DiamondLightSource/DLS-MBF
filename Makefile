@@ -30,6 +30,9 @@ install: $(INSTALL_TARGETS)
 .PHONY: install
 
 
+# The following file is a prerequisite for both the EPICS and FPGA builds.
+DEFS_PATH = python/mbf/defs_path.py
+
 
 # ------------------------------------------------------------------------------
 # FPGA build
@@ -39,7 +42,7 @@ FPGA_TARGETS = \
     fpga fpga_project runvivado edit_bd save_bd create_bd load_fpga fpga_built
 .PHONY: $(FPGA_TARGETS)
 
-$(FPGA_TARGETS): $(FPGA_BUILD_DIR)
+$(FPGA_TARGETS): $(FPGA_BUILD_DIR) $(DEFS_PATH)
 	$(call MAKE_LOCAL,AMC525)
 
 $(FPGA_BUILD_DIR):
@@ -79,10 +82,10 @@ epics/configure/RELEASE: CONFIG
 	echo EPICS_DEVICE = $(EPICS_DEVICE) >>$@
 	echo EPICS_BASE = $(EPICS_BASE) >>$@
 
-epics: epics/configure/RELEASE
-	make -C $@
-.PHONY: epics
+epics: epics/configure/RELEASE $(DEFS_PATH)
 
+# For the clean-epics target we need to manage the built configure/RELEASE file
+# as otherwise the EPICS build script becomes confused.
 clean-epics:
 	touch epics/configure/RELEASE
 	make -C epics clean uninstall
@@ -93,25 +96,29 @@ clean-epics:
 # ------------------------------------------------------------------------------
 # Miscellanous other targets
 
-matlab:
-	make -C $@
-.PHONY: matlab
+# All the targets below are implemented by simple recursive calls to make.
+DIR_TARGETS = epics matlab tune_fit opi iocs python
 
-tune_fit:
-	make -C $@
-.PHONY: tune_fit
+$(DEFS_PATH):
+	make -C python
 
-opi:
-	make -C $@
-.PHONY: opi
+tune_fit: $(DEFS_PATH)
 
-iocs:
-	make -C $@
-.PHONY: iocs
 
-python:
+$(DIR_TARGETS):
 	make -C $@
-.PHONY: python
+.PHONY: $(DIR_TARGETS)
+
+# Note that because we use pattern matching for our subdirectory clean targets,
+# we can't mark these targets as .PHONY, because it seems that .PHONY targets
+# don't participate in pattern matching.
+clean-%:
+	make -C $* clean
+
+
+clean: $(DIR_TARGETS:%=clean-%)
+	rm -rf $(BUILD_DIR)
+.PHONY: clean
 
 
 print_version:
@@ -122,13 +129,3 @@ print_version:
 	@echo GIT_VERSION=$(GIT_VERSION)
 	@echo MBF_VERSION=$(MBF_VERSION)
 .PHONY: print_version
-
-
-clean: clean-epics
-	rm -rf $(BUILD_DIR)
-	make -C matlab clean
-	make -C tune_fit clean
-	make -C opi clean
-	make -C iocs clean
-	make -C python clean
-.PHONY: clean
