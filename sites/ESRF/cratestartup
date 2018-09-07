@@ -74,23 +74,7 @@ if ! lspci -v | grep -q "Xilinx"; then
 
   printf "Ok\n"
 
-  # Wait for FPGA to be loaded
-  for i in `seq 1 120` 
-  do
-    if ! lspci -v | grep -q "Xilinx"; then
-      sleep 2
-    else break
-    fi
-  done
-
-  echo "AMC525 on PCIe waiting time: i=$i" >> /tmp/start_amc525.log
-
-  if ! lspci -v | grep -q "Xilinx"; then
-    echo "ERROR: FPGA not detected on PCIe port. Exiting..."
-    exit 2
-  fi
-
-  else echo "AMC525 already detected on PCIe." >> /tmp/start_amc525.log
+else echo "AMC525 already detected on PCIe." >> /tmp/start_amc525.log
 fi
 
     # Load the driver
@@ -104,43 +88,16 @@ fi
         echo "MBF driver $MBF_DRIVER already loaded"
     fi
 
-    # Start EPICS IOCs
-    #
-    . ~dserver/setpath_mbf
-    printf "Starting SR-TMBF ioc\n"
-    if ! su dserver -c "screen -ls" | grep -q SRTMBF; then
-        CMD="screen -dmS SRTMBF $MBFHOME/epics/runioc \
-                $MBFHOME/iocs/SR-TMBF.config"
-        su dserver -c "$CMD"
-        sleep 4
-    else
-        echo "EPICS IOC SRTMBF is already running"
-    fi
-    # python interactive_ioc failed to run in screen so launch it in background
-    #$HERE/bin/$EPICS_HOST_ARCH/softIoc $MBFHOME/tune_fit/tune_fit_ioc_noshell $MBFHOME/SR-TFIT.config&
-    #$MBFHOME/iocs/SR-TFIT&
-    if ! su dserver -c "screen -ls" | grep -q SRTFIT; then
-        CMD="screen -dmS SRTFIT $MBFHOME/../screen_tfit"
-        su dserver -c "$CMD"
-        sleep 4
-    else
-        echo "EPICS IOC SRTFIT is already running"
-    fi
-
     echo "" >> /tmp/start_amc525.log
 
     ########### start control system services
     #
+    . ~dserver/setpath_mbf
     su dserver -c "/operation/dserver/crates/common_scripts/taco start" 2>> /tmp/start.log
     ;;
  
    stop)
     /operation/dserver/crates/common_scripts/cratestartup $1 2>> /tmp/stop.log
-
-    # Stop EPICS IOCs
-    su dserver -c "screen -X -S SRTMBF quit"
-    su dserver -c "screen -X -S SRTFIT quit"
-    sleep 2
 
     rmmod $MBF_DRIVER
 

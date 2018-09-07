@@ -10,6 +10,20 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <DefaultPropValue>SRTMBF</DefaultPropValue>
     </deviceProperties>
+    <deviceProperties name="wait_for_amc525" description="Wait for the FPGA card (AMC525) to be detected before starting the IOC">
+      <type xsi:type="pogoDsl:BooleanType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>True</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="ioc_in_screen" description="Start or IOC in a screen session">
+      <type xsi:type="pogoDsl:BooleanType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>True</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="command" description="command to be excecuted in a screen session">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="1000" isDynamic="false">
       <argin description="none">
         <type xsi:type="pogoDsl:VoidType"/>

@@ -64,6 +64,13 @@ class MBFStartIOC (PyTango.Device_4Impl):
     
     # -------- Add you global variables here --------------------------
     #----- PROTECTED REGION ID(MBFStartIOC.global_variables) ENABLED START -----#
+    def check_screen_session(self):
+        pop_inst1 = subprocess.Popen(["screen", "-ls"], stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        pop_inst2 = subprocess.Popen(["grep", "-q", self.screen_name],
+                stdin=pop_inst1.stdout, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        return pop_inst2.wait()
     
     #----- PROTECTED REGION END -----#	//	MBFStartIOC.global_variables
 
@@ -78,6 +85,10 @@ class MBFStartIOC (PyTango.Device_4Impl):
     def delete_device(self):
         self.debug_stream("In delete_device()")
         #----- PROTECTED REGION ID(MBFStartIOC.delete_device) ENABLED START -----#
+        if len(self.command) != 0:
+            pop_inst = subprocess.Popen(["screen", "-X", "-S", self.screen_name,
+                "quit"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            pop_inst.wait()
         
         #----- PROTECTED REGION END -----#	//	MBFStartIOC.delete_device
 
@@ -85,6 +96,38 @@ class MBFStartIOC (PyTango.Device_4Impl):
         self.debug_stream("In init_device()")
         self.get_device_properties(self.get_device_class())
         #----- PROTECTED REGION ID(MBFStartIOC.init_device) ENABLED START -----#
+        if len(self.command) == 0:
+            print >>sys.stderr, "The property command is not defined."
+            print >>sys.stderr, "-> the device will not do anything"
+            return
+
+        if self.wait_for_amc525:
+            self.set_state(PyTango.DevState.MOVING)
+            returncode = 1
+            print("Waiting for the FPGA to be detected on PCIe port...")
+            while returncode:
+                pop_inst1 = subprocess.Popen(["lspci", "-v"],
+                        stdout=subprocess.PIPE)
+                pop_inst2 = subprocess.Popen(["grep", "-q", "Xilinx"],
+                        stdin=pop_inst1.stdout, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+                returncode = pop_inst2.wait()
+                sleep(0.2)
+            print("-> FPGA detected")
+            print("")
+
+        if self.ioc_in_screen:
+            # Test if screen session already exists
+            returncode = self.check_screen_session()
+            if returncode == 0:
+                print("Screen session already started, nothing to be done.")
+            else:
+                pop_inst = subprocess.Popen(["screen", "-dmS", self.screen_name]
+                    + self.command.split(" "), stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+                pop_inst.wait()
+                print("IOC Screen session started.")
+            print("")
 
         #----- PROTECTED REGION END -----#	//	MBFStartIOC.init_device
 
@@ -120,15 +163,18 @@ class MBFStartIOC (PyTango.Device_4Impl):
         self.debug_stream("In dev_state()")
         argout = PyTango.DevState.UNKNOWN
         #----- PROTECTED REGION ID(MBFStartIOC.State) ENABLED START -----#
-        a = subprocess.Popen(["screen", "-ls"], stdout=subprocess.PIPE)
-        a = subprocess.Popen(["grep", "-q", self.screen_name], stdin=a.stdout)
-        returncode = a.wait()
-        if returncode == 0:
-            self.set_state(PyTango.DevState.ON)
+        if len(self.command) != 0:
+            returncode = self.check_screen_session()
+            if returncode == 0:
+                self.set_state(PyTango.DevState.ON)
+            else:
+                self.set_state(PyTango.DevState.OFF)
+                print "Screen session closed."
+                print "-> Committing suicide"
+                pid = os.getpid()
+                os.kill(pid, signal.SIGTERM)
         else:
-            self.set_state(PyTango.DevState.OFF)
-            pid = os.getpid()
-            os.kill(pid, signal.SIGTERM)
+            self.set_state(PyTango.DevState.FAULT)
         
         #----- PROTECTED REGION END -----#	//	MBFStartIOC.State
         if argout != PyTango.DevState.ALARM:
@@ -158,6 +204,18 @@ class MBFStartIOCClass(PyTango.DeviceClass):
             [PyTango.DevString, 
             "Name of the screen instance which holds the IOC",
             ["SRTMBF"] ],
+        'wait_for_amc525':
+            [PyTango.DevBoolean, 
+            "Wait for the FPGA card (AMC525) to be detected before starting the IOC",
+            [True]],
+        'ioc_in_screen':
+            [PyTango.DevBoolean, 
+            "Start or IOC in a screen session",
+            [True]],
+        'command':
+            [PyTango.DevString, 
+            "command to be excecuted in a screen session",
+            [] ],
         }
 
 
