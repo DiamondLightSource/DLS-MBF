@@ -331,7 +331,7 @@ static void set_shared_state(enum shared_target_state state)
 static void set_shared_targets(const char *value)
 {
     EPICS_STRING s;
-    snprintf(s.s, sizeof(s.s), "%s", value);
+    format_epics_string(&s, "%s", value);
     WRITE_IN_RECORD(stringin, shared_targets_pv, s);
 }
 

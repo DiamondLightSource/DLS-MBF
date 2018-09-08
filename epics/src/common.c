@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include <math.h>
 #include <string.h>
 
@@ -125,4 +126,14 @@ double freq_to_tune_signed(unsigned int freq)
 {
     int sfreq = (int) freq;
     return ldexp(sfreq, -32) * hardware_config.bunches;
+}
+
+
+bool format_epics_string(EPICS_STRING *s, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    int length = vsnprintf(s->s, sizeof(s->s), format, args);
+    va_end(args);
+    return (size_t) length < sizeof(s->s);
 }

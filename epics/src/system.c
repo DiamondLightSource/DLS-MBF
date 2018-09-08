@@ -138,10 +138,11 @@ static error__t initialise_constants(void)
 
     struct fpga_version fpga;
     hw_read_fpga_version(&fpga);
-    sprintf(fpga_version.s, "%u.%u.%u", fpga.major, fpga.minor, fpga.patch);
-    sprintf(fpga_git_version.s, "%07x%s",
-        fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
-    strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
+    format_epics_string(&fpga_version,
+        "%u.%u.%u", fpga.major, fpga.minor, fpga.patch);
+    format_epics_string(&fpga_git_version,
+        "%07x%s", fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
+    format_epics_string(&device_name, "%s", system_config.device_address);
     log_message("FPGA version %s, git %s, API %d",
         fpga_version.s, fpga_git_version.s, fpga.firmware);
 

@@ -482,16 +482,18 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
         {
             unsigned int single_bunch =
                 find_first_index(true, bunch_config->nco1_enable);
-            snprintf(result->s, 40, "Sweep: bunch %u (%s)", single_bunch, gain);
+            format_epics_string(result,
+                "Sweep: bunch %u (%s)", single_bunch, gain);
         }
         else if (sweeping == system_config.bunches_per_turn)
-            snprintf(result->s, 40, "Sweep: all bunches (%s)", gain);
+            format_epics_string(result, "Sweep: all bunches (%s)", gain);
         else
-            snprintf(result->s, 40, "Sweep: %u bunches (%s)", sweeping, gain);
+            format_epics_string(result,
+                "Sweep: %u bunches (%s)", sweeping, gain);
         return true;
     }
 
-    snprintf(result->s, 40, "%s", status);
+    format_epics_string(result, "%s", status);
     return true;
 }
 
