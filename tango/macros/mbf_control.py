@@ -66,6 +66,7 @@ class mbf_control(Macro):
         global mbfCtrl, Mbf
 
         tic = time()
+        str_warning = ""
         self.output("[mbf_%s] Start macro: %s" % (command, mbfCtrlDevName) )
         
         # reload module to handle change
@@ -80,6 +81,26 @@ class mbf_control(Macro):
             Mbf = setup_mbf.get_Mbf(mbfDevName, mbfGDevName)
             db = Database()
 
+            try:
+                if "vertical" in mbfDevName:
+                    # Get cleaning parameters
+                    d = db.get_property('Mfdbk', 'Cleaning_Device')
+                    SRCleaning_device_name = d['Cleaning_Device'][0]
+                    cleaningDS = DeviceProxy(SRCleaning_device_name);
+                    freq_min = cleaningDS.FreqMin
+                    freq_max = cleaningDS.FreqMax
+                    freq_sweeptime = cleaningDS.SweepTime
+                    cleaning_fine_gain = cleaningDS.Gain/100.
+                else:
+                    cleaning_fine_gain = 0.
+                cleaning_init_ok = True
+            except:
+                cleaning_init_ok = False
+                cleaning_fine_gain = 0.
+                str_warning += "Error while loading Cleaning parameters\n"
+                str_warning += "-> SR cleaning will not be possible\n\n"
+
+            feedback_fine_gain = mbfCtrl.FeedbackFineGain
             modeList = mbfCtrl.ModeList
             mode = modeList[mbfCtrl.mode]
             single_bunch = mbfCtrl.TuneOnSingleBunch
@@ -116,19 +137,11 @@ class mbf_control(Macro):
                 if "vertical" not in mbfDevName:
                     raise ValueError("Cleaning allowed only on vertical device")
 
-                d = db.get_property('Mfdbk', 'Cleaning_Device')
-                SRCleaning_device_name = d['Cleaning_Device'][0]
-                
-                # Get cleaning parameters
-                cleaningDS = DeviceProxy(SRCleaning_device_name);
-                freq_min = cleaningDS.FreqMin
-                freq_max = cleaningDS.FreqMax
-                freq_sweeptime = cleaningDS.SweepTime
-                cleaning_fine_gain = cleaningDS.Gain/100.
+                if not cleaning_init_ok:
+                    raise EnvironmentError("Error while loading Cleaning parameters")
+
                 dt = 0.2
 
-                feedback_fine_gain = mbfCtrl.FeedbackFineGain
-                
                 # Stop Tune sweep during a cleaning
                 Mbf.put('TRG:SEQ:DISARM_S', 0)
                 Mbf.put('SEQ:RESET_S', 0)
@@ -198,12 +211,10 @@ class mbf_control(Macro):
                 sweep_holdoff = 0
                 detector_input = 0      # Detector input is ADC (0)
                 det_gain = 0            # Don't use the -48 dB scaling (0)
-                cleaning_fine_gain = 0.0
                 
                 tune_fb = mbfCtrl.Tune
                 tune_sweep = mbfCtrl.Tune
                 tune_reverse = False
-                feedback_fine_gain = mbfCtrl.FeedbackFineGain
                 blanking_interval = mbfCtrl.BlankingInterval
                 N_TAPS = Mbf.n_taps
 
@@ -213,8 +224,8 @@ class mbf_control(Macro):
                     try:
                         external_devices.set_config(mode)
                     except:
-                        self.warning("Error while calling external_device (external_device.py)")
-                        self.warning("Continue anyway...")
+                        str_warning += "Error while calling external_device (external_device.py)\n"
+                        str_warning += "Continue anyway...\n\n"
 
                 # ------------------------------------------------------------------------------
                 # Write computed configuration
@@ -334,6 +345,8 @@ class mbf_control(Macro):
 
         self.output("[mbf_%s] End macro" % command)
         self.output("[mbf_%s] Execution time: %f s" % (command, time()-tic) )
+
+        self.warning(str_warning)
         return
         
     def on_abort(self):
