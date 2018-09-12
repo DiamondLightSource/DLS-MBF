@@ -80,7 +80,7 @@ if ! lspci -v | grep -q "Xilinx"; then
   printf "Loading FPGA image... "
 
   # Load the AMC525 FPGA
-  $MBFHOME/load_fpga -f $MBFHOME/../firmwares/amc525_mbf.bit 199
+  $MBFHOME/load_fpga -f $MBFHOME/../amc525_mbf.bit 199
 
   printf "Ok\n"
 
