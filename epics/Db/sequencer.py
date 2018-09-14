@@ -69,11 +69,21 @@ def count_pvs(super_count):
         CALC = 'A*B', INPA = super_count, INPB = duration,
         EGU = 'turns', DESC = 'Super sequence raw capture duration')
 
-    # The grand total PVs are computed from all the parameters above, and need
-    # to be processed whenever any relevant sequencer or super sequencer
-    # parameter changes.
-    total_fanout = create_fanout('TOTAL:FAN',
-        super_duration,
+    count_fanout = create_fanout('COUNT:FAN',
+        # These PVs count the duration and samples from a single sequencer
+        # program.
+        duration,           # Turns in a single sequencer program
+        length,             # Captured samples in a single sequencer program
+        records.calc('DURATION:S',
+            CALC = 'A/B',
+            INPA = duration, INPB = REVOLUTION_FREQUENCY,
+            PREC = 3, EGU = 's',
+            DESC = 'Capture duration'),
+        super_duration,     # Duration of the super sequencer
+
+        # The grand total PVs are computed from all the parameters above, and
+        # need to be processed whenever any relevant sequencer or super
+        # sequencer parameter changes.
         records.calc('TOTAL:DURATION:S',
             CALC = 'A/B',
             INPA = super_duration, INPB = REVOLUTION_FREQUENCY,
@@ -81,18 +91,6 @@ def count_pvs(super_count):
         records.calc('TOTAL:LENGTH',
             CALC = 'A*B', INPA = super_count, INPB = length,
             DESC = 'Super sequencer capture count'))
-    super_count.FLNK = total_fanout
-
-    # These PVs count the duration and samples from a single sequencer program.
-    count_fanout = create_fanout('COUNT:FAN',
-        duration,
-        length,
-        records.calc('DURATION:S',
-            CALC = 'A/B',
-            INPA = duration, INPB = REVOLUTION_FREQUENCY,
-            PREC = 3, EGU = 's',
-            DESC = 'Capture duration'),
-        total_fanout)
 
     # This PV will be processed when any sequencer PV which affects the duration
     # and sample count is updated.  The duration and length are then updated and
@@ -110,6 +108,7 @@ for a in axes('SEQ', lmbf_mode):
     # This PV needs to be updated by any parameter which changes sequencer
     # duration or capture count.
     update_count = count_pvs(super_count)
+    super_count.FLNK = update_count
 
     # This is the only valid control in state 0.
     mbbOut('0:BANK', 'Bank 0', 'Bank 1', 'Bank 2', 'Bank 3',

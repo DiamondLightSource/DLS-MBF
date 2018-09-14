@@ -30,19 +30,27 @@ def detector_bank_pvs(updates):
 
 
 for a in axes('DET', lmbf_mode):
-    updates = [
+    # The scale waveforms are updated separately from the other waveforms.  This
+    # is necessary to reduce the network and archiver load from these waveforms,
+    # which normally update quite rarely.
+    Trigger('UPDATE_SCALE',
         Waveform('SCALE', DETECTOR_LENGTH, 'DOUBLE',
             DESC = 'Scale for frequency sweep'),
         Waveform('TIMEBASE', DETECTOR_LENGTH, 'LONG',
             DESC = 'Timebase for frequency sweep'),
-        longIn('SAMPLES', DESC = 'Number of captured samples'),
+        longIn('SAMPLES', DESC = 'Number of captured samples'))
+
+
+    # Gather all the updates from the four detectors.
+    updates = [
         boolIn('UNDERRUN', 'Ok', 'Underrun', OSV = 'MAJOR',
             DESC = 'Data output underrun'),
     ]
-
     for det in range(4):
         with name_prefix('%d' % det):
             detector_bank_pvs(updates)
+    Trigger('UPDATE', *updates)
+
 
     boolOut('SELECT', 'ADC', 'FIR', DESC = 'Select detector source')
     aOut('FIR_DELAY', PREC = 1, EGU = 'turns',
@@ -51,5 +59,3 @@ for a in axes('DET', lmbf_mode):
     # This PV is something of a hack until we sort out the display
     boolOut('FILL_WAVEFORM', 'Truncated', 'Filled',
         DESC = 'Treatment of truncated waveforms')
-
-    Trigger('UPDATE', *updates)

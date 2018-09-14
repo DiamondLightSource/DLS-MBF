@@ -48,6 +48,7 @@ static struct detector_context {
     int axis;
 
     struct epics_interlock *update;
+    struct epics_interlock *update_scale;
 
     struct detector_bank banks[DETECTOR_COUNT];
 
@@ -238,7 +239,22 @@ static void read_detector_memory(struct detector_context *det)
 }
 
 
-static void detector_readout_event(struct detector_context *det)
+static void update_detector_scale(struct detector_context *det)
+{
+    interlock_wait(det->update_scale);
+
+    read_detector_scale_info(
+        det->axis, system_config.detector_length, &det->scale_info);
+    if (det->fill_waveform)
+        det->scale_length = system_config.detector_length;
+    else
+        det->scale_length =
+            MIN(system_config.detector_length, det->scale_info.samples);
+
+    interlock_signal(det->update_scale, NULL);
+}
+
+static void update_detector_result(struct detector_context *det)
 {
     interlock_wait(det->update);
 
@@ -253,17 +269,16 @@ static void detector_readout_event(struct detector_context *det)
         log_message("Unexpected detector readout underrun");
     det->underrun |= underrun;
 
-    read_detector_scale_info(
-        det->axis, system_config.detector_length, &det->scale_info);
-    if (det->fill_waveform)
-        det->scale_length = system_config.detector_length;
-    else
-        det->scale_length =
-            MIN(system_config.detector_length, det->scale_info.samples);
-
     read_detector_memory(det);
 
     interlock_signal(det->update, NULL);
+}
+
+static void detector_readout_event(struct detector_context *det)
+{
+    if (detector_scale_changed(det->axis))
+        update_detector_scale(det);
+    update_detector_result(det);
 }
 
 
@@ -422,6 +437,7 @@ error__t initialise_detector(void)
 
         PUBLISH_WRITE_VAR_P(bo, "FILL_WAVEFORM", det->fill_waveform);
 
+        det->update_scale = create_interlock("UPDATE_SCALE", false);
         det->update = create_interlock("UPDATE", false);
     }
 

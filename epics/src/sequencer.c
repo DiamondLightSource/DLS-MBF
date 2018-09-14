@@ -28,6 +28,9 @@
 /* These are the sequencer states for states 1 to 7.  State 0 is special and
  * is not handled in this array. */
 struct sequencer_bank {
+    /* Parent state. */
+    struct seq_context *seq;
+
     /* Much of our state is as written to hardware. */
     struct seq_entry *entry;
 
@@ -44,6 +47,13 @@ static struct seq_context {
     struct sequencer_bank banks[MAX_SEQUENCER_COUNT];   // EPICS management
     struct seq_config seq_hw_config;    // Configuration written to hardware
 
+    /* The seq_config_dirty flag is set whenever the seq_config is changed via
+     * EPICS.  This flag is copied to seq_hw_config_dirty and reset when arming
+     * the sequencer, and is used to determine whether the frequency scale and
+     * timebase may have changed. */
+    bool seq_config_dirty;
+    bool seq_hw_config_dirty;
+
     struct seq_state seq_state;     // Current state as read from hardware
 
     unsigned int capture_count;     // Number of IQ points to capture
@@ -51,7 +61,11 @@ static struct seq_context {
 
     bool reset_offsets;             // Reset super sequencer offsets
     bool reset_window;              // Reset detector window
-} seq_context[AXIS_COUNT];
+} seq_context[AXIS_COUNT] = {
+    [0 ... AXIS_COUNT-1] = {
+        .seq_config_dirty = true,
+    },
+};
 
 
 
@@ -116,6 +130,8 @@ static bool write_end_freq(void *context, double *value)
     entry->delta_freq = tune_to_freq(target_delta_freq);
     double actual_delta_freq = freq_to_tune_signed(entry->delta_freq);
     WRITE_OUT_RECORD(ao, bank->delta_freq_rec, actual_delta_freq, false);
+
+    bank->seq->seq_config_dirty = true;
     return true;
 }
 
@@ -129,6 +145,8 @@ static bool update_end_freq(void *context, bool *value)
     unsigned int end_freq =
         entry->start_freq + entry->capture_count * entry->delta_freq;
     WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
+
+    bank->seq->seq_config_dirty = true;
     return true;
 }
 
@@ -219,6 +237,8 @@ static bool update_capture_count(void *context, bool *value)
             bank->entry->capture_count *
             (bank->entry->dwell_time + bank->entry->holdoff);
     }
+
+    seq->seq_config_dirty = true;
     return true;
 }
 
@@ -268,6 +288,8 @@ static void write_super_offsets(
         seq->seq_config.super_offsets[i] = freq;
         offsets[i] = freq_to_tune(freq);
     }
+
+    seq->seq_config_dirty = true;
 }
 
 static bool reset_super_offsets(void *context, bool *value)
@@ -384,7 +406,16 @@ void prepare_sequencer(int axis)
 {
     struct seq_context *seq = &seq_context[axis];
     seq->seq_hw_config = seq->seq_config;
+    seq->seq_hw_config_dirty = seq->seq_config_dirty;
+    seq->seq_config_dirty = false;
     hw_write_seq_config(seq->axis, &seq->seq_hw_config);
+}
+
+
+bool detector_scale_changed(int axis)
+{
+    struct seq_context *seq = &seq_context[axis];
+    return seq->seq_hw_config_dirty;
 }
 
 
@@ -512,6 +543,7 @@ error__t initialise_sequencer(void)
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
         {
+            seq->banks[i].seq = seq;
             seq->banks[i].entry = &seq->seq_config.entries[i];
             publish_bank(i, &seq->banks[i]);
         }
