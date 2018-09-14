@@ -422,7 +422,7 @@ x 40
 y 64
 w 184
 h 14
-controlPv "$(device):$(axis):STATUS.DESC"
+controlPv "$(device):$(axis):STA:STATUS.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -450,7 +450,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(axis):STATUS"
+alarmPv "$(device):$(axis):STA:STATUS"
 endObjectProperties
 
 # (Static Text)
