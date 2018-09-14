@@ -66,12 +66,12 @@ class MBF:
     def __init__(self, name):
         self.mbf = name
 
-        self.adc_taps = self.get_shared('ADC_TAPS')
-        self.dac_taps = self.get_shared('DAC_TAPS')
-        self.bunch_taps = self.get_shared('BUNCH_TAPS')
+        self.adc_taps = self.get_shared('INFO:ADC_TAPS')
+        self.dac_taps = self.get_shared('INFO:DAC_TAPS')
+        self.bunch_taps = self.get_shared('INFO:BUNCH_TAPS')
 
-        self.axes = [self.get_shared('AXIS%d' % a) for a in self.CHANNELS]
-        self.bunches = self.get_shared('BUNCHES')
+        self.axes = [self.get_shared('INFO:AXIS%d' % a) for a in self.CHANNELS]
+        self.bunches = self.get_shared('INFO:BUNCHES')
 
     def pv(self, name, axis = 0):
         if axis is None:
