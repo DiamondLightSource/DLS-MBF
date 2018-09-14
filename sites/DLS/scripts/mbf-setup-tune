@@ -144,12 +144,12 @@ else:
     RING_MODE = args.ring_mode
 
 # Read fundamental parameters from device
-LMBF_MODE = get('MODE')
+LMBF_MODE = get('INFO:MODE')
 if LMBF_MODE:
-    AXIS0 = get('AXIS0')
-    AXIS1 = get('AXIS1')
-N_TAPS = get('BUNCH_TAPS')
-BUNCH_COUNT = get('BUNCHES')
+    AXIS0 = get('INFO:AXIS0')
+    AXIS1 = get('INFO:AXIS1')
+N_TAPS = get('INFO:BUNCH_TAPS')
+BUNCH_COUNT = get('INFO:BUNCHES')
 
 
 # ------------------------------------------------------------------------------
