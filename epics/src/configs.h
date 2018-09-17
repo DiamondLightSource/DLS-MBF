@@ -38,6 +38,7 @@ extern const struct system_config {
     const char *persistence_file;       // Where to save the persistent state
     int persistence_interval;           // How often to update state (in secs)
     int pv_log_array_length;            // Manages PV logging verbosity
+    int archive_interval;               // Interval for special archive PVs
     unsigned int memory_readout_length; // Length of MEM readout PVs
     unsigned int detector_length;       // Length of DET readout PVs
     unsigned int data_port;             // Socket port for fast data readout

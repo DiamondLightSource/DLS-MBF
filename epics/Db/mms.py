@@ -39,6 +39,12 @@ def do_mms_pvs(source):
         FLNK = create_fanout('FAN', *pvs),
         DESC = '%s min/max scanning' % source)
 
+    # Archival PVs for standard deviation
+    Trigger('ARCHIVE',
+        mms_waveform('STD_MEAN_WF', 'Power average of standard deviation'),
+        mms_waveform('STD_MIN_WF', 'Minimum of standard deviation'),
+        mms_waveform('STD_MAX_WF', 'Maximum of standard deviation'))
+
     # If an MMS fault is detected this will reset
     boolOut('RESET_FAULT', DESC = 'Resets MMS fault accumulation')
 
