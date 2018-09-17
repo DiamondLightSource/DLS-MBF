@@ -51,8 +51,6 @@ import signal
 from time import sleep
 import subprocess
 
-commit_suicide = False
-
 #----- PROTECTED REGION END -----#	//	MBFStartIOC.additionnal_import
 
 # Device States Description
@@ -60,17 +58,19 @@ commit_suicide = False
 
 
 class MBFStartIOC (PyTango.Device_4Impl):
-    """"""
+    """This class mimic an EPICS IOC. It is used to display the state of an IOC in Astor.
+    
+    when the Tango device is started, it starts the IOC. When it is killed, it also kills the IOC. And if the IOC dies, the Tango device commit a suicide."""
     
     # -------- Add you global variables here --------------------------
     #----- PROTECTED REGION ID(MBFStartIOC.global_variables) ENABLED START -----#
-    def check_screen_session(self):
-        pop_inst1 = subprocess.Popen(["screen", "-ls"], stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-        pop_inst2 = subprocess.Popen(["grep", "-q", self.screen_name],
-                stdin=pop_inst1.stdout, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-        return pop_inst2.wait()
+    def tmux_session_closed(self):
+        pop_inst = subprocess.Popen(["tmux", "has-session", "-t",
+            self.tmux_session_name], stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE)
+        returncode = pop_inst.wait()
+        return (returncode != 0)
     
     #----- PROTECTED REGION END -----#	//	MBFStartIOC.global_variables
 
@@ -79,15 +79,17 @@ class MBFStartIOC (PyTango.Device_4Impl):
         self.debug_stream("In __init__()")
         MBFStartIOC.init_device(self)
         #----- PROTECTED REGION ID(MBFStartIOC.__init__) ENABLED START -----#
-        
+
         #----- PROTECTED REGION END -----#	//	MBFStartIOC.__init__
         
     def delete_device(self):
         self.debug_stream("In delete_device()")
         #----- PROTECTED REGION ID(MBFStartIOC.delete_device) ENABLED START -----#
         if len(self.command) != 0:
-            pop_inst = subprocess.Popen(["screen", "-X", "-S", self.screen_name,
-                "quit"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            pop_inst = subprocess.Popen(["tmux", "kill-session", "-t",
+                self.tmux_session_name], stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.PIPE)
             pop_inst.wait()
         
         #----- PROTECTED REGION END -----#	//	MBFStartIOC.delete_device
@@ -96,37 +98,44 @@ class MBFStartIOC (PyTango.Device_4Impl):
         self.debug_stream("In init_device()")
         self.get_device_properties(self.get_device_class())
         #----- PROTECTED REGION ID(MBFStartIOC.init_device) ENABLED START -----#
+        self.poll_command("State", 3000)
+
         if len(self.command) == 0:
             print >>sys.stderr, "The property command is not defined."
             print >>sys.stderr, "-> the device will not do anything"
             return
 
+        if len(self.tmux_session_name) == 0:
+            print >>sys.stderr, "The property tmux_session_name is not defined."
+            print >>sys.stderr, "-> Exiting."
+            print >>sys.stderr, ""
+            exit(1)
+
         if self.wait_for_amc525:
             self.set_state(PyTango.DevState.MOVING)
-            returncode = 1
             print("Waiting for the FPGA to be detected on PCIe port...")
-            while returncode:
-                pop_inst1 = subprocess.Popen(["lspci", "-v"],
-                        stdout=subprocess.PIPE)
-                pop_inst2 = subprocess.Popen(["grep", "-q", "Xilinx"],
-                        stdin=pop_inst1.stdout, stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
-                returncode = pop_inst2.wait()
+            while True:
+                pop_inst = subprocess.Popen(["lspci"],
+                        stdout=subprocess.PIPE,
+                        stdin=subprocess.PIPE)
+                lspci_out = pop_inst.stdout.read()
+                if lspci_out.find("Xilinx") != -1:
+                    break
                 sleep(0.2)
             print("-> FPGA detected")
             print("")
 
-        if self.ioc_in_screen:
-            # Test if screen session already exists
-            returncode = self.check_screen_session()
-            if returncode == 0:
-                print("Screen session already started, nothing to be done.")
-            else:
-                pop_inst = subprocess.Popen(["screen", "-dmS", self.screen_name]
-                    + self.command.split(" "), stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
-                pop_inst.wait()
-                print("IOC Screen session started.")
+        # Test if screen session already exists
+        if not self.tmux_session_closed():
+            print("Screen session already started, nothing to be done.")
+        else:
+            pop_inst = subprocess.Popen(["tmux", "new-session", "-d",
+                "-s", self.tmux_session_name] + self.command.split(" "),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.PIPE)
+            pop_inst.wait()
+            print("IOC Screen session started.")
             print("")
 
         #----- PROTECTED REGION END -----#	//	MBFStartIOC.init_device
@@ -164,8 +173,7 @@ class MBFStartIOC (PyTango.Device_4Impl):
         argout = PyTango.DevState.UNKNOWN
         #----- PROTECTED REGION ID(MBFStartIOC.State) ENABLED START -----#
         if len(self.command) != 0:
-            returncode = self.check_screen_session()
-            if returncode == 0:
+            if not self.tmux_session_closed():
                 self.set_state(PyTango.DevState.ON)
             else:
                 self.set_state(PyTango.DevState.OFF)
@@ -200,17 +208,13 @@ class MBFStartIOCClass(PyTango.DeviceClass):
 
     #    Device Properties
     device_property_list = {
-        'screen_name':
+        'tmux_session_name':
             [PyTango.DevString, 
-            "Name of the screen instance which holds the IOC",
-            ["SRTMBF"] ],
+            "Name of the tmux session which holds the IOC",
+            [] ],
         'wait_for_amc525':
             [PyTango.DevBoolean, 
             "Wait for the FPGA card (AMC525) to be detected before starting the IOC",
-            [True]],
-        'ioc_in_screen':
-            [PyTango.DevBoolean, 
-            "Start or IOC in a screen session",
             [True]],
         'command':
             [PyTango.DevString, 

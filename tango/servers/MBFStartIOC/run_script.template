@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# Just a script to start the Python device server called (PROJECT_NAME)
-
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/dserver/lib/classes
-export PYTHONPATH=/operation/dserver/python/bliss_modules/(OS_TYPE)
-
-python (PY_DIRECTORY)/(PROJECT_NAME).py $*

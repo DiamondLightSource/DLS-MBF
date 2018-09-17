@@ -9,7 +9,6 @@ ln -sf sites/ESRF/CONFIG CONFIG
 
 ln -sf $MBF_DIR/sites/ESRF/cratestartup ../cratestartup
 ln -sf $MBF_DIR/sites/ESRF/setpath_mbf ../setpath_mbf
-ln -sf $MBF_DIR/sites/ESRF/screen_tfit ../screen_tfit
 ln -sf $MBF_DIR/sites/ESRF/.bashrc ../.bashrc
 
 mkdir -p ../autosave/SR-TMBF
