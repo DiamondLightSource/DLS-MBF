@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1191
-y 312
+x 900
+y 77
 w 456
-h 648
+h 501
 font "helvetica-medium-r-8.0"
 ctlFont "helvetica-medium-r-8.0"
 btnFont "helvetica-medium-r-8.0"
@@ -32,7 +32,7 @@ beginObjectProperties
 major 4
 minor 3
 release 0
-x 8
+x 64
 y 440
 w 136
 h 24
@@ -81,29 +81,7 @@ beginObjectProperties
 major 4
 minor 3
 release 0
-x 160
-y 520
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "7/8+1 mode"
-numCmds 1
-command {
-  0 "run-command 'Setup MBF in 7/8+1 mode' mbf-setup-tune -m 78 $(device):$(axis) TUNE"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 8
+x 64
 y 472
 w 136
 h 24
@@ -125,7 +103,7 @@ beginObjectProperties
 major 4
 minor 3
 release 0
-x 160
+x 264
 y 440
 w 136
 h 24
@@ -147,7 +125,7 @@ beginObjectProperties
 major 4
 minor 3
 release 0
-x 160
+x 264
 y 472
 w 136
 h 24
@@ -160,94 +138,6 @@ buttonLabel "Tune Sweep Off"
 numCmds 1
 command {
   0 "run-command 'Tune Sweep Off' mbf-control -t 0 $(device):$(axis)"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 312
-y 456
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Cleaning!"
-numCmds 1
-command {
-  0 "run-command 'Bunch cleaning' mbf-control -c 1 $(device):$(axis)"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 160
-y 552
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "16-bunch mode"
-numCmds 1
-command {
-  0 "run-command 'Setup MBF in 16-bunch mode' mbf-setup-tune -m 16 $(device):$(axis) TUNE"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 160
-y 584
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "4-bunch mode"
-numCmds 1
-command {
-  0 "run-command 'Setup MBF in 4-bunch mode' mbf-setup-tune -m 4 $(device):$(axis) TUNE"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 160
-y 616
-w 136
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Hybrid mode"
-numCmds 1
-command {
-  0 "run-command 'Setup MBF in hybrid mode' mbf-setup-tune -m H $(device):$(axis) TUNE"
 }
 endObjectProperties
 

@@ -5,8 +5,6 @@ from pkg_resources import require
 require('cothread')
 
 import argparse
-from numpy import linspace
-
 from cothread import catools, Sleep
 
 
@@ -31,7 +29,7 @@ def get(pv, **kargs):
 # Argument parsing
 
 parser = argparse.ArgumentParser(
-    description = 'Do feedback, tune sweep and cleaning ON/OFF.')
+    description = 'Do feedback and tune sweep ON/OFF.')
 parser.add_argument(
     '-d', dest = 'debug', default = False, action = 'store_true',
     help = 'Enable debug mode')
@@ -44,20 +42,12 @@ parser.add_argument(
 parser.add_argument(
     '-t', dest = 'sweep_status', default = None, type = int,
     help = 'Enable Tune sweep')
-parser.add_argument(
-    '-c', dest = 'cleaning_status', default = None, type = int,
-    help = 'Enable Cleaning')
 parser.add_argument('device', help = 'TMBF device name to configure')
 args = parser.parse_args()
 
 sweep_status = args.sweep_status
-cleaning_status = args.cleaning_status
 feedback_status = args.feedback_status
 DEVICE, AXIS = args.device.split(':')
-
-# Load setup defaults
-import setup_defaults as setup
-
 
 if feedback_status:
     put('SEQ:1:BANK_S', 2)
@@ -65,35 +55,6 @@ if feedback_status:
 elif feedback_status == 0:
     put('SEQ:1:BANK_S', 0)
     put('SEQ:0:BANK_S', 1)
-
-if cleaning_status:
-    # Stop Tune sweep during a cleaning
-    put('TRG:SEQ:DISARM_S', 0)
-    put('SEQ:RESET_S', 0)
-
-    # Get cleaning parameters
-    freq_min = setup.cleaning_freq_min
-    freq_max = setup.cleaning_freq_max
-    freq_sweeptime = setup.cleaning_sweeptime
-    dt = 0.2
-
-    # Generate frequency list
-    freq_list = linspace(freq_min, freq_max, round(freq_sweeptime/dt)-1,
-            endpoint=True)
-
-    # Start NCO and sweep frequency
-    put('NCO:FREQ_S', freq_list[0])
-    put('NCO:ENABLE_S', 1)
-    print "Cleaning in progress..."
-    for freq in freq_list:
-        Sleep(dt)
-        put('NCO:FREQ_S', freq)
-    Sleep(dt)
-
-    # Stop NCO
-    put('NCO:ENABLE_S', 0)
-    # Rearm sequence for tune sweep
-    put('TRG:SEQ:ARM_S', 0)
 
 if sweep_status:
     put('SEQ:1:ENABLE_S', 1)
