@@ -402,6 +402,10 @@ static void *read_mms_thread(void *context)
     ASSERT_IO(clock_gettime(CLOCK_REALTIME, &now));
     time_t next = interval * (1 + now.tv_sec / interval);
 
+    /* Treat first readout of MMS as a reset; we do this after EPICS is up and
+     * running and everything has settled down. */
+    read_mms_handlers(true);
+
     while (running)
     {
         usleep(system_config.mms_poll_interval);
@@ -423,9 +427,6 @@ static pthread_t mms_thread_id;
 
 error__t start_mms_handlers(void)
 {
-    /* Perform first initialisation read of MMS before starting thread. */
-    read_mms_handlers(true);
-
     return TEST_PTHREAD(
         pthread_create(&mms_thread_id, NULL, read_mms_thread, NULL));
 }
