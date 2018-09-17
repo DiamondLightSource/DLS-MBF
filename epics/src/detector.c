@@ -32,6 +32,7 @@ struct detector_bank {
 
     struct detector_config config;  // Hardware configuration
     unsigned int bunch_count;       // Number of enabled bunches
+    bool enabled;                   // Set if currently enabled in hardware
 
     bool output_ovf;                // Detector readout overflow
 
@@ -332,6 +333,7 @@ static void publish_detector(
     WITH_NAME_PREFIX(prefix)
     {
         PUBLISH_WRITE_VAR_P(bo, "ENABLE", bank->config.enable);
+        PUBLISH_READ_VAR(bi, "ENABLE", bank->enabled);
         PUBLISH_WRITE_VAR_P(mbbo, "SCALING", bank->config.scaling);
 
         PUBLISH_WAVEFORM_C_P(
@@ -374,7 +376,10 @@ void prepare_detector(int axis)
 
     struct detector_config config[DETECTOR_COUNT];
     for (int i = 0; i < DETECTOR_COUNT; i ++)
+    {
         config[i] = det->banks[i].config;
+        det->banks[i].enabled = config[i].enable;
+    }
     unsigned int offset = det->input_select ?
         hardware_delays.DET_FIR_OFFSET :
         hardware_delays.DET_ADC_OFFSET;

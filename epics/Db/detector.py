@@ -19,14 +19,25 @@ def detector_bank_pvs(updates):
         FLNK = bunch_count,
         DESC = 'Enable bunches for detector')
 
-    updates.extend([
+    enable = boolIn('ENABLE', 'Disabled', 'Enabled',
+        DESC = 'Current detector enable state')
+    updates.append(enable)
+
+    results = [
         detector_wf('I', 'Detector I'),
         detector_wf('Q', 'Detector Q'),
         detector_wf('POWER', 'Detector Power'),
         detector_wf('PHASE', 'Detector Phase'),
         aIn('MAX_POWER', EGU = 'dB',
             DESC = 'Percentage full scale of maximum power'),
-    ])
+    ]
+    updates.extend(results)
+
+    # Prevent disabled detectors from generating data.  This is not strictly
+    # truthful if the enable is changed while the sequencer is armed.
+    for pv in results:
+        pv.DISV = 0
+        pv.SDIS = enable
 
 
 for a in axes('DET', lmbf_mode):
