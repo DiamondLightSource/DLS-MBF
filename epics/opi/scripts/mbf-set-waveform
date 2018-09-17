@@ -48,3 +48,5 @@ else:
     wf[bunch] = value
 
 caput(pv, wf)
+
+# vim: set filetype=python:

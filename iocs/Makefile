@@ -12,7 +12,7 @@ iocs: $(IOCS)
 .PHONY: iocs
 
 %: $(CONFIG_DIR)/%.config
-	ln -s ../tools/start-ioc $@
+	ln -sf ../tools/start-ioc $@
 
 clean:
 	rm -f $(filter-out Makefile,$(wildcard *))
