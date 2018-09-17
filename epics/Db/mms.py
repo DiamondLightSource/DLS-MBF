@@ -2,8 +2,8 @@
 
 from common import *
 
-def mms_waveform(name, desc):
-    return Waveform(name, BUNCHES_PER_TURN, 'FLOAT', DESC = desc)
+def mms_waveform(name, desc, **kargs):
+    return Waveform(name, BUNCHES_PER_TURN, 'FLOAT', DESC = desc, **kargs)
 
 
 def do_mms_pvs(source):

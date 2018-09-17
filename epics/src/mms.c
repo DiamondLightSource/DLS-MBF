@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
+#include <string.h>
 #include <pthread.h>
 
 #include "error.h"
@@ -83,6 +84,16 @@ static struct mms_handlers {
 } mms_handlers = {
     .count = 0,
 };
+
+
+void read_mms_mean(struct mms_handler *mms, float mean[])
+{
+    WITH_MUTEX(mms->mutex)
+    {
+        unsigned int bunches = hardware_config.bunches;
+        memcpy(mean, mms->epics.mean, sizeof(float) * bunches);
+    }
+}
 
 
 /* Helper functions for adding with overflow detection.  This is annoyingly a
