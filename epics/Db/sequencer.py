@@ -9,16 +9,16 @@ SUPER_SEQ_STATES = 1024
 
 
 def bank_pvs(update_count):
-    # END_FREQ is internally updated whenever START_FREQ, STEP_FREQ, or COUNT
-    # changes, however when COUNT changes we process the change internally.
-    update_end = Action('UPDATE_END', DESC = 'Update end frequency')
-
     aOut('START_FREQ',
         None, None, 'tune', 5,
-        FLNK = update_end, DESC = 'Sweep NCO start frequency')
+        DESC = 'Sweep NCO start frequency')
     aOut('STEP_FREQ',
         None, None, 'tune', 7,
-        FLNK = update_end, DESC = 'Sweep NCO step frequency')
+        DESC = 'Sweep NCO step frequency')
+    aOut('END_FREQ',
+        None, None, 'tune', 5,
+        PINI = 'NO', DESC = 'Sweep NCO end frequency')
+
     longOut('DWELL', 1, 1<<16,
         FLNK = update_count, EGU = 'turns', DESC = 'Sweep dwell time')
     longOut('COUNT', 1, 1<<16,
@@ -35,12 +35,6 @@ def bank_pvs(update_count):
         FLNK = update_count, DESC = 'Enable data capture')
     boolOut('BLANK', 'Off', 'Blanking',
         DESC = 'Detector blanking control')
-
-    # This fellow is treated a little differently and is processed
-    # internally.
-    aOut('END_FREQ',
-        None, None, 'tune', 5,
-        PINI = 'NO', DESC = 'Sweep NCO end frequency')
 
 
 # The super sequencer is controlled by two settings: the OFFSET waveform which

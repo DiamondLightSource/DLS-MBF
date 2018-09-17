@@ -51,6 +51,7 @@ static struct seq_context {
      * EPICS.  This flag is copied to seq_hw_config_dirty and reset when arming
      * the sequencer, and is used to determine whether the frequency scale and
      * timebase may have changed. */
+    pthread_mutex_t mutex;
     bool seq_config_dirty;
     bool seq_hw_config_dirty;
 
@@ -63,6 +64,7 @@ static struct seq_context {
     bool reset_window;              // Reset detector window
 } seq_context[AXIS_COUNT] = {
     [0 ... AXIS_COUNT-1] = {
+        .mutex = PTHREAD_MUTEX_INITIALIZER,
         .seq_config_dirty = true,
     },
 };
@@ -103,12 +105,26 @@ static struct seq_context {
  * 32-bit numbers -- so both STEP_FREQ and END_FREQ may end up as values
  * different from what the user has written! */
 
+/* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
+ * END_FREQ is updated. */
+static void update_end_freq(struct sequencer_bank *bank)
+{
+    struct seq_entry *entry = bank->entry;
+    unsigned int end_freq =
+        entry->start_freq + entry->capture_count * entry->delta_freq;
+    WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
+
+    bank->seq->seq_config_dirty = true;
+}
+
+
 static bool write_start_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
     struct seq_entry *entry = bank->entry;
     entry->start_freq = tune_to_freq(*value);
     *value = freq_to_tune(entry->start_freq);
+    update_end_freq(bank);
     return true;
 }
 
@@ -118,6 +134,7 @@ static bool write_step_freq(void *context, double *value)
     struct seq_entry *entry = bank->entry;
     entry->delta_freq = tune_to_freq(*value);
     *value = freq_to_tune_signed(entry->delta_freq);
+    update_end_freq(bank);
     return true;
 }
 
@@ -136,27 +153,13 @@ static bool write_end_freq(void *context, double *value)
 }
 
 
-/* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
- * END_FREQ is updated. */
-static bool update_end_freq(void *context, bool *value)
-{
-    struct sequencer_bank *bank = context;
-    struct seq_entry *entry = bank->entry;
-    unsigned int end_freq =
-        entry->start_freq + entry->capture_count * entry->delta_freq;
-    WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
-
-    bank->seq->seq_config_dirty = true;
-    return true;
-}
-
-
 static bool write_bank_count(void *context, unsigned int *value)
 {
     struct sequencer_bank *bank = context;
     struct seq_entry *entry = bank->entry;
     entry->capture_count = *value;
-    return update_end_freq(context, NULL);
+    update_end_freq(bank);
+    return true;
 }
 
 
@@ -199,8 +202,6 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
         bank->delta_freq_rec =
             PUBLISH_C_P(ao, "STEP_FREQ", write_step_freq, bank);
         bank->end_freq_rec = PUBLISH_C(ao, "END_FREQ", write_end_freq, bank);
-
-        PUBLISH_C(bo, "UPDATE_END", update_end_freq, bank);
     }
 }
 
@@ -405,9 +406,12 @@ unsigned int compute_scale_info(
 void prepare_sequencer(int axis)
 {
     struct seq_context *seq = &seq_context[axis];
-    seq->seq_hw_config = seq->seq_config;
-    seq->seq_hw_config_dirty = seq->seq_config_dirty;
-    seq->seq_config_dirty = false;
+    WITH_MUTEX(seq->mutex)
+    {
+        seq->seq_hw_config = seq->seq_config;
+        seq->seq_hw_config_dirty = seq->seq_config_dirty;
+        seq->seq_config_dirty = false;
+    }
     hw_write_seq_config(seq->axis, &seq->seq_hw_config);
 }
 
@@ -540,6 +544,12 @@ error__t initialise_sequencer(void)
         struct seq_context *seq = &seq_context[axis];
         seq->axis = axis;
 
+        /* All PVs which modify the hardware configuration are modified under a
+         * mutex to ensure we don't have surprises if settings are changed while
+         * rearming. */
+        pthread_mutex_t *old_mutex =
+            set_default_epics_device_mutex(&seq->mutex);
+
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
         {
@@ -578,6 +588,9 @@ error__t initialise_sequencer(void)
         PUBLISH_C(bo, "RESET_WIN", reset_detector_window, seq);
 
         PUBLISH_C(stringin, "MODE", read_sequencer_mode, seq);
+
+        /* Don't forget to restore the default! */
+        set_default_epics_device_mutex(old_mutex);
     }
 
     return ERROR_OK;
