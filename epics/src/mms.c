@@ -383,20 +383,25 @@ static void update_all_archive_pvs(void)
 static void *read_mms_thread(void *context)
 {
     wait_for_epics_start();
-    struct timespec last;
-    ASSERT_IO(clock_gettime(CLOCK_MONOTONIC, &last));
+
+    /* Work out when we're going to start, make sure that all our archive
+     * updates are on an integer multiple of the archive interval. */
+    int interval = system_config.archive_interval;
+    struct timespec now;
+    ASSERT_IO(clock_gettime(CLOCK_REALTIME, &now));
+    time_t next = interval * (1 + now.tv_sec / interval);
+
     while (running)
     {
         usleep(system_config.mms_poll_interval);
         read_mms_handlers(false);
 
         /* Check for archive output. */
-        struct timespec now;
-        ASSERT_IO(clock_gettime(CLOCK_MONOTONIC, &now));
-        if (now.tv_sec >= last.tv_sec + system_config.archive_interval)
+        ASSERT_IO(clock_gettime(CLOCK_REALTIME, &now));
+        if (now.tv_sec >= next)
         {
             update_all_archive_pvs();
-            last = now;
+            next += interval;
         }
     }
     return NULL;
