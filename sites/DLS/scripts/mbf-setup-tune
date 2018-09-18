@@ -170,7 +170,11 @@ if args.tune is None:
     setup.tune = float(get_config(setup, 'tune'))
 else:
     setup.tune = args.tune
-setup.cycles, setup.length = compute_filter_size(setup.tune)
+
+# Compute best matching filter.  For LMBF mode need to scale matched target by
+# configured decimation.
+decimation = get('IQ:FIR:DECIMATION_S') if LMBF_MODE else 1
+setup.cycles, setup.length = compute_filter_size(setup.tune * decimation)
 
 
 # Apply mode specific overrides.
