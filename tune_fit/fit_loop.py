@@ -25,32 +25,28 @@ class Gather:
 
     def __init__(self, pv_i, pv_q, pv_s):
         self.event = cothread.Event()
-        self.timestamps = {}
-        self.values = {}
-
         self.monitor('I', pv_i)
         self.monitor('Q', pv_q)
         self.monitor('S', pv_s)
 
     def monitor(self, key, pv):
-        self.timestamps[key] = 0
-        self.values[key] = 0
         camonitor(pv, lambda v: self.update(key, v), format = FORMAT_TIME)
 
     def update(self, key, value):
-        timestamp = value.timestamp
-        self.timestamps[key] = timestamp
-        self.values[key] = +value
-        if any(t == 0 for t in self.timestamps.values()):
-            return
-        if all(self.timestamps[u] == timestamp for u in self.updates):
-            self.emit(timestamp, self.values)
+        setattr(self, key, value)
 
-    def emit(self, timestamp, values):
-        iq = numpy.complex128(values['I'] + 1j * values['Q'])
-        s = numpy.float64(values['S'])
-        if len(iq) > 0:
-            self.event.Signal((timestamp, s, iq))
+        try:
+            timestamp = self.I.timestamp
+            do_emit = \
+                self.Q.timestamp == timestamp and timestamp >= self.S.timestamp
+        except AttributeError:
+            # Until we've seen all values we'll get an attribute error
+            pass
+        else:
+            if do_emit:
+                iq = numpy.complex128(self.I + 1j * self.Q)
+                if len(iq) > 0:
+                    self.event.Signal((timestamp, self.S, iq))
 
     def wait(self):
         return self.event.Wait()

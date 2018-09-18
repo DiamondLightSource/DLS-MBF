@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 266
-y 155
+x 2341
+y 72
 w 641
 h 849
 font "helvetica-medium-r-18.0"
@@ -290,18 +290,27 @@ y2AxisSrc "AutoScale"
 y2Min 8300
 y2Max 16600
 # Trace Properties
-numTraces 1
+numTraces 4
 yPv {
   0 "$(device):$(axis):$(part):MMS:STD"
+  1 "$(device):$(axis):$(part):MMS:STD_MEAN_WF"
+  2 "$(device):$(axis):$(part):MMS:STD_MIN_WF"
+  3 "$(device):$(axis):$(part):MMS:STD_MAX_WF"
 }
 plotUpdateMode {
   0 "y"
+  1 "y"
+  2 "y"
+  3 "y"
 }
 ySigned {
   0 1
 }
 plotColor {
   0 index 27
+  1 index 18
+  2 index 33
+  3 index 33
 }
 endObjectProperties
 

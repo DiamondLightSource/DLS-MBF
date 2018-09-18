@@ -25,13 +25,13 @@ def get(pv):
     return catools.caget('%s:%s' % (DEVICE, pv))
 
 # Pickup the basic machine parameters
-LMBF_MODE = bool(get('MODE'))
-X = get('AXIS0')
-Y = get('AXIS1')
+LMBF_MODE = bool(get('INFO:MODE'))
+X = get('INFO:AXIS0')
+Y = get('INFO:AXIS1')
 
-BUNCHES = get('BUNCHES')
-ADC_TAPS = get('ADC_TAPS')
-DAC_TAPS = get('DAC_TAPS')
+BUNCHES = get('INFO:BUNCHES')
+ADC_TAPS = get('INFO:ADC_TAPS')
+DAC_TAPS = get('INFO:DAC_TAPS')
 
 
 # Reset the compensation filters

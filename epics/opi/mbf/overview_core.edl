@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 86
-y 386
+x 87
+y 387
 w 456
 h 473
 font "helvetica-medium-r-8.0"
@@ -176,25 +176,6 @@ command {
 includeHelpIcon
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 296
-y 64
-w 80
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):FIR:GAIN_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -202,7 +183,7 @@ major 4
 minor 1
 release 1
 x 256
-y 70
+y 64
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -221,8 +202,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 256
-y 104
+x 392
+y 64
 w 40
 h 14
 font "helvetica-bold-r-12.0"
@@ -241,9 +222,9 @@ beginObjectProperties
 major 4
 minor 2
 release 0
-x 304
-y 104
-w 136
+x 256
+y 108
+w 184
 h 24
 fgColor index 6
 bgColor index 4
@@ -410,8 +391,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 392
-y 80
+x 390
+y 84
 w 48
 h 20
 controlPv "$(device):$(axis):FIR:0:PHASE_S"
@@ -441,7 +422,7 @@ x 40
 y 64
 w 184
 h 14
-controlPv "$(device):$(axis):STATUS.DESC"
+controlPv "$(device):$(axis):STA:STATUS.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -469,7 +450,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(axis):STATUS"
+alarmPv "$(device):$(axis):STA:STATUS"
 endObjectProperties
 
 # (Static Text)
@@ -633,5 +614,76 @@ symbols {
 replaceSymbols {
   0 1
 }
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 292
+y 62
+w 48
+h 16
+controlPv "$(device):$(axis):FIR:GAIN_S"
+font "helvetica-bold-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 4
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 256
+y 80
+w 48
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):FIR:GAIN:UP_S.PROC"
+pressValue "0"
+onLabel "Up"
+offLabel "Up"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 312
+y 80
+w 48
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):FIR:GAIN:DN_S.PROC"
+pressValue "0"
+onLabel "Dn"
+offLabel "Dn"
+3d
+font "helvetica-bold-r-12.0"
 endObjectProperties
 

@@ -20,6 +20,8 @@
 #include "bunch_fir.h"
 
 
+#define MAX_FIR_GAIN     15
+
 /* Represents the internal state of a single FIR bank. */
 struct fir_bank {
     int axis;
@@ -37,6 +39,7 @@ struct fir_bank {
 static struct fir_context {
     int axis;
     bool overflow;
+    struct epics_record *fir_gain;
     struct fir_bank banks[FIR_BANKS];
 } fir_context[AXIS_COUNT];
 
@@ -224,6 +227,26 @@ static bool write_fir_gain(void *context, unsigned int *value)
 }
 
 
+static bool increment_fir_gain(void *context, bool *value)
+{
+    struct fir_context *fir = context;
+    unsigned int new_gain = READ_RECORD_VALUE(mbbo, fir->fir_gain) - 1;
+    if (new_gain <= MAX_FIR_GAIN)
+        WRITE_OUT_RECORD(mbbo, fir->fir_gain, new_gain, true);
+    return true;
+}
+
+
+static bool decrement_fir_gain(void *context, bool *value)
+{
+    struct fir_context *fir = context;
+    unsigned int new_gain = READ_RECORD_VALUE(mbbo, fir->fir_gain) + 1;
+    if (new_gain <= MAX_FIR_GAIN)
+        WRITE_OUT_RECORD(mbbo, fir->fir_gain, new_gain, true);
+    return true;
+}
+
+
 static void write_fir_decimation(unsigned int value)
 {
     fir_decimation = value;
@@ -269,7 +292,9 @@ error__t initialise_bunch_fir(void)
     {
         struct fir_context *fir = &fir_context[axis];
         publish_banks(fir);
-        PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
+        fir->fir_gain = PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
+        PUBLISH_C(bo, "GAIN:UP", increment_fir_gain, fir);
+        PUBLISH_C(bo, "GAIN:DN", decrement_fir_gain, fir);
 
         if (system_config.lmbf_mode)
             PUBLISH_WRITER_P(ulongout, "DECIMATION", write_fir_decimation);

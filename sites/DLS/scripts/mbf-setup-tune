@@ -18,6 +18,7 @@ import sys
 import numpy
 import argparse
 
+import cothread
 from cothread import catools
 
 
@@ -40,7 +41,7 @@ DAC_OUT_NCO = 2
 DAC_OUT_SWEEP = 4
 
 
-def _put(axis, pv, value):
+def _put(pv, value, axis = None):
     if axis:
         target = '%s:%s:%s' % (DEVICE, axis, pv)
     else:
@@ -51,17 +52,22 @@ def _put(axis, pv, value):
         catools.caput(target, value)
 
 def put(pv, value):
-    _put(AXIS, pv, value)
+    _put(pv, value, AXIS)
 
 def put_axes(pv, value):
     if LMBF_MODE:
-        _put(AXIS0, pv, value)
-        _put(AXIS1, pv, value)
+        _put(pv, value, AXIS0)
+        _put(pv, value, AXIS1)
     else:
-        _put(AXIS, pv, value)
+        _put(pv, value, AXIS)
 
 def get(pv, **kargs):
     return catools.caget('%s:%s' % (DEVICE, pv), **kargs)
+
+def wait_for_pv(pv, value):
+    while get(pv) != value:
+        print 'waiting for', pv
+        cothread.Sleep(0.1)
 
 
 
@@ -144,12 +150,12 @@ else:
     RING_MODE = args.ring_mode
 
 # Read fundamental parameters from device
-LMBF_MODE = get('MODE')
+LMBF_MODE = get('INFO:MODE')
 if LMBF_MODE:
-    AXIS0 = get('AXIS0')
-    AXIS1 = get('AXIS1')
-N_TAPS = get('BUNCH_TAPS')
-BUNCH_COUNT = get('BUNCHES')
+    AXIS0 = get('INFO:AXIS0')
+    AXIS1 = get('INFO:AXIS1')
+N_TAPS = get('INFO:BUNCH_TAPS')
+BUNCH_COUNT = get('INFO:BUNCHES')
 
 
 # ------------------------------------------------------------------------------
@@ -170,7 +176,11 @@ if args.tune is None:
     setup.tune = float(get_config(setup, 'tune'))
 else:
     setup.tune = args.tune
-setup.cycles, setup.length = compute_filter_size(setup.tune)
+
+# Compute best matching filter.  For LMBF mode need to scale matched target by
+# configured decimation.
+decimation = get('IQ:FIR:DECIMATION_S') if LMBF_MODE else 1
+setup.cycles, setup.length = compute_filter_size(setup.tune * decimation)
 
 
 # Apply mode specific overrides.
@@ -213,7 +223,7 @@ put('SEQ:SUPER:COUNT_S', 1)
 put('SEQ:SUPER:RESET_S', 0)
 
 # Ensure the blanking interval is right (this is not axis specific)
-_put(None, 'TRG:BLANKING_S', setup.blanking_interval)
+_put('TRG:BLANKING_S', setup.blanking_interval)
 
 
 # Configure FIR as selected
@@ -275,5 +285,29 @@ put('SEQ:PC_S', 1)
 put_axes('DAC:ENABLE_S', 'On')
 put('TRG:SEQ:ARM_S', 0)
 
+
+# ------------------------------------------------------------------------------
+# Special action for normal FB mode: enable and arm memory postmortem trigger
+
+if MODE == 'FB':
+    # Start by disarm memory in case it's already running
+    _put('TRG:MEM:DISARM_S', 0)
+    wait_for_pv('MEM:BUSY', 0)
+
+    # Configure sources for PM only and ignore blanking for PM
+    for source in TRIGGER_SOURCES:
+        _put('TRG:MEM:%s:EN_S' % source, 'Ignore')
+    _put('TRG:MEM:PM:EN_S', 'Enable')
+    _put('TRG:MEM:PM:BL_S', 'All')
+    _put('TRG:MEM:DELAY_S', 0)
+
+    # Configure capture of ADC into both channels, set 25% runout, configure one
+    # shot capture (we'll want to readout and rearm elsewhere).
+    _put('MEM:SELECT_S', 'ADC0/ADC1')
+    _put('MEM:RUNOUT_S', '25%')
+    _put('TRG:MEM:MODE_S', 'One Shot')
+
+    # Go!
+    _put('TRG:MEM:ARM_S', 0)
 
 # vim: set filetype=python:

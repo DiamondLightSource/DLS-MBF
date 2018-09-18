@@ -23,15 +23,15 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:ADC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN1,\ 
                                    SR-TMBF:ADC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_S,\ 
                                    SR-TMBF:ADC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*ADC_TAPS,\ 
-                                   SR-TMBF:AXIS0*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS0,\ 
-                                   SR-TMBF:AXIS1*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS1,\ 
-                                   SR-TMBF:BUNCHES*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCHES,\ 
-                                   SR-TMBF:BUNCH_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCH_TAPS,\ 
+                                   SR-TMBF:INFO:AXIS0*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS0,\ 
+                                   SR-TMBF:INFO:AXIS1*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS1,\ 
+                                   SR-TMBF:INFO:BUNCHES*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCHES,\ 
+                                   SR-TMBF:INFO:BUNCH_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCH_TAPS,\ 
                                    SR-TMBF:DAC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_S,\ 
                                    SR-TMBF:DAC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN,\ 
                                    SR-TMBF:DAC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN1,\ 
                                    SR-TMBF:DAC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*DAC_TAPS,\ 
-                                   SR-TMBF:DEVICE*Scalar*String*READ_ONLY*ATTRIBUTE*DEVICE,\ 
+                                   SR-TMBF:INFO:DEVICE*Scalar*String*READ_ONLY*ATTRIBUTE*DEVICE,\ 
                                    SR-TMBF:DLY:DAC:COARSE_DELAY_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_DAC_COARSE_DELAY_S,\ 
                                    SR-TMBF:DLY:DAC:DELAY_PS*Scalar*Double*READ_ONLY*ATTRIBUTE*DLY_DAC_DELAY_PS,\ 
                                    SR-TMBF:DLY:DAC:FIFO*Scalar*Int*READ_ONLY*ATTRIBUTE*DLY_DAC_FIFO,\ 
@@ -49,13 +49,13 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:DLY:TURN:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*DLY_TURN_STATUS,\ 
                                    SR-TMBF:DLY:TURN:SYNC_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_TURN_SYNC_S,\ 
                                    SR-TMBF:DLY:TURN:TURNS*Scalar*Int*READ_ONLY*ATTRIBUTE*DLY_TURN_TURNS,\ 
-                                   SR-TMBF:DRIVER_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*DRIVER_VERSION,\ 
+                                   SR-TMBF:INFO:DRIVER_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*DRIVER_VERSION,\ 
                                    SR-TMBF:FIR:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*FIR_EVENTS_FAN,\ 
                                    SR-TMBF:FIR:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*FIR_EVENTS_S,\ 
-                                   SR-TMBF:FPGA_GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_GIT_VERSION,\ 
-                                   SR-TMBF:FPGA_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_VERSION,\ 
-                                   SR-TMBF:GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*GIT_VERSION,\ 
-                                   SR-TMBF:HOSTNAME*Scalar*String*READ_ONLY*ATTRIBUTE*HOSTNAME,\ 
+                                   SR-TMBF:INFO:FPGA_GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_GIT_VERSION,\ 
+                                   SR-TMBF:INFO:FPGA_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_VERSION,\ 
+                                   SR-TMBF:INFO:GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*GIT_VERSION,\ 
+                                   SR-TMBF:INFO:HOSTNAME*Scalar*String*READ_ONLY*ATTRIBUTE*HOSTNAME,\ 
                                    SR-TMBF:MEM:BUSY*Scalar*Enum*READ_ONLY*ATTRIBUTE*MEM_BUSY,\ 
                                    SR-TMBF:MEM:CAPTURE_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*MEM_CAPTURE_S,\ 
                                    SR-TMBF:MEM:FIR0_GAIN_S*Scalar*Enum*READ_WRITE*ATTRIBUTE*MEM_FIR0_GAIN_S,\ 
@@ -75,8 +75,8 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:MEM:WF0*Array:16384*Int*READ_ONLY*ATTRIBUTE*MEM_WF0,\ 
                                    SR-TMBF:MEM:WF1*Array:16384*Int*READ_ONLY*ATTRIBUTE*MEM_WF1,\ 
                                    SR-TMBF:MEM:WRITE_GAIN_S*Scalar*Int*READ_WRITE*ATTRIBUTE*MEM_WRITE_GAIN_S,\ 
-                                   SR-TMBF:MODE*Scalar*Enum*READ_ONLY*ATTRIBUTE*MODE,\ 
-                                   SR-TMBF:SOCKET*Scalar*Int*READ_ONLY*ATTRIBUTE*SOCKET,\ 
+                                   SR-TMBF:INFO:MODE*Scalar*Enum*READ_ONLY*ATTRIBUTE*MODE,\ 
+                                   SR-TMBF:INFO:SOCKET*Scalar*Int*READ_ONLY*ATTRIBUTE*SOCKET,\ 
                                    SR-TMBF:STA:CLOCK*Scalar*Enum*READ_ONLY*ATTRIBUTE*STA_CLOCK,\ 
                                    SR-TMBF:STA:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*STA_FAN,\ 
                                    SR-TMBF:STA:POLL_S*Scalar*Int*READ_WRITE*ATTRIBUTE*STA_POLL_S,\ 
@@ -132,7 +132,7 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:TRG:SOFT_S.SCAN*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_S,\ 
                                    SR-TMBF:TRG:SOFT_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_CMD,\ 
                                    SR-TMBF:TRG:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_STATUS,\ 
-                                   SR-TMBF:VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*VERSION
+                                   SR-TMBF:INFO:VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*VERSION
 
 # --- sr/d-mfdbk/utca-global attribute properties
 

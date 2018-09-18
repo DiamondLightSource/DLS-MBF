@@ -126,15 +126,18 @@ static error__t get_driver_version(EPICS_STRING *version)
 
 static error__t initialise_constants(void)
 {
-    PUBLISH_READ_VAR(stringin, "VERSION", version_string);
-    PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
-    PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
-    PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
-    PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
-    PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
-    PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
-    PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
-    PUBLISH_READ_VAR(stringin, "DRIVER_VERSION", driver_version);
+    WITH_NAME_PREFIX("INFO")
+    {
+        PUBLISH_READ_VAR(stringin, "VERSION", version_string);
+        PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
+        PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
+        PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
+        PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
+        PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
+        PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
+        PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
+        PUBLISH_READ_VAR(stringin, "DRIVER_VERSION", driver_version);
+    }
 
     struct fpga_version fpga;
     hw_read_fpga_version(&fpga);
