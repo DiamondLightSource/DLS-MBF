@@ -4,7 +4,7 @@
 % axis is specified, the default is 0.  The frequency scale and timebase are
 % returned if requested.
 
-function [d, s, varargout] = mbf_read_mem(mbf, varargin)
+function [d, s, varargout] = mbf_read_det(mbf, varargin)
     % Default arguments and argument parsing
     p = inputParser;
     addParamValue(p, 'axis', 0);
