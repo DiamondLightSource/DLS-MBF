@@ -1402,7 +1402,7 @@ buttonLabel "Graphs"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/graphs.edl"
+  0 "tune_fit/tune_waveforms.edl"
 }
 endObjectProperties
 

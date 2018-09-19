@@ -89,7 +89,7 @@ invisible
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/peaks.edl"
+  0 "tune_fit/tune_peaks.edl"
 }
 symbols {
   0 "tune_prefix=$(device):$(axis)"
