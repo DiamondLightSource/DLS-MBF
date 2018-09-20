@@ -34,6 +34,7 @@
 
 /* User interface for trigger target. */
 struct trigger_target_state {
+    int axis;                        // Not valid for DRAM target
     struct in_epics_record_mbbi *state_pv;
 
     struct epics_record *update_sources;    // Used to read sources[]
@@ -67,35 +68,37 @@ static bool blanking_in;
 /* Target specific configuration and implementation. */
 
 
-static size_t get_seq_name(int axis, char name[], size_t length)
+static size_t get_seq_name(
+    struct trigger_target_state *target, char name[], size_t length)
 {
     return (size_t) snprintf(name, length, "%s:SEQ",
-        get_axis_name(axis, system_config.lmbf_mode));
+        get_axis_name(target->axis, system_config.lmbf_mode));
 }
 
 
-static void prepare_seq_target(int axis)
+static void prepare_seq_target(struct trigger_target_state *target)
 {
-    prepare_sequencer(axis);
-    prepare_detector(axis);
+    prepare_sequencer(target->axis);
+    prepare_detector(target->axis);
 }
 
-static enum target_state stop_seq_target(int axis)
+static enum target_state stop_seq_target(struct trigger_target_state *target)
 {
     return TARGET_IDLE;
 }
 
-static size_t get_mem_name(int axis, char name[], size_t length)
+static size_t get_mem_name(
+    struct trigger_target_state *target, char name[], size_t length)
 {
     return (size_t) snprintf(name, length, "MEM");
 }
 
-static void prepare_mem_target(int axis)
+static void prepare_mem_target(struct trigger_target_state *target)
 {
     prepare_memory();
 }
 
-static enum target_state stop_mem_target(int axis)
+static enum target_state stop_mem_target(struct trigger_target_state *target)
 {
     /* Stop the memory target by actually forcing a trigger! */
     bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
@@ -104,9 +107,9 @@ static enum target_state stop_mem_target(int axis)
 }
 
 
-static void set_target_state(void *context, enum target_state state)
+static void set_target_state(
+    struct trigger_target_state *target, enum target_state state)
 {
-    struct trigger_target_state *target = context;
     WRITE_IN_RECORD(mbbi, target->state_pv, state);
 }
 
@@ -114,9 +117,9 @@ static void set_target_state(void *context, enum target_state state)
 /* Array of possible targets. */
 static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_SEQ0] = {
+        .axis = 0,
         .config = {
             .target_id = TRIGGER_SEQ0,
-            .axis = 0,
             .get_target_name = get_seq_name,
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
@@ -126,9 +129,9 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .complete_interrupt = { .seq_done = 1, },
     },
     [TRIGGER_SEQ1] = {
+        .axis = 1,
         .config = {
             .target_id = TRIGGER_SEQ1,
-            .axis = 1,
             .get_target_name = get_seq_name,
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
@@ -140,7 +143,6 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_DRAM] = {
         .config = {
             .target_id = TRIGGER_DRAM,
-            .axis = -1,          // Not valid for this target
             .get_target_name = get_mem_name,
             .prepare_target = prepare_mem_target,
             .stop_target = stop_mem_target,
@@ -158,6 +160,9 @@ static struct trigger_target_state *sequencer_targets[AXIS_COUNT] = {
 };
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Trigger event handling. */
+
 /* Helper macros for looping through targets. */
 #define _FOR_ALL_TARGETS(i, target) \
     for (unsigned int i = 0; i < TRIGGER_TARGET_COUNT; i ++) \
@@ -166,7 +171,6 @@ static struct trigger_target_state *sequencer_targets[AXIS_COUNT] = {
 #define FOR_ALL_TARGETS(target) _FOR_ALL_TARGETS(UNIQUE_ID(), target)
 
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
 /* When a trigger has been processed, update the sources to show where the
