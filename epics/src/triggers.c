@@ -65,6 +65,26 @@ static bool blanking_in;
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Trigger event handling. */
+
+/* This is called during target arming to reset the trigger sources. */
+static void reset_trigger_sources(struct trigger_target_state *target)
+{
+    memset(target->sources, 0, sizeof(target->sources));
+    trigger_record(target->update_sources);
+}
+
+
+/* When a trigger has been processed, update the sources to show where the
+ * trigger came from. */
+static void update_trigger_sources(struct trigger_target_state *target)
+{
+    hw_read_trigger_sources(target->config.target_id, target->sources);
+    trigger_record(target->update_sources);
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Target specific configuration and implementation. */
 
 
@@ -78,6 +98,7 @@ static size_t get_seq_name(
 
 static void prepare_seq_target(struct trigger_target_state *target)
 {
+    reset_trigger_sources(target);
     prepare_sequencer(target->axis);
     prepare_detector(target->axis);
 }
@@ -95,6 +116,7 @@ static size_t get_mem_name(
 
 static void prepare_mem_target(struct trigger_target_state *target)
 {
+    reset_trigger_sources(target);
     prepare_memory();
 }
 
@@ -158,47 +180,6 @@ static struct trigger_target_state *sequencer_targets[AXIS_COUNT] = {
     [0] = &targets[TRIGGER_SEQ0],
     [1] = &targets[TRIGGER_SEQ1],
 };
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Trigger event handling. */
-
-/* Helper macros for looping through targets. */
-#define _FOR_ALL_TARGETS(i, target) \
-    for (unsigned int i = 0; i < TRIGGER_TARGET_COUNT; i ++) \
-        for (struct trigger_target_state *target = &targets[i]; \
-            target; target = NULL)
-#define FOR_ALL_TARGETS(target) _FOR_ALL_TARGETS(UNIQUE_ID(), target)
-
-
-
-
-/* When a trigger has been processed, update the sources to show where the
- * trigger came from. */
-static void update_trigger_sources(struct trigger_target_state *target)
-{
-    hw_read_trigger_sources(target->config.target_id, target->sources);
-    trigger_record(target->update_sources);
-}
-
-
-/* Called in response to hardware interrupt events signalling trigger and target
- * complete events. */
-static void dispatch_target_events(void *context, struct interrupts interrupts)
-{
-    FOR_ALL_TARGETS(target)
-    {
-        /* If we get both trigger and complete simultaneously we can process
-         * them in sequence. */
-        if (test_intersect(interrupts, target->trigger_interrupt))
-        {
-            update_trigger_sources(target);
-            trigger_target_trigger(target->target);
-        }
-        if (test_intersect(interrupts, target->complete_interrupt))
-            trigger_target_complete(target->target);
-    }
-}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -325,6 +306,33 @@ static void read_input_events(void)
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+/* Helper macro for looping through targets. */
+#define _FOR_ALL_TARGETS(i, target) \
+    for (unsigned int i = 0; i < TRIGGER_TARGET_COUNT; i ++) \
+        for (struct trigger_target_state *target = &targets[i]; \
+            target; target = NULL)
+#define FOR_ALL_TARGETS(target) _FOR_ALL_TARGETS(UNIQUE_ID(), target)
+
+
+/* Called in response to hardware interrupt events signalling trigger and target
+ * complete events. */
+static void dispatch_target_events(void *context, struct interrupts interrupts)
+{
+    FOR_ALL_TARGETS(target)
+    {
+        /* If we get both trigger and complete simultaneously we can process
+         * them in sequence. */
+        if (test_intersect(interrupts, target->trigger_interrupt))
+        {
+            update_trigger_sources(target);
+            trigger_target_trigger(target->target);
+        }
+        if (test_intersect(interrupts, target->complete_interrupt))
+            trigger_target_complete(target->target);
+    }
+}
 
 
 static void set_shared_state(enum shared_target_state state)
