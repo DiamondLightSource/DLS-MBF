@@ -1,8 +1,6 @@
 #!/usr/bin/env dls-python
 
-from pkg_resources import require
-require('numpy')
-require('cothread')
+import mbf.requires
 
 import sys
 import numpy

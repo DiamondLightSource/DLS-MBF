@@ -1,8 +1,7 @@
 #!/usr/bin/env dls-python
 #-*- coding: utf-8 -*-
 
-from pkg_resources import require
-require('cothread')
+import mbf.requires
 
 import argparse
 from cothread import catools, Sleep

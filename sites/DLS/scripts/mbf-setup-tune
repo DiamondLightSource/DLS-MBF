@@ -10,9 +10,7 @@
 #   AP      Tune Special        Multibunch tune only measurement
 #   FB      Feedback On & Tune  Feedback and tune measurement, normal operation
 
-from pkg_resources import require
-require('cothread')
-require('numpy')
+import mbf.requires
 
 import sys
 import numpy

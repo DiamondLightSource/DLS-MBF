@@ -2,9 +2,7 @@
 
 # Helper script for setting bunch waveforms
 
-from pkg_resources import require
-
-require('cothread')
+import mbf.requires
 
 import sys
 

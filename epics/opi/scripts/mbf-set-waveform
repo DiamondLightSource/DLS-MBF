@@ -10,9 +10,7 @@
 #
 # If a bunch is not specified the value is written to the entire waveform
 
-from pkg_resources import require
-
-require('cothread')
+import mbf.requires
 
 import sys
 

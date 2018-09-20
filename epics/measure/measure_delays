@@ -1,7 +1,6 @@
 #!/usr/bin/env dls-python
 
-from pkg_resources import require
-require('cothread')
+import mbf.requires
 
 import sys
 import time
