@@ -1,5 +1,5 @@
 #
-# Resource backup , created Thu Jun 28 12:47:00 CEST 2018
+# Resource backup , created Tue Sep 18 17:49:20 CEST 2018
 #
 
 #---------------------------------------------------------
@@ -11,6 +11,14 @@ Tango2Epics/mfdbk-global/DEVICE/Tango2Epics: "sr/d-mfdbk/utca-global"
 
 # --- sr/d-mfdbk/utca-global properties
 
+sr/d-mfdbk/utca-global->polled_attr: dly_turn_errors,\ 
+                                     1000,\ 
+                                     sta_vcxo,\ 
+                                     1000,\ 
+                                     git_version,\ 
+                                     10000,\ 
+                                     fpga_git_version,\ 
+                                     1000
 sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN,\ 
                                    SR-TMBF:ADC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN1,\ 
                                    SR-TMBF:ADC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_S,\ 
@@ -20,15 +28,14 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:INFO:BUNCHES*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCHES,\ 
                                    SR-TMBF:INFO:BUNCH_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCH_TAPS,\ 
                                    SR-TMBF:DAC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_S,\ 
-                                   SR-TMBF:DAC:SCAN:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_SCAN_FAN,\ 
-                                   SR-TMBF:DAC:SCAN:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_SCAN_FAN1,\ 
+                                   SR-TMBF:DAC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN,\ 
+                                   SR-TMBF:DAC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN1,\ 
                                    SR-TMBF:DAC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*DAC_TAPS,\ 
                                    SR-TMBF:INFO:DEVICE*Scalar*String*READ_ONLY*ATTRIBUTE*DEVICE,\ 
                                    SR-TMBF:DLY:DAC:COARSE_DELAY_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_DAC_COARSE_DELAY_S,\ 
                                    SR-TMBF:DLY:DAC:DELAY_PS*Scalar*Double*READ_ONLY*ATTRIBUTE*DLY_DAC_DELAY_PS,\ 
                                    SR-TMBF:DLY:DAC:FIFO*Scalar*Int*READ_ONLY*ATTRIBUTE*DLY_DAC_FIFO,\ 
                                    SR-TMBF:DLY:DAC:FINE_DELAY_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_DAC_FINE_DELAY_S,\ 
-                                   SR-TMBF:DLY:DAC:HALF_STEP_S*Scalar*Enum*READ_WRITE*ATTRIBUTE*DLY_DAC_HALF_STEP_S,\ 
                                    SR-TMBF:DLY:DAC:RESET_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_DAC_RESET_S,\ 
                                    SR-TMBF:DLY:DAC:STEP_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_DAC_STEP_S,\ 
                                    SR-TMBF:DLY:STEP_SIZE*Scalar*Double*READ_ONLY*ATTRIBUTE*DLY_STEP_SIZE,\ 
@@ -158,6 +165,9 @@ sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->description: "Turn clock input delay"
 sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->format: %2d
 sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->max_value: 31.0
 sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->min_value: 0.0
+sr/d-mfdbk/utca-global/DLY_TURN_ERRORS->archive_abs_change: -1,\ 
+                                                            1
+sr/d-mfdbk/utca-global/DLY_TURN_ERRORS->archive_period: 3600000
 sr/d-mfdbk/utca-global/DLY_TURN_ERRORS->description: "Turn clock errors"
 sr/d-mfdbk/utca-global/DLY_TURN_OFFSET_S->description: "Turn clock offset"
 sr/d-mfdbk/utca-global/DLY_TURN_OFFSET_S->format: %3d
@@ -172,10 +182,12 @@ sr/d-mfdbk/utca-global/DLY_TURN_SYNC_S->description: "Synchronise turn clock"
 sr/d-mfdbk/utca-global/DLY_TURN_TURNS->description: "Turns sampled"
 sr/d-mfdbk/utca-global/DRIVER_VERSION->description: "Kernel driver version"
 sr/d-mfdbk/utca-global/FIR_EVENTS_S->description: "FIR event detect scan"
+sr/d-mfdbk/utca-global/FPGA_GIT_VERSION->archive_period: 86400000
 sr/d-mfdbk/utca-global/FPGA_GIT_VERSION->description: "Firmware git version"
 sr/d-mfdbk/utca-global/FPGA_VERSION->description: "Firmware version"
+sr/d-mfdbk/utca-global/GIT_VERSION->archive_period: 86400000
 sr/d-mfdbk/utca-global/GIT_VERSION->description: "Software git version"
-sr/d-mfdbk/utca-global/HOSTNAME->description: "Host name of LMBF IOC"
+sr/d-mfdbk/utca-global/HOSTNAME->description: "Host name of MBF IOC"
 sr/d-mfdbk/utca-global/MEM_BUSY->description: "Capture status"
 sr/d-mfdbk/utca-global/MEM_BUSY->EnumLabels: Ready,\ 
                                              Busy
@@ -250,6 +262,9 @@ sr/d-mfdbk/utca-global/STA_VCO->description: "VCO clock status"
 sr/d-mfdbk/utca-global/STA_VCO->EnumLabels: "Unlocked (MAJOR)",\ 
                                             Locked,\ 
                                             Passthrough
+sr/d-mfdbk/utca-global/STA_VCXO->archive_abs_change: -1,\ 
+                                                     1
+sr/d-mfdbk/utca-global/STA_VCXO->archive_period: 3600000
 sr/d-mfdbk/utca-global/STA_VCXO->description: "VCXO clock status"
 sr/d-mfdbk/utca-global/STA_VCXO->EnumLabels: "Unlocked (MAJOR)",\ 
                                              Locked,\ 
@@ -414,3 +429,7 @@ CLASS/Tango2Epics->ProjectTitle: "Tango2Epics Tango Device"
 # CLASS Tango2Epics attribute properties
 
 
+
+# --- dserver/Tango2Epics/mfdbk-global properties
+
+dserver/Tango2Epics/mfdbk-global->polling_threads_pool_conf: "sr/d-mfdbk/utca-global"

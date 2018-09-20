@@ -1,5 +1,5 @@
 #! /bin/bash
 
 . ~dserver/.bashrc
-/users/dserver/mbf/iocs/SR-TFIT
+/users/dserver/mbf/iocs/$*
 

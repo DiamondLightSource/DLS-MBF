@@ -1,5 +1,5 @@
 #
-# Resource backup , created Thu Jun 28 12:47:41 CEST 2018
+# Resource backup , created Tue Sep 18 17:49:35 CEST 2018
 #
 
 #---------------------------------------------------------
@@ -11,6 +11,8 @@ Tango2Epics/mfdbk-h/DEVICE/Tango2Epics: "sr/d-mfdbk/utca-horizontal"
 
 # --- sr/d-mfdbk/utca-horizontal properties
 
+sr/d-mfdbk/utca-horizontal->polled_attr: dac_mms_std_mean,\ 
+                                         1000
 sr/d-mfdbk/utca-horizontal->Variables: SR-TMBF:X:ADC:DRAM_SOURCE_S*Scalar*Enum*READ_WRITE*ATTRIBUTE*ADC_DRAM_SOURCE_S,\ 
                                        SR-TMBF:X:ADC:EVENT*Scalar*Enum*READ_ONLY*ATTRIBUTE*ADC_EVENT,\ 
                                        SR-TMBF:X:ADC:EVENT_LIMIT_S*Scalar*Double*READ_WRITE*ATTRIBUTE*ADC_EVENT_LIMIT_S,\ 
@@ -472,7 +474,11 @@ sr/d-mfdbk/utca-horizontal/DAC_MMS_SOURCE_S->description: "Source of min/max/sum
 sr/d-mfdbk/utca-horizontal/DAC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                          "After FIR"
 sr/d-mfdbk/utca-horizontal/DAC_MMS_STD->description: "DAC standard deviation per bunch"
+sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN->archive_abs_change: -1e-06,\ 
+                                                                 1e-06
+sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN->archive_period: 3600000
 sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
+sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN->event_period: 1234
 sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN->format: %.6f
 sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN->max_value: 1.0
 sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN->min_value: 0.0
@@ -1216,3 +1222,7 @@ CLASS/Tango2Epics->ProjectTitle: "Tango2Epics Tango Device"
 # CLASS Tango2Epics attribute properties
 
 
+
+# --- dserver/Tango2Epics/mfdbk-h properties
+
+dserver/Tango2Epics/mfdbk-h->polling_threads_pool_conf: "sr/d-mfdbk/utca-horizontal"
