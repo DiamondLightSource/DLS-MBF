@@ -5,7 +5,7 @@ import os
 from docutils import nodes, statemachine
 from docutils.parsers import rst
 
-import mbf
+from mbf import parse, defs_path
 
 
 def trim_text(text):
@@ -29,7 +29,7 @@ def format_range(range, bits = False):
         return '%d' % start
 
 
-class GenerateMethods(mbf.parse.register_defs.WalkParse):
+class GenerateMethods(parse.register_defs.WalkParse):
     def __init__(self, table):
         self.table = table
 
@@ -179,10 +179,10 @@ class register_docs_file(rst.Directive):
         return result
 
     def load_groups(self, filename):
-        full_filename = os.path.join(mbf.MBF_TOP, filename)
-        defs = mbf.parse.register_defs.parse_defs(
-            mbf.parse.indent.parse_file(file(full_filename)))
-        defs = mbf.parse.register_defs.flatten(defs)
+        full_filename = os.path.join(defs_path.MBF_TOP, filename)
+        defs = parse.register_defs.parse_defs(
+            parse.indent.parse_file(file(full_filename)))
+        defs = parse.register_defs.flatten(defs)
         groups = self.list_to_dict(defs.groups)
         group_defs = self.list_to_dict(defs.group_defs)
         register_defs = self.list_to_dict(defs.register_defs)
