@@ -16,7 +16,7 @@ be device name:axis for new MBF.  Examples:
 
 Such logs can then be replayed by running
 
-    dls-python plotting.py logfile
+    python plotting.py logfile
 EOF
     exit
 fi

@@ -1,4 +1,4 @@
-#!/usr/bin/env dls-python
+#!/usr/bin/env python
 
 # Simple script for setting the MBF into the appropriate tune measurement
 # mode.
