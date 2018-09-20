@@ -287,27 +287,26 @@ put('TRG:SEQ:ARM_S', 0)
 
 
 # ------------------------------------------------------------------------------
-# Special action for normal FB mode: enable and arm memory postmortem trigger
+# Finally, enable and arm memory postmortem trigger
 
-if MODE == 'FB':
-    # Start by disarm memory in case it's already running
-    _put('TRG:MEM:DISARM_S', 0)
-    wait_for_pv('MEM:BUSY', 0)
+# Start by disarm memory in case it's already running
+_put('TRG:MEM:DISARM_S', 0)
+wait_for_pv('MEM:BUSY', 0)
 
-    # Configure sources for PM only and ignore blanking for PM
-    for source in TRIGGER_SOURCES:
-        _put('TRG:MEM:%s:EN_S' % source, 'Ignore')
-    _put('TRG:MEM:PM:EN_S', 'Enable')
-    _put('TRG:MEM:PM:BL_S', 'All')
-    _put('TRG:MEM:DELAY_S', 0)
+# Configure sources for PM only and ignore blanking for PM
+for source in TRIGGER_SOURCES:
+    _put('TRG:MEM:%s:EN_S' % source, 'Ignore')
+_put('TRG:MEM:PM:EN_S', 'Enable')
+_put('TRG:MEM:PM:BL_S', 'All')
+_put('TRG:MEM:DELAY_S', 0)
 
-    # Configure capture of ADC into both channels, set 25% runout, configure one
-    # shot capture (we'll want to readout and rearm elsewhere).
-    _put('MEM:SELECT_S', 'ADC0/ADC1')
-    _put('MEM:RUNOUT_S', '25%')
-    _put('TRG:MEM:MODE_S', 'One Shot')
+# Configure capture of ADC into both channels, set 25% runout, configure one
+# shot capture (we'll want to readout and rearm elsewhere).
+_put('MEM:SELECT_S', 'ADC0/ADC1')
+_put('MEM:RUNOUT_S', '25%')
+_put('TRG:MEM:MODE_S', 'One Shot')
 
-    # Go!
-    _put('TRG:MEM:ARM_S', 0)
+# Go!
+_put('TRG:MEM:ARM_S', 0)
 
 # vim: set filetype=python:
