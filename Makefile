@@ -99,6 +99,14 @@ opi: epics
 
 
 # ------------------------------------------------------------------------------
+# Tango build
+
+# The db files are required to built Epics to Tango bridges
+
+tango: epics
+
+
+# ------------------------------------------------------------------------------
 # Miscellanous other targets
 
 # All the targets below are implemented by simple recursive calls to make.

@@ -1,4 +1,4 @@
-#!/bin/env python2
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 import re
@@ -10,8 +10,10 @@ from config import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate a ressource file to create Tango devices from epics db file.")
+    parser.add_argument(type=str, help="EPICS db filename", dest="db_filename")
     parser.add_argument(default="global", type=str, help="Scope of the PV (can be global, horizontal or vertical)", dest="current_scope")
     args = parser.parse_args()
+    db_filename = args.db_filename
     current_scope = args.current_scope
     dev_name = tango_dev_name[current_scope]
     instance_name = tango_instance_name[current_scope]

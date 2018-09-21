@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-db_filename = '../../epics/db/tmbf.db'
-
 horizontal_axis_number = 1
 
 tango_dev_name = {
