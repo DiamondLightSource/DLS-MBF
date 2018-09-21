@@ -1,6 +1,4 @@
-# During development we have state files here.  Ignore them.
-*.state
-
 # IOCs can basically have any name, so we exclude everything except for
 # the known files
 /*
+!Makefile
