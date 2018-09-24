@@ -1,9 +1,6 @@
 # Makefile for Tango server and resource files
 
-ifndef MBF_TOP
-	$(error Do not call this file directly)
-endif
-
+MBF_TOP = ..
 include $(MBF_TOP)/Makefile.common
 
 SCRIPT_DIR := $(MBF_TOP)/sites/$(SITE)/scripts/tango
@@ -20,7 +17,7 @@ RESSOURCES += e2t_vertical.res
 default: $(SCRIPTS) $(RESSOURCES) install-py mbfstartioc-res macroserver-res
 .PHONY: default
 
-$(RESSOURCES): %.res:
+$(RESSOURCES): %.res: ../epics/db/tmbf.db
 	tools/epics_to_tango.py ../epics/db/tmbf.db $(subst e2t_,,$*) > $(RESSOURCE_DIR)/$*.res
 
 %.py: $(SCRIPT_DIR)/%.py
