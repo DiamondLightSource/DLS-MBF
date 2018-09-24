@@ -3,8 +3,8 @@
 SITE = ESRF
 
 # Override default and install targets for make
-DEFAULT_TARGETS = python epics matlab tune_fit iocs tango
-INSTALL_TARGETS = tango
+DEFAULT_TARGETS = driver python epics matlab tune_fit iocs tango
+INSTALL_TARGETS = 
 
 
 # Place the FPGA build in /scratch
@@ -20,8 +20,8 @@ AMC525_SERVER = l-c31-3 199
 
 # Definitions needed for EPICS driver build
 #
-EPICS_DEVICE = /segfs/tango/contrib/debian9/epics/epics_device
-EPICS_BASE = /segfs/tango/contrib/debian9/epics/base-3.14.12.7
+EPICS_DEVICE = /opt/dserver/epics/epics_device
+EPICS_BASE = /opt/dserver/epics/base-3.14.12.7
 
 # Directory for Tango Device Server binaries
 INSTALL_DIR = /users/dserver/bin

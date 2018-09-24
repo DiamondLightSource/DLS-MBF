@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Reads key from given config file.  Called thus:
+#
+#   read_key file key
+read_key()
+{
+    sed -n "/^$2 *= */{s///; p; q;}" "$1"
+}
+
+# Only deal with epics IOCs
+IOC_TYPE=$(read_key $1 ioc)
+if [[ $IOC_TYPE != "epics/runioc" ]] ; then
+    exit 0
+fi
+
+#VAR_SUBST="$VAR_SUBST;s:@@DEVICE_NAME@@:$(read_key $1 tango_device_name):"
+
+MBF_HOME="$(cd "$(dirname $0)/../../.."; pwd)"
+
+VAR_SUBST=""
+VAR_SUBST="$VAR_SUBST;s:@@DEVICE_NAME_DOOR_H@@:$(read_key $1 tango_door_h_devicename):"
+VAR_SUBST="$VAR_SUBST;s:@@DEVICE_NAME_DOOR_V@@:$(read_key $1 tango_door_v_devicename):"
+VAR_SUBST="$VAR_SUBST;s:@@DEVICE_NAME_MACRO@@:$(read_key $1 tango_macro_devicename):"
+VAR_SUBST="$VAR_SUBST;s:@@INSTANCE@@:$(read_key $1 tango_macroserver_instance):"
+VAR_SUBST="$VAR_SUBST;s:@@DOOR_PYTHONPATH@@:$MBF_HOME/tango/macros:"
+VAR_SUBST="$VAR_SUBST;s:@@DOOR_MACROPATH@@:$MBF_HOME/tango/macros\",\\\\ \n\"$(read_key $1 tango_macroserver_sardana_path):"
+sed "$VAR_SUBST" MacroServer_template.res
