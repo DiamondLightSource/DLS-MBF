@@ -3,7 +3,7 @@
 MACHARCH=`/csadmin/common/scripts/get_os`
 
 export PATH=$PATH:/opt/dserver/epics/base-3.14.12.7/bin/linux-x86_64
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/dserver/epics/base-3.14.12.7/lib/linux-x86_64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/dserver/epics/base-3.14.12.7/lib/linux-x86_64
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/dserver/epics/pythonIoc/lib/linux-x86_64
 export PYTHONPATH=$PYTHONPATH:/opt/dserver/epics/cothread/dist/cothread-2.14-py2.7-linux-x86_64.egg
 export PYTHONPATH=$PYTHONPATH:/opt/dserver/epics/epicsdbbuilder
