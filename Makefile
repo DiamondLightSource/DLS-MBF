@@ -84,10 +84,12 @@ epics/configure/RELEASE: CONFIG
 	echo EPICS_DEVICE = $(EPICS_DEVICE) >>$@
 	echo EPICS_BASE = $(EPICS_BASE) >>$@
 
+clean-epics/configure/RELEASE:
+	rm -f epics/configure/RELEASE
+
 # For the clean-epics target we need to manage the built configure/RELEASE file
 # as otherwise the EPICS build script becomes confused.
-clean-epics:
-	touch epics/configure/RELEASE
+clean-epics: clean-epics/configure/RELEASE epics/configure/RELEASE
 	make -C epics clean uninstall
 	rm -f epics/configure/RELEASE
 .PHONY: clean-epics
