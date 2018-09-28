@@ -39,8 +39,6 @@ public class DACSetupPanel extends javax.swing.JFrame {
 
     try {
       
-      NumberScalar delay = (NumberScalar)attList.add(devName+"/DAC_FILTER_DELAY_S");
-      delayEditor.setModel(delay);
       NumberScalar outputDelay = (NumberScalar)attList.add(devName+"/DAC_DELAY_S");
       outputDelayEditor.setModel(outputDelay);
       EnumScalar outputEnable = (EnumScalar)attList.add(devName+"/DAC_ENABLE_S");
@@ -89,8 +87,6 @@ public class DACSetupPanel extends javax.swing.JFrame {
     java.awt.GridBagConstraints gridBagConstraints;
 
     paramPanel = new javax.swing.JPanel();
-    label1 = new fr.esrf.tangoatk.widget.util.JSmoothLabel();
-    delayEditor = new fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor();
     label2 = new fr.esrf.tangoatk.widget.util.JSmoothLabel();
     outputDelayEditor = new fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor();
     label4 = new fr.esrf.tangoatk.widget.util.JSmoothLabel();
@@ -110,25 +106,12 @@ public class DACSetupPanel extends javax.swing.JFrame {
 
     paramPanel.setLayout(new java.awt.GridBagLayout());
 
-    label1.setHorizontalAlignment(0);
-    label1.setOpaque(false);
-    label1.setText("Filter Delay");
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
-    paramPanel.add(label1, gridBagConstraints);
-
-    delayEditor.setOpaque(false);
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    paramPanel.add(delayEditor, gridBagConstraints);
-
     label2.setHorizontalAlignment(0);
     label2.setOpaque(false);
     label2.setText("Output delay");
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 1;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
     paramPanel.add(label2, gridBagConstraints);
@@ -136,7 +119,7 @@ public class DACSetupPanel extends javax.swing.JFrame {
     outputDelayEditor.setOpaque(false);
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 1;
-    gridBagConstraints.gridy = 1;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     paramPanel.add(outputDelayEditor, gridBagConstraints);
 
@@ -144,10 +127,14 @@ public class DACSetupPanel extends javax.swing.JFrame {
     label4.setOpaque(false);
     label4.setText("Output enable");
     gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 2;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
     paramPanel.add(label4, gridBagConstraints);
     gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 3;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
     paramPanel.add(outputEnableComboEditor, gridBagConstraints);
@@ -264,13 +251,11 @@ public class DACSetupPanel extends javax.swing.JFrame {
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel btnPanel;
   private javax.swing.JButton chartButton;
-  private fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor delayEditor;
   private javax.swing.JButton dismissButton;
   private fr.esrf.tangoatk.widget.attribute.EnumScalarComboEditor dramInputComboEditor;
   private javax.swing.JPanel filterPanel;
   private fr.esrf.tangoatk.widget.attribute.NumberSpectrumViewer filterViewer;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel jSmoothLabel4;
-  private fr.esrf.tangoatk.widget.util.JSmoothLabel label1;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel label2;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel label4;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel label5;

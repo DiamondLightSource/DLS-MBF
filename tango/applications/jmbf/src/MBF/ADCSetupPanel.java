@@ -45,8 +45,6 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
 
     try {
       
-      NumberScalar delay = (NumberScalar)attList.add(devName+"/ADC_FILTER_DELAY_S");
-      delayEditor.setModel(delay);
       NumberScalar overflow = (NumberScalar)attList.add(devName+"/ADC_OVF_LIMIT_S");
       overflowEditor.setModel(overflow);
       NumberScalar minmax = (NumberScalar)attList.add(devName+"/ADC_EVENT_LIMIT_S");
@@ -100,8 +98,6 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     java.awt.GridBagConstraints gridBagConstraints;
 
     paramPanel = new javax.swing.JPanel();
-    label1 = new fr.esrf.tangoatk.widget.util.JSmoothLabel();
-    delayEditor = new fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor();
     label2 = new fr.esrf.tangoatk.widget.util.JSmoothLabel();
     overflowEditor = new fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor();
     label3 = new fr.esrf.tangoatk.widget.util.JSmoothLabel();
@@ -125,25 +121,12 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
 
     paramPanel.setLayout(new java.awt.GridBagLayout());
 
-    label1.setHorizontalAlignment(0);
-    label1.setOpaque(false);
-    label1.setText("Filter Delay");
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
-    paramPanel.add(label1, gridBagConstraints);
-
-    delayEditor.setOpaque(false);
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    paramPanel.add(delayEditor, gridBagConstraints);
-
     label2.setHorizontalAlignment(0);
     label2.setOpaque(false);
     label2.setText("Overflow threshold");
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 1;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
     paramPanel.add(label2, gridBagConstraints);
@@ -151,7 +134,7 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     overflowEditor.setOpaque(false);
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 1;
-    gridBagConstraints.gridy = 1;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     paramPanel.add(overflowEditor, gridBagConstraints);
 
@@ -160,7 +143,7 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     label3.setText("Min/Max event");
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 3;
+    gridBagConstraints.gridy = 2;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
     paramPanel.add(label3, gridBagConstraints);
@@ -168,7 +151,7 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     minmaxEditor.setOpaque(false);
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 1;
-    gridBagConstraints.gridy = 2;
+    gridBagConstraints.gridy = 1;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     paramPanel.add(minmaxEditor, gridBagConstraints);
 
@@ -176,10 +159,14 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     label4.setOpaque(false);
     label4.setText("Loopback");
     gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 2;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
     paramPanel.add(label4, gridBagConstraints);
     gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 3;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
     paramPanel.add(loopbackComboEditor, gridBagConstraints);
@@ -219,7 +206,7 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     statusViewer.setText("-----");
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 1;
-    gridBagConstraints.gridy = 4;
+    gridBagConstraints.gridy = 3;
     gridBagConstraints.gridwidth = 3;
     gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
     gridBagConstraints.ipadx = 10;
@@ -232,7 +219,7 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     jSmoothLabel4.setText("Status");
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 4;
+    gridBagConstraints.gridy = 3;
     gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
     gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
     paramPanel.add(jSmoothLabel4, gridBagConstraints);
@@ -254,7 +241,7 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
 
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 1;
-    gridBagConstraints.gridy = 3;
+    gridBagConstraints.gridy = 2;
     gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
     gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
     gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
@@ -265,7 +252,7 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
     label7.setText("Min/Max threshold");
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 2;
+    gridBagConstraints.gridy = 1;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
     paramPanel.add(label7, gridBagConstraints);
@@ -329,14 +316,12 @@ public class ADCSetupPanel extends javax.swing.JFrame implements IEnumScalarList
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel btnPanel;
   private javax.swing.JButton chartButton;
-  private fr.esrf.tangoatk.widget.attribute.NumberScalarWheelEditor delayEditor;
   private javax.swing.JButton dismissButton;
   private fr.esrf.tangoatk.widget.attribute.EnumScalarComboEditor dramInputComboEditor;
   private javax.swing.JPanel eventPanel;
   private javax.swing.JPanel filterPanel;
   private fr.esrf.tangoatk.widget.attribute.NumberSpectrumViewer filterViewer;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel jSmoothLabel4;
-  private fr.esrf.tangoatk.widget.util.JSmoothLabel label1;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel label2;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel label3;
   private fr.esrf.tangoatk.widget.util.JSmoothLabel label4;
