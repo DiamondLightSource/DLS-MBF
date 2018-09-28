@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="MBFControl" pogoRevision="9.6">
-    <description description="A high level class to control MBF startup, configuration sequence and configuration file" title="MBFControl" sourcePath="/mntdirect/_segfs/tango/cppserver/machine/diagnostic/MBF/tango" language="Cpp" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="Copyright (C): 2018&#xA;               European Synchrotron Radiation Facility&#xA;               BP 220, Grenoble 38043&#xA;               France" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A high level class to control MBF startup, configuration sequence and configuration file" title="MBFControl" sourcePath="/mntdirect/_segfs/tango/cppserver/machine/diagnostic/MBF/tango/servers/MBFControl" language="Cpp" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="Copyright (C): 2018&#xA;               European Synchrotron Radiation Facility&#xA;               BP 220, Grenoble 38043&#xA;               France" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <identification contact="at esrf.fr - pons" author="pons" emailDomain="esrf.fr" classFamily="AcceleratorComponents" siteSpecific="ESRF" platform="Unix Like" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
@@ -116,6 +116,15 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <commands name="Reset" description="Abort sequence" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="ReLoad" description="Reload current parameter on the hardware" execMethod="re_load" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>

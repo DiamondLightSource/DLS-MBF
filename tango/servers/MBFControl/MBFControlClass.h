@@ -501,6 +501,29 @@ public:
 	{return (static_cast<MBFControl *>(dev))->is_Reset_allowed(any);}
 };
 
+//	Command ReLoad class definition
+class ReLoadClass : public Tango::Command
+{
+public:
+	ReLoadClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	ReLoadClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~ReLoadClass() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<MBFControl *>(dev))->is_ReLoad_allowed(any);}
+};
+
 
 /**
  *	The MBFControlClass singleton definition

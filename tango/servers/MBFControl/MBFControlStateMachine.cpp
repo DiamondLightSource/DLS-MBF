@@ -488,6 +488,21 @@ bool MBFControl::is_Reset_allowed(TANGO_UNUSED(const CORBA::Any &any))
 	return true;
 }
 
+//--------------------------------------------------------
+/**
+ *	Method      : MBFControl::is_ReLoad_allowed()
+ *	Description : Execution allowed for ReLoad attribute
+ */
+//--------------------------------------------------------
+bool MBFControl::is_ReLoad_allowed(TANGO_UNUSED(const CORBA::Any &any))
+{
+	//	Not any excluded states for ReLoad command.
+	/*----- PROTECTED REGION ID(MBFControl::ReLoadStateAllowed) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::ReLoadStateAllowed
+	return true;
+}
+
 
 /*----- PROTECTED REGION ID(MBFControl::MBFControlStateAllowed.AdditionalMethods) ENABLED START -----*/
 

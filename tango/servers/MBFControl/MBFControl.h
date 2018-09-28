@@ -426,6 +426,13 @@ public:
 	 */
 	virtual void reset();
 	virtual bool is_Reset_allowed(const CORBA::Any &any);
+	/**
+	 *	Command ReLoad related method
+	 *	Description: Reload current parameter on the hardware
+	 *
+	 */
+	virtual void re_load();
+	virtual bool is_ReLoad_allowed(const CORBA::Any &any);
 
 
 	//--------------------------------------------------------
