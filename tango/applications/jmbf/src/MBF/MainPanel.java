@@ -35,7 +35,7 @@ import javax.swing.JOptionPane;
  */
 public class MainPanel extends javax.swing.JFrame implements SynopticProgressListener {
 
-  final static String APP_RELEASE = "1.1";
+  final static String APP_RELEASE = "1.2";
 
   static int NB_BUCKET;
   static String mfdbkHDevName;
@@ -119,7 +119,12 @@ public class MainPanel extends javax.swing.JFrame implements SynopticProgressLis
       theSynoptic.setErrorHistoryWindow(errWin);
       theSynoptic.setToolTipMode(TangoSynopticHandler.TOOL_TIP_NAME);
       theSynoptic.setAutoZoom(true);
-      theSynoptic.loadSynopticFromStream(inStrReader);
+      theSynoptic.addMetaName("mfdbkHDevName",mfdbkHDevName);
+      theSynoptic.addMetaName("mfdbkVDevName",mfdbkVDevName);
+      theSynoptic.addMetaName("mfdbkHEpicsDevName",mfdbkHEpicsDevName);
+      theSynoptic.addMetaName("mfdbkVEpicsDevName",mfdbkVEpicsDevName);
+      theSynoptic.addMetaName("mfdbkGEpicsDevName",mfdbkGEpicsDevName);
+      theSynoptic.loadSynopticFromStream(inStrReader);      
     } catch (IOException ioex) {
       splash.setVisible(false);
       JOptionPane.showMessageDialog(

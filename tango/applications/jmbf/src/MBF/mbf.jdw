@@ -115,7 +115,7 @@ JDFile v11 {
     summit:917,42,981,66
     origin:910,53
     lineWidth:0
-    name:"sr/d-mfdbk/utca-global/STA_CLOCK"
+    name:"mfdbkGEpicsDevName/STA_CLOCK"
     extensions:{
       alarmEnabled:"false"
       validBackground:"230,230,230"
@@ -155,7 +155,7 @@ JDFile v11 {
     origin:432,94
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/ADC_LOOPBACK_S"
+    name:"mfdbkHEpicsDevName/ADC_LOOPBACK_S"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -169,7 +169,7 @@ JDFile v11 {
     origin:486,94
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/ADC_INP_OVF"
+    name:"mfdbkHEpicsDevName/ADC_INP_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -183,7 +183,7 @@ JDFile v11 {
     origin:535,94
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/ADC_FIR_OVF"
+    name:"mfdbkHEpicsDevName/ADC_FIR_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -205,7 +205,7 @@ JDFile v11 {
     origin:603,93
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/FIR_OVF"
+    name:"mfdbkHEpicsDevName/FIR_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -219,7 +219,7 @@ JDFile v11 {
     origin:664,94
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/DAC_BUN_OVF"
+    name:"mfdbkHEpicsDevName/DAC_BUN_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -233,7 +233,7 @@ JDFile v11 {
     origin:714,94
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/DAC_MUX_OVF"
+    name:"mfdbkHEpicsDevName/DAC_MUX_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -247,7 +247,7 @@ JDFile v11 {
     origin:760,94
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/DAC_FIR_OVF"
+    name:"mfdbkHEpicsDevName/DAC_FIR_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -289,7 +289,7 @@ JDFile v11 {
     origin:819,94
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-horizontal/DAC_ENABLE_S"
+    name:"mfdbkHEpicsDevName/DAC_ENABLE_S"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -309,7 +309,7 @@ JDFile v11 {
     origin:431,248
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/ADC_LOOPBACK_S"
+    name:"mfdbkVEpicsDevName/ADC_LOOPBACK_S"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -323,7 +323,7 @@ JDFile v11 {
     origin:486,248
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/ADC_INP_OVF"
+    name:"mfdbkVEpicsDevName/ADC_INP_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -337,7 +337,7 @@ JDFile v11 {
     origin:533,248
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/ADC_FIR_OVF"
+    name:"mfdbkVEpicsDevName/ADC_FIR_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -351,7 +351,7 @@ JDFile v11 {
     origin:603,247
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/FIR_OVF"
+    name:"mfdbkVEpicsDevName/FIR_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -365,7 +365,7 @@ JDFile v11 {
     origin:662,248
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/DAC_BUN_OVF"
+    name:"mfdbkVEpicsDevName/DAC_BUN_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -379,7 +379,7 @@ JDFile v11 {
     origin:712,248
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/DAC_MUX_OVF"
+    name:"mfdbkVEpicsDevName/DAC_MUX_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -393,7 +393,7 @@ JDFile v11 {
     origin:758,248
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/DAC_FIR_OVF"
+    name:"mfdbkVEpicsDevName/DAC_FIR_OVF"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -407,7 +407,7 @@ JDFile v11 {
     origin:817,248
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/utca-vertical/DAC_ENABLE_S"
+    name:"mfdbkVEpicsDevName/DAC_ENABLE_S"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -421,7 +421,7 @@ JDFile v11 {
     origin:517,120
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-horizontal/ADC_MMS_STD_MEAN_DB"
+    name:"mfdbkHEpicsDevName/ADC_MMS_STD_MEAN_DB"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -453,7 +453,7 @@ JDFile v11 {
     origin:766,119
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-horizontal/DAC_MMS_STD_MEAN_DB"
+    name:"mfdbkHEpicsDevName/DAC_MMS_STD_MEAN_DB"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -477,7 +477,7 @@ JDFile v11 {
     origin:516,273
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-vertical/ADC_MMS_STD_MEAN_DB"
+    name:"mfdbkVEpicsDevName/ADC_MMS_STD_MEAN_DB"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -501,7 +501,7 @@ JDFile v11 {
     origin:763,273
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-vertical/DAC_MMS_STD_MEAN_DB"
+    name:"mfdbkVEpicsDevName/DAC_MMS_STD_MEAN_DB"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -516,7 +516,7 @@ JDFile v11 {
     summit:917,42,981,66
     origin:943,62
     fillStyle:1
-    name:"sr/d-mfdbk/utca-global/STA_CLOCK"
+    name:"mfdbkGEpicsDevName/STA_CLOCK"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -547,7 +547,7 @@ JDFile v11 {
     summit:917,77,981,101
     origin:931,89
     fillStyle:1
-    name:"sr/d-mfdbk/utca-global/STA_VCO"
+    name:"mfdbkGEpicsDevName/STA_VCO"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -560,7 +560,7 @@ JDFile v11 {
     summit:917,77,981,101
     origin:939,97
     lineWidth:0
-    name:"sr/d-mfdbk/utca-global/STA_VCO"
+    name:"mfdbkGEpicsDevName/STA_VCO"
     extensions:{
       alarmEnabled:"false"
       validBackground:"230,230,230"
@@ -581,7 +581,7 @@ JDFile v11 {
     summit:917,113,981,137
     origin:931,125
     fillStyle:1
-    name:"sr/d-mfdbk/utca-global/STA_VCXO"
+    name:"mfdbkGEpicsDevName/STA_VCXO"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -594,7 +594,7 @@ JDFile v11 {
     summit:917,113,981,137
     origin:931,125
     lineWidth:0
-    name:"sr/d-mfdbk/utca-global/STA_VCXO"
+    name:"mfdbkGEpicsDevName/STA_VCXO"
     extensions:{
       alarmEnabled:"false"
       validBackground:"230,230,230"
@@ -618,7 +618,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/FeedbackGain"
+    name:"mfdbkHDevName/FeedbackGain"
     className:"fr.esrf.tangoatk.widget.attribute.EnumScalarComboEditor"
     font:"Dialog",0,11
   }
@@ -637,7 +637,7 @@ JDFile v11 {
     background:205,205,205
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/FeedbackPhase"
+    name:"mfdbkHDevName/FeedbackPhase"
     extensions:{
       arrowColor:"200,200,200"
       arrowSelColor:"156,154,206"
@@ -650,7 +650,7 @@ JDFile v11 {
     origin:279,57
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-horizontal/BUN_MODE"
+    name:"mfdbkHEpicsDevName/BUN_MODE"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -669,7 +669,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/on"
+    name:"mfdbkHDevName/on"
     extensions:{
       text:"On"
     }
@@ -684,7 +684,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/off"
+    name:"mfdbkHDevName/off"
     extensions:{
       text:"Off"
     }
@@ -708,7 +708,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/FeedbackGain"
+    name:"mfdbkVDevName/FeedbackGain"
     className:"fr.esrf.tangoatk.widget.attribute.EnumScalarComboEditor"
     font:"Dialog",0,11
   }
@@ -727,7 +727,7 @@ JDFile v11 {
     background:205,205,205
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/FeedbackPhase"
+    name:"mfdbkVDevName/FeedbackPhase"
     extensions:{
       arrowColor:"200,200,200"
       arrowSelColor:"156,154,206"
@@ -740,7 +740,7 @@ JDFile v11 {
     origin:280,217
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-vertical/BUN_MODE"
+    name:"mfdbkVEpicsDevName/BUN_MODE"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -759,7 +759,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/on"
+    name:"mfdbkVDevName/on"
     extensions:{
       text:"On"
     }
@@ -774,7 +774,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/off"
+    name:"mfdbkVDevName/off"
     extensions:{
       text:"Off"
     }
@@ -844,7 +844,7 @@ JDFile v11 {
     origin:134,142
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-horizontal/SEQ_MODE"
+    name:"mfdbkHEpicsDevName/SEQ_MODE"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -861,7 +861,7 @@ JDFile v11 {
     origin:240,301
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/utca-vertical/SEQ_MODE"
+    name:"mfdbkVEpicsDevName/SEQ_MODE"
     extensions:{
       unitVisible:"true"
       userFormat:""
@@ -879,7 +879,7 @@ JDFile v11 {
     background:153,153,153
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/_horizontal/state"
+    name:"mfdbkHDevName/state"
     extensions:{
       className:"atkpanel.MainPanel"
     }
@@ -890,7 +890,7 @@ JDFile v11 {
     background:153,153,153
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/_vertical/state"
+    name:"mfdbkVDevName/state"
     extensions:{
       className:"atkpanel.MainPanel"
     }
@@ -902,7 +902,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/mode"
+    name:"mfdbkHDevName/mode"
     className:"fr.esrf.tangoatk.widget.attribute.EnumScalarComboEditor"
     font:"Dialog",0,11
   }
@@ -913,7 +913,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:1
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/mode"
+    name:"mfdbkVDevName/mode"
     className:"fr.esrf.tangoatk.widget.attribute.EnumScalarComboEditor"
     font:"Dialog",0,11
   }
@@ -966,7 +966,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/SweepOn"
+    name:"mfdbkHDevName/SweepOn"
     extensions:{
       text:"On"
     }
@@ -981,7 +981,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/SweepOff"
+    name:"mfdbkHDevName/SweepOff"
     extensions:{
       text:"Off"
     }
@@ -995,7 +995,7 @@ JDFile v11 {
     background:153,153,153
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/_horizontal/SweepState"
+    name:"mfdbkHDevName/SweepState"
     extensions:{
       className:"atkpanel.MainPanel"
     }
@@ -1007,7 +1007,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/SweepOn"
+    name:"mfdbkVDevName/SweepOn"
     extensions:{
       text:"On"
     }
@@ -1022,7 +1022,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/SweepOff"
+    name:"mfdbkVDevName/SweepOff"
     extensions:{
       text:"Off"
     }
@@ -1036,7 +1036,7 @@ JDFile v11 {
     background:153,153,153
     fillStyle:1
     initvalue:-1
-    name:"sr/d-mfdbk/_vertical/SweepState"
+    name:"mfdbkVDevName/SweepState"
     extensions:{
       className:"atkpanel.MainPanel"
     }
@@ -1084,7 +1084,7 @@ JDFile v11 {
     summit:917,149,981,173
     origin:931,161
     fillStyle:1
-    name:"sr/d-mfdbk/utca-global/DLY_TURN_STATUS"
+    name:"mfdbkGEpicsDevName/DLY_TURN_STATUS"
     backgroundmapper:{
       mapping_type:2
       mode:0
@@ -1098,7 +1098,7 @@ JDFile v11 {
     summit:917,149,981,173
     origin:931,161
     lineWidth:0
-    name:"sr/d-mfdbk/utca-global/DLY_TURN_STATUS"
+    name:"mfdbkGEpicsDevName/DLY_TURN_STATUS"
     extensions:{
       alarmEnabled:"false"
       validBackground:"230,230,230"
@@ -1113,7 +1113,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_horizontal/reload"
+    name:"mfdbkHDevName/reload"
     extensions:{
       text:"Reset"
     }
@@ -1128,7 +1128,7 @@ JDFile v11 {
     background:238,238,238
     fillStyle:11
     lineWidth:0
-    name:"sr/d-mfdbk/_vertical/reload"
+    name:"mfdbkVDevName/reload"
     extensions:{
       text:"Reset"
     }
