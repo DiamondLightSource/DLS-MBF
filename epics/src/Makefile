@@ -49,7 +49,7 @@ mbf_DBD += base.dbd
 mbf_DBD += epics_device.dbd
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
-mbf_SRCS += mbf_registerRecordDeviceDriver.c
+mbf_SRCS += mbf_registerRecordDeviceDriver.cpp
 mbf_SRCS += main.c              # Entry point and initialisation
 
 mbf_SRCS += common.c            # Miscellaneous shared helper functions
