@@ -92,11 +92,12 @@ def gen_cleaning_pattern(sr_mode, bunch_count):
     elif sr_mode == 'Hybrid':
         gap_l = 147
         gap_r = 123
+        trains_l = 9
         clean_pattern[1:1+gap_l] = 1
         clean_pattern[-gap_r:] = -1
-        start = gap_l+1+8
+        start = gap_l+trains_l+1
         for ii in range(23):
-            clean_pattern[start+ii*31:start+ii*31+23] = (2*(ii%2)-1)
+            clean_pattern[start+ii*31:start+ii*31+(31-trains_l)] = (2*(ii%2)-1)
     elif sr_mode == 'Uniform':
         pass
     else:

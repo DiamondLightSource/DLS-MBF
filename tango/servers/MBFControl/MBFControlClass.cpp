@@ -317,6 +317,24 @@ CORBA::Any *ResetClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CO
 	return new CORBA::Any();
 }
 
+//--------------------------------------------------------
+/**
+ * method : 		ReLoadClass::execute()
+ * description : 	method to trigger the execution of the command.
+ *
+ * @param	device	The device on which the command must be executed
+ * @param	in_any	The command input data
+ *
+ *	returns The command output data (packed in the Any object)
+ */
+//--------------------------------------------------------
+CORBA::Any *ReLoadClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA::Any &in_any))
+{
+	cout2 << "ReLoadClass::execute(): arrived" << endl;
+	((static_cast<MBFControl *>(device))->re_load());
+	return new CORBA::Any();
+}
+
 
 //===================================================================
 //	Properties management
@@ -1081,6 +1099,15 @@ void MBFControlClass::command_factory()
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pResetCmd);
+
+	//	Command ReLoad
+	ReLoadClass	*pReLoadCmd =
+		new ReLoadClass("ReLoad",
+			Tango::DEV_VOID, Tango::DEV_VOID,
+			"",
+			"",
+			Tango::OPERATOR);
+	command_list.push_back(pReLoadCmd);
 
 	/*----- PROTECTED REGION ID(MBFControlClass::command_factory_after) ENABLED START -----*/
 	

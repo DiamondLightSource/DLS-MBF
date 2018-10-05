@@ -35,13 +35,14 @@ import javax.swing.JOptionPane;
  */
 public class MainPanel extends javax.swing.JFrame implements SynopticProgressListener {
 
-  final static String APP_RELEASE = "1.0";
-  final static int NB_BUCKET=992;
-  final static String mfdbkHDevName = "sr/d-mfdbk/_horizontal";
-  final static String mfdbkVDevName = "sr/d-mfdbk/_vertical";
-  final static String mfdbkHEpicsDevName = "sr/d-mfdbk/utca-horizontal";
-  final static String mfdbkVEpicsDevName = "sr/d-mfdbk/utca-vertical";
-  final static String mfdbkGEpicsDevName = "sr/d-mfdbk/utca-global";
+  final static String APP_RELEASE = "1.2";
+
+  static int NB_BUCKET;
+  static String mfdbkHDevName;
+  static String mfdbkVDevName;
+  static String mfdbkHEpicsDevName;
+  static String mfdbkVEpicsDevName;
+  static String mfdbkGEpicsDevName;
   
   private AttributeList attList;
   public static ErrorHistory errWin;
@@ -53,7 +54,17 @@ public class MainPanel extends javax.swing.JFrame implements SynopticProgressLis
   /**
    * Creates new form MainPanel
    */
-  public MainPanel(boolean runningFromShell) {
+  public MainPanel(boolean runningFromShell,
+          String hName,String vName,
+          String epicsHNane,String epicsVNane,String epicsGNane,
+          int nbBucket) {
+    
+    NB_BUCKET = nbBucket;
+    mfdbkHDevName = hName;
+    mfdbkVDevName = vName;
+    mfdbkHEpicsDevName = epicsHNane;
+    mfdbkVEpicsDevName = epicsVNane;
+    mfdbkGEpicsDevName = epicsGNane;    
     
     this.runningFromShell = runningFromShell;
     
@@ -108,7 +119,12 @@ public class MainPanel extends javax.swing.JFrame implements SynopticProgressLis
       theSynoptic.setErrorHistoryWindow(errWin);
       theSynoptic.setToolTipMode(TangoSynopticHandler.TOOL_TIP_NAME);
       theSynoptic.setAutoZoom(true);
-      theSynoptic.loadSynopticFromStream(inStrReader);
+      theSynoptic.addMetaName("mfdbkHDevName",mfdbkHDevName);
+      theSynoptic.addMetaName("mfdbkVDevName",mfdbkVDevName);
+      theSynoptic.addMetaName("mfdbkHEpicsDevName",mfdbkHEpicsDevName);
+      theSynoptic.addMetaName("mfdbkVEpicsDevName",mfdbkVEpicsDevName);
+      theSynoptic.addMetaName("mfdbkGEpicsDevName",mfdbkGEpicsDevName);
+      theSynoptic.loadSynopticFromStream(inStrReader);      
     } catch (IOException ioex) {
       splash.setVisible(false);
       JOptionPane.showMessageDialog(
@@ -439,9 +455,27 @@ public class MainPanel extends javax.swing.JFrame implements SynopticProgressLis
    * @param args the command line arguments
    */
   public static void main(String args[]) {
+    
+    if( args.length != 6 ) {
+      
+      System.out.println("Usage: jmbf devH devV bridgeH bridgeV bridgeG bucketNb");
+      System.out.println("  devH: Name of the horizontal MBFControl device");
+      System.out.println("  devV: Name of the vertical MBFControl device");
+      System.out.println("  bridgeH: Name of the epics gateway horizontal device");
+      System.out.println("  bridgeV: Name of the epics gateway vertical device");
+      System.out.println("  bridgeG: Name of the epics gateway global device");
+      System.out.println("  bucketNb: Bucket number of the storage ring");
+      System.exit(0);
+      
+    }
 
     /* Create and display the form */
-    new MainPanel(true).setVisible(true);
+    try {
+      int nb = Integer.parseInt(args[5]);    
+      new MainPanel(true,args[0],args[1],args[2],args[3],args[4],nb).setVisible(true);
+    } catch( NumberFormatException e) {
+      System.out.println("Error: bucketNb " + e.getMessage());
+    }
         
   }
 

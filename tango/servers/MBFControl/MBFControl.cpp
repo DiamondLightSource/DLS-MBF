@@ -71,6 +71,7 @@
 //  SweepOff                  |  sweep_off
 //  Clean                     |  clean
 //  Reset                     |  reset
+//  ReLoad                    |  re_load
 //================================================================
 
 //================================================================
@@ -1019,32 +1020,49 @@ Tango::DevState MBFControl::dev_state()
 		Tango::DevState door_state = Tango::UNKNOWN;
 
 		Tango::DeviceAttribute attr_data;
-		attr_data = doorDS->read_attribute ("State");
+		attr_data = doorDS->read_attribute("State");
 		attr_data >> door_state;
 
-		switch (door_state)
-		{
+		attr_data = doorDS->read_attribute("Error");
+		vector<string> errors;
+		try {
+			attr_data >> errors;
+		} catch (Tango::DevFailed &e) {
+		}
 
-      case Tango::ON:
-        status += "Ready to execute macro";
-        break;
+		if(errors.size()>0) {
 
-			case Tango::RUNNING:
-				argout = Tango::MOVING;
-				status += "Executing macro: " + macroName;
-				break;
+			// Macro error
+			argout = Tango::DISABLE;
+			status += "Macro Error: " + macroName;
 
-			case Tango::ALARM:
-				status += "Macro aborted: " + macroName;
-				break;
+		} else {
 
-			case Tango::STANDBY:
-				status += "Macro paused: " + macroName;
-				break;
+			switch (door_state) {
 
-			default:
-				status += "Unexpected macro state: " + string(Tango::DevStateName[door_state]);
-				break;
+				case Tango::ON:
+					status += "Ready to execute macro";
+					break;
+
+				case Tango::RUNNING:
+					argout = Tango::MOVING;
+					status += "Executing macro: " + macroName;
+					break;
+
+				case Tango::ALARM:
+					argout = Tango::DISABLE;
+					status += "Macro aborted: " + macroName;
+					break;
+
+				case Tango::STANDBY:
+					status += "Macro paused: " + macroName;
+					break;
+
+				default:
+					status += "Unexpected macro state: " + string(Tango::DevStateName[door_state]);
+					break;
+			}
+
 		}
 
 	}	catch (const Tango::DevFailed &e)	{
@@ -1413,6 +1431,25 @@ void MBFControl::reset()
 }
 //--------------------------------------------------------
 /**
+ *	Command ReLoad related method
+ *	Description: Reload current parameter on the hardware
+ *
+ */
+//--------------------------------------------------------
+void MBFControl::re_load()
+{
+	DEBUG_STREAM << "MBFControl::ReLoad()  - " << device_name << endl;
+	/*----- PROTECTED REGION ID(MBFControl::re_load) ENABLED START -----*/
+
+	if( get_state()==Tango::MOVING )
+		RAISE_EXCEPTION("Cannot read config file while moving.");
+	
+	run_macro("set_param","All");
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::re_load
+}
+//--------------------------------------------------------
+/**
  *	Method      : MBFControl::add_dynamic_commands()
  *	Description : Create the dynamic commands if any
  *                for specified device.
@@ -1460,6 +1497,8 @@ bool MBFControl::is_srv_starting() {
 
 void MBFControl::run_macro(string command,string att) {
 
+	macroName = "mbf_control("+command+")";
+
 	Tango::DevState doorState;
 	doorDS->read_attribute ("State") >> doorState;
 	if(doorState==Tango::MOVING) {
@@ -1496,7 +1535,6 @@ void MBFControl::run_macro(string command,string att) {
 	Tango::DeviceData indat;
 	indat << v_in;
 	doorDS->command_inout("RunMacro",indat);
-	macroName = "mbf_control("+command+")";
 
 }
 

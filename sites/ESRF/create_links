@@ -16,4 +16,3 @@ mkdir -p ../autosave/SR-TFIT
 mkdir -p ../autosave/T-TMBF
 mkdir -p ../autosave/T-TFIT
 ln -sf ../$MBF_DIR/sites/ESRF/cron_daily_backup.sh ../autosave/cron_daily_backup.sh
-ln -sf ../$MBF_DIR/sites/ESRF/cron_daily_backup.sh ../autosave/cron_daily_backup.sh
