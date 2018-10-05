@@ -35,7 +35,7 @@ import javax.swing.JOptionPane;
  */
 public class MainPanel extends javax.swing.JFrame implements SynopticProgressListener {
 
-  final static String APP_RELEASE = "1.2";
+  final static String APP_RELEASE = "1.3";
 
   static int NB_BUCKET;
   static String mfdbkHDevName;
