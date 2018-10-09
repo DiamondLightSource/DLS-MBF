@@ -1,5 +1,3 @@
-# Place-holder for building Tango
-
 MBF_TOP = ../../..
 include $(MBF_TOP)/Makefile.common
 

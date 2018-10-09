@@ -1,12 +1,14 @@
 from PyTango import *
-from numpy import *
-from time import *
 
+DAC_OUT_OFF = 0
+DAC_OUT_FIR = 1
+DAC_OUT_NCO = 2
+DAC_OUT_SWEEP = 4
 
 mbfCtrl_d = {}
 Mbf_d = {}
 
-def get_mbfCtrl(mbfCtrlDevName):
+def get_device(mbfCtrlDevName):
     global mbfCtrl_d
     if mbfCtrlDevName not in mbfCtrl_d:
         mbfCtrl_d[mbfCtrlDevName] = DeviceProxy(mbfCtrlDevName)
@@ -32,22 +34,32 @@ class TangoMBF():
         self.bunch_count = self.mbfG.BUNCHES
         self.mbfDevName = mbfDevName
 
-    def get(pv):
+    def get(self, pv):
         pv = pv.replace(':', '_')
         return self.mbf.__getattr__(pv)
 
-    def put(self, pv, value):
+    def _put(self, mbf_dev, pv, value):
         pv_tango = pv.replace(':', '_')
-        att_config = self.mbf.get_attribute_config_ex(pv_tango)
-        if att_config[0].data_type == CmdArgType.DevUShort:
+        dev_name = mbf_dev.dev_name()
+        att_config = mbf_dev.get_attribute_config_ex(pv_tango)
+        if att_config[0].data_type in [CmdArgType.DevUShort,
+                CmdArgType.DevLong]:
             if type(value) is str:
-                att_properties = self.db.get_device_attribute_property(self.mbfDevName, pv_tango)
+                att_properties = self.db.get_device_attribute_property(
+                        dev_name, pv_tango)
                 if pv_tango in att_properties:
                     if 'EnumLabels' in att_properties[pv_tango]:
-                        value = list(att_properties[pv_tango]['EnumLabels']).index(value)
+                        value = list(att_properties[pv_tango]['EnumLabels'])\
+                            .index(value)
         elif att_config[0].data_type == CmdArgType.DevEnum:
             value = list(att_config[0].enum_labels).index(value)
-        self.mbf.__setattr__(pv_tango, value)
+        mbf_dev.__setattr__(pv_tango, value)
+
+    def put(self, pv, value):
+        self._put(self.mbf, pv, value)
+
+    def gput(self, pv, value):
+        self._put(self.mbfG, pv, value)
 
     def put_axes(self, pv, value):
         if self.lmbf_mode:
@@ -58,10 +70,6 @@ class TangoMBF():
         else:
             self.put(pv, value)
 
-    def _put(self, axis, pv, value):
-        pv = pv.replace(':', '_')
-        if axis is None:
-            self.mbfG.__setattr__(pv, value)
 
 def compute_filter_size(tune, N_TAPS):
     # Search for best filter size.  In this search we prefer shorter filters
@@ -75,31 +83,3 @@ def compute_filter_size(tune, N_TAPS):
                 best_error = error
                 filter = (cycles, length)
     return filter
-
-
-def gen_cleaning_pattern(sr_mode, bunch_count):
-    clean_pattern = zeros((bunch_count,), dtype=int)
-    if sr_mode == '7/8+1':
-        gap = 61
-        clean_pattern[1:1+gap] = 1
-        clean_pattern[-gap:] = -1
-    elif sr_mode == '16-bunch':
-        for ii in range(16):
-            clean_pattern[62*ii+1:62*(ii+1)] = (2*(ii%2)-1)
-    elif sr_mode == '4-bunch':
-        for ii in range(4):
-            clean_pattern[248*ii+1:248*(ii+1)] = (2*(ii%2)-1)
-    elif sr_mode == 'Hybrid':
-        gap_l = 147
-        gap_r = 123
-        trains_l = 9
-        clean_pattern[1:1+gap_l] = 1
-        clean_pattern[-gap_r:] = -1
-        start = gap_l+trains_l+1
-        for ii in range(23):
-            clean_pattern[start+ii*31:start+ii*31+(31-trains_l)] = (2*(ii%2)-1)
-    elif sr_mode == 'Uniform':
-        pass
-    else:
-        raise NameError('SR mode ' + sr_mode + ' invalid')
-    return clean_pattern
