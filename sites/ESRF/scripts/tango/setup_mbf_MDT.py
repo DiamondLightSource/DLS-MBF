@@ -6,25 +6,7 @@ from setup_mbf_common import *
 from setup_mbf_USM import MBF_HL as MBF_HL_USM
 from time import sleep
 
-# Configure MBF for MDT studies
-#  note: FIR 0 has to be correctly configured
 #  feedback_fine_gain act on sweep too
-
-# What we want:
-# -------------
-#  - when configured for MDT mode, everything works as in operation
-#       feedback, tune sweep
-#  - as soon as a measurement is started:
-#       stop possible sweep in progress
-#       change configuration: detectors, sweep range
-#       arm, trig, an wait the time required
-#       get data
-#       and put back configuration
-
-# instructions d'avant manger:
-# faire marcher le ON/OFF sur le sweep
-#manque soft trig enable + trig every 0.1 s
-#seq bank 1
 
 
 class Cleaning():
@@ -39,7 +21,7 @@ class Cleaning():
     def clean(self, output_fct):
         raise EnvironmentError("Error: cleaning not allowed in MDT mode")
 
-    def clean(self, output_fct):
+    def stop(self, output_fct):
         pass
 
 

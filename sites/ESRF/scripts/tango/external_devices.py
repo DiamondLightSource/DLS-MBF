@@ -1,6 +1,6 @@
 from PyTango import *
 
-def set_config(modei, mbfDevName):
+def set_config(mode, mbfDevName):
     # set PLL mode
     db = Database()
     d = {'pll_device': ''}

@@ -53,6 +53,9 @@ class Cleaning():
 
         sweep_bunch_enables = self.mbf_hl.gen_sweep_pattern()
         feedback_fine_gain = mbfCtrl.FeedbackFineGain
+        freq_min = self.freq_min
+        freq_max = self.freq_max
+        freq_sweeptime = self.freq_sweeptime
         modeList = mbfCtrl.ModeList
         mode = modeList[mbfCtrl.mode]
         self.mbf_hl.set_banks(mode, self.cleaning_fine_gain,
@@ -66,14 +69,14 @@ class Cleaning():
                 round(freq_sweeptime/dt)-1, endpoint=True)
 
         # Start NCO and sweep frequency
-        self.output("Cleaning in progress, sweep from {:.6f} to {:.6f}"
+        output_fct("Cleaning in progress, sweep from {:.6f} to {:.6f}"
                 .format(freq_min,freq_max))
         Mbf.put('NCO:FREQ_S', freq_list[0])
         sleep(dt)
         Mbf.put('NCO:ENABLE_S', 1)
         for freq in freq_list:
             Mbf.put('NCO:FREQ_S', freq)
-            self.output("Cleaning in progress, currently at %.6f" % (freq))
+            output_fct("Cleaning in progress, currently at %.6f" % (freq))
             sleep(dt)
 
         # Stop NCO
@@ -81,7 +84,7 @@ class Cleaning():
         # Rearm sequence for tune sweep
         Mbf.put('TRG:SEQ:ARM_S', 0)
 
-    def clean(self, output_fct):
+    def stop(self, output_fct):
         # Here we assume a cleaning is in progress, and we just have
         # to stop it
         #

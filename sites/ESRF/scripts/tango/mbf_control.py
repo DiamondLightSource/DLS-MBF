@@ -74,7 +74,7 @@ class mbf_control(Macro):
 
             elif command=="growdamp_end":
                 # attName holds sweep_state
-                mbf_hl.growdamp_end(attName ==' ON')
+                mbf_hl.growdamp_end(attName == 'ON')
 
             elif command=="set_param":
                 self.output("setting params for: %s" % mbfCtrlDevName)
