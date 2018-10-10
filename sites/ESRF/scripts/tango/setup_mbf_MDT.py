@@ -75,18 +75,37 @@ class MBF_HL(MBF_HL_USM):
         mbfGrowDamp = get_device(mbfGrowDampDevName)
         str_warning = ""
 
+        def get_attr(device, name, default_value):
+            try:
+                value = device.__getattr__(name)
+            except AttributeError:
+                value = default_value
+            return value
+
         # get measurement parameters from mbfGrowDamp
         tune = mbfGrowDamp.Tune%1
         mode_meas_max = mbfGrowDamp.mode_meas_max
-        grow_turns = mbfGrowDamp.grow_turns
+        turns_per_acq = mbfGrowDamp.turns_per_acq
+        grow_turns = get_attr(mbfGrowDamp, 'grow_turns', 1)
+        grow_acq_nb = get_attr(mbfGrowDamp, 'grow_acq_nb', 1)
         grow_gain = mbfGrowDamp.grow_gain
         grow_capture = mbfGrowDamp.grow_capture
         damp_acq_nb = mbfGrowDamp.damp_acq_nb
-        damp_acq_turns = mbfGrowDamp.damp_acq_turns
         damp_capture = mbfGrowDamp.damp_capture
         damp_feedback = mbfGrowDamp.damp_feedback
-        feedback_turns = mbfGrowDamp.feedback_turns
+        feedback_turns = get_attr(mbfGrowDamp, 'feedback_turns', 1)
+        feedback_acq_nb = get_attr(mbfGrowDamp, 'feedback_acq_nb', 1)
         feedback_capture = mbfGrowDamp.feedback_capture
+
+        if grow_capture == 0:
+            grow_dwell = grow_turns
+        else:
+            grow_dwell = turns_per_acq
+
+        if feedback_capture == 0:
+            feedback_dwell = feedback_turns
+        else:
+            feedback_dwell = turns_per_acq
 
         bunch_count = Mbf.bunch_count
         all_buckets = ones((bunch_count,), dtype=int)
@@ -122,12 +141,12 @@ class MBF_HL(MBF_HL_USM):
 
         # SEQ1: Excite a mode (grow)
         Mbf.put('SEQ:3:BANK_S', 0)
-        Mbf.put('SEQ:3:COUNT_S', 1)
+        Mbf.put('SEQ:3:COUNT_S', grow_acq_nb)
         Mbf.put('SEQ:3:START_FREQ_S', tune)
         Mbf.put('SEQ:3:END_FREQ_S', tune)
         Mbf.put('SEQ:3:CAPTURE_S', grow_capture)
         Mbf.put('SEQ:3:HOLDOFF_S', 0)
-        Mbf.put('SEQ:3:DWELL_S', grow_turns)
+        Mbf.put('SEQ:3:DWELL_S', grow_dwell)
         Mbf.put('SEQ:3:GAIN_S', grow_gain)
         Mbf.put('SEQ:3:ENWIN_S', 'Windowed')
         Mbf.put('SEQ:3:BLANK_S', 'Off')
@@ -141,7 +160,7 @@ class MBF_HL(MBF_HL_USM):
         Mbf.put('SEQ:2:END_FREQ_S', tune)
         Mbf.put('SEQ:2:CAPTURE_S', damp_capture)
         Mbf.put('SEQ:2:HOLDOFF_S', 0)
-        Mbf.put('SEQ:2:DWELL_S', damp_acq_turns)
+        Mbf.put('SEQ:2:DWELL_S', turns_per_acq)
         Mbf.put('SEQ:2:GAIN_S', '0dB')
         Mbf.put('SEQ:2:ENWIN_S', 'Windowed')
         Mbf.put('SEQ:2:BLANK_S', 'Off')
@@ -149,12 +168,12 @@ class MBF_HL(MBF_HL_USM):
 
         # SEQ3: Forced damping (feedback)
         Mbf.put('SEQ:1:BANK_S', 3)
-        Mbf.put('SEQ:1:COUNT_S', 1)
+        Mbf.put('SEQ:1:COUNT_S', feedback_acq_nb)
         Mbf.put('SEQ:1:START_FREQ_S', tune)
         Mbf.put('SEQ:1:END_FREQ_S', tune)
         Mbf.put('SEQ:1:CAPTURE_S', feedback_capture)
         Mbf.put('SEQ:1:HOLDOFF_S', 0)
-        Mbf.put('SEQ:1:DWELL_S', feedback_turns)
+        Mbf.put('SEQ:1:DWELL_S', feedback_dwell)
         Mbf.put('SEQ:1:GAIN_S', '0dB')
         Mbf.put('SEQ:1:ENWIN_S', 'Windowed')
         Mbf.put('SEQ:1:BLANK_S', 'Off')
