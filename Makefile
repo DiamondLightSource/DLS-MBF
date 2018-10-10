@@ -11,7 +11,7 @@ DEFAULT_TARGETS = python epics matlab tune_fit iocs
 
 # These targets are built when `make install` is run, and should define all the
 # targets which are expected to be built as part of the system installation.
-INSTALL_TARGETS = $(DEFAULT_TARGETS) driver-rpm opi
+INSTALL_TARGETS = $(DEFAULT_TARGETS) install-python driver-rpm opi
 
 
 include Makefile.common
@@ -114,6 +114,10 @@ DIR_TARGETS = epics matlab tune_fit opi iocs python tango
 
 $(DEFS_PATH):
 	make -C python
+
+install-python:
+	make -C python install
+.PHONY: install-python
 
 tune_fit: $(DEFS_PATH)
 

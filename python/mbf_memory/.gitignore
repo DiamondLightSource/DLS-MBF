@@ -1,0 +1,7 @@
+*.pyc
+
+# Dist build output
+/build
+/dist
+/mbf_memory.egg-info/
+/installed.files
