@@ -105,15 +105,21 @@ static struct seq_context {
  * 32-bit numbers -- so both STEP_FREQ and END_FREQ may end up as values
  * different from what the user has written! */
 
+/* Compute the end frequency so that it always satisfies the equation above. */
+static double compute_end_freq(struct sequencer_bank *bank)
+{
+    struct seq_entry *entry = bank->entry;
+    return
+        freq_to_tune(entry->start_freq) +
+        entry->capture_count * freq_to_tune_signed(entry->delta_freq);
+}
+
+
 /* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
  * END_FREQ is updated. */
 static void update_end_freq(struct sequencer_bank *bank)
 {
-    struct seq_entry *entry = bank->entry;
-    unsigned int end_freq =
-        entry->start_freq + entry->capture_count * entry->delta_freq;
-    WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
-
+    WRITE_OUT_RECORD(ao, bank->end_freq_rec, compute_end_freq(bank), false);
     bank->seq->seq_config_dirty = true;
 }
 
@@ -146,7 +152,9 @@ static bool write_end_freq(void *context, double *value)
         (*value - freq_to_tune(entry->start_freq)) / entry->capture_count;
     entry->delta_freq = tune_to_freq(target_delta_freq);
     double actual_delta_freq = freq_to_tune_signed(entry->delta_freq);
+
     WRITE_OUT_RECORD(ao, bank->delta_freq_rec, actual_delta_freq, false);
+    *value = compute_end_freq(bank);
 
     bank->seq->seq_config_dirty = true;
     return true;
