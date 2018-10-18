@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 671
-y 182
+x 672
+y 183
 w 370
 h 181
 font "helvetica-medium-r-18.0"
@@ -387,7 +387,6 @@ y 112
 w 80
 h 20
 controlPv "$(tune_prefix):TUNE:CONFIG:MAXIMUM_FIT_ERROR_S"
-format "exponential"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
