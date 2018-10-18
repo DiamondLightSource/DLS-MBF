@@ -12,15 +12,15 @@ use work.trigger_defs.all;
 
 entity trigger_target is
     port (
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
-        triggers_i : in std_logic_vector;   -- Active in
-        blanking_window_i : in std_logic;   -- Set if blanking active
+        triggers_i : in std_ulogic_vector;   -- Active in
+        blanking_window_i : in std_ulogic;   -- Set if blanking active
         setup_i : in trigger_setup_t;
 
         readback_o : out trigger_readback_t;
-        trigger_o : out std_logic
+        trigger_o : out std_ulogic
     );
 end;
 
@@ -31,11 +31,11 @@ architecture arch of trigger_target is
     -- the corresponding trigger source into readback_o.source.
     signal blanking_mask : setup_i.blanking'SUBTYPE;
     signal trigger_sources : triggers_i'SUBTYPE;
-    signal trigger_in : std_logic;
+    signal trigger_in : std_ulogic;
 
     -- When trigger accepted by trigger handler latch the sources active at that
     -- instant, and reset the sources when rearming or soft triggering.
-    signal trigger_seen : std_logic;
+    signal trigger_seen : std_ulogic;
 
 begin
     assert triggers_i'LENGTH = setup_i.enables'LENGTH severity failure;

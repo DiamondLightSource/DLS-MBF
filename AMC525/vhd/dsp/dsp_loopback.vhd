@@ -11,10 +11,10 @@ entity dsp_loopback is
         PIPELINE_DAC_OUT : natural := 8
     );
     port (
-        adc_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
 
-        loopback_i : in std_logic;
-        output_enable_i : in std_logic;
+        loopback_i : in std_ulogic;
+        output_enable_i : in std_ulogic;
 
         adc_data_i : in signed;
         dac_data_i : in signed;
@@ -36,7 +36,7 @@ begin
         DW => adc_data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(adc_data_i),
+        data_i => std_ulogic_vector(adc_data_i),
         signed(data_o) => adc_data_in
     );
 
@@ -45,7 +45,7 @@ begin
         DW => dac_data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(dac_data_i),
+        data_i => std_ulogic_vector(dac_data_i),
         signed(data_o) => dac_data_in
     );
 
@@ -72,7 +72,7 @@ begin
         DW => adc_data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(adc_data_out),
+        data_i => std_ulogic_vector(adc_data_out),
         signed(data_o) => adc_data_o
     );
 
@@ -81,7 +81,7 @@ begin
         DW => dac_data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(dac_data_out),
+        data_i => std_ulogic_vector(dac_data_out),
         signed(data_o) => dac_data_o
     );
 end;

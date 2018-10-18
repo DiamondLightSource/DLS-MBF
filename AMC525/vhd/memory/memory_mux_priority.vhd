@@ -10,22 +10,22 @@ use work.support.all;
 
 entity memory_mux_priority is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
-        input_valid_i : in std_logic_vector;
-        input_ready_o : out std_logic_vector;
+        input_valid_i : in std_ulogic_vector;
+        input_ready_o : out std_ulogic_vector;
         data_i : in vector_array;
         addr_i : in unsigned_array;
 
-        output_valid_o : out std_logic;
-        output_ready_i : in std_logic;
-        data_o : out std_logic_vector;
+        output_valid_o : out std_ulogic;
+        output_ready_i : in std_ulogic;
+        data_o : out std_ulogic_vector;
         addr_o : out unsigned
     );
 end;
 
 architecture arch of memory_mux_priority is
-    function priority_select(input : std_logic_vector) return natural is
+    function priority_select(input : std_ulogic_vector) return natural is
     begin
         for n in input'RANGE loop
             if input(n) = '1' then
@@ -64,5 +64,5 @@ begin
     end process;
 
     input_ready_o <= input_ready;
-    output_valid_o <= to_std_logic(out_state = BUSY);
+    output_valid_o <= to_std_ulogic(out_state = BUSY);
 end;

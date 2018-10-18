@@ -34,28 +34,28 @@ entity block_memory is
     );
     port (
         -- Read interface
-        read_clk_i : in std_logic;
+        read_clk_i : in std_ulogic;
         read_addr_i : in unsigned(ADDR_BITS-1 downto 0);
-        read_data_o : out std_logic_vector(DATA_BITS-1 downto 0)
+        read_data_o : out std_ulogic_vector(DATA_BITS-1 downto 0)
             := (others => '0');
 
         -- Write interface
-        write_clk_i : in std_logic;
-        write_strobe_i : in std_logic;
+        write_clk_i : in std_ulogic;
+        write_strobe_i : in std_ulogic;
         write_addr_i : in unsigned(ADDR_BITS-1 downto 0);
-        write_data_i : in std_logic_vector(DATA_BITS-1 downto 0)
+        write_data_i : in std_ulogic_vector(DATA_BITS-1 downto 0)
     );
 end;
 
 architecture arch of block_memory is
     -- Block RAM
-    subtype data_t is std_logic_vector(DATA_BITS-1 downto 0);
+    subtype data_t is std_ulogic_vector(DATA_BITS-1 downto 0);
     type memory_t is array(0 to 2**ADDR_BITS-1) of data_t;
     signal memory : memory_t := (others => (others => '0'));
     attribute ram_style : string;
     attribute ram_style of memory : signal is "BLOCK";
 
-    signal read_data : std_logic_vector(DATA_BITS-1 downto 0)
+    signal read_data : std_ulogic_vector(DATA_BITS-1 downto 0)
         := (others => '0');
 
 begin

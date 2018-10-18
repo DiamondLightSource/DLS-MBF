@@ -2,6 +2,8 @@
 
 /* Abstract interface to a single trigger target. */
 struct trigger_target;
+/* Common type of trigger target implementation, defined by triggers.c */
+struct trigger_target_state;
 
 
 /* Target arming control. */
@@ -36,15 +38,16 @@ enum shared_target_state {
 struct target_config {
     /* Target identity. */
     enum trigger_target_id target_id;   // Hardware identification
-    int axis;                        // Not valid for DRAM target
-    size_t (*get_target_name)(int axis, char name[], size_t length);
+    size_t (*get_target_name)(
+        struct trigger_target_state *target, char name[], size_t length);
 
     /* Target specific methods and variables. */
-    void (*prepare_target)(int axis);
-    enum target_state (*stop_target)(int axis);
+    void (*prepare_target)(struct trigger_target_state *target);
+    enum target_state (*stop_target)(struct trigger_target_state *target);
 
     /* State change notification. */
-    void (*set_target_state)(void *context, enum target_state state);
+    void (*set_target_state)(
+        struct trigger_target_state *target, enum target_state state);
 };
 
 
@@ -56,7 +59,7 @@ error__t initialise_trigger_targets(
 /* Create and initialise a single trigger target.  The context is used for the
  * .set_target_state() callback. */
 struct trigger_target *create_trigger_target(
-    const struct target_config *config, void *context);
+    const struct target_config *config, struct trigger_target_state *target);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

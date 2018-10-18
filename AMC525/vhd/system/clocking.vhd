@@ -16,67 +16,67 @@ use work.register_defs.all;
 entity clocking is
     port (
         -- Raw input clocks and reset
-        nCOLDRST : in std_logic;
-        clk125mhz_i : in std_logic;
-        adc_dco_i : in std_logic;
+        nCOLDRST : in std_ulogic;
+        clk125mhz_i : in std_ulogic;
+        adc_dco_i : in std_ulogic;
 
         -- 200 MHz DRAM timing reference clock
-        ref_clk_o : out std_logic;
-        ref_clk_ok_o : out std_logic;
+        ref_clk_o : out std_ulogic;
+        ref_clk_ok_o : out std_ulogic;
 
         -- ADC/DSP/REG clocks.
-        adc_clk_o : out std_logic;      -- 500 MHz data clock
-        dsp_clk_o : out std_logic;      -- 250 MHz clock = ADC/2
-        dsp_clk_ok_o : out std_logic;
-        reg_clk_o : out std_logic;      -- 125 MHz clock
-        reg_clk_ok_o : out std_logic;
+        adc_clk_o : out std_ulogic;      -- 500 MHz data clock
+        dsp_clk_o : out std_ulogic;      -- 250 MHz clock = ADC/2
+        dsp_clk_ok_o : out std_ulogic;
+        reg_clk_o : out std_ulogic;      -- 125 MHz clock
+        reg_clk_ok_o : out std_ulogic;
         -- Separate DSP reset.  This is only deasserted at startup (after
         -- coming out of nCOLDRST).
-        dsp_reset_n_o : out std_logic;
+        dsp_reset_n_o : out std_ulogic;
 
         -- Register control interface: one register for clock management.  The
         -- register interface is clocked by ref_clk_o
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
         read_data_o : out reg_data_t;
 
         -- This is a diagnostic signal, shouldn't need to be checked!
-        adc_pll_ok_o : out std_logic
+        adc_pll_ok_o : out std_ulogic
     );
 end;
 
 architecture arch of clocking is
     -- Processed incoming signals
-    signal clk125mhz : std_logic;
-    signal adc_dco_delay : std_logic;
+    signal clk125mhz : std_ulogic;
+    signal adc_dco_delay : std_ulogic;
 
     -- Generated clocks
-    signal ref_clk_pll : std_logic;
-    signal ref_clk : std_logic;
-    signal ref_clk_ok : std_logic;
-    signal reg_clk_pll : std_logic;
-    signal reg_clk : std_logic;
-    signal reg_clk_ok : std_logic;
-    signal adc_clk_pll : std_logic;
-    signal adc_clk : std_logic;
-    signal dsp_clk_pll : std_logic;
-    signal dsp_clk : std_logic;
-    signal dsp_clk_ok : std_logic;
+    signal ref_clk_pll : std_ulogic;
+    signal ref_clk : std_ulogic;
+    signal ref_clk_ok : std_ulogic;
+    signal reg_clk_pll : std_ulogic;
+    signal reg_clk : std_ulogic;
+    signal reg_clk_ok : std_ulogic;
+    signal adc_clk_pll : std_ulogic;
+    signal adc_clk : std_ulogic;
+    signal dsp_clk_pll : std_ulogic;
+    signal dsp_clk : std_ulogic;
+    signal dsp_clk_ok : std_ulogic;
 
     -- 125 MHz reference clock PLL
-    signal ref_pll_reset : std_logic;
-    signal ref_pll_feedback : std_logic;
-    signal ref_pll_locked : std_logic;
-    signal ref_pll_ok : std_logic;
+    signal ref_pll_reset : std_ulogic;
+    signal ref_pll_feedback : std_ulogic;
+    signal ref_pll_locked : std_ulogic;
+    signal ref_pll_ok : std_ulogic;
 
     -- ADC clock PLL
-    signal adc_pll_reset_request : std_logic;
+    signal adc_pll_reset_request : std_ulogic;
     signal adc_pll_reset_timer : unsigned(2 downto 0);
-    signal adc_pll_reset : std_logic := '1';
-    signal adc_pll_feedback : std_logic;
-    signal adc_pll_feedback_bufg : std_logic;
-    signal adc_pll_locked : std_logic;
-    signal adc_pll_ok : std_logic;
+    signal adc_pll_reset : std_ulogic := '1';
+    signal adc_pll_feedback : std_ulogic;
+    signal adc_pll_feedback_bufg : std_ulogic;
+    signal adc_pll_locked : std_ulogic;
+    signal adc_pll_ok : std_ulogic;
 
     signal read_data : reg_data_t;
 
@@ -183,7 +183,7 @@ begin
                 adc_pll_reset_timer <= adc_pll_reset_timer - 1;
             end if;
             adc_pll_reset <=
-                not nCOLDRST or to_std_logic(adc_pll_reset_timer > 0);
+                not nCOLDRST or to_std_ulogic(adc_pll_reset_timer > 0);
         end if;
     end process;
 

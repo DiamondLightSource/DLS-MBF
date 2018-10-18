@@ -12,7 +12,7 @@ entity testbench is
 end testbench;
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural := 1) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural := 1) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -20,30 +20,30 @@ architecture arch of testbench is
         end loop;
     end procedure;
 
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
-    signal turn_clock : std_logic;
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
+    signal turn_clock : std_ulogic;
 
     constant TURN_COUNT : natural := 7;
 
     signal nco_frequency : angle_t := X"31234567";
 
     -- detector_core parameters
-    signal start_write : std_logic;
-    signal bunch_write : std_logic;
+    signal start_write : std_ulogic;
+    signal bunch_write : std_ulogic;
     signal write_data : reg_data_t;
     signal data : signed(24 downto 0);
     signal iq_in : cos_sin_18_t;
-    signal start : std_logic;
-    signal write_in : std_logic;
-    signal data_overflow_in : std_logic;
-    signal data_overflow : std_logic;
-    signal detector_overflow : std_logic;
-    signal output_underrun : std_logic;
+    signal start : std_ulogic;
+    signal write_in : std_ulogic;
+    signal data_overflow_in : std_ulogic;
+    signal data_overflow : std_ulogic;
+    signal detector_overflow : std_ulogic;
+    signal output_underrun : std_ulogic;
     signal output_scaling : unsigned(2 downto 0);
-    signal valid : std_logic;
-    signal ready : std_logic;
-    signal data_out : std_logic_vector(63 downto 0);
+    signal valid : std_ulogic;
+    signal ready : std_ulogic;
+    signal data_out : std_ulogic_vector(63 downto 0);
 
 begin
     adc_clk <= not adc_clk after 1 ns;

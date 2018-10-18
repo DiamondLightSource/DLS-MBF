@@ -24,16 +24,16 @@ use work.support.all;
 
 entity memory_buffer_simple is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
-        input_valid_i : in std_logic;
-        input_ready_o : out std_logic;
-        input_data_i : in std_logic_vector;
+        input_valid_i : in std_ulogic;
+        input_ready_o : out std_ulogic;
+        input_data_i : in std_ulogic_vector;
         input_addr_i : in unsigned;
 
-        output_valid_o : out std_logic;
-        output_ready_i : in std_logic;
-        output_data_o : out std_logic_vector;
+        output_valid_o : out std_ulogic;
+        output_ready_i : in std_ulogic;
+        output_data_o : out std_ulogic_vector;
         output_addr_o : out unsigned
     );
 end;
@@ -60,6 +60,6 @@ begin
         end if;
     end process;
 
-    input_ready_o  <= to_std_logic(state = EMPTY);
-    output_valid_o <= to_std_logic(state = FULL);
+    input_ready_o  <= to_std_ulogic(state = EMPTY);
+    output_valid_o <= to_std_ulogic(state = FULL);
 end;

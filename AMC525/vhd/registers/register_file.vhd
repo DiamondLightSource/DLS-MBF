@@ -11,12 +11,12 @@ entity register_file is
         UNTIMED : boolean := true
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector;
+        write_strobe_i : in std_ulogic_vector;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector;
+        write_ack_o : out std_ulogic_vector;
 
         -- Register array
         register_data_o : out reg_data_array_t

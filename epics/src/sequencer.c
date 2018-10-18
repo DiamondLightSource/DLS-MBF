@@ -28,6 +28,9 @@
 /* These are the sequencer states for states 1 to 7.  State 0 is special and
  * is not handled in this array. */
 struct sequencer_bank {
+    /* Parent state. */
+    struct seq_context *seq;
+
     /* Much of our state is as written to hardware. */
     struct seq_entry *entry;
 
@@ -44,6 +47,14 @@ static struct seq_context {
     struct sequencer_bank banks[MAX_SEQUENCER_COUNT];   // EPICS management
     struct seq_config seq_hw_config;    // Configuration written to hardware
 
+    /* The seq_config_dirty flag is set whenever the seq_config is changed via
+     * EPICS.  This flag is copied to seq_hw_config_dirty and reset when arming
+     * the sequencer, and is used to determine whether the frequency scale and
+     * timebase may have changed. */
+    pthread_mutex_t mutex;
+    bool seq_config_dirty;
+    bool seq_hw_config_dirty;
+
     struct seq_state seq_state;     // Current state as read from hardware
 
     unsigned int capture_count;     // Number of IQ points to capture
@@ -51,7 +62,12 @@ static struct seq_context {
 
     bool reset_offsets;             // Reset super sequencer offsets
     bool reset_window;              // Reset detector window
-} seq_context[AXIS_COUNT];
+} seq_context[AXIS_COUNT] = {
+    [0 ... AXIS_COUNT-1] = {
+        .mutex = PTHREAD_MUTEX_INITIALIZER,
+        .seq_config_dirty = true,
+    },
+};
 
 
 
@@ -89,12 +105,32 @@ static struct seq_context {
  * 32-bit numbers -- so both STEP_FREQ and END_FREQ may end up as values
  * different from what the user has written! */
 
+/* Compute the end frequency so that it always satisfies the equation above. */
+static double compute_end_freq(struct sequencer_bank *bank)
+{
+    struct seq_entry *entry = bank->entry;
+    return
+        freq_to_tune(entry->start_freq) +
+        entry->capture_count * freq_to_tune_signed(entry->delta_freq);
+}
+
+
+/* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
+ * END_FREQ is updated. */
+static void update_end_freq(struct sequencer_bank *bank)
+{
+    WRITE_OUT_RECORD(ao, bank->end_freq_rec, compute_end_freq(bank), false);
+    bank->seq->seq_config_dirty = true;
+}
+
+
 static bool write_start_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
     struct seq_entry *entry = bank->entry;
     entry->start_freq = tune_to_freq(*value);
     *value = freq_to_tune(entry->start_freq);
+    update_end_freq(bank);
     return true;
 }
 
@@ -104,6 +140,7 @@ static bool write_step_freq(void *context, double *value)
     struct seq_entry *entry = bank->entry;
     entry->delta_freq = tune_to_freq(*value);
     *value = freq_to_tune_signed(entry->delta_freq);
+    update_end_freq(bank);
     return true;
 }
 
@@ -115,20 +152,11 @@ static bool write_end_freq(void *context, double *value)
         (*value - freq_to_tune(entry->start_freq)) / entry->capture_count;
     entry->delta_freq = tune_to_freq(target_delta_freq);
     double actual_delta_freq = freq_to_tune_signed(entry->delta_freq);
+
     WRITE_OUT_RECORD(ao, bank->delta_freq_rec, actual_delta_freq, false);
-    return true;
-}
+    *value = compute_end_freq(bank);
 
-
-/* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
- * END_FREQ is updated. */
-static bool update_end_freq(void *context, bool *value)
-{
-    struct sequencer_bank *bank = context;
-    struct seq_entry *entry = bank->entry;
-    unsigned int end_freq =
-        entry->start_freq + entry->capture_count * entry->delta_freq;
-    WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
+    bank->seq->seq_config_dirty = true;
     return true;
 }
 
@@ -138,7 +166,8 @@ static bool write_bank_count(void *context, unsigned int *value)
     struct sequencer_bank *bank = context;
     struct seq_entry *entry = bank->entry;
     entry->capture_count = *value;
-    return update_end_freq(context, NULL);
+    update_end_freq(bank);
+    return true;
 }
 
 
@@ -181,8 +210,6 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
         bank->delta_freq_rec =
             PUBLISH_C_P(ao, "STEP_FREQ", write_step_freq, bank);
         bank->end_freq_rec = PUBLISH_C(ao, "END_FREQ", write_end_freq, bank);
-
-        PUBLISH_C(bo, "UPDATE_END", update_end_freq, bank);
     }
 }
 
@@ -219,6 +246,8 @@ static bool update_capture_count(void *context, bool *value)
             bank->entry->capture_count *
             (bank->entry->dwell_time + bank->entry->holdoff);
     }
+
+    seq->seq_config_dirty = true;
     return true;
 }
 
@@ -268,6 +297,8 @@ static void write_super_offsets(
         seq->seq_config.super_offsets[i] = freq;
         offsets[i] = freq_to_tune(freq);
     }
+
+    seq->seq_config_dirty = true;
 }
 
 static bool reset_super_offsets(void *context, bool *value)
@@ -383,8 +414,20 @@ unsigned int compute_scale_info(
 void prepare_sequencer(int axis)
 {
     struct seq_context *seq = &seq_context[axis];
-    seq->seq_hw_config = seq->seq_config;
+    WITH_MUTEX(seq->mutex)
+    {
+        seq->seq_hw_config = seq->seq_config;
+        seq->seq_hw_config_dirty = seq->seq_config_dirty;
+        seq->seq_config_dirty = false;
+    }
     hw_write_seq_config(seq->axis, &seq->seq_hw_config);
+}
+
+
+bool detector_scale_changed(int axis)
+{
+    struct seq_context *seq = &seq_context[axis];
+    return seq->seq_hw_config_dirty;
 }
 
 
@@ -482,16 +525,18 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
         {
             unsigned int single_bunch =
                 find_first_index(true, bunch_config->nco1_enable);
-            snprintf(result->s, 40, "Sweep: bunch %u (%s)", single_bunch, gain);
+            format_epics_string(result,
+                "Sweep: bunch %u (%s)", single_bunch, gain);
         }
         else if (sweeping == system_config.bunches_per_turn)
-            snprintf(result->s, 40, "Sweep: all bunches (%s)", gain);
+            format_epics_string(result, "Sweep: all bunches (%s)", gain);
         else
-            snprintf(result->s, 40, "Sweep: %u bunches (%s)", sweeping, gain);
+            format_epics_string(result,
+                "Sweep: %u bunches (%s)", sweeping, gain);
         return true;
     }
 
-    snprintf(result->s, 40, "%s", status);
+    format_epics_string(result, "%s", status);
     return true;
 }
 
@@ -507,9 +552,16 @@ error__t initialise_sequencer(void)
         struct seq_context *seq = &seq_context[axis];
         seq->axis = axis;
 
+        /* All PVs which modify the hardware configuration are modified under a
+         * mutex to ensure we don't have surprises if settings are changed while
+         * rearming. */
+        pthread_mutex_t *old_mutex =
+            set_default_epics_device_mutex(&seq->mutex);
+
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
         {
+            seq->banks[i].seq = seq;
             seq->banks[i].entry = &seq->seq_config.entries[i];
             publish_bank(i, &seq->banks[i]);
         }
@@ -544,6 +596,9 @@ error__t initialise_sequencer(void)
         PUBLISH_C(bo, "RESET_WIN", reset_detector_window, seq);
 
         PUBLISH_C(stringin, "MODE", read_sequencer_mode, seq);
+
+        /* Don't forget to restore the default! */
+        set_default_epics_device_mutex(old_mutex);
     }
 
     return ERROR_OK;

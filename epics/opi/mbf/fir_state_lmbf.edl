@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 250
-y 112
+x 251
+y 113
 w 599
 h 26
 font "helvetica-medium-r-18.0"
@@ -175,10 +175,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 256
 y 0
-w 40
-h 22
+w 48
+h 24
 controlPv "$(device):$(axis):FIR:$(fir):PHASE_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -203,7 +203,7 @@ beginObjectProperties
 major 4
 minor 2
 release 0
-x 128
+x 120
 y 0
 w 128
 h 24

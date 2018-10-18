@@ -12,24 +12,24 @@ use work.trigger_defs.all;
 
 entity trigger_registers is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        write_strobe_i : in std_ulogic_vector(CTRL_TRG_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(CTRL_TRG_REGS);
-        read_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        write_ack_o : out std_ulogic_vector(CTRL_TRG_REGS);
+        read_strobe_i : in std_ulogic_vector(CTRL_TRG_REGS);
         read_data_o : out reg_data_array_t(CTRL_TRG_REGS);
-        read_ack_o : out std_logic_vector(CTRL_TRG_REGS);
+        read_ack_o : out std_ulogic_vector(CTRL_TRG_REGS);
 
         -- Revolution clock synchronisation
         turn_setup_o : out turn_clock_setup_t;
         turn_readback_i : in turn_clock_readback_t;
 
         -- Trigger control
-        soft_trigger_o : out std_logic;
-        triggers_i : in std_logic_vector(TRIGGER_SET);
-        blanking_trigger_i : in std_logic;
+        soft_trigger_o : out std_ulogic;
+        triggers_i : in std_ulogic_vector(TRIGGER_SET);
+        blanking_trigger_i : in std_ulogic;
 
         blanking_interval_o : out unsigned;
 
@@ -110,7 +110,7 @@ begin
 
     read_data_o(CTRL_TRG_TURN_COUNT_REG) <= (
         CTRL_TRG_TURN_COUNT_COUNT_BITS =>
-            std_logic_vector(turn_readback_i.turn_counter),
+            std_ulogic_vector(turn_readback_i.turn_counter),
         others => '0'
     );
     read_ack_o(CTRL_TRG_TURN_COUNT_REG) <= '1';
@@ -118,7 +118,7 @@ begin
 
     read_data_o(CTRL_TRG_ERROR_COUNT_REG) <= (
         CTRL_TRG_ERROR_COUNT_COUNT_BITS =>
-            std_logic_vector(turn_readback_i.error_counter),
+            std_ulogic_vector(turn_readback_i.error_counter),
         others => '0'
     );
     read_ack_o(CTRL_TRG_ERROR_COUNT_REG) <= '1';

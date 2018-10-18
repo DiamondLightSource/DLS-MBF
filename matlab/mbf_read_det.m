@@ -4,7 +4,7 @@
 % axis is specified, the default is 0.  The frequency scale and timebase are
 % returned if requested.
 
-function [d, s, varargout] = mbf_read_mem(mbf, varargin)
+function [d, s, varargout] = mbf_read_det(mbf, varargin)
     % Default arguments and argument parsing
     p = inputParser;
     addParamValue(p, 'axis', 0);
@@ -14,8 +14,8 @@ function [d, s, varargout] = mbf_read_mem(mbf, varargin)
     locking = p.Results.lock;
 
     % Pick up server address
-    server = deblank(char(lcaGet([mbf ':HOSTNAME'])));
-    port = lcaGet([mbf ':SOCKET']);
+    server = deblank(char(lcaGet([mbf ':INFO:HOSTNAME'])));
+    port = lcaGet([mbf ':INFO:SOCKET']);
 
     % Capture detector data, frequency scale, group delay, and optional timebase
     [d, s, g, varargout{1:nargout-2}] = ...

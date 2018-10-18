@@ -9,18 +9,18 @@ use work.defines.all;
 
 entity trigger_blanking is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
-        blanking_i : in std_logic;
+        blanking_i : in std_ulogic;
         blanking_interval_i : in unsigned;
-        turn_clock_i : in std_logic;
-        blanking_window_o : out std_logic := '0'
+        turn_clock_i : in std_ulogic;
+        blanking_window_o : out std_ulogic := '0'
     );
 end;
 
 architecture arch of trigger_blanking is
     signal blanking_counter : blanking_interval_i'SUBTYPE := (others => '0');
-    signal blanking_window : std_logic := '0';
+    signal blanking_window : std_ulogic := '0';
 
 begin
     process (dsp_clk_i) begin

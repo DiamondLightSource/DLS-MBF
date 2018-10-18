@@ -14,19 +14,19 @@ entity fast_fir_top is
         PIPELINE_OUT : natural := 4
     );
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Taps write interface
-        write_start_i : in std_logic;
-        write_strobe_i : in std_logic;
+        write_start_i : in std_ulogic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_ulogic;
 
         -- data stream
         data_i : in signed;                 -- on ADC clock
         data_o : out signed;                -- on ADC clock
-        overflow_o : out std_logic          -- on DSP clock
+        overflow_o : out std_ulogic          -- on DSP clock
     );
 end;
 
@@ -35,7 +35,7 @@ architecture arch of fast_fir_top is
     signal data_out : data_o'SUBTYPE;
     signal taps_in : reg_data_array_t(0 to TAP_COUNT-1);
     signal taps : reg_data_array_t(0 to TAP_COUNT-1);
-    signal fir_overflow : std_logic;
+    signal fir_overflow : std_ulogic;
 
 begin
     -- Single register writes to array of taps
@@ -69,7 +69,7 @@ begin
         DW => data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_i),
+        data_i => std_ulogic_vector(data_i),
         signed(data_o) => data_in
     );
 
@@ -92,7 +92,7 @@ begin
         DW => data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_out),
+        data_i => std_ulogic_vector(data_out),
         signed(data_o) => data_o
     );
 

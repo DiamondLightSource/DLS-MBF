@@ -1,0 +1,18 @@
+#! /bin/bash
+
+cd "$(dirname "$0")"
+cd ../..
+MBF_DIR=$(basename "$(pwd -P)")
+
+
+ln -sf sites/ESRF/CONFIG CONFIG
+
+ln -sf $MBF_DIR/sites/ESRF/cratestartup ../cratestartup
+ln -sf $MBF_DIR/sites/ESRF/setpath_mbf ../setpath_mbf
+ln -sf $MBF_DIR/sites/ESRF/.bashrc ../.bashrc
+
+mkdir -p ../autosave/SR-TMBF
+mkdir -p ../autosave/SR-TFIT
+mkdir -p ../autosave/T-TMBF
+mkdir -p ../autosave/T-TFIT
+ln -sf ../$MBF_DIR/sites/ESRF/cron_daily_backup.sh ../autosave/cron_daily_backup.sh

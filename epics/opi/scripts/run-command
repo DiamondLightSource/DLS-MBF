@@ -33,9 +33,11 @@ shift 2
 # If -P flag given then fixup the command by prefixing with path to this
 # directory.  This is a special trick to help with CSS path behaviour.
 if ((PATH_FIXUP)); then
-    command="$HERE/$command"
+    PATH="$HERE":"$PATH"
 fi
 
+# Add the site subdirectory for site specific commands.
+PATH="$HERE"/site:"$PATH"
 
 action="$command $* $SEP read -p 'press return'"
 xterm -T "$title" -e "$action"

@@ -11,15 +11,15 @@ entity bunch_fir is
         HEADROOM_OFFSET : natural
     );
     port (
-        clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
         taps_i : in signed_array;
 
-        data_valid_i : in std_logic;
+        data_valid_i : in std_ulogic;
         data_i : in signed;
-        data_valid_o : out std_logic := '0';
+        data_valid_o : out std_ulogic := '0';
         data_o : out signed;
-        overflow_o : out std_logic
+        overflow_o : out std_ulogic
     );
 end;
 
@@ -35,7 +35,7 @@ architecture arch of bunch_fir is
         := (others => (others => '0'));
     signal delay_out : signed_array(TAPS_RANGE)(DELAY_RANGE)
         := (others => (others => '0'));
-    signal overflows : std_logic_vector(TAPS_RANGE);
+    signal overflows : std_ulogic_vector(TAPS_RANGE);
 
     -- Delay on input to allow data to get to each tap
     constant DISTRIBUTION_DELAY : natural := 4;
@@ -67,7 +67,7 @@ begin
     -- Core processing DSP chain
     taps_gen : for t in TAPS_RANGE generate
         signal data_in : signed(data_i'RANGE);
-        signal dsp_overflow : std_logic;
+        signal dsp_overflow : std_ulogic;
     begin
         -- Data distribution delays.
         delay_data : entity work.dlyreg generic map (
@@ -75,7 +75,7 @@ begin
             DW => data_i'LENGTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_logic_vector(data_i),
+            data_i => std_ulogic_vector(data_i),
             signed(data_o) => data_in
         );
 
@@ -125,7 +125,7 @@ begin
     -- Delay lines between each bunch
     delay_gen : for t in 1 to TAP_COUNT-1 generate
         signal delay_in_reg : signed(DELAY_RANGE);
-        signal delay_in_valid : std_logic;
+        signal delay_in_valid : std_ulogic;
         signal delay_out_reg : signed(DELAY_RANGE);
 
     begin
@@ -134,7 +134,7 @@ begin
             DW => DELAY_WIDTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_logic_vector(accum_out(t-1)),
+            data_i => std_ulogic_vector(accum_out(t-1)),
             signed(data_o) => delay_in_reg
         );
 
@@ -161,7 +161,7 @@ begin
             DW => DELAY_WIDTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_logic_vector(delay_out_reg),
+            data_i => std_ulogic_vector(delay_out_reg),
             signed(data_o) => delay_out(t)
         );
     end generate;

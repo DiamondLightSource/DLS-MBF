@@ -41,8 +41,8 @@ function a = mbf_read_mem(mbf, turns, varargin)
     bunch = p.Results.bunch;
 
     % Pick up server address and machine parameters
-    server = deblank(char(lcaGet([mbf ':HOSTNAME'])));
-    port = lcaGet([mbf ':SOCKET']);
+    server = deblank(char(lcaGet([mbf ':INFO:HOSTNAME'])));
+    port = lcaGet([mbf ':INFO:SOCKET']);
 
     a = mex_mbf_memory_( ...
         server, port, turns, offset, channel, locking, ...

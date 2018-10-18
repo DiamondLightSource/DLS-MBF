@@ -165,7 +165,7 @@ x 112
 y 64
 w 200
 h 14
-controlPv "$(device):VERSION"
+controlPv "$(device):INFO:VERSION"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -189,7 +189,7 @@ x 112
 y 96
 w 200
 h 14
-controlPv "$(device):FPGA_VERSION"
+controlPv "$(device):INFO:FPGA_VERSION"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -233,7 +233,7 @@ x 112
 y 152
 w 200
 h 14
-controlPv "$(device):HOSTNAME"
+controlPv "$(device):INFO:HOSTNAME"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -277,7 +277,7 @@ x 112
 y 168
 w 200
 h 14
-controlPv "$(device):SOCKET"
+controlPv "$(device):INFO:SOCKET"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -321,7 +321,7 @@ x 112
 y 184
 w 200
 h 14
-controlPv "$(device):DEVICE"
+controlPv "$(device):INFO:DEVICE"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -365,7 +365,7 @@ x 112
 y 112
 w 200
 h 14
-controlPv "$(device):FPGA_GIT_VERSION"
+controlPv "$(device):INFO:FPGA_GIT_VERSION"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -409,7 +409,7 @@ x 112
 y 80
 w 200
 h 14
-controlPv "$(device):GIT_VERSION"
+controlPv "$(device):INFO:GIT_VERSION"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -453,7 +453,7 @@ x 112
 y 128
 w 200
 h 14
-controlPv "$(device):DRIVER_VERSION"
+controlPv "$(device):INFO:DRIVER_VERSION"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -516,7 +516,7 @@ x 112
 y 208
 w 200
 h 14
-controlPv "$(device):MODE"
+controlPv "$(device):INFO:MODE"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -560,7 +560,7 @@ x 112
 y 240
 w 200
 h 14
-controlPv "$(device):ADC_TAPS"
+controlPv "$(device):INFO:ADC_TAPS"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -604,7 +604,7 @@ x 112
 y 256
 w 200
 h 14
-controlPv "$(device):BUNCH_TAPS"
+controlPv "$(device):INFO:BUNCH_TAPS"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -648,7 +648,7 @@ x 112
 y 272
 w 200
 h 14
-controlPv "$(device):DAC_TAPS"
+controlPv "$(device):INFO:DAC_TAPS"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -692,7 +692,7 @@ x 112
 y 296
 w 200
 h 14
-controlPv "$(device):AXIS0"
+controlPv "$(device):INFO:AXIS0"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -736,7 +736,7 @@ x 112
 y 312
 w 200
 h 14
-controlPv "$(device):AXIS1"
+controlPv "$(device):INFO:AXIS1"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -800,7 +800,7 @@ x 112
 y 224
 w 200
 h 14
-controlPv "$(device):BUNCHES"
+controlPv "$(device):INFO:BUNCHES"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0

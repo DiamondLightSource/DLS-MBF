@@ -12,7 +12,7 @@ use ieee.math_real.all;
 
 entity sim_nco is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );
@@ -53,7 +53,7 @@ begin
         DW => 18
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin.cos),
+        data_i => std_ulogic_vector(cos_sin.cos),
         signed(data_o) => cos_sin_o.cos
     );
 
@@ -62,7 +62,7 @@ begin
         DW => 18
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin.sin),
+        data_i => std_ulogic_vector(cos_sin.sin),
         signed(data_o) => cos_sin_o.sin
     );
 end;

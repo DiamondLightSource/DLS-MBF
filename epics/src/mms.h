@@ -17,3 +17,6 @@ void set_mms_offset(struct mms_handler *mms, unsigned int bunch_offset);
 
 /* Must be called during shutdown before unmapping hardware registers. */
 void stop_mms_handlers(void);
+
+/* Reads MMS mean waveform as current written to EPICS. */
+void read_mms_mean(struct mms_handler *mms, float mean[]);

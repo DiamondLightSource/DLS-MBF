@@ -51,11 +51,34 @@ static bool write_dac_delay(void *context, unsigned int *value)
 }
 
 
+/* This counter is used to delay updates to DAC output enable until everything
+ * has had time to settle.  We piggy-back on the scan_events event as this is a
+ * regular timing event. */
+static int output_enable_delay = 2;
+
+/* In combination with write_dac_output_enable() below, ensures that the DAC
+ * output enable is left in its default Off state for two update ticks, or
+ * around 200ms.  This ensures that all configuration is complete by the time we
+ * enable the DAC output. */
+static void tick_output_enable_delay(void)
+{
+    if (output_enable_delay > 0)
+    {
+        output_enable_delay -= 1;
+        if (output_enable_delay == 1)
+        {
+            for (int i = 0; i < AXIS_COUNT; i ++)
+                hw_write_output_enable(i, dac_context[i].output_enable);
+        }
+    }
+}
+
 static bool write_dac_output_enable(void *context, bool *value)
 {
     struct dac_context *dac = context;
     dac->output_enable = *value;
-    hw_write_output_enable(dac->axis, dac->output_enable);
+    if (output_enable_delay == 0)
+        hw_write_output_enable(dac->axis, dac->output_enable);
     return true;
 }
 
@@ -105,6 +128,7 @@ static void scan_events(void)
         dac->overflow =
             dac->events.fir_ovf | dac->events.mux_ovf | dac->events.out_ovf;
     }
+    tick_output_enable_delay();
 }
 
 

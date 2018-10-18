@@ -110,14 +110,14 @@ static void update_status_core(
     switch (complexity)
     {
         case ALL_SAME:
-            snprintf(status->s, 40, "%s", value_name);
+            format_epics_string(status, "%s", value_name);
             break;
         case ALL_BUT_ONE:
-            snprintf(status->s, 40, "%s (%s @%u)",
+            format_epics_string(status, "%s (%s @%u)",
                 value_name, other_name, other_ix);
             break;
         case COMPLICATED:
-            snprintf(status->s, 40, "Mixed %s", name);
+            format_epics_string(status, "Mixed %s", name);
             break;
     }
 }
@@ -196,15 +196,16 @@ static bool read_feedback_mode(void *context, EPICS_STRING *result)
         get_dac_output_enable(bunch->axis);
 
     if (!output_on)
-        snprintf(result->s, 40, "Output off");
+        format_epics_string(result, "Output off");
     else if (all_off)
-        snprintf(result->s, 40, "Feedback off");
+        format_epics_string(result, "Feedback off");
     else if (!all_fir)
-        snprintf(result->s, 40, "Feedback mixed mode");
+        format_epics_string(result, "Feedback mixed mode");
     else if (same_fir)
-        snprintf(result->s, 40, "Feedback on, FIR: #%d", config->fir_select[0]);
+        format_epics_string(result,
+            "Feedback on, FIR: #%d", config->fir_select[0]);
     else
-        snprintf(result->s, 40, "Feedback on, FIR: mixed");
+        format_epics_string(result, "Feedback on, FIR: mixed");
     return true;
 }
 

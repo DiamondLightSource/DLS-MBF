@@ -7,10 +7,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
+#include <string.h>
 #include <pthread.h>
 
 #include "error.h"
 #include "epics_device.h"
+#include "epics_extra.h"
 
 #include "hardware.h"
 #include "common.h"
@@ -31,6 +33,11 @@ struct mms_accum {
     int64_t *raw_sum;
     uint64_t *raw_sum2;
 
+    unsigned int variance_sum_count;
+    double *variance_sum;
+    float *std_min_wf;
+    float *std_max_wf;
+
     /* Raw state from MMS. */
     unsigned int raw_turns;
     unsigned int mms_overflow;
@@ -47,6 +54,11 @@ struct mms_epics {
     double mean_mean;
     double std_mean;
 
+    /* These three waveforms are updated by the archive update process. */
+    float *std_mean_wf;
+    float *std_min_wf;
+    float *std_max_wf;
+
     unsigned int turns;
     unsigned int mms_overflow;
 };
@@ -59,6 +71,8 @@ struct mms_handler {
     unsigned int bunch_offset;
     pthread_mutex_t mutex;
 
+    struct epics_interlock *archive;
+
     struct mms_accum accum;
     struct mms_epics epics;
 };
@@ -70,6 +84,16 @@ static struct mms_handlers {
 } mms_handlers = {
     .count = 0,
 };
+
+
+void read_mms_mean(struct mms_handler *mms, float mean[])
+{
+    WITH_MUTEX(mms->mutex)
+    {
+        unsigned int bunches = hardware_config.bunches;
+        memcpy(mean, mms->epics.mean, sizeof(float) * bunches);
+    }
+}
 
 
 /* Helper functions for adding with overflow detection.  This is annoyingly a
@@ -216,15 +240,44 @@ static void process_mms_waveforms(struct mms_handler *mms)
         epics->mean[i] = ldexpf((float) mean, -15);
         mean_mean += mean;
         double mean2 = (double) accum->raw_sum2[i] / accum->raw_turns;
-        float var = (float) (mean2 - mean * mean);
-        epics->std[i] = ldexpf(sqrtf(var >= 0 ? var : 0), -15);
+        double var = ldexp(mean2 - mean * mean, -30);
+        accum->variance_sum[i] += var;
         std_mean += var;
+        float std = sqrtf(var >= 0 ? (float) var : 0);
+        epics->std[i] = std;
+        accum->std_min_wf[i] = MIN(accum->std_min_wf[i], std);
+        accum->std_max_wf[i] = MAX(accum->std_max_wf[i], std);
     }
     epics->mean_mean = ldexp(mean_mean / hardware_config.bunches, -15);
-    epics->std_mean = ldexp(sqrt(std_mean / hardware_config.bunches), -15);
+    epics->std_mean = sqrt(std_mean / hardware_config.bunches);
 
     epics->turns = accum->raw_turns;
     epics->mms_overflow = accum->mms_overflow;
+
+    accum->variance_sum_count += 1;
+}
+
+
+static void update_archive_pvs(struct mms_handler *mms)
+{
+    struct mms_accum *accum = &mms->accum;
+    struct mms_epics *epics = &mms->epics;
+
+    interlock_wait(mms->archive);
+
+    unsigned int count = accum->variance_sum_count;
+    accum->variance_sum_count = 0;
+    FOR_BUNCHES(i)
+    {
+        epics->std_mean_wf[i] = (float) sqrt(accum->variance_sum[i] / count);
+        accum->variance_sum[i] = 0;
+        epics->std_min_wf[i] = accum->std_min_wf[i];
+        accum->std_min_wf[i] = INFINITY;
+        epics->std_max_wf[i] = accum->std_max_wf[i];
+        accum->std_max_wf[i] = -INFINITY;
+    }
+
+    interlock_signal(mms->archive, NULL);
 }
 
 
@@ -267,6 +320,9 @@ struct mms_handler *create_mms_handler(
             .raw_max  = CALLOC(int16_t, bunches),
             .raw_sum  = CALLOC(int64_t, bunches),
             .raw_sum2 = CALLOC(uint64_t, bunches),
+            .variance_sum = CALLOC(double, bunches),
+            .std_min_wf = CALLOC(float, bunches),
+            .std_max_wf = CALLOC(float, bunches),
         },
         .epics = {
             .min      = CALLOC(float, bunches),
@@ -274,6 +330,9 @@ struct mms_handler *create_mms_handler(
             .delta    = CALLOC(float, bunches),
             .mean     = CALLOC(float, bunches),
             .std      = CALLOC(float, bunches),
+            .std_mean_wf = CALLOC(float, bunches),
+            .std_min_wf = CALLOC(float, bunches),
+            .std_max_wf = CALLOC(float, bunches),
         },
     };
 
@@ -290,6 +349,12 @@ struct mms_handler *create_mms_handler(
         PUBLISH_READ_VAR(ai, "STD_MEAN", epics->std_mean);
         PUBLISH_READ_VAR(ulongin, "TURNS", epics->turns);
         PUBLISH_READ_VAR(mbbi, "OVERFLOW", epics->mms_overflow);
+
+        PUBLISH_WF_READ_VAR(float, "STD_MEAN_WF", bunches, epics->std_mean_wf);
+        PUBLISH_WF_READ_VAR(float, "STD_MIN_WF", bunches, epics->std_min_wf);
+        PUBLISH_WF_READ_VAR(float, "STD_MAX_WF", bunches, epics->std_max_wf);
+        mms->archive = create_interlock("ARCHIVE", false);
+
         PUBLISH_C(bo, "RESET_FAULT", reset_mms_fault, mms,
             .mutex = &mms->mutex);
     }
@@ -310,20 +375,49 @@ static void read_mms_handlers(bool initialise)
 {
     for (unsigned int i = 0; i < mms_handlers.count; i ++)
     {
-        WITH_MUTEX(mms_handlers.handlers[i].mutex)
-        {
-            struct mms_handler *mms = &mms_handlers.handlers[i];
+        struct mms_handler *mms = &mms_handlers.handlers[i];
+        WITH_MUTEX(mms->mutex)
             read_raw_mms(mms, initialise);
-        }
+    }
+}
+
+static void update_all_archive_pvs(void)
+{
+    for (unsigned int i = 0; i < mms_handlers.count; i ++)
+    {
+        struct mms_handler *mms = &mms_handlers.handlers[i];
+        WITH_MUTEX(mms->mutex)
+            update_archive_pvs(mms);
     }
 }
 
 static void *read_mms_thread(void *context)
 {
+    wait_for_epics_start();
+
+    /* Work out when we're going to start, make sure that all our archive
+     * updates are on an integer multiple of the archive interval. */
+    int interval = system_config.archive_interval;
+    struct timespec now;
+    ASSERT_IO(clock_gettime(CLOCK_REALTIME, &now));
+    time_t next = interval * (1 + now.tv_sec / interval);
+
+    /* Treat first readout of MMS as a reset; we do this after EPICS is up and
+     * running and everything has settled down. */
+    read_mms_handlers(true);
+
     while (running)
     {
         usleep(system_config.mms_poll_interval);
         read_mms_handlers(false);
+
+        /* Check for archive output. */
+        ASSERT_IO(clock_gettime(CLOCK_REALTIME, &now));
+        if (now.tv_sec >= next)
+        {
+            update_all_archive_pvs();
+            next += interval;
+        }
     }
     return NULL;
 }
@@ -333,9 +427,6 @@ static pthread_t mms_thread_id;
 
 error__t start_mms_handlers(void)
 {
-    /* Perform first initialisation read of MMS before starting thread. */
-    read_mms_handlers(true);
-
     return TEST_PTHREAD(
         pthread_create(&mms_thread_id, NULL, read_mms_thread, NULL));
 }

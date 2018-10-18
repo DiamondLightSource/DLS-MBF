@@ -12,23 +12,23 @@ entity memory_buffer is
         DOUBLE_BUFFER : boolean := false
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
-        input_valid_i : in std_logic;
-        input_ready_o : out std_logic;
-        input_data_i : in std_logic_vector;
+        input_valid_i : in std_ulogic;
+        input_ready_o : out std_ulogic;
+        input_data_i : in std_ulogic_vector;
         input_addr_i : in unsigned;
 
-        output_valid_o : out std_logic;
-        output_ready_i : in std_logic;
-        output_data_o : out std_logic_vector;
+        output_valid_o : out std_ulogic;
+        output_ready_i : in std_ulogic;
+        output_data_o : out std_ulogic_vector;
         output_addr_o : out unsigned
     );
 end;
 
 architecture arch of memory_buffer is
-    signal valid : std_logic_vector(0 to LENGTH);
-    signal ready : std_logic_vector(0 to LENGTH);
+    signal valid : std_ulogic_vector(0 to LENGTH);
+    signal ready : std_ulogic_vector(0 to LENGTH);
     signal data : vector_array(0 to LENGTH)(input_data_i'RANGE);
     signal addr : unsigned_array(0 to LENGTH)(input_addr_i'RANGE);
 

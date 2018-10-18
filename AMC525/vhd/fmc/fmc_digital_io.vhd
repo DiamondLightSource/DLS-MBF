@@ -11,28 +11,28 @@ use work.support.all;
 entity fmc_digital_io is
     port (
         -- All FMC low pin count connections.
-        FMC_LA_P : inout std_logic_vector(0 to 33);
-        FMC_LA_N : inout std_logic_vector(0 to 33);
+        FMC_LA_P : inout std_ulogic_vector(0 to 33);
+        FMC_LA_N : inout std_ulogic_vector(0 to 33);
 
         -- Output enable and input termination enable
-        out_enable_i : in std_logic_vector(4 downto 0);
-        term_enable_i : in std_logic_vector(4 downto 0);
+        out_enable_i : in std_ulogic_vector(4 downto 0);
+        term_enable_i : in std_ulogic_vector(4 downto 0);
 
         -- Direct connection to I/O pins, buffered only.
-        output_i : in std_logic_vector(4 downto 0);
-        leds_i : in std_logic_vector(1 downto 0);
-        input_o : out std_logic_vector(4 downto 0)
+        output_i : in std_ulogic_vector(4 downto 0);
+        leds_i : in std_ulogic_vector(1 downto 0);
+        input_o : out std_ulogic_vector(4 downto 0)
     );
 end;
 
 architecture arch of fmc_digital_io is
-    signal buf_input_p : std_logic_vector(4 downto 0);
-    signal buf_input_n : std_logic_vector(4 downto 0);
+    signal buf_input_p : std_ulogic_vector(4 downto 0);
+    signal buf_input_n : std_ulogic_vector(4 downto 0);
 
-    signal buf_output_p : std_logic_vector(4 downto 0);
-    signal buf_output_n : std_logic_vector(4 downto 0);
+    signal buf_output_p : std_ulogic_vector(4 downto 0);
+    signal buf_output_n : std_ulogic_vector(4 downto 0);
 
-    signal n_out_enable : std_logic_vector(4 downto 0);
+    signal n_out_enable : std_ulogic_vector(4 downto 0);
 
 begin
     -- Pin by pin buffer assignments

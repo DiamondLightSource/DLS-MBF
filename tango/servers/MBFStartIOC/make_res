@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Reads key from given config file.  Called thus:
+#
+#   read_key file key
+read_key()
+{
+    sed -n "/^$2 *= */{s///; p; q;}" "$1"
+}
+
+IOC_NAME="$(basename $1 ".config")"
+IOC_DIR="$(cd "$(dirname $1)/../../../iocs"; pwd)"
+
+VAR_SUBST=""
+VAR_SUBST="$VAR_SUBST;s:@@DEVICE_NAME@@:$(read_key $1 tango_device_name):"
+VAR_SUBST="$VAR_SUBST;s:@@INSTANCE@@:$(read_key $1 tango_instance):"
+VAR_SUBST="$VAR_SUBST;s:@@COMMAND@@:$IOC_DIR/$IOC_NAME:"
+VAR_SUBST="$VAR_SUBST;s:@@TMUX_SESSION_NAME@@:$(read_key $1 tango_tmux_session_name):"
+sed "$VAR_SUBST" MBFStartIOC_template.res

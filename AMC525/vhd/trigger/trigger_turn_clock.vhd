@@ -15,31 +15,31 @@ use work.trigger_defs.all;
 entity trigger_turn_clock is
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Control and readback
         setup_i : in turn_clock_setup_t;
         readback_o : out turn_clock_readback_t;
 
         -- Input clock
-        revolution_clock_i : in std_logic;
+        revolution_clock_i : in std_ulogic;
         -- Generated turn clocks
-        turn_clock_o : out std_logic
+        turn_clock_o : out std_ulogic
     );
 end;
 
 architecture arch of trigger_turn_clock is
-    signal start_sync : std_logic;
-    signal read_sync : std_logic;
+    signal start_sync : std_ulogic;
+    signal read_sync : std_ulogic;
     signal zero_detect : boolean;
     signal bunch_counter : bunch_count_t := (others => '0');
-    signal revolution_clock : std_logic := '0';
+    signal revolution_clock : std_ulogic := '0';
     signal sync_request : boolean := false;
     signal bunch_counter_delay : bunch_count_t := (others => '0');
     signal zero_detect_delay : boolean := false;
     signal revolution_clock_delay : boolean := false;
-    signal turn_clock : std_logic := '0';
+    signal turn_clock : std_ulogic := '0';
 
     signal turn_counter : readback_o.turn_counter'SUBTYPE := (others => '0');
     signal turn_counter_out : readback_o.turn_counter'SUBTYPE;
@@ -89,7 +89,7 @@ begin
             revolution_clock_delay <= revolution_clock = '1';
 
             -- Output of turn clock
-            turn_clock <= to_std_logic(
+            turn_clock <= to_std_ulogic(
                 bunch_counter_delay = setup_i.clock_offset);
 
             -- Now count some turn statistics
@@ -111,7 +111,7 @@ begin
     -- Bring register readbacks onto DSP clock
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            readback_o.sync_busy <= to_std_logic(sync_request);
+            readback_o.sync_busy <= to_std_ulogic(sync_request);
             readback_o.turn_counter <= turn_counter_out;
             readback_o.error_counter <= error_counter_out;
         end if;

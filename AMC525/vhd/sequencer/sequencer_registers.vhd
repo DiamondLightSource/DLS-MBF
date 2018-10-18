@@ -12,18 +12,18 @@ use work.sequencer_defs.all;
 
 entity sequencer_registers is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_SEQ_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_SEQ_REGS);
-        read_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_SEQ_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_SEQ_REGS);
         read_data_o : out reg_data_array_t(DSP_SEQ_REGS);
-        read_ack_o : out std_logic_vector(DSP_SEQ_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_SEQ_REGS);
 
         -- Sequencer configuration settings
-        seq_abort_o : out std_logic;
+        seq_abort_o : out std_ulogic;
         target_seq_pc_o : out seq_pc_t;
         target_super_count_o : out super_count_t;
         trigger_state_o : out seq_pc_t;
@@ -31,10 +31,10 @@ entity sequencer_registers is
         -- State readbacks
         seq_pc_i : in seq_pc_t;
         super_count_i : in super_count_t;
-        seq_busy_i : in std_logic;
+        seq_busy_i : in std_ulogic;
 
         -- Burst memory write interface
-        mem_write_strobe_o : out std_logic_vector;
+        mem_write_strobe_o : out std_ulogic_vector;
         mem_write_addr_o : out unsigned;
         mem_write_data_o : out reg_data_t
     );
@@ -47,10 +47,10 @@ architecture arch of sequencer_registers is
 
     constant WRITE_LENGTH : natural := mem_write_strobe_o'LENGTH;
     signal mem_write_strobe : mem_write_strobe_o'SUBTYPE := (others => '0');
-    signal start_write : std_logic;
+    signal start_write : std_ulogic;
     signal write_target : unsigned(bits(WRITE_LENGTH)-1 downto 0);
     signal write_address : mem_write_addr_o'SUBTYPE;
-    signal write_strobe : std_logic;
+    signal write_strobe : std_ulogic;
 
 begin
     -- -------------------------------------------------------------------------
@@ -116,9 +116,9 @@ begin
     start_write <= strobed_bits(DSP_SEQ_COMMAND_WRITE_BIT);
 
     readback_register <= (
-        DSP_SEQ_STATUS_PC_BITS    => std_logic_vector(seq_pc_i),
+        DSP_SEQ_STATUS_PC_BITS    => std_ulogic_vector(seq_pc_i),
         DSP_SEQ_STATUS_BUSY_BIT   => seq_busy_i,
-        DSP_SEQ_STATUS_SUPER_BITS => std_logic_vector(super_count_i),
+        DSP_SEQ_STATUS_SUPER_BITS => std_ulogic_vector(super_count_i),
         others => '0'
     );
 

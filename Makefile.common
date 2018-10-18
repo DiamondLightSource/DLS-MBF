@@ -4,6 +4,9 @@
 # ------------------------------------------------------------------------------
 # List of symbols which can be defined in the CONFIG file
 
+# Site definition for local configuration options
+MUST_DEFINE += SITE
+
 # FPGA build and simulation tools
 MUST_DEFINE += VIVADO
 MUST_DEFINE += VSIM

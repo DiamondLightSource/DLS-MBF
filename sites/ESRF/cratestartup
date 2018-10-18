@@ -1,0 +1,119 @@
+#! /bin/sh
+#
+# cratestartup:    Loading/Unloading drivers,
+#                  Starting/Stopping device servers
+#
+# chkconfig:    3 99 8
+# description:  Tango/Taco device servers, drivers start/stop
+#
+ 
+# Setting the environmnent
+
+# New:    Next environment variable is used in individual drivers scripts
+#         (except rocket and ieee1394) so that they do not run udevstart
+#         when invoked from this cratestartup script, but they do it when
+#         invoked individually from the interactive shell.
+# Remark: Although in this crate only rocketport driver is used, whose
+#         script does not use CRATESTARTUP, leave next 2 lines uncommented
+#         in case some ESRF driver (whose script uses CRATESTARTUP) is 
+#         added later.
+CRATESTARTUP=1
+export CRATESTARTUP
+
+DATE=`date`
+HOSTNAME=`hostname`
+DRIVERSPATH=/opt/dserver/driver
+MBF_DRIVER=amc525_mbf
+export MBFHOME=/users/dserver/mbf
+export DRIVERSPATH
+DSHOME="/opt/dserver"
+. /operation/dserver/.environ
+		
+echo "$DATE cratestartup running on $HOSTNAME" >>/tmp/start.log
+
+# New:    Set driver module path (as seen from crate) which is used
+#         in individual drivers scripts (except rocket where this path
+#         is hardwired). In those scripts this path is defined only
+#         if it is not yet defined (= in case the scripts are used
+#         independently i.e. not called from this one).
+# Remark: Although in this crate only rocketport driver is used, whose
+#         script does not use MODULE_PATH, leave next 2 lines uncommented
+#         in case some ESRF driver (whose script uses MODULE_PATH) is
+#         added later.
+MODULE_PATH=$DRIVERSPATH/modules/`uname -r`
+export MODULE_PATH
+
+case "$1" in
+   start)
+    /operation/dserver/crates/common_scripts/cratestartup $1 2>> /tmp/start.log
+
+# Load MBF driver (for FPGA)
+#
+if ! lsmod | grep -q "$MBF_DRIVER"; then
+	printf "Loading driver... "
+	insmod $MBFHOME/build/driver/kbuild-$(uname -r)/$MBF_DRIVER.ko
+	printf "Ok\n"
+else
+	echo "MBF driver $MBF_DRIVER already loaded"
+fi
+
+if ! lspci -v | grep -q "Xilinx"; then
+  # Wait for the network interface with AMC525 to be ready
+  printf "Waiting for network connection with AMC525... "
+  for i in `seq 1 120` 
+  do
+    ping -c 1 -W 1 192.168.40.199 > /dev/null
+    if [ $? = 1 ] ; then
+      sleep 2
+    else break
+    fi
+  done
+
+  echo "Network connection waiting time: i=$i" >> /tmp/start_amc525.log
+
+  if [ $i = 120 ] ; then
+    printf "Failed!\n"
+    exit 2
+    else printf "Ok\n"
+  fi
+
+  printf "Loading FPGA image... "
+
+  # Load the AMC525 FPGA
+  $MBFHOME/load_fpga -f $MBFHOME/../amc525_mbf.bit 199
+
+  printf "Ok\n"
+
+else echo "AMC525 already detected on PCIe." >> /tmp/start_amc525.log
+fi
+
+echo "" >> /tmp/start_amc525.log
+
+    ########### start control system services
+    #
+    . ~dserver/setpath_mbf
+    su dserver -c "/operation/dserver/crates/common_scripts/taco start" 2>> /tmp/start.log
+    ;;
+ 
+   stop)
+    /operation/dserver/crates/common_scripts/cratestartup $1 2>> /tmp/stop.log
+
+    rmmod $MBF_DRIVER
+
+    ########### stop control system services
+    #
+    su dserver -c "/operation/dserver/crates/common_scripts/taco stop" 2>> /tmp/stop.log
+
+    # Unload the Rocket port driver (Serial lines)
+    # Dont append to /tmp/start.log for errors from rocketport,
+    # since it uses its own log file.
+    #$DRIVERSPATH/scripts/rocket stop
+    #
+    ;;
+
+   *) echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit 0
+

@@ -4,7 +4,7 @@ import os
 import sys
 import numpy
 
-import mbf
+from mbf import parse
 
 
 # Reads and writes a bit-field in a register
@@ -209,7 +209,7 @@ def make_top(group, attributes):
     return Top
 
 
-class GenerateMethods(mbf.parse.register_defs.WalkParse):
+class GenerateMethods(parse.register_defs.WalkParse):
     def walk_field(self, context, field):
         return Field(field)
 
@@ -248,11 +248,17 @@ generate = GenerateMethods()
 
 
 # Read the definitions in parsed form
-defs = mbf.parsed_defs(flatten = True)
+defs = parse.parsed_defs(flatten = True)
 
 register_groups = {}
 for group in defs.groups:
     register_groups[group.name] = generate.walk_top(group)
+
+class Constants:
+    def __init__(self):
+        for constant in defs.constants.values():
+            setattr(self, constant.name, constant.value)
+constants = Constants()
 
 
 class BaseAddress:

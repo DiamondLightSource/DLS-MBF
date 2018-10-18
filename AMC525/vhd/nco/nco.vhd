@@ -13,7 +13,7 @@ use work.nco_defs.all;
 
 entity nco is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );
@@ -32,7 +32,7 @@ begin
         DW => phase_advance_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(phase_advance_i),
+        data_i => std_ulogic_vector(phase_advance_i),
         unsigned(data_o) => phase_advance
     );
 

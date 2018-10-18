@@ -15,9 +15,9 @@ entity ibufds_gte2_array is
         COUNT : natural := 1
     );
     port (
-        p_i : in  std_logic_vector(COUNT-1 downto 0);
-        n_i : in  std_logic_vector(COUNT-1 downto 0);
-        o_o : out std_logic_vector(COUNT-1 downto 0)
+        p_i : in  std_ulogic_vector(COUNT-1 downto 0);
+        n_i : in  std_ulogic_vector(COUNT-1 downto 0);
+        o_o : out std_ulogic_vector(COUNT-1 downto 0)
     );
 end;
 

@@ -10,7 +10,7 @@ use work.nco_defs.all;
 
 entity nco_cos_sin_octant is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         octant_i : octant_t;
         cos_sin_i : in cos_sin_18_t;

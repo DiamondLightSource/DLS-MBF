@@ -10,7 +10,7 @@ use work.nco_defs.all;
 
 entity nco_phase is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
         phase_o : out angle_t := (others => '0')
     );
@@ -40,7 +40,7 @@ begin
         DW => angle_t'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(phase),
+        data_i => std_ulogic_vector(phase),
         unsigned(data_o) => phase_o
     );
 end;

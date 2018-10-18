@@ -9,14 +9,14 @@ entity dlyline is
         DW  : natural := 1
     );
     port (
-       clk_i : in std_logic;
-       data_i : in std_logic_vector(DW-1 downto 0);
-       data_o : out std_logic_vector(DW-1 downto 0)
+       clk_i : in std_ulogic;
+       data_i : in std_ulogic_vector(DW-1 downto 0);
+       data_o : out std_ulogic_vector(DW-1 downto 0)
     );
 end;
 
 architecture arch of dlyline is
-    type dlyline_t is array(DLY-1 downto 0) of std_logic_vector(DW-1 downto 0);
+    type dlyline_t is array(DLY-1 downto 0) of std_ulogic_vector(DW-1 downto 0);
     signal dlyline : dlyline_t := (others => (others => '0'));
 
 begin

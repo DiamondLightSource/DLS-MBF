@@ -12,58 +12,58 @@ entity axi_burst_master is
         DATA_WIDTH : natural := 64;
         RAM_ADDR_WIDTH : natural := 31;
         BURST_LENGTH : natural := 32;
-        ADDR_PADDING : std_logic_vector := ""
+        ADDR_PADDING : std_ulogic_vector := ""
     );
     port (
-        clk_i : in std_logic;
-        rstn_i : in std_logic;
+        clk_i : in std_ulogic;
+        rstn_i : in std_ulogic;
 
         -- AXI write master interface
-        awaddr_o : out std_logic_vector(47 downto 0);
-        awburst_o : out std_logic_vector(1 downto 0);
-        awsize_o : out std_logic_vector(2 downto 0);
-        awlen_o : out std_logic_vector(7 downto 0);
-        awcache_o : out std_logic_vector(3 downto 0);
-        awlock_o : out std_logic_vector(0 downto 0);
-        awprot_o : out std_logic_vector(2 downto 0);
-        awqos_o : out std_logic_vector(3 downto 0);
-        awregion_o : out std_logic_vector(3 downto 0);
-        awvalid_o : out std_logic;
-        awready_i : in std_logic;
+        awaddr_o : out std_ulogic_vector(47 downto 0);
+        awburst_o : out std_ulogic_vector(1 downto 0);
+        awsize_o : out std_ulogic_vector(2 downto 0);
+        awlen_o : out std_ulogic_vector(7 downto 0);
+        awcache_o : out std_ulogic_vector(3 downto 0);
+        awlock_o : out std_ulogic_vector(0 downto 0);
+        awprot_o : out std_ulogic_vector(2 downto 0);
+        awqos_o : out std_ulogic_vector(3 downto 0);
+        awregion_o : out std_ulogic_vector(3 downto 0);
+        awvalid_o : out std_ulogic;
+        awready_i : in std_ulogic;
         --
-        wdata_o : out std_logic_vector(DATA_WIDTH-1 downto 0)
+        wdata_o : out std_ulogic_vector(DATA_WIDTH-1 downto 0)
             := (others => '0');
-        wlast_o : out std_logic := '0';
-        wstrb_o : out std_logic_vector(DATA_WIDTH/8-1 downto 0)
+        wlast_o : out std_ulogic := '0';
+        wstrb_o : out std_ulogic_vector(DATA_WIDTH/8-1 downto 0)
             := (others => '0');
-        wvalid_o : out std_logic;
-        wready_i : in std_logic;
+        wvalid_o : out std_ulogic;
+        wready_i : in std_ulogic;
         --
-        bresp_i : in std_logic_vector(1 downto 0);
-        bvalid_i : in std_logic;
-        bready_o : out std_logic;
+        bresp_i : in std_ulogic_vector(1 downto 0);
+        bvalid_i : in std_ulogic;
+        bready_o : out std_ulogic;
 
         -- Control interface.
         -- If capture_enable_i is held high then eventually data_ready_o will
         -- go high, after which data will be processed until capture_enable_i
         -- goes low, at which point data_ready_o will go low.
-        capture_enable_i : in std_logic;
-        data_ready_o : out std_logic;
+        capture_enable_i : in std_ulogic;
+        data_ready_o : out std_ulogic;
 
         -- This is the address of the currently written data word.
-        capture_address_o : out std_logic_vector(RAM_ADDR_WIDTH-1 downto 0)
+        capture_address_o : out std_ulogic_vector(RAM_ADDR_WIDTH-1 downto 0)
             := (others => '0');
 
         -- Data to be written.  If data_ready_o is not set then data_strobe_i
         -- will be ignored and any data write will be lost.
-        data_i : in std_logic_vector(DATA_WIDTH-1 downto 0);
-        data_valid_i : in std_logic;
+        data_i : in std_ulogic_vector(DATA_WIDTH-1 downto 0);
+        data_valid_i : in std_ulogic;
 
         -- Error detection flags.  These need to be latched externally as
         -- they're only set transiently.
-        data_error_o : out std_logic := '0';   -- Data lost via wready_i
-        addr_error_o : out std_logic := '0';   -- Should never happen
-        brsp_error_o : out std_logic := '0'    -- Non zero bresp received
+        data_error_o : out std_ulogic := '0';   -- Data lost via wready_i
+        addr_error_o : out std_ulogic := '0';   -- Should never happen
+        brsp_error_o : out std_ulogic := '0'    -- Non zero bresp received
     );
 end;
 
@@ -80,15 +80,15 @@ architecture arch of axi_burst_master is
     signal write_done : boolean := false;
     signal burst_active : boolean := false;
     signal first_write_done : boolean := false;
-    signal first_burst : std_logic := '0';
-    signal enable_request : std_logic := '0';
-    signal first_write : std_logic;
+    signal first_burst : std_ulogic := '0';
+    signal enable_request : std_ulogic := '0';
+    signal first_write : std_ulogic;
     signal starting : boolean := false;
     signal next_burst : boolean := false;
     signal data_active : boolean := false;
 
     -- Address channnel
-    signal half_burst : std_logic := '0';
+    signal half_burst : std_ulogic := '0';
     signal write_address : boolean := false;
     signal burst_address : unsigned(BURST_ADDR_WIDTH-1 downto 0)
         := (others => '0');
@@ -97,8 +97,8 @@ architecture arch of axi_burst_master is
     -- Data channel
     signal reset_beat : boolean := true;
     signal beat_counter : unsigned(BURST_BITS-1 downto 0);
-    signal wlast_early : std_logic;
-    signal wlast_early_edge : std_logic := '0';
+    signal wlast_early : std_ulogic;
+    signal wlast_early_edge : std_ulogic := '0';
     signal wvalid : boolean := false;
     signal wlast : boolean := false;
 
@@ -113,7 +113,7 @@ begin
     -- incrementing burst address in the appropriate field.
     awaddr_o(47 downto RAM_ADDR_WIDTH) <= ADDR_PADDING;
     awaddr_o(RAM_ADDR_WIDTH-1 downto BURST_ADDR_BASE) <=
-        std_logic_vector(burst_address);
+        std_ulogic_vector(burst_address);
     awaddr_o(BURST_ADDR_BASE-1 downto 0) <= (others => '0');
 
     -- Fixed write address fields
@@ -124,9 +124,9 @@ begin
     awqos_o <= "0000";                  -- Default QoS
     awregion_o <= "0000";               -- Default region
     -- All bursts are the same configured burst length
-    awlen_o <= std_logic_vector(to_unsigned(BURST_LENGTH-1, 8));
+    awlen_o <= std_ulogic_vector(to_unsigned(BURST_LENGTH-1, 8));
     -- Each beat is our full data width in size
-    awsize_o <= std_logic_vector(to_unsigned(DATA_ADDR_BITS, 3));
+    awsize_o <= std_ulogic_vector(to_unsigned(DATA_ADDR_BITS, 3));
 
     -- We can always accept a write response
     bready_o <= '1';
@@ -135,7 +135,7 @@ begin
     -- The beat counter is directly written into the capture address, and the
     -- bottom bits are permanently zero.
     capture_address_o(BURST_ADDR_BASE-1 downto DATA_ADDR_BITS) <=
-        std_logic_vector(beat_counter);
+        std_ulogic_vector(beat_counter);
     capture_address_o(DATA_ADDR_BITS-1 downto 0) <= (others => '0');
 
 
@@ -175,11 +175,11 @@ begin
         DLY => FIRST_DELAY
     ) port map (
         clk_i => clk_i,
-        data_i(0) => to_std_logic(first_write_done),
+        data_i(0) => to_std_ulogic(first_write_done),
         data_o(0) => first_burst);
 
     -- Use rising edge of capture_enable_i and inactivity to generate start.
-    enable_request <= to_std_logic(
+    enable_request <= to_std_ulogic(
         capture_enable_i = '1' and not burst_active and not starting);
     first_write_inst : entity work.edge_detect port map (
         clk_i => clk_i,
@@ -221,7 +221,7 @@ begin
         end if;
     end process;
 
-    data_ready_o <= to_std_logic(data_active);
+    data_ready_o <= to_std_ulogic(data_active);
 
 
     -- -------------------------------------------------------------------------
@@ -265,17 +265,17 @@ begin
 
             -- Detect an address error if we're still waiting to get rid of the
             -- last address when starting a new one
-            addr_error_o <= to_std_logic(write_address and awvalid);
+            addr_error_o <= to_std_ulogic(write_address and awvalid);
 
             -- Update the capture address when starting a new burst
             if wlast and wvalid and wready_i = '1' then
                 capture_address_o(RAM_ADDR_WIDTH-1 downto BURST_ADDR_BASE) <=
-                    std_logic_vector(burst_address);
+                    std_ulogic_vector(burst_address);
             end if;
         end if;
     end process;
 
-    awvalid_o <= to_std_logic(awvalid);
+    awvalid_o <= to_std_ulogic(awvalid);
 
 
     -- -------------------------------------------------------------------------
@@ -289,7 +289,7 @@ begin
 
     -- The next beat will be the last one.  This flag is required for updating
     -- burst_active, which must only be updated during the last beat.
-    wlast_early <= to_std_logic(
+    wlast_early <= to_std_ulogic(
         beat_counter = BURST_LENGTH - 2 and wready_i = '1');
     wlast_early_inst : entity work.edge_detect port map (
         clk_i => clk_i,
@@ -339,12 +339,12 @@ begin
 
             -- Detect a data write error if we've got data incoming and we've
             -- not managed to get rid of the last write.
-            data_error_o <= to_std_logic(
+            data_error_o <= to_std_ulogic(
                 burst_active and data_active and data_valid_i = '1' and
                 wvalid and wready_i = '0');
 
             -- Detect write response error if response is not all zeros
-            brsp_error_o <= to_std_logic(bvalid_i = '1' and bresp_i /= "00");
+            brsp_error_o <= to_std_ulogic(bvalid_i = '1' and bresp_i /= "00");
         end if;
     end process;
 
@@ -356,7 +356,7 @@ begin
         data_i => beat_counter(BURST_BITS-1),
         edge_o => half_burst);
 
-    wvalid_o <= to_std_logic(wvalid);
-    wlast_o <= to_std_logic(wlast);
+    wvalid_o <= to_std_ulogic(wvalid);
+    wlast_o <= to_std_ulogic(wlast);
 
 end;

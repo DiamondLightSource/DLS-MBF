@@ -24,20 +24,20 @@ use ieee.numeric_std.all;
 
 entity adc_dsp_phase is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        adc_phase_o : out std_logic := '0'
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        adc_phase_o : out std_ulogic := '0'
     );
 end;
 
 architecture arch of adc_dsp_phase is
-    signal phase_0 : std_logic := '0';
-    signal phase_90 : std_logic := '0';
+    signal phase_0 : std_ulogic := '0';
+    signal phase_90 : std_ulogic := '0';
     -- We need to bring the DSP clock phase signals over to the ADC clock domain
     -- before attempting any logic, as otherwise the timing becomes potentially
     -- *very* challenging.
-    signal phase_0_adc : std_logic := '0';
-    signal phase_90_adc : std_logic := '0';
+    signal phase_0_adc : std_ulogic := '0';
+    signal phase_90_adc : std_ulogic := '0';
 
 begin
     process (dsp_clk_i) begin

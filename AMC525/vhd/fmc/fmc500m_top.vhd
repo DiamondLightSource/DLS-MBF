@@ -10,37 +10,37 @@ use work.fmc500m_defs.all;
 
 entity fmc500m_top is
     port (
-        adc_clk_i : in std_logic;       -- Derived ADC clock
-        reg_clk_i : in std_logic;       -- Register clock
+        adc_clk_i : in std_ulogic;       -- Derived ADC clock
+        reg_clk_i : in std_ulogic;       -- Register clock
 
         -- FMC
-        FMC_LA_P : inout std_logic_vector(0 to 33);
-        FMC_LA_N : inout std_logic_vector(0 to 33);
-        FMC_HB_P : inout std_logic_vector(0 to 21);
-        FMC_HB_N : inout std_logic_vector(0 to 21);
+        FMC_LA_P : inout std_ulogic_vector(0 to 33);
+        FMC_LA_N : inout std_ulogic_vector(0 to 33);
+        FMC_HB_P : inout std_ulogic_vector(0 to 21);
+        FMC_HB_N : inout std_ulogic_vector(0 to 21);
 
         -- SPI Register control
-        spi_write_strobe_i : in std_logic;
+        spi_write_strobe_i : in std_ulogic;
         spi_write_data_i : in reg_data_t;
-        spi_write_ack_o : out std_logic;
-        spi_read_strobe_i : in std_logic;
+        spi_write_ack_o : out std_ulogic;
+        spi_read_strobe_i : in std_ulogic;
         spi_read_data_o : out reg_data_t;
-        spi_read_ack_o : out std_logic;
+        spi_read_ack_o : out std_ulogic;
 
         -- ADC clock and data
-        adc_dco_o : out std_logic;      -- Raw data clock from ADC
+        adc_dco_o : out std_ulogic;      -- Raw data clock from ADC
         adc_data_a_o : out signed;
         adc_data_b_o : out signed;
-        adc_status_a_o : out std_logic;
-        adc_status_b_o : out std_logic;
+        adc_status_a_o : out std_ulogic;
+        adc_status_b_o : out std_ulogic;
 
         -- DAC clock and data (clocked by ADC clock)
         dac_data_a_i : in signed;
         dac_data_b_i : in signed;
-        dac_frame_i : in std_logic;
+        dac_frame_i : in std_ulogic;
 
         -- Miscellaneous IO signals
-        ext_trig_o : out std_logic;     -- Fast external trigger
+        ext_trig_o : out std_ulogic;     -- Fast external trigger
         misc_outputs_i : in fmc500_outputs_t;
         misc_inputs_o : out fmc500_inputs_t
     );
@@ -51,50 +51,50 @@ architecture arch of fmc500m_top is
     -- Signal interfaces to IO.
 
     -- PLL
-    signal pll_spi_csn : std_logic;
-    signal pll_spi_sclk : std_logic;
-    signal pll_spi_sdi : std_logic;
-    signal pll_spi_sdo : std_logic;
-    signal pll_status_ld1 : std_logic;
-    signal pll_status_ld2 : std_logic;
-    signal pll_clkin_sel0_in : std_logic;
-    signal pll_clkin_sel0_out : std_logic;
-    signal pll_clkin_sel0_ena : std_logic;
-    signal pll_clkin_sel1_in : std_logic;
-    signal pll_clkin_sel1_out : std_logic;
-    signal pll_clkin_sel1_ena : std_logic;
-    signal pll_sync : std_logic;
-    signal pll_dclkout2 : std_logic;     -- On CC pin
-    signal pll_sdclkout3 : std_logic;
+    signal pll_spi_csn : std_ulogic;
+    signal pll_spi_sclk : std_ulogic;
+    signal pll_spi_sdi : std_ulogic;
+    signal pll_spi_sdo : std_ulogic;
+    signal pll_status_ld1 : std_ulogic;
+    signal pll_status_ld2 : std_ulogic;
+    signal pll_clkin_sel0_in : std_ulogic;
+    signal pll_clkin_sel0_out : std_ulogic;
+    signal pll_clkin_sel0_ena : std_ulogic;
+    signal pll_clkin_sel1_in : std_ulogic;
+    signal pll_clkin_sel1_out : std_ulogic;
+    signal pll_clkin_sel1_ena : std_ulogic;
+    signal pll_sync : std_ulogic;
+    signal pll_dclkout2 : std_ulogic;     -- On CC pin
+    signal pll_sdclkout3 : std_ulogic;
 
     -- ADC
-    signal adc_data : std_logic_vector(13 downto 0);
-    signal adc_status : std_logic;
-    signal adc_fd_a : std_logic;
-    signal adc_fd_b : std_logic;
-    signal adc_spi_csn : std_logic;
-    signal adc_spi_sclk : std_logic;
-    signal adc_spi_sdi : std_logic;
-    signal adc_spi_sdo : std_logic;
-    signal adc_spi_sdio_en : std_logic;
-    signal adc_pdwn : std_logic;
+    signal adc_data : std_ulogic_vector(13 downto 0);
+    signal adc_status : std_ulogic;
+    signal adc_fd_a : std_ulogic;
+    signal adc_fd_b : std_ulogic;
+    signal adc_spi_csn : std_ulogic;
+    signal adc_spi_sclk : std_ulogic;
+    signal adc_spi_sdi : std_ulogic;
+    signal adc_spi_sdo : std_ulogic;
+    signal adc_spi_sdio_en : std_ulogic;
+    signal adc_pdwn : std_ulogic;
 
     -- DAC
-    signal dac_data : std_logic_vector(15 downto 0);
-    signal dac_dci : std_logic;
-    signal dac_frame : std_logic;
-    signal dac_spi_csn : std_logic;
-    signal dac_spi_sclk : std_logic;
-    signal dac_spi_sdi : std_logic;
-    signal dac_spi_sdo : std_logic;
-    signal dac_rstn : std_logic;
-    signal dac_irqn : std_logic;
+    signal dac_data : std_ulogic_vector(15 downto 0);
+    signal dac_dci : std_ulogic;
+    signal dac_frame : std_ulogic;
+    signal dac_spi_csn : std_ulogic;
+    signal dac_spi_sclk : std_ulogic;
+    signal dac_spi_sdi : std_ulogic;
+    signal dac_spi_sdo : std_ulogic;
+    signal dac_rstn : std_ulogic;
+    signal dac_irqn : std_ulogic;
 
     -- Misc
-    signal adc_pwr_good : std_logic;
-    signal dac_pwr_good : std_logic;
-    signal vcxo_pwr_good : std_logic;
-    signal temp_alert_n : std_logic;
+    signal adc_pwr_good : std_ulogic;
+    signal dac_pwr_good : std_ulogic;
+    signal vcxo_pwr_good : std_ulogic;
+    signal temp_alert_n : std_ulogic;
 
 
 begin
@@ -210,8 +210,8 @@ begin
         COUNT => dac_data'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        d1_i => std_logic_vector(dac_data_a_i),
-        d2_i => std_logic_vector(dac_data_b_i),
+        d1_i => std_ulogic_vector(dac_data_a_i),
+        d2_i => std_ulogic_vector(dac_data_b_i),
         q_o => dac_data
     );
     dac_dci_inst : entity work.oddr_array port map (

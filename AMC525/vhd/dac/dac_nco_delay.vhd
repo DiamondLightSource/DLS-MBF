@@ -11,7 +11,7 @@ entity dac_nco_delay is
         DELAY : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         data_i : in dsp_nco_from_mux_t;
         data_o : out dsp_nco_from_mux_t
     );
@@ -24,7 +24,7 @@ begin
         DW => data_i.nco'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(data_i.nco),
+        data_i => std_ulogic_vector(data_i.nco),
         signed(data_o) => data_o.nco
     );
 
@@ -33,7 +33,7 @@ begin
         DW => data_i.gain'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(data_i.gain),
+        data_i => std_ulogic_vector(data_i.gain),
         unsigned(data_o) => data_o.gain
     );
 

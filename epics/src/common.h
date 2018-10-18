@@ -103,3 +103,10 @@ double _pure freq_to_tune_signed(unsigned int freq);
 
 /* Type aware calloc. */
 #define CALLOC(type, nelm)      (type *) calloc(nelm, sizeof(type))
+
+
+/* Helper function for formatting an EPICS string.  Probably belongs in
+ * epics_device at some point.  Returns false if the string was truncated. */
+struct epics_string;    // Aliased as EPICS_STRING
+bool format_epics_string(struct epics_string *s, const char *format, ...)
+    __attribute__((format(printf, 2, 3)));

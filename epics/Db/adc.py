@@ -42,3 +42,22 @@ with name_prefix('ADC'):
         SCAN = '.1 second',
         FLNK = create_fanout('EVENTS:FAN', *adc_events),
         DESC = 'ADC event detect scan')
+
+
+if lmbf_mode:
+    for a in axes('ADC', lmbf_mode):
+        # Create bunch phase and magnitude measurement PVs derived from MMS
+        # waveforms.
+        phase_pvs = [
+            mms.mms_waveform('MAGNITUDE', 'Bunch magnitude'),
+            mms.mms_waveform('PHASE', 'Bunch phase', EGU = 'deg'),
+            aIn('PHASE_MEAN', -180, 180, EGU = 'deg', PREC = 2,
+                DESC = 'Average bunch phase'),
+            aIn('MAGNITUDE_MEAN', 0, 1, PREC = 6,
+                DESC = 'Average bunch magnitude'),
+        ]
+        Action('TRIGGER',
+            SCAN = '.2 second',
+            FLNK = create_fanout('FAN', *phase_pvs),
+            DESC = 'Update bunch phase')
+        aOut('THRESHOLD', 0, 1, PREC = 3, DESC = 'Magnitude phase threshold')

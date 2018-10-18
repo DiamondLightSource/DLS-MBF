@@ -12,9 +12,9 @@ use work.sequencer_defs.all;
 
 entity sequencer_super is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_addr_i : in unsigned;
         write_data_i : in reg_data_t;
 

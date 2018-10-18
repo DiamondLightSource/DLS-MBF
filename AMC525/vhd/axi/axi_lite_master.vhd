@@ -8,33 +8,33 @@ use work.support.all;
 
 entity axi_lite_master is
     generic (
-        ADDR_PADDING : std_logic_vector := ""
+        ADDR_PADDING : std_ulogic_vector := ""
     );
     port (
-        clk_i : in std_logic;
-        rstn_i : in std_logic;
+        clk_i : in std_ulogic;
+        rstn_i : in std_ulogic;
 
         -- AXI-Lite write master interface
-        awaddr_o : out std_logic_vector;
-        awprot_o : out std_logic_vector(2 downto 0);
-        awready_i : in std_logic;
-        awvalid_o : out std_logic;
+        awaddr_o : out std_ulogic_vector;
+        awprot_o : out std_ulogic_vector(2 downto 0);
+        awready_i : in std_ulogic;
+        awvalid_o : out std_ulogic;
         --
-        bready_o : out std_logic;
-        bresp_i : in std_logic_vector(1 downto 0);
-        bvalid_i : in std_logic;
+        bready_o : out std_ulogic;
+        bresp_i : in std_ulogic_vector(1 downto 0);
+        bvalid_i : in std_ulogic;
         --
-        wdata_o : out std_logic_vector;
-        wready_i : in std_logic;
-        wstrb_o : out std_logic_vector;
-        wvalid_o : out std_logic;
+        wdata_o : out std_ulogic_vector;
+        wready_i : in std_ulogic;
+        wstrb_o : out std_ulogic_vector;
+        wvalid_o : out std_ulogic;
 
         -- Control interface
         address_i : in unsigned;
-        data_i : in std_logic_vector;
-        data_valid_i : in std_logic;
-        data_ready_o : out std_logic;
-        brsp_error_o : out std_logic
+        data_i : in std_ulogic_vector;
+        data_valid_i : in std_ulogic;
+        data_ready_o : out std_ulogic;
+        brsp_error_o : out std_ulogic
     );
 end;
 
@@ -68,7 +68,7 @@ begin
 
     -- Assemble write address from the real write address.
     awaddr_o(ADDR_TOP) <= ADDR_PADDING;
-    awaddr_o(ADDR_MID) <= std_logic_vector(address_i);
+    awaddr_o(ADDR_MID) <= std_ulogic_vector(address_i);
     awaddr_o(ADDR_LOW) <= (others => '0');
 
     awprot_o <= "010";                  -- Unprivileged non-secure data access
@@ -109,12 +109,12 @@ begin
                     end if;
             end case;
 
-            brsp_error_o <= to_std_logic(bvalid_i = '1' and bresp_i /= "00");
+            brsp_error_o <= to_std_ulogic(bvalid_i = '1' and bresp_i /= "00");
         end if;
     end process;
 
     -- Convert the write state into the appropriate validity outputs
-    data_ready_o <= to_std_logic(write_done);
-    awvalid_o <= to_std_logic(aw_busy);
-    wvalid_o <= to_std_logic(w_busy);
+    data_ready_o <= to_std_ulogic(write_done);
+    awvalid_o <= to_std_ulogic(aw_busy);
+    wvalid_o <= to_std_ulogic(w_busy);
 end;

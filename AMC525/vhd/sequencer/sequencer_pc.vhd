@@ -15,24 +15,24 @@ use work.sequencer_defs.all;
 
 entity sequencer_pc is
     port (
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
-        trigger_i : in std_logic;       -- Sequencer trigger
+        trigger_i : in std_ulogic;       -- Sequencer trigger
 
-        reset_i : in std_logic;         -- Program reset request
+        reset_i : in std_ulogic;         -- Program reset request
         seq_pc_i : in seq_pc_t;         -- PC for newly started program
         super_count_i : in super_count_t;   -- Number of sequencer meta states
-        state_end_i : in std_logic;     -- Signal to advance PC and update state
+        state_end_i : in std_ulogic;    -- Signal to advance PC and update state
 
         trigger_state_i : in seq_pc_t;  -- State to generate trigger
-        state_trigger_o : out std_logic;    -- Sequencer about to start state
+        state_trigger_o : out std_ulogic;    -- Sequencer about to start state
 
-        start_load_o : out std_logic;   -- Triggers loading of next state
+        start_load_o : out std_ulogic;   -- Triggers loading of next state
         seq_pc_o : out seq_pc_t;        -- Current PC
         super_count_o : out super_count_t;  -- Current sequencer meta state
-        busy_o : out std_logic := '0';  -- Set from trigger until program done
-        reset_o : out std_logic         -- Program reset command, aborts dwell
+        busy_o : out std_ulogic := '0';  -- Set from trigger until program done
+        reset_o : out std_ulogic         -- Program reset command, aborts dwell
     );
 end;
 
@@ -40,32 +40,32 @@ architecture arch of sequencer_pc is
     -- Reset processing.  The reset_i pulse comes in as a one clock asynchronous
     -- pulse, here we synchronise it to the turn clock and generate a one turn
     -- long reset output pulse.
-    signal reset_in : std_logic := '0';
-    signal reset_out : std_logic := '0';
+    signal reset_in : std_ulogic := '0';
+    signal reset_out : std_ulogic := '0';
 
     -- Arming and trigger.  Capture trigger, disallow retriggering until current
     -- program has completed.  The trigger flag remains set until a fresh load
     -- event occurs.
-    signal trigger : std_logic := '0';
-    signal trigger_in : std_logic := '0';
+    signal trigger : std_ulogic := '0';
+    signal trigger_in : std_ulogic := '0';
 
     -- When we see last_turn_i we should advance the program counter and then
     -- pulse start_load_o to trigger loading of configuration for the new state.
-    signal loading : std_logic := '0';
+    signal loading : std_ulogic := '0';
     signal super_count : super_count_t := (others => '0');
     signal seq_pc : seq_pc_t := "000";
-    signal start_load : std_logic := '0';
+    signal start_load : std_ulogic := '0';
 
     -- Generate trigger output on entry to selected state
-    signal last_trigger : std_logic := '0';
-    signal trigger_now : std_logic;
+    signal last_trigger : std_ulogic := '0';
+    signal trigger_now : std_ulogic;
 
 begin
     -- Trigger source selection.
     trigger_in <= trigger_i or trigger;
 
     -- Output trigger
-    trigger_now <= to_std_logic(seq_pc = trigger_state_i);
+    trigger_now <= to_std_ulogic(seq_pc = trigger_state_i);
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then

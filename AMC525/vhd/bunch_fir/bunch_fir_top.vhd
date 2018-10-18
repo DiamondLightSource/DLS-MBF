@@ -17,49 +17,49 @@ entity bunch_fir_top is
         HEADROOM_OFFSET : natural
     );
     port (
-        dsp_clk_i : in std_logic;
-        adc_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        adc_clk_i : in std_ulogic;
 
         data_i : in signed;
         data_o : out signed;
 
-        turn_clock_i : in std_logic;
+        turn_clock_i : in std_ulogic;
         bunch_config_i : in bunch_config_t;
 
         -- General register interface
-        write_strobe_i : in std_logic_vector(DSP_FIR_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_FIR_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_FIR_REGS);
-        read_strobe_i : in std_logic_vector(DSP_FIR_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_FIR_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_FIR_REGS);
         read_data_o : out reg_data_array_t(DSP_FIR_REGS);
-        read_ack_o : out std_logic_vector(DSP_FIR_REGS)
+        read_ack_o : out std_ulogic_vector(DSP_FIR_REGS)
     );
 end;
 
 architecture arch of bunch_fir_top is
     -- Control values
-    signal turn_clock : std_logic;
+    signal turn_clock : std_ulogic;
     signal config_register : reg_data_t;
     signal write_fir : unsigned(FIR_BANK_BITS-1 downto 0);
     signal decimation_limit : unsigned(6 downto 0);
     signal decimation_shift : unsigned(2 downto 0);
-    signal write_start : std_logic;
+    signal write_start : std_ulogic;
 
     -- Overflow detection
     signal pulsed_bits : reg_data_t;
-    signal overflow : std_logic;
+    signal overflow : std_ulogic;
 
     -- Data types
     subtype TAP_RANGE  is natural range TAP_WIDTH-1 downto 0;
     subtype TAPS_RANGE is natural range 0 to TAP_COUNT-1;
     signal taps : signed_array(TAPS_RANGE)(TAP_RANGE);
     signal decimated_data : signed(15 downto 0);
-    signal decimated_valid : std_logic;
+    signal decimated_valid : std_ulogic;
 
     -- Data flow and decimation control
     signal data_in : data_i'SUBTYPE;
     signal filtered_data : data_o'SUBTYPE;
-    signal filtered_valid : std_logic;
+    signal filtered_valid : std_ulogic;
     signal data_out : data_o'SUBTYPE;
 
 begin
@@ -124,7 +124,7 @@ begin
         DW => data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_i),
+        data_i => std_ulogic_vector(data_i),
         signed(data_o) => data_in
     );
 
@@ -172,7 +172,7 @@ begin
         DW => data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_out),
+        data_i => std_ulogic_vector(data_out),
         signed(data_o) => data_o
     );
 end;

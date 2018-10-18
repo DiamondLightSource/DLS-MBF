@@ -7,7 +7,7 @@ end testbench;
 
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -45,7 +45,7 @@ begin
     ) port map (
         clk_i => clk,
         delay_i => delay,
-        data_i => std_logic_vector(data_in),
+        data_i => std_ulogic_vector(data_in),
         unsigned(data_o) => data_out
     );
 

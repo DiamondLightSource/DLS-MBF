@@ -10,23 +10,23 @@ use work.dsp_defs.all;
 
 entity fast_memory_data_mux is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Input control
-        mux_select_i : in std_logic_vector(3 downto 0);
+        mux_select_i : in std_ulogic_vector(3 downto 0);
         fir_gain_i : in unsigned_array(CHANNELS)(0 downto 0);
 
         dsp_to_control_i : in dsp_to_control_array_t;
-        extra_i : in std_logic_vector(63 downto 0);
+        extra_i : in std_ulogic_vector(63 downto 0);
 
-        fir_overflow_o : out std_logic_vector(CHANNELS);
-        data_o : out std_logic_vector(63 downto 0) := (others => '0')
+        fir_overflow_o : out std_ulogic_vector(CHANNELS);
+        data_o : out std_ulogic_vector(63 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of fast_memory_data_mux is
-    signal adc_phase : std_logic;
+    signal adc_phase : std_ulogic;
 
     -- Incoming data
     signal adc    : signed_array(CHANNELS)(15 downto 0);
@@ -37,8 +37,8 @@ architecture arch of fast_memory_data_mux is
     -- Outgoing data
     signal data   : signed_array(CHANNELS)(15 downto 0)
         := (others => (others => '0'));
-    signal data_out : std_logic_vector(31 downto 0);
-    signal wide_data : std_logic_vector(63 downto 0) := (others => '0');
+    signal data_out : std_ulogic_vector(31 downto 0);
+    signal wide_data : std_ulogic_vector(63 downto 0) := (others => '0');
 
 begin
     phase : entity work.adc_dsp_phase port map (
@@ -65,7 +65,7 @@ begin
 
     -- Gain control on FIR data
     chans_gen : for c in CHANNELS generate
-        signal fir_overflow : std_logic;
+        signal fir_overflow : std_ulogic;
         -- There is only one gain shift available, so make the gain control
         -- interval enough to span the data input.
         constant GAIN_SHIFT : natural := fir_in(c)'LENGTH - fir(c)'LENGTH;
@@ -120,8 +120,8 @@ begin
     end process;
 
     -- Flatten the data to a single 32-bit value
-    data_out(15 downto  0) <= std_logic_vector(data(0));
-    data_out(31 downto 16) <= std_logic_vector(data(1));
+    data_out(15 downto  0) <= std_ulogic_vector(data(0));
+    data_out(31 downto 16) <= std_ulogic_vector(data(1));
 
     -- Retime the data across to the DSP clock domain
     process (adc_clk_i) begin

@@ -1,10 +1,8 @@
-#!/usr/bin/env dls-python
+#!/usr/bin/env python
 
 # Helper script for setting bunch waveforms
 
-from pkg_resources import require
-
-require('cothread')
+import mbf.requires
 
 import sys
 
@@ -91,7 +89,7 @@ action_out_all  = make_action_all(output_wf_pv, check_output)
 action_gain_all = make_action_all(gain_wf_pv,   check_gain, float)
 
 
-BUNCH_COUNT = caget('%s:BUNCHES' % tmbf)
+BUNCH_COUNT = caget('%s:INFO:BUNCHES' % tmbf)
 
 try:
     action_method = globals()['action_%s' % action]

@@ -179,7 +179,7 @@ struct pll_0x143 {
     CAST_TO(type, hw_read_fmc500_spi(FMC500_SPI_PLL, reg))
 
 #define WRITE_PLL(reg, value) \
-    hw_write_fmc500_spi(FMC500_SPI_PLL, reg, CAST_TO(uint8_t, value));
+    hw_write_fmc500_spi(FMC500_SPI_PLL, reg, CAST_TO(uint8_t, value))
 
 
 /* All access to the PLL is managed under this mutex. */

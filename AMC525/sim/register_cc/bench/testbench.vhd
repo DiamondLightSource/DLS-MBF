@@ -10,7 +10,7 @@ use work.support.all;
 use work.defines.all;
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -19,8 +19,8 @@ architecture arch of testbench is
     end procedure;
 
 
-    signal out_clk : std_logic := '0';
-    signal reg_clk : std_logic := '0';
+    signal out_clk : std_ulogic := '0';
+    signal reg_clk : std_ulogic := '0';
 
 
     procedure tick_wait(count : natural) is
@@ -34,22 +34,22 @@ architecture arch of testbench is
     end procedure;
 
 
-    signal out_rst_n : std_logic := '0';
+    signal out_rst_n : std_ulogic := '0';
 
-    signal reg_read_strobe : std_logic := '0';
+    signal reg_read_strobe : std_ulogic := '0';
     signal reg_read_data : reg_data_t;
-    signal reg_read_ack : std_logic;
-    signal out_read_strobe : std_logic;
+    signal reg_read_ack : std_ulogic;
+    signal out_read_strobe : std_ulogic;
     signal out_read_data : reg_data_t := (others => '0');
-    signal out_read_ack : std_logic := '0';
-    signal reg_write_strobe : std_logic := '0';
+    signal out_read_ack : std_ulogic := '0';
+    signal reg_write_strobe : std_ulogic := '0';
     signal reg_write_data : reg_data_t := (others => '0');
-    signal reg_write_ack : std_logic;
-    signal out_write_strobe : std_logic;
+    signal reg_write_ack : std_ulogic;
+    signal out_write_strobe : std_ulogic;
     signal out_write_data : reg_data_t;
-    signal out_write_ack : std_logic := '0';
+    signal out_write_ack : std_ulogic := '0';
 
-    signal force_read_ack : std_logic := '0';
+    signal force_read_ack : std_ulogic := '0';
 
 begin
 
@@ -65,7 +65,7 @@ begin
     process (out_clk) begin
         if rising_edge(out_clk) then
             out_read_data <=
-                std_logic_vector(unsigned(out_read_data) + 1);
+                std_ulogic_vector(unsigned(out_read_data) + 1);
         end if;
     end process;
 

@@ -16,22 +16,22 @@ entity spi_master is
         DATA_BITS : natural := 8
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- SPI interface
-        csn_o : out std_logic := '1';   -- SPI slave chip select
-        sclk_o : out std_logic;         -- SPI clock
-        mosi_o : out std_logic;         -- SPI data to slave
-        moen_o : out std_logic := '0';  -- Output enable for mosi_o
-        miso_i : in std_logic;          -- SPI data from slave
+        csn_o : out std_ulogic := '1';   -- SPI slave chip select
+        sclk_o : out std_ulogic;         -- SPI clock
+        mosi_o : out std_ulogic;         -- SPI data to slave
+        moen_o : out std_ulogic := '0';  -- Output enable for mosi_o
+        miso_i : in std_ulogic;          -- SPI data from slave
 
         -- Command interface
-        start_i : in std_logic;         -- Triggers start of SPI
-        r_wn_i : in std_logic;          -- Read/Write selection
-        command_i : in std_logic_vector(ADDRESS_BITS-1 downto 0);
-        data_i : in std_logic_vector(DATA_BITS-1 downto 0);
-        busy_o : out std_logic;         -- Set until SPI command complete
-        response_o : out std_logic_vector(DATA_BITS-1 downto 0)
+        start_i : in std_ulogic;         -- Triggers start of SPI
+        r_wn_i : in std_ulogic;          -- Read/Write selection
+        command_i : in std_ulogic_vector(ADDRESS_BITS-1 downto 0);
+        data_i : in std_ulogic_vector(DATA_BITS-1 downto 0);
+        busy_o : out std_ulogic;         -- Set until SPI command complete
+        response_o : out std_ulogic_vector(DATA_BITS-1 downto 0)
     );
 end;
 
@@ -41,13 +41,13 @@ architecture arch of spi_master is
 
     -- Clock generator
     signal divisor : unsigned(LOG_SCLK_DIVISOR downto 0) := (others => '0');
-    signal sclk : std_logic;
-    signal last_sclk : std_logic;
+    signal sclk : std_ulogic;
+    signal last_sclk : std_ulogic;
     signal sclk_rising : boolean;
     signal sclk_falling : boolean;
 
-    signal data_out : std_logic_vector(OUT_BITS-1 downto 0);
-    signal data_in : std_logic_vector(DATA_BITS-1 downto 0);
+    signal data_out : std_ulogic_vector(OUT_BITS-1 downto 0);
+    signal data_in : std_ulogic_vector(DATA_BITS-1 downto 0);
     signal read : boolean;
 
     type spi_state is (IDLE, STARTING, COMMAND, DATA, ENDING);
@@ -86,7 +86,7 @@ begin
                     if sclk_falling then
                         cmd_counter <= cmd_counter - 1;
                         if cmd_counter = 0 then
-                            moen_o <= to_std_logic(not read);
+                            moen_o <= to_std_ulogic(not read);
                             state <= DATA;
                         end if;
                     end if;
@@ -132,6 +132,6 @@ begin
     end process;
 
     mosi_o <= data_out(OUT_BITS-1);
-    busy_o <= to_std_logic(state /= IDLE);
+    busy_o <= to_std_ulogic(state /= IDLE);
     response_o <= data_in;
 end;

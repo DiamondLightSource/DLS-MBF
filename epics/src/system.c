@@ -101,43 +101,58 @@ static char hostname[256];
 static EPICS_STRING device_name;
 
 
-static error__t get_driver_version(EPICS_STRING *version)
+static error__t get_hostname(char name[], size_t length)
 {
     struct utsname utsname;
-    FILE *file;
     return
         TEST_IO(uname(&utsname))  ?:
-        DO(strncpy(hostname, utsname.nodename, sizeof(hostname)))  ?:
-        TEST_OK(file = fopen("/sys/module/amc525_mbf/version", "r"))  ?:
+        DO(strncpy(name, utsname.nodename, length));
+}
+
+
+static error__t get_driver_version(EPICS_STRING *version)
+{
+    FILE *file = fopen("/sys/module/amc525_mbf/version", "r");
+    return
+        TEST_OK(file)  ?:
         DO_FINALLY(
             TEST_OK(fgets(version->s, sizeof(version->s), file))  ?:
             DO(*strchrnul(version->s, '\n') = '\0'),
         // finally
-            fclose(file));
+            fclose(file))  ?:
+        DO(log_message("Driver version %s", version->s));
 }
 
 
 static error__t initialise_constants(void)
 {
-    PUBLISH_READ_VAR(stringin, "VERSION", version_string);
-    PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
-    PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
-    PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
-    PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
-    PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
-    PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
-    PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
-    PUBLISH_READ_VAR(stringin, "DRIVER_VERSION", driver_version);
+    WITH_NAME_PREFIX("INFO")
+    {
+        PUBLISH_READ_VAR(stringin, "VERSION", version_string);
+        PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
+        PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
+        PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
+        PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
+        PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
+        PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
+        PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
+        PUBLISH_READ_VAR(stringin, "DRIVER_VERSION", driver_version);
+    }
 
     struct fpga_version fpga;
     hw_read_fpga_version(&fpga);
-    sprintf(fpga_version.s, "%u.%u.%u", fpga.major, fpga.minor, fpga.patch);
-    sprintf(fpga_git_version.s, "%07x%s",
-        fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
-    strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
+    format_epics_string(&fpga_version,
+        "%u.%u.%u", fpga.major, fpga.minor, fpga.patch);
+    format_epics_string(&fpga_git_version,
+        "%07x%s", fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
+    format_epics_string(&device_name, "%s", system_config.device_address);
+    log_message("FPGA version %s, git %s, API %d",
+        fpga_version.s, fpga_git_version.s, fpga.firmware);
 
-    return IF(!hardware_config.no_hardware,
-        get_driver_version(&driver_version));
+    return
+        get_hostname(hostname, sizeof(hostname))  ?:
+        IF(!hardware_config.no_hardware,
+            get_driver_version(&driver_version));
 }
 
 

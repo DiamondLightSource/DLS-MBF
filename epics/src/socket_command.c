@@ -871,14 +871,18 @@ error__t process_detector_command(
         DO(lock = get_sequencer_trigger_target(args.axis))  ?:
         wait_for_lock(lock, file, args.locking);
 
+    /* Now we have the lock we are committed to releasing the lock. */
     if (!error)
     {
-        if (!raw_mode)
-            write_char(file, '\0');
-
         struct detector_info info;
         get_detector_info(args.axis, &info);
-        send_detector_result(file, &args, &info);
+        error = TEST_OK_(info.detector_count > 0, "No detectors enabled");
+        if (!error)
+        {
+            if (!raw_mode)
+                write_char(file, '\0');
+            send_detector_result(file, &args, &info);
+        }
 
         release_lock(lock, args.locking);
     }

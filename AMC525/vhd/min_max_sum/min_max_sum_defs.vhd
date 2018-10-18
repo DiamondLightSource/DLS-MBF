@@ -25,22 +25,22 @@ package min_max_sum_defs is
     );
 
     -- Conversion between packed and unpacked representation
-    function mms_row_to_bits(data : mms_row_t) return std_logic_vector;
-    function bits_to_mms_row(data : std_logic_vector) return mms_row_t;
+    function mms_row_to_bits(data : mms_row_t) return std_ulogic_vector;
+    function bits_to_mms_row(data : std_ulogic_vector) return mms_row_t;
 end;
 
 package body min_max_sum_defs is
-    function mms_row_to_bits(data : mms_row_t) return std_logic_vector is
-        variable result : std_logic_vector(MMS_ROW_BITS-1 downto 0);
+    function mms_row_to_bits(data : mms_row_t) return std_ulogic_vector is
+        variable result : std_ulogic_vector(MMS_ROW_BITS-1 downto 0);
     begin
-        result(15 downto 0)   := std_logic_vector(data.min);
-        result(31 downto 16)  := std_logic_vector(data.max);
-        result(63 downto 32)  := std_logic_vector(data.sum);
-        result(111 downto 64) := std_logic_vector(data.sum2);
+        result(15 downto 0)   := std_ulogic_vector(data.min);
+        result(31 downto 16)  := std_ulogic_vector(data.max);
+        result(63 downto 32)  := std_ulogic_vector(data.sum);
+        result(111 downto 64) := std_ulogic_vector(data.sum2);
         return result;
     end;
 
-    function bits_to_mms_row(data : std_logic_vector) return mms_row_t is
+    function bits_to_mms_row(data : std_ulogic_vector) return mms_row_t is
         variable result : mms_row_t;
     begin
         result.min  := signed(data(15 downto  0));

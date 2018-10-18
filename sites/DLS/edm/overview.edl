@@ -1,0 +1,118 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 694
+y 340
+w 456
+h 473
+font "helvetica-medium-r-8.0"
+ctlFont "helvetica-medium-r-8.0"
+btnFont "helvetica-medium-r-8.0"
+fgColor index 14
+bgColor index 3
+textColor index 14
+ctlFgColor1 index 14
+ctlFgColor2 index 0
+ctlBgColor1 index 0
+ctlBgColor2 index 14
+topShadowColor index 0
+botShadowColor index 14
+title "$(device):$(axis) Overview"
+showGrid
+snapToGrid
+gridSize 8
+disableScroll
+endScreenProperties
+
+# (Shell Command)
+object shellCmdClass
+beginObjectProperties
+major 4
+minor 3
+release 0
+x 8
+y 440
+w 136
+h 24
+fgColor index 25
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Tune Only"
+numCmds 1
+command {
+  0 "run-command 'Setup Tune Measurement only' mbf-setup-tune $(device):$(axis) TUNE"
+}
+endObjectProperties
+
+# (Shell Command)
+object shellCmdClass
+beginObjectProperties
+major 4
+minor 3
+release 0
+x 312
+y 440
+w 136
+h 24
+fgColor index 25
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Feedback On & Tune"
+numCmds 1
+command {
+  0 "run-command 'Setup Closed Loop + SB Tune Meas.' mbf-setup-tune $(device):$(axis) FB"
+}
+endObjectProperties
+
+# (Shell Command)
+object shellCmdClass
+beginObjectProperties
+major 4
+minor 3
+release 0
+x 160
+y 440
+w 136
+h 24
+fgColor index 25
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Tune Special"
+numCmds 1
+command {
+  0 "run-command 'Setup Tune Measurement Special' mbf-setup-tune $(device):$(axis) AP"
+}
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 0
+y 0
+w 456
+h 436
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "mbf/overview_core.edl"
+}
+noScroll
+endObjectProperties
+

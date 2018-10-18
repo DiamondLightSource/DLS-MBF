@@ -12,40 +12,40 @@ use work.detector_defs.all;
 
 entity detector_body is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
         -- Bunch selection control on DSP clock
-        start_write_i : in std_logic;
-        bunch_write_i : in std_logic;
+        start_write_i : in std_ulogic;
+        bunch_write_i : in std_ulogic;
         write_data_i : in reg_data_t;
 
         -- Data in, all on ADC clock
         data_i : in signed(24 downto 0);
         iq_i : in cos_sin_18_t;
-        start_i : in std_logic;
-        write_i : in std_logic;
+        start_i : in std_ulogic;
+        write_i : in std_ulogic;
 
         -- Error events, all on DSP clock
-        detector_overflow_o : out std_logic;
-        output_underrun_o : out std_logic;
+        detector_overflow_o : out std_ulogic;
+        output_underrun_o : out std_ulogic;
 
         -- Output scaling control on DSP clock
         output_scaling_i : in unsigned;
 
         -- Detector data out, all on ADC clock, with AXI style handshake
-        valid_o : out std_logic;
-        ready_i : in std_logic;
-        data_o : out std_logic_vector(63 downto 0)
+        valid_o : out std_ulogic;
+        ready_i : in std_ulogic;
+        data_o : out std_ulogic_vector(63 downto 0)
     );
 end;
 
 architecture arch of detector_body is
-    signal bunch_enable : std_logic;
+    signal bunch_enable : std_ulogic;
 
-    signal detector_overflow : std_logic;
-    signal det_write : std_logic;
+    signal detector_overflow : std_ulogic;
+    signal det_write : std_ulogic;
     signal det_iq : cos_sin_96_t;
     signal iq_shift : cos_sin_96_t;
     signal iq_out : cos_sin_32_t;
@@ -55,8 +55,8 @@ architecture arch of detector_body is
     signal overflow_mask : signed(95 downto 0);
     signal preload : signed(95 downto 0);
 
-    signal det_write_dsp : std_logic;
-    signal det_write_out : std_logic;
+    signal det_write_dsp : std_ulogic;
+    signal det_write_out : std_ulogic;
 
 begin
     -- Bunch selection

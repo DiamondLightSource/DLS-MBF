@@ -13,38 +13,38 @@ use work.detector_defs.all;
 
 entity detector_core is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         data_i : in signed(24 downto 0);
         iq_i : in cos_sin_18_t;
-        bunch_enable_i : in std_logic;
+        bunch_enable_i : in std_ulogic;
 
-        detector_overflow_o : out std_logic;
+        detector_overflow_o : out std_ulogic;
 
         overflow_mask_i : in signed(95 downto 0);
         preload_i : in signed(95 downto 0);
 
-        start_i : in std_logic;
-        write_i : in std_logic;
+        start_i : in std_ulogic;
+        write_i : in std_ulogic;
 
-        write_o : out std_logic := '0';
+        write_o : out std_ulogic := '0';
         iq_o : out cos_sin_96_t
     );
 end;
 
 architecture arch of detector_core is
-    signal bunch_enable_cos : std_logic;
-    signal bunch_enable_sin : std_logic;
+    signal bunch_enable_cos : std_ulogic;
+    signal bunch_enable_sin : std_ulogic;
 
     signal iq_out : iq_o'SUBTYPE;
-    signal cos_overflow : std_logic;
-    signal sin_overflow : std_logic;
+    signal cos_overflow : std_ulogic;
+    signal sin_overflow : std_ulogic;
 
     -- Typically both start_i and write_i are synchronous, and the delay from
     -- start_i to reset data out is 4 ticks, so we need the write delay to be
     -- one less to pick up the data before reset.
     constant WRITE_DELAY : natural := 3;
-    signal write_in : std_logic;
+    signal write_in : std_ulogic;
 
 begin
     bunch_delay_cos : entity work.dlyreg generic map (

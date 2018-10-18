@@ -11,11 +11,11 @@ entity short_delay is
         WIDTH : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         delay_i : in unsigned;
-        data_i : in std_logic_vector(WIDTH-1 downto 0);
-        data_o : out std_logic_vector(WIDTH-1 downto 0) := (others => '0')
+        data_i : in std_ulogic_vector(WIDTH-1 downto 0);
+        data_o : out std_ulogic_vector(WIDTH-1 downto 0) := (others => '0')
     );
 end;
 
@@ -23,7 +23,7 @@ architecture arch of short_delay is
     constant DELAY_BITS : natural := delay_i'LENGTH;
     constant MAX_DELAY : natural := 2**DELAY_BITS-1;
 
-    subtype data_t is std_logic_vector(WIDTH-1 downto 0);
+    subtype data_t is std_ulogic_vector(WIDTH-1 downto 0);
     type delay_line_t is array(0 to MAX_DELAY) of data_t;
     signal delay_line : delay_line_t := (others => (others => '0'));
 

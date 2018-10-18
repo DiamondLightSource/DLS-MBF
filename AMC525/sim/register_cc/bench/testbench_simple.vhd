@@ -10,7 +10,7 @@ use work.support.all;
 use work.defines.all;
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -19,8 +19,8 @@ architecture arch of testbench is
     end procedure;
 
 
-    signal dsp_clk : std_logic := '0';
-    signal axi_clk : std_logic := '0';
+    signal dsp_clk : std_ulogic := '0';
+    signal axi_clk : std_ulogic := '0';
 
 
     procedure tick_wait(count : natural) is
@@ -34,11 +34,11 @@ architecture arch of testbench is
     end procedure;
 
 
-    signal dsp_rst_n : std_logic := '0';
-    signal axi_strobe : std_logic;
-    signal dsp_strobe : std_logic;
-    signal dsp_ack : std_logic;
-    signal axi_ack : std_logic;
+    signal dsp_rst_n : std_ulogic := '0';
+    signal axi_strobe : std_ulogic;
+    signal dsp_strobe : std_ulogic;
+    signal dsp_ack : std_ulogic;
+    signal axi_ack : std_ulogic;
 
 
 begin

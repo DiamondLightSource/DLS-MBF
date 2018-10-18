@@ -8,27 +8,27 @@ use work.support.all;
 use work.defines.all;
 
 package sim_support is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural);
-    procedure clk_wait(signal clk_i : in std_logic);
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural);
+    procedure clk_wait(signal clk_i : in std_ulogic);
 
     procedure write_reg(
-        signal clk_i : in std_logic;
+        signal clk_i : in std_ulogic;
         signal data_o : out reg_data_t;
-        signal strobe_o : out std_logic_vector;
-        signal ack_i : in std_logic_vector;
+        signal strobe_o : out std_ulogic_vector;
+        signal ack_i : in std_ulogic_vector;
         reg : natural; value : reg_data_t);
     procedure read_reg(
-        signal clk_i : in std_logic;
+        signal clk_i : in std_ulogic;
         signal data_i : in reg_data_array_t;
-        signal strobe_o : out std_logic_vector;
-        signal ack_i : in std_logic_vector;
+        signal strobe_o : out std_ulogic_vector;
+        signal ack_i : in std_ulogic_vector;
         reg : natural);
 
 end package;
 
 package body sim_support is
 
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -36,16 +36,16 @@ package body sim_support is
         end loop;
     end procedure;
 
-    procedure clk_wait(signal clk_i : in std_logic) is
+    procedure clk_wait(signal clk_i : in std_ulogic) is
     begin
         clk_wait(clk_i, 1);
     end procedure;
 
     procedure write_reg(
-        signal clk_i : in std_logic;
+        signal clk_i : in std_ulogic;
         signal data_o : out reg_data_t;
-        signal strobe_o : out std_logic_vector;
-        signal ack_i : in std_logic_vector;
+        signal strobe_o : out std_ulogic_vector;
+        signal ack_i : in std_ulogic_vector;
         reg : natural; value : reg_data_t) is
     begin
         data_o <= value;
@@ -62,10 +62,10 @@ package body sim_support is
     end procedure;
 
     procedure read_reg(
-        signal clk_i : in std_logic;
+        signal clk_i : in std_ulogic;
         signal data_i : in reg_data_array_t;
-        signal strobe_o : out std_logic_vector;
-        signal ack_i : in std_logic_vector;
+        signal strobe_o : out std_ulogic_vector;
+        signal ack_i : in std_ulogic_vector;
         reg : natural)
     is
         variable value : reg_data_t;

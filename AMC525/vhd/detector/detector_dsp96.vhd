@@ -69,45 +69,45 @@ use unisim.vcomponents.all;
 
 entity detector_dsp96 is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         data_i : in signed(24 downto 0);
         mul_i : in signed(17 downto 0);
 
-        enable_i : in std_logic;
-        start_i : in std_logic;
+        enable_i : in std_ulogic;
+        start_i : in std_ulogic;
 
         overflow_mask_i : in signed(95 downto 0);
         preload_i : in signed(95 downto 0);
 
         sum_o : out signed(95 downto 0) := (others => '0');
-        overflow_o : out std_logic
+        overflow_o : out std_ulogic
     );
 end;
 
 architecture arch of detector_dsp96 is
-    signal carrycasc : std_logic;
-    signal multsign : std_logic;
-    signal start_in : std_logic := '0';
-    signal pc_in_out : std_logic_vector(47 downto 0);
-    signal m47 : std_logic;
-    signal c47 : std_logic;
+    signal carrycasc : std_ulogic;
+    signal multsign : std_ulogic;
+    signal start_in : std_ulogic := '0';
+    signal pc_in_out : std_ulogic_vector(47 downto 0);
+    signal m47 : std_ulogic;
+    signal c47 : std_ulogic;
 
-    signal opmode_low : std_logic_vector(6 downto 0) := "0000101";
-    signal opmode_high : std_logic_vector(6 downto 0) := "0001000";
-    signal carryin_high : std_logic;
-    signal carryinsel_high : std_logic_vector(2 downto 0) := "000";
+    signal opmode_low : std_ulogic_vector(6 downto 0) := "0000101";
+    signal opmode_high : std_ulogic_vector(6 downto 0) := "0001000";
+    signal carryin_high : std_ulogic;
+    signal carryinsel_high : std_ulogic_vector(2 downto 0) := "000";
     signal sum_low : signed(47 downto 0) := (others => '0');
 
     signal register_c_low : signed(47 downto 0);
     signal register_c_high : signed(95 downto 48);
     signal preload_in : signed(95 downto 48);
-    signal detect_low : std_logic;
-    signal detect_low_bar : std_logic;
-    signal detect_low_pl : std_logic;
-    signal detect_low_bar_pl : std_logic;
-    signal detect_high : std_logic;
-    signal detect_high_bar : std_logic;
+    signal detect_low : std_ulogic;
+    signal detect_low_bar : std_ulogic;
+    signal detect_low_pl : std_ulogic;
+    signal detect_low_bar_pl : std_ulogic;
+    signal detect_high : std_ulogic;
+    signal detect_high_bar : std_ulogic;
 
 begin
     -- Both the OPMODE and CARRYINSEL controls are registered, so we need to
@@ -140,7 +140,7 @@ begin
                     opmode_high <= "011" & "00" & "00";     -- C + CIN
                 end if;
 
-                case std_logic_vector'(m47 & c47) is
+                case std_ulogic_vector'(m47 & c47) is
                     when "00" =>
                         carryinsel_high <= "000";       -- CIN = 0
                         carryin_high <= '0';
@@ -183,12 +183,12 @@ begin
         USE_PATTERN_DETECT => "PATDET",
         SEL_MASK => "C"
     ) port map (
-        A => std_logic_vector(resize(data_i, 30)),
+        A => std_ulogic_vector(resize(data_i, 30)),
         ACIN => (others => '0'),
         ALUMODE => "0000",
-        B => std_logic_vector(mul_i),
+        B => std_ulogic_vector(mul_i),
         BCIN => (others => '0'),
-        C => std_logic_vector(register_c_low),
+        C => std_ulogic_vector(register_c_low),
         CARRYCASCIN => '0',
         CARRYIN => '0',
         CARRYINSEL => "000",
@@ -250,7 +250,7 @@ begin
         ALUMODE => "0000",
         B => (others => '0'),
         BCIN => (others => '0'),
-        C => std_logic_vector(register_c_high),
+        C => std_ulogic_vector(register_c_high),
         CARRYCASCIN => carrycasc,
         CARRYIN => carryin_high,
         CARRYINSEL => carryinsel_high,

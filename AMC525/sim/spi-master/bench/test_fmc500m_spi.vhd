@@ -10,7 +10,7 @@ use work.support.all;
 use work.defines.all;
 
 architecture arch of test_fmc500m_spi is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -19,33 +19,33 @@ architecture arch of test_fmc500m_spi is
     end procedure;
 
 
-    signal dsp_clk : std_logic := '0';
+    signal dsp_clk : std_ulogic := '0';
 
 
     -- Register control
-    signal write_strobe : std_logic;
+    signal write_strobe : std_ulogic;
     signal write_data : reg_data_t;
     --
-    signal read_strobe : std_logic;
+    signal read_strobe : std_ulogic;
     signal read_data : reg_data_t;
-    signal read_ack : std_logic;
+    signal read_ack : std_ulogic;
 
     -- PLL SPI
-    signal pll_spi_csn : std_logic;
-    signal pll_spi_sclk : std_logic;
-    signal pll_spi_sdi : std_logic;
-    signal pll_spi_sdo : std_logic;
+    signal pll_spi_csn : std_ulogic;
+    signal pll_spi_sclk : std_ulogic;
+    signal pll_spi_sdi : std_ulogic;
+    signal pll_spi_sdo : std_ulogic;
     -- ADC SPI
-    signal adc_spi_csn : std_logic;
-    signal adc_spi_sclk : std_logic;
-    signal adc_spi_sdi : std_logic;
-    signal adc_spi_sdo : std_logic;
-    signal adc_spi_sdio_en : std_logic;
+    signal adc_spi_csn : std_ulogic;
+    signal adc_spi_sclk : std_ulogic;
+    signal adc_spi_sdi : std_ulogic;
+    signal adc_spi_sdo : std_ulogic;
+    signal adc_spi_sdio_en : std_ulogic;
     -- DAC SPI
-    signal dac_spi_csn : std_logic;
-    signal dac_spi_sclk : std_logic;
-    signal dac_spi_sdi : std_logic;
-    signal dac_spi_sdo : std_logic;
+    signal dac_spi_csn : std_ulogic;
+    signal dac_spi_sclk : std_ulogic;
+    signal dac_spi_sdi : std_ulogic;
+    signal dac_spi_sdo : std_ulogic;
 
 
     procedure tick_wait(count : natural) is
@@ -98,14 +98,14 @@ begin
             address : in natural;
             value : in natural) is
         begin
-            write_data(31) <= to_std_logic(do_read);
+            write_data(31) <= to_std_ulogic(do_read);
             write_data(30 downto 29) <=
-                std_logic_vector(to_unsigned(device, 2));
+                std_ulogic_vector(to_unsigned(device, 2));
             write_data(28 downto 23) <= (others => '0');
             write_data(22 downto 8) <=
-                std_logic_vector(to_unsigned(address, 15));
+                std_ulogic_vector(to_unsigned(address, 15));
             write_data(7 downto 0) <=
-                std_logic_vector(to_unsigned(value, 8));
+                std_ulogic_vector(to_unsigned(value, 8));
 
             write_strobe <= '1';
             tick_wait;

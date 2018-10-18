@@ -14,13 +14,13 @@ use work.dsp_defs.all;
 
 entity dsp_control_mux is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Multiplexer selections
-        adc_mux_i : in std_logic;
-        nco_0_mux_i : in std_logic;
-        nco_1_mux_i : in std_logic;
-        bank_mux_i : in std_logic;
+        adc_mux_i : in std_ulogic;
+        nco_0_mux_i : in std_ulogic;
+        nco_1_mux_i : in std_ulogic;
+        bank_mux_i : in std_ulogic;
 
         -- Data channels
         dsp_to_control_i : in dsp_to_control_array_t;

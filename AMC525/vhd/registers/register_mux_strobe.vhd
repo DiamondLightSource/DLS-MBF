@@ -25,22 +25,22 @@ use work.support.all;
 
 entity register_mux_strobe is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Register interface to demultiplex
-        strobe_i : in std_logic;
+        strobe_i : in std_ulogic;
         address_i : in unsigned;
-        ack_o : out std_logic := '0';
+        ack_o : out std_ulogic := '0';
 
         -- Multiplexed registers
-        strobe_o : out std_logic_vector;
-        ack_i : in std_logic_vector
+        strobe_o : out std_ulogic_vector;
+        ack_i : in std_ulogic_vector
     );
 end;
 
 architecture arch of register_mux_strobe is
     signal address : natural;
-    signal ack_in : std_logic;
+    signal ack_in : std_ulogic;
     signal busy : boolean := false;
     signal strobe : strobe_o'SUBTYPE := (others => '0');
 
@@ -54,7 +54,7 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            ack_o <= ack_in and to_std_logic(busy);
+            ack_o <= ack_in and to_std_ulogic(busy);
             if strobe_i = '1' then
                 if address <= ack_i'HIGH then
                     strobe <= compute_strobe(address, strobe_o'LENGTH);

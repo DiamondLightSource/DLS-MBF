@@ -1,0 +1,9 @@
+# Standard EPICS makefile
+
+TOP = .
+
+include $(TOP)/configure/CONFIG
+DIRS += configure
+DIRS += Db
+DIRS += src
+include $(TOP)/configure/RULES_TOP

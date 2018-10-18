@@ -11,35 +11,35 @@ use work.defines.all;
 
 entity register_mux is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Register write.
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_address_i : in unsigned;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_ulogic;
 
-        write_strobe_o : out std_logic_vector;
+        write_strobe_o : out std_ulogic_vector;
         write_data_o : out reg_data_t;
-        write_ack_i : in std_logic_vector;
+        write_ack_i : in std_ulogic_vector;
 
         -- Register read.
-        read_strobe_i : in std_logic;
+        read_strobe_i : in std_ulogic;
         read_address_i : in unsigned;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic := '0';
+        read_ack_o : out std_ulogic := '0';
 
         -- Multiplexed registers
         read_data_i : in reg_data_array_t;      -- Individual read registers
-        read_strobe_o : out std_logic_vector;   -- Individual read selects
-        read_ack_i : in std_logic_vector        -- Individual read acknowlege
+        read_strobe_o : out std_ulogic_vector;   -- Individual read selects
+        read_ack_i : in std_ulogic_vector        -- Individual read acknowlege
     );
 end;
 
 architecture arch of register_mux is
     signal read_address : natural;
     signal read_data : reg_data_t;
-    signal read_ack : std_logic;
+    signal read_ack : std_ulogic;
 
 begin
     -- The strobe instances already check that read and write ranges are

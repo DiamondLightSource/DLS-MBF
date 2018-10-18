@@ -59,7 +59,7 @@ entity nco_cos_sin_refine is
         REFINE_DELAY : natural          -- Our internal delay for validation
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         residue_i : in residue_t;       -- Arrives LOOKUP_DELAY ticks early
 
         cos_sin_i : in cos_sin_19_t;    -- Unrefined in

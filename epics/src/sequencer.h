@@ -16,6 +16,9 @@ struct scale_info {
     unsigned int samples;
 };
 
+/* Checks whether the scale info has changed and will need to be reread. */
+bool detector_scale_changed(int axis);
+
 /* Reads the current scale info.  This is valid for the current acquisition
  * after prepare_sequencer() has been called. */
 void read_detector_scale_info(

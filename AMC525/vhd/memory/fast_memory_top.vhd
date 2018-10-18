@@ -12,32 +12,32 @@ use work.dsp_defs.all;
 
 entity fast_memory_top is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Control register interface
-        write_strobe_i : in std_logic_vector(CTRL_MEM_REGS);
+        write_strobe_i : in std_ulogic_vector(CTRL_MEM_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(CTRL_MEM_REGS);
-        read_strobe_i : in std_logic_vector(CTRL_MEM_REGS);
+        write_ack_o : out std_ulogic_vector(CTRL_MEM_REGS);
+        read_strobe_i : in std_ulogic_vector(CTRL_MEM_REGS);
         read_data_o : out reg_data_array_t(CTRL_MEM_REGS);
-        read_ack_o : out std_logic_vector(CTRL_MEM_REGS);
+        read_ack_o : out std_ulogic_vector(CTRL_MEM_REGS);
 
         -- Input data stream
         dsp_to_control_i : in dsp_to_control_array_t;
         -- Capture control
-        memory_trigger_i : in std_logic;
-        memory_phase_i : in std_logic;
+        memory_trigger_i : in std_ulogic;
+        memory_phase_i : in std_ulogic;
 
         -- DRAM0 capture control: connected directly to AXI burst master
-        capture_enable_o : out std_logic;
-        data_ready_i : in std_logic;
-        capture_address_i : in std_logic_vector;
-        data_valid_o : out std_logic;
-        data_o : out std_logic_vector;
-        data_error_i : in std_logic;
-        addr_error_i : in std_logic;
-        brsp_error_i : in std_logic
+        capture_enable_o : out std_ulogic;
+        data_ready_i : in std_ulogic;
+        capture_address_i : in std_ulogic_vector;
+        data_valid_o : out std_ulogic;
+        data_o : out std_ulogic_vector;
+        data_error_i : in std_ulogic;
+        addr_error_i : in std_ulogic;
+        brsp_error_i : in std_ulogic
     );
 end;
 
@@ -50,25 +50,25 @@ architecture arch of fast_memory_top is
 
     -- Configuration
     constant COUNT_BITS : natural := 28;
-    signal mux_select : std_logic_vector(3 downto 0);
+    signal mux_select : std_ulogic_vector(3 downto 0);
     signal fir_gain : unsigned_array(CHANNELS)(0 downto 0);
     signal count : unsigned(COUNT_BITS-1 downto 0);
 
     -- Command
-    signal start : std_logic;
-    signal stop : std_logic;
-    signal reset_errors : std_logic;
-    signal snapshot_address : std_logic;
+    signal start : std_ulogic;
+    signal stop : std_ulogic;
+    signal reset_errors : std_ulogic;
+    signal snapshot_address : std_ulogic;
 
     signal capture_address : capture_address_i'SUBTYPE;
 
-    signal data_valid : std_logic;
-    signal extra_data : std_logic_vector(63 downto 0);
+    signal data_valid : std_ulogic;
+    signal extra_data : std_ulogic_vector(63 downto 0);
 
     -- We don't expect the error bits to ever be seen
-    signal error_bits : std_logic_vector(2 downto 0) := "000";
+    signal error_bits : std_ulogic_vector(2 downto 0) := "000";
 
-    signal fir_overflow : std_logic_vector(CHANNELS);
+    signal fir_overflow : std_ulogic_vector(CHANNELS);
 
     -- We have a variety of pipelines to the AXI DRAM0 controller so that we can
     -- be instantiated some distance from the DRAM0 system.
@@ -78,9 +78,9 @@ architecture arch of fast_memory_top is
     constant ADDRESS_PIPELINE : natural := 12;
 
     -- Pipeline signals
-    signal capture_enable_out : std_logic;
+    signal capture_enable_out : std_ulogic;
     signal data_out : data_o'SUBTYPE;
-    signal error_bits_in : std_logic_vector(2 downto 0);
+    signal error_bits_in : std_ulogic_vector(2 downto 0);
     signal capture_address_in : capture_address_i'SUBTYPE;
 
 begin

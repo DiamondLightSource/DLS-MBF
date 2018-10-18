@@ -9,29 +9,29 @@ use work.defines.all;
 
 entity register_read_adc is
     port (
-        dsp_clk_i : in std_logic;
-        adc_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        adc_clk_i : in std_ulogic;
 
         -- Register interface on DSP clock
-        dsp_read_strobe_i : in std_logic_vector;
+        dsp_read_strobe_i : in std_ulogic_vector;
         dsp_read_data_o : out reg_data_array_t;
-        dsp_read_ack_o : out std_logic_vector;
+        dsp_read_ack_o : out std_ulogic_vector;
 
         -- Translated register interface on ADC clock
-        adc_read_strobe_o : out std_logic_vector;
+        adc_read_strobe_o : out std_ulogic_vector;
         adc_read_data_i : in reg_data_array_t;
-        adc_read_ack_i : in std_logic_vector
+        adc_read_ack_i : in std_ulogic_vector
     );
 end;
 
 architecture arch of register_read_adc is
-    signal adc_phase : std_logic;
+    signal adc_phase : std_ulogic;
 
     subtype register_range is natural range dsp_read_strobe_i'RANGE;
     signal read_strobe : dsp_read_strobe_i'SUBTYPE;
-    signal read_ack : std_logic_vector(register_range) := (others => '0');
+    signal read_ack : std_ulogic_vector(register_range) := (others => '0');
     signal read_data : dsp_read_data_o'SUBTYPE;
-    signal read_ack_pl : std_logic_vector(register_range) := (others => '0');
+    signal read_ack_pl : std_ulogic_vector(register_range) := (others => '0');
     signal read_data_pl : dsp_read_data_o'SUBTYPE;
 
     -- Initialised outputs

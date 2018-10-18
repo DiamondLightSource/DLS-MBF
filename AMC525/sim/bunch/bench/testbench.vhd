@@ -14,18 +14,18 @@ entity testbench is
 end testbench;
 
 architecture arch of testbench is
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
 
     constant TURN_COUNT : natural := 7;
-    signal turn_clock : std_logic := '0';
+    signal turn_clock : std_ulogic := '0';
 
-    signal write_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal write_strobe : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
     signal write_data : reg_data_t;
-    signal write_ack : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
-    signal read_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal write_ack : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal read_strobe : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
     signal read_data : reg_data_array_t(DSP_REGS_RANGE);
-    signal read_ack : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal read_ack : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
 
     signal bank_select : unsigned(1 downto 0) := "00";
     signal bunch_config : bunch_config_t;

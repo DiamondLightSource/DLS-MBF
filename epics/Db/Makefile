@@ -25,7 +25,6 @@ include $(TOP)/configure/RULES
 
 # include $(TOP)/install_d/CONFIG
 
-export BUNCHES_PER_TURN = 936
 export EPICS_DEVICE
 
 # We use the python library to construct the .db file

@@ -20,17 +20,17 @@ entity detector_top is
         CONTROL_BUFFER_LENGTH : natural
     );
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector(DSP_DET_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_DET_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_DET_REGS);
-        read_strobe_i : in std_logic_vector(DSP_DET_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_DET_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_DET_REGS);
         read_data_o : out reg_data_array_t(DSP_DET_REGS);
-        read_ack_o : out std_logic_vector(DSP_DET_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_DET_REGS);
 
         -- Data in
         adc_data_i : in signed;
@@ -39,35 +39,35 @@ entity detector_top is
         window_i : in signed;
 
         -- Control
-        start_i : in std_logic;
-        write_i : in std_logic;
+        start_i : in std_ulogic;
+        write_i : in std_ulogic;
 
         -- Data out
-        mem_valid_o : out std_logic;
-        mem_ready_i : in std_logic;
+        mem_valid_o : out std_ulogic;
+        mem_ready_i : in std_ulogic;
         mem_addr_o : out unsigned;
-        mem_data_o : out std_logic_vector
+        mem_data_o : out std_ulogic_vector
     );
 end;
 
 architecture arch of detector_top is
     -- Register control settings
-    signal data_select : std_logic;
-    signal start_write : std_logic;
-    signal bunch_write : std_logic_vector(DETECTOR_RANGE);
+    signal data_select : std_ulogic;
+    signal start_write : std_ulogic;
+    signal bunch_write : std_ulogic_vector(DETECTOR_RANGE);
     signal output_scaling : unsigned_array(DETECTOR_RANGE)(0 downto 0);
-    signal address_reset : std_logic;
-    signal input_enable : std_logic_vector(DETECTOR_RANGE);
+    signal address_reset : std_ulogic;
+    signal input_enable : std_ulogic_vector(DETECTOR_RANGE);
     -- Event feedbacks (all on DSP clock)
-    signal detector_overflow : std_logic_vector(DETECTOR_RANGE);
-    signal output_underrun : std_logic_vector(DETECTOR_RANGE);
+    signal detector_overflow : std_ulogic_vector(DETECTOR_RANGE);
+    signal output_underrun : std_ulogic_vector(DETECTOR_RANGE);
 
     -- Internal paths
     signal data_in : signed(24 downto 0);
 
     -- Output data streams
-    signal output_valid : std_logic_vector(DETECTOR_RANGE);
-    signal output_ready : std_logic_vector(DETECTOR_RANGE);
+    signal output_valid : std_ulogic_vector(DETECTOR_RANGE);
+    signal output_ready : std_ulogic_vector(DETECTOR_RANGE);
     signal output_data : vector_array(DETECTOR_RANGE)(mem_data_o'RANGE);
 
 begin
@@ -116,12 +116,12 @@ begin
     detectors : for d in DETECTOR_RANGE generate
         signal nco_iq_in : nco_iq_i'SUBTYPE;
         signal data_delay : data_in'SUBTYPE;
-        signal start : std_logic;
-        signal write : std_logic;
-        signal turn_clock : std_logic;
+        signal start : std_ulogic;
+        signal write : std_ulogic;
+        signal turn_clock : std_ulogic;
 
-        signal valid : std_logic;
-        signal ready : std_logic;
+        signal valid : std_ulogic;
+        signal ready : std_ulogic;
         signal data : mem_data_o'SUBTYPE;
 
         -- Annoyingly we can't assign an unconstrained output to open.
@@ -144,7 +144,7 @@ begin
             DLY => DATA_BUFFER_LENGTH
         ) port map (
             clk_i => adc_clk_i,
-            data_i => std_logic_vector(data_in),
+            data_i => std_ulogic_vector(data_in),
             signed(data_o) => data_delay
         );
 

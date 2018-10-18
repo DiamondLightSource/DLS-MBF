@@ -33,7 +33,7 @@ struct trigger_target {
 
     /* Fixed target identification and behaviour definitions. */
     const struct target_config *config;
-    void *context;
+    struct trigger_target_state *context;
 };
 
 
@@ -73,6 +73,11 @@ static pthread_cond_t trigger_event;
         if (target->mode != MODE_SHARED) ; else
 
 
+/* Wrapper for calling target method.  Automatically passes context as the first
+ * argument, passes all other arguments through. */
+#define CALL(method, target, args...) \
+    target->config->method(target->context, ## args)
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Target state control. */
@@ -84,7 +89,7 @@ static void set_target_state(
     if (state != target->state)
     {
         target->state = state;
-        target->config->set_target_state(target->context, state);
+        CALL(set_target_state, target, state);
     }
 }
 
@@ -109,8 +114,8 @@ static void update_shared_targets(void)
     {
         if (!first)
             out += snprintf(out, (size_t) (value + sizeof(value) - out), " ");
-        out += target->config->get_target_name(
-            target->config->axis, out, (size_t) (value + sizeof(value) - out));
+        out += CALL(get_target_name,
+            target, out, (size_t) (value + sizeof(value) - out));
         first = false;
     }
     shared.set_shared_targets(value);
@@ -219,7 +224,7 @@ static bool do_arm_target(struct trigger_target *target)
         if (target->lock_count == 0)
         {
             target->dont_rearm = false;
-            target->config->prepare_target(target->config->axis);
+            CALL(prepare_target, target);
             set_target_state(target, TARGET_ARMED);
             armed = true;
         }
@@ -251,11 +256,7 @@ static void do_disarm_target(struct trigger_target *target)
 {
     target->dont_rearm = true;
     if (target->state == TARGET_ARMED)
-    {
-        const struct target_config *config = target->config;
-        enum target_state disarmed = config->stop_target(config->axis);
-        set_target_state(target, disarmed);
-    }
+        set_target_state(target, CALL(stop_target, target));
     else if (target->state == TARGET_LOCKED)
         set_target_state(target, TARGET_IDLE);
 }
@@ -647,7 +648,7 @@ bool immediate_memory_capture(bool ignored)
 /* Initialisation. */
 
 struct trigger_target *create_trigger_target(
-    const struct target_config *config, void *context)
+    const struct target_config *config, struct trigger_target_state *context)
 {
     struct trigger_target *target = &targets[config->target_id];
     *target = (struct trigger_target) {

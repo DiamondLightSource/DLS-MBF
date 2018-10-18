@@ -12,161 +12,161 @@ use work.version.all;
 
 architecture arch of top is
     -- IO instances
-    signal uled_out : std_logic_vector(3 downto 0);
-    signal n_coldrst_in : std_logic;
-    signal fclka : std_logic;
-    signal clk125mhz : std_logic;
+    signal uled_out : std_ulogic_vector(3 downto 0);
+    signal n_coldrst_in : std_ulogic;
+    signal fclka : std_ulogic;
+    signal clk125mhz : std_ulogic;
 
     -- Interrupt signals
-    signal INTR : std_logic_vector(30 downto 0);
+    signal INTR : std_ulogic_vector(30 downto 0);
 
     -- Clocking and reset resources
-    signal adc_clk : std_logic;
-    signal dsp_clk : std_logic;
-    signal dsp_clk_ok : std_logic;
-    signal dsp_reset_n : std_logic;
-    signal ref_clk : std_logic;
-    signal ref_clk_ok : std_logic;
-    signal reg_clk : std_logic;
-    signal reg_clk_ok : std_logic;
-    signal adc_pll_ok : std_logic;
+    signal adc_clk : std_ulogic;
+    signal dsp_clk : std_ulogic;
+    signal dsp_clk_ok : std_ulogic;
+    signal dsp_reset_n : std_ulogic;
+    signal ref_clk : std_ulogic;
+    signal ref_clk_ok : std_ulogic;
+    signal reg_clk : std_ulogic;
+    signal reg_clk_ok : std_ulogic;
+    signal adc_pll_ok : std_ulogic;
 
 
     -- -------------------------------------------------------------------------
     -- Interconnect wiring
 
     -- Wiring from AXI-Lite master to register slave
-    signal DSP_REGS_araddr : std_logic_vector(15 downto 0);     -- AR
-    signal DSP_REGS_arprot : std_logic_vector(2 downto 0);
-    signal DSP_REGS_arready : std_logic;
-    signal DSP_REGS_arvalid : std_logic;
-    signal DSP_REGS_rdata : std_logic_vector(31 downto 0);      -- R
-    signal DSP_REGS_rresp : std_logic_vector(1 downto 0);
-    signal DSP_REGS_rready : std_logic;
-    signal DSP_REGS_rvalid : std_logic;
-    signal DSP_REGS_awaddr : std_logic_vector(15 downto 0);     -- AW
-    signal DSP_REGS_awprot : std_logic_vector(2 downto 0);
-    signal DSP_REGS_awready : std_logic;
-    signal DSP_REGS_awvalid : std_logic;
-    signal DSP_REGS_wdata : std_logic_vector(31 downto 0);      -- W
-    signal DSP_REGS_wstrb : std_logic_vector(3 downto 0);
-    signal DSP_REGS_wready : std_logic;
-    signal DSP_REGS_wvalid : std_logic;
-    signal DSP_REGS_bresp : std_logic_vector(1 downto 0);
-    signal DSP_REGS_bready : std_logic;                         -- B
-    signal DSP_REGS_bvalid : std_logic;
+    signal DSP_REGS_araddr : std_ulogic_vector(15 downto 0);     -- AR
+    signal DSP_REGS_arprot : std_ulogic_vector(2 downto 0);
+    signal DSP_REGS_arready : std_ulogic;
+    signal DSP_REGS_arvalid : std_ulogic;
+    signal DSP_REGS_rdata : std_ulogic_vector(31 downto 0);      -- R
+    signal DSP_REGS_rresp : std_ulogic_vector(1 downto 0);
+    signal DSP_REGS_rready : std_ulogic;
+    signal DSP_REGS_rvalid : std_ulogic;
+    signal DSP_REGS_awaddr : std_ulogic_vector(15 downto 0);     -- AW
+    signal DSP_REGS_awprot : std_ulogic_vector(2 downto 0);
+    signal DSP_REGS_awready : std_ulogic;
+    signal DSP_REGS_awvalid : std_ulogic;
+    signal DSP_REGS_wdata : std_ulogic_vector(31 downto 0);      -- W
+    signal DSP_REGS_wstrb : std_ulogic_vector(3 downto 0);
+    signal DSP_REGS_wready : std_ulogic;
+    signal DSP_REGS_wvalid : std_ulogic;
+    signal DSP_REGS_bresp : std_ulogic_vector(1 downto 0);
+    signal DSP_REGS_bready : std_ulogic;                         -- B
+    signal DSP_REGS_bvalid : std_ulogic;
 
     -- Wiring from DSP burst master to AXI DRAM0 slave
-    signal DSP_DRAM0_awaddr : std_logic_vector(47 downto 0);    -- AW
-    signal DSP_DRAM0_awburst : std_logic_vector(1 downto 0);
-    signal DSP_DRAM0_awcache : std_logic_vector(3 downto 0);
-    signal DSP_DRAM0_awlen : std_logic_vector(7 downto 0);
-    signal DSP_DRAM0_awlock : std_logic_vector(0 downto 0);
-    signal DSP_DRAM0_awprot : std_logic_vector(2 downto 0);
-    signal DSP_DRAM0_awqos : std_logic_vector(3 downto 0);
-    signal DSP_DRAM0_awregion : std_logic_vector(3 downto 0);
-    signal DSP_DRAM0_awsize : std_logic_vector(2 downto 0);
-    signal DSP_DRAM0_awready : std_logic;
-    signal DSP_DRAM0_awvalid : std_logic;
-    signal DSP_DRAM0_wdata : std_logic_vector(63 downto 0);     -- W
-    signal DSP_DRAM0_wlast : std_logic;
-    signal DSP_DRAM0_wstrb : std_logic_vector(7 downto 0);
-    signal DSP_DRAM0_wready : std_logic;
-    signal DSP_DRAM0_wvalid : std_logic;
-    signal DSP_DRAM0_bresp : std_logic_vector(1 downto 0);      -- B
-    signal DSP_DRAM0_bready : std_logic;
-    signal DSP_DRAM0_bvalid : std_logic;
+    signal DSP_DRAM0_awaddr : std_ulogic_vector(47 downto 0);    -- AW
+    signal DSP_DRAM0_awburst : std_ulogic_vector(1 downto 0);
+    signal DSP_DRAM0_awcache : std_ulogic_vector(3 downto 0);
+    signal DSP_DRAM0_awlen : std_ulogic_vector(7 downto 0);
+    signal DSP_DRAM0_awlock : std_ulogic_vector(0 downto 0);
+    signal DSP_DRAM0_awprot : std_ulogic_vector(2 downto 0);
+    signal DSP_DRAM0_awqos : std_ulogic_vector(3 downto 0);
+    signal DSP_DRAM0_awregion : std_ulogic_vector(3 downto 0);
+    signal DSP_DRAM0_awsize : std_ulogic_vector(2 downto 0);
+    signal DSP_DRAM0_awready : std_ulogic;
+    signal DSP_DRAM0_awvalid : std_ulogic;
+    signal DSP_DRAM0_wdata : std_ulogic_vector(63 downto 0);     -- W
+    signal DSP_DRAM0_wlast : std_ulogic;
+    signal DSP_DRAM0_wstrb : std_ulogic_vector(7 downto 0);
+    signal DSP_DRAM0_wready : std_ulogic;
+    signal DSP_DRAM0_wvalid : std_ulogic;
+    signal DSP_DRAM0_bresp : std_ulogic_vector(1 downto 0);      -- B
+    signal DSP_DRAM0_bready : std_ulogic;
+    signal DSP_DRAM0_bvalid : std_ulogic;
 
     -- Wiring from DSP slow write master to AXI-Lite DRAM1 slave
-    signal DSP_DRAM1_awaddr : std_logic_vector(47 downto 0);    -- AW
-    signal DSP_DRAM1_awprot : std_logic_vector(2 downto 0);
-    signal DSP_DRAM1_awready : std_logic;
-    signal DSP_DRAM1_awvalid : std_logic;
-    signal DSP_DRAM1_wdata : std_logic_vector(63 downto 0);     -- W
-    signal DSP_DRAM1_wstrb : std_logic_vector(7 downto 0);
-    signal DSP_DRAM1_wready : std_logic;
-    signal DSP_DRAM1_wvalid : std_logic;
-    signal DSP_DRAM1_bresp : std_logic_vector(1 downto 0);      -- B
-    signal DSP_DRAM1_bready : std_logic;
-    signal DSP_DRAM1_bvalid : std_logic;
+    signal DSP_DRAM1_awaddr : std_ulogic_vector(47 downto 0);    -- AW
+    signal DSP_DRAM1_awprot : std_ulogic_vector(2 downto 0);
+    signal DSP_DRAM1_awready : std_ulogic;
+    signal DSP_DRAM1_awvalid : std_ulogic;
+    signal DSP_DRAM1_wdata : std_ulogic_vector(63 downto 0);     -- W
+    signal DSP_DRAM1_wstrb : std_ulogic_vector(7 downto 0);
+    signal DSP_DRAM1_wready : std_ulogic;
+    signal DSP_DRAM1_wvalid : std_ulogic;
+    signal DSP_DRAM1_bresp : std_ulogic_vector(1 downto 0);      -- B
+    signal DSP_DRAM1_bready : std_ulogic;
+    signal DSP_DRAM1_bvalid : std_ulogic;
 
     -- -------------------------------------------------------------------------
     -- Memory controller wiring
 
     -- Internal register path from AXI conversion
-    signal REGS_write_strobe : std_logic;
+    signal REGS_write_strobe : std_ulogic;
     signal REGS_write_address : unsigned(13 downto 0);
-    signal REGS_write_data : std_logic_vector(31 downto 0);
-    signal REGS_write_ack : std_logic;
-    signal REGS_read_strobe : std_logic;
+    signal REGS_write_data : std_ulogic_vector(31 downto 0);
+    signal REGS_write_ack : std_ulogic;
+    signal REGS_read_strobe : std_ulogic;
     signal REGS_read_address : unsigned(13 downto 0);
-    signal REGS_read_data : std_logic_vector(31 downto 0);
-    signal REGS_read_ack : std_logic;
+    signal REGS_read_data : std_ulogic_vector(31 downto 0);
+    signal REGS_read_ack : std_ulogic;
 
     -- Data from DSP to DRAM0 burst master
-    signal DRAM0_capture_enable : std_logic;
-    signal DRAM0_data_ready : std_logic;
-    signal DRAM0_capture_address : std_logic_vector(30 downto 0);
-    signal DRAM0_data : std_logic_vector(63 downto 0);
-    signal DRAM0_data_valid : std_logic;
-    signal DRAM0_data_error : std_logic;
-    signal DRAM0_addr_error : std_logic;
-    signal DRAM0_brsp_error : std_logic;
+    signal DRAM0_capture_enable : std_ulogic;
+    signal DRAM0_data_ready : std_ulogic;
+    signal DRAM0_capture_address : std_ulogic_vector(30 downto 0);
+    signal DRAM0_data : std_ulogic_vector(63 downto 0);
+    signal DRAM0_data_valid : std_ulogic;
+    signal DRAM0_data_error : std_ulogic;
+    signal DRAM0_addr_error : std_ulogic;
+    signal DRAM0_brsp_error : std_ulogic;
 
     -- Data from DSP to DRAM1 master
     signal DRAM1_address : unsigned(23 downto 0);
-    signal DRAM1_data : std_logic_vector(63 downto 0);
-    signal DRAM1_data_valid : std_logic;
-    signal DRAM1_data_ready : std_logic;
-    signal DRAM1_brsp_error : std_logic;
+    signal DRAM1_data : std_ulogic_vector(63 downto 0);
+    signal DRAM1_data_valid : std_ulogic;
+    signal DRAM1_data_ready : std_ulogic;
+    signal DRAM1_brsp_error : std_ulogic;
 
     -- -------------------------------------------------------------------------
     -- FMC wiring
 
     -- Digital I/O on FMC0
-    signal dio_inputs : std_logic_vector(4 downto 0);
-    signal dio_out_enable : std_logic_vector(4 downto 0);
-    signal dio_term_enable : std_logic_vector(4 downto 0);
-    signal dio_outputs : std_logic_vector(4 downto 0);
-    signal dio_leds : std_logic_vector(1 downto 0);
+    signal dio_inputs : std_ulogic_vector(4 downto 0);
+    signal dio_out_enable : std_ulogic_vector(4 downto 0);
+    signal dio_term_enable : std_ulogic_vector(4 downto 0);
+    signal dio_outputs : std_ulogic_vector(4 downto 0);
+    signal dio_leds : std_ulogic_vector(1 downto 0);
 
     -- Connections to FMC500M on FMC0
-    signal adc_dco : std_logic;
+    signal adc_dco : std_ulogic;
     signal dsp_adc_data : signed_array(CHANNELS)(13 downto 0);
-    signal dsp_adc_status : std_logic_vector(CHANNELS);
+    signal dsp_adc_status : std_ulogic_vector(CHANNELS);
     signal dsp_dac_data : signed_array(CHANNELS)(15 downto 0);
-    signal fast_ext_trigger : std_logic;
+    signal fast_ext_trigger : std_ulogic;
     signal fmc500_outputs : fmc500_outputs_t;
     signal fmc500_inputs : fmc500_inputs_t;
 
     -- FMC500 SPI interface
-    signal fmc500m_spi_write_strobe : std_logic;
+    signal fmc500m_spi_write_strobe : std_ulogic;
     signal fmc500m_spi_write_data : reg_data_t;
-    signal fmc500m_spi_write_ack : std_logic;
-    signal fmc500m_spi_read_strobe : std_logic;
+    signal fmc500m_spi_write_ack : std_ulogic;
+    signal fmc500m_spi_read_strobe : std_ulogic;
     signal fmc500m_spi_read_data : reg_data_t;
-    signal fmc500m_spi_read_ack : std_logic;
+    signal fmc500m_spi_read_ack : std_ulogic;
 
     -- -------------------------------------------------------------------------
     -- Top register wiring
 
     -- System register wiring
-    signal system_write_strobe : std_logic_vector(SYS_REGS_RANGE);
+    signal system_write_strobe : std_ulogic_vector(SYS_REGS_RANGE);
     signal system_write_data : reg_data_t;
-    signal system_write_ack : std_logic_vector(SYS_REGS_RANGE);
-    signal system_read_strobe : std_logic_vector(SYS_REGS_RANGE);
+    signal system_write_ack : std_ulogic_vector(SYS_REGS_RANGE);
+    signal system_read_strobe : std_ulogic_vector(SYS_REGS_RANGE);
     signal system_read_data : reg_data_array_t(SYS_REGS_RANGE);
-    signal system_read_ack : std_logic_vector(SYS_REGS_RANGE);
+    signal system_read_ack : std_ulogic_vector(SYS_REGS_RANGE);
 
     -- DSP control register wiring
-    signal dsp_write_strobe : std_logic;
+    signal dsp_write_strobe : std_ulogic;
     signal dsp_write_address : unsigned(12 downto 0);
     signal dsp_write_data : reg_data_t;
-    signal dsp_write_ack : std_logic;
-    signal dsp_read_strobe : std_logic;
+    signal dsp_write_ack : std_ulogic;
+    signal dsp_read_strobe : std_ulogic;
     signal dsp_read_address : unsigned(12 downto 0);
     signal dsp_read_data : reg_data_t;
-    signal dsp_read_ack : std_logic;
+    signal dsp_read_ack : std_ulogic;
 
     -- Control registers
     signal version_data : reg_data_t;
@@ -176,23 +176,23 @@ architecture arch of top is
     signal control_data : reg_data_t;
 
     -- ADC clock IDELAY control
-    signal adc_idelay_write_strobe : std_logic;
+    signal adc_idelay_write_strobe : std_ulogic;
     signal adc_idelay_write_data : reg_data_t;
     signal adc_idelay_read_data : reg_data_t;
 
     -- Revolution clock IDELAY control
-    signal rev_idelay_write_strobe : std_logic;
+    signal rev_idelay_write_strobe : std_ulogic;
     signal rev_idelay_write_data : reg_data_t;
     signal rev_idelay_read_data : reg_data_t;
 
     -- External triggers
-    signal revolution_clock : std_logic;
-    signal event_trigger : std_logic;
-    signal postmortem_trigger : std_logic;
-    signal blanking_trigger : std_logic;
-    signal dsp_events : std_logic_vector(CHANNELS);
+    signal revolution_clock : std_ulogic;
+    signal event_trigger : std_ulogic;
+    signal postmortem_trigger : std_ulogic;
+    signal blanking_trigger : std_ulogic;
+    signal dsp_events : std_ulogic_vector(CHANNELS);
 
-    signal dio_output_5 : std_logic;
+    signal dio_output_5 : std_ulogic;
 
 begin
 
@@ -719,25 +719,26 @@ begin
     -- Control register mapping.
 
     version_data <= (
-        SYS_VERSION_PATCH_BITS => to_std_logic_vector(VERSION_PATCH, 8),
-        SYS_VERSION_MINOR_BITS => to_std_logic_vector(VERSION_MINOR, 8),
-        SYS_VERSION_MAJOR_BITS => to_std_logic_vector(VERSION_MAJOR, 8),
-        others => '0'
+        SYS_VERSION_PATCH_BITS => to_std_ulogic_vector(VERSION_PATCH, 8),
+        SYS_VERSION_MINOR_BITS => to_std_ulogic_vector(VERSION_MINOR, 8),
+        SYS_VERSION_MAJOR_BITS => to_std_ulogic_vector(VERSION_MAJOR, 8),
+        SYS_VERSION_FIRMWARE_BITS =>
+            to_std_ulogic_vector(FIRMWARE_COMPAT_VERSION, 8)
     );
 
     git_version_data <= (
-        SYS_GIT_VERSION_SHA_BITS => to_std_logic_vector(GIT_VERSION, 28),
-        SYS_GIT_VERSION_DIRTY_BIT => to_std_logic(GIT_DIRTY),
+        SYS_GIT_VERSION_SHA_BITS => to_std_ulogic_vector(GIT_VERSION, 28),
+        SYS_GIT_VERSION_DIRTY_BIT => to_std_ulogic(GIT_DIRTY),
         others => '0'
     );
 
     info_data <= (
         SYS_INFO_ADC_TAPS_BITS     =>
-            to_std_logic_vector(ADC_FIR_TAP_COUNT, 8),
+            to_std_ulogic_vector(ADC_FIR_TAP_COUNT, 8),
         SYS_INFO_BUNCH_TAPS_BITS   =>
-            to_std_logic_vector(BUNCH_FIR_TAP_COUNT, 8),
+            to_std_ulogic_vector(BUNCH_FIR_TAP_COUNT, 8),
         SYS_INFO_DAC_TAPS_BITS     =>
-            to_std_logic_vector(DAC_FIR_TAP_COUNT, 8),
+            to_std_ulogic_vector(DAC_FIR_TAP_COUNT, 8),
         others => '0'
     );
 

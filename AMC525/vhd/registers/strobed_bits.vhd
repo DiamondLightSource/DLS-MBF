@@ -12,12 +12,12 @@ entity strobed_bits is
         BUFFER_LENGTH : natural := 2
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Control register interface
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_ulogic;
 
         -- Output strobed bits
         strobed_bits_o : out reg_data_t

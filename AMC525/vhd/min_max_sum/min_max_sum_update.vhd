@@ -33,14 +33,14 @@ entity min_max_sum_update is
         UPDATE_DELAY : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         data_i : in signed(15 downto 0);
         mms_i : in mms_row_t;
         mms_o : out mms_row_t := mms_reset_value;
 
-        sum_overflow_o : out std_logic := '0';
-        sum2_overflow_o : out std_logic := '0';
+        sum_overflow_o : out std_ulogic := '0';
+        sum2_overflow_o : out std_ulogic := '0';
         delta_o : out unsigned(15 downto 0) := (others => '0')
     );
 end;
@@ -57,11 +57,11 @@ architecture arch of min_max_sum_update is
     signal data_large : boolean := false;
 
     -- Overflow detection
-    signal old_sum_top : std_logic_vector(1 downto 0) := "00";
-    signal delta_sum_top : std_logic_vector(3 downto 0) := "0000";
-    signal old_sum2_top : std_logic := '0';
-    signal delta_sum2_top : std_logic_vector(1 downto 0) := "00";
-    signal sum_overflow : std_logic := '0';
+    signal old_sum_top : std_ulogic_vector(1 downto 0) := "00";
+    signal delta_sum_top : std_ulogic_vector(3 downto 0) := "0000";
+    signal old_sum2_top : std_ulogic := '0';
+    signal delta_sum2_top : std_ulogic_vector(1 downto 0) := "00";
+    signal sum_overflow : std_ulogic := '0';
 
     -- Prevent DSP unit for consuming an extra input register!
     attribute DONT_TOUCH : string;
@@ -117,19 +117,19 @@ begin
 
             -- Detect signed overflow if large positive number goes negative or
             -- large negative number goes positive.
-            old_sum_top <= std_logic_vector(mms_i.sum(31 downto 30));
-            sum_overflow <= to_std_logic(
+            old_sum_top <= std_ulogic_vector(mms_i.sum(31 downto 30));
+            sum_overflow <= to_std_ulogic(
                 delta_sum_top = "0110" or delta_sum_top = "1001");
             sum_overflow_o <= sum_overflow;
 
             -- Unsigned overflow if top bit goes from 1 to 0.
             old_sum2_top <= mms.sum2(47);
-            sum2_overflow_o <= to_std_logic(delta_sum2_top = "10");
+            sum2_overflow_o <= to_std_ulogic(delta_sum2_top = "10");
         end if;
     end process;
 
     -- Concatenate old and new versions of top bits of accumulators for fast
     -- overflow detection.
-    delta_sum_top <= old_sum_top & std_logic_vector(mms.sum(31 downto 30));
+    delta_sum_top <= old_sum_top & std_ulogic_vector(mms.sum(31 downto 30));
     delta_sum2_top <= old_sum2_top & mms_o.sum2(47);
 end;

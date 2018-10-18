@@ -19,22 +19,22 @@ use work.sequencer_defs.all;
 
 entity sequencer_delays is
     port (
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
         seq_state_i : in seq_state_t;
         seq_pc_i : in seq_pc_t;
 
         seq_pc_o : out seq_pc_t := (others => '0');
         hom_gain_o : out unsigned(3 downto 0) := (others => '0');
-        hom_enable_o : out std_logic;
+        hom_enable_o : out std_ulogic;
         bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of sequencer_delays is
-    signal load_bunch_bank : std_logic;
-    signal load_hom_gain : std_logic;
+    signal load_bunch_bank : std_ulogic;
+    signal load_hom_gain : std_ulogic;
 
 begin
     bunch_bank_delay:

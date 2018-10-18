@@ -14,10 +14,10 @@ entity oddr_array is
         COUNT : natural := 1
     );
     port (
-        clk_i : in std_logic;
-        d1_i : in std_logic_vector(COUNT-1 downto 0);
-        d2_i : in std_logic_vector(COUNT-1 downto 0);
-        q_o : out std_logic_vector(COUNT-1 downto 0)
+        clk_i : in std_ulogic;
+        d1_i : in std_ulogic_vector(COUNT-1 downto 0);
+        d2_i : in std_ulogic_vector(COUNT-1 downto 0);
+        q_o : out std_ulogic_vector(COUNT-1 downto 0)
     );
 end;
 

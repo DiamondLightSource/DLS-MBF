@@ -18,14 +18,14 @@ entity min_max_sum_memory is
         READ_DELAY : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Read interface
         read_addr_i : in unsigned;
         read_data_o : out mms_row_t := mms_reset_value;
 
         -- Write interface
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_addr_i : in unsigned;
         write_data_i : in mms_row_t
     );
@@ -35,12 +35,12 @@ architecture arch of min_max_sum_memory is
     constant ADDR_BITS : natural := read_addr_i'LENGTH;
 
     -- Declare block ram
-    subtype bram_row_t is std_logic_vector(MMS_ROW_BITS-1 downto 0);
+    subtype bram_row_t is std_ulogic_vector(MMS_ROW_BITS-1 downto 0);
 
     signal read_addr : read_addr_i'SUBTYPE;
     signal read_row : bram_row_t;
 
-    signal write_strobe : std_logic;
+    signal write_strobe : std_ulogic;
     signal write_addr : write_addr_i'SUBTYPE;
     signal write_row : bram_row_t;
 

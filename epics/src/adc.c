@@ -29,6 +29,15 @@ static struct adc_context {
 } adc_context[AXIS_COUNT];
 
 
+static struct phase {
+    float *magnitude;
+    float *phase;
+    double mean_phase;
+    double mean_magnitude;
+    double threshold;
+} phase;
+
+
 static void write_adc_taps(void *context, float array[], unsigned int *length)
 {
     struct adc_context *adc = context;
@@ -105,6 +114,40 @@ static void scan_events(void)
 }
 
 
+static void compute_phase(void)
+{
+    unsigned int bunches = hardware_config.bunches;
+    float mean_i[bunches], mean_q[bunches];
+    read_mms_mean(adc_context[0].mms, mean_i);
+    read_mms_mean(adc_context[1].mms, mean_q);
+
+    float max_mag = 0;
+    float sum_mag = 0;
+    FOR_BUNCHES(i)
+    {
+        phase.magnitude[i] = sqrtf(SQR(mean_i[i]) + SQR(mean_q[i]));
+        max_mag = MAX(max_mag, phase.magnitude[i]);
+        sum_mag += phase.magnitude[i];
+    }
+    phase.mean_magnitude = sum_mag / (float) bunches;
+
+    float threshold = (float) phase.threshold * max_mag;
+    float sum_i = 0, sum_q = 0;
+    FOR_BUNCHES(i)
+    {
+        if (phase.magnitude[i] > threshold)
+        {
+            phase.phase[i] = 180 / (float) M_PI * atan2f(mean_q[i], mean_i[i]);
+            sum_i += mean_i[i];
+            sum_q += mean_q[i];
+        }
+        else
+            phase.phase[i] = 0;
+    }
+    phase.mean_phase = 180 / (float) M_PI * atan2f(sum_q, sum_i);
+}
+
+
 error__t initialise_adc(void)
 {
     FOR_AXIS_NAMES(axis, "ADC")
@@ -131,6 +174,22 @@ error__t initialise_adc(void)
 
     WITH_NAME_PREFIX("ADC")
         PUBLISH_ACTION("EVENTS", scan_events);
+
+    if (system_config.lmbf_mode)
+    {
+        unsigned int bunches = hardware_config.bunches;
+        phase.magnitude = CALLOC(float, bunches);
+        phase.phase = CALLOC(float, bunches);
+        FOR_AXIS_NAMES(axis, "ADC", system_config.lmbf_mode)
+        {
+            PUBLISH_ACTION("TRIGGER", compute_phase);
+            PUBLISH_WF_READ_VAR(float, "MAGNITUDE", bunches, phase.magnitude);
+            PUBLISH_WF_READ_VAR(float, "PHASE", bunches, phase.phase);
+            PUBLISH_READ_VAR(ai, "PHASE_MEAN", phase.mean_phase);
+            PUBLISH_READ_VAR(ai, "MAGNITUDE_MEAN", phase.mean_magnitude);
+            PUBLISH_WRITE_VAR_P(ao, "THRESHOLD", phase.threshold);
+        }
+    }
 
     return ERROR_OK;
 }

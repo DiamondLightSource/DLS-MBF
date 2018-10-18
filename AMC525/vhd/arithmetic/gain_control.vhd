@@ -13,11 +13,11 @@ entity gain_control is
         GAIN_DELAY : natural := 4
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         gain_sel_i : in unsigned;
         data_i : in signed;
         data_o : out signed;
-        overflow_o : out std_logic
+        overflow_o : out std_ulogic
     );
 end;
 

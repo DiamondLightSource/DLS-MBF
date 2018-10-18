@@ -12,9 +12,9 @@ entity bunch_fir_delay is
         PROCESS_DELAY : natural
     );
     port (
-        clk_i : in std_logic;
-        turn_clock_i : in std_logic;
-        write_strobe_i : in std_logic;
+        clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
+        write_strobe_i : in std_ulogic;
         data_i : in signed;
         data_o : out signed
     );
@@ -38,7 +38,7 @@ architecture arch of bunch_fir_delay is
     constant READ_DELAY : natural := 2;
     constant WRITE_DELAY : natural := PROCESS_DELAY + READ_DELAY;
 
-    signal turn_clock : std_logic;
+    signal turn_clock : std_ulogic;
     signal read_addr : bunch_count_t := (others => '0');
     signal write_addr : bunch_count_t;
 
@@ -71,7 +71,7 @@ begin
         DW  => bunch_count_t'LENGTH
     ) port map (
        clk_i => clk_i,
-       data_i => std_logic_vector(read_addr),
+       data_i => std_ulogic_vector(read_addr),
        unsigned(data_o) => write_addr
     );
 
@@ -88,6 +88,6 @@ begin
         write_clk_i => clk_i,
         write_strobe_i => write_strobe_i,
         write_addr_i => write_addr,
-        write_data_i => std_logic_vector(data_i)
+        write_data_i => std_ulogic_vector(data_i)
     );
 end;

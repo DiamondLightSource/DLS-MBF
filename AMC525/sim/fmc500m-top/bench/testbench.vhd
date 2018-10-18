@@ -11,7 +11,7 @@ use work.defines.all;
 use work.fmc500m_defs.all;
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -37,38 +37,38 @@ architecture arch of testbench is
 
 
 
-    signal FMC_LA_P : std_logic_vector(0 to 33);
-    signal FMC_LA_N : std_logic_vector(0 to 33);
-    signal FMC_HB_P : std_logic_vector(0 to 21);
-    signal FMC_HB_N : std_logic_vector(0 to 21);
-    signal write_strobe : std_logic;
+    signal FMC_LA_P : std_ulogic_vector(0 to 33);
+    signal FMC_LA_N : std_ulogic_vector(0 to 33);
+    signal FMC_HB_P : std_ulogic_vector(0 to 21);
+    signal FMC_HB_N : std_ulogic_vector(0 to 21);
+    signal write_strobe : std_ulogic;
     signal write_data : reg_data_t;
-    signal write_ack : std_logic;
-    signal read_strobe : std_logic;
+    signal write_ack : std_ulogic;
+    signal read_strobe : std_ulogic;
     signal read_data : reg_data_t;
-    signal read_ack : std_logic;
-    signal adc_dco : std_logic;
+    signal read_ack : std_ulogic;
+    signal adc_dco : std_ulogic;
     signal adc_data_a : signed(13 downto 0);
     signal adc_data_b : signed(13 downto 0);
     signal dac_data_a : signed(15 downto 0);
     signal dac_data_b : signed(15 downto 0);
-    signal dac_frame : std_logic;
-    signal ext_trig : std_logic;
+    signal dac_frame : std_ulogic;
+    signal ext_trig : std_ulogic;
     signal misc_outputs : fmc500_outputs_t;
     signal misc_inputs : fmc500_inputs_t;
 
     -- Make the SPI signals visible
-    signal pll_spi_csn : std_logic;
-    signal pll_spi_sclk : std_logic;
-    signal pll_spi_sdi : std_logic;
-    signal pll_spi_sdo : std_logic;
-    signal adc_spi_csn : std_logic;
-    signal adc_spi_sclk : std_logic;
-    signal adc_spi_sdio : std_logic;
-    signal dac_spi_csn : std_logic;
-    signal dac_spi_sclk : std_logic;
-    signal dac_spi_sdi : std_logic;
-    signal dac_spi_sdo : std_logic;
+    signal pll_spi_csn : std_ulogic;
+    signal pll_spi_sclk : std_ulogic;
+    signal pll_spi_sdi : std_ulogic;
+    signal pll_spi_sdo : std_ulogic;
+    signal adc_spi_csn : std_ulogic;
+    signal adc_spi_sclk : std_ulogic;
+    signal adc_spi_sdio : std_ulogic;
+    signal dac_spi_csn : std_ulogic;
+    signal dac_spi_sclk : std_ulogic;
+    signal dac_spi_sdi : std_ulogic;
+    signal dac_spi_sdo : std_ulogic;
 
 begin
 

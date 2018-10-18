@@ -9,19 +9,19 @@ use work.support.all;
 entity adc_overflow is
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Data flow
         data_i : in signed;                 -- on ADC clock
         limit_i : in unsigned;
-        overflow_o : out std_logic          -- on DSP clock
+        overflow_o : out std_ulogic          -- on DSP clock
     );
 end;
 
 architecture arch of adc_overflow is
     signal abs_data : unsigned(data_i'RANGE) := (others => '0');
-    signal overflow : std_logic := '0';
+    signal overflow : std_ulogic := '0';
 
 begin
     process (adc_clk_i) begin
@@ -34,7 +34,7 @@ begin
                 abs_data <= unsigned(not data_i);
             end if;
 
-            overflow <= to_std_logic(abs_data > limit_i);
+            overflow <= to_std_ulogic(abs_data > limit_i);
         end if;
     end process;
 

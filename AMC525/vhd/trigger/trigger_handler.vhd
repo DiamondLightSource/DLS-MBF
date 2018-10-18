@@ -8,20 +8,20 @@ use work.support.all;
 
 entity trigger_handler is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
-        trigger_i : in std_logic;       -- External trigger source
-        turn_clock_i : in std_logic;    -- Machine revolution clock
+        trigger_i : in std_ulogic;       -- External trigger source
+        turn_clock_i : in std_ulogic;    -- Machine revolution clock
 
-        arm_i : in std_logic;
-        fire_i : in std_logic;
-        disarm_i : in std_logic;
+        arm_i : in std_ulogic;
+        fire_i : in std_ulogic;
+        disarm_i : in std_ulogic;
         delay_i : in unsigned;
 
-        trigger_o : out std_logic := '0';
-        armed_o : out std_logic;
+        trigger_o : out std_ulogic := '0';
+        armed_o : out std_ulogic;
 
-        trigger_seen_o : out std_logic  -- Captured effective trigger pulse
+        trigger_seen_o : out std_ulogic  -- Captured effective trigger pulse
     );
 end;
 
@@ -65,12 +65,12 @@ begin
 
             trigger_o <=
                 turn_clock_i and
-                to_std_logic(trig_state = TRIGGER_TRIGGERED) and
-                to_std_logic(counter = 0);
+                to_std_ulogic(trig_state = TRIGGER_TRIGGERED) and
+                to_std_ulogic(counter = 0);
         end if;
     end process;
 
     -- Report as armed until trigger pulse has actually been generated
-    armed_o <= to_std_logic(trig_state /= TRIGGER_IDLE);
-    trigger_seen_o <= to_std_logic(trig_state = TRIGGER_ARMED) and trigger_i;
+    armed_o <= to_std_ulogic(trig_state /= TRIGGER_IDLE);
+    trigger_seen_o <= to_std_ulogic(trig_state = TRIGGER_ARMED) and trigger_i;
 end;

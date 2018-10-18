@@ -30,16 +30,16 @@ use work.support.all;
 
 entity memory_buffer_fast is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
-        input_valid_i : in std_logic;
-        input_ready_o : out std_logic;
-        input_data_i : in std_logic_vector;
+        input_valid_i : in std_ulogic;
+        input_ready_o : out std_ulogic;
+        input_data_i : in std_ulogic_vector;
         input_addr_i : in unsigned;
 
-        output_valid_o : out std_logic;
-        output_ready_i : in std_logic;
-        output_data_o : out std_logic_vector;
+        output_valid_o : out std_ulogic;
+        output_ready_i : in std_ulogic;
+        output_data_o : out std_ulogic_vector;
         output_addr_o : out unsigned
     );
 end;
@@ -51,7 +51,7 @@ architecture arch of memory_buffer_fast is
     signal full_data : input_data_i'SUBTYPE;
     signal full_addr : input_addr_i'SUBTYPE;
 
-    signal input_output_state : std_logic_vector(0 to 1);
+    signal input_output_state : std_ulogic_vector(0 to 1);
 
 begin
     input_output_state <= input_valid_i & output_ready_i;

@@ -33,6 +33,8 @@ def bunch_fir_pvs():
             bank_pvs()
 
     mbbOut('GAIN', DESC = 'FIR gain select', *dBrange(16, -6, 48))
+    Action('GAIN:UP', DESC = 'Increase FIR gain')
+    Action('GAIN:DN', DESC = 'Decrease FIR gain')
 
 
 for a in axes('FIR', lmbf_mode):

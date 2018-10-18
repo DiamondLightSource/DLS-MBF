@@ -13,47 +13,47 @@ use work.dsp_defs.all;
 entity dsp_control_top is
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Control register interface
-        write_strobe_i : in std_logic_vector(CTRL_REGS_RANGE);
+        write_strobe_i : in std_ulogic_vector(CTRL_REGS_RANGE);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(CTRL_REGS_RANGE);
-        read_strobe_i : in std_logic_vector(CTRL_REGS_RANGE);
+        write_ack_o : out std_ulogic_vector(CTRL_REGS_RANGE);
+        read_strobe_i : in std_ulogic_vector(CTRL_REGS_RANGE);
         read_data_o : out reg_data_array_t(CTRL_REGS_RANGE);
-        read_ack_o : out std_logic_vector(CTRL_REGS_RANGE);
+        read_ack_o : out std_ulogic_vector(CTRL_REGS_RANGE);
 
         -- DSP controls and data streams from DSP units
         control_to_dsp_o : out control_to_dsp_array_t;
         dsp_to_control_i : in dsp_to_control_array_t;
-        loopback_o : out std_logic_vector(CHANNELS);
-        output_enable_o : out std_logic_vector(CHANNELS);
+        loopback_o : out std_ulogic_vector(CHANNELS);
+        output_enable_o : out std_ulogic_vector(CHANNELS);
 
         -- DRAM0 capture control
-        dram0_capture_enable_o : out std_logic;
-        dram0_data_ready_i : in std_logic;
-        dram0_capture_address_i : in std_logic_vector;
-        dram0_data_valid_o : out std_logic;
-        dram0_data_o : out std_logic_vector;
-        dram0_data_error_i : in std_logic;
-        dram0_addr_error_i : in std_logic;
-        dram0_brsp_error_i : in std_logic;
+        dram0_capture_enable_o : out std_ulogic;
+        dram0_data_ready_i : in std_ulogic;
+        dram0_capture_address_i : in std_ulogic_vector;
+        dram0_data_valid_o : out std_ulogic;
+        dram0_data_o : out std_ulogic_vector;
+        dram0_data_error_i : in std_ulogic;
+        dram0_addr_error_i : in std_ulogic;
+        dram0_brsp_error_i : in std_ulogic;
 
         -- DRAM1 data and control (on DSP clock)
         dram1_address_o : out unsigned;
-        dram1_data_o : out std_logic_vector;
-        dram1_data_valid_o : out std_logic;
-        dram1_data_ready_i : in std_logic;
-        dram1_brsp_error_i : in std_logic;
+        dram1_data_o : out std_ulogic_vector;
+        dram1_data_valid_o : out std_ulogic;
+        dram1_data_ready_i : in std_ulogic;
+        dram1_brsp_error_i : in std_ulogic;
 
         -- External triggers
-        revolution_clock_i : in std_logic;
-        event_trigger_i : in std_logic;
-        postmortem_trigger_i : in std_logic;
-        blanking_trigger_i : in std_logic;
+        revolution_clock_i : in std_ulogic;
+        event_trigger_i : in std_ulogic;
+        postmortem_trigger_i : in std_ulogic;
+        blanking_trigger_i : in std_ulogic;
 
-        interrupts_o : out std_logic_vector
+        interrupts_o : out std_ulogic_vector
     );
 end;
 
@@ -61,30 +61,30 @@ architecture arch of dsp_control_top is
     signal pulsed_bits : reg_data_t;
     signal control_register : reg_data_t;
 
-    signal adc_mux : std_logic;
-    signal nco_0_mux : std_logic;
-    signal nco_1_mux : std_logic;
-    signal bank_mux : std_logic;
+    signal adc_mux : std_ulogic;
+    signal nco_0_mux : std_ulogic;
+    signal nco_1_mux : std_ulogic;
+    signal bank_mux : std_ulogic;
     signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
     signal mux_nco_0_out : dsp_nco_from_mux_array_t;
     signal mux_nco_1_out : dsp_nco_from_mux_array_t;
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
     -- DRAM1 interface
-    signal dram1_valid : std_logic_vector(CHANNELS);
-    signal dram1_ready : std_logic_vector(CHANNELS);
+    signal dram1_valid : std_ulogic_vector(CHANNELS);
+    signal dram1_ready : std_ulogic_vector(CHANNELS);
     signal dram1_address : unsigned_array(CHANNELS)(dram1_address_o'RANGE);
     signal dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
 
     -- Triggering and events interface
-    signal adc_trigger : std_logic_vector(CHANNELS);
-    signal seq_trigger : std_logic_vector(CHANNELS);
-    signal blanking_window : std_logic;
-    signal turn_clock : std_logic;
-    signal seq_start : std_logic_vector(CHANNELS);
-    signal seq_busy : std_logic_vector(CHANNELS);
-    signal dram0_trigger : std_logic;
-    signal dram0_phase : std_logic;
+    signal adc_trigger : std_ulogic_vector(CHANNELS);
+    signal seq_trigger : std_ulogic_vector(CHANNELS);
+    signal blanking_window : std_ulogic;
+    signal turn_clock : std_ulogic;
+    signal seq_start : std_ulogic_vector(CHANNELS);
+    signal seq_busy : std_ulogic_vector(CHANNELS);
+    signal dram0_trigger : std_ulogic;
+    signal dram0_phase : std_ulogic;
 
 begin
     -- Capture of pulsed bits.
@@ -182,8 +182,8 @@ begin
         control_to_dsp_o(c).dram1_ready <= dram1_ready(c);
         -- The top bit of each address identifies the generating DSP unit
         dram1_address(c) <= unsigned(
-            to_std_logic(c) &
-            std_logic_vector(dsp_to_control_i(c).dram1_address));
+            to_std_ulogic(c) &
+            std_ulogic_vector(dsp_to_control_i(c).dram1_address));
         dram1_data(c) <= dsp_to_control_i(c).dram1_data;
     end generate;
 

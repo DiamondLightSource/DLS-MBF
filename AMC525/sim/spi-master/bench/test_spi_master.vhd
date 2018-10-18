@@ -7,7 +7,7 @@ end test_spi_master;
 
 
 architecture arch of test_spi_master is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -16,12 +16,12 @@ architecture arch of test_spi_master is
     end procedure;
 
 
-    signal dsp_clk : std_logic := '0';
+    signal dsp_clk : std_ulogic := '0';
 
-    signal spi_start : std_logic;
-    signal spi_r_wn : std_logic;
-    signal spi_busy : std_logic;
-    signal spi_data : std_logic;
+    signal spi_start : std_ulogic;
+    signal spi_r_wn : std_ulogic;
+    signal spi_busy : std_ulogic;
+    signal spi_data : std_ulogic;
 
     procedure tick_wait(count : natural) is
     begin

@@ -21,9 +21,9 @@ entity adc_top is
     );
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;    -- start of machine revolution
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;    -- start of machine revolution
 
         -- Data flow
         data_i : in signed;
@@ -31,14 +31,14 @@ entity adc_top is
         data_store_o : out signed;      -- Data to be stored to memory
 
         -- General register interface
-        write_strobe_i : in std_logic_vector(DSP_ADC_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_ADC_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_ADC_REGS);
-        read_strobe_i : in std_logic_vector(DSP_ADC_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_ADC_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_ADC_REGS);
         read_data_o : out reg_data_array_t(DSP_ADC_REGS);
-        read_ack_o : out std_logic_vector(DSP_ADC_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_ADC_REGS);
 
-        delta_event_o : out std_logic       -- bunch movement over threshold
+        delta_event_o : out std_ulogic       -- bunch movement over threshold
     );
 end;
 
@@ -46,16 +46,16 @@ architecture arch of adc_top is
     signal config_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
-    signal mms_source : std_logic;
-    signal dram_source : std_logic;
+    signal mms_source : std_ulogic;
+    signal dram_source : std_ulogic;
 
     signal command_bits : reg_data_t;
-    signal write_start : std_logic;
-    signal delta_reset : std_logic;
+    signal write_start : std_ulogic;
+    signal delta_reset : std_ulogic;
 
     signal event_bits : reg_data_t;
-    signal input_overflow : std_logic;
-    signal fir_overflow : std_logic;
+    signal input_overflow : std_ulogic;
+    signal fir_overflow : std_ulogic;
 
     signal filtered_data : data_o'SUBTYPE;
     signal data_in : data_i'SUBTYPE;
@@ -114,7 +114,7 @@ begin
         DW => data_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(data_i),
+        data_i => std_ulogic_vector(data_i),
         signed(data_o) => data_in
     );
 
@@ -200,7 +200,7 @@ begin
         DW => data_o'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(filtered_data),
+        data_i => std_ulogic_vector(filtered_data),
         signed(data_o) => data_o
     );
 end;

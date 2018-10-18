@@ -64,7 +64,7 @@ buttonLabel "LMBF-01"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/peaks.edl"
+  0 "tune_fit/tune_peaks.edl"
 }
 symbols {
   0 "tune_prefix=SR23C-DI-LMBF-01:IQ"
@@ -90,7 +90,7 @@ buttonLabel "TMBF-01:Y"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/peaks.edl"
+  0 "tune_fit/tune_peaks.edl"
 }
 symbols {
   0 "tune_prefix=SR23C-DI-TMBF-01:Y"
@@ -116,7 +116,7 @@ buttonLabel "TMBF-01:X"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/peaks.edl"
+  0 "tune_fit/tune_peaks.edl"
 }
 symbols {
   0 "tune_prefix=SR23C-DI-TMBF-01:X"
