@@ -70,9 +70,9 @@ Example     :
         return int(np.ceil((1.*buffer_size) / self.bunch_nb) - 1)
 
     def read_mem_avg(self, turns, offset=0, channel=None, decimate=None,
-            tune=None, verbose=False):
+            tune=None, lock=None, verbose=False):
         d = self.read_mem(turns, offset=offset, channel=channel,
-            decimate=decimate, tune=tune, verbose=verbose)
+            decimate=decimate, tune=tune, lock=lock, verbose=verbose)
         n = np.size(d)
         out_buffer_size = self.bunch_nb
         if channel is None:

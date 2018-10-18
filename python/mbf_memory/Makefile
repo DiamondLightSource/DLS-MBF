@@ -1,12 +1,11 @@
 PYTHON = python
-MODULEVER=1.0
 
 MBF_TOP := $(shell readlink -f '$(CURDIR)/../..')
 include $(MBF_TOP)/Makefile.common
 
 # This is run when we type make
 dist: setup.py $(wildcard mbf_memory/*)
-	MODULEVER=$(MODULEVER) $(PYTHON) setup.py bdist_egg
+	$(PYTHON) setup.py bdist_egg
 	touch dist
 
 # Clean the module
