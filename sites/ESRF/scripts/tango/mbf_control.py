@@ -42,11 +42,15 @@ class mbf_control(Macro):
 
             if mode[:4].lower() == 'mdt_':
                 import setup_mbf_MDT as setup_mbf
+                reload(setup_mbf)
+                if mode[4:].lower() == 'grow_damp':
+                    mbf_hl = setup_mbf.MBF_HL_GROW_DAMP(Mbf, mbfCtrl)
+                elif mode[4:].lower() == 'nco1b':
+                    mbf_hl = setup_mbf.MBF_HL_NCO1B(Mbf, mbfCtrl)
             else:
                 import setup_mbf_USM as setup_mbf
-            reload(setup_mbf)
-
-            mbf_hl = setup_mbf.MBF_HL(Mbf, mbfCtrl)
+                reload(setup_mbf)
+                mbf_hl = setup_mbf.MBF_HL(Mbf, mbfCtrl)
 
             # Create cleaning object if necessary
             if command in ['set_param', 'clean', 'reset']:

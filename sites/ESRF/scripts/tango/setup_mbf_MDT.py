@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from numpy import ones
+import numpy as np
 
 from setup_mbf_common import *
 from setup_mbf_USM import MBF_HL as MBF_HL_USM
@@ -25,7 +25,69 @@ class Cleaning():
         pass
 
 
-class MBF_HL(MBF_HL_USM):
+class MBF_HL_NCO1B(MBF_HL_USM, object):
+    def set_banks(self, mode, cleaning_fine_gain, feedback_fine_gain,
+            sweep_bunch_enables):
+        Mbf = self.Mbf
+        bunch_count = Mbf.bunch_count
+        all_buckets = np.ones(bunch_count, dtype=int)
+        all_buckets_minus_one = all_buckets.copy()
+        all_buckets_minus_one[495] = 0
+        one_bucket = np.zeros(bunch_count, dtype=int)
+        one_bucket[495] = 1
+        
+        # Bank0
+        Mbf.put('BUN:0:FIRWF_S', 0*all_buckets)
+        Mbf.put('BUN:0:OUTWF_S', DAC_OUT_NCO * one_bucket)
+        Mbf.put('BUN:0:GAINWF_S', feedback_fine_gain*all_buckets)
+
+        # Bank1
+        Mbf.put('BUN:1:FIRWF_S', 0*all_buckets)
+        Mbf.put('BUN:1:OUTWF_S', DAC_OUT_NCO * one_bucket)
+        Mbf.put('BUN:1:GAINWF_S', feedback_fine_gain*all_buckets)
+
+        # Bank2
+        Mbf.put('BUN:2:FIRWF_S', 0*all_buckets)
+        Mbf.put('BUN:2:OUTWF_S', DAC_OUT_FIR * all_buckets_minus_one
+                + DAC_OUT_NCO * one_bucket)
+        Mbf.put('BUN:2:GAINWF_S', feedback_fine_gain*all_buckets)
+
+        # Bank3
+        Mbf.put('BUN:3:FIRWF_S', 0*all_buckets)
+        Mbf.put('BUN:3:OUTWF_S', DAC_OUT_FIR * all_buckets_minus_one
+                + DAC_OUT_NCO * one_bucket)
+        Mbf.put('BUN:3:GAINWF_S', feedback_fine_gain*all_buckets)
+
+    def comm_set_sweep_on(self, state=True):
+        Mbf = self.Mbf
+        if state == True:
+            Mbf.put('NCO:ENABLE_S', 'On')
+        else:
+            Mbf.put('NCO:ENABLE_S', 'Off')
+
+    def set_param(self, cleaning, attName):
+        Mbf = self.Mbf
+        mbfCtrl = self.mbfCtrl
+
+        modeList = mbfCtrl.ModeList
+        mode = modeList[mbfCtrl.mode]
+        
+        if attName in ['All', 'Mode', 'SweepGain']:
+            Mbf.put('NCO:GAIN_S', mbfCtrl.SweepGain)
+
+        if attName in ['All', 'Mode', 'Tune']:
+            Mbf.put('NCO:FREQ_S', mbfCtrl.Tune%1)
+        
+        return super(MBF_HL_NCO1B, self).set_param(cleaning, attName)
+
+
+class MBF_HL_GROW_DAMP(MBF_HL_USM, object):
+    def set_param(self, cleaning, attName):
+        Mbf = self.Mbf
+        ret = super(MBF_HL_GROW_DAMP, self).set_param(cleaning, attName)
+        Mbf.put('DET:SELECT_S', 1)
+        return ret
+
     def config_triggers(self):
         Mbf = self.Mbf
         Mbf.put('TRG:SEQ:SOFT:EN_S', 'Enable')
@@ -38,7 +100,7 @@ class MBF_HL(MBF_HL_USM):
             sweep_bunch_enables):
         Mbf = self.Mbf
         bunch_count = Mbf.bunch_count
-        all_buckets = ones(bunch_count, dtype=int)
+        all_buckets = np.ones(bunch_count, dtype=int)
         
         # Bank0
         Mbf.put('BUN:0:FIRWF_S', 0*all_buckets)
@@ -78,6 +140,8 @@ class MBF_HL(MBF_HL_USM):
         def get_attr(device, name, default_value):
             try:
                 value = device.__getattr__(name)
+                if value is None:
+                    raise AttributeError()
             except AttributeError:
                 value = default_value
             return value
@@ -108,7 +172,7 @@ class MBF_HL(MBF_HL_USM):
             feedback_dwell = turns_per_acq
 
         bunch_count = Mbf.bunch_count
-        all_buckets = ones((bunch_count,), dtype=int)
+        all_buckets = np.ones((bunch_count,), dtype=int)
         
         sweep_state = self.get_sweep_state()
         
