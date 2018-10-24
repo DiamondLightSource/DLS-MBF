@@ -1,0 +1,4 @@
+#! /bin/bash
+
+sed -n "/^ioc *= */{s///; p; q;}" $1 | grep -q tune_fit
+

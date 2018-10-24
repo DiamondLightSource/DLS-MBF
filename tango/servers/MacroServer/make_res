@@ -8,14 +8,6 @@ read_key()
     sed -n "/^$2 *= */{s///; p; q;}" "$1"
 }
 
-# Only deal with epics IOCs
-IOC_TYPE=$(read_key $1 ioc)
-if [[ $IOC_TYPE != "epics/runioc" ]] ; then
-    exit 0
-fi
-
-#VAR_SUBST="$VAR_SUBST;s:@@DEVICE_NAME@@:$(read_key $1 tango_device_name):"
-
 MBF_HOME="$(cd "$(dirname $0)/../../.."; pwd)"
 
 VAR_SUBST=""
