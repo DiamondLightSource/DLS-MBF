@@ -979,7 +979,7 @@ endObjectProperties
 
 endGroup
 
-visPv "$(device):MODE"
+visPv "$(device):INFO:MODE"
 visMin "1"
 visMax "2"
 endObjectProperties
@@ -1055,7 +1055,7 @@ endObjectProperties
 
 endGroup
 
-visPv "$(device):MODE"
+visPv "$(device):INFO:MODE"
 visMin "0"
 visMax "1"
 endObjectProperties
