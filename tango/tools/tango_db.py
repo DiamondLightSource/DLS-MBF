@@ -39,11 +39,13 @@ def Tango_db(dev_name, scope=''):
             
             d['scope'] = scope
             
-            att_prop_dic = db.get_device_attribute_property(dev_name, d['tango_att_name'])[d['tango_att_name']]
+            att_prop_dic = db.get_device_attribute_property(dev_name, 
+                    d['tango_att_name'])[d['tango_att_name']]
             
             for att_prop in att_prop_dic.keys():
                 if att_prop not in att_prop_known_list:
-                    print >> sys.stderr, "Attribute property {} not known".format(att_prop)
+                    print >> sys.stderr, "Attribute property {} not known"\
+                            .format(att_prop)
             
             for att_prop in att_prop_list:
                 if att_prop in att_prop_dic:

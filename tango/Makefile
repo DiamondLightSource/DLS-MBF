@@ -9,16 +9,23 @@ RESSOURCE_DIR := servers/resources
 SCRIPTS := $(wildcard $(SCRIPT_DIR)/*)
 SCRIPTS := $(notdir $(SCRIPTS))
 
-RESSOURCES =
-RESSOURCES += e2t_global.res
-RESSOURCES += e2t_horizontal.res
-RESSOURCES += e2t_vertical.res
+TMBF_RES =
+TMBF_RES += e2t_tmbf_global.res
+TMBF_RES += e2t_tmbf_horizontal.res
+TMBF_RES += e2t_tmbf_vertical.res
 
-default: $(SCRIPTS) $(RESSOURCES) install-py mbfstartioc-res macroserver-res mbfcontrol-res
+TFIT_RES =
+TFIT_RES += e2t_tfit_horizontal.res
+TFIT_RES += e2t_tfit_vertical.res
+
+default: $(SCRIPTS) $(TMBF_RES) $(TFIT_RES) install-py mbfstartioc-res macroserver-res mbfcontrol-res
 .PHONY: default
 
-$(RESSOURCES): %.res: ../epics/db/tmbf.db
-	tools/epics_to_tango.py ../epics/db/tmbf.db $(subst e2t_,,$*) > $(RESSOURCE_DIR)/$*.res
+$(TMBF_RES): %.res: ../epics/db/tmbf.db
+	tools/T2E_make_res.py tmbf ../epics/db/tmbf.db $(subst e2t_tmbf_,,$*) > $(RESSOURCE_DIR)/$*.res
+
+$(TFIT_RES): %.res: tools/tune_fit.db
+	tools/T2E_make_res.py tfit tools/tune_fit.db $(subst e2t_tfit_,,$*) > $(RESSOURCE_DIR)/$*.res
 
 %.py: $(SCRIPT_DIR)/%.py
 	ln -sf ../../sites/$(SITE)/scripts/tango/$@ macros/$@
