@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 248
-y 110
+x 249
+y 111
 w 599
 h 26
 font "helvetica-medium-r-18.0"
@@ -90,7 +90,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -111,6 +110,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -118,7 +118,6 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
@@ -139,6 +138,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -166,14 +166,13 @@ endObjectProperties
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
-inputFocusUpdates
 major 4
 minor 6
 release 0
-x 264
+x 256
 y 0
-w 44
-h 22
+w 48
+h 24
 controlPv "$(device):$(axis):FIR:$(fir):PHASE_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -187,6 +186,7 @@ limitsFromDb
 nullColor index 0
 useHexPrefix
 newPos
+inputFocusUpdates
 objType "controls"
 noExecuteClipMask
 endObjectProperties
@@ -197,7 +197,7 @@ beginObjectProperties
 major 4
 minor 2
 release 0
-x 128
+x 120
 y 0
 w 128
 h 24
