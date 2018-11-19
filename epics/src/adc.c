@@ -137,14 +137,14 @@ static void compute_phase(void)
     {
         if (phase.magnitude[i] > threshold)
         {
-            phase.phase[i] = 180 / (float) M_PI * atan2f(mean_q[i], mean_i[i]);
+            phase.phase[i] = 180 / (float) M_PI * atan2f(-mean_i[i], mean_q[i]);
             sum_i += mean_i[i];
             sum_q += mean_q[i];
         }
         else
             phase.phase[i] = 0;
     }
-    phase.mean_phase = 180 / (float) M_PI * atan2f(sum_q, sum_i);
+    phase.mean_phase = 180 / (float) M_PI * atan2f(-sum_i, sum_q);
 }
 
 
