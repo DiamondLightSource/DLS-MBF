@@ -45,7 +45,9 @@
 #define RAISE_EXCEPTION(cmd) Tango::Except::throw_exception(\
   (const char *)"MBFControl::config_error",\
   (const char *)cmd,\
-  (const char *)"MBFControl::load_config");
+  (const char *)"MBFControl::[load][save]_config");
+
+#define ARB_MODE (modeList.size()-1)
 
 /*----- PROTECTED REGION END -----*/	//	MBFControl.cpp
 
@@ -77,22 +79,24 @@
 //================================================================
 //  Attributes managed are:
 //================================================================
-//  Mode               |  Tango::DevEnum	Scalar
-//  ConfigFileName     |  Tango::DevString	Scalar
-//  Tune               |  Tango::DevDouble	Scalar
-//  FeedbackGain       |  Tango::DevShort	Scalar
-//  FeedbackFineGain   |  Tango::DevDouble	Scalar
-//  FeedbackPhase      |  Tango::DevDouble	Scalar
-//  Harmonic           |  Tango::DevDouble	Scalar
-//  SweepRange         |  Tango::DevDouble	Scalar
-//  SweepDwellTime     |  Tango::DevLong	Scalar
-//  SweepGain          |  Tango::DevShort	Scalar
-//  BlankingInterval   |  Tango::DevLong	Scalar
-//  TuneOnSingleBunch  |  Tango::DevBoolean	Scalar
-//  TuneBunch          |  Tango::DevShort	Scalar
-//  SweepState         |  Tango::DevState	Scalar
-//  MacroHistory       |  Tango::DevString	Spectrum  ( max = 1024)
-//  ModeList           |  Tango::DevString	Spectrum  ( max = 32)
+//  Mode                  |  Tango::DevEnum	Scalar
+//  ConfigFileName        |  Tango::DevString	Scalar
+//  Tune                  |  Tango::DevDouble	Scalar
+//  FeedbackGain          |  Tango::DevShort	Scalar
+//  FeedbackFineGain      |  Tango::DevDouble	Scalar
+//  FeedbackPhase         |  Tango::DevDouble	Scalar
+//  Harmonic              |  Tango::DevDouble	Scalar
+//  SweepRange            |  Tango::DevDouble	Scalar
+//  SweepDwellTime        |  Tango::DevLong	Scalar
+//  SweepGainSingleBunch  |  Tango::DevShort	Scalar
+//  SweepGainAllBunches   |  Tango::DevShort	Scalar
+//  BlankingInterval      |  Tango::DevLong	Scalar
+//  TuneOnSingleBunch     |  Tango::DevBoolean	Scalar
+//  TuneBunch             |  Tango::DevShort	Scalar
+//  SweepState            |  Tango::DevState	Scalar
+//  MacroHistory          |  Tango::DevString	Spectrum  ( max = 1024)
+//  ModeList              |  Tango::DevString	Spectrum  ( max = 32)
+//  CleaningPattern       |  Tango::DevShort	Spectrum  ( max = 1024)
 //================================================================
 
 namespace MBFControl_ns
@@ -160,11 +164,13 @@ void MBFControl::delete_device()
 	delete[] attr_Harmonic_read;
 	delete[] attr_SweepRange_read;
 	delete[] attr_SweepDwellTime_read;
-	delete[] attr_SweepGain_read;
+	delete[] attr_SweepGainSingleBunch_read;
+	delete[] attr_SweepGainAllBunches_read;
 	delete[] attr_BlankingInterval_read;
 	delete[] attr_TuneOnSingleBunch_read;
 	delete[] attr_TuneBunch_read;
 	delete[] attr_SweepState_read;
+	delete[] attr_CleaningPattern_read;
 }
 
 //--------------------------------------------------------
@@ -195,11 +201,13 @@ void MBFControl::init_device()
 	attr_Harmonic_read = new Tango::DevDouble[1];
 	attr_SweepRange_read = new Tango::DevDouble[1];
 	attr_SweepDwellTime_read = new Tango::DevLong[1];
-	attr_SweepGain_read = new Tango::DevShort[1];
+	attr_SweepGainSingleBunch_read = new Tango::DevShort[1];
+	attr_SweepGainAllBunches_read = new Tango::DevShort[1];
 	attr_BlankingInterval_read = new Tango::DevLong[1];
 	attr_TuneOnSingleBunch_read = new Tango::DevBoolean[1];
 	attr_TuneBunch_read = new Tango::DevShort[1];
 	attr_SweepState_read = new Tango::DevState[1];
+	attr_CleaningPattern_read = new Tango::DevShort[1024];
 	/*----- PROTECTED REGION ID(MBFControl::init_device) ENABLED START -----*/
 	
 	//	Initialize device
@@ -223,18 +231,20 @@ void MBFControl::init_device()
   configFile = "No file";
   configLoadingFailed = false;
   attr_BlankingInterval_read[0]=-1;
+	pattern_length = 0;
 
 	// Set labels for modes
 	if( modeList.size()==0 ) {
 	  cerr << "Warning no mode defined, use ModeList property to define mode(s)" << endl;
-	} else {
-		string attName = "Mode";
-		Tango::Attribute &modeAtt = get_device_attr()->get_attr_by_name(attName.c_str());
-		Tango::MultiAttrProp<Tango::DevEnum> modeProps;
-		modeAtt.get_properties(modeProps);
-		modeProps.enum_labels = modeList;
-		modeAtt.set_properties(modeProps);
-	};
+	}
+
+  modeList.push_back("ARB_Pattern");
+	string attName = "Mode";
+	Tango::Attribute &modeAtt = get_device_attr()->get_attr_by_name(attName.c_str());
+	Tango::MultiAttrProp<Tango::DevEnum> modeProps;
+	modeAtt.get_properties(modeProps);
+	modeProps.enum_labels = modeList;
+	modeAtt.set_properties(modeProps);
 
 	/*----- PROTECTED REGION END -----*/	//	MBFControl::init_device
 }
@@ -743,44 +753,85 @@ void MBFControl::write_SweepDwellTime(Tango::WAttribute &attr)
 }
 //--------------------------------------------------------
 /**
- *	Read attribute SweepGain related method
+ *	Read attribute SweepGainSingleBunch related method
  *	Description: 
  *
  *	Data type:	Tango::DevShort
  *	Attr type:	Scalar
  */
 //--------------------------------------------------------
-void MBFControl::read_SweepGain(Tango::Attribute &attr)
+void MBFControl::read_SweepGainSingleBunch(Tango::Attribute &attr)
 {
-	DEBUG_STREAM << "MBFControl::read_SweepGain(Tango::Attribute &attr) entering... " << endl;
-	/*----- PROTECTED REGION ID(MBFControl::read_SweepGain) ENABLED START -----*/
-
-	attr.set_value(attr_SweepGain_read);
+	DEBUG_STREAM << "MBFControl::read_SweepGainSingleBunch(Tango::Attribute &attr) entering... " << endl;
+	/*----- PROTECTED REGION ID(MBFControl::read_SweepGainSingleBunch) ENABLED START -----*/
+	//	Set the attribute value
+	attr.set_value(attr_SweepGainSingleBunch_read);
 	
-	/*----- PROTECTED REGION END -----*/	//	MBFControl::read_SweepGain
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::read_SweepGainSingleBunch
 }
 //--------------------------------------------------------
 /**
- *	Write attribute SweepGain related method
+ *	Write attribute SweepGainSingleBunch related method
  *	Description: 
  *
  *	Data type:	Tango::DevShort
  *	Attr type:	Scalar
  */
 //--------------------------------------------------------
-void MBFControl::write_SweepGain(Tango::WAttribute &attr)
+void MBFControl::write_SweepGainSingleBunch(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "MBFControl::write_SweepGain(Tango::WAttribute &attr) entering... " << endl;
+	DEBUG_STREAM << "MBFControl::write_SweepGainSingleBunch(Tango::WAttribute &attr) entering... " << endl;
 	//	Retrieve write value
 	Tango::DevShort	w_val;
 	attr.get_write_value(w_val);
-	/*----- PROTECTED REGION ID(MBFControl::write_SweepGain) ENABLED START -----*/
+	/*----- PROTECTED REGION ID(MBFControl::write_SweepGainSingleBunch) ENABLED START -----*/
 
-  attr_SweepGain_read[0] = w_val;
-  if( !is_srv_starting() )
-    run_macro("set_param","SweepGain");
+	attr_SweepGainSingleBunch_read[0] = w_val;
+	if( !is_srv_starting() )
+		run_macro("set_param","SweepGainSingleBunch");
 
-	/*----- PROTECTED REGION END -----*/	//	MBFControl::write_SweepGain
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::write_SweepGainSingleBunch
+}
+//--------------------------------------------------------
+/**
+ *	Read attribute SweepGainAllBunches related method
+ *	Description: 
+ *
+ *	Data type:	Tango::DevShort
+ *	Attr type:	Scalar
+ */
+//--------------------------------------------------------
+void MBFControl::read_SweepGainAllBunches(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "MBFControl::read_SweepGainAllBunches(Tango::Attribute &attr) entering... " << endl;
+	/*----- PROTECTED REGION ID(MBFControl::read_SweepGainAllBunches) ENABLED START -----*/
+	//	Set the attribute value
+	attr.set_value(attr_SweepGainAllBunches_read);
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::read_SweepGainAllBunches
+}
+//--------------------------------------------------------
+/**
+ *	Write attribute SweepGainAllBunches related method
+ *	Description: 
+ *
+ *	Data type:	Tango::DevShort
+ *	Attr type:	Scalar
+ */
+//--------------------------------------------------------
+void MBFControl::write_SweepGainAllBunches(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "MBFControl::write_SweepGainAllBunches(Tango::WAttribute &attr) entering... " << endl;
+	//	Retrieve write value
+	Tango::DevShort	w_val;
+	attr.get_write_value(w_val);
+	/*----- PROTECTED REGION ID(MBFControl::write_SweepGainAllBunches) ENABLED START -----*/
+
+	attr_SweepGainAllBunches_read[0] = w_val;
+	if( !is_srv_starting() )
+		run_macro("set_param","SweepGainAllBunches");
+
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::write_SweepGainAllBunches
 }
 //--------------------------------------------------------
 /**
@@ -941,6 +992,51 @@ void MBFControl::read_ModeList(Tango::Attribute &attr)
   attr.set_value(make_string_array(modeList), modeList.size(), 0, true);
 
 	/*----- PROTECTED REGION END -----*/	//	MBFControl::read_ModeList
+}
+//--------------------------------------------------------
+/**
+ *	Read attribute CleaningPattern related method
+ *	Description: 
+ *
+ *	Data type:	Tango::DevShort
+ *	Attr type:	Spectrum max = 1024
+ */
+//--------------------------------------------------------
+void MBFControl::read_CleaningPattern(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "MBFControl::read_CleaningPattern(Tango::Attribute &attr) entering... " << endl;
+	/*----- PROTECTED REGION ID(MBFControl::read_CleaningPattern) ENABLED START -----*/
+
+	attr.set_value(attr_CleaningPattern_read, pattern_length);
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::read_CleaningPattern
+}
+//--------------------------------------------------------
+/**
+ *	Write attribute CleaningPattern related method
+ *	Description: 
+ *
+ *	Data type:	Tango::DevShort
+ *	Attr type:	Spectrum max = 1024
+ */
+//--------------------------------------------------------
+void MBFControl::write_CleaningPattern(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "MBFControl::write_CleaningPattern(Tango::WAttribute &attr) entering... " << endl;
+	//	Retrieve number of write values
+	int	w_length = attr.get_write_value_length();
+
+	//	Retrieve pointer on write values (Do not delete !)
+	const Tango::DevShort	*w_val;
+	attr.get_write_value(w_val);
+	/*----- PROTECTED REGION ID(MBFControl::write_CleaningPattern) ENABLED START -----*/
+
+	pattern_length = w_length;
+	for(int i=0;i<w_length;i++) attr_CleaningPattern_read[i] = w_val[i];
+  if( !is_srv_starting() )
+    run_macro("set_param","CleaningPattern");
+
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::write_CleaningPattern
 }
 
 //--------------------------------------------------------
@@ -1186,12 +1282,17 @@ void MBFControl::load_configuration_file(Tango::DevString argin)
         Tango::WAttribute &att = dev_attr->get_w_attr_by_name("SweepDwellTime");
         att.set_write_value(lValue);
         attr_SweepDwellTime_read[0] = lValue;
-      } else if (att_name=="SweepGain") {
+      } else if (att_name=="SweepGainSingleBunch") {
         ss >> sValue;
-        Tango::WAttribute &att = dev_attr->get_w_attr_by_name("SweepGain");
+        Tango::WAttribute &att = dev_attr->get_w_attr_by_name("SweepGainSingleBunch");
         att.set_write_value(sValue);
-        attr_SweepGain_read[0] = sValue;
-      } else if (att_name=="SweepRange") {
+        attr_SweepGainSingleBunch_read[0] = sValue;
+      } else if (att_name=="SweepGainAllBunches") {
+				ss >> sValue;
+				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("SweepGainAllBunches");
+				att.set_write_value(sValue);
+				attr_SweepGainAllBunches_read[0] = sValue;
+			} else if (att_name=="SweepRange") {
         ss >> dValue;
         Tango::WAttribute &att = dev_attr->get_w_attr_by_name("SweepRange");
         att.set_write_value(dValue);
@@ -1211,6 +1312,19 @@ void MBFControl::load_configuration_file(Tango::DevString argin)
         Tango::WAttribute &att = dev_attr->get_w_attr_by_name("TuneOnSingleBunch");
         att.set_write_value(bValue);
         attr_TuneOnSingleBunch_read[0] = bValue;
+      } else if (att_name=="CleaningPattern") {
+      	ss >> strValue;
+      	vector<string> values;
+      	vector<short> setValues;
+      	split(values,strValue,',');
+      	pattern_length = values.size();
+      	for(int i=0;i<pattern_length;i++) {
+      		short s = (short)atoi(values[i].c_str());
+					attr_CleaningPattern_read[i] = s;
+					setValues.push_back(s);
+				}
+				Tango::WAttribute &att = dev_attr->get_w_attr_by_name("CleaningPattern");
+				att.set_write_value(setValues,setValues.size());
       }
 
     }
@@ -1244,6 +1358,12 @@ void MBFControl::save_configuration_file(Tango::DevString argin)
 	DEBUG_STREAM << "MBFControl::SaveConfigurationFile()  - " << device_name << endl;
 	/*----- PROTECTED REGION ID(MBFControl::save_configuration_file) ENABLED START -----*/
 
+	if( attr_Mode_read[0]==ARB_MODE ) {
+		// ARB Pattern
+		if( pattern_length==0 ) {
+			RAISE_EXCEPTION("Cleaning pattern not defined for ARB Pattern mode");
+		}
+	}
 
   char absolute_name[512];
   strcpy(absolute_name, configFilePath.c_str());
@@ -1262,11 +1382,15 @@ void MBFControl::save_configuration_file(Tango::DevString argin)
     conf << "Harmonic\t" <<  attr_Harmonic_read[0] << endl;
     conf << "Mode\t" <<  modeList[attr_Mode_read[0]] << endl;
     conf << "SweepDwellTime\t" <<  attr_SweepDwellTime_read[0] << endl;
-    conf << "SweepGain\t" <<  attr_SweepGain_read[0] << endl;
+    conf << "SweepGainAllBunches\t" <<  attr_SweepGainAllBunches_read[0] << endl;
+		conf << "SweepGainSingleBunch\t" <<  attr_SweepGainSingleBunch_read[0] << endl;
     conf << "SweepRange\t" <<  attr_SweepRange_read[0] << endl;
     conf << "Tune\t" <<  attr_Tune_read[0] << endl;
     conf << "TuneBunch\t" <<  attr_TuneBunch_read[0] << endl;
     conf << "TuneOnSingleBunch\t" <<  attr_TuneOnSingleBunch_read[0] << endl;
+    if( attr_Mode_read[0]==ARB_MODE ) {
+    	conf << "CleaningPattern\t" << get_pattern_string() << endl;
+    }
     conf.close();
     configFile=string(argin);
   }
@@ -1632,6 +1756,33 @@ Tango::DevString *MBFControl::make_string_array(vector<string> v) {
 
 }
 
+string MBFControl::get_pattern_string() {
+
+	stringstream str;
+	for(int i=0;i<pattern_length;i++) {
+		str << attr_CleaningPattern_read[i];
+		if(i<pattern_length-1)
+			str << ",";
+	}
+	string ret;
+	str >> ret;
+	return ret;
+
+}
+
+void MBFControl::split(vector<string> &tokens, const string &text, char sep) {
+
+  size_t start = 0, end = 0;
+  tokens.clear();
+
+  while ((end = text.find(sep, start)) != string::npos) {
+    tokens.push_back(text.substr(start, end - start));
+    start = end + 1;
+  }
+
+  tokens.push_back(text.substr(start));
+
+}
 
 string MBFControl::get_date() {
 
@@ -1663,42 +1814,6 @@ string MBFControl::get_date() {
   return string(tmp);
 
 }
-// //--------------------------------------------------------
-// /**
-//  *	Read attribute CleaningFineGain related method
-//  *	Description: 
-//  *
-//  *	Data type:	Tango::DevDouble
-//  *	Attr type:	Scalar
-//  */
-// //--------------------------------------------------------
-// void MBFControl::read_CleaningFineGain(Tango::Attribute &attr)
-// {
-// 	DEBUG_STREAM << "MBFControl::read_CleaningFineGain(Tango::Attribute &attr) entering... " << endl;
-// 	//	Set the attribute value
-// 	attr.set_value(attr_CleaningFineGain_read);
-// 	
-// }
-
-// //--------------------------------------------------------
-// /**
-//  *	Write attribute CleaningFineGain related method
-//  *	Description: 
-//  *
-//  *	Data type:	Tango::DevDouble
-//  *	Attr type:	Scalar
-//  */
-// //--------------------------------------------------------
-// void MBFControl::write_CleaningFineGain(Tango::WAttribute &attr)
-// {
-// 	DEBUG_STREAM << "MBFControl::write_CleaningFineGain(Tango::WAttribute &attr) entering... " << endl;
-// 	//	Retrieve write value
-// 	Tango::DevDouble	w_val;
-// 	attr.get_write_value(w_val);
-//   attr_CleaningFineGain_read[0] = w_val;
-//   if( !is_srv_starting() )
-//     run_macro("set_param");
-// }
 
 
 /*----- PROTECTED REGION END -----*/	//	MBFControl::namespace_ending

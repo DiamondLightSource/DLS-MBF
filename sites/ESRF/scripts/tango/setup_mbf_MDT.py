@@ -72,8 +72,8 @@ class MBF_HL_NCO1B(MBF_HL_USM, object):
         modeList = mbfCtrl.ModeList
         mode = modeList[mbfCtrl.mode]
         
-        if attName in ['All', 'Mode', 'SweepGain']:
-            Mbf.put('NCO:GAIN_S', mbfCtrl.SweepGain)
+        if attName in ['All', 'Mode', 'SweepGainAllBunches']:
+            Mbf.put('NCO:GAIN_S', mbfCtrl.SweepGainAllBunches)
 
         if attName in ['All', 'Mode', 'Tune']:
             Mbf.put('NCO:FREQ_S', mbfCtrl.Tune%1)

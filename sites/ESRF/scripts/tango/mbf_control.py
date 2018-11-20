@@ -98,8 +98,8 @@ class mbf_control(Macro):
                 self.output("Harmonic=%f" % mbfCtrl.Harmonic)
                 self.output("SweepDwellTime=%d" % mbfCtrl.SweepDwellTime)
                 self.output("SweepRange=%f" % mbfCtrl.SweepRange)
-                self.output("SweepGain=%d dB" %
-                        sweepGainList[mbfCtrl.SweepGain])
+                self.output("SweepGainAllBunches=%d dB" %
+                        sweepGainList[mbfCtrl.SweepGainAllBunches])
                 self.output("BlankingInterval=%d" % mbfCtrl.BlankingInterval)
                 self.output("TuneOnSingleBunch=%d" % mbfCtrl.TuneOnSingleBunch)
                 self.output("TuneBunch=%d" % mbfCtrl.TuneBunch)

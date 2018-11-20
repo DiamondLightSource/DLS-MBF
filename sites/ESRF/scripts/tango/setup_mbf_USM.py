@@ -255,7 +255,7 @@ class MBF_HL():
         if attName in ['All', 'Mode', 'FeedbackPhase']:
             actions += ['set_fir_phase']
         if attName in ['All', 'Mode', 'Tune', 'Harmonic', 'SweepDwellTime',
-                'SweepRange', 'SweepGain', 'Seq1']:
+                'SweepRange', 'SweepGainAllBunches', 'Seq1']:
             actions += ['set_sweep']
         
         sweep_state = self.get_sweep_state()
@@ -360,7 +360,7 @@ class MBF_HL():
             Mbf.put('SEQ:1:CAPTURE_S', 'Capture')
             Mbf.put('SEQ:1:HOLDOFF_S', sweep_holdoff)
             Mbf.put('SEQ:1:DWELL_S', mbfCtrl.SweepDwellTime)
-            Mbf.put('SEQ:1:GAIN_S', mbfCtrl.SweepGain)
+            Mbf.put('SEQ:1:GAIN_S', mbfCtrl.SweepGainAllBunches)
             Mbf.put('SEQ:1:ENWIN_S', 'Windowed')
             Mbf.put('SEQ:1:BLANK_S', 'Blanking')
 

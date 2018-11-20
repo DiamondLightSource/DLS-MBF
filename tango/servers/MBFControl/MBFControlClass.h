@@ -193,19 +193,34 @@ public:
 		{return (static_cast<MBFControl *>(dev))->is_SweepDwellTime_allowed(ty);}
 };
 
-//	Attribute SweepGain class definition
-class SweepGainAttrib: public Tango::Attr
+//	Attribute SweepGainSingleBunch class definition
+class SweepGainSingleBunchAttrib: public Tango::Attr
 {
 public:
-	SweepGainAttrib():Attr("SweepGain",
+	SweepGainSingleBunchAttrib():Attr("SweepGainSingleBunch",
 			Tango::DEV_SHORT, Tango::READ_WRITE) {};
-	~SweepGainAttrib() {};
+	~SweepGainSingleBunchAttrib() {};
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-		{(static_cast<MBFControl *>(dev))->read_SweepGain(att);}
+		{(static_cast<MBFControl *>(dev))->read_SweepGainSingleBunch(att);}
 	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-		{(static_cast<MBFControl *>(dev))->write_SweepGain(att);}
+		{(static_cast<MBFControl *>(dev))->write_SweepGainSingleBunch(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-		{return (static_cast<MBFControl *>(dev))->is_SweepGain_allowed(ty);}
+		{return (static_cast<MBFControl *>(dev))->is_SweepGainSingleBunch_allowed(ty);}
+};
+
+//	Attribute SweepGainAllBunches class definition
+class SweepGainAllBunchesAttrib: public Tango::Attr
+{
+public:
+	SweepGainAllBunchesAttrib():Attr("SweepGainAllBunches",
+			Tango::DEV_SHORT, Tango::READ_WRITE) {};
+	~SweepGainAllBunchesAttrib() {};
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+		{(static_cast<MBFControl *>(dev))->read_SweepGainAllBunches(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+		{(static_cast<MBFControl *>(dev))->write_SweepGainAllBunches(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+		{return (static_cast<MBFControl *>(dev))->is_SweepGainAllBunches_allowed(ty);}
 };
 
 //	Attribute BlankingInterval class definition
@@ -288,6 +303,21 @@ public:
 		{(static_cast<MBFControl *>(dev))->read_ModeList(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
 		{return (static_cast<MBFControl *>(dev))->is_ModeList_allowed(ty);}
+};
+
+//	Attribute CleaningPattern class definition
+class CleaningPatternAttrib: public Tango::SpectrumAttr
+{
+public:
+	CleaningPatternAttrib():SpectrumAttr("CleaningPattern",
+			Tango::DEV_SHORT, Tango::READ_WRITE, 1024) {};
+	~CleaningPatternAttrib() {};
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+		{(static_cast<MBFControl *>(dev))->read_CleaningPattern(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+		{(static_cast<MBFControl *>(dev))->write_CleaningPattern(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+		{return (static_cast<MBFControl *>(dev))->is_CleaningPattern_allowed(ty);}
 };
 
 
