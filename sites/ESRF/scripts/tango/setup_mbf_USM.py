@@ -95,40 +95,47 @@ class Cleaning():
         Mbf.put('TRG:SEQ:ARM_S', 0)
 
 
-def gen_cleaning_pattern(sr_mode, bunch_count):
-    clean_pattern = zeros((bunch_count,), dtype=int)
-    if sr_mode == '7/8+1':
-        gap = 61
-        clean_pattern[1:1+gap] = 1
-        clean_pattern[-gap:] = -1
-        # Don't clean bucket #61 to avoid killing right marker
-        clean_pattern[61] = 0
-    elif sr_mode == '16-bunch':
-        for ii in range(16):
-            clean_pattern[62*ii+1:62*(ii+1)] = (2*(ii%2)-1)
-    elif sr_mode == '4-bunch':
-        for ii in range(4):
-            clean_pattern[248*ii+1:248*(ii+1)] = (2*(ii%2)-1)
-    elif sr_mode == 'Hybrid':
-        gap_l = 147
-        gap_r = 123
-        trains_l = 9
-        clean_pattern[1:1+gap_l] = 1
-        clean_pattern[-gap_r:] = -1
-        start = gap_l+trains_l+1
-        for ii in range(23):
-            clean_pattern[start+ii*31:start+ii*31+(31-trains_l)] = (2*(ii%2)-1)
-    elif sr_mode == 'Uniform':
-        pass
-    else:
-        raise NameError('SR mode ' + sr_mode + ' invalid')
-    return clean_pattern
-
-
 class MBF_HL():
     def __init__(self, Mbf, mbfCtrl):
         self.Mbf = Mbf
         self.mbfCtrl = mbfCtrl
+
+    def gen_cleaning_pattern(self, sr_mode, bunch_count):
+        clean_pattern = zeros((bunch_count,), dtype=int)
+        if sr_mode == '7/8+1':
+            gap = 61
+            clean_pattern[1:1+gap] = 1
+            clean_pattern[-gap:] = -1
+            # Don't clean bucket #61 to avoid killing right marker
+            clean_pattern[61] = 0
+        elif sr_mode == '16-bunch':
+            for ii in range(16):
+                clean_pattern[62*ii+1:62*(ii+1)] = (2*(ii%2)-1)
+        elif sr_mode == '4-bunch':
+            for ii in range(4):
+                clean_pattern[248*ii+1:248*(ii+1)] = (2*(ii%2)-1)
+        elif sr_mode == 'Hybrid':
+            gap_l = 147
+            gap_r = 123
+            trains_l = 9
+            clean_pattern[1:1+gap_l] = 1
+            clean_pattern[-gap_r:] = -1
+            start = gap_l+trains_l+1
+            for ii in range(23):
+                clean_pattern[start+ii*31:start+ii*31+(31-trains_l)] = \
+                        (2*(ii%2)-1)
+        elif sr_mode == 'Uniform':
+            pass
+        elif sr_mode == 'ARB_Pattern':
+            mbfCtrl = self.mbfCtrl
+            user_pattern = mbfCtrl.CleaningPattern
+            if user_pattern.size != bunch_count:
+                raise ValueError(('CleaningPattern should have exactly {:.0f} '
+                        + 'elements').format(bunch_count))
+            clean_pattern[:] = sign(user_pattern)
+        else:
+            raise NameError('SR mode ' + sr_mode + ' invalid')
+        return clean_pattern
 
     def set_banks(self, mode, cleaning_fine_gain, feedback_fine_gain,
             sweep_bunch_enables):
@@ -140,7 +147,7 @@ class MBF_HL():
 
         # Configure banks #1, #2, #3 and #4
         #
-        clean_pattern = gen_cleaning_pattern(mode, BUNCH_COUNT)
+        clean_pattern = self.gen_cleaning_pattern(mode, BUNCH_COUNT)
 
         all_bucket = ones((BUNCH_COUNT,))
         bunches = clean_pattern == 0
@@ -237,6 +244,7 @@ class MBF_HL():
         modeList = mbfCtrl.ModeList
         mode = modeList[mbfCtrl.mode]
         feedback_fine_gain = mbfCtrl.FeedbackFineGain
+        sweep_on_SB = mbfCtrl.TuneOnSingleBunch
         sweep_bunch_enables = self.gen_sweep_pattern()
         mbfDevName = Mbf.mbfDevName
 
@@ -255,7 +263,8 @@ class MBF_HL():
         if attName in ['All', 'Mode', 'FeedbackPhase']:
             actions += ['set_fir_phase']
         if attName in ['All', 'Mode', 'Tune', 'Harmonic', 'SweepDwellTime',
-                'SweepRange', 'SweepGainAllBunches', 'Seq1']:
+                'SweepRange', 'SweepGainAllBunches', 'SweepGainSingleBunch',
+                'TuneOnSingleBunch', 'Seq1']:
             actions += ['set_sweep']
         
         sweep_state = self.get_sweep_state()
@@ -354,13 +363,15 @@ class MBF_HL():
             sweep_end = sweep_start + 2 * sweep_range
             if tune_reverse:
                 sweep_start, sweep_end = sweep_end, sweep_start
+            sweep_gain = mbfCtrl.SweepGainSingleBunch if sweep_on_SB \
+                    else mbfCtrl.SweepGainAllBunches
             Mbf.put('SEQ:1:COUNT_S', 4096)
             Mbf.put('SEQ:1:START_FREQ_S', sweep_start)
             Mbf.put('SEQ:1:END_FREQ_S', sweep_end)
             Mbf.put('SEQ:1:CAPTURE_S', 'Capture')
             Mbf.put('SEQ:1:HOLDOFF_S', sweep_holdoff)
             Mbf.put('SEQ:1:DWELL_S', mbfCtrl.SweepDwellTime)
-            Mbf.put('SEQ:1:GAIN_S', mbfCtrl.SweepGainAllBunches)
+            Mbf.put('SEQ:1:GAIN_S', sweep_gain)
             Mbf.put('SEQ:1:ENWIN_S', 'Windowed')
             Mbf.put('SEQ:1:BLANK_S', 'Blanking')
 
