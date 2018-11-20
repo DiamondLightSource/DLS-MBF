@@ -203,6 +203,7 @@ def publish_graphs(pvs, length):
 def publish_info(pvs):
     pvs.stringIn('last_error', 'LAST_ERROR')
     pvs.aIn('output.fit_error', 'FIT_ERROR', PREC = 5)
+    pvs.longIn('fit_length', 'FIT_LENGTH')
 
 
 def publish_pvs(persist, target, tune_aliases, length):

@@ -218,4 +218,5 @@ def fit_tune(config, scale, iq):
         models = models,
         fit_error = fit_error,
         last_error = last_error,
+        fit_length = len(iq),
         tune = tune)
