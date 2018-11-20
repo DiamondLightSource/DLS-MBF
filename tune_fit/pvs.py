@@ -1,7 +1,8 @@
 # Definition of PVs
 
+import numpy
 import epicsdbbuilder
-from softioc import builder
+from softioc import builder, alarm
 
 
 # Helper for DB name prefix.
@@ -42,6 +43,32 @@ class Config:
     pass
 
 
+# Computes a suitable invalid value from the given value.  Kind of tricky given
+# the number of edge cases!
+def invalid_value(value):
+    if isinstance(value, int):
+        return 0
+    elif isinstance(value, str):
+        return ''
+    elif isinstance(value, numpy.ndarray):
+        # Ok, we have a numpy array ... but alas, it might be a singleton value
+        # masquerading as an array.
+        if value.shape == ():
+            return numpy.nan
+        else:
+            return numpy.empty(0)
+    elif isinstance(value, float):
+        # Ordinary floating point
+        return numpy.nan
+    elif hasattr(value, '__iter__'):
+        # Iterable but not a numpy value.  Return a numpy empty value, as it
+        # turns out that the Python IOC can choke if we feed a tuple back.
+        return numpy.empty(0)
+    else:
+        # Not a clue, none of the above.  Go with what we have
+        return value
+
+
 class PvSet:
     def __init__(self, persist):
         self.__persist = persist
@@ -60,7 +87,14 @@ class PvSet:
 
     def update(self, timestamp, trace):
         for name, pv in self.__in_pvs.items():
-            pv.set(trace._get(name), timestamp = timestamp)
+            try:
+                value = trace._get(name)
+                severity = alarm.NO_ALARM
+            except AttributeError:
+                # Invalid value.  Compute an appropriate invalid value
+                value = invalid_value(pv.get())
+                severity = alarm.INVALID_ALARM
+            pv.set(value, severity = severity, timestamp = timestamp)
 
     def get_config(self):
         config = Config()

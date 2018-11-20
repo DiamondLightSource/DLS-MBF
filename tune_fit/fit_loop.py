@@ -8,6 +8,7 @@ from cothread.catools import *
 
 import tune_fit
 import pvs
+import support
 
 
 LENGTH = 4096
@@ -83,7 +84,12 @@ class TuneFitLoop:
     def fit_one_sweep(self):
         timestamp, s, iq = self.gather.wait()
         config = self.pvs.get_config()
-        trace = tune_fit.fit_tune(config, s, iq)
+        try:
+            trace = tune_fit.fit_tune(config, s, iq)
+        except:
+            trace = support.Trace(last_error = 'Fitter raised exception')
+            print 'Fitter exception'
+            traceback.print_exc(1)
         self.pvs.update(timestamp, trace)
 
     def fit_thread(self):
@@ -91,7 +97,9 @@ class TuneFitLoop:
             try:
                 self.fit_one_sweep()
             except:
-                print 'Fitter raised exception'
+                # If we have an exception here we've got a bit of a problem, but
+                # let's not actually die right now.
+                print 'Fitter raised unexpected exception'
                 traceback.print_exc()
 
     def start(self):
