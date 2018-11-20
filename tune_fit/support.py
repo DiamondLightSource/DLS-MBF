@@ -62,6 +62,8 @@ class Config:
     MINIMUM_SPACING = 1e-3
     MINIMUM_HEIGHT = 0.1
     MAXIMUM_FIT_ERROR = 0.2
+    WINDOW_START = 0
+    WINDOW_LENGTH = 0
 
     SMOOTHING = 32
 

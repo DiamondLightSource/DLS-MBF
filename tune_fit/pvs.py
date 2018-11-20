@@ -105,6 +105,10 @@ def publish_config(pvs):
             DESC = 'Reject peaks shorter than this')
         pvs.aOut('MAXIMUM_FIT_ERROR', 0, 1, initial_value = 0.2, PREC = 3,
             DESC = 'Reject overall fit if error this large')
+        pvs.longOut('WINDOW_START', initial_value = 0,
+            DESC = 'First point to fit')
+        pvs.longOut('WINDOW_LENGTH', initial_value = 0,
+            DESC = 'Length of window (0 means all)')
 
 
 def publish_tune(pvs, tune_aliases):

@@ -168,7 +168,20 @@ def compute_tune_result(config, peaks, fit_error):
         delta_left = delta_left, delta_right = delta_right)
 
 
+# Clip the data to the requested window
+def compute_window(config, scale, iq):
+    start = config.WINDOW_START
+    length = config.WINDOW_LENGTH
+    if length <= 0:
+        window = slice(start, None)
+    else:
+        window = slice(start, start + length)
+    return scale[window], iq[window]
+
+
 def fit_tune(config, scale, iq):
+    scale, iq = compute_window(config, scale, iq)
+
     power = support.abs2(iq)
     input_trace = support.Trace(scale = scale, iq = iq, power = power)
 
