@@ -101,10 +101,12 @@ static void gather_buffers(
 void get_detector_info(int axis, struct detector_info *info)
 {
     struct detector_context *det = &detector_context[axis];
-    info->detector_mask = det->detector_mask;
-    info->detector_count = det->detector_count;
-    info->samples = det->scale_info.samples;
-    info->delay = det->phase_delay;
+    *info = (struct detector_info) {
+        .detector_mask = det->detector_mask,
+        .detector_count = det->detector_count,
+        .samples = det->scale_info.samples,
+        .delay = det->phase_delay,
+    };
 }
 
 

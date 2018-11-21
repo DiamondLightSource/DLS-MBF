@@ -32,7 +32,7 @@ static int dram0_device = -1;
 static int dram1_device = -1;
 /* We share the dram1 device between two axes under a lock, as there is
  * absolutely no benefit in running two copies of this file handle -- there's
- * only one underly DMA device anyway. */
+ * only one underlying DMA device anyway. */
 static pthread_mutex_t dram1_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
@@ -159,14 +159,16 @@ void hw_read_fpga_version(struct fpga_version *version)
 void hw_read_system_status(struct system_status *result)
 {
     struct sys_status status = READL(sys_regs->status);
-    result->dsp_ok = status.dsp_ok;
-    result->vcxo_ok = status.vcxo_ok;
-    result->adc_ok = status.adc_ok;
-    result->dac_ok = status.dac_ok;
-    result->vcxo_locked = status.pll_ld1;
-    result->vco_locked = status.pll_ld2;
-    result->dac_irq = !status.dac_irqn;
-    result->temp_alert = status.temp_alert;
+    *result = (struct system_status) {
+        .dsp_ok = status.dsp_ok,
+        .vcxo_ok = status.vcxo_ok,
+        .adc_ok = status.adc_ok,
+        .dac_ok = status.dac_ok,
+        .vcxo_locked = status.pll_ld1,
+        .vco_locked = status.pll_ld2,
+        .dac_irq = !status.dac_irqn,
+        .temp_alert = status.temp_alert,
+    };
 }
 
 void hw_write_turn_clock_idelay(unsigned int delay)
@@ -380,10 +382,12 @@ void hw_write_trigger_soft_trigger(void)
 void hw_read_trigger_status(struct trigger_status *result)
 {
     struct ctrl_trg_status status = READL(ctrl_regs->trg_status);
-    result->sync_busy = status.sync_busy;
-    result->seq0_armed = status.seq0_armed;
-    result->seq1_armed = status.seq1_armed;
-    result->dram_armed = status.dram0_armed;
+    *result = (struct trigger_status) {
+        .sync_busy = status.sync_busy,
+        .seq0_armed = status.seq0_armed,
+        .seq1_armed = status.seq1_armed,
+        .dram_armed = status.dram0_armed,
+    };
 }
 
 void hw_read_trigger_sources(
@@ -551,9 +555,11 @@ void hw_write_adc_delta_threshold(int axis, unsigned int delta)
 void hw_read_adc_events(int axis, struct adc_events *result)
 {
     struct dsp_adc_events events = READL(dsp_regs[axis]->adc_events);
-    result->input_ovf = events.inp_ovf;
-    result->fir_ovf = events.fir_ovf;
-    result->delta_event = events.delta;
+    *result = (struct adc_events) {
+        .input_ovf = events.inp_ovf,
+        .fir_ovf = events.fir_ovf,
+        .delta_event = events.delta,
+    };
 }
 
 void hw_write_adc_taps(int axis, const int taps[])
@@ -684,9 +690,11 @@ void hw_write_dac_dram_source(int axis, bool after_fir)
 void hw_read_dac_events(int axis, struct dac_events *result)
 {
     struct dsp_dac_events events = READL(dsp_regs[axis]->dac_events);
-    result->fir_ovf = events.fir_ovf;
-    result->mux_ovf = events.mux_ovf;
-    result->out_ovf = events.out_ovf;
+    *result = (struct dac_events) {
+        .fir_ovf = events.fir_ovf,
+        .mux_ovf = events.mux_ovf,
+        .out_ovf = events.out_ovf,
+    };
 }
 
 void hw_write_dac_taps(int axis, const int taps[])
@@ -807,9 +815,11 @@ void hw_write_seq_abort(int axis)
 void hw_read_seq_state(int axis, struct seq_state *state)
 {
     struct dsp_seq_status status = READL(dsp_regs[axis]->seq_status);
-    state->busy = status.busy;
-    state->pc = status.pc;
-    state->super_pc = status.super;
+    *state = (struct seq_state) {
+        .busy = status.busy,
+        .pc = status.pc,
+        .super_pc = status.super,
+    };
 }
 
 
