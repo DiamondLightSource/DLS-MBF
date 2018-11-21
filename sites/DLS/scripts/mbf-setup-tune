@@ -277,6 +277,10 @@ put('SEQ:1:ENABLE_S', 'On')
 put('SEQ:1:ENWIN_S', 'Windowed')
 put('SEQ:1:BLANK_S', 'Blanking')
 
+# Ensure the associated tune fitter is fitting the entire sweep
+put('TUNE:CONFIG:WINDOW_START_S', 0)
+put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
+
 put('SEQ:PC_S', 1)
 
 # Now we can go!
