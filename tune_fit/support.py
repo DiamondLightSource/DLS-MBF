@@ -58,6 +58,7 @@ def read_config(filename):
 
 class Config:
     MAX_PEAKS = 3
+    SMOOTHING = 32
     MINIMUM_WIDTH = 1e-5
     MINIMUM_SPACING = 1e-3
     MINIMUM_HEIGHT = 0.1
@@ -65,10 +66,8 @@ class Config:
     WINDOW_START = 0
     WINDOW_LENGTH = 0
 
-    SMOOTHING = 32
 
-    def __init__(self, max_peaks, **kargs):
-        self.MAX_PEAKS = max_peaks
+    def __init__(self, **kargs):
         self.__dict__.update(kargs)
 
     @classmethod

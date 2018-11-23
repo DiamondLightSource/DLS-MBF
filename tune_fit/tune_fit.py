@@ -1,6 +1,7 @@
 # Top level tune fitting
 
 import numpy
+from collections import namedtuple
 
 import support
 import dd_peaks
@@ -10,6 +11,9 @@ import refine
 
 MAXIMUM_ANGLE = 100.0
 
+FitResult = namedtuple('FitResult', [
+    'models', 'dd_traces', 'refine_traces', 'last_error',
+    'model_iq', 'residue', 'fit_error'])
 
 def fit_multiple_peaks(config, scale, iq):
     models = []
@@ -18,6 +22,7 @@ def fit_multiple_peaks(config, scale, iq):
     model = (numpy.zeros((0, 2)), 0)
     models.append(model)
     last_error = 'Nothing fitted'
+
     for n in range(config.MAX_PEAKS):
         model, dd_trace, refine_trace = \
             refine.add_one_pole(config, scale, iq, model)
@@ -33,7 +38,17 @@ def fit_multiple_peaks(config, scale, iq):
         dd_traces.append(dd_trace)
         refine_traces.append(refine_trace)
 
-    return (models, dd_traces, refine_traces, last_error)
+    model_iq, residue, fit_error = refine.compute_fit_error(scale, iq, model)
+
+    # If the fit error is too large reject out of hand
+    if fit_error > config.MAXIMUM_FIT_ERROR or not numpy.isfinite(fit_error):
+        last_error = 'Fit error too large'
+    if not last_error:
+        last_error = 'Fit ok'
+
+    return FitResult(
+        models, dd_traces, refine_traces, last_error,
+        model_iq, residue, fit_error)
 
 
 # Checks whether the model is convincing.  There are four checks that can fail:
@@ -148,9 +163,7 @@ def compute_delta_info(centre, side):
         height = side.height / centre.height)
 
 
-def compute_tune_result(config, peaks, fit_error):
-    if fit_error > config.MAXIMUM_FIT_ERROR or not numpy.isfinite(fit_error):
-        peaks = []
+def compute_tune_result(config, peaks):
     left, centre, right = find_three_peaks(peaks)
 
     left = compute_peak_info(left)
@@ -190,33 +203,29 @@ def fit_tune(config, scale, iq):
     scale = scale - scale_offset
 
     # Incrementally fit the required number of peaks
-    models, dd_traces, refine_traces, last_error = \
-        fit_multiple_peaks(config, scale, iq)
-    model = models[-1]
+    fit_result = fit_multiple_peaks(config, scale, iq)
+    model = fit_result.models[-1]
 
-    model_iq, residue, fit_error = refine.compute_fit_error(scale, iq, model)
     output_trace = support.Trace(
-        fit_error = fit_error,
-        model = model_iq,
-        model_power = support.abs2(model_iq),
-        residue = residue)
+        fit_error = fit_result.fit_error,
+        model = fit_result.model_iq,
+        model_power = support.abs2(fit_result.model_iq),
+        residue = fit_result.residue)
 
     # Compute final peak result after first extracting the peaks part of the
     # final fitted model and restoring the scale offset.
     peaks, _ = model
     peaks = peaks + [0, scale_offset]
-    tune = compute_tune_result(config, peaks, fit_error)
+    tune = compute_tune_result(config, peaks)
 
-    if not last_error:
-        last_error = 'Fit ok'
     return support.Trace(
         input = input_trace,
         output = output_trace,
         scale_offset = scale_offset,
-        dd = dd_traces,
-        refine = refine_traces,
-        models = models,
-        fit_error = fit_error,
-        last_error = last_error,
+        dd = fit_result.dd_traces,
+        refine = fit_result.refine_traces,
+        models = fit_result.models,
+        fit_error = fit_result.fit_error,
+        last_error = fit_result.last_error,
         fit_length = len(iq),
         tune = tune)
