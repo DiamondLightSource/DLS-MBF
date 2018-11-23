@@ -100,14 +100,17 @@ class MBF_HL():
         self.Mbf = Mbf
         self.mbfCtrl = mbfCtrl
 
-    def gen_cleaning_pattern(self, sr_mode, bunch_count):
+    def gen_patterns(self, sr_mode, bunch_count):
         clean_pattern = zeros((bunch_count,), dtype=int)
+        fb_pattern = clean_pattern == 0
         if sr_mode == '7/8+1':
             gap = 61
             clean_pattern[1:1+gap] = 1
             clean_pattern[-gap:] = -1
             # Don't clean bucket #61 to avoid killing right marker
             clean_pattern[61] = 0
+            fb_pattern = zeros((bunch_count,), dtype=int)
+            fb_pattern[0] = 1
         elif sr_mode == '16-bunch':
             for ii in range(16):
                 clean_pattern[62*ii+1:62*(ii+1)] = (2*(ii%2)-1)
@@ -135,7 +138,7 @@ class MBF_HL():
             clean_pattern[:] = sign(user_pattern)
         else:
             raise NameError('SR mode ' + sr_mode + ' invalid')
-        return clean_pattern
+        return clean_pattern, fb_pattern
 
     def set_banks(self, mode, cleaning_fine_gain, feedback_fine_gain,
             sweep_bunch_enables):
@@ -147,16 +150,16 @@ class MBF_HL():
 
         # Configure banks #1, #2, #3 and #4
         #
-        clean_pattern = self.gen_cleaning_pattern(mode, BUNCH_COUNT)
+        clean_pattern, fb_pattern = self.gen_patterns(mode, BUNCH_COUNT)
 
         all_bucket = ones((BUNCH_COUNT,))
         bunches = clean_pattern == 0
 
-        outwf_fb = smc.DAC_OUT_FIR*bunches
+        outwf_fb = smc.DAC_OUT_FIR*fb_pattern
         outwf_clean = smc.DAC_OUT_NCO*logical_not(bunches)
         outwf_sweep = smc.DAC_OUT_SWEEP*sweep_bunch_enables
         gainwf_clean = cleaning_fine_gain*clean_pattern
-        gainwf_fb = feedback_fine_gain*bunches
+        gainwf_fb = feedback_fine_gain*fb_pattern
         gainwf_fb_sweep = feedback_fine_gain*all_bucket
 
         # Bank1: Tune sweep
