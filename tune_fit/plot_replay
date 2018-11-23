@@ -2,7 +2,11 @@
 
 # Plotting of fits
 
-import mbf.requires
+from mbf.requires import require
+
+require('matplotlib')
+require('scipy')
+
 import sys
 import argparse
 from matplotlib import pyplot
