@@ -8,13 +8,13 @@ require('matplotlib')
 require('scipy')
 
 import sys
+import time
 import argparse
 from matplotlib import pyplot
 
 import support
 import replay
 import plotting
-
 
 
 def parse_option(name_value):
@@ -25,7 +25,7 @@ def parse_option(name_value):
 
 def parse_args():
     parser = argparse.ArgumentParser(description = 'Replay and plot')
-    parser.add_argument('-n', '--peaks', default = 3, type = int,
+    parser.add_argument('-n', '--peaks', default = None, type = int,
         help = 'Number of peaks to match')
     parser.add_argument('-a', '--plot_all',
         default = False, action = 'store_true',
@@ -37,6 +37,13 @@ def parse_args():
         default = [], action = 'append', type = parse_option,
         help = '''Add config option, of form <name>=<value>.  The possible
             option names are %s.''' % ', '.join(support.Config._keys()))
+    parser.add_argument('-m',
+        dest = 'load_replay', default = replay.load_replay,
+        action = 'store_const', const = replay.load_replay_mat,
+        help = '''Load replay file from matlab format file.  The file must
+            contain a two dimensional array of iq values and a single matching
+            one dimensional s value.''')
+
     parser.add_argument('filename',
         help = 'Name of file to replay')
     parser.add_argument('samples', nargs = '?', default = 0, type = int,
@@ -53,17 +60,24 @@ print args
 
 # Load requested number of samples from the given file and extract the replay
 # subset if requred.
-s_iq = replay.load_replay(args.filename, args.samples)
+s_iq = args.load_replay(args.filename, args.samples)
 if args.subset:
     s_iq = [s_iq[ix] for ix in args.subset]
 
 plot_each = bool(args.subset) or args.plot_all
 
 # Perform fitting on all the requested samples.
-config = support.Config(args.peaks, **dict(args.config))
+if args.peaks:
+    args.config.append(('MAX_PEAKS', args.peaks))
+config = support.Config(**dict(args.config))
 fitter = plotting.Fitter(
     len(s_iq), config, plot_each, args.plot_all, args.plot_dd)
+
+start_time = time.time()
 replay.replay_s_iq(s_iq, fitter.fit_tune)
+duration = time.time() - start_time
+print 'Took %.3f seconds, %.2f ms per fit' % (
+    duration, 1e3 * duration / len(s_iq))
 
 # If not plotting each individual fit, plot the final result.
 if not plot_each:
