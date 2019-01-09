@@ -206,8 +206,8 @@ class Fitter:
             print trace.last_error
 
         if self.plot_each:
-            dd_traces = trace.dd
-            refine_traces = trace.refine
+            dd_traces     = [t.fit_trace.dd for t in trace.traces]
+            refine_traces = [t.fit_trace.refine for t in trace.traces]
             if not self.plot_all:
                 dd_traces = dd_traces[-1:]
                 refine_traces = refine_traces[-1:]
@@ -218,7 +218,7 @@ class Fitter:
                 plot_refine(iq, refine)
             pyplot.show()
 
-        fit, offset = trace.models[-1]
+        fit, offset = trace.fit
         self.fits[n, :len(fit)] = fit
         self.offsets[n] = offset
         self.scale_offsets[n] = trace.scale_offset

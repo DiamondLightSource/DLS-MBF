@@ -138,7 +138,7 @@ def publish_config(pvs):
         pvs.aOut('MINIMUM_HEIGHT', 0, 1, initial_value = 0.1, PREC = 3,
             DESC = 'Reject peaks shorter than this')
         pvs.aOut('MAXIMUM_FIT_ERROR', 0, 1, initial_value = 0.2, PREC = 3,
-            DESC = 'Reject overall fit if error this large')
+            DESC = 'Reject overall fit if error too large')
         pvs.longOut('WINDOW_START', initial_value = 0,
             DESC = 'First point to fit')
         pvs.longOut('WINDOW_LENGTH', initial_value = 0,
@@ -202,7 +202,7 @@ def publish_graphs(pvs, length):
 
 def publish_info(pvs):
     pvs.stringIn('last_error', 'LAST_ERROR')
-    pvs.aIn('output.fit_error', 'FIT_ERROR', PREC = 5)
+    pvs.aIn('fit_error', 'FIT_ERROR', PREC = 5)
     pvs.longIn('fit_length', 'FIT_LENGTH')
 
 

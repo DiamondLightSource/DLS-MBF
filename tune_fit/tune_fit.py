@@ -11,44 +11,70 @@ import refine
 
 MAXIMUM_ANGLE = 100.0
 
-FitResult = namedtuple('FitResult', [
-    'models', 'dd_traces', 'refine_traces', 'last_error',
-    'model_iq', 'residue', 'fit_error'])
 
+# Performs one stage of fitting.  Returns:
+#   status      Status string if fit failed, empty string if successful
+#   new_fit     Updated fit, or None if fit failed
+#   fit_trace   The new fit plus trace of fit process
+#   fit_info    Model, residue and fit error.  Can be none if fit failed
+def fit_one_peak(config, scale, iq, fit):
+    new_fit, dd, refine_trace = refine.add_one_pole(config, scale, iq, fit)
+    fit_trace = support.Trace(dd = dd, refine = refine_trace)
+
+    if new_fit is None:
+        # Fit failed completely, return nothing
+        status = 'Adding new pole failed'
+        fit_info = None
+    else:
+        # See how the new fit fares
+        model, residue, fit_error = refine.compute_fit_error(scale, iq, new_fit)
+        status = assess_fit(config, scale, new_fit)
+        fit_info = support.Trace(
+            model = model, residue = residue, fit_error = fit_error)
+
+    return (status, new_fit, fit_trace, fit_info)
+
+
+# Fits up to as many fits as configured, returns the following:
+#   status          Error code associated with last failing fit
+#   best_fit        The last successful fit
+#   best_fit_info   Trace for the successful fit
+#   results         List of traces of fits and associated information
 def fit_multiple_peaks(config, scale, iq):
-    models = []
-    dd_traces = []
-    refine_traces = []
-    model = (numpy.zeros((0, 2)), 0)
-    models.append(model)
-    last_error = 'Nothing fitted'
+    fit = (numpy.zeros((0, 2)), 0)
+    results = []
+
+    last_fit_error = numpy.inf
+    best_fit = fit
+    best_fit_info = None
 
     for n in range(config.MAX_PEAKS):
-        model, dd_trace, refine_trace = \
-            refine.add_one_pole(config, scale, iq, model)
+        status, fit, fit_trace, fit_info = fit_one_peak(config, scale, iq, fit)
+        results.append(support.Trace(
+            fit = fit, fit_trace = fit_trace, info = fit_info))
 
-        if model is None:
-            last_error = 'Adding new pole failed'
-        else:
-            last_error = assess_model(config, scale, model)
-        if last_error:
+        if status:
             break
 
-        models.append(model)
-        dd_traces.append(dd_trace)
-        refine_traces.append(refine_trace)
+        # If we get here we were happy with the fit so far and are ready to
+        # refine it further if possible.
+        last_fit_error = fit_info.fit_error
+        best_fit = fit
+        best_fit_info = fit_info
 
-    model_iq, residue, fit_error = refine.compute_fit_error(scale, iq, model)
 
-    # If the fit error is too large reject out of hand
-    if fit_error > config.MAXIMUM_FIT_ERROR or not numpy.isfinite(fit_error):
-        last_error = 'Fit error too large'
-    if not last_error:
-        last_error = 'Fit ok'
+    # Finally check the overall fit error; if this is too large then just bail
+    if status == '':
+        fit_error = best_fit_info.fit_error
+        if fit_error > config.MAXIMUM_FIT_ERROR or \
+           not numpy.isfinite(fit_error):
+            status = 'Fit error too large'
+            best_fit = None
 
-    return FitResult(
-        models, dd_traces, refine_traces, last_error,
-        model_iq, residue, fit_error)
+    if status == '':
+        status = 'All peaks fitted'
+
+    return (status, best_fit, best_fit_info, results)
 
 
 # Checks whether the model is convincing.  There are four checks that can fail:
@@ -69,8 +95,8 @@ def fit_multiple_peaks(config, scale, iq):
 #
 #   4.  Finally, relatively small peaks represent fitting errors and can be
 #       discarded.
-def assess_model(config, scale, model):
-    peaks, _ = model
+def assess_fit(config, scale, fit):
+    peaks, _ = fit
     aa = peaks[:, 0]
     bb = peaks[:, 1]
     centres = bb.real
@@ -203,29 +229,36 @@ def fit_tune(config, scale, iq):
     scale = scale - scale_offset
 
     # Incrementally fit the required number of peaks
-    fit_result = fit_multiple_peaks(config, scale, iq)
-    model = fit_result.models[-1]
+    fit_status, fit, fit_info, traces = fit_multiple_peaks(config, scale, iq)
 
-    output_trace = support.Trace(
-        fit_error = fit_result.fit_error,
-        model = fit_result.model_iq,
-        model_power = support.abs2(fit_result.model_iq),
-        residue = fit_result.residue)
+    if fit_info:
+        output_trace = support.Trace(
+            model = fit_info.model,
+            model_power = support.abs2(fit_info.model),
+            residue = fit_info.residue)
+        fit_error = fit_info.fit_error
+    else:
+        output_trace = None
+        fit_error = numpy.inf
 
-    # Compute final peak result after first extracting the peaks part of the
-    # final fitted model and restoring the scale offset.
-    peaks, _ = model
-    peaks = peaks + [0, scale_offset]
-    tune = compute_tune_result(config, peaks)
+    if fit:
+        # Compute final peak result after first extracting the peaks part of the
+        # final fitted model and restoring the scale offset.
+        tune = compute_tune_result(config, fit[0] + [0, scale_offset])
+    else:
+        tune = None
 
     return support.Trace(
+        # The following values are published as PVs
+        tune = tune,
         input = input_trace,
         output = output_trace,
-        scale_offset = scale_offset,
-        dd = fit_result.dd_traces,
-        refine = fit_result.refine_traces,
-        models = fit_result.models,
-        fit_error = fit_result.fit_error,
-        last_error = fit_result.last_error,
+        fit_error = fit_error,
+        last_error = fit_status,
         fit_length = len(iq),
-        tune = tune)
+
+        # These are needed for extra information during development
+        scale_offset = scale_offset,
+        fit = fit,
+        fit_info = fit_info,
+        traces = traces)
