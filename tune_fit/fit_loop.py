@@ -78,8 +78,8 @@ class TuneFitLoop:
         tune_aliases = config.get(source + '_a', '')
 
         self.gather = Gather(pv_i, pv_q, pv_s)
-        self.pvs = pvs.publish_pvs(
-            persist, target, tune_aliases.split(), LENGTH)
+        self.pvs = pvs.publish_pvs(persist, target, LENGTH)
+        self.mux = pvs.TuneMux(target, tune_aliases.split())
 
     def fit_one_sweep(self):
         timestamp, s, iq = self.gather.wait()
@@ -91,6 +91,7 @@ class TuneFitLoop:
             print 'Fitter exception'
             traceback.print_exc(1)
         self.pvs.update(timestamp, trace)
+        self.mux.update(timestamp, trace)
 
     def fit_thread(self):
         while True:

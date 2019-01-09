@@ -277,9 +277,11 @@ put('SEQ:1:ENABLE_S', 'On')
 put('SEQ:1:ENWIN_S', 'Windowed')
 put('SEQ:1:BLANK_S', 'Blanking')
 
-# Ensure the associated tune fitter is fitting the entire sweep
+# Ensure the associated tune fitter is fitting the entire sweep and is running
+# with the appropriate selection
 put('TUNE:CONFIG:WINDOW_START_S', 0)
 put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
+put('TUNE:SELECT_S', 'Fitted')
 
 put('SEQ:PC_S', 1)
 

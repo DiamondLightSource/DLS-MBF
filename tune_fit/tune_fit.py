@@ -224,6 +224,9 @@ def fit_tune(config, scale, iq):
     power = support.abs2(iq)
     input_trace = support.Trace(scale = scale, iq = iq, power = power)
 
+    # Find maximum point.  This is always valid!
+    max_tune = numpy.mod(scale[numpy.argmax(power)], 1)
+
     # For subsequent processing remove the mean value from the scale
     scale_offset = scale.mean()
     scale = scale - scale_offset
@@ -250,6 +253,7 @@ def fit_tune(config, scale, iq):
 
     return support.Trace(
         # The following values are published as PVs
+        max_tune = max_tune,
         tune = tune,
         input = input_trace,
         output = output_trace,
