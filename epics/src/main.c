@@ -191,7 +191,8 @@ static error__t initialise_epics(void)
         TEST_OK(mbf_registerRecordDeviceDriver(pdbbase) == 0)  ?:
         load_database(MAKE_PATH(database))  ?:
         TEST_OK(iocInit() == 0)  ?:
-        TEST_OK(check_unused_record_bindings(true) == 0);
+        TEST_OK_(check_unused_record_bindings(true) == 0,
+            "Incomplete record bindings");
 
 #undef MAKE_PATH
 }

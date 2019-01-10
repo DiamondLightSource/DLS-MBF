@@ -23,6 +23,7 @@
 #include "events.h"
 #include "sequencer.h"
 #include "bunch_fir.h"
+#include "bunch_set.h"
 
 #include "detector.h"
 
@@ -42,6 +43,10 @@ struct detector_bank {
     float *wf_power;
     float *wf_phase;
     double max_power;
+
+    /* Context for editing bunch enable waveform. */
+    struct epics_record *enablewf;
+    struct bunch_set *bunch_set;
 };
 
 
@@ -314,6 +319,21 @@ static void write_bunch_enables(
 }
 
 
+static bool enable_selection(void *context, bool *_value)
+{
+    struct detector_bank *bank = context;
+    UPDATE_RECORD_BUNCH_SET(char, bank->bunch_set, bank->enablewf, true);
+    return true;
+}
+
+static bool disable_selection(void *context, bool *_value)
+{
+    struct detector_bank *bank = context;
+    UPDATE_RECORD_BUNCH_SET(char, bank->bunch_set, bank->enablewf, false);
+    return true;
+}
+
+
 static void publish_detector(
     struct detector_context *context, int i, struct detector_bank *bank)
 {
@@ -338,7 +358,7 @@ static void publish_detector(
         PUBLISH_READ_VAR(bi, "ENABLE", bank->enabled);
         PUBLISH_WRITE_VAR_P(mbbo, "SCALING", bank->config.scaling);
 
-        PUBLISH_WAVEFORM_C_P(
+        bank->enablewf = PUBLISH_WAVEFORM_C_P(
             char, "BUNCHES", system_config.bunches_per_turn,
             write_bunch_enables, bank);
         PUBLISH_READ_VAR(ulongin, "COUNT", bank->bunch_count);
@@ -354,6 +374,10 @@ static void publish_detector(
         PUBLISH_WF_READ_VAR_LEN(float, "PHASE",
             detector_length, bank->samples, bank->wf_phase);
         PUBLISH_READ_VAR(ai, "MAX_POWER", bank->max_power);
+
+        bank->bunch_set = create_bunch_set();
+        PUBLISH(bo, "SET_SELECT", enable_selection, .context = bank);
+        PUBLISH(bo, "RESET_SELECT", disable_selection, .context = bank);
     }
 }
 
