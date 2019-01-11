@@ -28,6 +28,7 @@ architecture arch of register_read_adc is
     signal adc_phase : std_ulogic;
 
     subtype register_range is natural range dsp_read_strobe_i'RANGE;
+    signal dsp_read_strobe : dsp_read_strobe_i'SUBTYPE;
     signal read_strobe : dsp_read_strobe_i'SUBTYPE;
     signal read_ack : std_ulogic_vector(register_range) := (others => '0');
     signal read_data : dsp_read_data_o'SUBTYPE;
@@ -47,6 +48,7 @@ begin
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
+            read_strobe <= dsp_read_strobe;
             for r in register_range loop
                 adc_read_strobe(r) <= read_strobe(r) and adc_phase;
                 if adc_read_ack_i(r) = '1' then
@@ -64,7 +66,7 @@ begin
     -- and add a pipeline stage to assist with timing.
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            read_strobe <= dsp_read_strobe_i;
+            dsp_read_strobe <= dsp_read_strobe_i;
             read_data_pl <= read_data;
             read_ack_pl <= read_ack;
             dsp_read_data_o <= read_data_pl;
