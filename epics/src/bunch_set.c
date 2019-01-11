@@ -63,16 +63,20 @@ static error__t parse_bunch_num(const char **parse, unsigned int *bunch)
 }
 
 
-static void set_range(unsigned int start, unsigned int end, bool selection[])
+static error__t set_range(
+    unsigned int start, unsigned int skip, unsigned int end, bool selection[])
 {
-    for (unsigned int i = start; i <= end; i ++)
-        selection[i] = true;
+    return
+        TEST_OK_(start <= end, "Empty range")  ?:
+        TEST_OK_(skip > 0, "Invalid skip interval")  ?:
+        DO( for (unsigned int i = start; i <= end; i += skip)
+                selection[i] = true );
 }
 
 
 /* A valid parse is a full range or a non-empty list of values and ranges
  *
- *  bunch_set = ":" | ( bunch [ ":" bunch ] )+
+ *  bunch_set = ":" | ( bunch [ ":" bunch [ ":" bunch ]] )+
  */
 static error__t parse_bunch_select(const char **parse, bool selection[])
 {
@@ -80,9 +84,10 @@ static error__t parse_bunch_select(const char **parse, bool selection[])
     if (read_char(parse, ':'))
     {
         /* A single : on its own corresponds to the full range. */
-        set_range(0, hardware_config.bunches - 1, selection);
         skip_whitespace(parse);
-        return parse_eos(parse);
+        return
+            parse_eos(parse)  ?:
+            set_range(0, 1, hardware_config.bunches - 1, selection);
     }
     else
     {
@@ -92,14 +97,20 @@ static error__t parse_bunch_select(const char **parse, bool selection[])
          * specifier, optionally repeated. */
         error__t error;
         do {
-            unsigned int bunch, last_bunch;
+            unsigned int bunch, bunch2, bunch3;
             error =
                 parse_bunch_num(parse, &bunch)  ?:
                 IF_ELSE(read_char(parse, ':'),
-                    parse_bunch_num(parse, &last_bunch)  ?:
-                    TEST_OK_(bunch <= last_bunch, "Empty range")  ?:
-                    DO(set_range(bunch, last_bunch, selection)),
+                    parse_bunch_num(parse, &bunch2)  ?:
+                    IF_ELSE(read_char(parse, ':'),
+                        /* Must be start:skip:end. */
+                        parse_bunch_num(parse, &bunch3)  ?:
+                        set_range(bunch, bunch2, bunch3, selection),
+                    //else
+                        /* Must be start:end. */
+                        set_range(bunch, 1, bunch2, selection)),
                 //else
+                    /* Single number. */
                     DO(selection[bunch] = true));
         } while (!error  &&  **parse != '\0');
 
