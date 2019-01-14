@@ -6,4 +6,8 @@ EPICS_OPI="$HERE"/../epics/opi
 PATH="$EPICS_OPI/scripts:$PATH"
 export EDMDATAFILES="$HERE"/opi
 
-edm -x -eolc tune_launcher.edl &
+if [[ -n "$1" ]]; then
+    edm -x -eolc -m tune_prefix="$1" tune_fit/tune_peaks.edl &
+else
+    edm -x -eolc tune_launcher.edl &
+fi

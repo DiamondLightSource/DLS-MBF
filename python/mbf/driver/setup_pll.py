@@ -3,7 +3,7 @@
 # SNAS605 and the datasheet is avaliable at http://www.ti.com/lit/pdf/snas605
 # Revision SNAS605AR dated December 2015 was used for this script.
 
-from config_pll import SettingsBase
+from config_pll import SettingsBase, Const
 import time
 
 
@@ -79,6 +79,20 @@ def delayed_output(output):
 #   DCLKout12   => CLK0_M2C
 #
 def setup_reclocked(pll):
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Configure outputs for FMC 500.
+
+    # Output level definitions taken from Malibu Fmc_500_Mb.cpp, function
+    # Fmc500_Pll::OnInit().
+    pll.out0_1.SDCLK_FMT = Const.FMT_HSDS8      # S1  ADC SYNC
+    pll.out2_3.DCLK_FMT  = Const.FMT_LVDS       # D2  FMC HB[9] (unused)
+    pll.out2_3.SDCLK_FMT = Const.FMT_LVDS       # S3  FMC LA[19] (unused)
+    pll.out4_5.DCLK_FMT  = Const.FMT_LVDS       # D4  DAC DACCLK
+    pll.out6_7.DCLK_FMT  = Const.FMT_LVDS       # D6  DAC REFCLK
+    pll.out10_11.DCLK_FMT = Const.FMT_HSDS8     # D10 J12 front panel
+    pll.out12_13.SDCLK_FMT = Const.FMT_HSDS8    # S13 ADC CLK
+
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Output configuration
 

@@ -20,6 +20,7 @@
 #include "configs.h"
 #include "dac.h"
 #include "sequencer.h"
+#include "bunch_set.h"
 
 #include "bunch_select.h"
 
@@ -33,6 +34,15 @@ struct bunch_bank {
     EPICS_STRING fir_status;
     EPICS_STRING out_status;
     EPICS_STRING gain_status;
+
+    /* Context for editing bunch selection waveforms. */
+    struct epics_record *firwf;
+    struct epics_record *outwf;
+    struct epics_record *gainwf;
+    unsigned int fir_select;
+    unsigned int dac_select;
+    double gain_select;
+    struct bunch_set *bunch_set;
 };
 
 static struct bunch_context {
@@ -297,6 +307,42 @@ static void initialise_bank(
 }
 
 
+/* The following functions support writing to sub-fields of the bunch waveforms.
+ * The values to be written are set separately. */
+
+static bool update_fir_waveform(void *context, bool *_value)
+{
+    struct bunch_bank *bank = context;
+    UPDATE_RECORD_BUNCH_SET(char,
+        bank->bunch_set, bank->firwf, (char) bank->fir_select);
+    return true;
+}
+
+static bool update_out_waveform(void *context, bool *_value)
+{
+    struct bunch_bank *bank = context;
+    UPDATE_RECORD_BUNCH_SET(char,
+        bank->bunch_set, bank->outwf, (char) bank->dac_select);
+    return true;
+}
+
+static bool update_gain_waveform(void *context, bool *_value)
+{
+    struct bunch_bank *bank = context;
+    UPDATE_RECORD_BUNCH_SET(float,
+        bank->bunch_set, bank->gainwf, (float) bank->gain_select);
+    return true;
+}
+
+static bool update_all_waveforms(void *context, bool *value)
+{
+    update_fir_waveform(context, value);
+    update_out_waveform(context, value);
+    update_gain_waveform(context, value);
+    return true;
+}
+
+
 static void publish_bank(unsigned int ix, struct bunch_bank *bank)
 {
     char prefix[4];
@@ -304,16 +350,30 @@ static void publish_bank(unsigned int ix, struct bunch_bank *bank)
     WITH_NAME_PREFIX(prefix)
     {
         unsigned int bunches = hardware_config.bunches;
-        PUBLISH_WAVEFORM(char, "FIRWF", bunches, write_fir_wf,
+        bank->firwf = PUBLISH_WAVEFORM(char, "FIRWF", bunches, write_fir_wf,
             .context = bank, .persist = true);
-        PUBLISH_WAVEFORM(char, "OUTWF", bunches, write_out_wf,
+        bank->outwf = PUBLISH_WAVEFORM(char, "OUTWF", bunches, write_out_wf,
             .context = bank, .persist = true);
-        PUBLISH_WAVEFORM(float, "GAINWF", bunches, write_gain_wf,
+        bank->gainwf = PUBLISH_WAVEFORM(float, "GAINWF", bunches, write_gain_wf,
             .context = bank, .persist = true);
 
         PUBLISH_READ_VAR(stringin, "FIRWF:STA", bank->fir_status);
         PUBLISH_READ_VAR(stringin, "OUTWF:STA", bank->out_status);
         PUBLISH_READ_VAR(stringin, "GAINWF:STA", bank->gain_status);
+
+        PUBLISH(bo, "FIRWF:SET", update_fir_waveform, .context = bank);
+        PUBLISH(bo, "OUTWF:SET", update_out_waveform, .context = bank);
+        PUBLISH(bo, "GAINWF:SET", update_gain_waveform, .context = bank);
+
+        PUBLISH_WRITE_VAR(mbbo, "FIR_SELECT", bank->fir_select);
+        PUBLISH_WRITE_VAR(mbbo, "DAC_SELECT", bank->dac_select);
+        PUBLISH_WRITE_VAR(ao, "GAIN_SELECT", bank->gain_select);
+
+        PUBLISH(bo, "ALL:SET", update_all_waveforms, .context = bank);
+
+        /* Initialise the bunch set and set a sensible default gain. */
+        bank->bunch_set = create_bunch_set();
+        bank->gain_select = 1;
     }
 }
 

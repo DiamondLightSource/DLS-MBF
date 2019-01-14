@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 672
-y 183
+x 2121
+y 631
 w 370
-h 181
+h 209
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -77,7 +77,7 @@ release 0
 x 8
 y 48
 w 352
-h 96
+h 120
 lineColor index 14
 fill
 fillColor index 4
@@ -122,7 +122,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 96
+x 104
 y 64
 w 64
 h 20
@@ -190,7 +190,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 96
+x 104
 y 88
 w 80
 h 24
@@ -238,7 +238,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 96
+x 104
 y 112
 w 80
 h 24
@@ -260,32 +260,13 @@ objType "controls"
 noExecuteClipMask
 endObjectProperties
 
-# (Exit Button)
-object activeExitButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 296
-y 152
-w 64
-h 24
-fgColor index 46
-bgColor index 3
-topShadowColor index 1
-botShadowColor index 11
-label "EXIT"
-font "helvetica-bold-r-12.0"
-3d
-endObjectProperties
-
 # (Text Control)
 object activeXTextDspClass
 beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 272
 y 64
 w 80
 h 20
@@ -313,7 +294,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 184
+x 192
 y 64
 w 67
 h 14
@@ -333,7 +314,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 272
 y 88
 w 80
 h 20
@@ -362,7 +343,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 184
+x 192
 y 88
 w 62
 h 14
@@ -382,7 +363,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 272
 y 112
 w 80
 h 20
@@ -410,7 +391,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 184
+x 192
 y 112
 w 62
 h 14
@@ -420,6 +401,121 @@ bgColor index 0
 useDisplayBg
 value {
   "Max error:"
+}
+autoSize
+endObjectProperties
+
+# (Exit Button)
+object activeExitButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 296
+y 176
+w 64
+h 24
+fgColor index 46
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+label "EXIT"
+font "helvetica-bold-r-12.0"
+3d
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 136
+w 82
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Window start:"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 104
+y 136
+w 80
+h 20
+controlPv "$(tune_prefix):TUNE:CONFIG:WINDOW_START_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 272
+y 136
+w 80
+h 20
+controlPv "$(tune_prefix):TUNE:CONFIG:WINDOW_LENGTH_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 192
+y 136
+w 70
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Window len:"
 }
 autoSize
 endObjectProperties

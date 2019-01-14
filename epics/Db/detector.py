@@ -19,6 +19,12 @@ def detector_bank_pvs(updates):
         FLNK = bunch_count,
         DESC = 'Enable bunches for detector')
 
+    # PVs for user interface to bunch enable waveform
+    stringOut('BUNCH_SELECT', DESC = 'Select bunch to set',
+        FLNK = stringIn('SELECT_STATUS', DESC = 'Status of selection'))
+    Action('SET_SELECT', DESC = 'Enable selected bunches')
+    Action('RESET_SELECT', DESC = 'Disable selected bunches')
+
     enable = boolIn('ENABLE', 'Disabled', 'Enabled',
         DESC = 'Current detector enable state')
     updates.append(enable)

@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Simple parsing support. */
 
-/* Returns pointer to first non space character in string. */
+/* Skips string past any spaces, returns true if whitespace was seen. */
 bool skip_whitespace(const char **string);
 
 /* Advances *string past whitespace, fails with error if no whitespace found.

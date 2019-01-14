@@ -168,5 +168,5 @@ error__t parse_to_eos(const char **string, char **result)
 
 error__t parse_eos(const char **string)
 {
-    return TEST_OK_(**string == '\0', "Unexpected character after input");
+    return TEST_OK_(**string == '\0', "Unexpected extra character");
 }

@@ -3,7 +3,7 @@
 
 import numpy
 
-import support
+from support import abs2
 
 
 # Fitting one pole filter to IQ data.  Given waveforms scale[] and wf[], which
@@ -53,7 +53,7 @@ import support
 #      D = S(2) S(2 |iq|^2) - |S(w iq)|^2
 def fit_one_pole(scale, iq, weights):
     # Compute the components of M^H W M and M^H W y.
-    iq2 = support.abs2(iq)
+    iq2 = abs2(iq)
 
     S_w       = weights.sum()                   # S w
     S_w_iq    = (weights * iq).sum()            # S w iq
@@ -62,7 +62,7 @@ def fit_one_pole(scale, iq, weights):
     S_w_s_iq2 = (weights * iq2 * scale).sum()   # S w s |iq|^2
 
     # Do the inversion by hand
-    det = S_w * S_w_iq2 - support.abs2(S_w_iq)
+    det = S_w * S_w_iq2 - abs2(S_w_iq)
     a = (S_w_iq2 * S_w_s_iq - S_w_iq * S_w_s_iq2) / det
     b = (S_w * S_w_s_iq2 - numpy.conj(S_w_iq) * S_w_s_iq) / det
     return numpy.array([a, b])

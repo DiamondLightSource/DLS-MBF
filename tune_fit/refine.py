@@ -2,7 +2,7 @@
 
 import numpy
 
-import support
+from support import abs2, Trace
 import dd_peaks
 import prefit
 
@@ -71,7 +71,7 @@ def step_refine_fits(scale, iq, model, lam):
     beta = numpy.inner(de.conj(), e)
     alpha0 = numpy.inner(de.conj(), de)
 
-    Ein2 = support.abs2(e).sum()
+    Ein2 = abs2(e).sum()
     while lam < LAMBDA_MAX:
         alpha = alpha0 + numpy.diag(lam * alpha0.diagonal().real)
         delta = numpy.linalg.solve(alpha, beta)
@@ -81,7 +81,7 @@ def step_refine_fits(scale, iq, model, lam):
         offset = a_new[-1]
 
         e_new = w * (eval_model(scale, (new_fit, offset)) - iq)
-        Eout2 = support.abs2(e_new).sum()
+        Eout2 = abs2(e_new).sum()
 
         if Eout2 >= Ein2:
             lam *= LAMBDA_UP
@@ -107,7 +107,7 @@ def refine_fits(scale, iq, fit):
         if change < REFINE_FRACTION:
             break
 
-    trace = support.Trace(scale = scale, all_fits = all_fits)
+    trace = Trace(scale = scale, all_fits = all_fits)
     return (model, trace)
 
 
@@ -116,7 +116,7 @@ def add_one_pole(config, scale, iq, model):
     # Compute the residue to fit and take the most peaky peak from the residue
     fit, offset = model
     residue = iq - eval_model(scale, model)
-    power = support.abs2(residue)
+    power = abs2(residue)
     (l, r), dd_trace = dd_peaks.get_next_peak(power, config.SMOOTHING)
 
     # Compute an initial fit
@@ -134,7 +134,7 @@ def add_one_pole(config, scale, iq, model):
 # the large weight of zero data.
 def compute_fit_error(scale, iq, model):
     m = eval_model(scale, model)
-    m2 = support.abs2(m)
-    r2 = support.abs2(iq - m)
-    iq2 = support.abs2(iq)
+    m2 = abs2(m)
+    r2 = abs2(iq - m)
+    iq2 = abs2(iq)
     return m, r2, numpy.sum(r2 * m2) / numpy.sum(iq2 * m2)

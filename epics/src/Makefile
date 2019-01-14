@@ -77,6 +77,7 @@ mbf_SRCS += delay.c             # Fine control over clocking delays
 mbf_SRCS += buffered_file.c     # Helper for buffered file access
 mbf_SRCS += socket_command.c    # Command implementation for high speed data
 mbf_SRCS += socket_server.c     # Socket connection for high speed data
+mbf_SRCS += bunch_set.c         # Manages bunch selection set for GUI updates
 
 
 mbf_LIBS += epics_device

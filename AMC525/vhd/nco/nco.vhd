@@ -12,6 +12,10 @@ use work.defines.all;
 use work.nco_defs.all;
 
 entity nco is
+    generic (
+        IN_DELAY : natural := 4;        -- Input pipeline
+        OUT_DELAY : natural := 8        -- Output pipeline
+    );
     port (
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
@@ -20,9 +24,6 @@ entity nco is
 end;
 
 architecture arch of nco is
-    constant IN_DELAY : natural := 4;
-    constant OUT_DELAY : natural := 8;
-
     signal phase_advance : angle_t;
     signal cos_sin : cos_sin_18_t;
 
