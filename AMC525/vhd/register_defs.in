@@ -10,10 +10,22 @@
 # that the firmware and software are compatible.
 #
 # Whenever an incompatible change is made to the firmware that can't be checked
-# or handled elsewhere, this version number should be stepped.
+# or handled elsewhere, this version number should be stepped and the table
+# below should be updated accordingly.
 #
-# Note that this is only an 8-bit number, so some discrection is appropriate.
+# The following values for this field are reserved:
+#
+# ======= ====================================================================
+# 0       Used for initial MBF 1.0 and 1.1 releases
+# 254     Use this for unstable MBF firmware versions under development
+# 255     Reserved for non MBF firmware with driver compatibility.  Do not use
+#         for any version of MBF firmware
+# ======= ====================================================================
 FIRMWARE_COMPAT_VERSION = 0
+
+## Do not change this value, leave equal to 254
+FIRMWARE_COMPAT_UNSTABLE = 254
+
 
 :IDELAY     RW
     # Write new IDELAY value, returns current IDELAY setting

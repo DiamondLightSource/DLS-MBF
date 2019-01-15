@@ -953,9 +953,13 @@ static error__t check_firmware_version(bool no_hardware)
     else
     {
         struct sys_version sys_version = READL(sys_regs->version);
-        return TEST_OK_(sys_version.firmware == FIRMWARE_COMPAT_VERSION,
-            "Firmware version mismatch: read %u, expected %u",
-            sys_version.firmware, FIRMWARE_COMPAT_VERSION);
+        error__t error =
+            TEST_OK_(sys_version.firmware == FIRMWARE_COMPAT_VERSION,
+                "Firmware version mismatch: read %u, expected %u",
+                sys_version.firmware, FIRMWARE_COMPAT_VERSION);
+        if (FIRMWARE_COMPAT_VERSION == FIRMWARE_COMPAT_UNSTABLE)
+            log_message("WARNING: Running with UNSTABLE firmware version");
+        return error;
     }
 }
 

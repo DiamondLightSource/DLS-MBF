@@ -243,7 +243,8 @@ class constant_docs(RegisterDocs):
         table = Table(self, [50, 15])
         table.add_header([['Name'], ['Value']])
         for constant in constant_defs:
-            table.add_row([trim_text(constant.doc)], more_cols = [1])
+            if constant.doc:
+                table.add_row([trim_text(constant.doc)], more_cols = [1])
             table.add_row([format_name(constant), ['%d' % constant.value]])
         return [table.table]
 
