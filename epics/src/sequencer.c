@@ -293,9 +293,12 @@ static void write_super_offsets(
 
     for (int i = 0; i < SUPER_SEQ_STATES; i ++)
     {
-        unsigned int freq = tune_to_freq(offsets[i]);
-        seq->seq_config.super_offsets[i] = freq;
-        offsets[i] = freq_to_tune(freq);
+        /* For the super sequencer offset we take the top 32 bits of the 48 bit
+         * frequency after rounding. */
+        uint64_t freq = tune_to_freq(offsets[i]);
+        uint32_t offset = (uint32_t) ((freq + 0x8000) >> 16);
+        seq->seq_config.super_offsets[i] = offset;
+        offsets[i] = freq_to_tune((uint64_t) offset << 16);
     }
 
     seq->seq_config_dirty = true;
@@ -349,8 +352,8 @@ static bool reset_detector_window(void *context, bool *value)
 
 /* Helper function for compute_scale_info() below. */
 static inline void write_scale_point(
-    unsigned int frequency[], unsigned int timebase[],
-    unsigned int i, unsigned int f0, unsigned int total_time)
+    uint64_t frequency[], unsigned int timebase[],
+    unsigned int i, uint64_t f0, unsigned int total_time)
 {
     if (frequency) frequency[i] = f0;
     if (timebase)  timebase[i] = total_time;
@@ -358,7 +361,7 @@ static inline void write_scale_point(
 
 /* Computes frequency and timebase scales from detector configuration. */
 unsigned int compute_scale_info(
-    int axis, unsigned int frequency[], unsigned int timebase[],
+    int axis, uint64_t frequency[], unsigned int timebase[],
     unsigned int start_offset, unsigned int length)
 {
     const struct seq_context *seq = &seq_context[axis];
@@ -371,7 +374,7 @@ unsigned int compute_scale_info(
     unsigned int ix = 0;            // Index into generated vectors
     unsigned int total_time = 0;    // Accumulates time base
     unsigned int gap_time = 0;      // For non-captured states
-    unsigned int f0 = 0;            // Accumulates current frequency
+    uint64_t f0 = 0;                // Accumulates current frequency
     for (unsigned int super = 0; super < super_count; super ++)
         for (unsigned int state = seq_count; state > 0; state --)
         {
@@ -379,7 +382,8 @@ unsigned int compute_scale_info(
             unsigned int dwell_time = entry->dwell_time + entry->holdoff;
             if (entry->write_enable)
             {
-                f0 = entry->start_freq + seq_config->super_offsets[super];
+                f0 = entry->start_freq +
+                    (seq_config->super_offsets[super] << 16);
                 total_time += gap_time;
                 gap_time = 0;
                 for (unsigned int i = 0; i < entry->capture_count; i ++)
@@ -437,7 +441,7 @@ void read_detector_scale_info(
     int axis, unsigned int length, struct scale_info *scale_info)
 {
     /* Need buffer for frequency data so we can covert to tune afterwards. */
-    unsigned int frequency[length];
+    uint64_t frequency[length];
     scale_info->samples = compute_scale_info(
         axis, frequency, (unsigned int *) scale_info->timebase, 0, length);
     for (unsigned int i = 0; i < length; i ++)

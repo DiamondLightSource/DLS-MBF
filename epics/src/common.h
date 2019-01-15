@@ -73,13 +73,13 @@ unsigned int double_to_uint(double *in, int bits, int high_bits);
 
 /* Convert fractional tune in cycles per machine revolution to phase advance per
  * bunch in hardware units. */
-unsigned int _pure tune_to_freq(double tune);
+uint64_t _pure tune_to_freq(double tune);
 
 /* Reverse computation: hardware units to tune frequency. */
-double _pure freq_to_tune(unsigned int freq);
+double _pure freq_to_tune(uint64_t freq);
 
 /* As for freq_to_tune, but treats freq as a signed number. */
-double _pure freq_to_tune_signed(unsigned int freq);
+double _pure freq_to_tune_signed(uint64_t freq);
 
 
 /* A loop for counting down: surprisingly tricksy for something so simple.

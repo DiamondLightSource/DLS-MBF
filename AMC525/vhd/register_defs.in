@@ -437,8 +437,14 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # Used for channel specific DSP control, each channel has its own bank of
 # registers.
 !DSP
-    # Sets NCO0 frequency
-    NCO0_FREQ   RW
+    # Sets the low 32 bits of the NCO0 frequency.  The frequency is unchanged
+    # when this register is written.
+    NCO0_FREQ_L RW
+        .LOW_BITS   32
+    # Sets the high 16 bits of the NCO0 frequency.  The frequency is updated
+    # when this register is written.
+    NCO0_FREQ_H RW
+        .HIGH_BITS  16
 
     # Input signal processing
     !ADC
@@ -594,10 +600,16 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             # required to write a complete state, and so a sequence of 64 writes
             # updates the sequencer program memory.
             *OVERLAY    STATE       W
-                # Starting frequency for this sweep
+                # Starting frequency for this sweep (low order 32 bits)
                 START_FREQ
-                # Frequency step for this sweep
+                    .LOW_BITS       32
+                # Frequency step for this sweep (low order 32 bits)
                 DELTA_FREQ
+                    .LOW_BITS       32
+                # High order bits for the sweep
+                HIGH_BITS
+                    .START_HIGH_BITS    16
+                    .DELTA_HIGH_BITS    16
                 TIME
                     # Number of turns to capture for one detector cycle
                     .DWELL          16
@@ -623,7 +635,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # before starting detector capture
                     .HOLDOFF        16
 
-                # Two extra writes are required to pad the state setup to 8
+                # One extra write is required to pad the state setup to 8
                 # words.
                 PADDING
 

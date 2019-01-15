@@ -454,13 +454,13 @@ static void send_float32_memory_data(
 /* Holds the evolving state required to perform tune shifted decimation. */
 struct tune_decimate_state {
     /* Copies of relevant parameters. */
-    unsigned int tune;          /* Converted into 2^32 revolutions per bunch. */
+    uint64_t tune;          /* Converted into 2^48 revolutions per bunch. */
     unsigned int decimation;
 
-    /* Current rotation angle, in units of rotation per 2^32. */
-    unsigned int angle;
+    /* Current rotation angle, in units of rotation per 2^48. */
+    uint64_t angle;
     /* Angle advance per turn. */
-    unsigned int turn_advance;
+    uint64_t turn_advance;
     /* Fixup buffer. */
     float complex *turn_fixup;
 };
@@ -472,10 +472,10 @@ static float complex cisf(float angle)
 }
 
 
-static float complex angle_to_rotate(unsigned int angle)
+static float complex angle_to_rotate(uint64_t angle)
 {
-    /* The angle is in units of rotation per 2^32, so multiply by 2 pi. */
-    return cisf((float) (M_PI * ldexp(angle, -31)));
+    /* The angle is in units of rotation per 2^48, so multiply by 2 pi. */
+    return cisf((float) (2*M_PI * ldexp((double) angle, -48)));
 }
 
 
@@ -486,7 +486,7 @@ static void prepare_tune_decimate(
     const struct channels_context *channels)
 {
     unsigned int bunches_per_turn = system_config.bunches_per_turn;
-    unsigned int tune = tune_to_freq(args->tune);
+    uint64_t tune = tune_to_freq(args->tune);
     *state = (struct tune_decimate_state) {
         .tune = tune,
         .decimation = args->decimation,
@@ -496,7 +496,7 @@ static void prepare_tune_decimate(
     };
 
     /* Compute the turn fixup array. */
-    unsigned int angle = 0;
+    uint64_t angle = 0;
     for (unsigned int i = 0; i < bunches_per_turn; i ++)
     {
         float complex rotate = angle_to_rotate(angle);
@@ -800,7 +800,11 @@ static void read_detector_scale(
     int axis, void *buffer, unsigned int sample_size,
     unsigned int offset, unsigned int samples)
 {
-    compute_scale_info(axis, buffer, NULL, offset, samples);
+    uint64_t frequencies[samples];
+    compute_scale_info(axis, frequencies, NULL, offset, samples);
+    unsigned int *buf_out = buffer;
+    for (unsigned int i = 0; i < samples; i ++)
+        *buf_out++ = (unsigned int) (frequencies[i] >> 16);
 }
 
 static void read_detector_timebase(

@@ -531,9 +531,12 @@ static void read_mms(
 }
 
 
-void hw_write_nco0_frequency(int axis, unsigned int frequency)
+void hw_write_nco0_frequency(int axis, uint64_t frequency)
 {
-    WRITEL(dsp_regs[axis]->nco0_freq, frequency);
+    WRITE_FIELDS(dsp_regs[axis]->nco0_freq_l,
+        .low_bits = frequency & 0xFFFFFFFF);
+    WRITE_FIELDS(dsp_regs[axis]->nco0_freq_h,
+        .high_bits = (frequency >> 16) & 0xFFFF);
 }
 
 
@@ -720,8 +723,13 @@ static void write_sequencer_state(int axis, const struct seq_entry *entry)
 {
     volatile union dsp_seq_state *target = &dsp_regs[axis]->seq_state;
 
-    WRITEL(target->start_freq, entry->start_freq);
-    WRITEL(target->delta_freq, entry->delta_freq);
+    WRITE_FIELDS(target->start_freq,
+        .low_bits = entry->start_freq & 0xFFFFFFFF);
+    WRITE_FIELDS(target->delta_freq,
+        .low_bits = entry->delta_freq & 0xFFFFFFFF);
+    WRITE_FIELDS(target->high_bits,
+        .start_high_bits = (entry->start_freq >> 32) & 0xFFFF,
+        .delta_high_bits = (entry->delta_freq >> 32) & 0xFFFF);
     WRITE_FIELDS(target->time,
         .dwell = (entry->dwell_time - 1) & 0xFFFF,
         .capture = (entry->capture_count - 1) & 0xFFFF);
@@ -735,7 +743,6 @@ static void write_sequencer_state(int axis, const struct seq_entry *entry)
     WRITEL(target->window_rate, entry->window_rate);
     WRITE_FIELDS(target->holdoff,
         .holdoff = entry->holdoff & 0xFFFF);
-    WRITEL(target->padding, 0);
     WRITEL(target->padding, 0);
 }
 

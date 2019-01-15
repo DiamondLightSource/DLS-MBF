@@ -219,7 +219,7 @@ struct mms_result {
 };
 
 /* Directly sets the fixed frequency oscillator. */
-void hw_write_nco0_frequency(int axis, unsigned int frequency);
+void hw_write_nco0_frequency(int axis, uint64_t frequency);
 
 
 /* ADC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -312,8 +312,8 @@ void hw_read_dac_mms(int axis, struct mms_result *result);
 /* Sequencer configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 struct seq_entry {
-    unsigned int start_freq;        // NCO start frequency
-    unsigned int delta_freq;        // Frequency step for sweep
+    uint64_t start_freq;            // NCO start frequency
+    uint64_t delta_freq;            // Frequency step for sweep
     unsigned int dwell_time;        // Dwell time at each step
     unsigned int capture_count;     // Number of sweep points to capture
     unsigned int bunch_bank;        // Bunch bank selection

@@ -27,7 +27,7 @@ static struct nco_context {
 static bool set_nco_frequency(void *context, double *tune)
 {
     struct nco_context *nco = context;
-    unsigned int frequency = tune_to_freq(*tune);
+    uint64_t frequency = tune_to_freq(*tune);
     *tune = freq_to_tune(frequency);
     hw_write_nco0_frequency(nco->axis, frequency);
     return true;

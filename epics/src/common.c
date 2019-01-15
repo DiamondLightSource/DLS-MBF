@@ -104,7 +104,7 @@ unsigned int double_to_uint(double *in, int bits, int high_bits)
 
 /* Convert fractional tune in cycles per machine revolution to phase advance per
  * bunch in hardware units. */
-unsigned int tune_to_freq(double tune)
+uint64_t tune_to_freq(double tune)
 {
     /* Convert the incoming tune in cycles per machine revolution into phase
      * advance per bunch by scaling and reducing to the half open interval
@@ -114,18 +114,18 @@ unsigned int tune_to_freq(double tune)
     if (fraction < 0.0)
         fraction += 1.0;
     /* Can now scale up to hardware units. */
-    return (unsigned int) round(ldexp(fraction, 32));
+    return (uint64_t) llround(ldexp(fraction, 48));
 }
 
-double freq_to_tune(unsigned int freq)
+double freq_to_tune(uint64_t freq)
 {
-    return ldexp(freq, -32) * hardware_config.bunches;
+    return ldexp((double) (freq << 16), -64) * hardware_config.bunches;
 }
 
-double freq_to_tune_signed(unsigned int freq)
+double freq_to_tune_signed(uint64_t freq)
 {
-    int sfreq = (int) freq;
-    return ldexp(sfreq, -32) * hardware_config.bunches;
+    int64_t sfreq = (int64_t) freq;
+    return ldexp((double) (sfreq << 16), -64) * hardware_config.bunches;
 }
 
 
