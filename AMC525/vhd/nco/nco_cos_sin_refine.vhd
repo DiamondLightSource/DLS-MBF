@@ -86,8 +86,8 @@ architecture arch of nco_cos_sin_refine is
     signal delta_result : signed(17 downto 0) := (others => '0');
     signal delta : signed(9 downto 0) := (others => '0');
 
-    attribute USE_DSP48 : string;
-    attribute USE_DSP48 of delta_product : signal is "yes";
+    attribute USE_DSP : string;
+    attribute USE_DSP of delta_product : signal is "yes";
 
     -- Pipeline signals numbered by assignment stage
     -- 1
@@ -144,7 +144,7 @@ begin
         if rising_edge(clk_i) then
             -- Convert unsigned residue to signed for multiplier.  We need an
             -- extra pipeline stage after the product to align the result.
-            residue <= signed('0' & residue_i(18 downto 11));
+            residue <= signed('0' & residue_i(34 downto 27));
             delta_product <= PI_SCALED * residue;
             delta_result <= delta_product;
             delta <= delta_result(17 downto 8);

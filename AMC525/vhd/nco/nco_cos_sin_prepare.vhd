@@ -42,9 +42,9 @@ begin
     --  | octant | lookup | residue |
     --  +--------+--------+---------+
     --
-    octant <= angle_i(31 downto 29);        -- 3 bits
-    lookup <= angle_i(28 downto 19);        -- 10 bits
-    residue <= angle_i(18 downto 0);        -- the rest
+    octant <= angle_i(47 downto 45);        -- 3 bits
+    lookup <= angle_i(44 downto 35);        -- 10 bits
+    residue <= angle_i(34 downto 0);        -- the rest
 
     -- The octant determines the direction of the angle and how to treat the
     -- generated sin and cos values.  This will need to be pipelined through to

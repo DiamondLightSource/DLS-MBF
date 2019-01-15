@@ -21,6 +21,9 @@ architecture arch of nco_phase is
     signal phase_advance : angle_t := (others => '0');
     signal phase : angle_t := (others => '0');
 
+    attribute USE_DSP : string;
+    attribute USE_DSP of phase : signal is "yes";
+
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then

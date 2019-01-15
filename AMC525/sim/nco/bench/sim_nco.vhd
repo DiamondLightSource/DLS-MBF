@@ -40,7 +40,8 @@ begin
         phase_o => int_phase
     );
 
-    phase <= 2.0 * MATH_PI * real(to_integer(int_phase)) / 2.0**32;
+    phase <= 2.0 * MATH_PI *
+        real(to_integer(int_phase(47 downto 17))) / 2.0**31;
     cosine <= cos(phase);
     sine <= sin(phase);
 
