@@ -12,6 +12,12 @@ import refine
 MAXIMUM_ANGLE = 100.0
 
 
+def compute_fit_info(scale, iq, new_fit):
+    model, residue, fit_error = refine.compute_fit_error(scale, iq, new_fit)
+    return support.Trace(
+        model = model, residue = residue, fit_error = fit_error)
+
+
 # Performs one stage of fitting.  Returns:
 #   status      Status string if fit failed, empty string if successful
 #   new_fit     Updated fit, or None if fit failed
@@ -27,10 +33,8 @@ def fit_one_peak(config, scale, iq, fit):
         fit_info = None
     else:
         # See how the new fit fares
-        model, residue, fit_error = refine.compute_fit_error(scale, iq, new_fit)
         status = assess_fit(config, scale, new_fit)
-        fit_info = support.Trace(
-            model = model, residue = residue, fit_error = fit_error)
+        fit_info = compute_fit_info(scale, iq, new_fit)
 
     return (status, new_fit, fit_trace, fit_info)
 
@@ -46,7 +50,7 @@ def fit_multiple_peaks(config, scale, iq):
 
     last_fit_error = numpy.inf
     best_fit = fit
-    best_fit_info = None
+    best_fit_info = compute_fit_info(scale, iq, fit)
 
     for n in range(config.MAX_PEAKS):
         status, fit, fit_trace, fit_info = fit_one_peak(config, scale, iq, fit)
@@ -64,12 +68,10 @@ def fit_multiple_peaks(config, scale, iq):
 
 
     # Finally check the overall fit error; if this is too large then just bail
-    if status == '':
-        fit_error = best_fit_info.fit_error
-        if fit_error > config.MAXIMUM_FIT_ERROR or \
-           not numpy.isfinite(fit_error):
-            status = 'Fit error too large'
-            best_fit = None
+    fit_error = best_fit_info.fit_error
+    if fit_error > config.MAXIMUM_FIT_ERROR or not numpy.isfinite(fit_error):
+        status = 'Fit error too large'
+        best_fit = None
 
     if status == '':
         status = 'All peaks fitted'
