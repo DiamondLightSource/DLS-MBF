@@ -44,7 +44,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Feedback On"
 numCmds 1
 command {
-  0 "run-command 'Feeback On' mbf-control -f 1 $(device):$(axis)"
+  0 "mbf-run-command 'Feeback On' mbf-control -f 1 $(device):$(axis)"
 }
 endObjectProperties
 
@@ -93,7 +93,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Feedback Off"
 numCmds 1
 command {
-  0 "run-command 'Feeback Off' mbf-control -f 0 $(device):$(axis)"
+  0 "mbf-run-command 'Feeback Off' mbf-control -f 0 $(device):$(axis)"
 }
 endObjectProperties
 
@@ -115,7 +115,7 @@ font "helvetica-bold-r-12.0"
 buttonLabel "Tune Sweep On"
 numCmds 1
 command {
-  0 "run-command 'Tune Sweep On' mbf-control -t 1 $(device):$(axis)"
+  0 "mbf-run-command 'Tune Sweep On' mbf-control -t 1 $(device):$(axis)"
 }
 endObjectProperties
 
