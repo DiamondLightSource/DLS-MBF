@@ -437,14 +437,13 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # Used for channel specific DSP control, each channel has its own bank of
 # registers.
 !DSP
-    # Sets the low 32 bits of the NCO0 frequency.  The frequency is unchanged
-    # when this register is written.
-    NCO0_FREQ_L RW
-        .LOW_BITS   32
-    # Sets the high 16 bits of the NCO0 frequency.  The frequency is updated
-    # when this register is written.
-    NCO0_FREQ_H RW
-        .HIGH_BITS  16
+    # NCO0 is a 48 bit frequency which is updated by writing to two words.  The
+    # low 32 bits of the frequency are first written to the LOW register, and
+    # then the high 16 bits are written to the HIGH register.  The frequency is
+    # only changed when the high register is written.
+    !NCO0
+        LOW         RW
+        HIGH        RW
 
     # Input signal processing
     !ADC
@@ -608,8 +607,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .LOW_BITS       32
                 # High order bits for the sweep
                 HIGH_BITS
-                    .START_HIGH_BITS    16
-                    .DELTA_HIGH_BITS    16
+                    .START_HIGH     16
+                    .DELTA_HIGH     16
                 TIME
                     # Number of turns to capture for one detector cycle
                     .DWELL          16

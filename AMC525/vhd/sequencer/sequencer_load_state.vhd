@@ -97,9 +97,16 @@ begin
             if loading_dly = '1' then
                 case to_integer(load_ctr_dly) is
                     when DSP_SEQ_STATE_START_FREQ_OVL =>
-                        seq_state_o.start_freq <= angle_t(prog_word);
+                        seq_state_o.start_freq(31 downto 0)
+                            <= unsigned(prog_word);
                     when DSP_SEQ_STATE_DELTA_FREQ_OVL =>
-                        seq_state_o.delta_freq <= angle_t(prog_word);
+                        seq_state_o.delta_freq(31 downto 0)
+                            <= unsigned(prog_word);
+                    when DSP_SEQ_STATE_HIGH_BITS_OVL =>
+                        seq_state_o.start_freq(47 downto 32) <= unsigned(
+                            prog_word(DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS));
+                        seq_state_o.delta_freq(47 downto 32) <= unsigned(
+                            prog_word(DSP_SEQ_STATE_HIGH_BITS_DELTA_HIGH_BITS));
                     when DSP_SEQ_STATE_TIME_OVL =>
                         seq_state_o.dwell_count <= dwell_count_t(
                             prog_word(DSP_SEQ_STATE_TIME_DWELL_BITS));

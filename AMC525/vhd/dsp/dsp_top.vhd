@@ -65,20 +65,19 @@ begin
     -- -------------------------------------------------------------------------
     -- General register handling
 
-    register_file : entity work.register_file generic map (
-        UNTIMED => false
-    ) port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_NCO0_FREQ_REG),
+    nco_register : entity work.nco_register port map (
+        dsp_clk_i => dsp_clk_i,
+        adc_clk_i => adc_clk_i,
+
+        write_strobe_i => write_strobe_i(DSP_NCO0_REGS),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_NCO0_FREQ_REG),
-        register_data_o(0) => nco0_register
+        write_ack_o => write_ack_o(DSP_NCO0_REGS),
+        read_strobe_i => read_strobe_i(DSP_NCO0_REGS),
+        read_data_o => read_data_o(DSP_NCO0_REGS),
+        read_ack_o => read_ack_o(DSP_NCO0_REGS),
+
+        nco_freq_o => nco_0_phase_advance
     );
-    read_data_o(DSP_NCO0_FREQ_REG) <= nco0_register;
-    read_ack_o(DSP_NCO0_FREQ_REG) <= '1';
-
-    nco_0_phase_advance <= angle_t(nco0_register);
-
 
     -- -------------------------------------------------------------------------
     -- Miscellaneous control
