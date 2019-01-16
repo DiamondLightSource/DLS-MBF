@@ -533,10 +533,8 @@ static void read_mms(
 
 void hw_write_nco0_frequency(int axis, uint64_t frequency)
 {
-    WRITE_FIELDS(dsp_regs[axis]->nco0_freq_l,
-        .low_bits = frequency & 0xFFFFFFFF);
-    WRITE_FIELDS(dsp_regs[axis]->nco0_freq_h,
-        .high_bits = (frequency >> 16) & 0xFFFF);
+    WRITEL(dsp_regs[axis]->nco0_low, frequency & 0xFFFFFFFF);
+    WRITEL(dsp_regs[axis]->nco0_high, (frequency >> 16) & 0xFFFF);
 }
 
 
@@ -728,8 +726,8 @@ static void write_sequencer_state(int axis, const struct seq_entry *entry)
     WRITE_FIELDS(target->delta_freq,
         .low_bits = entry->delta_freq & 0xFFFFFFFF);
     WRITE_FIELDS(target->high_bits,
-        .start_high_bits = (entry->start_freq >> 32) & 0xFFFF,
-        .delta_high_bits = (entry->delta_freq >> 32) & 0xFFFF);
+        .start_high = (entry->start_freq >> 32) & 0xFFFF,
+        .delta_high = (entry->delta_freq >> 32) & 0xFFFF);
     WRITE_FIELDS(target->time,
         .dwell = (entry->dwell_time - 1) & 0xFFFF,
         .capture = (entry->capture_count - 1) & 0xFFFF);
