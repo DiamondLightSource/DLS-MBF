@@ -323,6 +323,7 @@ struct seq_entry {
     bool enable_window;             // Enable detector windowing
     bool write_enable;              // Enable data capture of sequence
     bool enable_blanking;           // Observe trigger holdoff control
+    bool reset_phase;               // If set sweep phase is reset at start
     unsigned int holdoff;           // Detector holdoff
 };
 

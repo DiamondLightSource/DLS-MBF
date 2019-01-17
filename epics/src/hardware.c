@@ -534,7 +534,9 @@ static void read_mms(
 void hw_write_nco0_frequency(int axis, uint64_t frequency)
 {
     WRITEL(dsp_regs[axis]->nco0_low, frequency & 0xFFFFFFFF);
-    WRITEL(dsp_regs[axis]->nco0_high, (frequency >> 32) & 0xFFFF);
+    WRITE_FIELDS(dsp_regs[axis]->nco0_high,
+        .bits = (frequency >> 32) & 0xFFFF,
+        .reset_phase = frequency == 0);
 }
 
 
@@ -737,7 +739,8 @@ static void write_sequencer_state(int axis, const struct seq_entry *entry)
         .ena_window = entry->enable_window,
         .ena_write = entry->write_enable,
         .ena_blank = entry->enable_blanking,
-        .ena_nco = entry->nco_enable);
+        .ena_nco = entry->nco_enable,
+        .reset_phase = entry->reset_phase);
     WRITEL(target->window_rate, entry->window_rate);
     WRITE_FIELDS(target->holdoff,
         .holdoff = entry->holdoff & 0xFFFF);
@@ -755,6 +758,7 @@ static void write_sequencer_entries(
         .dwell_time = 1,
         .bunch_bank = bank0,
         .capture_count = 1,
+        .reset_phase = true,
     });
     if (entries)
         for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)

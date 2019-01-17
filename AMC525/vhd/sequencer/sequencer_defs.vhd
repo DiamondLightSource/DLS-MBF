@@ -24,6 +24,7 @@ package sequencer_defs is
         enable_write : std_ulogic;       -- Enable data capture for this sweep
         enable_blanking : std_ulogic;    -- Observe blanking input signal
         window_rate : angle_t;          -- Detector window advance rate
+        reset_phase : std_ulogic;       -- Reset NCO phase at start
         holdoff_count : dwell_count_t;  -- Holdoff count before each dwell
     end record;
 
@@ -44,6 +45,7 @@ package sequencer_defs is
         enable_window => '0',
         enable_write => '0',
         enable_blanking => '0',
+        reset_phase => '0',
         window_rate => (others => '0'),
         holdoff_count => (others => '0')
     );

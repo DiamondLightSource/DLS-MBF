@@ -24,10 +24,12 @@ entity sequencer_counter is
         start_freq_i : in angle_t;      -- Initial output frequency
         delta_freq_i : in angle_t;      -- Output frequency step
         capture_count_i : in capture_count_t;   -- Number of dwells to generate
+        reset_phase_i : in std_ulogic;  -- Reset phase at start of sweep
         last_turn_i : in std_ulogic;     -- Dwell is in its last turn
 
         state_end_o : out std_ulogic := '0';  -- Set during last turn of state
-        hom_freq_o : out angle_t := (others => '0')  -- Output frequency
+        hom_freq_o : out angle_t := (others => '0'); -- Output frequency
+        hom_reset_o : out std_ulogic := '0'
     );
 end;
 
@@ -78,6 +80,7 @@ begin
             end if;
 
             hom_freq_o <= hom_freq;
+            hom_reset_o <= reset_phase_i and turn_clock_i and state_end_o;
         end if;
     end process;
 end;

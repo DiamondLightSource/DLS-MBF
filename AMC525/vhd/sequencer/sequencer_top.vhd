@@ -61,6 +61,7 @@ entity sequencer_top is
         seq_write_adc_o : out std_ulogic;   -- End of dwell interval
 
         hom_freq_o : out angle_t;       -- NCO frequency
+        hom_reset_o : out std_ulogic;
         hom_gain_o : out unsigned(3 downto 0);  -- NCO gain
         hom_enable_o : out std_ulogic;   -- Enable NCO out
         hom_window_o : out hom_win_t;   -- Detector input window
@@ -210,10 +211,12 @@ begin
         start_freq_i => seq_state.start_freq,
         delta_freq_i => seq_state.delta_freq,
         capture_count_i => seq_state.capture_count,
+        reset_phase_i => seq_state.reset_phase,
         last_turn_i => last_turn,
 
         state_end_o => state_end,
-        hom_freq_o => hom_freq_o
+        hom_freq_o => hom_freq_o,
+        hom_reset_o => hom_reset_o
     );
 
     -- Generates detector window.

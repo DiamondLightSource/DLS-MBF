@@ -444,6 +444,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     !NCO0
         LOW         RW
         HIGH        RW
+            .BITS           16
+            -               15
+            .RESET_PHASE
 
     # Input signal processing
     !ADC
@@ -627,6 +630,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .ENA_BLANK
                     # Sweep output enable
                     .ENA_NCO
+                    # Reset NCO phase
+                    .RESET_PHASE
                 # Detector window advance.
                 WINDOW_RATE
                 HOLDOFF

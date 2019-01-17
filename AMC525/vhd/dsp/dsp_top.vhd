@@ -54,8 +54,10 @@ architecture arch of dsp_top is
 
     -- Oscillator control
     signal nco_0_phase_advance : angle_t;
+    signal nco_0_reset_phase : std_ulogic;
     signal nco_0_cos_sin : cos_sin_18_t;
     signal nco_1_phase_advance : angle_t;
+    signal nco_1_reset_phase : std_ulogic;
     signal nco_1_cos_sin : cos_sin_18_t;
 
     -- Data flow
@@ -66,8 +68,7 @@ begin
     -- General register handling
 
     nco_register : entity work.nco_register port map (
-        dsp_clk_i => dsp_clk_i,
-        adc_clk_i => adc_clk_i,
+        clk_i => dsp_clk_i,
 
         write_strobe_i => write_strobe_i(DSP_NCO0_REGS),
         write_data_i => write_data_i,
@@ -76,7 +77,8 @@ begin
         read_data_o => read_data_o(DSP_NCO0_REGS),
         read_ack_o => read_ack_o(DSP_NCO0_REGS),
 
-        nco_freq_o => nco_0_phase_advance
+        nco_freq_o => nco_0_phase_advance,
+        reset_phase_o => nco_0_reset_phase
     );
 
     -- -------------------------------------------------------------------------
@@ -104,6 +106,7 @@ begin
     nco_0 : entity work.nco port map (
         clk_i => adc_clk_i,
         phase_advance_i => nco_0_phase_advance,
+        reset_phase_i => nco_0_reset_phase,
         cos_sin_o => nco_0_cos_sin
     );
     dsp_to_control_o.nco_0_data.nco <= nco_0_cos_sin;
@@ -111,6 +114,7 @@ begin
     nco_1 : entity work.nco port map (
         clk_i => adc_clk_i,
         phase_advance_i => nco_1_phase_advance,
+        reset_phase_i => nco_1_reset_phase,
         cos_sin_o => nco_1_cos_sin
     );
     dsp_to_control_o.nco_1_data.nco <= nco_1_cos_sin;
@@ -220,6 +224,7 @@ begin
         seq_write_adc_o => sequencer_write,
 
         hom_freq_o => nco_1_phase_advance,
+        hom_reset_o => nco_1_reset_phase,
         hom_gain_o => dsp_to_control_o.nco_1_data.gain,
         hom_enable_o => dsp_to_control_o.nco_1_data.enable,
         hom_window_o => detector_window,

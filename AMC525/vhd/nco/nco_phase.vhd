@@ -12,12 +12,12 @@ entity nco_phase is
     port (
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
+        reset_phase_i : in std_logic;
         phase_o : out angle_t := (others => '0')
     );
 end;
 
 architecture arch of nco_phase is
-    signal reset : boolean := false;
     signal phase_advance : angle_t := (others => '0');
     signal phase : angle_t := (others => '0');
 
@@ -29,8 +29,7 @@ begin
         if rising_edge(clk_i) then
             -- Phase advance
             phase_advance <= phase_advance_i;
-            reset <= phase_advance = 0;
-            if reset then
+            if reset_phase_i = '1' then
                 phase <= (others => '0');
             else
                 phase <= phase + phase_advance;
