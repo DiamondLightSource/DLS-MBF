@@ -22,8 +22,8 @@ end;
 architecture arch of dlyreg is
     type dlyline_t is array(DLY-1 downto 0) of std_ulogic_vector(DW-1 downto 0);
     signal dlyline : dlyline_t := (others => (others => '0'));
-    attribute SHREG_EXTRACT : string;
-    attribute SHREG_EXTRACT of dlyline : signal is "no";
+    attribute KEEP : string;
+    attribute KEEP of dlyline : signal is "true";
 
 begin
     dly_gen : if DLY > 0 generate
