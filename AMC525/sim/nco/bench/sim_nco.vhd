@@ -14,6 +14,7 @@ entity sim_nco is
     port (
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
+        reset_phase_i : in std_ulogic;
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );
 end;
@@ -37,6 +38,7 @@ begin
     nco_phase : entity work.nco_phase port map (
         clk_i => clk_i,
         phase_advance_i => phase_advance_i,
+        reset_phase_i => reset_phase_i,
         phase_o => int_phase
     );
 

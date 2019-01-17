@@ -23,18 +23,13 @@ architecture arch of testbench is
     signal clk : std_ulogic := '0';
 
 
-    procedure tick_wait(count : natural) is
+    procedure tick_wait(count : natural := 1) is
     begin
         clk_wait(clk, count);
     end procedure;
 
-    procedure tick_wait is
-    begin
-        clk_wait(clk, 1);
-    end procedure;
-
-
     signal phase_advance : angle_t;
+    signal reset_phase : std_ulogic;
     signal unscaled : cos_sin_18_t;
 
     signal reference : cos_sin_18_t;
@@ -47,6 +42,7 @@ begin
     nco : entity work.nco_core port map (
         clk_i => clk,
         phase_advance_i => phase_advance,
+        reset_phase_i => reset_phase,
         cos_sin_o => unscaled
     );
 
@@ -55,6 +51,7 @@ begin
     sim_nco : entity work.sim_nco port map (
         clk_i => clk,
         phase_advance_i => phase_advance,
+        reset_phase_i => reset_phase,
         cos_sin_o => reference
     );
     difference.cos <= unscaled.cos - reference.cos;
@@ -67,12 +64,21 @@ begin
     -- Sweeping through frequencies
     process begin
         phase_advance <= X"001234560000";
+        reset_phase <= '1';
+        tick_wait;
+        reset_phase <= '0';
+
         for i in 1 to 10 loop
             tick_wait(60);
             phase_advance <= shift_left(phase_advance, 1);
         end loop;
+
         phase_advance <= X"000000000000";
+        reset_phase <= '1';
         tick_wait;
+        reset_phase <= '0';
+        tick_wait;
+
         phase_advance <= X"00147AE10000";
         wait;
     end process;
