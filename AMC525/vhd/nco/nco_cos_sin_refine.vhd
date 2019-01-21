@@ -83,6 +83,7 @@ architecture arch of nco_cos_sin_refine is
     -- Signals for computing delta
     signal residue : signed(8 downto 0) := (others => '0');
     signal delta_product : signed(17 downto 0) := (others => '0');
+    signal delta_rounding : signed(17 downto 0) := (others => '0');
     signal delta_result : signed(17 downto 0) := (others => '0');
     signal delta : signed(9 downto 0) := (others => '0');
 
@@ -135,7 +136,8 @@ begin
             -- extra pipeline stage after the product to align the result.
             residue <= signed('0' & residue_i(34 downto 27));
             delta_product <= PI_SCALED * residue;
-            delta_result <= delta_product;
+            delta_rounding <= 18X"00080";
+            delta_result <= delta_rounding + delta_product;
             delta <= delta_result(17 downto 8);
             -- At this point delta and cos_sin_i will be in step
 
