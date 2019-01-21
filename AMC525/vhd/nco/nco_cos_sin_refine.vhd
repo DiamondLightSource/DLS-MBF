@@ -110,6 +110,7 @@ architecture arch of nco_cos_sin_refine is
     -- the DSP unit will swallow two input pipeline stages!
     attribute DONT_TOUCH : string;
     attribute DONT_TOUCH of residue_i : signal is "yes";
+    attribute DONT_TOUCH of delta : signal is "yes";
 
 begin
     -- We align cos_sin_i and delta: the delay from residue_i to delta must
