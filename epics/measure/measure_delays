@@ -264,9 +264,9 @@ def get_detector_delay(mbf, source, pvs):
     mbf.set('TRG:SEQ:ARM_S', 0)
     mbf.set_shared('TRG:SOFT_S', 0)
 
+    s = mbf.get('DET:SCALE')
     wf_i = pvs.det_i
     wf_q = pvs.det_q
-    s = pvs.scale
     iq = wf_i + 1j * wf_q
     return compute_group_delay(mbf, s, iq)
 
@@ -390,7 +390,6 @@ def measure_detector_delay(mbf, results):
     pvs = PV_set(mbf)
     pvs.det_i = 'DET:0:I'
     pvs.det_q = 'DET:0:Q'
-    pvs.scale = 'DET:SCALE'
 
     results.DET_FIR_DELAY = get_detector_delay(mbf, 'FIR', pvs)
     results.DET_ADC_DELAY = get_detector_delay(mbf, 'ADC', pvs)
