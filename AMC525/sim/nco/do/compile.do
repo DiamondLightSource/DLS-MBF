@@ -30,7 +30,9 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
+add wave -group "Prepare" sim:/testbench/nco/prepare/*
 add wave -group "Refine" sim:/testbench/nco/refine/*
+add wave -group "Fixup" sim:/testbench/nco/fixup_octant/*
 add wave -group "NCO" sim:/testbench/nco/*
 add wave sim:*
 

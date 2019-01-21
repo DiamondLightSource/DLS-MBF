@@ -21,10 +21,32 @@ entity nco_core is
 end;
 
 architecture arch of nco_core is
-    -- Delay from lookup valid to cos_sin_raw valid
-    constant LOOKUP_DELAY : natural := 4;
-    -- Delay from cos_sin_raw to cos_sin_refined
-    constant REFINE_DELAY : natural := 6;
+    -- The figure below shows the required timing relationships between the
+    -- stages of signal processing:
+    --
+    --              [prepare]
+    --      +-----------+-----------+
+    --      | octant    | residue   | lookup
+    --      |           O.......... | ................................
+    --      |           |           O.................          ^
+    --      |           |           |           ^               | RESIDUE_
+    --      |           |      [lookup_table]   | LOOKUP_DELAY  | DELAY
+    --      |           |           | raw       v               v
+    --      |           |           O.................................
+    --      |           +-----+-----+       ^
+    --      |              [refine]         | REFINE_DELAY
+    --      |                 | refined     v
+    --      O.................O..................
+    --      |                 |
+    --      +--------+--------+
+    --         [fixup_octant]
+    --
+    -- The following delays are checked by the appropriate component below and
+    -- need to be used to ensure that the various processing stages are in step.
+    constant LOOKUP_DELAY : natural := 2;   -- Defined by lookup_table
+    constant REFINE_DELAY : natural := 4;   -- Defined by refine
+    constant RESIDUE_DELAY : natural := 4;  -- Defined by refine
+
 
     signal phase : angle_t;
 
@@ -50,6 +72,7 @@ begin
     -- delayed as appropriate for the final correction.
     prepare : entity work.nco_cos_sin_prepare generic map (
         LOOKUP_DELAY => LOOKUP_DELAY,
+        RESIDUE_DELAY => RESIDUE_DELAY,
         REFINE_DELAY => REFINE_DELAY
     ) port map (
         clk_i => clk_i,
@@ -70,7 +93,7 @@ begin
 
     -- Refine the lookup by linear interpolation
     refine : entity work.nco_cos_sin_refine generic map (
-        LOOKUP_DELAY => LOOKUP_DELAY,
+        RESIDUE_DELAY => RESIDUE_DELAY,
         REFINE_DELAY => REFINE_DELAY
     ) port map (
         clk_i => clk_i,

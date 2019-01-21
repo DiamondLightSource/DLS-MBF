@@ -49,8 +49,9 @@ begin
                 when others =>
             end case;
 
-            cos_sin_o.cos <= cos;
-            cos_sin_o.sin <= sin;
         end if;
     end process;
+
+    cos_sin_o.cos <= cos;
+    cos_sin_o.sin <= sin;
 end;

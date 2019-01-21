@@ -13,7 +13,7 @@ entity nco_phase is
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
         reset_phase_i : in std_logic;
-        phase_o : out angle_t := (others => '0')
+        phase_o : out angle_t
     );
 end;
 
@@ -27,7 +27,6 @@ architecture arch of nco_phase is
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then
-            -- Phase advance
             phase_advance <= phase_advance_i;
             if reset_phase_i = '1' then
                 phase <= (others => '0');
@@ -37,12 +36,5 @@ begin
         end if;
     end process;
 
-    phase_dly : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => angle_t'LENGTH
-    ) port map (
-        clk_i => clk_i,
-        data_i => std_ulogic_vector(phase),
-        unsigned(data_o) => phase_o
-    );
+    phase_o <= phase;
 end;
