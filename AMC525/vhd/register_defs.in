@@ -492,8 +492,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         BANK        W
             # Selects FIR to apply to this bunch
             .FIR_SELECT     2
-            # Output gain
-            .GAIN           13
+            # Output gain.  This is scaled as a 6.12 fixed point number
+            .GAIN           18
             # Enable FIR output for this bunch
             .FIR_ENABLE
             # Enable NCO0 output

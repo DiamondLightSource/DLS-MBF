@@ -65,10 +65,10 @@ architecture arch of dac_output_mux is
         := (others => '0');
     signal full_dac_out : signed(FULL_PROD_WIDTH-1 downto 0) := (others => '0');
 
-    -- To compute the output offset, regard the gain as a signed number in the
-    -- range -1..1, ie there are GAIN_WIDTH-1 extra fraction bits after
-    -- multiplication which we now want to discard.
-    constant OUTPUT_OFFSET : natural := GAIN_WIDTH - 1;
+    -- To compute the output offset, regard the gain as a signed number with 12
+    -- fraction bits; these have been added in by the multiplication and need to
+    -- be discarded now.
+    constant OUTPUT_OFFSET : natural := 12;
 
     signal fir_overflow : std_ulogic := '0';
     signal mux_overflow : std_ulogic;

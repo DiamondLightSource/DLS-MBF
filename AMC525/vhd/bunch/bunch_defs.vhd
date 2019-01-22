@@ -19,9 +19,9 @@ package bunch_defs is
         fir_enable : std_ulogic;
         nco_0_enable : std_ulogic;
         nco_1_enable : std_ulogic;
-        -- Final output gain
-        gain : signed(12 downto 0);
+        -- Final output gain, scaled as signed 6.12 number
+        gain : signed(17 downto 0);
     end record;
 
-    constant BUNCH_CONFIG_BITS : natural := FIR_BANK_BITS + 3 + 13;
+    constant BUNCH_CONFIG_BITS : natural := FIR_BANK_BITS + 3 + 18;
 end;
