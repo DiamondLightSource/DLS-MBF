@@ -61,10 +61,9 @@ void _exit_axis_step(void)
 
 
 void float_array_to_int(
-    size_t count, float in[], int out[], int bits, int high_bits)
+    size_t count, float in[], int out[], int bits, int fraction_bits)
 {
-    int fraction_bits = bits - high_bits - 1;
-    float top_bit = ldexpf(1, high_bits);
+    float top_bit = ldexpf(1, bits - fraction_bits - 1);
     float min_val = -top_bit;
     /* We have to be a bit careful with max_val.  If bits is larger than can be
      * represented in a float then simply subtracting 2^-fraction_bits will do
@@ -85,10 +84,9 @@ void float_array_to_int(
 }
 
 /* Much as above, but double, unsigned, one result. */
-unsigned int double_to_uint(double *in, int bits, int high_bits)
+unsigned int double_to_uint(double *in, int bits, int fraction_bits)
 {
-    int fraction_bits = bits - high_bits;
-    double top_bit = ldexp(1, high_bits);
+    double top_bit = ldexp(1, bits - fraction_bits);
     double min_val = 0;
     double max_val = nextafter(top_bit, 0) - ldexp(1, -fraction_bits);
 

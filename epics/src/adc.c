@@ -44,7 +44,7 @@ static void write_adc_taps(void *context, float array[], unsigned int *length)
     *length = hardware_config.adc_taps;
 
     int taps[hardware_config.adc_taps];
-    float_array_to_int(hardware_config.adc_taps, array, taps, 32, 0);
+    float_array_to_int(hardware_config.adc_taps, array, taps, 32, 31);
 
     hw_write_adc_taps(adc->axis, taps);
 }
@@ -53,7 +53,7 @@ static void write_adc_taps(void *context, float array[], unsigned int *length)
 static bool set_adc_overflow_threshold(void *context, double *value)
 {
     struct adc_context *adc = context;
-    hw_write_adc_overflow_threshold(adc->axis, double_to_uint(value, 13, 0));
+    hw_write_adc_overflow_threshold(adc->axis, double_to_uint(value, 13, 13));
     return true;
 }
 
@@ -61,7 +61,7 @@ static bool set_adc_overflow_threshold(void *context, double *value)
 static bool set_adc_delta_threshold(void *context, double *value)
 {
     struct adc_context *adc = context;
-    hw_write_adc_delta_threshold(adc->axis, double_to_uint(value, 16, 1));
+    hw_write_adc_delta_threshold(adc->axis, double_to_uint(value, 16, 15));
     return true;
 }
 

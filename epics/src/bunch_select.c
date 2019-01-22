@@ -152,7 +152,7 @@ static void out_name(int out, char result[])
 
 static void gain_name(int gain, char result[])
 {
-    sprintf(result, "%.3g", ldexp(gain, -31));
+    sprintf(result, "%.3g", ldexp(gain, -12));
 }
 
 
@@ -272,7 +272,7 @@ static void write_gain_wf(void *context, float gain[], unsigned int *length)
 
     int scaled_gain[hardware_config.bunches];
     float_array_to_int(
-        hardware_config.bunches, gain, scaled_gain, 32, 0);
+        hardware_config.bunches, gain, scaled_gain, 13, 12);
     update_gain_status(bank, scaled_gain);
 
     FOR_BUNCHES_OFFSET(i, j, hardware_delays.BUNCH_GAIN_OFFSET)

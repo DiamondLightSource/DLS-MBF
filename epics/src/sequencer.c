@@ -338,7 +338,7 @@ static void write_detector_window(
 
     *length = DET_WINDOW_LENGTH;
     float_array_to_int(
-        DET_WINDOW_LENGTH, window, seq->seq_config.window, 16, 0);
+        DET_WINDOW_LENGTH, window, seq->seq_config.window, 16, 15);
 }
 
 

@@ -606,10 +606,9 @@ void hw_write_bunch_config(
         WRITE_FIELDS(dsp_regs[axis]->bunch_config, .bank = bank & 0x3);
         FOR_BUNCHES(i)
         {
-            int gain = config->gain[i] >> (32 - 13);
             WRITE_FIELDS(dsp_regs[axis]->bunch_bank,
                 .fir_select = (unsigned int) config->fir_select[i] & 0x3,
-                .gain = (unsigned int) gain & 0x1FFF,
+                .gain = (unsigned int) config->gain[i] & 0x1FFF,
                 .fir_enable = config->fir_enable[i],
                 .nco0_enable = config->nco0_enable[i],
                 .nco1_enable = config->nco1_enable[i]);
