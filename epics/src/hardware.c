@@ -546,18 +546,20 @@ void hw_write_nco0_frequency(int axis, uint64_t frequency)
 void hw_write_adc_overflow_threshold(int axis, unsigned int threshold)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config, threshold, threshold & 0x3FFF);
+        WRITE_DSP_MIRROR(
+            axis, adc_config_config, threshold, threshold & 0x3FFF);
 }
 
 void hw_write_adc_delta_threshold(int axis, unsigned int delta)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config, delta, delta & 0xFFFF);
+        WRITE_DSP_MIRROR(axis, adc_config_config, delta, delta & 0xFFFF);
 }
 
 void hw_read_adc_events(int axis, struct adc_events *result)
 {
-    struct dsp_adc_events events = READL(dsp_regs[axis]->adc_events);
+    struct dsp_adc_config_events events =
+        READL(dsp_regs[axis]->adc_config_events);
     *result = (struct adc_events) {
         .input_ovf = events.inp_ovf,
         .fir_ovf = events.fir_ovf,
@@ -569,7 +571,7 @@ void hw_write_adc_taps(int axis, const int taps[])
 {
     WITH_MUTEX(dsp_locks[axis])
     {
-        WRITE_FIELDS(dsp_regs[axis]->adc_command, .write = 1);
+        WRITE_FIELDS(dsp_regs[axis]->adc_config_command, .write = 1);
         for (unsigned int i = 0; i < hardware_config.adc_taps; i ++)
             WRITEL(dsp_regs[axis]->adc_taps, (uint32_t) taps[i]);
     }
@@ -578,20 +580,20 @@ void hw_write_adc_taps(int axis, const int taps[])
 void hw_write_adc_mms_source(int axis, bool after_fir)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config, mms_source, after_fir);
+        WRITE_DSP_MIRROR(axis, adc_config_config, mms_source, after_fir);
 }
 
 void hw_write_adc_dram_source(int axis, bool after_fir)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config, dram_source, after_fir);
+        WRITE_DSP_MIRROR(axis, adc_config_config, dram_source, after_fir);
 }
 
 void hw_read_adc_mms(int axis, struct mms_result *result)
 {
     read_mms(axis, &dsp_regs[axis]->adc_mms, result);
     /* Re-arm delta event after mms readout. */
-    WRITE_FIELDS(dsp_regs[axis]->adc_command, .reset_delta = 1);
+    WRITE_FIELDS(dsp_regs[axis]->adc_config_command, .reset_delta = 1);
 }
 
 

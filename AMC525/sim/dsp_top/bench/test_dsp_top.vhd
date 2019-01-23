@@ -154,7 +154,7 @@ begin
 --         write_reg(DSP_FIR_TAPS_REG,   X"a57d8680");
 
         -- Initialise ADC FIR
-        write_reg(DSP_ADC_COMMAND_REG_W,  X"00000001");
+        write_reg(DSP_ADC_CONFIG_COMMAND_REG_W,  X"00000001");
         write_reg(DSP_ADC_TAPS_REG, X"7FFFFFFF");
 
         wait for 2 us;

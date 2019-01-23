@@ -450,31 +450,32 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 
     # Input signal processing
     !ADC
-        CONFIG       W
-            # Input threshold for reporting input overflow
-            .THRESHOLD  14
-            # Choose source of MMS data: before or after FIR
-            .MMS_SOURCE
-            # Choose source of DRAM0 data: before or after FIR
-            .DRAM_SOURCE
-            # Limit threshold for min/max/sum bunch motion event detector
-            .DELTA      16
-        *RW
-            EVENTS      R
-                # Set if input data exceeds ADC input limit setting
-                .INP_OVF
-                # Set if overflow detected during input compensation filter
-                .FIR_OVF
-                # Placeholder for obsolete bit
-                -
-                # Set when ADC min/max/sum motion exceeds configured threshold
-                .DELTA
-            # Writing to this register generates a pulse on the selected bits
-            COMMAND      WP
-                # Starts block write to ADC fast FIR taps
-                .WRITE
-                # Resets ADC min/max event detector to enable further events
-                .RESET_DELTA
+        !CONFIG
+            CONFIG       W
+                # Input threshold for reporting input overflow
+                .THRESHOLD  14
+                # Choose source of MMS data: before or after FIR
+                .MMS_SOURCE
+                # Choose source of DRAM0 data: before or after FIR
+                .DRAM_SOURCE
+                # Limit threshold for min/max/sum bunch motion event detector
+                .DELTA      16
+            *RW
+                EVENTS      R
+                    # Set if input data exceeds ADC input limit setting
+                    .INP_OVF
+                    # Set if overflow detected during input compensation filter
+                    .FIR_OVF
+                    # Set when ADC min/max/sum motion exceeds configured
+                    # threshold
+                    .DELTA
+                # Writing to this register generates a pulse on the selected
+                # bits
+                COMMAND      WP
+                    # Starts block write to ADC fast FIR taps
+                    .WRITE
+                    # Resets ADC min/max event detector to enable further events
+                    .RESET_DELTA
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W

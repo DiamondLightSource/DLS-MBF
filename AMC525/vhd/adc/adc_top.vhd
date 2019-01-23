@@ -43,17 +43,14 @@ entity adc_top is
 end;
 
 architecture arch of adc_top is
-    signal config_register : reg_data_t;
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
     signal mms_source : std_ulogic;
     signal dram_source : std_ulogic;
 
-    signal command_bits : reg_data_t;
     signal write_start : std_ulogic;
     signal delta_reset : std_ulogic;
 
-    signal event_bits : reg_data_t;
     signal input_overflow : std_ulogic;
     signal fir_overflow : std_ulogic;
 
@@ -63,48 +60,28 @@ architecture arch of adc_top is
     signal mms_delta : unsigned(data_o'RANGE);
 
 begin
-    -- Limit register.
-    register_file : entity work.register_file port map (
+    -- Register interface
+    registers : entity work.adc_registers port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_ADC_CONFIG_REG),
+
+        write_strobe_i => write_strobe_i(DSP_ADC_CONFIG_REGS),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_ADC_CONFIG_REG),
-        register_data_o(0) => config_register
-    );
-    read_data_o(DSP_ADC_CONFIG_REG) <= (others => '0');
-    read_ack_o(DSP_ADC_CONFIG_REG) <= '1';
+        write_ack_o => write_ack_o(DSP_ADC_CONFIG_REGS),
+        read_strobe_i => read_strobe_i(DSP_ADC_CONFIG_REGS),
+        read_data_o => read_data_o(DSP_ADC_CONFIG_REGS),
+        read_ack_o => read_ack_o(DSP_ADC_CONFIG_REGS),
 
-    -- Command register: start write and reset limit
-    command : entity work.strobed_bits port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(DSP_ADC_COMMAND_REG_W),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_ADC_COMMAND_REG_W),
-        strobed_bits_o => command_bits
-    );
+        input_limit_o => input_limit,
+        delta_limit_o => delta_limit,
+        mms_source_o => mms_source,
+        dram_source_o => dram_source,
 
-    -- Event detection register
-    events : entity work.all_pulsed_bits port map (
-        clk_i => dsp_clk_i,
-        read_strobe_i => read_strobe_i(DSP_ADC_EVENTS_REG_R),
-        read_data_o => read_data_o(DSP_ADC_EVENTS_REG_R),
-        read_ack_o => read_ack_o(DSP_ADC_EVENTS_REG_R),
-        pulsed_bits_i => event_bits
-    );
+        write_start_o => write_start,
+        delta_reset_o => delta_reset,
 
-    input_limit <= unsigned(config_register(DSP_ADC_CONFIG_THRESHOLD_BITS));
-    mms_source  <= config_register(DSP_ADC_CONFIG_MMS_SOURCE_BIT);
-    dram_source  <= config_register(DSP_ADC_CONFIG_DRAM_SOURCE_BIT);
-    delta_limit <= unsigned(config_register(DSP_ADC_CONFIG_DELTA_BITS));
-
-    write_start <= command_bits(DSP_ADC_COMMAND_WRITE_BIT);
-    delta_reset <= command_bits(DSP_ADC_COMMAND_RESET_DELTA_BIT);
-
-    event_bits <= (
-        DSP_ADC_EVENTS_INP_OVF_BIT => input_overflow,
-        DSP_ADC_EVENTS_FIR_OVF_BIT => fir_overflow,
-        DSP_ADC_EVENTS_DELTA_BIT   => delta_event_o,
-        others => '0'
+        input_overflow_i => input_overflow,
+        fir_overflow_i => fir_overflow,
+        delta_event_i => delta_event_o
     );
 
 
