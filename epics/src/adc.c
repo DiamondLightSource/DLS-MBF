@@ -21,8 +21,8 @@
 
 static struct adc_context {
     int axis;
-    bool mms_after_fir;
-    bool dram_after_fir;
+    unsigned int mms_after_fir;
+    unsigned int dram_after_fir;
     bool overflow;
     struct adc_events events;
     struct mms_handler *mms;
@@ -76,29 +76,58 @@ static bool set_adc_loopback(void *context, bool *value)
 
 static void update_delays(struct adc_context *adc)
 {
-    set_mms_offset(adc->mms, adc->mms_after_fir ?
-        hardware_delays.MMS_ADC_FIR_DELAY :
-        hardware_delays.MMS_ADC_DELAY);
-    set_memory_adc_offset(adc->axis, adc->dram_after_fir ?
-        hardware_delays.DRAM_ADC_FIR_DELAY :
-        hardware_delays.DRAM_ADC_DELAY);
+    switch (adc->mms_after_fir)
+    {
+        case 0:
+            set_mms_offset(adc->mms, hardware_delays.MMS_ADC_FIR_DELAY);
+            break;
+        case 1:
+            set_mms_offset(adc->mms, hardware_delays.MMS_ADC_DELAY);
+            break;
+        case 2:
+            set_mms_offset(adc->mms, hardware_delays.MMS_ADC_REJECT_DELAY);
+            break;
+    }
+
+    switch (adc->dram_after_fir)
+    {
+        case 0:
+            set_memory_adc_offset(
+                adc->axis, hardware_delays.DRAM_ADC_FIR_DELAY);
+            break;
+        case 1:
+            set_memory_adc_offset(
+                adc->axis, hardware_delays.DRAM_ADC_DELAY);
+            break;
+        case 2:
+            set_memory_adc_offset(
+                adc->axis, hardware_delays.DRAM_ADC_REJECT_DELAY);
+            break;
+    }
 }
 
-static bool write_adc_mms_source(void *context, bool *after_fir)
+static bool write_adc_mms_source(void *context, unsigned int *source)
 {
     struct adc_context *adc = context;
-    adc->mms_after_fir = *after_fir;
-    hw_write_adc_mms_source(adc->axis, *after_fir);
+    adc->mms_after_fir = *source;
+    hw_write_adc_mms_source(adc->axis, *source);
     update_delays(adc);
     return true;
 }
 
-static bool write_adc_dram_source(void *context, bool *after_fir)
+static bool write_adc_dram_source(void *context, unsigned int *source)
 {
     struct adc_context *adc = context;
-    adc->dram_after_fir = *after_fir;
-    hw_write_adc_dram_source(adc->axis, *after_fir);
+    adc->dram_after_fir = *source;
+    hw_write_adc_dram_source(adc->axis, *source);
     update_delays(adc);
+    return true;
+}
+
+static bool write_adc_reject_shift(void *context, unsigned int *shift)
+{
+    struct adc_context *adc = context;
+    hw_write_adc_reject_shift(adc->axis, *shift);
     return true;
 }
 
@@ -161,8 +190,9 @@ error__t initialise_adc(void)
         PUBLISH_C_P(ao, "OVF_LIMIT", set_adc_overflow_threshold, adc);
         PUBLISH_C_P(ao, "EVENT_LIMIT", set_adc_delta_threshold, adc);
         PUBLISH_C(bo, "LOOPBACK", set_adc_loopback, adc);
-        PUBLISH_C_P(bo, "MMS_SOURCE",  write_adc_mms_source, adc);
-        PUBLISH_C_P(bo, "DRAM_SOURCE", write_adc_dram_source, adc);
+        PUBLISH_C_P(mbbo, "MMS_SOURCE",  write_adc_mms_source, adc);
+        PUBLISH_C_P(mbbo, "DRAM_SOURCE", write_adc_dram_source, adc);
+        PUBLISH_C_P(ulongout, "REJECT_SHIFT", write_adc_reject_shift, adc);
 
         PUBLISH_READ_VAR(bi, "INP_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF", adc->events.fir_ovf);

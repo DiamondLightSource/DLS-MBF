@@ -547,13 +547,19 @@ void hw_write_adc_overflow_threshold(int axis, unsigned int threshold)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(
-            axis, adc_config_config, threshold, threshold & 0x3FFF);
+            axis, adc_config_limits, threshold, threshold & 0x3FFF);
 }
 
 void hw_write_adc_delta_threshold(int axis, unsigned int delta)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config_config, delta, delta & 0xFFFF);
+        WRITE_DSP_MIRROR(axis, adc_config_limits, delta, delta & 0xFFFF);
+}
+
+void hw_write_adc_reject_shift(int axis, unsigned int shift)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, adc_config_config, reject_shift, shift & 0xF);
 }
 
 void hw_read_adc_events(int axis, struct adc_events *result)
@@ -577,16 +583,16 @@ void hw_write_adc_taps(int axis, const int taps[])
     }
 }
 
-void hw_write_adc_mms_source(int axis, bool after_fir)
+void hw_write_adc_mms_source(int axis, unsigned int source)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config_config, mms_source, after_fir);
+        WRITE_DSP_MIRROR(axis, adc_config_config, mms_source, source & 0x3);
 }
 
-void hw_write_adc_dram_source(int axis, bool after_fir)
+void hw_write_adc_dram_source(int axis, unsigned int source)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config_config, dram_source, after_fir);
+        WRITE_DSP_MIRROR(axis, adc_config_config, dram_source, source & 0x3);
 }
 
 void hw_read_adc_mms(int axis, struct mms_result *result)

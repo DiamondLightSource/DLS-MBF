@@ -236,6 +236,9 @@ void hw_write_adc_overflow_threshold(int axis, unsigned int threshold);
 /* Sets the threshold for generating ADC bunch motion event. */
 void hw_write_adc_delta_threshold(int axis, unsigned int delta);
 
+/* Sets shift factor for ADC fill pattern reject filter. */
+void hw_write_adc_reject_shift(int axis, unsigned int shift);
+
 /* Polls the ADC events: input overflow, FIR overflow, min/max/sum overflow,
  * bunch motion event. */
 void hw_read_adc_events(int axis, struct adc_events *events);
@@ -245,8 +248,8 @@ void hw_read_adc_events(int axis, struct adc_events *events);
 void hw_write_adc_taps(int axis, const int taps[]);
 
 /* Set output source for ADC MMS. */
-void hw_write_adc_mms_source(int axis, bool after_fir);
-void hw_write_adc_dram_source(int axis, bool after_fir);
+void hw_write_adc_mms_source(int axis, unsigned int source);
+void hw_write_adc_dram_source(int axis, unsigned int source);
 
 /* Reads min/max/sum for ADC. */
 void hw_read_adc_mms(int axis, struct mms_result *result);

@@ -17,10 +17,11 @@ for a in axes('ADC'):
     loopback = boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
         DESC = 'Enable DAC -> ADC loopback')
 
-    boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
+    mbbOut('MMS_SOURCE', 'Before FIR', 'After FIR', 'Fill Reject',
         DESC = 'Source of min/max/sum data')
-    boolOut('DRAM_SOURCE', 'Before FIR', 'After FIR',
+    mbbOut('DRAM_SOURCE', 'Before FIR', 'After FIR', 'Fill Reject',
         DESC = 'Source of memory data')
+    longOut('REJECT_SHIFT', 0, 15, DESC = 'Reject filter counter shift')
 
     overflows = [
         overflow('INP_OVF', 'ADC input overflow'),

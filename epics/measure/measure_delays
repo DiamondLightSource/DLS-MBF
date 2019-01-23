@@ -322,6 +322,8 @@ def measure_dac_mms(mbf, results):
     results.MMS_ADC_DELAY = mbf.find_mms_peak(maxadc)
     mbf.set('ADC:MMS_SOURCE_S', 'After FIR')
     results.MMS_ADC_FIR_DELAY = mbf.find_mms_peak(maxadc)
+    mbf.set('ADC:MMS_SOURCE_S', 'Fill Reject')
+    results.MMS_ADC_REJECT_DELAY = mbf.find_mms_peak(maxadc)
 
     # Measure gain skew: configure NCO on all bunches, but unit gain only on
     # bunch zer0, zero gain elsewhere.
@@ -354,6 +356,10 @@ def measure_dram(mbf, results):
     mbf.set('ADC:DRAM_SOURCE_S', 'After FIR')
     results.DRAM_ADC_FIR_DELAY, results.DRAM_DAC_FIR_DELAY = \
         dram.get_peaks('ADC0/DAC0')
+
+    # One last sample for the ADC fill reject delay
+    mbf.set('ADC:DRAM_SOURCE_S', 'Fill Reject')
+    results.DRAM_ADC_REJECT_DELAY, _ = dram.get_peaks('ADC0/DAC0')
 
     # Now get the FIR delay
     base_fir_delay, _ = dram.get_peaks('FIR0/DAC0')
