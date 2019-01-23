@@ -25,11 +25,6 @@ entity adc_top is
         dsp_clk_i : in std_ulogic;
         turn_clock_i : in std_ulogic;    -- start of machine revolution
 
-        -- Data flow
-        data_i : in signed;
-        data_o : out signed;
-        data_store_o : out signed;      -- Data to be stored to memory
-
         -- General register interface
         write_strobe_i : in std_ulogic_vector(DSP_ADC_REGS);
         write_data_i : in reg_data_t;
@@ -37,6 +32,11 @@ entity adc_top is
         read_strobe_i : in std_ulogic_vector(DSP_ADC_REGS);
         read_data_o : out reg_data_array_t(DSP_ADC_REGS);
         read_ack_o : out std_ulogic_vector(DSP_ADC_REGS);
+
+        -- Data flow
+        data_i : in signed;
+        data_o : out signed;
+        data_store_o : out signed;      -- Data to be stored to memory
 
         delta_event_o : out std_ulogic       -- bunch movement over threshold
     );
@@ -163,7 +163,6 @@ begin
         dram_source_i => dram_source,
         dram_data_o => data_store_o
     );
-
 
 
     -- Min/Max/Sum
