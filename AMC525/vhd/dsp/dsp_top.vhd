@@ -62,6 +62,7 @@ architecture arch of dsp_top is
 
     -- Data flow
     signal fir_data : signed(FIR_DATA_RANGE);
+    signal fill_reject_adc : signed(ADC_DATA_RANGE);
 
 begin
     -- -------------------------------------------------------------------------
@@ -133,6 +134,7 @@ begin
 
         data_i => adc_data_i,
         data_o => dsp_to_control_o.adc_data,
+        fill_reject_o => fill_reject_adc,
         data_store_o => dsp_to_control_o.store_adc_data,
 
         write_strobe_i => write_strobe_i(DSP_ADC_REGS),
@@ -252,6 +254,7 @@ begin
         read_ack_o => read_ack_o(DSP_DET_REGS),
 
         adc_data_i => control_to_dsp_i.adc_data,
+        adc_fill_reject_i => fill_reject_adc,
         fir_data_i => fir_data,
         nco_iq_i => nco_1_cos_sin,
         window_i => detector_window,

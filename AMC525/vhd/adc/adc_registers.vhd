@@ -20,10 +20,12 @@ entity adc_registers is
         read_data_o : out reg_data_array_t(DSP_ADC_CONFIG_REGS);
         read_ack_o : out std_ulogic_vector(DSP_ADC_CONFIG_REGS);
 
+        mms_source_o : out std_ulogic_vector;
+        dram_source_o : out std_ulogic_vector;
+        reject_shift_o : out unsigned;
+
         input_limit_o : out unsigned;
         delta_limit_o : out unsigned;
-        mms_source_o : out std_ulogic;
-        dram_source_o : out std_ulogic;
 
         write_start_o : out std_ulogic;
         delta_reset_o : out std_ulogic;
@@ -36,6 +38,7 @@ end;
 
 architecture arch of adc_registers is
     signal config_register : reg_data_t;
+    signal limits_register : reg_data_t;
     signal command_bits : reg_data_t;
     signal event_bits : reg_data_t;
 
@@ -44,12 +47,17 @@ begin
     register_file : entity work.register_file port map (
         clk_i => clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_ADC_CONFIG_CONFIG_REG),
+        write_strobe_i(1) => write_strobe_i(DSP_ADC_CONFIG_LIMITS_REG),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_ADC_CONFIG_CONFIG_REG),
-        register_data_o(0) => config_register
+        write_ack_o(1) => write_ack_o(DSP_ADC_CONFIG_LIMITS_REG),
+        register_data_o(0) => config_register,
+        register_data_o(1) => limits_register
     );
     read_data_o(DSP_ADC_CONFIG_CONFIG_REG) <= (others => '0');
     read_ack_o(DSP_ADC_CONFIG_CONFIG_REG) <= '1';
+    read_data_o(DSP_ADC_CONFIG_LIMITS_REG) <= (others => '0');
+    read_ack_o(DSP_ADC_CONFIG_LIMITS_REG) <= '1';
 
     -- Command register: start write and reset limit
     command : entity work.strobed_bits port map (
@@ -70,12 +78,15 @@ begin
     );
 
 
-    input_limit_o <= unsigned(
-                     config_register(DSP_ADC_CONFIG_CONFIG_THRESHOLD_BITS));
-    mms_source_o  <= config_register(DSP_ADC_CONFIG_CONFIG_MMS_SOURCE_BIT);
-    dram_source_o <= config_register(DSP_ADC_CONFIG_CONFIG_DRAM_SOURCE_BIT);
-    delta_limit_o <= unsigned(
-                     config_register(DSP_ADC_CONFIG_CONFIG_DELTA_BITS));
+    mms_source_o  <= config_register(DSP_ADC_CONFIG_CONFIG_MMS_SOURCE_BITS);
+    dram_source_o <= config_register(DSP_ADC_CONFIG_CONFIG_DRAM_SOURCE_BITS);
+    reject_shift_o <=
+        unsigned(config_register(DSP_ADC_CONFIG_CONFIG_REJECT_SHIFT_BITS));
+
+    input_limit_o <=
+        unsigned(limits_register(DSP_ADC_CONFIG_LIMITS_THRESHOLD_BITS));
+    delta_limit_o <=
+        unsigned(limits_register(DSP_ADC_CONFIG_LIMITS_DELTA_BITS));
 
     write_start_o <= command_bits(DSP_ADC_CONFIG_COMMAND_WRITE_BIT);
     delta_reset_o <= command_bits(DSP_ADC_CONFIG_COMMAND_RESET_DELTA_BIT);

@@ -452,12 +452,18 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     !ADC
         !CONFIG
             CONFIG       W
+                # Choose source of MMS data: before or after FIR or after fill
+                # pattern rejection
+                .MMS_SOURCE     2
+                # Choose source of DRAM0 data: before or after FIR or after fill
+                # pattern rejection
+                .DRAM_SOURCE    2
+                # Fill pattern rejection shift factor
+                .REJECT_SHIFT   4
+            LIMITS      W
                 # Input threshold for reporting input overflow
                 .THRESHOLD  14
-                # Choose source of MMS data: before or after FIR
-                .MMS_SOURCE
-                # Choose source of DRAM0 data: before or after FIR
-                .DRAM_SOURCE
+                -           2
                 # Limit threshold for min/max/sum bunch motion event detector
                 .DELTA      16
             *RW
@@ -657,8 +663,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # Configures global behaviour of the four detectors
         CONFIG      RW
             # Select data input source: 0 selects ADC data, 1 selects scaled
-            # FIR data
-            .SELECT
+            # FIR data, 2 selects ADC data with fill pattern rejection
+            .SELECT     2
             # Output scaling for detector 0
             .SCALE0     1
             # Output enable for detector 0

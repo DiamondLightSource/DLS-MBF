@@ -23,7 +23,7 @@ entity adc_top is
         -- Clocking
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
-        turn_clock_i : in std_ulogic;    -- start of machine revolution
+        turn_clock_i : in std_ulogic;   -- start of machine revolution
 
         -- General register interface
         write_strobe_i : in std_ulogic_vector(DSP_ADC_REGS);
@@ -35,18 +35,20 @@ entity adc_top is
 
         -- Data flow
         data_i : in signed;
-        data_o : out signed;
+        data_o : out signed;            -- Processed ADC data
+        fill_reject_o : out signed;     -- Fill pattern reject filtered data
         data_store_o : out signed;      -- Data to be stored to memory
 
-        delta_event_o : out std_ulogic       -- bunch movement over threshold
+        delta_event_o : out std_ulogic  -- bunch movement over threshold
     );
 end;
 
 architecture arch of adc_top is
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
-    signal mms_source : std_ulogic;
-    signal dram_source : std_ulogic;
+    signal mms_source : std_ulogic_vector(1 downto 0);
+    signal dram_source : std_ulogic_vector(1 downto 0);
+    signal fill_reject_shift : unsigned(3 downto 0);
 
     signal write_start : std_ulogic;
     signal delta_reset : std_ulogic;
@@ -55,6 +57,7 @@ architecture arch of adc_top is
     signal fir_overflow : std_ulogic;
 
     signal filtered_data : data_o'SUBTYPE;
+    signal fill_reject_data : fill_reject_o'SUBTYPE;
     signal data_in : data_i'SUBTYPE;
     signal mms_data : data_o'SUBTYPE;
     signal mms_delta : unsigned(data_o'RANGE);
@@ -71,10 +74,12 @@ begin
         read_data_o => read_data_o(DSP_ADC_CONFIG_REGS),
         read_ack_o => read_ack_o(DSP_ADC_CONFIG_REGS),
 
-        input_limit_o => input_limit,
-        delta_limit_o => delta_limit,
         mms_source_o => mms_source,
         dram_source_o => dram_source,
+        reject_shift_o => fill_reject_shift,
+
+        input_limit_o => input_limit,
+        delta_limit_o => delta_limit,
 
         write_start_o => write_start,
         delta_reset_o => delta_reset,
@@ -127,12 +132,22 @@ begin
     read_ack_o(DSP_ADC_TAPS_REG) <= '1';
 
 
+    -- Fill pattern rejection
+    fill_reject : entity work.adc_fill_reject port map (
+        clk_i => adc_clk_i,
+        shift_i => fill_reject_shift,
+        data_i => filtered_data,
+        data_o => fill_reject_data
+    );
+
+
     -- Select sources for stored and MMS data
-    source_mux : entity work.mms_dram_data_source port map (
+    source_mux : entity work.adc_mms_dram_data_source port map (
         adc_clk_i => adc_clk_i,
 
         unfiltered_data_i(15 downto 0) => data_in & "00",
         filtered_data_i => filtered_data,
+        fill_reject_data_i => fill_reject_data,
 
         mms_source_i => mms_source,
         mms_data_o => mms_data,
@@ -178,5 +193,14 @@ begin
         clk_i => adc_clk_i,
         data_i => std_ulogic_vector(filtered_data),
         signed(data_o) => data_o
+    );
+
+    reject_delay : entity work.dlyreg generic map (
+        DLY => OUT_BUFFER_LENGTH,
+        DW => fill_reject_o'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(fill_reject_data),
+        signed(data_o) => fill_reject_o
     );
 end;
