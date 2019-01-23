@@ -52,4 +52,4 @@ resize_pblock [get_pblocks pblock_x1y2] -add {RAMB36_X11Y20:RAMB36_X14Y29}
 create_pblock pblock_axi_lite
 add_cells_to_pblock [get_pblocks pblock_axi_lite] [get_cells -quiet [list \
     {interconnect/interconnect_i/axi_lite/axi_register_slice_1}]]
-resize_pblock [get_pblocks pblock_axi_lite] -add {SLICE_X150Y212:SLICE_X169Y224}
+resize_pblock [get_pblocks pblock_axi_lite] -add {SLICE_X158Y218:SLICE_X169Y224}
