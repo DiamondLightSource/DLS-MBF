@@ -5,14 +5,14 @@ extern const struct hardware_delays {
     bool valid;                         // If not set, all fields are zero
 
     unsigned int MMS_ADC_DELAY;
-    unsigned int MMS_ADC_FIR_DELAY;
     unsigned int MMS_ADC_REJECT_DELAY;
+    unsigned int MMS_ADC_FIR_DELAY;
     unsigned int MMS_DAC_DELAY;
     unsigned int MMS_DAC_FIR_DELAY;
 
     unsigned int DRAM_ADC_DELAY;
-    unsigned int DRAM_ADC_FIR_DELAY;
     unsigned int DRAM_ADC_REJECT_DELAY;
+    unsigned int DRAM_ADC_FIR_DELAY;
     unsigned int DRAM_DAC_DELAY;
     unsigned int DRAM_FIR_DELAY;
     unsigned int DRAM_DAC_FIR_DELAY;
@@ -21,10 +21,12 @@ extern const struct hardware_delays {
     unsigned int BUNCH_FIR_OFFSET;
 
     unsigned int DET_ADC_OFFSET;
+    unsigned int DET_ADC_REJECT_OFFSET;
     unsigned int DET_FIR_OFFSET;
 
-    int DET_FIR_DELAY;
     int DET_ADC_DELAY;
+    int DET_ADC_REJECT_DELAY;
+    int DET_FIR_DELAY;
 } hardware_delays;
 
 extern const struct system_config {

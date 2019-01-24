@@ -379,7 +379,7 @@ struct detector_result {
 
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
-    int axis, bool input_select, unsigned int delay,
+    int axis, unsigned int input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT]);
 
 /* Resets detector capture address. */

@@ -264,10 +264,10 @@ def get_detector_delay(mbf, source, pvs):
     mbf.set('TRG:SEQ:ARM_S', 0)
     mbf.set_shared('TRG:SOFT_S', 0)
 
-    s = mbf.get('DET:SCALE')
     wf_i = pvs.det_i
     wf_q = pvs.det_q
     iq = wf_i + 1j * wf_q
+    s = mbf.get('DET:SCALE')
     return compute_group_delay(mbf, s, iq)
 
 
@@ -383,6 +383,7 @@ def measure_det_bunch(mbf, results):
 
     results.DET_ADC_OFFSET = mbf.search_det_bunch(power, 'ADC')
     results.DET_FIR_OFFSET = mbf.search_det_bunch(power, 'FIR')
+    results.DET_FIR_REJECT_OFFSET = mbf.search_det_bunch(power, 'ADC no fill')
 
     power.close()
 
@@ -399,6 +400,7 @@ def measure_detector_delay(mbf, results):
 
     results.DET_FIR_DELAY = get_detector_delay(mbf, 'FIR', pvs)
     results.DET_ADC_DELAY = get_detector_delay(mbf, 'ADC', pvs)
+    results.DET_ADC_REJECT_DELAY = get_detector_delay(mbf, 'ADC no fill', pvs)
 
 
 

@@ -19,6 +19,17 @@
 #include "adc.h"
 
 
+/* The enumeration values here must match the selections defined in Db/adc.py
+ * for ADC:MMS_SOURCE and ADC:DRAM_SOURCE, and must also match the values
+ * defined in register_defs.in for DSP.ADC.CONFIG.CONFIG for the corresponding
+ * fields. */
+enum adc_output_select {
+    ADC_SELECT_RAW = 0,     // ADC data before compensation filter
+    ADC_SELECT_FIR = 1,     // Standard compensated ADC data
+    ADC_SELECT_REJECT = 2,  // ADC data after filter and fill pattern rejection
+};
+
+
 static struct adc_context {
     int axis;
     unsigned int mms_after_fir;
@@ -78,28 +89,28 @@ static void update_delays(struct adc_context *adc)
 {
     switch (adc->mms_after_fir)
     {
-        case 0:
+        case ADC_SELECT_FIR:
             set_mms_offset(adc->mms, hardware_delays.MMS_ADC_FIR_DELAY);
             break;
-        case 1:
+        case ADC_SELECT_RAW:
             set_mms_offset(adc->mms, hardware_delays.MMS_ADC_DELAY);
             break;
-        case 2:
+        case ADC_SELECT_REJECT:
             set_mms_offset(adc->mms, hardware_delays.MMS_ADC_REJECT_DELAY);
             break;
     }
 
     switch (adc->dram_after_fir)
     {
-        case 0:
+        case ADC_SELECT_FIR:
             set_memory_adc_offset(
                 adc->axis, hardware_delays.DRAM_ADC_FIR_DELAY);
             break;
-        case 1:
+        case ADC_SELECT_RAW:
             set_memory_adc_offset(
                 adc->axis, hardware_delays.DRAM_ADC_DELAY);
             break;
-        case 2:
+        case ADC_SELECT_REJECT:
             set_memory_adc_offset(
                 adc->axis, hardware_delays.DRAM_ADC_REJECT_DELAY);
             break;

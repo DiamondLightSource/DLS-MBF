@@ -453,10 +453,20 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         !CONFIG
             CONFIG       W
                 # Choose source of MMS data: before or after FIR or after fill
-                # pattern rejection
+                # pattern rejection, according to the following table:
+                #
+                # ===== ========================================================
+                # \     Data source
+                # ===== ========================================================
+                # 0     ADC data before input compensation
+                # 1     ADC data after input compensation
+                # 2     ADC data after input compensation and fill pattern
+                #       rejection filtering
+                # ===== ========================================================
                 .MMS_SOURCE     2
                 # Choose source of DRAM0 data: before or after FIR or after fill
-                # pattern rejection
+                # pattern rejection.  The possible values are the same as
+                # documented above for ``MMS_SOURCE``.
                 .DRAM_SOURCE    2
                 # Fill pattern rejection shift factor
                 .REJECT_SHIFT   4
@@ -662,8 +672,15 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     !DET
         # Configures global behaviour of the four detectors
         CONFIG      RW
-            # Select data input source: 0 selects ADC data, 1 selects scaled
-            # FIR data, 2 selects ADC data with fill pattern rejection
+            # Select data input source according to the following table:
+            #
+            # ===== ========================================================
+            # \     Data source
+            # ===== ========================================================
+            # 0     Input compensated ADC data
+            # 1     Scaled FIR data
+            # 2     Input compensated ADC data after fill pattern rejection
+            # ===== ========================================================
             .SELECT     2
             # Output scaling for detector 0
             .SCALE0     1

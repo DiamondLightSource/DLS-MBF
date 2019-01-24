@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1998
-y 603
+x 3178
+y 500
 w 641
 h 360
 font "helvetica-medium-r-18.0"
@@ -496,5 +496,52 @@ displayFileName {
 symbols {
   0 "part=ADC"
 }
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 144
+y 320
+w 80
+h 20
+controlPv "$(device):$(axis):ADC:REJECT_SHIFT_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 320
+w 126
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Fill reject shift depth:"
+}
+autoSize
 endObjectProperties
 

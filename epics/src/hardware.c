@@ -869,11 +869,11 @@ static void write_det_bunch_enable(
 }
 
 void hw_write_det_config(
-    int axis, bool input_select, unsigned int delay,
+    int axis, unsigned int input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT])
 {
     struct dsp_det_config det_config = {
-        .select  = input_select,
+        .select  = input_select & 0x3,
         .scale0  = config[0].scaling & 0x1,
         .enable0 = config[0].enable,
         .scale1  = config[1].scaling & 0x1,
