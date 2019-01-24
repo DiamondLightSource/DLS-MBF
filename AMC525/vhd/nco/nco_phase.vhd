@@ -12,7 +12,7 @@ entity nco_phase is
     port (
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
-        reset_phase_i : in std_logic;
+        reset_phase_i : in std_ulogic;
         phase_o : out angle_t
     );
 end;

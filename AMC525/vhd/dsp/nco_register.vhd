@@ -54,9 +54,9 @@ begin
     end process;
 
 
-    read_data_o(0) <= std_logic_vector(nco_freq_o(31 downto 0));
+    read_data_o(0) <= std_ulogic_vector(nco_freq_o(31 downto 0));
     read_data_o(1) <= (
-        15 downto 0 => std_logic_vector(nco_freq_o(47 downto 32)),
+        15 downto 0 => std_ulogic_vector(nco_freq_o(47 downto 32)),
         others => '0'
     );
 

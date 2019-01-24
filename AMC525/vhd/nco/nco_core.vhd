@@ -15,7 +15,7 @@ entity nco_core is
     port (
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
-        reset_phase_i : in std_logic;
+        reset_phase_i : in std_ulogic;
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );
 end;
