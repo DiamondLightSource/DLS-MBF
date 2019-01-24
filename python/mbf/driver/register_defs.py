@@ -50,8 +50,29 @@ def make_register(register, fields):
         __offset = register.offset
         __rw = register.rw
 
+        # This is a dictionary of field accessor methods indexed by field name.
+        # We would use property attributes, but they don't play well with
+        # __setattr__, in particular we can't block assignment to non-existent
+        # fields.
+        __fields = {}
+
         def __init__(self, parent):
-            self.__parent = parent
+            self.__dict__['_Register__parent'] = parent
+
+        def __getattr__(self, name):
+            try:
+                read, write = self.__fields[name]
+            except KeyError:
+                # If no support in fields, look for this in the dictionary
+                return self.__dict__[name]
+            else:
+                # Delegate named fields to their associated read method
+                return read(self)
+
+        def __setattr__(self, name, value):
+            # Only allow existing fields to be updated
+            read, write = self.__fields[name]
+            write(self, value)
 
 
         def _read_value(self):
@@ -59,9 +80,6 @@ def make_register(register, fields):
 
         def _write_value(self, value):
             self.__parent._write_value(self.__offset, self.__rw, value)
-
-        # _value returns the underlying register value
-        _value = property(_read_value, _write_value)
 
 
         def _get_fields(self, read = True):
@@ -71,9 +89,6 @@ def make_register(register, fields):
         def __set_fields(self, value):
             self._value = value._value
 
-        # _fields returns an updatable image of the current register settings as
-        # a group of settable fields
-        _fields = property(_get_fields, __set_fields)
 
         @property
         def _fields_wo(self):
@@ -103,8 +118,20 @@ def make_register(register, fields):
             else:
                 assert False
 
-
+        # Populate all the fields including the two special fields
+        #
+        # _value returns the underlying register value
+        __fields['_value'] = (_read_value, _write_value)
+        # _fields returns an updatable image of the current register settings as
+        # a group of settable fields
+        __fields['_fields'] = (_get_fields, __set_fields)
+        # Populate the rest of the fields and remember the field names
         _field_names = []
+        for field in fields:
+            __fields[field._name] = (field._read, field._write)
+            _field_names.append(field._name)
+
+
         def __repr__(self):
             if self._field_names:
                 fields = self._fields
@@ -115,22 +142,22 @@ def make_register(register, fields):
                 values = '%d' % self._value
             return '<Reg %s @%d %s>' % (self._name, self.__offset, values)
 
-    for field in fields:
-        setattr(Register, field._name, property(field._read, field._write))
-        Register._field_names.append(field._name)
-
     return Register
 
 
 class Delegator(object):
     def __init__(self, parent):
-        self.__parent = parent
+        self.__dict__['_Delegator__parent'] = parent
 
     def _read_value(self, offset, rw):
         return self.__parent._read_value(offset, rw)
 
     def _write_value(self, offset, rw, value):
         self.__parent._write_value(offset, rw, value)
+
+    def __setattr__(self, name, value):
+        # Block accidential assignment to non-existent fields
+        assert False, 'Cannot assign to field %s' % name
 
 
 def make_array(array):
