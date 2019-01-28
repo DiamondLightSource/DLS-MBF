@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 3178
-y 500
+x 2732
+y 167
 w 641
 h 360
 font "helvetica-medium-r-18.0"
@@ -458,16 +458,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 376
+x 360
 y 328
-w 74
+w 86
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "DRAM input:"
+  "Memory input:"
 }
 autoSize
 endObjectProperties
@@ -498,33 +498,6 @@ symbols {
 }
 endObjectProperties
 
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 144
-y 320
-w 80
-h 20
-controlPv "$(device):$(axis):ADC:REJECT_SHIFT_S"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -533,15 +506,35 @@ minor 1
 release 1
 x 8
 y 320
-w 126
+w 95
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Fill reject shift depth:"
+  "Fill reject count:"
 }
 autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 120
+y 320
+w 96
+h 22
+fgColor index 14
+fgAlarm
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):ADC:REJECT_COUNT_S"
+font "helvetica-medium-r-12.0"
 endObjectProperties
 
