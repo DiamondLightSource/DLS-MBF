@@ -58,12 +58,12 @@ begin
         others => '0'
     );
 
-    -- Interrupt assignment and pipeline to help with placement.
-    interrupt_delay : entity work.dlyreg generic map (
-        DLY => INTERRUPT_PIPELINE,
-        DW => interrupts'LENGTH
+    -- Put all interrupts on untimed registers to avoid pointless timing issues
+    interrupt_out : entity work.untimed_reg generic map (
+        WIDTH => interrupts'LENGTH
     ) port map (
         clk_i => dsp_clk_i,
+        write_i => '1',
         data_i => interrupts,
         data_o => interrupts_o
     );
