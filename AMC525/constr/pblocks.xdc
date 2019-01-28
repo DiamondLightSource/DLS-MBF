@@ -46,10 +46,10 @@ resize_pblock [get_pblocks pblock_x1y2] -add {DSP48_X15Y40:DSP48_X17Y59}
 resize_pblock [get_pblocks pblock_x1y2] -add {RAMB18_X11Y40:RAMB18_X14Y59}
 resize_pblock [get_pblocks pblock_x1y2] -add {RAMB36_X11Y20:RAMB36_X14Y29}
 
-# A special pblock just for the output AXI Lite register.  The idea here is to
-# try to protect the interconnect from timing tensions by fixing the output
-# register.
-create_pblock pblock_axi_lite
-add_cells_to_pblock [get_pblocks pblock_axi_lite] [get_cells -quiet [list \
-    {interconnect/interconnect_i/axi_lite/axi_register_slice_1}]]
-resize_pblock [get_pblocks pblock_axi_lite] -add {SLICE_X162Y225:SLICE_X169Y230}
+# # A special pblock just for the output AXI Lite register.  The idea here is to
+# # try to protect the interconnect from timing tensions by fixing the output
+# # register.
+# create_pblock pblock_axi_lite
+# add_cells_to_pblock [get_pblocks pblock_axi_lite] [get_cells -quiet [list \
+#     {interconnect/interconnect_i/axi_lite/axi_register_slice_1}]]
+# resize_pblock [get_pblocks pblock_axi_lite] -add {SLICE_X162Y225:SLICE_X169Y230}

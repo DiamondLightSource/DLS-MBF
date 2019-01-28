@@ -57,7 +57,6 @@ begin
                 turn_num <= turn_num + 1;
             end if;
         end loop;
-        wait;
     end process;
     turn_clock <= to_std_ulogic(turn_num = 0);
 
@@ -78,9 +77,10 @@ begin
     -- Start with pretty dumb dummy data
     process begin
         data_in <= (others => '0');
-        while true loop
+        loop
             clk_wait;
-            data_in <= to_signed(turn_num, 16);
+--             data_in <= to_signed(turn_num, 16);
+            data_in <= X"7FFF";
 --             data_in <= data_in + 1;
         end loop;
     end process;

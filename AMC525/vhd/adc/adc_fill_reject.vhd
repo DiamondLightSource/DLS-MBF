@@ -49,7 +49,39 @@ architecture arch of adc_fill_reject is
 
     -- The data flow in this design requires that a number of signals be
     -- accurately aligned, as illustrated below:
-    constant WRITE_OFFSET_DELAY : natural := 2;
+    --
+    -- clk          .   .   .   .   .   .   .....   .   .   .....   .   .   .
+    -- turn             /                    ...    /        ...    /
+    -- accum_out    ----X a X--------------- ... ---X c X---------------X   X
+    --                                               _______ ... _______
+    -- reset_accum  ________________________ ... ___/                   \___
+    -- accum_summand -------X a X----------- ... -------X 0 X--- ...
+    -- data_in      --------X b X----------- ... -------X e X----- ...
+    -- accum_in     ------------X c X------- ... -----------X e X------ ...
+    -- offset_in    ----------------X d X--- ... ---------------X   X---- ...
+    --                               _______ ... _______________
+    -- write_offset ________________/                           \___ ...
+    -- offset_out   --------X e X----------- ... -------X d X------- ...
+    -- data_o       ------------X f X------- ... -----------X g X--- ...
+    --
+    -- The flow is annoying complex to capture, and the timing diagram above
+    -- does a pretty poor job.  The essential idea is that each bunch is
+    -- accumulated for 2^N turns.  In the figure above we see the turn-around
+    -- at the end of this accumulation process.
+    --
+    -- Key:
+    --  a - last value to add to in accumulator, a = sum of last N-1 bunches
+    --  b - last bunch value to accumulate for this round
+    --  c - total sum of last N bunches.  This is divided by N to produce
+    --  d - mean of last N bunches.  This will be written to the offset memory
+    --  e - last value out of offset memory to be subracted from data_in
+    --  f - generated result for last turn of accumulation round
+    --  g - generated result for first turn of next round
+    --
+    -- The two PROCESS_ delays below align the delay lines so that inputs and
+    -- outputs line up, and the WRITE_OFFSET_DELAY is used as a skew between the
+    -- two control signals.
+    constant WRITE_OFFSET_DELAY : natural := 3;
     constant PROCESS_ACCUM_DELAY : natural := 2;
     constant PROCESS_OFFSET_DELAY : natural := 2;
 
