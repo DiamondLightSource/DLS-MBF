@@ -44,6 +44,9 @@ entity adc_top is
 end;
 
 architecture arch of adc_top is
+    -- Maximum permissible shift for fill pattern rejection filter
+    constant MAX_FILL_REJECT_SHIFT : natural := 12;
+
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
     signal mms_source : std_ulogic_vector(1 downto 0);
@@ -133,8 +136,11 @@ begin
 
 
     -- Fill pattern rejection
-    fill_reject : entity work.adc_fill_reject port map (
+    fill_reject : entity work.adc_fill_reject generic map (
+        MAX_SHIFT => MAX_FILL_REJECT_SHIFT
+    ) port map (
         clk_i => adc_clk_i,
+        turn_clock_i => turn_clock_i,
         shift_i => fill_reject_shift,
         data_i => filtered_data,
         data_o => fill_reject_data
