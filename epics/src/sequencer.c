@@ -376,14 +376,16 @@ unsigned int compute_scale_info(
     unsigned int gap_time = 0;      // For non-captured states
     uint64_t f0 = 0;                // Accumulates current frequency
     for (unsigned int super = 0; super < super_count; super ++)
+    {
+        uint64_t super_offset =
+            (uint64_t) seq_config->super_offsets[super] << 16;
         for (unsigned int state = seq_count; state > 0; state --)
         {
             const struct seq_entry *entry = &seq_config->entries[state - 1];
             unsigned int dwell_time = entry->dwell_time + entry->holdoff;
             if (entry->write_enable)
             {
-                f0 = entry->start_freq +
-                    (seq_config->super_offsets[super] << 16);
+                f0 = entry->start_freq + super_offset;
                 total_time += gap_time;
                 gap_time = 0;
                 for (unsigned int i = 0; i < entry->capture_count; i ++)
@@ -400,6 +402,7 @@ unsigned int compute_scale_info(
             else
                 gap_time += dwell_time * entry->capture_count;
         }
+    }
 
     /* Fill in the rest of the waveforms. */
     for (unsigned int i = ix; i < end_offset; i ++)
