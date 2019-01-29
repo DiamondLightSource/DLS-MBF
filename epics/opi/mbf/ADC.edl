@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2732
-y 167
+x 2903
+y 111
 w 641
 h 360
 font "helvetica-medium-r-18.0"
@@ -506,14 +506,14 @@ minor 1
 release 1
 x 8
 y 320
-w 95
+w 98
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Fill reject count:"
+  "Fill reject length:"
 }
 autoSize
 endObjectProperties
