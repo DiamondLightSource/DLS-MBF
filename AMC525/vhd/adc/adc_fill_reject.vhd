@@ -47,6 +47,9 @@ architecture arch of adc_fill_reject is
     signal offset_in : data_t;
     signal offset_out : data_t;
 
+    -- We need to allow for an extra bit of growth in the final result
+    signal data_out : signed(DATA_WIDTH downto 0);
+
     -- The data flow in this design requires that a number of signals be
     -- accurately aligned, as illustrated below:
     --
@@ -157,7 +160,11 @@ begin
             offset_in <= resize(
                 shift_right(accum_in, to_integer(shift_i)), DATA_WIDTH);
 
-            data_o <= data_in - offset_out;
+            data_out <=
+                resize(data_in, DATA_WIDTH+1) -
+                resize(offset_out, DATA_WIDTH+1) + 1;
         end if;
     end process;
+
+    data_o <= data_out(DATA_WIDTH downto 1);
 end;
