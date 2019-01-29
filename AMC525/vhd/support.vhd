@@ -136,18 +136,6 @@ package support is
     -- Reverses order of bits in vector
     function reverse(data : in std_ulogic_vector) return std_ulogic_vector;
 
-
-    -- Shift functions with limited shift, designed for optimal synthesis.  If
-    -- the requested shift is larger than max_shift then don't care is returned.
-    function shift_left(
-        data : signed; shift : natural; max_shift : natural) return signed;
-    function shift_left(
-        data : unsigned; shift : natural; max_shift : natural) return unsigned;
-    function shift_right(
-        data : signed; shift : natural; max_shift : natural) return signed;
-    function shift_right(
-        data : unsigned; shift : natural; max_shift : natural) return unsigned;
-
 end;
 
 
@@ -401,48 +389,5 @@ package body support is
             result(i) := data(i);
         end loop;
         return result;
-    end;
-
-
-    function shift_left(
-        data : signed; shift : natural; max_shift : natural) return signed is
-    begin
-        if shift <= max_shift then
-            return shift_left(data, shift);
-        else
-            return (data'RANGE => '-');
-        end if;
-    end;
-
-    function shift_left(
-        data : unsigned; shift : natural; max_shift : natural) return unsigned
-    is
-    begin
-        if shift <= max_shift then
-            return shift_left(data, shift);
-        else
-            return (data'RANGE => '-');
-        end if;
-    end;
-
-    function shift_right(
-        data : signed; shift : natural; max_shift : natural) return signed is
-    begin
-        if shift <= max_shift then
-            return shift_right(data, shift);
-        else
-            return (data'RANGE => '-');
-        end if;
-    end;
-
-    function shift_right(
-        data : unsigned; shift : natural; max_shift : natural) return unsigned
-    is
-    begin
-        if shift <= max_shift then
-            return shift_right(data, shift);
-        else
-            return (data'RANGE => '-');
-        end if;
     end;
 end;

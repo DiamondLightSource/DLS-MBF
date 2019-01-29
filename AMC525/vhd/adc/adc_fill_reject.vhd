@@ -146,8 +146,7 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Accumulator
-            accum_rounding <=
-                shift_left(accum_bit, to_integer(shift_i), MAX_SHIFT);
+            accum_rounding <= shift_left(accum_bit, to_integer(shift_i));
             if reset_accum = '1' then
                 accum_summand <= accum_rounding(ACCUM_WIDTH downto 1);
             else
@@ -156,8 +155,7 @@ begin
             accum_in <= resize(data_in, ACCUM_WIDTH) + accum_summand;
 
             offset_in <= resize(
-                shift_right(accum_in, to_integer(shift_i), MAX_SHIFT),
-                DATA_WIDTH);
+                shift_right(accum_in, to_integer(shift_i)), DATA_WIDTH);
 
             data_o <= data_in - offset_out;
         end if;

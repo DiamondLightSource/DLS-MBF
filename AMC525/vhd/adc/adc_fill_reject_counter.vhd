@@ -47,8 +47,8 @@ begin
         if rising_edge(clk_i) then
             if turn_clock_i = '1' then
                 if turn_counter = 0 then
-                    turn_counter <= not shift_left(
-                        base_mask, to_integer(shift_i), MAX_SHIFT);
+                    turn_counter <=
+                        not shift_left(base_mask, to_integer(shift_i));
                 else
                     turn_counter <= turn_counter - 1;
                 end if;
