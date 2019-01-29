@@ -25,7 +25,7 @@ DRIVER_NAME = amc525_mbf
 # and follows the Red Hat versioning rules: only letters, digits, and periods.
 # See https://fedoraproject.org/wiki/Packaging:Versioning for information on RPM
 # versioning.  We'll want to obey these rules if we can.
-DRV_VERSION = $(VERSION_EXTRA)$(MBF_VERSION)-$(GIT_VERSION)
+DRV_VERSION = $(MBF_VERSION)$(VERSION_EXTRA)-$(GIT_VERSION)
 RPM_VERSION = $(MBF_VERSION)
 
 

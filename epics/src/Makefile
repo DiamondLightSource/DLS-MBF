@@ -18,7 +18,7 @@ USR_CFLAGS += -mavx
 
 
 # Pass version information through to build
-USR_CFLAGS += -DMBF_VERSION='"$(VERSION_EXTRA)$(MBF_VERSION)"'
+USR_CFLAGS += -DMBF_VERSION='"$(MBF_VERSION)$(VERSION_EXTRA)"'
 USR_CFLAGS += -DGIT_VERSION='"$(GIT_VERSION)"'
 
 # Compute a sensible format of build date
