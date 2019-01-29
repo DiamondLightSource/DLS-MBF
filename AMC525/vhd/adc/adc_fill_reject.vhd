@@ -161,8 +161,8 @@ begin
                 shift_right(accum_in, to_integer(shift_i)), DATA_WIDTH);
 
             data_out <=
-                resize(data_in, DATA_WIDTH+1) -
-                resize(offset_out, DATA_WIDTH+1) + 1;
+                resize(data_in, DATA_WIDTH + 1) -
+                resize(offset_out, DATA_WIDTH + 1) + 1;
         end if;
     end process;
 

@@ -147,8 +147,7 @@ static int amc525_mbf_open(struct inode *inode, struct file *file)
     switch (minor_index)
     {
         case MINOR_REG:
-            rc = mbf_reg_open(
-                file, mbf->dev, mbf->interrupts, &mbf->locking);
+            rc = mbf_reg_open(file, mbf->dev, mbf->interrupts, &mbf->locking);
             break;
         case MINOR_DDR0:
             rc = mbf_dma_open(file, mbf->dma, DDR0_BASE, DDR0_LENGTH);
