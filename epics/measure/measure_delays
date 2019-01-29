@@ -78,6 +78,8 @@ def configure_timing_test(mbf, compensate = False):
     # Configure ADC and DAC filters with identity filters.
     mbf.set('ADC:FILTER_S', unit_fir(mbf.adc_taps))
     mbf.set('DAC:FILTER_S', unit_fir(mbf.dac_taps))
+    # Configure fill reject filter with minimum length
+    mbf.set('ADC:REJECT_COUNT_S', '1 turns')
 
 
     # For a sensible starting state, disable the sequencer and select bank 0.
@@ -174,8 +176,13 @@ def find_second_peak(value):
 
 
 @MBF.method
-def find_mms_peak(mbf, mms):
-    return mbf.find_one_peak(mms.get_new(0.25))
+def find_mms_peak(mbf, mms, nco_freq = 0):
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', nco_freq)
+    peak = mbf.find_one_peak(mms.get_new(0.25))
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', 0)
+    return peak
 
 
 # ------------------------------------------------------------------------------
@@ -222,9 +229,11 @@ def binary_search(start, end, test):
 
 # Performs binary search to discover which bunch is detected for bunch zero
 @MBF.method
-def search_det_bunch(mbf, det_power, source):
+def search_det_bunch(mbf, det_power, source, nco_freq = 0):
     # Configure source
     mbf.set('DET:SELECT_S', source)
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', nco_freq)
 
     def test(start, end):
         outwf = numpy.empty(mbf.bunches, dtype = int)
@@ -242,7 +251,11 @@ def search_det_bunch(mbf, det_power, source):
 
     # Note that we have to negate the returned delay so that hardware.c can do
     # the compensation in the most straightforward way.
-    return mbf.fixup_delay(-binary_search(0, mbf.bunches, test))
+    delay = mbf.fixup_delay(-binary_search(0, mbf.bunches, test))
+
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', 0)
+    return delay
 
 
 # Computes group delay from scaled IQ.
@@ -322,11 +335,14 @@ def measure_dac_mms(mbf, results):
     results.MMS_ADC_DELAY = mbf.find_mms_peak(maxadc)
     mbf.set('ADC:MMS_SOURCE_S', 'After FIR')
     results.MMS_ADC_FIR_DELAY = mbf.find_mms_peak(maxadc)
-    mbf.set('ADC:MMS_SOURCE_S', 'Fill Reject')
-    results.MMS_ADC_REJECT_DELAY = mbf.find_mms_peak(maxadc)
+
+    # For the fill pattern reject measurement we need to use an NCO frequency
+    # that will get through the filter.
+    mbf.set('ADC:MMS_SOURCE_S', 'FIR no fill')
+    results.MMS_ADC_REJECT_DELAY = mbf.find_mms_peak(maxadc, nco_freq = 0.51)
 
     # Measure gain skew: configure NCO on all bunches, but unit gain only on
-    # bunch zer0, zero gain elsewhere.
+    # bunch zero, zero gain elsewhere.
     mbf.bank_wf(0, mbf.one_bunch(1, 0), FIR_UNIT, DAC_OUT.NCO)
     results.BUNCH_GAIN_OFFSET = mbf.find_mms_peak(maxdac) - dac_minmax_delay
 
@@ -358,8 +374,8 @@ def measure_dram(mbf, results):
         dram.get_peaks('ADC0/DAC0')
 
     # One last sample for the ADC fill reject delay
-    mbf.set('ADC:DRAM_SOURCE_S', 'Fill Reject')
-    results.DRAM_ADC_REJECT_DELAY, _ = dram.get_peaks('ADC0/DAC0')
+    mbf.set('ADC:DRAM_SOURCE_S', 'FIR no fill')
+    results.DRAM_ADC_REJECT_DELAY, _ = dram.get_peaks('ADC0/DAC0', 0.51)
 
     # Now get the FIR delay
     base_fir_delay, _ = dram.get_peaks('FIR0/DAC0')
@@ -383,7 +399,8 @@ def measure_det_bunch(mbf, results):
 
     results.DET_ADC_OFFSET = mbf.search_det_bunch(power, 'ADC')
     results.DET_FIR_OFFSET = mbf.search_det_bunch(power, 'FIR')
-    results.DET_FIR_REJECT_OFFSET = mbf.search_det_bunch(power, 'ADC no fill')
+    results.DET_FIR_REJECT_OFFSET = \
+        mbf.search_det_bunch(power, 'ADC no fill', nco_freq = 0.51)
 
     power.close()
 
@@ -400,6 +417,13 @@ def measure_detector_delay(mbf, results):
 
     results.DET_FIR_DELAY = get_detector_delay(mbf, 'FIR', pvs)
     results.DET_ADC_DELAY = get_detector_delay(mbf, 'ADC', pvs)
+
+    # For the fill pattern reject filter we have to work a bit harder.  We'll
+    # use the super-sequencer to sweep over a range of central regions
+    mbf.state(1, start = 0.45, step = 0.1/512, count = 512, dwell = 128)
+    mbf.set('SEQ:SUPER:COUNT_S', 8)
+    mbf.set('SEQ:SUPER:RESET_S', 0)
+    mbf.set('ADC:REJECT_COUNT_S', '64 turns')
     results.DET_ADC_REJECT_DELAY = get_detector_delay(mbf, 'ADC no fill', pvs)
 
 
