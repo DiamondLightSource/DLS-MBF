@@ -203,7 +203,7 @@ error__t initialise_adc(void)
         PUBLISH_C(bo, "LOOPBACK", set_adc_loopback, adc);
         PUBLISH_C_P(mbbo, "MMS_SOURCE",  write_adc_mms_source, adc);
         PUBLISH_C_P(mbbo, "DRAM_SOURCE", write_adc_dram_source, adc);
-        PUBLISH_C_P(ulongout, "REJECT_SHIFT", write_adc_reject_shift, adc);
+        PUBLISH_C_P(mbbo, "REJECT_COUNT", write_adc_reject_shift, adc);
 
         PUBLISH_READ_VAR(bi, "INP_OVF", adc->events.input_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF", adc->events.fir_ovf);
