@@ -51,10 +51,7 @@ architecture arch of detector_body is
     signal iq_shift : cos_sin_96_t;
     signal iq_out : cos_sin_32_t;
 
-    signal shift : integer;
-    signal base_mask : unsigned(95 downto 0) := (others => '1');
-    signal overflow_mask : signed(95 downto 0);
-    signal preload : signed(95 downto 0);
+    signal shift : integer := 0;
 
     signal det_write_dsp_in : std_ulogic;
     signal det_write_dsp : std_ulogic;
@@ -77,11 +74,6 @@ begin
 
     -- Compute preload and overflow detection mask for output shift.
     shift <= 8 * to_integer(output_scaling_i) + 24;
-    preload <= shift_left(96X"0_0000_0000_0000_0000_0000_0001", shift - 1);
-    -- The overflow mask determines which bits will be used for overflow
-    -- detection: we need to include all discarded bits plus our generated sign
-    -- bit, hence the base shift of 65 = 96 - 32 - 1.
-    overflow_mask <= signed(shift_right(base_mask, 65 - shift));
 
 
     -- IQ Detector
@@ -93,8 +85,7 @@ begin
         bunch_enable_i => bunch_enable,
         detector_overflow_o => detector_overflow,
 
-        overflow_mask_i => overflow_mask,
-        preload_i => preload,
+        shift_i => shift,
 
         start_i => start_i,
         write_i => write_i,

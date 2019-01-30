@@ -21,8 +21,7 @@ entity detector_core is
 
         detector_overflow_o : out std_ulogic;
 
-        overflow_mask_i : in signed(95 downto 0);
-        preload_i : in signed(95 downto 0);
+        shift_i : in natural;   -- Valid range 0 to 64
 
         start_i : in std_ulogic;
         write_i : in std_ulogic;
@@ -40,6 +39,9 @@ architecture arch of detector_core is
     signal cos_overflow : std_ulogic;
     signal sin_overflow : std_ulogic;
 
+    signal overflow_mask : signed(95 downto 0);
+    signal preload : signed(95 downto 0);
+
     -- Typically both start_i and write_i are synchronous, and the delay from
     -- start_i to reset data out is 4 ticks, so we need the write delay to be
     -- one less to pick up the data before reset.
@@ -47,6 +49,15 @@ architecture arch of detector_core is
     signal write_in : std_ulogic;
 
 begin
+    -- Compute preload and overflow detection mask for output shift.  The
+    -- preload simply ensures proper rounding by adding 0.5 to the result.
+    preload <= shift_left(to_signed(1, 97), shift_i)(96 downto 1);
+    -- The overflow mask determines which bits will be used for overflow
+    -- detection: we need to include all discarded bits plus our generated sign
+    -- bit, hence the base shift of 65 = 96 - 32 - 1.
+    overflow_mask <= signed(shift_right(not to_unsigned(0, 96), 65 - shift_i));
+
+
     bunch_delay_cos : entity work.dlyreg generic map (
         DLY => 4
     ) port map (
@@ -69,8 +80,8 @@ begin
         mul_i => iq_i.cos,
         enable_i => bunch_enable_cos,
         start_i => start_i,
-        overflow_mask_i => overflow_mask_i,
-        preload_i => preload_i,
+        overflow_mask_i => overflow_mask,
+        preload_i => preload,
         sum_o => iq_out.cos,
         overflow_o => cos_overflow
     );
@@ -81,8 +92,8 @@ begin
         mul_i => iq_i.sin,
         enable_i => bunch_enable_sin,
         start_i => start_i,
-        overflow_mask_i => overflow_mask_i,
-        preload_i => preload_i,
+        overflow_mask_i => overflow_mask,
+        preload_i => preload,
         sum_o => iq_out.sin,
         overflow_o => sin_overflow
     );
