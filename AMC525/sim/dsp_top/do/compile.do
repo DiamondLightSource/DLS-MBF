@@ -94,6 +94,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/nco_register.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
     $vhd_dir/adc/adc_registers.vhd \
+    $vhd_dir/adc/adc_fill_reject_counter.vhd \
     $vhd_dir/adc/adc_fill_reject.vhd \
     $vhd_dir/adc/adc_mms_dram_data_source.vhd \
     $vhd_dir/adc/adc_overflow.vhd \

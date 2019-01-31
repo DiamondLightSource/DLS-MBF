@@ -15,36 +15,34 @@
 #   SLICE       106         116         50
 
 
-# Place the two FIR blocks in tile X1Y1
-create_pblock pblock_x1y1
-add_cells_to_pblock [get_pblocks pblock_x1y1] [get_cells -quiet [list \
+# Place the two FIR blocks in tile X1Y0
+create_pblock pblock_fir
+add_cells_to_pblock [get_pblocks pblock_fir] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/bunch_fir_top} \
     {dsp_main/dsp_gen[1].dsp_top/bunch_fir_top}]]
-resize_pblock [get_pblocks pblock_x1y1] -add {DSP48_X7Y20:DSP48_X17Y39}
-resize_pblock [get_pblocks pblock_x1y1] -add {RAMB18_X7Y20:RAMB18_X14Y39}
-resize_pblock [get_pblocks pblock_x1y1] -add {RAMB36_X7Y10:RAMB36_X14Y19}
+resize_pblock [get_pblocks pblock_fir] -add {DSP48_X7Y0:DSP48_X17Y19}
+resize_pblock [get_pblocks pblock_fir] -add {RAMB18_X7Y0:RAMB18_X14Y19}
+resize_pblock [get_pblocks pblock_fir] -add {RAMB36_X7Y0:RAMB36_X14Y9}
 
-# Put the two detectors in tile X0Y1
-create_pblock pblock_x0y1
-add_cells_to_pblock [get_pblocks pblock_x0y1] [get_cells -quiet [list \
+# Put the two detectors in tile X0Y0
+create_pblock pblock_det
+add_cells_to_pblock [get_pblocks pblock_det] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/detector} \
     {dsp_main/dsp_gen[1].dsp_top/detector}]]
-
-resize_pblock [get_pblocks pblock_x0y1] -add {DSP48_X0Y20:DSP48_X6Y39}
-resize_pblock [get_pblocks pblock_x0y1] -add {RAMB18_X0Y20:RAMB18_X6Y39}
-resize_pblock [get_pblocks pblock_x0y1] -add {RAMB36_X0Y10:RAMB36_X6Y19}
+resize_pblock [get_pblocks pblock_det] -add {DSP48_X0Y0:DSP48_X6Y19}
+resize_pblock [get_pblocks pblock_det] -add {RAMB18_X0Y0:RAMB18_X6Y19}
+resize_pblock [get_pblocks pblock_det] -add {RAMB36_X0Y0:RAMB36_X6Y9}
 
 # Let's force the MMS blocks into right hand side of tile X1Y2
-create_pblock pblock_x1y2
-add_cells_to_pblock [get_pblocks pblock_x1y2] [get_cells -quiet [list \
+create_pblock pblock_mms
+add_cells_to_pblock [get_pblocks pblock_mms] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/adc_top/min_max_sum} \
     {dsp_main/dsp_gen[0].dsp_top/dac_top/min_max_sum} \
     {dsp_main/dsp_gen[1].dsp_top/adc_top/min_max_sum} \
     {dsp_main/dsp_gen[1].dsp_top/dac_top/min_max_sum}]]
-
-resize_pblock [get_pblocks pblock_x1y2] -add {DSP48_X15Y40:DSP48_X17Y59}
-resize_pblock [get_pblocks pblock_x1y2] -add {RAMB18_X11Y40:RAMB18_X14Y59}
-resize_pblock [get_pblocks pblock_x1y2] -add {RAMB36_X11Y20:RAMB36_X14Y29}
+resize_pblock [get_pblocks pblock_mms] -add {DSP48_X15Y40:DSP48_X17Y59}
+resize_pblock [get_pblocks pblock_mms] -add {RAMB18_X11Y40:RAMB18_X14Y59}
+resize_pblock [get_pblocks pblock_mms] -add {RAMB36_X11Y20:RAMB36_X14Y29}
 
 # # A special pblock just for the output AXI Lite register.  The idea here is to
 # # try to protect the interconnect from timing tensions by fixing the output

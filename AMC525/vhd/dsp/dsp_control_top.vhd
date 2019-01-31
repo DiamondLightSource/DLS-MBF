@@ -71,10 +71,14 @@ architecture arch of dsp_control_top is
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
     -- DRAM1 interface
-    signal dram1_valid : std_ulogic_vector(CHANNELS);
-    signal dram1_ready : std_ulogic_vector(CHANNELS);
-    signal dram1_address : unsigned_array(CHANNELS)(dram1_address_o'RANGE);
-    signal dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
+    signal dsp_dram1_valid : std_ulogic_vector(CHANNELS);
+    signal dsp_dram1_ready : std_ulogic_vector(CHANNELS);
+    signal dsp_dram1_address : unsigned_array(CHANNELS)(dram1_address_o'RANGE);
+    signal dsp_dram1_data : vector_array(CHANNELS)(dram1_data_o'RANGE);
+    signal dram1_valid : std_ulogic;
+    signal dram1_ready : std_ulogic;
+    signal dram1_address : dram1_address_o'SUBTYPE;
+    signal dram1_data : dram1_data_o'SUBTYPE;
 
     -- Triggering and events interface
     signal adc_trigger : std_ulogic_vector(CHANNELS);
@@ -178,27 +182,43 @@ begin
 
     -- DRAM1 memory multiplexer
     chan_gen : for c in CHANNELS generate
-        dram1_valid(c) <= dsp_to_control_i(c).dram1_valid;
-        control_to_dsp_o(c).dram1_ready <= dram1_ready(c);
+        dsp_dram1_valid(c) <= dsp_to_control_i(c).dram1_valid;
+        control_to_dsp_o(c).dram1_ready <= dsp_dram1_ready(c);
         -- The top bit of each address identifies the generating DSP unit
-        dram1_address(c) <= unsigned(
+        dsp_dram1_address(c) <= unsigned(
             to_std_ulogic(c) &
             std_ulogic_vector(dsp_to_control_i(c).dram1_address));
-        dram1_data(c) <= dsp_to_control_i(c).dram1_data;
+        dsp_dram1_data(c) <= dsp_to_control_i(c).dram1_data;
     end generate;
 
     memory_mux : entity work.memory_mux_priority port map (
         clk_i => dsp_clk_i,
 
+        input_valid_i => dsp_dram1_valid,
+        input_ready_o => dsp_dram1_ready,
+        data_i => dsp_dram1_data,
+        addr_i => dsp_dram1_address,
+
+        output_ready_i => dram1_ready,
+        output_valid_o => dram1_valid,
+        data_o => dram1_data,
+        addr_o => dram1_address
+    );
+
+    dram1_buffer : entity work.memory_buffer generic map (
+        LENGTH => 2
+    ) port map (
+        clk_i => dsp_clk_i,
+
         input_valid_i => dram1_valid,
         input_ready_o => dram1_ready,
-        data_i => dram1_data,
-        addr_i => dram1_address,
+        input_data_i => dram1_data,
+        input_addr_i => dram1_address,
 
         output_ready_i => dram1_data_ready_i,
         output_valid_o => dram1_data_valid_o,
-        data_o => dram1_data_o,
-        addr_o => dram1_address_o
+        output_data_o => dram1_data_o,
+        output_addr_o => dram1_address_o
     );
 
 
