@@ -12,6 +12,9 @@ use work.nco_defs.all;
 use work.detector_defs.all;
 
 entity detector_core is
+    generic (
+        RESULT_WIDTH : natural := 32    -- Used for overflow checking
+    );
     port (
         clk_i : in std_ulogic;
 
@@ -50,12 +53,15 @@ architecture arch of detector_core is
 
 begin
     -- Compute preload and overflow detection mask for output shift.  The
-    -- preload simply ensures proper rounding by adding 0.5 to the result.
-    preload <= shift_left(to_signed(1, 97), shift_i)(96 downto 1);
-    -- The overflow mask determines which bits will be used for overflow
-    -- detection: we need to include all discarded bits plus our generated sign
-    -- bit, hence the base shift of 65 = 96 - 32 - 1.
-    overflow_mask <= signed(shift_right(not to_unsigned(0, 96), 65 - shift_i));
+    -- parameter shift_i tells us the offset of the first bit to be read out, so
+    -- want to inject a one bit directly below that.  For the overflow mask we
+    -- want the sign bit of the result and all bits above to be checked.
+    process (shift_i) begin
+        for i in 0 to 95 loop
+            preload(i) <= to_std_ulogic(i + 1 = shift_i);
+            overflow_mask(i) <= to_std_ulogic(i >= RESULT_WIDTH - 1 + shift_i);
+        end loop;
+    end process;
 
 
     bunch_delay_cos : entity work.dlyreg generic map (

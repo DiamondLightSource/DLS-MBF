@@ -12,7 +12,8 @@ use work.detector_defs.all;
 
 entity detector_input is
     generic (
-        BUFFER_LENGTH : natural
+        BUFFER_LENGTH : natural;
+        USE_WINDOW : boolean := true
     );
     port (
         clk_i : in std_ulogic;
@@ -73,15 +74,6 @@ begin
         signed(data_o) => adc_fill_reject_in
     );
 
-    window_buffer : entity work.dlyreg generic map (
-        DLY => BUFFER_LENGTH,
-        DW => window_i'LENGTH
-    ) port map (
-        clk_i => clk_i,
-        data_i => std_ulogic_vector(window_i),
-        signed(data_o) => window_in
-    );
-
 
     scaled_adc_data <=
         shift_left(resize(adc_data_in, data_o'LENGTH), ADC_SHIFT);
@@ -104,15 +96,29 @@ begin
     end process;
 
 
-    -- Multiply incoming data by window for final output.  We discard the
-    -- top-most bit of the product, as this is only significant if both input
-    -- terms are min-int, and the FIR value never will be.
-    product : entity work.rounded_product generic map (
-        DISCARD_TOP => 1
-    ) port map (
-        clk_i => clk_i,
-        a_i => window_in,
-        b_i => data_in,
-        ab_o => data_o
-    );
+    gen_window : if USE_WINDOW generate
+        window_buffer : entity work.dlyreg generic map (
+            DLY => BUFFER_LENGTH,
+            DW => window_i'LENGTH
+        ) port map (
+            clk_i => clk_i,
+            data_i => std_ulogic_vector(window_i),
+            signed(data_o) => window_in
+        );
+
+        -- Multiply incoming data by window for final output.  We discard the
+        -- top-most bit of the product, as this is only significant if both
+        -- input terms are min-int, and the FIR value never will be.
+        product : entity work.rounded_product generic map (
+            DISCARD_TOP => 1
+        ) port map (
+            clk_i => clk_i,
+            a_i => window_in,
+            b_i => data_in,
+            ab_o => data_o
+        );
+    else generate
+        -- Bypass window if not being used
+        data_o <= data_in;
+    end generate;
 end;
