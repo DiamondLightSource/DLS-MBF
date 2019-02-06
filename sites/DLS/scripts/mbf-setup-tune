@@ -124,6 +124,9 @@ parser.add_argument(
     '-t', dest = 'tune', default = None, type = float,
     help = 'Specify tune, otherwise config file will be consulted')
 parser.add_argument(
+    '-g', dest = 'gain', default = '-42dB',
+    help = 'Specify FIR gain, otherwise default -42dB will be used')
+parser.add_argument(
     '-n', dest = 'dry_run', default = False, action = 'store_true',
     help = 'Dry run, don\'t actually write to device')
 parser.add_argument('device', help = 'TMBF device name to configure')
@@ -228,7 +231,7 @@ _put('TRG:BLANKING_S', setup.blanking_interval)
 put('FIR:0:LENGTH_S', setup.length)
 put('FIR:0:CYCLES_S', setup.cycles)
 put('FIR:0:USEWF_S', 'Settings')
-put('FIR:GAIN_S', '-42dB')
+put('FIR:GAIN_S', args.gain)
 
 # Configure bunch bank #0 for FIR and selected operation
 put('BUN:0:FIRWF_S', BUNCH_ZEROS)
