@@ -14,6 +14,23 @@
 --  pulse_stretch ______/       \___________/       \_______________________
 --                           _______                 _______
 --  pulse_o    _____________/       \_______________/       \___________
+--
+-- Note that if pulse_i is a write strobe for data on the ADC clock which is
+-- being registered across to the DSP clock then pulse_o can be used as a write
+-- strobe for this registered data.  Using the timing above we see:
+--
+--  adc clk i   /   /   /   /   /   /   /   /   /   /   /   /   /   /
+--  dsp_clk         /       /       /       /       /       /       /
+--                   ___                 ___
+--  pulse_i    _____/   \_______________/   \___________________________
+--                   ___________________ _______________________________
+--  adc_data   -----X___________________X_______________________________
+--                           _______                 _______
+--  pulse_o    _____________/       \_______________/       \___________
+--                           _______________ ___________________________
+--  dsp_data    ------------X_______________X___________________________
+--
+-- Of course, this requires that pulse_i events don't come too quickly.
 
 library ieee;
 use ieee.std_logic_1164.all;

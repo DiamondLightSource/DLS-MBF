@@ -121,7 +121,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        pulse_i => detector_overflow,
+        pulse_i => detector_overflow and det_write,
         pulse_o => detector_overflow_o
     );
 

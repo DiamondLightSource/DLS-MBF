@@ -80,7 +80,9 @@ begin
     );
 
 
-    cos_detect : entity work.detector_dsp96 port map (
+    cos_detect : entity work.detector_dsp96 generic map (
+        WRITE_DELAY => WRITE_DELAY
+    ) port map (
         clk_i => clk_i,
         data_i => data_i,
         mul_i => iq_i.cos,
@@ -92,7 +94,9 @@ begin
         overflow_o => cos_overflow
     );
 
-    sin_detect : entity work.detector_dsp96 port map (
+    sin_detect : entity work.detector_dsp96 generic map (
+        WRITE_DELAY => WRITE_DELAY
+    ) port map (
         clk_i => clk_i,
         data_i => data_i,
         mul_i => iq_i.sin,
@@ -117,8 +121,8 @@ begin
             write_o <= write_in;
             if write_in = '1' then
                 iq_o <= iq_out;
+                detector_overflow_o <= cos_overflow or sin_overflow;
             end if;
-            detector_overflow_o <= write_o and (cos_overflow or sin_overflow);
         end if;
     end process;
 end;
