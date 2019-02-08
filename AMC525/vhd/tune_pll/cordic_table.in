@@ -4,13 +4,13 @@ use ieee.numeric_std.all;
 
 entity cordic_table is
     port (
-        addr_i : in unsigned(4 downto 0);
-        dat_o : out signed(33 downto 0)
+        addr_i : in unsigned(3 downto 0);
+        dat_o : out signed(19 downto 0)
     );
 end;
 
 architecture cordic_table of cordic_table is
-    type lookup_t is array(0 to 31) of dat_o'SUBTYPE;
+    type lookup_t is array(0 to 15) of dat_o'SUBTYPE;
     signal table : lookup_t := (
         @TABLE_BODY@
     );

@@ -5,9 +5,9 @@ import sys
 from numpy import *
 
 # Number of bits in tan inverse
-BITS = 34
+BITS = 20
 # Number of entries in the table
-ROUNDS = 32
+ROUNDS = 16
 
 def generate_body():
     scale = 2**BITS / 2 / pi

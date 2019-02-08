@@ -46,24 +46,22 @@ entity tune_pll_cordic is
 end;
 
 architecture arch of tune_pll_cordic is
-    constant WORD_SIZE_IN : natural := iq_i.cos'LENGTH;
-    constant ANGLE_BITS : natural := angle_o'LENGTH;
-    constant WORD_SIZE : natural := iq_i.cos'LENGTH;
-
+    constant ANGLE_BITS : natural := 18;
     constant SHIFT_COUNT : natural := ANGLE_BITS - 2;
     constant ATAN_BITS : natural := ANGLE_BITS + 2;
 
-    subtype angle_t is signed(ATAN_BITS-1 downto 0);
+    constant WORD_SIZE_IN : natural := iq_i.cos'LENGTH;
+
+    subtype cordic_angle_t is signed(ATAN_BITS-1 downto 0);
 
     -- Inverse tangent
-    signal atan : angle_t;
-    signal angle_update : angle_t;
+    signal atan : cordic_angle_t;
+    signal angle_update : cordic_angle_t;
 
     -- Cordic state machine.
     type state_t is (STATE_IDLE, STATE_SHIFT, STATE_ADD);
     signal state : state_t := STATE_IDLE;
     signal step_count : unsigned(bits(SHIFT_COUNT-1)-1 downto 0);
-    signal shift : natural;
     signal done : std_ulogic;
     signal quadrant : std_ulogic_vector(1 downto 0);
 
@@ -80,12 +78,14 @@ architecture arch of tune_pll_cordic is
     signal angle : signed(ATAN_BITS-1 downto 0);
 
 
-    function initial_angle(quadrant : integer) return angle_t is
+    function initial_angle(quadrant : integer) return cordic_angle_t is
     begin
         return to_signed(quadrant, 2) & to_signed(0, ATAN_BITS - 2);
     end;
 
 begin
+    assert angle_o'LENGTH = ANGLE_BITS severity failure;
+
     -- Angle adustment for step lookup.
     atan_table : entity work.cordic_table port map (
         addr_i => step_count,
@@ -93,7 +93,6 @@ begin
     );
 
     quadrant <= sign_bit(iq_i.cos) & sign_bit(iq_i.sin);
-    shift <= to_integer(step_count);
 
     process (clk_i) begin
         if rising_edge(clk_i) then
@@ -130,12 +129,12 @@ begin
 
                 when STATE_SHIFT =>
                     state <= STATE_ADD;
-                    shifted.cos <= shift_right(iq.cos, shift);
-                    shifted.sin <= shift_right(iq.sin, shift);
+                    shifted.cos <= shift_right(iq.cos, to_integer(step_count));
+                    shifted.sin <= shift_right(iq.sin, to_integer(step_count));
                     angle_update <= atan;
 
                 when STATE_ADD =>
-                    if step_count = SHIFT_COUNT-1 then
+                    if step_count = SHIFT_COUNT - 1 then
                         done <= '1';
                         state <= STATE_IDLE;
                     else

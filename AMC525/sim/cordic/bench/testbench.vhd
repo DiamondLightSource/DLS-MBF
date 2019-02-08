@@ -40,19 +40,27 @@ architecture arch of testbench is
     );
 
 
-    subtype cos_sin_32_t is cos_sin_t(cos(31 downto 0), sin(31 downto 0));
+    constant ANGLE_BITS : natural := 18;
+    constant IQ_BITS : natural := 20;
+    constant MAGNITUDE_BITS : natural := IQ_BITS;
+
+    subtype angle_t is signed(ANGLE_BITS-1 downto 0);
+    subtype magnitude_t is unsigned(MAGNITUDE_BITS-1 downto 0);
+
+    subtype cos_sin_32_t is
+        cos_sin_t(cos(IQ_BITS-1 downto 0), sin(IQ_BITS-1 downto 0));
     signal iq : cos_sin_32_t;
     signal start : std_ulogic;
 
-    signal angle : signed(31 downto 0);
-    signal magnitude : unsigned(31 downto 0);
+    signal angle : angle_t;
+    signal magnitude : magnitude_t;
     signal done : std_ulogic;
 
-    signal expected_angle : signed(31 downto 0);
-    signal expected_magnitude : unsigned(31 downto 0);
+    signal expected_angle : angle_t;
+    signal expected_magnitude : magnitude_t;
 
-    signal magnitude_error : signed(31 downto 0);
-    signal angle_error : signed(31 downto 0);
+    signal magnitude_error : signed(MAGNITUDE_BITS downto 0);
+    signal angle_error : angle_t;
     signal ok : boolean := true;
 
 begin
@@ -79,19 +87,23 @@ begin
         iq_cos := real(to_integer(iq.cos));
         iq_sin := real(to_integer(iq.sin));
         angle_rad := arctan(iq_sin, iq_cos);
-        expected_angle <= to_signed(integer(2.0**31 * angle_rad / MATH_PI), 32);
+        expected_angle <= to_signed(integer(
+            2.0**(ANGLE_BITS-1) * angle_rad / MATH_PI), ANGLE_BITS);
         scaled_magnitude := sqrt(iq_cos*iq_cos + iq_sin*iq_sin) * scaling;
-        expected_magnitude <= to_unsigned(integer(scaled_magnitude / 4.0), 32);
+        expected_magnitude <= to_unsigned(integer(
+            scaled_magnitude / 4.0), MAGNITUDE_BITS);
     end process;
 
     -- Compute magnitude of error and set ok flag accordingly
     process (done) begin
         if rising_edge(done) then
-            magnitude_error <= signed(magnitude - expected_magnitude);
+            magnitude_error <= signed(
+                resize(magnitude, MAGNITUDE_BITS + 1) -
+                resize(expected_magnitude, MAGNITUDE_BITS + 1));
             angle_error <= angle - expected_angle;
         end if;
         if falling_edge(done) then
-            ok <= abs(magnitude_error) <= 1 and abs(angle_error) <= 1;
+            ok <= abs(magnitude_error) <= 1 and abs(angle_error) <= 2;
         end if;
     end process;
 
@@ -126,24 +138,24 @@ begin
     begin
         start <= '0';
 
-        for i in test_sequence'RANGE loop
-            iq.cos <= to_signed(test_sequence(i)(0), 32);
-            iq.sin <= to_signed(test_sequence(i)(1), 32);
-            run_cordic;
-        end loop;
+--         for i in test_sequence'RANGE loop
+--             iq.cos <= to_signed(test_sequence(i)(0), IQ_BITS);
+--             iq.sin <= to_signed(test_sequence(i)(1), IQ_BITS);
+--             run_cordic;
+--         end loop;
 
 
         loop
-            iq.cos <= to_signed(integer(random(2.0**32, 0.5)), 32);
-            iq.sin <= to_signed(integer(random(2.0**32, 0.5)), 32);
+--             iq.cos <= to_signed(integer(random(2.0**IQ_BITS, 0.5)), IQ_BITS);
+--             iq.sin <= to_signed(integer(random(2.0**IQ_BITS, 0.5)), IQ_BITS);
+-- 
+--             run_cordic;
 
-            run_cordic;
-
-            mag := random(2.0**31);
-            mag := random * 2.0 ** (1.0 + random(30.0));
-            angle := random(MATH_PI, 0.5);
-            iq.cos <= to_signed(integer(mag * cos(angle)), 32);
-            iq.sin <= to_signed(integer(mag * sin(angle)), 32);
+            mag := random * 2.0 ** random(real(IQ_BITS-1));
+            mag := 2.0 ** real(IQ_BITS-1);
+            angle := random(2.0 * MATH_PI, 0.5);
+            iq.cos <= to_signed(integer(mag * cos(angle)), IQ_BITS);
+            iq.sin <= to_signed(integer(mag * sin(angle)), IQ_BITS);
 
             run_cordic;
 
