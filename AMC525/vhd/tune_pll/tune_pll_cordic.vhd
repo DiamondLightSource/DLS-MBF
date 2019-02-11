@@ -73,7 +73,8 @@ architecture arch of tune_pll_cordic is
     -- Cordic state machine.
     type state_t is (STATE_IDLE, STATE_NORMALISE, STATE_SHIFT, STATE_ADD);
     signal state : state_t := STATE_IDLE;
-    signal step_count : unsigned(bits(SHIFT_COUNT-1)-1 downto 0);
+    signal step_count : unsigned(bits(SHIFT_COUNT-1)-1 downto 0)
+        := (others => '0');
     signal done : std_ulogic := '0';
 
     signal quadrant : std_ulogic_vector(1 downto 0);

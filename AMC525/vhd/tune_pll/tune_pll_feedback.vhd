@@ -112,7 +112,7 @@ begin
             -- Frequency update overrides, otherwise we update on delayed start
             -- gated together with error and blanking vetos.
             if set_frequency_i = '1' then
-                frequency_out <= new_frequency_i;
+                frequency_out <= signed(base_frequency_i);
             elsif update_frequency then
                 frequency_out <= frequency_out + scaled_update;
             end if;

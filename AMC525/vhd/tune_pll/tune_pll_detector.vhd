@@ -7,8 +7,8 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 
-use work.register_defs.all;
 use work.nco_defs.all;
+use work.detector_defs.all;
 
 entity tune_pll_detector is
     port (
@@ -41,12 +41,14 @@ entity tune_pll_detector is
 end;
 
 architecture arch of tune_pll_detector is
+    constant DATA_IN_BUFFER_LENGTH : natural := 4;
     constant RESULT_WIDTH : natural := iq_o.cos'LENGTH;
 
     signal shift : natural;
     signal bunch_enable : std_ulogic;
     signal data_in : signed(24 downto 0);
     signal detector_overflow : std_ulogic;
+    signal detector_overflow_out : std_ulogic;
     signal det_done : std_ulogic;
     signal done : std_ulogic;
     signal iq : cos_sin_96_t;
@@ -81,7 +83,7 @@ begin
         adc_data_i => adc_data_i,
         adc_fill_reject_i => adc_fill_reject_i,
         fir_data_i => fir_data_i,
-        window_i => open,
+        window_i => "",
 
         data_o => data_in
     );
@@ -134,6 +136,6 @@ begin
 
             detector_overflow_o <= detector_overflow and done;
             done_o <= done;
-        end process;
-    end;
+        end if;
+    end process;
 end;
