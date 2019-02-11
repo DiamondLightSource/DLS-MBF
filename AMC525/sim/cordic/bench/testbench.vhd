@@ -33,15 +33,18 @@ architecture arch of testbench is
     -- Test sequence
     type test_cos_sin_t is array(0 to 1) of integer;
     type test_seq_t is array(natural range<>) of test_cos_sin_t;
-    signal test_sequence : test_seq_t(0 to 2) := (
+    signal test_sequence : test_seq_t(0 to 5) := (
         (1, 0),
-        (16#40000000#, 0),
+        (0, 0),
+        (16#40000#, 0),
+        (16#7FFFFFFF#, 16#7FFFFFFF#),
+        (16#80000000#, 16#80000000#),
         (1234567, 1234567)
     );
 
 
     constant ANGLE_BITS : natural := 18;
-    constant IQ_BITS : natural := 20;
+    constant IQ_BITS : natural := 32;
     constant MAGNITUDE_BITS : natural := IQ_BITS;
 
     subtype angle_t is signed(ANGLE_BITS-1 downto 0);
@@ -56,11 +59,11 @@ architecture arch of testbench is
     signal magnitude : magnitude_t;
     signal done : std_ulogic;
 
-    signal expected_angle : angle_t;
-    signal expected_magnitude : magnitude_t;
+    signal expected_angle : real;
+    signal expected_magnitude : real;
 
-    signal magnitude_error : signed(MAGNITUDE_BITS downto 0);
-    signal angle_error : angle_t;
+    signal magnitude_error : real := 0.0;
+    signal angle_error : real := 0.0;
     signal ok : boolean := true;
 
 begin
@@ -78,32 +81,34 @@ begin
     -- Compute expected angle and magnitude from given iq
     process (iq)
         -- Scaling factor for CORDIC magnitude
-        constant scaling : real := 1.6467602581210654;
+        constant scaling : real := 1.6467602581210654 / 2.0;
         variable iq_cos : real;
         variable iq_sin : real;
         variable angle_rad : real;
-        variable scaled_magnitude : real;
     begin
         iq_cos := real(to_integer(iq.cos));
         iq_sin := real(to_integer(iq.sin));
         angle_rad := arctan(iq_sin, iq_cos);
-        expected_angle <= to_signed(integer(
-            2.0**(ANGLE_BITS-1) * angle_rad / MATH_PI), ANGLE_BITS);
-        scaled_magnitude := sqrt(iq_cos*iq_cos + iq_sin*iq_sin) * scaling;
-        expected_magnitude <= to_unsigned(integer(
-            scaled_magnitude / 4.0), MAGNITUDE_BITS);
+        expected_angle <= 2.0**(ANGLE_BITS-1) * angle_rad / MATH_PI;
+        expected_magnitude <= sqrt(iq_cos*iq_cos + iq_sin*iq_sin) * scaling;
     end process;
 
     -- Compute magnitude of error and set ok flag accordingly
-    process (done) begin
+    process (done)
+        variable real_magnitude : real;
+        variable real_angle : real;
+    begin
         if rising_edge(done) then
-            magnitude_error <= signed(
-                resize(magnitude, MAGNITUDE_BITS + 1) -
-                resize(expected_magnitude, MAGNITUDE_BITS + 1));
-            angle_error <= angle - expected_angle;
+            -- Annoyingly, because magnitude is unsigned(32) it seems we can't
+            -- convert to real without overflow unless we drop the bottom bit.
+            real_magnitude := 2.0 * real(to_integer(shift_right(magnitude, 1)));
+            real_angle := real(to_integer(angle));
+            magnitude_error <= real_magnitude - expected_magnitude;
+            angle_error <= real_angle - expected_angle;
         end if;
         if falling_edge(done) then
-            ok <= abs(magnitude_error) <= 1 and abs(angle_error) <= 2;
+            ok <= abs(magnitude_error) < 6.0 and
+                (real_magnitude = 0.0 or abs(angle_error) < 3.0);
         end if;
     end process;
 
@@ -138,18 +143,18 @@ begin
     begin
         start <= '0';
 
---         for i in test_sequence'RANGE loop
---             iq.cos <= to_signed(test_sequence(i)(0), IQ_BITS);
---             iq.sin <= to_signed(test_sequence(i)(1), IQ_BITS);
---             run_cordic;
---         end loop;
+        for i in test_sequence'RANGE loop
+            iq.cos <= to_signed(test_sequence(i)(0), IQ_BITS);
+            iq.sin <= to_signed(test_sequence(i)(1), IQ_BITS);
+            run_cordic;
+        end loop;
 
 
         loop
---             iq.cos <= to_signed(integer(random(2.0**IQ_BITS, 0.5)), IQ_BITS);
---             iq.sin <= to_signed(integer(random(2.0**IQ_BITS, 0.5)), IQ_BITS);
--- 
---             run_cordic;
+            iq.cos <= to_signed(integer(random(2.0**IQ_BITS, 0.5)), IQ_BITS);
+            iq.sin <= to_signed(integer(random(2.0**IQ_BITS, 0.5)), IQ_BITS);
+
+            run_cordic;
 
             mag := random * 2.0 ** random(real(IQ_BITS-1));
             mag := 2.0 ** real(IQ_BITS-1);
