@@ -12,7 +12,6 @@ use work.dsp_defs.all;
 use work.bunch_defs.all;
 use work.nco_defs.all;
 use work.sequencer_defs.all;
-use work.register_defs.all;
 
 entity dsp_top is
     port (
@@ -71,15 +70,16 @@ begin
     nco_register : entity work.nco_register port map (
         clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(DSP_NCO0_REGS),
+        write_strobe_i => write_strobe_i(DSP_NCO_FREQ_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_NCO0_REGS),
-        read_strobe_i => read_strobe_i(DSP_NCO0_REGS),
-        read_data_o => read_data_o(DSP_NCO0_REGS),
-        read_ack_o => read_ack_o(DSP_NCO0_REGS),
+        write_ack_o => write_ack_o(DSP_NCO_FREQ_REGS),
+        read_strobe_i => read_strobe_i(DSP_NCO_FREQ_REGS),
+        read_data_o => read_data_o(DSP_NCO_FREQ_REGS),
+        read_ack_o => read_ack_o(DSP_NCO_FREQ_REGS),
 
         nco_freq_o => nco_0_phase_advance,
-        reset_phase_o => nco_0_reset_phase
+        reset_phase_o => nco_0_reset_phase,
+        write_freq_o => open
     );
 
     -- -------------------------------------------------------------------------

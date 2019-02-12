@@ -76,6 +76,18 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             .SUM2       16
 
 
+# NCO_FREQ is a 48 bit frequency which is updated by writing to two words.  The
+# low 32 bits of the frequency are first written to the LOW register, and then
+# the high 16 bits are written to the HIGH register.  The frequency is only
+# changed when the high register is written.
+:!NCO_FREQ
+    LOW         RW
+    HIGH        RW
+        .BITS           16
+        -               15
+        .RESET_PHASE
+
+
 # These occupy addresses 0x0000..0x1FFF
 #
 # Used for top level hardware management
@@ -437,16 +449,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # Used for channel specific DSP control, each channel has its own bank of
 # registers.
 !DSP
-    # NCO0 is a 48 bit frequency which is updated by writing to two words.  The
-    # low 32 bits of the frequency are first written to the LOW register, and
-    # then the high 16 bits are written to the HIGH register.  The frequency is
-    # only changed when the high register is written.
-    !NCO0
-        LOW         RW
-        HIGH        RW
-            .BITS           16
-            -               15
-            .RESET_PHASE
+    # This is a fixed frequency NCO with frequency under manual control only
+    :NCO_FREQ
 
     # Input signal processing
     !ADC
