@@ -13,9 +13,8 @@ entity tune_pll_feedback is
     port (
         clk_i : in std_ulogic;
 
-        -- Signal to temporarily suppress processing of updates: output
-        -- frequency stands still.
-        blanking_i : in std_ulogic;
+        -- Controls whether frequency will be updated
+        enable_i : in std_ulogic;
 
         -- Limits for phase and magnitude, checked and reported as errors
         magnitude_limit_i : in unsigned;
@@ -61,7 +60,10 @@ architecture arch of tune_pll_feedback is
     signal multiplier_in : multiplier_i'SUBTYPE;
     signal scaled_update : signed(PRODUCT_LENGTH-1 downto 0);
 
-    signal frequency_out : signed(angle_t'RANGE);
+    signal frequency_out : signed(angle_t'RANGE) := (others => '0');
+
+    signal base_frequency_in : angle_t;
+    signal set_frequency_in : std_ulogic;
 
     attribute USE_DSP : string;
     attribute USE_DSP of frequency_out : signal is "yes";
@@ -82,10 +84,10 @@ begin
         data_o(0) => start_in
     );
 
-    -- The feedback frequency update only happens during feedback without
-    -- blanking and if no errors have been detected.
+    -- The feedback frequency update only happens during feedback when enabled
+    -- and if no errors have been detected.
     update_frequency <=
-        start_in = '1' and blanking_i = '0' and
+        start_in = '1' and enable_i = '1' and
         not magnitude_error and not phase_error;
 
     phase_limit <= signed('0' & phase_limit_i);
@@ -109,10 +111,15 @@ begin
             -- DSP unit.
             multiplier_in <= multiplier_i;
             scaled_update <= phase_offset * multiplier_in;
+
+            -- Frequency update pipeline so we can use the built-in C register
+            base_frequency_in <= base_frequency_i;
+            set_frequency_in <= set_frequency_i;
+
             -- Frequency update overrides, otherwise we update on delayed start
             -- gated together with error and blanking vetos.
-            if set_frequency_i = '1' then
-                frequency_out <= signed(base_frequency_i);
+            if set_frequency_in = '1' then
+                frequency_out <= signed(base_frequency_in);
             elsif update_frequency then
                 frequency_out <= frequency_out + scaled_update;
             end if;

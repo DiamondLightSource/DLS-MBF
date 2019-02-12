@@ -156,8 +156,8 @@ begin
 
             run_cordic;
 
-            mag := random * 2.0 ** random(real(IQ_BITS-1));
-            mag := 2.0 ** real(IQ_BITS-1);
+            mag := random *
+                2.0 ** (random(real(IQ_BITS/2-1)) + real(IQ_BITS/2));
             angle := random(2.0 * MATH_PI, 0.5);
             iq.cos <= to_signed(integer(mag * cos(angle)), IQ_BITS);
             iq.sin <= to_signed(integer(mag * sin(angle)), IQ_BITS);

@@ -8,8 +8,7 @@ use work.support.all;
 use work.defines.all;
 
 package sim_support is
-    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural);
-    procedure clk_wait(signal clk_i : in std_ulogic);
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural := 1);
 
     procedure write_reg(
         signal clk_i : in std_ulogic;
@@ -43,17 +42,14 @@ end package;
 
 package body sim_support is
 
-    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
+    procedure clk_wait(
+        signal clk_i : in std_ulogic; count : in natural := 1)
+    is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
             wait until rising_edge(clk_i);
         end loop;
-    end procedure;
-
-    procedure clk_wait(signal clk_i : in std_ulogic) is
-    begin
-        clk_wait(clk_i, 1);
     end procedure;
 
     procedure write_reg(
