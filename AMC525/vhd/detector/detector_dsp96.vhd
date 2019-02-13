@@ -178,9 +178,21 @@ begin
     -- Detect overflow if we don't get perfect pattern match.  Note that this is
     -- NOT registered, so that it can be synchronous with sum_o; it is the
     -- responsibility of the caller to register this value.
+    --
+    -- To explain the calculation here: first note that the DSP pattern
+    -- detection logic is documented on page 39 of UG479 as follows:
+    --      PATTERNDETECT  = vector_and((P = PATTERN) | MASK)
+    --      PATTERNBDETECT = vector_and((P = ~PATTERN) | MASK)
+    -- (For conciseness write D = PATTERNDETECT, DB = PATTERNBDETECT.)
+    -- In our application with PATTERN=all zeros and MASK used to mask out the
+    -- low order bits of P this amounts to:
+    --      PATTERNDETECT  => P is valid positive value
+    --      PATTERNBDETECT => P is valid negative value
+    -- Therefore for a valid two register value we require both values are valid
+    -- positive or both are valid negative.
     overflow_o <= not (
-        (detect_low_pl and detect_high) or
-        (detect_low_bar_pl and detect_high_bar));
+        (detect_low_pl and detect_high) or          -- Both parts valid +ve
+        (detect_low_bar_pl and detect_high_bar));   -- Both parts valid -ve
 
 
     -- Low order multiply/accumlate unit.  This accumulates the bottom 48 bits
@@ -301,8 +313,8 @@ begin
         MULTSIGNOUT => open,
         OVERFLOW => open,
         signed(P) => sum_o(95 downto 48),
-        PATTERNBDETECT => detect_high,
-        PATTERNDETECT => detect_high_bar,
+        PATTERNBDETECT => detect_high_bar,
+        PATTERNDETECT => detect_high,
         PCOUT => open,
         UNDERFLOW => open
     );
