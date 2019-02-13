@@ -90,6 +90,11 @@ architecture arch of tune_pll_cordic is
     signal shifted : iq_accum_t;
     signal angle : signed(ATAN_BITS-1 downto 0);
 
+    -- Output signals, repeated here purely so we can assign default values for
+    -- simulation.
+    signal angle_out : angle_o'SUBTYPE := (angle_o'RANGE => '0');
+    signal magnitude_out : magnitude_o'SUBTYPE := (magnitude_o'RANGE => '0');
+
 
     function initial_angle(quadrant : integer) return cordic_angle_t is
     begin
@@ -192,12 +197,15 @@ begin
             -- Register the final result
             if done = '1' then
                 -- Discard the sign bit for our unsigned result
-                magnitude_o <= shift_right(unsigned(
+                magnitude_out <= shift_right(unsigned(
                     iq.cos(IQ_SIZE-2 downto IQ_SIZE - magnitude_o'LENGTH-1)),
                     to_integer(normalise_shift));
-                angle_o <= angle(ATAN_BITS-1 downto ROUNDING_BITS);
+                angle_out <= angle(ATAN_BITS-1 downto ROUNDING_BITS);
             end if;
             done_o <= done;
         end if;
     end process;
+
+    magnitude_o <= magnitude_out;
+    angle_o <= angle_out;
 end;

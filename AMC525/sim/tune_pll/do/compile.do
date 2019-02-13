@@ -32,6 +32,7 @@ vcom -64 -2008 -work xil_defaultlib \
     cordic_table.vhd \
     $vhd_dir/tune_pll/tune_pll_cordic.vhd \
     $vhd_dir/tune_pll/tune_pll_feedback.vhd \
+    $vhd_dir/tune_pll/tune_pll_control.vhd \
     $vhd_dir/tune_pll/tune_pll_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -45,12 +46,15 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 view wave
 
 add wave -group "Registers" tune_pll/registers/*
+add wave -group "Detector Core Cos" tune_pll/detector/detector/cos_detect/*
+add wave -group "Detector Core" tune_pll/detector/detector/*
 add wave -group "Detector" tune_pll/detector/*
 add wave -group "CORDIC" tune_pll/cordic/*
 add wave -group "Feedback" tune_pll/feedback/*
+add wave -group "Control" tune_pll/control/*
 add wave -group "Tune Pll" tune_pll/*
 add wave sim:*
 
-run 10ns
+run 2us
 
 # vim: set filetype=tcl:

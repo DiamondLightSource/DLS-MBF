@@ -20,7 +20,7 @@ architecture arch of testbench is
     signal adc_clk : std_ulogic := '1';
     signal dsp_clk : std_ulogic := '0';
 
-    constant TURN_COUNT : natural := 64;
+    constant TURN_COUNT : natural := 31;
     signal turn_clock : std_ulogic;
 
     -- Device under test signals
@@ -32,7 +32,7 @@ architecture arch of testbench is
         := (others => '0');
     signal read_data : reg_data_array_t(DSP_TUNE_PLL_CONTROL_REGS);
     signal read_ack : std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
-    signal adc_data : signed(15 downto 0);
+    signal adc_data : signed(15 downto 0) := (others => '0');
     -- We're just using 'Z' as a placeholder for unused signals because it shows
     -- as a different colour from 'X' and 'U'.
     signal adc_fill_reject : signed(15 downto 0) := (others => 'Z');
@@ -46,7 +46,7 @@ architecture arch of testbench is
 
     -- Simulated test data
     constant TEST_GAIN : natural := 16#1000#;
-    constant NOISE_GAIN : real := real(16#1000#);
+    constant NOISE_GAIN : real := real(4000);
     signal test_freq : angle_t := 48X"1000_0000_0000";
     signal data_cos_sin : cos_sin_16_t;
     signal adc_noise : adc_data'SUBTYPE;
@@ -106,7 +106,7 @@ begin
         gain_i => TEST_GAIN,
         cos_sin_o => data_cos_sin
     );
-    process (all)
+    process (data_cos_sin)
         variable seed1 : positive := 1;
         variable seed2 : positive := 1;
         variable noise : real;
@@ -134,14 +134,40 @@ begin
             clk_wait(dsp_clk, count);
         end;
 
+        constant DSP_TUNE_PLL_CONTROL_NCO_FREQ_LOW_REG : natural :=
+            DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS'LEFT +
+            NCO_FREQ_LOW_REG;
+        constant DSP_TUNE_PLL_CONTROL_NCO_FREQ_HIGH_REG : natural :=
+            DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS'LEFT +
+            NCO_FREQ_HIGH_REG;
+
     begin
         write_strobe <= (others => '0');
         read_strobe <= (others => '0');
 
         clk_wait;
 
-        write_reg(23, X"76543210");
-        write_reg(24, X"0000BA98");
+        -- Set NCO frequency close to test frequency
+        write_reg(DSP_TUNE_PLL_CONTROL_NCO_FREQ_LOW_REG, X"F0000000");
+        write_reg(DSP_TUNE_PLL_CONTROL_NCO_FREQ_HIGH_REG, (
+            NCO_FREQ_HIGH_BITS_BITS =>
+                std_ulogic_vector(test_freq(47 downto 32)),
+            others => '0'));
+        -- Configure dwell time to be long enough for CORDIC to complete
+        write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG, (
+            DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => 12X"0004",
+            others => '0'));
+        -- Effectively disable phase error checking
+        write_reg(DSP_TUNE_PLL_CONTROL_MAX_PHASE_ERROR_REG, (others => '1'));
+        -- Write all ones to bunch memory to enable detector operation
+        write_reg(DSP_TUNE_PLL_CONTROL_COMMAND_REG_W, (
+            DSP_TUNE_PLL_CONTROL_COMMAND_WRITE_BUNCH_BIT => '1',
+            others => '0'));
+        write_reg(DSP_TUNE_PLL_CONTROL_BUNCH_REG, (others => '1'));
+        -- Set multiplier
+        write_reg(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG, X"FFF00000");
+        -- Set target phase close to starting phase
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"80000000");
 
         wait;
     end process;

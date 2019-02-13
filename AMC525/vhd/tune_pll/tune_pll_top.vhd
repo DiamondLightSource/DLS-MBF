@@ -44,6 +44,9 @@ end;
 architecture arch of tune_pll_top is
     constant ANGLE_BITS : natural := 18;
 
+    -- Delayed turn clock to help with placement
+    signal turn_clock_in : std_ulogic;
+
     -- Control of bunch memory for detector
     signal bunch_start_write : std_ulogic;
     signal bunch_write_strobe : std_ulogic;
@@ -53,7 +56,6 @@ architecture arch of tune_pll_top is
 
     -- Detector control signals
     signal start_detector : std_ulogic;
-    signal write_detector : std_ulogic;
     signal detector_done : std_ulogic;
     signal detector_overflow : std_ulogic;
     signal detector_iq : cos_sin_t(cos(31 downto 0), sin(31 downto 0));
@@ -76,7 +78,18 @@ architecture arch of tune_pll_top is
     signal phase_error : std_ulogic;
     signal frequency_out : angle_t;
 
+    -- Control signals
+    signal dwell_time : unsigned(11 downto 0);
+
 begin
+    turn_clock : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => turn_clock_i,
+        data_o(0) => turn_clock_in
+    );
+
     registers : entity work.tune_pll_registers port map (
         dsp_clk_i => dsp_clk_i,
         -- Register interface
@@ -103,7 +116,9 @@ begin
         base_frequency_o => base_frequency,
         set_frequency_o => set_frequency,
         magnitude_error_i => magnitude_error,
-        phase_error_i => phase_error
+        phase_error_i => phase_error,
+        -- Control
+        dwell_time_o => dwell_time
     );
 
     -- The detector runs at ADC clock rate, but brings the result over to the
@@ -111,7 +126,7 @@ begin
     detector : entity work.tune_pll_detector port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        turn_clock_i => turn_clock_i,
+        turn_clock_i => turn_clock_in,
         -- Data input and selection
         data_select_i => data_select,
         adc_data_i => adc_data_i,
@@ -125,8 +140,8 @@ begin
         -- Select scaling of detector readout
         shift_i => detector_shift,
         -- Detector triggering
-        start_i => start_detector,
-        write_i => write_detector,
+        start_i => start_detector,      -- Detector is always running, so
+        write_i => start_detector,      -- start and write are the same signal
         -- Results
         detector_overflow_o => detector_overflow,
         done_o => detector_done,
@@ -168,11 +183,18 @@ begin
         frequency_o => frequency_out
     );
 
-    nco_freq_o <= frequency_out;
+    control : entity work.tune_pll_control port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        turn_clock_i => turn_clock_in,
+        dwell_time_i => dwell_time,
+        start_detector_o => start_detector
+    );
+    enable <= '1';
 
---     control : entity work.tune_pll_control port map (
---     );
 -- 
 --     readout : entity work.tune_pll_readout port map (
 --     );
+
+    nco_freq_o <= frequency_out;
 end;

@@ -41,8 +41,10 @@ entity tune_pll_registers is
         base_frequency_o : out angle_t;
         set_frequency_o : out std_ulogic;
         magnitude_error_i : in std_ulogic;
-        phase_error_i : in std_ulogic
+        phase_error_i : in std_ulogic;
 
+        -- Top level control
+        dwell_time_o : out unsigned(11 downto 0)
     );
 end;
 
@@ -108,12 +110,15 @@ begin
     read_ack_o(DSP_TUNE_PLL_CONTROL_MAX_PHASE_ERROR_REG) <= '1';
 
     data_select_o <= config_register(DSP_TUNE_PLL_CONTROL_CONFIG_SELECT_BITS);
+    detector_shift_o <= unsigned(
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DET_SHIFT_BITS));
     nco_gain_o <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_GAIN_BITS));
     nco_enable_o <=
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_ENABLE_BIT);
-    detector_shift_o <= unsigned(
-        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DET_SHIFT_BITS));
+    dwell_time_o <= unsigned(
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS));
+
     target_phase_o <= signed(target_phase_register(31 downto 14));
     multiplier_o <= signed(multiplier_register(31 downto 7));
     magnitude_limit_o <= unsigned(mag_limit_register);

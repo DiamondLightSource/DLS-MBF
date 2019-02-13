@@ -744,12 +744,15 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 # 1     Scaled FIR data
                 # 2     Input compensated ADC data after fill pattern rejection
                 # ===== ========================================================
-                .SELECT     2
+                .SELECT         2
                 # Readout shift for detector
-                .DET_SHIFT  2
+                .DET_SHIFT      2
                 # NCO gain and output enable
-                .NCO_GAIN   4
+                .NCO_GAIN       4
                 .NCO_ENABLE
+                # Number of turns between detector cycles, determines how fast
+                # the PLL tracker runs.
+                .DWELL_TIME     12
             # Target phase to track.  The top 18 bits of the phase are used
             TARGET_PHASE    RW
             # Integrating multiplier term.  The top 25 bits are used

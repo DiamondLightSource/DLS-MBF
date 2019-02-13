@@ -29,6 +29,12 @@ architecture arch of sim_nco is
     signal cosine : real;
     signal sine : real;
 
+    -- This incredibly ugly syntax is required because of a combination of both
+    -- VHDL and QuestaSim misfeatures.
+    signal cos_sin_out : cos_sin_t(
+        cos(cos_sin_o.cos'RANGE), sin(cos_sin_o.sin'RANGE))
+        := (others => (others => '0'));
+
 begin
     real_phase <= 2.0 * MATH_PI *
         real(to_integer(nco_phase(47 downto 17))) / 2.0**31;
@@ -39,8 +45,10 @@ begin
         if rising_edge(clk_i) then
             nco_phase <= nco_phase + nco_freq_i;
 
-            cos_sin_o.cos <= to_signed(integer(cosine), BITS_OUT);
-            cos_sin_o.sin <= to_signed(integer(sine), BITS_OUT);
+            cos_sin_out.cos <= to_signed(integer(cosine), BITS_OUT);
+            cos_sin_out.sin <= to_signed(integer(sine), BITS_OUT);
         end if;
     end process;
+
+    cos_sin_o <= cos_sin_out;
 end;
