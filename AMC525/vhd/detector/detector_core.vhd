@@ -59,7 +59,7 @@ begin
     process (shift_i) begin
         for i in 0 to 95 loop
             preload(i) <= to_std_ulogic(i + 1 = shift_i);
-            overflow_mask(i) <= to_std_ulogic(i >= RESULT_WIDTH - 1 + shift_i);
+            overflow_mask(i) <= to_std_ulogic(i < RESULT_WIDTH - 1 + shift_i);
         end loop;
     end process;
 
