@@ -42,7 +42,7 @@ entity tune_pll_top is
 end;
 
 architecture arch of tune_pll_top is
-    constant ANGLE_BITS : natural := 18;
+    constant PHASE_ANGLE_BITS : natural := 18;
 
     -- Delayed turn clock to help with placement
     signal turn_clock_in : std_ulogic;
@@ -61,22 +61,22 @@ architecture arch of tune_pll_top is
     signal detector_iq : cos_sin_t(cos(31 downto 0), sin(31 downto 0));
 
     -- Cordic signals
-    signal cordic_phase : signed(ANGLE_BITS-1 downto 0);
+    signal cordic_phase : signed(PHASE_ANGLE_BITS-1 downto 0);
     signal cordic_magnitude : unsigned(31 downto 0);
     signal cordic_done : std_ulogic;
 
     -- Feedback signals
     signal enable : std_ulogic;
     signal magnitude_limit : unsigned(31 downto 0);
-    signal phase_limit : unsigned(ANGLE_BITS-1 downto 0);
-    signal target_phase : signed(ANGLE_BITS-1 downto 0);
+    signal offset_limit : signed(31 downto 0);
+    signal target_phase : signed(PHASE_ANGLE_BITS-1 downto 0);
     signal multiplier : signed(24 downto 0);
     signal base_frequency : angle_t;
     signal set_frequency : std_ulogic;
     signal feedback_done : std_ulogic;
     signal magnitude_error : std_ulogic;
-    signal phase_error : std_ulogic;
-    signal frequency_out : angle_t;
+    signal offset_error : std_ulogic;
+    signal frequency_offset : signed(31 downto 0);
 
     -- Control signals
     signal dwell_time : unsigned(11 downto 0);
@@ -112,11 +112,11 @@ begin
         target_phase_o => target_phase,
         multiplier_o => multiplier,
         magnitude_limit_o => magnitude_limit,
-        phase_limit_o => phase_limit,
+        offset_limit_o => offset_limit,
         base_frequency_o => base_frequency,
         set_frequency_o => set_frequency,
         magnitude_error_i => magnitude_error,
-        phase_error_i => phase_error,
+        offset_error_i => offset_error,
         -- Control
         dwell_time_o => dwell_time
     );
@@ -163,9 +163,11 @@ begin
         clk_i => dsp_clk_i,
         -- Controls whether to update frequency.
         enable_i => enable,
+        blanking_i => blanking_i,
+        detector_overflow_i => detector_overflow,
         -- Limits for feedback
         magnitude_limit_i => magnitude_limit,
-        phase_limit_i => phase_limit,
+        offset_limit_i => offset_limit,
         -- Target phase and feedback scaling
         target_phase_i => target_phase,
         multiplier_i => multiplier,
@@ -179,8 +181,9 @@ begin
         -- Feedback and error flags
         done_o => feedback_done,
         magnitude_error_o => magnitude_error,
-        phase_error_o => phase_error,
-        frequency_o => frequency_out
+        offset_error_o => offset_error,
+        frequency_o => nco_freq_o,
+        frequency_offset_o => frequency_offset
     );
 
     control : entity work.tune_pll_control port map (
@@ -195,6 +198,4 @@ begin
 -- 
 --     readout : entity work.tune_pll_readout port map (
 --     );
-
-    nco_freq_o <= frequency_out;
 end;

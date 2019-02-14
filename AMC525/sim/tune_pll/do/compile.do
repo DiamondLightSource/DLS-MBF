@@ -38,6 +38,8 @@ vcom -64 -2008 -work xil_defaultlib \
 vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/sim_support.vhd \
     $bench_dir/sim_nco.vhd \
+    $bench_dir/sim_resonator.vhd \
+    $bench_dir/sim_noise.vhd \
     $bench_dir/testbench.vhd
 
 

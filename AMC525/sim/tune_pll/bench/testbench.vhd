@@ -44,20 +44,15 @@ architecture arch of testbench is
     signal nco_enable : std_ulogic;
     signal nco_freq : angle_t;
 
-    -- Simulated test data
-    constant TEST_GAIN : natural := 16#1000#;
-    constant NOISE_GAIN : real := real(4000);
-    signal test_freq : angle_t := 48X"1000_0000_0000";
-    signal data_cos_sin : cos_sin_16_t;
-    signal adc_noise : adc_data'SUBTYPE;
-
     -- Resonant filter
     constant FILTER_CENTRE_FREQ : real := 0.2;
-    constant FILTER_WIDTH : real := 0.01;
-    signal sweep_iq : cos_sin_16_t;
-    signal filtered : signed(15 downto 0);
-    signal sweep_freq  : angle_t := X"0000_0000_0000";
-    signal sweep_delta : angle_t := X"0010_0000_0000";
+    constant FILTER_WIDTH : real := 0.001;
+    constant FILTER_GAIN : real := 0.2;
+    signal resonant_adc_data : adc_data'SUBTYPE;
+
+    -- Noise to add to ADC data
+    constant NOISE_GAIN : real := real(4000);
+    signal adc_noise : adc_data'SUBTYPE;
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -107,47 +102,22 @@ begin
     );
 
 
---     -- Test data: sin wave with added noise
---     data_nco : entity work.sim_nco port map (
---         clk_i => adc_clk,
---         nco_freq_i => test_freq,
---         gain_i => TEST_GAIN,
---         cos_sin_o => data_cos_sin
---     );
---     process (data_cos_sin)
---         variable seed1 : positive := 1;
---         variable seed2 : positive := 1;
---         variable noise : real;
---     begin
---         uniform(seed1, seed2, noise);
---         adc_noise <= to_signed(integer(noise * NOISE_GAIN), 16);
---         adc_data <= data_cos_sin.cos + adc_noise;
---     end process;
-
-
     -- Simulated resonant filter
     resonator : entity work.sim_resonator port map (
         clk_i => adc_clk,
         centre_freq_i => FILTER_CENTRE_FREQ,
         width_i => FILTER_WIDTH,
-        gain_i => 1.0,
-        data_i => sweep_iq.cos,
-        data_o => filtered
+        gain_i => FILTER_GAIN,
+        data_i => nco_iq.cos(17 downto 2),
+        data_o => resonant_adc_data
     );
-    sweep_nco : entity work.sim_nco port map (
+
+    sim_noise : entity work.sim_noise port map (
         clk_i => adc_clk,
-        nco_freq_i => sweep_freq,
-        gain_i => 16#3fff#,
-        cos_sin_o => sweep_iq
+        gain_i => NOISE_GAIN,
+        data_o => adc_noise
     );
-    -- sweeper
-    process (adc_clk) begin
-        if rising_edge(adc_clk) then
-            if turn_clock = '1' then
-                sweep_freq <= sweep_freq + sweep_delta;
-            end if;
-        end if;
-    end process;
+    adc_data <= resonant_adc_data + adc_noise;
 
 
     -- Register control
@@ -174,6 +144,8 @@ begin
             DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS'LEFT +
             NCO_FREQ_HIGH_REG;
 
+        constant TEST_FREQ : std_ulogic_vector(15 downto 0) := X"0826";
+
     begin
         write_strobe <= (others => '0');
         read_strobe <= (others => '0');
@@ -183,26 +155,40 @@ begin
         -- Set NCO frequency close to test frequency
         write_reg(DSP_TUNE_PLL_CONTROL_NCO_FREQ_LOW_REG, X"F0000000");
         write_reg(DSP_TUNE_PLL_CONTROL_NCO_FREQ_HIGH_REG, (
-            NCO_FREQ_HIGH_BITS_BITS =>
-                std_ulogic_vector(test_freq(47 downto 32)),
+            NCO_FREQ_HIGH_BITS_BITS => TEST_FREQ,
             others => '0'));
         -- Configure dwell time to be long enough for CORDIC to complete
         write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG, (
-            DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => 12X"0004",
+            DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => 12X"0008",
             others => '0'));
         -- Effectively disable phase error checking
-        write_reg(DSP_TUNE_PLL_CONTROL_MAX_PHASE_ERROR_REG, (others => '1'));
+        write_reg(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG, X"7FFFFFFF");
         -- Write all ones to bunch memory to enable detector operation
         write_reg(DSP_TUNE_PLL_CONTROL_COMMAND_REG_W, (
             DSP_TUNE_PLL_CONTROL_COMMAND_WRITE_BUNCH_BIT => '1',
             others => '0'));
         write_reg(DSP_TUNE_PLL_CONTROL_BUNCH_REG, (others => '1'));
         -- Set multiplier
-        write_reg(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG, X"FFF00000");
+        write_reg(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG, X"FC000000");
         -- Set target phase close to starting phase
         write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"80000000");
 
+        wait for 25 us;
+        clk_wait;
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"90000000");
+
+        wait for 25 us;
+        clk_wait;
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"70000000");
+
+        wait for 25 us;
+        clk_wait;
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"60000000");
+
+        wait for 25 us;
+        clk_wait;
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"50000000");
+
         wait;
     end process;
-
 end;

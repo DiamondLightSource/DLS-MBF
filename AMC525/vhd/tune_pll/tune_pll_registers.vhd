@@ -37,11 +37,11 @@ entity tune_pll_registers is
         target_phase_o : out signed(17 downto 0);
         multiplier_o : out signed(24 downto 0);
         magnitude_limit_o : out unsigned(31 downto 0);
-        phase_limit_o : out unsigned(17 downto 0);
+        offset_limit_o : out signed(31 downto 0);
         base_frequency_o : out angle_t;
         set_frequency_o : out std_ulogic;
         magnitude_error_i : in std_ulogic;
-        phase_error_i : in std_ulogic;
+        offset_error_i : in std_ulogic;
 
         -- Top level control
         dwell_time_o : out unsigned(11 downto 0)
@@ -53,7 +53,7 @@ architecture arch of tune_pll_registers is
     signal target_phase_register : reg_data_t;
     signal multiplier_register : reg_data_t;
     signal mag_limit_register : reg_data_t;
-    signal phase_limit_register : reg_data_t;
+    signal offset_limit_register : reg_data_t;
     signal event_bits : reg_data_t;
     signal command_bits : reg_data_t;
 
@@ -84,30 +84,30 @@ begin
         write_strobe_i(3) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
         write_strobe_i(4) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_MAX_PHASE_ERROR_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG),
         write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
         write_ack_o(2) => write_ack_o(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG),
         write_ack_o(3) => write_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
-        write_ack_o(4) => write_ack_o(DSP_TUNE_PLL_CONTROL_MAX_PHASE_ERROR_REG),
+        write_ack_o(4) =>
+            write_ack_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG),
         register_data_o(0) => config_register,
         register_data_o(1) => target_phase_register,
         register_data_o(2) => multiplier_register,
         register_data_o(3) => mag_limit_register,
-        register_data_o(4) => phase_limit_register
+        register_data_o(4) => offset_limit_register
     );
-    read_data_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG) <= config_register;
+    read_data_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG) <= '1';
-    read_data_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= target_phase_register;
+    read_data_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= '1';
-    read_data_o(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG) <= multiplier_register;
+    read_data_o(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG) <= '1';
-    read_data_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG) <= mag_limit_register;
+    read_data_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG) <= '1';
-    read_data_o(DSP_TUNE_PLL_CONTROL_MAX_PHASE_ERROR_REG) <=
-        phase_limit_register;
-    read_ack_o(DSP_TUNE_PLL_CONTROL_MAX_PHASE_ERROR_REG) <= '1';
+    read_data_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG) <= (others => '0');
+    read_ack_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG) <= '1';
 
     data_select_o <= config_register(DSP_TUNE_PLL_CONTROL_CONFIG_SELECT_BITS);
     detector_shift_o <= unsigned(
@@ -122,7 +122,7 @@ begin
     target_phase_o <= signed(target_phase_register(31 downto 14));
     multiplier_o <= signed(multiplier_register(31 downto 7));
     magnitude_limit_o <= unsigned(mag_limit_register);
-    phase_limit_o <= unsigned(phase_limit_register(31 downto 14));
+    offset_limit_o <= signed(offset_limit_register);
 
 
     -- Event sensing bits
@@ -137,7 +137,7 @@ begin
     event_bits <= (
         DSP_TUNE_PLL_CONTROL_EVENTS_DET_OVFL_BIT => detector_overflow_i,
         DSP_TUNE_PLL_CONTROL_EVENTS_MAG_ERROR_BIT => magnitude_error_i,
-        DSP_TUNE_PLL_CONTROL_EVENTS_PHASE_ERROR_BIT => phase_error_i,
+        DSP_TUNE_PLL_CONTROL_EVENTS_OFFSET_ERROR_BIT => offset_error_i,
         others => '0'
     );
 

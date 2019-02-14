@@ -132,9 +132,9 @@ begin
                     shift_right(iq_out.cos, shift)(RESULT_WIDTH-1 downto 0);
                 iq_o.sin <=
                     shift_right(iq_out.sin, shift)(RESULT_WIDTH-1 downto 0);
+                detector_overflow_o <= detector_overflow_out;
             end if;
 
-            detector_overflow_o <= detector_overflow and done;
             done_o <= done;
         end if;
     end process;
