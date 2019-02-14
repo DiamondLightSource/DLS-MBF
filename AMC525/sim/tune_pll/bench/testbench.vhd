@@ -51,6 +51,14 @@ architecture arch of testbench is
     signal data_cos_sin : cos_sin_16_t;
     signal adc_noise : adc_data'SUBTYPE;
 
+    -- Resonant filter
+    constant FILTER_CENTRE_FREQ : real := 0.2;
+    constant FILTER_WIDTH : real := 0.01;
+    signal sweep_iq : cos_sin_16_t;
+    signal filtered : signed(15 downto 0);
+    signal sweep_freq  : angle_t := X"0000_0000_0000";
+    signal sweep_delta : angle_t := X"0010_0000_0000";
+
 begin
     adc_clk <= not adc_clk after 1 ns;
     dsp_clk <= not dsp_clk after 2 ns;
@@ -99,21 +107,46 @@ begin
     );
 
 
-    -- Test data: sin wave with added noise
-    data_nco : entity work.sim_nco port map (
+--     -- Test data: sin wave with added noise
+--     data_nco : entity work.sim_nco port map (
+--         clk_i => adc_clk,
+--         nco_freq_i => test_freq,
+--         gain_i => TEST_GAIN,
+--         cos_sin_o => data_cos_sin
+--     );
+--     process (data_cos_sin)
+--         variable seed1 : positive := 1;
+--         variable seed2 : positive := 1;
+--         variable noise : real;
+--     begin
+--         uniform(seed1, seed2, noise);
+--         adc_noise <= to_signed(integer(noise * NOISE_GAIN), 16);
+--         adc_data <= data_cos_sin.cos + adc_noise;
+--     end process;
+
+
+    -- Simulated resonant filter
+    resonator : entity work.sim_resonator port map (
         clk_i => adc_clk,
-        nco_freq_i => test_freq,
-        gain_i => TEST_GAIN,
-        cos_sin_o => data_cos_sin
+        centre_freq_i => FILTER_CENTRE_FREQ,
+        width_i => FILTER_WIDTH,
+        gain_i => 1.0,
+        data_i => sweep_iq.cos,
+        data_o => filtered
     );
-    process (data_cos_sin)
-        variable seed1 : positive := 1;
-        variable seed2 : positive := 1;
-        variable noise : real;
-    begin
-        uniform(seed1, seed2, noise);
-        adc_noise <= to_signed(integer(noise * NOISE_GAIN), 16);
-        adc_data <= data_cos_sin.cos + adc_noise;
+    sweep_nco : entity work.sim_nco port map (
+        clk_i => adc_clk,
+        nco_freq_i => sweep_freq,
+        gain_i => 16#3fff#,
+        cos_sin_o => sweep_iq
+    );
+    -- sweeper
+    process (adc_clk) begin
+        if rising_edge(adc_clk) then
+            if turn_clock = '1' then
+                sweep_freq <= sweep_freq + sweep_delta;
+            end if;
+        end if;
     end process;
 
 
