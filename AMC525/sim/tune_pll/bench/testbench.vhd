@@ -45,13 +45,13 @@ architecture arch of testbench is
     signal nco_freq : angle_t;
 
     -- Resonant filter
-    constant FILTER_CENTRE_FREQ : real := 0.2;
+    signal FILTER_CENTRE_FREQ : real := 0.2;
     constant FILTER_WIDTH : real := 0.001;
     constant FILTER_GAIN : real := 0.2;
     signal resonant_adc_data : adc_data'SUBTYPE;
 
     -- Noise to add to ADC data
-    constant NOISE_GAIN : real := real(4000);
+    constant NOISE_GAIN : real := 2000.0;
     signal adc_noise : adc_data'SUBTYPE;
 
 begin
@@ -168,8 +168,10 @@ begin
             DSP_TUNE_PLL_CONTROL_COMMAND_WRITE_BUNCH_BIT => '1',
             others => '0'));
         write_reg(DSP_TUNE_PLL_CONTROL_BUNCH_REG, (others => '1'));
-        -- Set multiplier
-        write_reg(DSP_TUNE_PLL_CONTROL_MULTIPLIER_REG, X"FC000000");
+        -- Set integral term
+        write_reg(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG, X"04000000");
+        -- Set proportional term
+        write_reg(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG, X"08000000");
         -- Set target phase close to starting phase
         write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"80000000");
 
@@ -186,8 +188,13 @@ begin
         write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"60000000");
 
         wait for 25 us;
-        clk_wait;
-        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"50000000");
+        FILTER_CENTRE_FREQ <= 0.201;
+
+        wait for 25 us;
+        FILTER_CENTRE_FREQ <= 0.205;
+
+        wait for 25 us;
+        FILTER_CENTRE_FREQ <= 0.210;
 
         wait;
     end process;

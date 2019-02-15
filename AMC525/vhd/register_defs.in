@@ -755,8 +755,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 .DWELL_TIME     12
             # Target phase to track.  The top 18 bits of the phase are used
             TARGET_PHASE    RW
-            # Integrating multiplier term.  The top 25 bits are used
-            MULTIPLIER      RW
+            # Integrating factor.  The top 25 bits are used
+            INTEGRAL        RW
+            # Proportional factor.  The top 25 bits are used
+            PROPORTIONAL    RW
             # Magnitude limit.  Minimum magnitude to allow feedback
             MIN_MAGNITUDE   RW
             # Offset error limit.  The instantaneous phase error must be less

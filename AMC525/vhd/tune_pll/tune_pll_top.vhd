@@ -70,7 +70,8 @@ architecture arch of tune_pll_top is
     signal magnitude_limit : unsigned(31 downto 0);
     signal offset_limit : signed(31 downto 0);
     signal target_phase : signed(PHASE_ANGLE_BITS-1 downto 0);
-    signal multiplier : signed(24 downto 0);
+    signal integral : signed(24 downto 0);
+    signal proportional : signed(24 downto 0);
     signal base_frequency : angle_t;
     signal set_frequency : std_ulogic;
     signal feedback_done : std_ulogic;
@@ -110,7 +111,8 @@ begin
         detector_overflow_i => detector_overflow,
         -- Feedback control and status
         target_phase_o => target_phase,
-        multiplier_o => multiplier,
+        integral_o => integral,
+        proportional_o => proportional,
         magnitude_limit_o => magnitude_limit,
         offset_limit_o => offset_limit,
         base_frequency_o => base_frequency,
@@ -170,7 +172,8 @@ begin
         offset_limit_i => offset_limit,
         -- Target phase and feedback scaling
         target_phase_i => target_phase,
-        multiplier_i => multiplier,
+        integral_i => integral,
+        proportional_i => proportional,
         -- Interface for setting output frequency
         base_frequency_i => base_frequency,
         set_frequency_i => set_frequency,
