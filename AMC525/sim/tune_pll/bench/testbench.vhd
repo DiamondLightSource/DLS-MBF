@@ -39,6 +39,7 @@ architecture arch of testbench is
     signal fir_data : signed(24 downto 0) := (others => 'Z');
     signal nco_iq : cos_sin_18_t;
     signal start : std_ulogic := '0';
+    signal stop : std_ulogic := '0';
     signal blanking : std_ulogic := '0';
     signal nco_gain : unsigned(3 downto 0);
     signal nco_enable : std_ulogic;
@@ -73,6 +74,7 @@ begin
         fir_data_i => fir_data,
         nco_iq_i => nco_iq,
         start_i => start,
+        stop_i => stop,
         blanking_i => blanking,
         nco_gain_o => nco_gain,
         nco_enable_o => nco_enable,
@@ -158,7 +160,7 @@ begin
             NCO_FREQ_HIGH_BITS_BITS => TEST_FREQ,
             others => '0'));
         -- Configure dwell time to be long enough for CORDIC to complete
-        write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG, (
+        write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W, (
             DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => 12X"0008",
             others => '0'));
         -- Effectively disable phase error checking
@@ -175,9 +177,19 @@ begin
         -- Set target phase close to starting phase
         write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"80000000");
 
+        -- Can now start the detector
+        start <= '1';
+        clk_wait;
+        start <= '0';
+
         wait for 25 us;
         clk_wait;
         write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"90000000");
+
+        -- Read back the NCO as a quick test.  This has to be done in HIGH then
+        -- LOW order to latch the full value correctly.
+        read_reg(DSP_TUNE_PLL_CONTROL_NCO_FREQ_HIGH_REG);
+        read_reg(DSP_TUNE_PLL_CONTROL_NCO_FREQ_LOW_REG);
 
         wait for 25 us;
         clk_wait;
@@ -195,6 +207,14 @@ begin
 
         wait for 25 us;
         FILTER_CENTRE_FREQ <= 0.210;
+
+        wait for 25 us;
+        clk_wait;
+
+        -- All done, now stop the detector
+        stop <= '1';
+        clk_wait;
+        stop <= '0';
 
         wait;
     end process;

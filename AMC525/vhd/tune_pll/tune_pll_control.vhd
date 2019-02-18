@@ -13,13 +13,28 @@ entity tune_pll_control is
         dsp_clk_i : in std_ulogic;
         turn_clock_i : in std_ulogic;       -- On ADC clock
 
---         enable_i : in std_ulogic;           -- Enable control from register
---         start_i : in std_ulogic;            -- External trigger to start
---         feedback_ok_i : in std_ulogic;      -- Last cycle ok
---         running_o : out std_ulogic;         -- Reports if running
+        -- Generation of detector dwell cycle.  This runs continually.
+        dwell_time_i : in unsigned;         -- Turns per dwell
+        dwell_clock_o : out std_ulogic;     -- Process detector output (ADC clk)
 
-        dwell_time_i : in unsigned;         -- Turns per update
-        start_detector_o : out std_ulogic   -- Process detector output (ADC clk)
+        -- Feedback status
+        detector_overflow_i : in std_ulogic;
+        magnitude_error_i : in std_ulogic;
+        offset_error_i : in std_ulogic;
+
+        -- Stop reasons, latched when disabled
+        stop_o : out std_ulogic;
+        detector_overflow_o : out std_ulogic;
+        magnitude_error_o : out std_ulogic;
+        offset_error_o : out std_ulogic;
+
+        -- Start and stop feedback
+        start_i : in std_ulogic;
+        stop_i : in std_ulogic;
+        -- The enable signal only changes state shortly after the detector dwell
+        -- clock; this ensures that (normally) this control flag will be stable
+        -- during feedback.
+        enable_o : out std_ulogic
     );
 end;
 
@@ -30,6 +45,11 @@ architecture arch of tune_pll_control is
     -- unknown values in arithmetic.  This should have no other consequence.
     signal dwell_start_adc : std_ulogic := '1';
     signal dwell_start : std_ulogic;
+
+    type run_state_t is (
+        STATE_IDLE, STATE_STARTING, STATE_RUNNING, STATE_STOPPING);
+    signal run_state : run_state_t;
+    signal stopping_feedback : boolean;
 
 begin
     -- The detector start signal is generated on the ADC clock.
@@ -47,7 +67,7 @@ begin
         end if;
     end process;
 
-    start_detector_o <= dwell_start_adc;
+    dwell_clock_o <= dwell_start_adc;
 
     -- Bring the start event over to the DSP clock for further processing.
     dwell_to_dsp : entity work.pulse_adc_to_dsp port map (
@@ -58,28 +78,52 @@ begin
         pulse_o => dwell_start
     );
 
---     process (clk_i) begin
---         if rising_edge(clk_i) then
--- 
---             -- Generate dwell clock by dividing the turn clock
---             if turn_clock_i = '1' then
---                 if dwell_counter = 0 then
---                     dwell_counter <= dwell_time_i;
---                 else
---                     dwell_counter <= dwell_counter - 1;
---                 end if;
---             end if;
---             dwell_start <= dwell_counter = 0 and turn_clock_i = '1';
--- 
---             -- Detect a start request, remember until next turn
---             if start_i = '1' and enable_i = '1' then
---                 start_request <= true;
---             elsif turn_clock_i = '1' then
---                 start_request <= false;
---             end if;
--- 
---             -- Process running state
---             if turn_clock_i = '1'
---         end if;
---     end process;
+
+    stopping_feedback <=
+        stop_i = '1' or
+        detector_overflow_i = '1' or
+        magnitude_error_i = '1' or
+        offset_error_i= '1';
+
+    process (dsp_clk_i) begin
+        if rising_edge(dsp_clk_i) then
+            case run_state is
+                when STATE_IDLE =>
+                    if start_i = '1' then
+                        run_state <= STATE_STARTING;
+                    end if;
+                when STATE_STARTING =>
+                    if stopping_feedback then
+                        run_state <= STATE_IDLE;
+                    elsif dwell_start = '1' then
+                        run_state <= STATE_RUNNING;
+                    end if;
+                when STATE_RUNNING =>
+                    if stopping_feedback then
+                        run_state <= STATE_STOPPING;
+                    end if;
+                when STATE_STOPPING =>
+                    if dwell_start = '1' then
+                        run_state <= STATE_IDLE;
+                    end if;
+            end case;
+
+            if (run_state = STATE_STARTING or run_state = STATE_RUNNING) and
+                   stopping_feedback then
+                -- Record the stop reason
+                stop_o <= stop_i;
+                detector_overflow_o <= detector_overflow_i;
+                magnitude_error_o <= magnitude_error_i;
+                offset_error_o <= offset_error_i;
+            elsif run_state = STATE_IDLE and start_i = '1' then
+                -- Reset the stop reasons
+                stop_o <= '0';
+                detector_overflow_o <= '0';
+                magnitude_error_o <= '0';
+                offset_error_o <= '0';
+            end if;
+
+            enable_o <= to_std_ulogic(run_state = STATE_RUNNING);
+        end if;
+    end process;
 end;

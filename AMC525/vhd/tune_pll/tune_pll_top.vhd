@@ -30,12 +30,14 @@ entity tune_pll_top is
         fir_data_i : in signed;
         nco_iq_i : in cos_sin_t;
 
-        -- Trigger etc
+        -- Global start/stop.  These controls come from outside so that both
+        -- Tune PLL units can be started and stopped together.
         start_i : in std_ulogic;
+        stop_i : in std_ulogic;
         blanking_i : in std_ulogic;
 
         -- Control frequency out
-        nco_gain_o : out unsigned;
+        nco_gain_o : out unsigned(3 downto 0);
         nco_enable_o : out std_ulogic;
         nco_freq_o : out angle_t
     );
@@ -55,7 +57,7 @@ architecture arch of tune_pll_top is
     signal detector_shift : unsigned(1 downto 0);
 
     -- Detector control signals
-    signal start_detector : std_ulogic;
+    signal dwell_clock : std_ulogic;
     signal detector_done : std_ulogic;
     signal detector_overflow : std_ulogic;
     signal detector_iq : cos_sin_t(cos(31 downto 0), sin(31 downto 0));
@@ -66,7 +68,7 @@ architecture arch of tune_pll_top is
     signal cordic_done : std_ulogic;
 
     -- Feedback signals
-    signal enable : std_ulogic;
+    signal enable_feedback : std_ulogic;
     signal magnitude_limit : unsigned(31 downto 0);
     signal offset_limit : signed(31 downto 0);
     signal target_phase : signed(PHASE_ANGLE_BITS-1 downto 0);
@@ -81,6 +83,11 @@ architecture arch of tune_pll_top is
 
     -- Control signals
     signal dwell_time : unsigned(11 downto 0);
+    -- Stop reasons
+    signal stop_stop : std_ulogic;
+    signal stop_detector_overflow : std_ulogic;
+    signal stop_magnitude_error : std_ulogic;
+    signal stop_offset_error : std_ulogic;
 
 begin
     turn_clock : entity work.dlyreg generic map (
@@ -103,6 +110,7 @@ begin
         -- NCO control
         nco_gain_o => nco_gain_o,
         nco_enable_o => nco_enable_o,
+        nco_freq_i => nco_freq_o,
         -- Detector control and status
         bunch_start_write_o => bunch_start_write,
         bunch_write_strobe_o => bunch_write_strobe,
@@ -120,7 +128,12 @@ begin
         magnitude_error_i => magnitude_error,
         offset_error_i => offset_error,
         -- Control
-        dwell_time_o => dwell_time
+        dwell_time_o => dwell_time,
+        enable_feedback_i => enable_feedback,
+        stop_stop_i => stop_stop,
+        stop_detector_overflow_i => stop_detector_overflow,
+        stop_magnitude_error_i => stop_magnitude_error,
+        stop_offset_error_i => stop_offset_error
     );
 
     -- The detector runs at ADC clock rate, but brings the result over to the
@@ -142,8 +155,8 @@ begin
         -- Select scaling of detector readout
         shift_i => detector_shift,
         -- Detector triggering
-        start_i => start_detector,      -- Detector is always running, so
-        write_i => start_detector,      -- start and write are the same signal
+        start_i => dwell_clock,      -- Detector is always running, so
+        write_i => dwell_clock,      -- start and write are the same signal
         -- Results
         detector_overflow_o => detector_overflow,
         done_o => detector_done,
@@ -164,7 +177,7 @@ begin
     feedback : entity work.tune_pll_feedback port map (
         clk_i => dsp_clk_i,
         -- Controls whether to update frequency.
-        enable_i => enable,
+        enable_i => enable_feedback,
         blanking_i => blanking_i,
         detector_overflow_i => detector_overflow,
         -- Limits for feedback
@@ -193,10 +206,23 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_in,
+        -- Continuous detector dwell
         dwell_time_i => dwell_time,
-        start_detector_o => start_detector
+        dwell_clock_o => dwell_clock,
+        -- Feedback status
+        detector_overflow_i => detector_overflow,
+        magnitude_error_i => magnitude_error,
+        offset_error_i => offset_error,
+        -- Stop reasons
+        stop_o => stop_stop,
+        detector_overflow_o => stop_detector_overflow,
+        magnitude_error_o => stop_magnitude_error,
+        offset_error_o => stop_offset_error,
+        -- Feedback operation
+        start_i => start_i,
+        stop_i => stop_i,
+        enable_o => enable_feedback
     );
-    enable <= '1';
 
 -- 
 --     readout : entity work.tune_pll_readout port map (

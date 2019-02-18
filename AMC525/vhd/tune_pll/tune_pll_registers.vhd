@@ -25,6 +25,7 @@ entity tune_pll_registers is
         -- NCO control
         nco_gain_o : out unsigned(3 downto 0);
         nco_enable_o : out std_ulogic;
+        nco_freq_i : in angle_t;
 
         -- Detector control and status
         bunch_start_write_o : out std_ulogic;
@@ -45,12 +46,18 @@ entity tune_pll_registers is
         offset_error_i : in std_ulogic;
 
         -- Top level control
-        dwell_time_o : out unsigned(11 downto 0)
+        dwell_time_o : out unsigned(11 downto 0);
+        enable_feedback_i : in std_ulogic;
+        stop_stop_i : in std_ulogic;
+        stop_detector_overflow_i : in std_ulogic;
+        stop_magnitude_error_i : in std_ulogic;
+        stop_offset_error_i : in std_ulogic
     );
 end;
 
 architecture arch of tune_pll_registers is
     signal config_register : reg_data_t;
+    signal status_register : reg_data_t;
     signal target_phase_register : reg_data_t;
     signal integral_register : reg_data_t;
     signal proportional_register : reg_data_t;
@@ -69,6 +76,7 @@ begin
         read_strobe_i => read_strobe_i(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
         read_data_o => read_data_o(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
         read_ack_o => read_ack_o(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
+        nco_freq_i => nco_freq_i,
         nco_freq_o => base_frequency_o,
         reset_phase_o => open,
         write_freq_o => set_frequency_o
@@ -78,7 +86,7 @@ begin
     -- Fixed register settings
     register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_REG),
+        write_strobe_i(0) => write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
         write_strobe_i(1) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
         write_strobe_i(2) =>
@@ -90,7 +98,7 @@ begin
         write_strobe_i(5) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG),
+        write_ack_o(0) => write_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
         write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
         write_ack_o(2) => write_ack_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
         write_ack_o(3) => write_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
@@ -104,8 +112,8 @@ begin
         register_data_o(4) => mag_limit_register,
         register_data_o(5) => offset_limit_register
     );
-    read_data_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG) <= (others => '0');
-    read_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG) <= '1';
+    read_data_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= status_register;
+    read_ack_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= '1';
     read_data_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= '1';
     read_data_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG) <= (others => '0');
@@ -126,6 +134,17 @@ begin
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_ENABLE_BIT);
     dwell_time_o <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS));
+
+    status_register <= (
+        DSP_TUNE_PLL_CONTROL_STATUS_RUNNING_BIT => enable_feedback_i,
+        DSP_TUNE_PLL_CONTROL_STATUS_STOP_STOP_BIT => stop_stop_i,
+        DSP_TUNE_PLL_CONTROL_STATUS_STOP_OVERFLOW_BIT =>
+            stop_detector_overflow_i,
+        DSP_TUNE_PLL_CONTROL_STATUS_STOP_MAGNITUDE_BIT =>
+            stop_magnitude_error_i,
+        DSP_TUNE_PLL_CONTROL_STATUS_STOP_OFFSET_BIT => stop_offset_error_i,
+        others => '0'
+    );
 
     target_phase_o <= signed(target_phase_register(31 downto 14));
     integral_o <= signed(integral_register(31 downto 7));
