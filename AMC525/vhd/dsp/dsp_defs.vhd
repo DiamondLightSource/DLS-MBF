@@ -71,6 +71,9 @@ package dsp_defs is
         blanking : std_ulogic;
         turn_clock : std_ulogic;             -- On ADC clock
         seq_start : std_ulogic;
+
+        start_tune_pll : std_ulogic;
+        stop_tune_pll : std_ulogic;
     end record;
 
     -- Convenient reset value for simulation
@@ -82,7 +85,9 @@ package dsp_defs is
         dram1_ready => '0',
         blanking => '0',
         turn_clock => '0',
-        seq_start => '0'
+        seq_start => '0',
+        start_tune_pll => '0',
+        stop_tune_pll => '0'
     );
 
     type dsp_to_control_array_t is array(CHANNELS) of dsp_to_control_t;

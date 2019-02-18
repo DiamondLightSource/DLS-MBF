@@ -39,7 +39,13 @@ entity trigger_top is
         turn_clock_o : out std_ulogic;
         seq_start_o : out std_ulogic_vector(CHANNELS);
         dram0_trigger_o : out std_ulogic;
-        dram0_phase_o : out std_ulogic
+        dram0_phase_o : out std_ulogic;
+
+        -- Tune PLL global control
+        start_tune_pll0_o : out std_ulogic;
+        start_tune_pll1_o : out std_ulogic;
+        stop_tune_pll0_o : out std_ulogic;
+        stop_tune_pll1_o : out std_ulogic
     );
 end;
 
@@ -95,7 +101,12 @@ begin
         seq_readback_i => seq_readback,
 
         dram0_setup_o => dram0_setup,
-        dram0_readback_i => dram0_readback
+        dram0_readback_i => dram0_readback,
+
+        start_tune_pll0_o => start_tune_pll0_o,
+        start_tune_pll1_o => start_tune_pll1_o,
+        stop_tune_pll0_o => stop_tune_pll0_o,
+        stop_tune_pll1_o => stop_tune_pll1_o
     );
 
 

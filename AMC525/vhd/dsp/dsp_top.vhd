@@ -267,4 +267,31 @@ begin
         mem_addr_o => dsp_to_control_o.dram1_address,
         mem_data_o => dsp_to_control_o.dram1_data
     );
+
+
+    tune_pll : entity work.tune_pll_top port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        turn_clock_i => control_to_dsp_i.turn_clock,
+
+        write_strobe_i => write_strobe_i(DSP_TUNE_PLL_REGS),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_TUNE_PLL_REGS),
+        read_strobe_i => read_strobe_i(DSP_TUNE_PLL_REGS),
+        read_data_o => read_data_o(DSP_TUNE_PLL_REGS),
+        read_ack_o => read_ack_o(DSP_TUNE_PLL_REGS),
+
+        adc_data_i => control_to_dsp_i.adc_data,
+        adc_fill_reject_i => fill_reject_adc,
+        fir_data_i => fir_data,
+        nco_iq_i => (cos => 18X"0", sin => 18X"0"),
+
+        start_i => control_to_dsp_i.start_tune_pll,
+        stop_i => control_to_dsp_i.stop_tune_pll,
+        blanking_i => control_to_dsp_i.blanking,
+
+        nco_gain_o => open,
+        nco_enable_o => open,
+        nco_freq_o => open
+    );
 end;

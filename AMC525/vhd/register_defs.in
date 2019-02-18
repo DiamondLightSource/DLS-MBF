@@ -357,6 +357,12 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 # Generate soft trigger event
                 .TRIGGER
 
+                # Controls for the two Tune PLL units
+                .START_PLL0
+                .START_PLL1
+                .STOP_PLL0
+                .STOP_PLL1
+
         # Trigger status readbacks
         STATUS      R
             # Start clock synchronisation busy

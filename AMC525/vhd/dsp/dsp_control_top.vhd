@@ -246,7 +246,12 @@ begin
         turn_clock_o => turn_clock,
         seq_start_o => seq_start,
         dram0_trigger_o => dram0_trigger,
-        dram0_phase_o => dram0_phase
+        dram0_phase_o => dram0_phase,
+
+        start_tune_pll0_o => control_to_dsp_o(0).start_tune_pll,
+        start_tune_pll1_o => control_to_dsp_o(1).start_tune_pll,
+        stop_tune_pll0_o => control_to_dsp_o(0).stop_tune_pll,
+        stop_tune_pll1_o => control_to_dsp_o(1).stop_tune_pll
     );
 
     -- Map events to individual DSP units

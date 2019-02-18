@@ -99,6 +99,13 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/adc/adc_mms_dram_data_source.vhd \
     $vhd_dir/adc/adc_overflow.vhd \
     $vhd_dir/adc/adc_top.vhd \
+    $vhd_dir/tune_pll/tune_pll_registers.vhd \
+    $vhd_dir/tune_pll/tune_pll_detector.vhd \
+    cordic_table.vhd \
+    $vhd_dir/tune_pll/tune_pll_cordic.vhd \
+    $vhd_dir/tune_pll/tune_pll_feedback.vhd \
+    $vhd_dir/tune_pll/tune_pll_control.vhd \
+    $vhd_dir/tune_pll/tune_pll_top.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
