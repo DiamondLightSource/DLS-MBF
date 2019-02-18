@@ -51,7 +51,6 @@ architecture arch of tune_pll_control is
     type sync_state_t is (SYNC_IDLE, SYNC_START, SYNC_DWELL);
     signal sync_state : sync_state_t := SYNC_IDLE;
 
-
     type run_state_t is (
         STATE_IDLE, STATE_STARTING, STATE_RUNNING, STATE_STOPPING);
     signal run_state : run_state_t := STATE_IDLE;

@@ -219,6 +219,7 @@ begin
         data_o => nco_2_data,
         overflow_o => open
     );
+    nco_2_enable <= nco_2_data_in.enable;
 
 
     -- Align NCO 1 enable with gain control

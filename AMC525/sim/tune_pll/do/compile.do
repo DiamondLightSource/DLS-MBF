@@ -28,12 +28,15 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/all_pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
+    $vhd_dir/tune_pll/tune_pll_defs.vhd \
     $vhd_dir/tune_pll/tune_pll_registers.vhd \
     $vhd_dir/tune_pll/tune_pll_detector.vhd \
     cordic_table.vhd \
     $vhd_dir/tune_pll/tune_pll_cordic.vhd \
     $vhd_dir/tune_pll/tune_pll_feedback.vhd \
     $vhd_dir/tune_pll/tune_pll_control.vhd \
+    $vhd_dir/tune_pll/one_pole_iir.vhd \
+    $vhd_dir/tune_pll/tune_pll_readout.vhd \
     $vhd_dir/tune_pll/tune_pll_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -55,6 +58,8 @@ add wave -group "Detector" tune_pll/detector/*
 add wave -group "CORDIC" tune_pll/cordic/*
 add wave -group "Feedback" tune_pll/feedback/*
 add wave -group "Control" tune_pll/control/*
+add wave -group "Phase IIR" tune_pll/readout/phase_filter/*
+add wave -group "Readout" tune_pll/readout/*
 add wave -group "Tune Pll" tune_pll/*
 add wave sim:*
 

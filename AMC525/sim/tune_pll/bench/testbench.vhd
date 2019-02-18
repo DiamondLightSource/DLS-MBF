@@ -162,9 +162,11 @@ begin
         -- Configure dwell time to be long enough for CORDIC to complete
         write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W, (
             DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => 12X"0008",
+            DSP_TUNE_PLL_CONTROL_CONFIG_CORDIC_IIR_BITS => "010",
+            DSP_TUNE_PLL_CONTROL_CONFIG_FEEDBACK_IIR_BITS => "010",
             others => '0'));
         -- Effectively disable phase error checking
-        write_reg(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG, X"7FFFFFFF");
+        write_reg(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W, X"7FFFFFFF");
         -- Write all ones to bunch memory to enable detector operation
         write_reg(DSP_TUNE_PLL_CONTROL_COMMAND_REG_W, (
             DSP_TUNE_PLL_CONTROL_COMMAND_WRITE_BUNCH_BIT => '1',
@@ -175,7 +177,7 @@ begin
         -- Set proportional term
         write_reg(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG, X"08000000");
         -- Set target phase close to starting phase
-        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"80000000");
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W, X"80000000");
 
         -- Can now start the detector
         start <= '1';
@@ -184,7 +186,7 @@ begin
 
         wait for 25 us;
         clk_wait;
-        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"90000000");
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W, X"90000000");
 
         -- Read back the NCO as a quick test.  This has to be done in HIGH then
         -- LOW order to latch the full value correctly.
@@ -193,11 +195,11 @@ begin
 
         wait for 25 us;
         clk_wait;
-        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"70000000");
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W, X"70000000");
 
         wait for 25 us;
         clk_wait;
-        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"60000000");
+        write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W, X"60000000");
 
         wait for 25 us;
         FILTER_CENTRE_FREQ <= 0.201;

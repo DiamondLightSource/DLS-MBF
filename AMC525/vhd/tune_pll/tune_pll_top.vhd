@@ -10,6 +10,8 @@ use work.support.all;
 use work.register_defs.all;
 use work.nco_defs.all;
 
+use work.tune_pll_defs.all;
+
 entity tune_pll_top is
     port (
         adc_clk_i : in std_ulogic;
@@ -44,50 +46,32 @@ entity tune_pll_top is
 end;
 
 architecture arch of tune_pll_top is
-    constant PHASE_ANGLE_BITS : natural := 18;
-
     -- Delayed turn clock to help with placement
     signal turn_clock_in : std_ulogic;
+
+    -- Register configuration
+    signal config : tune_pll_config_t;
+    signal status : tune_pll_status_t;
 
     -- Control of bunch memory for detector
     signal bunch_start_write : std_ulogic;
     signal bunch_write_strobe : std_ulogic;
-    -- Selection of data source
-    signal data_select : std_logic_vector(1 downto 0);
-    signal detector_shift : unsigned(1 downto 0);
 
     -- Detector control signals
     signal dwell_clock : std_ulogic;
     signal detector_done : std_ulogic;
-    signal detector_overflow : std_ulogic;
     signal detector_iq : cos_sin_t(cos(31 downto 0), sin(31 downto 0));
 
     -- Cordic signals
-    signal cordic_phase : signed(PHASE_ANGLE_BITS-1 downto 0);
+    signal cordic_phase : phase_angle_t;
+    signal phase_error : phase_angle_t;
     signal cordic_magnitude : unsigned(31 downto 0);
     signal cordic_done : std_ulogic;
 
     -- Feedback signals
-    signal enable_feedback : std_ulogic;
-    signal magnitude_limit : unsigned(31 downto 0);
-    signal offset_limit : signed(31 downto 0);
-    signal target_phase : signed(PHASE_ANGLE_BITS-1 downto 0);
-    signal integral : signed(24 downto 0);
-    signal proportional : signed(24 downto 0);
-    signal base_frequency : angle_t;
     signal set_frequency : std_ulogic;
     signal feedback_done : std_ulogic;
-    signal magnitude_error : std_ulogic;
-    signal offset_error : std_ulogic;
     signal frequency_offset : signed(31 downto 0);
-
-    -- Control signals
-    signal dwell_time : unsigned(11 downto 0);
-    -- Stop reasons
-    signal stop_stop : std_ulogic;
-    signal stop_detector_overflow : std_ulogic;
-    signal stop_magnitude_error : std_ulogic;
-    signal stop_offset_error : std_ulogic;
 
 begin
     turn_clock : entity work.dlyreg generic map (
@@ -107,33 +91,15 @@ begin
         read_strobe_i => read_strobe_i,
         read_data_o => read_data_o,
         read_ack_o => read_ack_o,
-        -- NCO control
-        nco_gain_o => nco_gain_o,
-        nco_enable_o => nco_enable_o,
+        -- Configuration control
+        config_o => config,
+        status_i => status,
+        -- NCO readback
         nco_freq_i => nco_freq_o,
-        -- Detector control and status
-        bunch_start_write_o => bunch_start_write,
-        bunch_write_strobe_o => bunch_write_strobe,
-        data_select_o => data_select,
-        detector_shift_o => detector_shift,
-        detector_overflow_i => detector_overflow,
-        -- Feedback control and status
-        target_phase_o => target_phase,
-        integral_o => integral,
-        proportional_o => proportional,
-        magnitude_limit_o => magnitude_limit,
-        offset_limit_o => offset_limit,
-        base_frequency_o => base_frequency,
         set_frequency_o => set_frequency,
-        magnitude_error_i => magnitude_error,
-        offset_error_i => offset_error,
-        -- Control
-        dwell_time_o => dwell_time,
-        enable_feedback_i => enable_feedback,
-        stop_stop_i => stop_stop,
-        stop_detector_overflow_i => stop_detector_overflow,
-        stop_magnitude_error_i => stop_magnitude_error,
-        stop_offset_error_i => stop_offset_error
+        -- Detector bunch memory
+        bunch_start_write_o => bunch_start_write,
+        bunch_write_strobe_o => bunch_write_strobe
     );
 
     -- The detector runs at ADC clock rate, but brings the result over to the
@@ -143,7 +109,7 @@ begin
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_in,
         -- Data input and selection
-        data_select_i => data_select,
+        data_select_i => config.data_select,
         adc_data_i => adc_data_i,
         adc_fill_reject_i => adc_fill_reject_i,
         fir_data_i => fir_data_i,
@@ -153,12 +119,12 @@ begin
         write_strobe_i => bunch_write_strobe,
         write_data_i => write_data_i,
         -- Select scaling of detector readout
-        shift_i => detector_shift,
+        shift_i => config.detector_shift,
         -- Detector triggering
         start_i => dwell_clock,      -- Detector is always running, so
         write_i => dwell_clock,      -- start and write are the same signal
         -- Results
-        detector_overflow_o => detector_overflow,
+        detector_overflow_o => status.detector_overflow,
         done_o => detector_done,
         iq_o => detector_iq
     );
@@ -177,54 +143,75 @@ begin
     feedback : entity work.tune_pll_feedback port map (
         clk_i => dsp_clk_i,
         -- Controls whether to update frequency.
-        enable_i => enable_feedback,
+        enable_i => status.enable_feedback,
         blanking_i => blanking_i,
-        detector_overflow_i => detector_overflow,
+        detector_overflow_i => status.detector_overflow,
         -- Limits for feedback
-        magnitude_limit_i => magnitude_limit,
-        offset_limit_i => offset_limit,
+        magnitude_limit_i => config.magnitude_limit,
+        offset_limit_i => config.offset_limit,
         -- Target phase and feedback scaling
-        target_phase_i => target_phase,
-        integral_i => integral,
-        proportional_i => proportional,
+        target_phase_i => config.target_phase,
+        integral_i => config.integral,
+        proportional_i => config.proportional,
         -- Interface for setting output frequency
-        base_frequency_i => base_frequency,
+        base_frequency_i => config.base_frequency,
         set_frequency_i => set_frequency,
         -- Phase and magnitude from CORDIC
         start_i => cordic_done,
         phase_i => cordic_phase,
         magnitude_i => cordic_magnitude,
+        phase_error_o => phase_error,
         -- Feedback and error flags
         done_o => feedback_done,
-        magnitude_error_o => magnitude_error,
-        offset_error_o => offset_error,
+        magnitude_error_o => status.magnitude_error,
+        offset_error_o => status.offset_error,
         frequency_o => nco_freq_o,
         frequency_offset_o => frequency_offset
     );
 
+    -- Control: generates dwell clock and feedback enable
     control : entity work.tune_pll_control port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock_in,
         -- Continuous detector dwell
-        dwell_time_i => dwell_time,
+        dwell_time_i => config.dwell_time,
         dwell_clock_o => dwell_clock,
         -- Feedback status
-        detector_overflow_i => detector_overflow,
-        magnitude_error_i => magnitude_error,
-        offset_error_i => offset_error,
+        detector_overflow_i => status.detector_overflow,
+        magnitude_error_i => status.magnitude_error,
+        offset_error_i => status.offset_error,
         -- Stop reasons
-        stop_o => stop_stop,
-        detector_overflow_o => stop_detector_overflow,
-        magnitude_error_o => stop_magnitude_error,
-        offset_error_o => stop_offset_error,
+        stop_o => status.stop_stop,
+        detector_overflow_o => status.stop_detector_overflow,
+        magnitude_error_o => status.stop_magnitude_error,
+        offset_error_o => status.stop_offset_error,
         -- Feedback operation
         start_i => start_i,
         stop_i => stop_i,
-        enable_o => enable_feedback
+        enable_o => status.enable_feedback
     );
 
--- 
---     readout : entity work.tune_pll_readout port map (
---     );
+    -- Register interface to read out state and results
+    readout : entity work.tune_pll_readout port map (
+        clk_i => dsp_clk_i,
+        -- Detector output
+        detector_done_i => detector_done,
+        iq_i => detector_iq,
+        -- CORDIC output
+        cordic_done_i => cordic_done,
+        phase_i => phase_error,
+        magnitude_i => cordic_magnitude,
+        cordic_filter_shift_i => config.cordic_filter_shift,
+        filtered_phase_o => status.filtered_phase,
+        filtered_magnitude_o => status.filtered_magnitude,
+        -- Feedback output
+        feedback_done_i => feedback_done,
+        frequency_offset_i => frequency_offset,
+        feedback_filter_shift_i => config.feedback_filter_shift,
+        filtered_frequency_offset_o => status.filtered_frequency_offset
+    );
+
+    nco_gain_o <= config.nco_gain;
+    nco_enable_o <= config.nco_enable;
 end;

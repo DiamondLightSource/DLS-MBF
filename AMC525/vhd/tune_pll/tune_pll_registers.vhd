@@ -10,6 +10,8 @@ use work.support.all;
 use work.register_defs.all;
 use work.nco_defs.all;
 
+use work.tune_pll_defs.all;
+
 entity tune_pll_registers is
     port (
         dsp_clk_i : in std_ulogic;
@@ -22,36 +24,18 @@ entity tune_pll_registers is
         read_data_o : out reg_data_array_t(DSP_TUNE_PLL_CONTROL_REGS);
         read_ack_o : out std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
 
-        -- NCO control
-        nco_gain_o : out unsigned(3 downto 0);
-        nco_enable_o : out std_ulogic;
+        -- Structured config and status
+        config_o : out tune_pll_config_t;
+        status_i : in tune_pll_status_t;
+
+        -- Readback of full NCO frequency
         nco_freq_i : in angle_t;
-
-        -- Detector control and status
-        bunch_start_write_o : out std_ulogic;
-        bunch_write_strobe_o : out std_ulogic;
-        data_select_o : out std_logic_vector(1 downto 0);
-        detector_shift_o : out unsigned(1 downto 0);
-        detector_overflow_i : in std_ulogic;
-
-        -- Feedback control and status
-        target_phase_o : out signed(17 downto 0);
-        integral_o : out signed(24 downto 0);
-        proportional_o : out signed(24 downto 0);
-        magnitude_limit_o : out unsigned(31 downto 0);
-        offset_limit_o : out signed(31 downto 0);
-        base_frequency_o : out angle_t;
+        -- Set when NCO frequency changed
         set_frequency_o : out std_ulogic;
-        magnitude_error_i : in std_ulogic;
-        offset_error_i : in std_ulogic;
 
-        -- Top level control
-        dwell_time_o : out unsigned(11 downto 0);
-        enable_feedback_i : in std_ulogic;
-        stop_stop_i : in std_ulogic;
-        stop_detector_overflow_i : in std_ulogic;
-        stop_magnitude_error_i : in std_ulogic;
-        stop_offset_error_i : in std_ulogic
+        -- Detector bunch memory interface
+        bunch_start_write_o : out std_ulogic;
+        bunch_write_strobe_o : out std_ulogic
     );
 end;
 
@@ -77,7 +61,7 @@ begin
         read_data_o => read_data_o(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
         read_ack_o => read_ack_o(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
         nco_freq_i => nco_freq_i,
-        nco_freq_o => base_frequency_o,
+        nco_freq_o => config_o.base_frequency,
         reset_phase_o => open,
         write_freq_o => set_frequency_o
     );
@@ -88,23 +72,23 @@ begin
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
         write_strobe_i(1) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W),
         write_strobe_i(2) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
         write_strobe_i(3) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
         write_strobe_i(4) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG_W),
         write_strobe_i(5) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
-        write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
+        write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W),
         write_ack_o(2) => write_ack_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
         write_ack_o(3) => write_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
-        write_ack_o(4) => write_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
+        write_ack_o(4) => write_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG_W),
         write_ack_o(5) =>
-            write_ack_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG),
+            write_ack_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W),
         register_data_o(0) => config_register,
         register_data_o(1) => target_phase_register,
         register_data_o(2) => integral_register,
@@ -112,45 +96,63 @@ begin
         register_data_o(4) => mag_limit_register,
         register_data_o(5) => offset_limit_register
     );
+
     read_data_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= status_register;
     read_ack_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= '1';
-    read_data_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= (others => '0');
-    read_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= '1';
+
+    read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_PHASE_REG_R) <= (
+        31 downto 32-PHASE_ANGLE_BITS =>
+            std_logic_vector(status_i.filtered_phase),
+        others => '0');
+    read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_PHASE_REG_R) <= '1';
+
     read_data_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG) <= '1';
     read_data_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG) <= '1';
-    read_data_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG) <= (others => '0');
-    read_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG) <= '1';
-    read_data_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG) <= (others => '0');
-    read_ack_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG) <= '1';
 
-    data_select_o <= config_register(DSP_TUNE_PLL_CONTROL_CONFIG_SELECT_BITS);
-    detector_shift_o <= unsigned(
+    read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_MAGNITUDE_REG_R) <=
+        std_logic_vector(status_i.filtered_magnitude);
+    read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_MAGNITUDE_REG_R) <= '1';
+
+    read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_OFFSET_REG_R) <=
+        std_logic_vector(status_i.filtered_frequency_offset);
+    read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_OFFSET_REG_R) <= '1';
+
+    config_o.data_select <=
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_SELECT_BITS);
+    config_o.detector_shift <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DET_SHIFT_BITS));
-    nco_gain_o <= unsigned(
+    config_o.nco_gain <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_GAIN_BITS));
-    nco_enable_o <=
+    config_o.nco_enable <=
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_ENABLE_BIT);
-    dwell_time_o <= unsigned(
+    config_o.dwell_time <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS));
+    config_o.cordic_filter_shift <= unsigned(
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_CORDIC_IIR_BITS));
+    config_o.feedback_filter_shift <= unsigned(
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_FEEDBACK_IIR_BITS));
 
     status_register <= (
-        DSP_TUNE_PLL_CONTROL_STATUS_RUNNING_BIT => enable_feedback_i,
-        DSP_TUNE_PLL_CONTROL_STATUS_STOP_STOP_BIT => stop_stop_i,
+        DSP_TUNE_PLL_CONTROL_STATUS_RUNNING_BIT =>
+            status_i.enable_feedback,
+        DSP_TUNE_PLL_CONTROL_STATUS_STOP_STOP_BIT =>
+            status_i.stop_stop,
         DSP_TUNE_PLL_CONTROL_STATUS_STOP_OVERFLOW_BIT =>
-            stop_detector_overflow_i,
+            status_i.stop_detector_overflow,
         DSP_TUNE_PLL_CONTROL_STATUS_STOP_MAGNITUDE_BIT =>
-            stop_magnitude_error_i,
-        DSP_TUNE_PLL_CONTROL_STATUS_STOP_OFFSET_BIT => stop_offset_error_i,
+            status_i.stop_magnitude_error,
+        DSP_TUNE_PLL_CONTROL_STATUS_STOP_OFFSET_BIT =>
+            status_i.stop_offset_error,
         others => '0'
     );
 
-    target_phase_o <= signed(target_phase_register(31 downto 14));
-    integral_o <= signed(integral_register(31 downto 7));
-    proportional_o <= signed(proportional_register(31 downto 7));
-    magnitude_limit_o <= unsigned(mag_limit_register);
-    offset_limit_o <= signed(offset_limit_register);
+    config_o.target_phase <= signed(target_phase_register(31 downto 14));
+    config_o.integral <= signed(integral_register(31 downto 7));
+    config_o.proportional <= signed(proportional_register(31 downto 7));
+    config_o.magnitude_limit <= unsigned(mag_limit_register);
+    config_o.offset_limit <= signed(offset_limit_register);
 
 
     -- Event sensing bits
@@ -163,9 +165,9 @@ begin
     );
 
     event_bits <= (
-        DSP_TUNE_PLL_CONTROL_EVENTS_DET_OVFL_BIT => detector_overflow_i,
-        DSP_TUNE_PLL_CONTROL_EVENTS_MAG_ERROR_BIT => magnitude_error_i,
-        DSP_TUNE_PLL_CONTROL_EVENTS_OFFSET_ERROR_BIT => offset_error_i,
+        DSP_TUNE_PLL_CONTROL_EVENTS_DET_OVFL_BIT => status_i.detector_overflow,
+        DSP_TUNE_PLL_CONTROL_EVENTS_MAG_ERROR_BIT => status_i.magnitude_error,
+        DSP_TUNE_PLL_CONTROL_EVENTS_OFFSET_ERROR_BIT => status_i.offset_error,
         others => '0'
     );
 
