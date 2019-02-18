@@ -44,18 +44,33 @@ architecture arch of tune_pll_control is
     -- reset in simulation, so that we can suppress simulation warnings about
     -- unknown values in arithmetic.  This should have no other consequence.
     signal dwell_start_adc : std_ulogic := '1';
+
     signal dwell_start : std_ulogic;
+
+    signal sync_request : std_ulogic;
+    type sync_state_t is (SYNC_IDLE, SYNC_START, SYNC_DWELL);
+    signal sync_state : sync_state_t := SYNC_IDLE;
+
 
     type run_state_t is (
         STATE_IDLE, STATE_STARTING, STATE_RUNNING, STATE_STOPPING);
-    signal run_state : run_state_t;
+    signal run_state : run_state_t := STATE_IDLE;
     signal stopping_feedback : boolean;
+
+    signal sync_request_dsp : std_ulogic := '0';
+    signal sync_done : std_ulogic;
+    signal sync_done_adc : std_ulogic;
 
 begin
     -- The detector start signal is generated on the ADC clock.
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            if turn_clock_i = '1' then
+            if sync_request = '1' then
+                -- Synchronise the dwell counter with the synchronisation
+                -- request.  We'll wait for two dwell clocks so that a good
+                -- dwell has been generated.
+                dwell_counter <= (others => '0');
+            elsif turn_clock_i = '1' then
                 if dwell_counter = 0 then
                     dwell_counter <= dwell_time_i;
                 else
@@ -64,6 +79,24 @@ begin
             end if;
             dwell_start_adc <=
                 to_std_ulogic(dwell_counter = 0 and turn_clock_i = '1');
+
+            -- Sync state management
+            case sync_state is
+                when SYNC_IDLE =>
+                    if sync_request = '1' then
+                        sync_state <= SYNC_START;
+                    end if;
+                when SYNC_START =>
+                    if dwell_start_adc = '1' then
+                        sync_state <= SYNC_DWELL;
+                    end if;
+                when SYNC_DWELL =>
+                    if dwell_start_adc = '1' then
+                        sync_state <= SYNC_IDLE;
+                    end if;
+            end case;
+            sync_done_adc <= to_std_ulogic(
+                sync_state = SYNC_DWELL and dwell_start_adc = '1');
         end if;
     end process;
 
@@ -76,6 +109,24 @@ begin
 
         pulse_i => dwell_start_adc,
         pulse_o => dwell_start
+    );
+
+    -- Resync request over to ADC clock for dwell counter
+    sync_to_adc : entity work.pulse_dsp_to_adc port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        pulse_i => sync_request_dsp,
+        pulse_o => sync_request
+    );
+
+    -- Resync done back to DSP clock
+    done_to_dsp : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        pulse_i => sync_done_adc,
+        pulse_o => sync_done
     );
 
 
@@ -95,7 +146,7 @@ begin
                 when STATE_STARTING =>
                     if stopping_feedback then
                         run_state <= STATE_IDLE;
-                    elsif dwell_start = '1' then
+                    elsif sync_done = '1' then
                         run_state <= STATE_RUNNING;
                     end if;
                 when STATE_RUNNING =>
@@ -107,6 +158,10 @@ begin
                         run_state <= STATE_IDLE;
                     end if;
             end case;
+
+            -- Generate synchronisation requested when starting
+            sync_request_dsp <= to_std_ulogic(
+                run_state = STATE_IDLE and start_i = '1');
 
             if (run_state = STATE_STARTING or run_state = STATE_RUNNING) and
                    stopping_feedback then

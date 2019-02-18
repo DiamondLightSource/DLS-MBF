@@ -105,7 +105,7 @@ begin
         DLY => 6
     ) port map (
         clk_i => clk_i,
-        data_i(0) => start_i,
+        data_i(0) => start_i and enable_i,
         data_o(0) => done_o
     );
 

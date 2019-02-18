@@ -14,6 +14,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
+    $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
     $vhd_dir/nco/nco_defs.vhd \
     $vhd_dir/detector/detector_defs.vhd \
