@@ -26,6 +26,8 @@ entity dac_output_mux is
         nco_0_i : in signed;
         nco_1_enable_i : in std_ulogic;
         nco_1_i : in signed;
+        nco_2_enable_i : in std_ulogic;
+        nco_2_i : in signed;
 
         -- Generated outputs.  Note that the FIR overflow is pipelined through
         -- so that we know whether to ignore it, if the output was unused.
@@ -45,11 +47,13 @@ architecture arch of dac_output_mux is
     signal fir_enable : std_ulogic;
     signal nco_0_enable : std_ulogic;
     signal nco_1_enable : std_ulogic;
+    signal nco_2_enable : std_ulogic;
 
     -- Selected data, widened for accumulator
     signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_0_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_1_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
+    signal nco_2_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     -- Sum of the three values above
     signal accum_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal accum : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
@@ -89,6 +93,7 @@ begin
     fir_enable   <= bunch_config_i.fir_enable;
     nco_0_enable <= nco_0_enable_i and bunch_config_i.nco_0_enable;
     nco_1_enable <= nco_1_enable_i and bunch_config_i.nco_1_enable;
+    nco_2_enable <= nco_2_enable_i and bunch_config_i.nco_2_enable;
 
     prepare_fir : entity work.dlyreg generic map (
         DLY => 4,
@@ -117,6 +122,15 @@ begin
         signed(data_o) => nco_1_data
     );
 
+    prepare_nco_2 : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => ACCUM_WIDTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(prepare(nco_2_i, nco_2_enable)),
+        signed(data_o) => nco_2_data
+    );
+
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
@@ -127,8 +141,8 @@ begin
             bunch_gain_in <= bunch_gain_pl;
             bunch_gain <= bunch_gain_in;
 
-            -- Add all three inputs together, continue with gain pipeline
-            accum_pl <= fir_data + nco_0_data + nco_1_data;
+            -- Add all four inputs together, continue with gain pipeline
+            accum_pl <= fir_data + nco_0_data + nco_1_data + nco_2_data;
             accum <= accum_pl;
 
             -- Apply selected gain

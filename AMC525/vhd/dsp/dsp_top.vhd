@@ -58,6 +58,9 @@ architecture arch of dsp_top is
     signal nco_1_phase_advance : angle_t;
     signal nco_1_reset_phase : std_ulogic;
     signal nco_1_cos_sin : cos_sin_18_t;
+    signal nco_2_phase_advance : angle_t;
+    signal nco_2_reset_phase : std_ulogic;
+    signal nco_2_cos_sin : cos_sin_18_t;
 
     -- Data flow
     signal fir_data : signed(FIR_DATA_RANGE);
@@ -77,6 +80,7 @@ begin
         read_data_o => read_data_o(DSP_NCO_FREQ_REGS),
         read_ack_o => read_ack_o(DSP_NCO_FREQ_REGS),
 
+        nco_freq_i => nco_0_phase_advance,
         nco_freq_o => nco_0_phase_advance,
         reset_phase_o => nco_0_reset_phase,
         write_freq_o => open
@@ -119,6 +123,14 @@ begin
         cos_sin_o => nco_1_cos_sin
     );
     dsp_to_control_o.nco_1_data.nco <= nco_1_cos_sin;
+
+    nco_2 : entity work.nco port map (
+        clk_i => adc_clk_i,
+        phase_advance_i => nco_2_phase_advance,
+        reset_phase_i => nco_2_reset_phase,
+        cos_sin_o => nco_2_cos_sin
+    );
+    dsp_to_control_o.nco_2_data.nco <= nco_2_cos_sin;
 
 
     -- -------------------------------------------------------------------------
@@ -184,7 +196,9 @@ begin
         fir_data_i => fir_data,
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
+        nco_2_data_i => control_to_dsp_i.nco_2_data,
 
+        -- These controls are here mainly as an accident of register assignment
         nco_0_gain_o => dsp_to_control_o.nco_0_data.gain,
         nco_0_enable_o => dsp_to_control_o.nco_0_data.enable,
 
@@ -284,14 +298,14 @@ begin
         adc_data_i => control_to_dsp_i.adc_data,
         adc_fill_reject_i => fill_reject_adc,
         fir_data_i => fir_data,
-        nco_iq_i => (cos => 18X"0", sin => 18X"0"),
+        nco_iq_i => nco_2_cos_sin,
 
         start_i => control_to_dsp_i.start_tune_pll,
         stop_i => control_to_dsp_i.stop_tune_pll,
         blanking_i => control_to_dsp_i.blanking,
 
-        nco_gain_o => open,
-        nco_enable_o => open,
-        nco_freq_o => open
+        nco_gain_o => dsp_to_control_o.nco_2_data.gain,
+        nco_enable_o => dsp_to_control_o.nco_2_data.enable,
+        nco_freq_o => nco_2_phase_advance
     );
 end;

@@ -64,10 +64,12 @@ architecture arch of dsp_control_top is
     signal adc_mux : std_ulogic;
     signal nco_0_mux : std_ulogic;
     signal nco_1_mux : std_ulogic;
+    signal nco_2_mux : std_ulogic;
     signal bank_mux : std_ulogic;
     signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
     signal mux_nco_0_out : dsp_nco_from_mux_array_t;
     signal mux_nco_1_out : dsp_nco_from_mux_array_t;
+    signal mux_nco_2_out : dsp_nco_from_mux_array_t;
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
     -- DRAM1 interface
@@ -129,6 +131,7 @@ begin
     adc_mux   <= control_register(CTRL_CONTROL_ADC_MUX_BIT);
     nco_0_mux <= control_register(CTRL_CONTROL_NCO0_MUX_BIT);
     nco_1_mux <= control_register(CTRL_CONTROL_NCO1_MUX_BIT);
+    nco_2_mux <= control_register(CTRL_CONTROL_NCO2_MUX_BIT);
     bank_mux  <= control_register(CTRL_CONTROL_BANK_MUX_BIT);
     dsp_control_mux : entity work.dsp_control_mux port map (
         clk_i => adc_clk_i,
@@ -136,6 +139,7 @@ begin
         adc_mux_i => adc_mux,
         nco_0_mux_i => nco_0_mux,
         nco_1_mux_i => nco_1_mux,
+        nco_2_mux_i => nco_2_mux,
         bank_mux_i => bank_mux,
 
         dsp_to_control_i => dsp_to_control_i,
@@ -143,12 +147,14 @@ begin
         adc_o => mux_adc_out,
         nco_0_o => mux_nco_0_out,
         nco_1_o => mux_nco_1_out,
+        nco_2_o => mux_nco_2_out,
         bank_select_o => bank_select_out
     );
     mux_gen : for c in CHANNELS generate
         control_to_dsp_o(c).adc_data <= mux_adc_out(c);
         control_to_dsp_o(c).nco_0_data <= mux_nco_0_out(c);
         control_to_dsp_o(c).nco_1_data <= mux_nco_1_out(c);
+        control_to_dsp_o(c).nco_2_data <= mux_nco_2_out(c);
         control_to_dsp_o(c).bank_select <= bank_select_out(c);
     end generate;
 

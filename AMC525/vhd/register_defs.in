@@ -208,6 +208,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         .NCO0_MUX
         # NCO1 mux: if set channel 1 NCO1 has sin data from channel 0
         .NCO1_MUX
+        # NCO2 mux: if set channel 1 NCO2 has sin data from channel 0
+        .NCO2_MUX
         # Bank mux: if set channel 1 bank selection is copy of bank selection
         # from channel 0.
         .BANK_MUX
@@ -527,6 +529,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             .NCO0_ENABLE
             # Enable NCO1 output
             .NCO1_ENABLE
+            # Enable NCO2 output
+            .NCO2_ENABLE
 
 
     # Bunch by bunch filter

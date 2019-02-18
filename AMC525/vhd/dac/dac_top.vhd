@@ -29,6 +29,7 @@ entity dac_top is
         fir_data_i : in signed;
         nco_0_data_i : in dsp_nco_from_mux_t;
         nco_1_data_i : in dsp_nco_from_mux_t;
+        nco_2_data_i : in dsp_nco_from_mux_t;
 
         -- Gain controls to multiplexer
         nco_0_gain_o : out unsigned;
@@ -53,9 +54,9 @@ architecture arch of dac_top is
     signal config_register : reg_data_t;
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(3 downto 0);
-    signal nco_0_gain : unsigned(3 downto 0);
     signal nco_0_enable : std_ulogic;
     signal nco_1_enable : std_ulogic;
+    signal nco_2_enable : std_ulogic;
     signal mms_source : std_ulogic;
     signal store_source : std_ulogic;
 
@@ -71,6 +72,7 @@ architecture arch of dac_top is
     signal fir_data_in : fir_data_i'SUBTYPE;
     signal nco_0_data_in : nco_0_data_i'SUBTYPE;
     signal nco_1_data_in : nco_1_data_i'SUBTYPE;
+    signal nco_2_data_in : nco_2_data_i'SUBTYPE;
 
     -- Overflow detection
     signal fir_overflow_in : std_ulogic;
@@ -80,6 +82,7 @@ architecture arch of dac_top is
     signal fir_data : data_o'SUBTYPE;
     signal nco_0_data : data_o'SUBTYPE;
     signal nco_1_data : data_o'SUBTYPE;
+    signal nco_2_data : data_o'SUBTYPE;
     signal data_out : data_o'SUBTYPE;
     signal filtered_data : data_o'SUBTYPE;
     signal mms_data_in : data_o'SUBTYPE;
@@ -165,6 +168,14 @@ begin
         data_o => nco_1_data_in
     );
 
+    nco2_delay : entity work.dac_nco_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => nco_2_data_i,
+        data_o => nco_2_data_in
+    );
+
 
     -- -------------------------------------------------------------------------
     -- Output preparation
@@ -199,6 +210,17 @@ begin
         overflow_o => open
     );
 
+    nco_2_gain_control : entity work.gain_control generic map (
+        EXTRA_SHIFT => 2
+    ) port map (
+        clk_i => adc_clk_i,
+        gain_sel_i => nco_2_data_in.gain,
+        data_i => nco_2_data_in.nco,
+        data_o => nco_2_data,
+        overflow_o => open
+    );
+
+
     -- Align NCO 1 enable with gain control
     nco_1_enable_delay : entity work.dlyline generic map (
         DLY => NCO1_GAIN_DELAY
@@ -222,6 +244,8 @@ begin
         nco_0_i => nco_0_data,
         nco_1_enable_i => nco_1_enable,
         nco_1_i => nco_1_data,
+        nco_2_enable_i => nco_2_enable,
+        nco_2_i => nco_2_data,
 
         data_o => data_out,
         fir_overflow_o => fir_overflow,

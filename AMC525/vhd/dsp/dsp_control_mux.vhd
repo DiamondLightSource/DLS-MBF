@@ -20,6 +20,7 @@ entity dsp_control_mux is
         adc_mux_i : in std_ulogic;
         nco_0_mux_i : in std_ulogic;
         nco_1_mux_i : in std_ulogic;
+        nco_2_mux_i : in std_ulogic;
         bank_mux_i : in std_ulogic;
 
         -- Data channels
@@ -29,6 +30,7 @@ entity dsp_control_mux is
         adc_o   : out signed_array;
         nco_0_o : out dsp_nco_from_mux_array_t;
         nco_1_o : out dsp_nco_from_mux_array_t;
+        nco_2_o : out dsp_nco_from_mux_array_t;
         bank_select_o : out unsigned_array
     );
 end;
@@ -56,6 +58,20 @@ architecture arch of dsp_control_mux is
         return result;
     end;
 
+    procedure nco_mux(
+        signal output : out dsp_nco_from_mux_array_t;
+        selector : in std_ulogic;
+        input_0 : in dsp_nco_to_mux_t;
+        input_1 : in dsp_nco_to_mux_t) is
+    begin
+        output(0) <= assign_cos(input_0);
+        if selector = '1' then
+            output(1) <= assign_sin(input_0);
+        else
+            output(1) <= assign_cos(input_1);
+        end if;
+    end;
+
 begin
     -- Data multiplexing control
     process (clk_i) begin
@@ -69,19 +85,9 @@ begin
             end if;
 
             -- NCO output multiplexing
-            nco_0_o(0) <= assign_cos(d2c0.nco_0_data);
-            if nco_0_mux_i = '1' then
-                nco_0_o(1) <= assign_sin(d2c0.nco_0_data);
-            else
-                nco_0_o(1) <= assign_cos(d2c1.nco_0_data);
-            end if;
-
-            nco_1_o(0) <= assign_cos(d2c0.nco_1_data);
-            if nco_0_mux_i = '1' then
-                nco_1_o(1) <= assign_sin(d2c0.nco_1_data);
-            else
-                nco_1_o(1) <= assign_cos(d2c1.nco_1_data);
-            end if;
+            nco_mux(nco_0_o, nco_0_mux_i, d2c0.nco_0_data, d2c1.nco_0_data);
+            nco_mux(nco_1_o, nco_1_mux_i, d2c0.nco_1_data, d2c1.nco_1_data);
+            nco_mux(nco_2_o, nco_2_mux_i, d2c0.nco_2_data, d2c1.nco_2_data);
 
             -- Bank selection
             bank_select_o(0) <= d2c0.bank_select;

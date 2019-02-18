@@ -43,6 +43,7 @@ package dsp_defs is
         -- NCO signals
         nco_0_data : dsp_nco_to_mux_t;
         nco_1_data : dsp_nco_to_mux_t;
+        nco_2_data : dsp_nco_to_mux_t;
 
         -- Data out to DRAM1
         dram1_valid : std_ulogic;
@@ -60,6 +61,7 @@ package dsp_defs is
         adc_data   : signed(ADC_DATA_RANGE);
         nco_0_data : dsp_nco_from_mux_t;
         nco_1_data : dsp_nco_from_mux_t;
+        nco_2_data : dsp_nco_from_mux_t;
 
         -- Bank selection
         bank_select : unsigned(1 downto 0);
@@ -81,6 +83,7 @@ package dsp_defs is
         adc_data   => (others => '0'),
         nco_0_data => (nco => (others => '0'), gain => X"0", enable => '0'),
         nco_1_data => (nco => (others => '0'), gain => X"0", enable => '0'),
+        nco_2_data => (nco => (others => '0'), gain => X"0", enable => '0'),
         bank_select => (others => '0'),
         dram1_ready => '0',
         blanking => '0',

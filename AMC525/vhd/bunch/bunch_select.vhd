@@ -100,4 +100,6 @@ begin
         config_out(DSP_BUNCH_BANK_NCO0_ENABLE_BIT);
     bunch_config_o.nco_1_enable <=
         config_out(DSP_BUNCH_BANK_NCO1_ENABLE_BIT);
+    bunch_config_o.nco_2_enable <=
+        config_out(DSP_BUNCH_BANK_NCO2_ENABLE_BIT);
 end;
