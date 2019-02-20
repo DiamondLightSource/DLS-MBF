@@ -58,7 +58,6 @@ add wave -group "Detector" tune_pll/detector/*
 add wave -group "CORDIC" tune_pll/cordic/*
 add wave -group "Feedback" tune_pll/feedback/*
 add wave -group "Control" tune_pll/control/*
-add wave -group "Phase IIR" tune_pll/readout/phase_filter/*
 add wave -group "Readout" tune_pll/readout/*
 add wave -group "Tune Pll" tune_pll/*
 add wave sim:*

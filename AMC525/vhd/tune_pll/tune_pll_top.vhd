@@ -13,6 +13,16 @@ use work.nco_defs.all;
 use work.tune_pll_defs.all;
 
 entity tune_pll_top is
+    generic (
+        -- This default readout IIR shift corresponds to a delay constant of
+        -- 2^13 or around 8000.  With an IIR clock at around 0.5MHz this
+        -- corresponds to a 3dB point around 60Hz and a settling time to 1% of
+        -- around 100 ms.
+        READOUT_IIR_SHIFT : unsigned := "1101";
+        -- Divide the DSP clock by 512 to produce the IIR clock.  This is enough
+        -- to ensure we should see all relevant updates.
+        READOUT_IIR_CLOCK_BITS : natural := 9
+    );
     port (
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
@@ -193,22 +203,24 @@ begin
     );
 
     -- Register interface to read out state and results
-    readout : entity work.tune_pll_readout port map (
+    readout : entity work.tune_pll_readout generic map (
+        READOUT_IIR_SHIFT => READOUT_IIR_SHIFT,
+        READOUT_IIR_CLOCK_BITS => READOUT_IIR_CLOCK_BITS
+    ) port map (
         clk_i => dsp_clk_i,
         -- Detector output
         detector_done_i => detector_done,
         iq_i => detector_iq,
+        filtered_iq_o => status.filtered_iq,
         -- CORDIC output
         cordic_done_i => cordic_done,
         phase_i => phase_error,
         magnitude_i => cordic_magnitude,
-        cordic_filter_shift_i => config.cordic_filter_shift,
         filtered_phase_o => status.filtered_phase,
         filtered_magnitude_o => status.filtered_magnitude,
         -- Feedback output
         feedback_done_i => feedback_done,
         frequency_offset_i => frequency_offset,
-        feedback_filter_shift_i => config.feedback_filter_shift,
         filtered_frequency_offset_o => status.filtered_frequency_offset
     );
 

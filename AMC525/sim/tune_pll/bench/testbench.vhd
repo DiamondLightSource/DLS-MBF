@@ -1,5 +1,5 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use ieee.math_real.all;
@@ -59,7 +59,11 @@ begin
     adc_clk <= not adc_clk after 1 ns;
     dsp_clk <= not dsp_clk after 2 ns;
 
-    tune_pll : entity work.tune_pll_top port map (
+    tune_pll : entity work.tune_pll_top generic map (
+        -- We run the IIR a lot faster for simulation
+        READOUT_IIR_SHIFT => "0100",
+        READOUT_IIR_CLOCK_BITS => 5
+    ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
         turn_clock_i => turn_clock,
@@ -162,8 +166,6 @@ begin
         -- Configure dwell time to be long enough for CORDIC to complete
         write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W, (
             DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => 12X"0008",
-            DSP_TUNE_PLL_CONTROL_CONFIG_CORDIC_IIR_BITS => "010",
-            DSP_TUNE_PLL_CONTROL_CONFIG_FEEDBACK_IIR_BITS => "010",
             others => '0'));
         -- Effectively disable phase error checking
         write_reg(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W, X"7FFFFFFF");

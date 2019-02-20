@@ -781,10 +781,6 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # Number of turns between detector cycles, determines how
                     # fast the PLL tracker runs.
                     .DWELL_TIME     12
-                    # IIR filter shift for CORDIC readout
-                    .CORDIC_IIR     3
-                    # IIR filter shift for feedback readout
-                    .FEEDBACK_IIR   3
             *RW
                 # Reads back currently measured phase offset after filtering by
                 # the CORDIC IIR.
@@ -818,6 +814,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 COMMAND     WP
                     # Triggers start of write to detector bunch enable memory.
                     .WRITE_BUNCH
+            # Reads back filtered IQ data
+            FILTERED_I      R
+            FILTERED_Q      R
 
             # Writing to this register programs the bunch enable memory for the
             # tune PLL detector.  To write the memory reset the address by

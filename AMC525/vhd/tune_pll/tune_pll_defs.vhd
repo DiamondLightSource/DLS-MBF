@@ -6,6 +6,7 @@ use work.support.all;
 use work.defines.all;
 
 use work.nco_defs.all;
+use work.detector_defs.all;
 
 package tune_pll_defs is
     constant PHASE_ANGLE_BITS : natural := 18;
@@ -32,10 +33,6 @@ package tune_pll_defs is
 
         -- Top level control
         dwell_time : unsigned(11 downto 0);
-
-        -- Readout control
-        cordic_filter_shift : unsigned (2 downto 0);
-        feedback_filter_shift : unsigned (2 downto 0);
     end record;
 
     -- Direct readback values
@@ -54,6 +51,7 @@ package tune_pll_defs is
         stop_offset_error : std_ulogic;
 
         -- Filtered readback signals
+        filtered_iq : cos_sin_32_t;
         filtered_phase : phase_angle_t;
         filtered_magnitude : signed(31 downto 0);
         filtered_frequency_offset : signed(31 downto 0);

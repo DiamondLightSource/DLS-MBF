@@ -129,10 +129,6 @@ begin
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_ENABLE_BIT);
     config_o.dwell_time <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS));
-    config_o.cordic_filter_shift <= unsigned(
-        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_CORDIC_IIR_BITS));
-    config_o.feedback_filter_shift <= unsigned(
-        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_FEEDBACK_IIR_BITS));
 
     status_register <= (
         DSP_TUNE_PLL_CONTROL_STATUS_RUNNING_BIT =>
@@ -154,6 +150,15 @@ begin
     config_o.magnitude_limit <= unsigned(mag_limit_register);
     config_o.offset_limit <= signed(offset_limit_register);
 
+    read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_I_REG) <=
+        std_logic_vector(status_i.filtered_iq.cos);
+    read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_I_REG) <= '1';
+    write_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_I_REG) <= '1';
+
+    read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_Q_REG) <=
+        std_logic_vector(status_i.filtered_iq.sin);
+    read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_Q_REG) <= '1';
+    write_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_Q_REG) <= '1';
 
     -- Event sensing bits
     events : entity work.all_pulsed_bits port map (
