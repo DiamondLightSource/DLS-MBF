@@ -93,6 +93,85 @@ begin
         clk_wait;
         reset_fifo <= '0';
 
+        -- Now try combinations of resets and writes
+
+        -- Write -(2)- reset
+        clk_wait(5);
+        write_data <= X"A0";
+        write_valid <= '1';
+        clk_wait;
+        write_valid <= '0';
+        clk_wait;
+        clk_wait;
+        reset_fifo <= '1';
+        clk_wait;
+        reset_fifo <= '0';
+
+        -- Write -(1)- reset
+        clk_wait(5);
+        write_data <= X"A1";
+        write_valid <= '1';
+        clk_wait;
+        write_valid <= '0';
+        clk_wait;
+        reset_fifo <= '1';
+        clk_wait;
+        reset_fifo <= '0';
+
+        -- Write -(0)- reset
+        clk_wait(5);
+        write_data <= X"A2";
+        write_valid <= '1';
+        clk_wait;
+        write_valid <= '0';
+        reset_fifo <= '1';
+        clk_wait;
+        reset_fifo <= '0';
+
+        -- Write reset
+        clk_wait(5);
+        write_data <= X"A3";
+        write_valid <= '1';
+        reset_fifo <= '1';
+        clk_wait;
+        write_valid <= '0';
+        reset_fifo <= '0';
+
+        -- Reset -(0)- write
+        clk_wait(5);
+        write_data <= X"A4";
+        reset_fifo <= '1';
+        clk_wait;
+        reset_fifo <= '0';
+        write_valid <= '1';
+        clk_wait;
+        -- Need second clock wait for proper write handshake, write not ready
+        clk_wait;
+        write_valid <= '0';
+
+        -- Reset -(1)- write
+        clk_wait(5);
+        write_data <= X"A5";
+        reset_fifo <= '1';
+        clk_wait;
+        reset_fifo <= '0';
+        clk_wait;
+        write_valid <= '1';
+        clk_wait;
+        write_valid <= '0';
+
+        -- Reset -(1)- write
+        clk_wait(5);
+        write_data <= X"A6";
+        reset_fifo <= '1';
+        clk_wait;
+        reset_fifo <= '0';
+        clk_wait;
+        clk_wait;
+        write_valid <= '1';
+        clk_wait;
+        write_valid <= '0';
+
         wait;
     end process;
 

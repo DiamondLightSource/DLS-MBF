@@ -105,12 +105,17 @@ begin
             end if;
 
             -- INPUT
-            write_ready <= not (full or nearly_full);
-            if write_enable then
-                write_data_valid <= true;
-                write_data <= write_data_i;
-            elsif do_write then
+            if reset_fifo_i = '1' then
+                write_ready <= false;
                 write_data_valid <= false;
+            else
+                write_ready <= not (full or nearly_full);
+                if write_enable then
+                    write_data_valid <= true;
+                    write_data <= write_data_i;
+                elsif do_write then
+                    write_data_valid <= false;
+                end if;
             end if;
 
             -- OUTPUT

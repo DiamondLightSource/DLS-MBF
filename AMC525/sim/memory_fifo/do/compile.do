@@ -21,6 +21,6 @@ view wave
 add wave -group "FIFO" fifo/*
 add wave sim:*
 
-run 300ns
+run 350ns
 
 # vim: set filetype=tcl:
