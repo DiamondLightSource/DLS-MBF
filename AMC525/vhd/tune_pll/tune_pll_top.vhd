@@ -21,7 +21,11 @@ entity tune_pll_top is
         READOUT_IIR_SHIFT : unsigned := "1101";
         -- Divide the DSP clock by 512 to produce the IIR clock.  This is enough
         -- to ensure we should see all relevant updates.
-        READOUT_IIR_CLOCK_BITS : natural := 9
+        READOUT_IIR_CLOCK_BITS : natural := 9;
+
+        -- For simulation we want a smaller FIFO, but for normal operation we
+        -- want a BRAM sized FIFO.
+        READOUT_FIFO_BITS : natural := 10
     );
     port (
         adc_clk_i : in std_ulogic;
@@ -225,7 +229,9 @@ begin
     );
 
     -- Register interface to read streamed results via FIFOs
-    readout : entity work.tune_pll_readout port map (
+    readout : entity work.tune_pll_readout generic map (
+        READOUT_FIFO_BITS => READOUT_FIFO_BITS
+    ) port map (
         clk_i => dsp_clk_i,
         -- Register interface
         write_strobe_i => write_strobe_i(DSP_TUNE_PLL_READOUT_REGS),

@@ -11,6 +11,9 @@ use work.register_defs.all;
 use work.detector_defs.all;
 
 entity tune_pll_readout is
+    generic (
+        READOUT_FIFO_BITS : natural
+    );
     port (
         clk_i : in std_ulogic;
 
@@ -101,6 +104,7 @@ begin
         -- Simple read/write interface
         data_i => std_logic_vector(frequency_offset_i),
         write_i => feedback_done_i,
+        start_i => feedback_done_i,
         -- Data is assumed to be valid at the time of reading
         data_o => offset_data,
         read_i => read_offset_data,
@@ -114,11 +118,14 @@ begin
         interrupt_o => offset_interrupt
     );
 
-    debug_fifo : entity work.tune_pll_readout_fifo port map (
+    debug_fifo : entity work.tune_pll_readout_fifo generic map (
+        READOUT_FIFO_BITS => READOUT_FIFO_BITS
+    ) port map (
         clk_i => clk_i,
         -- Simple read/write interface
         data_i => debug_data_in,
         write_i => debug_write,
+        start_i => detector_done_in,
         -- Data is assumed to be valid at the time of reading
         data_o => debug_data,
         read_i => read_debug_data,

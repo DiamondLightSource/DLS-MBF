@@ -63,7 +63,8 @@ begin
     tune_pll : entity work.tune_pll_top generic map (
         -- We run the IIR a lot faster for simulation
         READOUT_IIR_SHIFT => "0100",
-        READOUT_IIR_CLOCK_BITS => 5
+        READOUT_IIR_CLOCK_BITS => 5,
+        READOUT_FIFO_BITS => 2
     ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
@@ -187,6 +188,26 @@ begin
         start <= '1';
         clk_wait;
         start <= '0';
+
+
+        -- Write repeated FIFO resets
+        write_reg(DSP_TUNE_PLL_READOUT_COMMAND_REG_W, (
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_DEBUG_BIT => '1',
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_OFFSET_BIT => '1',
+            others => '0'));
+        write_reg(DSP_TUNE_PLL_READOUT_COMMAND_REG_W, (
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_DEBUG_BIT => '1',
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_OFFSET_BIT => '1',
+            others => '0'));
+        write_reg(DSP_TUNE_PLL_READOUT_COMMAND_REG_W, (
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_DEBUG_BIT => '1',
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_OFFSET_BIT => '1',
+            others => '0'));
+        write_reg(DSP_TUNE_PLL_READOUT_COMMAND_REG_W, (
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_DEBUG_BIT => '1',
+            DSP_TUNE_PLL_READOUT_COMMAND_RESET_OFFSET_BIT => '1',
+            others => '0'));
+
 
         wait for 25 us;
         clk_wait;
