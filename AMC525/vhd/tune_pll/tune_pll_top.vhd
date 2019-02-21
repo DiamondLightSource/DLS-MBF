@@ -29,12 +29,12 @@ entity tune_pll_top is
         turn_clock_i : in std_ulogic;
 
         -- Register interface
-        write_strobe_i : in std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_TUNE_PLL_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
-        read_strobe_i : in std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
-        read_data_o : out reg_data_array_t(DSP_TUNE_PLL_CONTROL_REGS);
-        read_ack_o : out std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_TUNE_PLL_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_TUNE_PLL_REGS);
+        read_data_o : out reg_data_array_t(DSP_TUNE_PLL_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_TUNE_PLL_REGS);
 
         -- Data in
         adc_data_i : in signed;
@@ -51,7 +51,10 @@ entity tune_pll_top is
         -- Control frequency out
         nco_gain_o : out unsigned(3 downto 0);
         nco_enable_o : out std_ulogic;
-        nco_freq_o : out angle_t
+        nco_freq_o : out angle_t;
+
+        -- Interrupt for readout ready
+        interrupt_o : out std_ulogic
     );
 end;
 
@@ -93,14 +96,14 @@ begin
     );
 
     registers : entity work.tune_pll_registers port map (
-        dsp_clk_i => dsp_clk_i,
+        clk_i => dsp_clk_i,
         -- Register interface
-        write_strobe_i => write_strobe_i,
+        write_strobe_i => write_strobe_i(DSP_TUNE_PLL_CONTROL_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o,
-        read_strobe_i => read_strobe_i,
-        read_data_o => read_data_o,
-        read_ack_o => read_ack_o,
+        write_ack_o => write_ack_o(DSP_TUNE_PLL_CONTROL_REGS),
+        read_strobe_i => read_strobe_i(DSP_TUNE_PLL_CONTROL_REGS),
+        read_data_o => read_data_o(DSP_TUNE_PLL_CONTROL_REGS),
+        read_ack_o => read_ack_o(DSP_TUNE_PLL_CONTROL_REGS),
         -- Configuration control
         config_o => config,
         status_i => status,
@@ -203,25 +206,42 @@ begin
     );
 
     -- Register interface to read out state and results
-    readout : entity work.tune_pll_readout generic map (
+    filtered : entity work.tune_pll_filtered generic map (
         READOUT_IIR_SHIFT => READOUT_IIR_SHIFT,
         READOUT_IIR_CLOCK_BITS => READOUT_IIR_CLOCK_BITS
     ) port map (
         clk_i => dsp_clk_i,
         -- Detector output
-        detector_done_i => detector_done,
         iq_i => detector_iq,
         filtered_iq_o => status.filtered_iq,
         -- CORDIC output
-        cordic_done_i => cordic_done,
         phase_i => phase_error,
         magnitude_i => cordic_magnitude,
         filtered_phase_o => status.filtered_phase,
         filtered_magnitude_o => status.filtered_magnitude,
         -- Feedback output
-        feedback_done_i => feedback_done,
         frequency_offset_i => frequency_offset,
         filtered_frequency_offset_o => status.filtered_frequency_offset
+    );
+
+    -- Register interface to read streamed results via FIFOs
+    readout : entity work.tune_pll_readout port map (
+        clk_i => dsp_clk_i,
+        -- Register interface
+        write_strobe_i => write_strobe_i(DSP_TUNE_PLL_READOUT_REGS),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_TUNE_PLL_READOUT_REGS),
+        read_strobe_i => read_strobe_i(DSP_TUNE_PLL_READOUT_REGS),
+        read_data_o => read_data_o(DSP_TUNE_PLL_READOUT_REGS),
+        read_ack_o => read_ack_o(DSP_TUNE_PLL_READOUT_REGS),
+        -- Detector output
+        detector_done_i => detector_done,
+        iq_i => detector_iq,
+        -- Feedback output
+        feedback_done_i => feedback_done,
+        frequency_offset_i => frequency_offset,
+        -- Interrupt for readout
+        interrupt_o => interrupt_o
     );
 
     nco_gain_o <= config.nco_gain;

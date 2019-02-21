@@ -14,7 +14,7 @@ use work.tune_pll_defs.all;
 
 entity tune_pll_registers is
     port (
-        dsp_clk_i : in std_ulogic;
+        clk_i : in std_ulogic;
 
         -- Register interface
         write_strobe_i : in std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
@@ -53,7 +53,7 @@ architecture arch of tune_pll_registers is
 begin
     -- Setting base NCO frequency
     nco_register : entity work.nco_register port map (
-        clk_i => dsp_clk_i,
+        clk_i => clk_i,
         write_strobe_i => write_strobe_i(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
@@ -69,7 +69,7 @@ begin
 
     -- Fixed register settings
     register_file : entity work.register_file port map (
-        clk_i => dsp_clk_i,
+        clk_i => clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
         write_strobe_i(1) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W),
@@ -102,7 +102,7 @@ begin
 
     read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_PHASE_REG_R) <= (
         31 downto 32-PHASE_ANGLE_BITS =>
-            std_logic_vector(status_i.filtered_phase),
+            std_ulogic_vector(status_i.filtered_phase),
         others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_PHASE_REG_R) <= '1';
 
@@ -112,11 +112,11 @@ begin
     read_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG) <= '1';
 
     read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_MAGNITUDE_REG_R) <=
-        std_logic_vector(status_i.filtered_magnitude);
+        std_ulogic_vector(status_i.filtered_magnitude);
     read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_MAGNITUDE_REG_R) <= '1';
 
     read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_OFFSET_REG_R) <=
-        std_logic_vector(status_i.filtered_frequency_offset);
+        std_ulogic_vector(status_i.filtered_frequency_offset);
     read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_OFFSET_REG_R) <= '1';
 
     config_o.data_select <=
@@ -151,18 +151,18 @@ begin
     config_o.offset_limit <= signed(offset_limit_register);
 
     read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_I_REG) <=
-        std_logic_vector(status_i.filtered_iq.cos);
+        std_ulogic_vector(status_i.filtered_iq.cos);
     read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_I_REG) <= '1';
     write_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_I_REG) <= '1';
 
     read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_Q_REG) <=
-        std_logic_vector(status_i.filtered_iq.sin);
+        std_ulogic_vector(status_i.filtered_iq.sin);
     read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_Q_REG) <= '1';
     write_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_Q_REG) <= '1';
 
     -- Event sensing bits
     events : entity work.all_pulsed_bits port map (
-        clk_i => dsp_clk_i,
+        clk_i => clk_i,
         read_strobe_i => read_strobe_i(DSP_TUNE_PLL_CONTROL_EVENTS_REG_R),
         read_data_o => read_data_o(DSP_TUNE_PLL_CONTROL_EVENTS_REG_R),
         read_ack_o => read_ack_o(DSP_TUNE_PLL_CONTROL_EVENTS_REG_R),
@@ -179,7 +179,7 @@ begin
 
     -- Pulsed command bits
     command : entity work.strobed_bits port map (
-        clk_i => dsp_clk_i,
+        clk_i => clk_i,
         write_strobe_i => write_strobe_i(DSP_TUNE_PLL_CONTROL_COMMAND_REG_W),
         write_data_i => write_data_i,
         write_ack_o => write_ack_o(DSP_TUNE_PLL_CONTROL_COMMAND_REG_W),

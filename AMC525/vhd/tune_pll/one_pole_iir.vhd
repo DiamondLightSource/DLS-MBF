@@ -21,14 +21,14 @@ entity one_pole_iir is
         SHIFT_STEP : natural := 1       -- Interval between shifts
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         data_i : in signed;
         iir_shift_i : in unsigned;
-        start_i : in std_logic;
+        start_i : in std_ulogic;
 
         data_o : out signed;
-        done_o : out std_logic
+        done_o : out std_ulogic
     );
 end;
 
@@ -56,10 +56,10 @@ architecture one_pole_iir of one_pole_iir is
     -- The or of the bits shifted out from the bottom of the accumulator is
     -- needed for the abs_ceiling calculation, which is in turn needed to ensure
     -- that when the filter is sufficiently small it does shrink correctly.
-    signal bottom_bits : std_logic_vector(MAX_SHIFT_VALUE downto 0);
+    signal bottom_bits : std_ulogic_vector(MAX_SHIFT_VALUE downto 0);
     signal abs_ceiling : signed(1 downto 0) := (others => '0');
 
-    signal data_ready : std_logic := '0';
+    signal data_ready : std_ulogic := '0';
 
 begin
     -- Assign bottom bits from accumulator before shift

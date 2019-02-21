@@ -24,14 +24,14 @@ architecture arch of testbench is
     signal turn_clock : std_ulogic;
 
     -- Device under test signals
-    signal write_strobe : std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS)
+    signal write_strobe : std_ulogic_vector(DSP_TUNE_PLL_REGS)
         := (others => '0');
     signal write_data : reg_data_t;
-    signal write_ack : std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
-    signal read_strobe : std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS)
+    signal write_ack : std_ulogic_vector(DSP_TUNE_PLL_REGS);
+    signal read_strobe : std_ulogic_vector(DSP_TUNE_PLL_REGS)
         := (others => '0');
-    signal read_data : reg_data_array_t(DSP_TUNE_PLL_CONTROL_REGS);
-    signal read_ack : std_ulogic_vector(DSP_TUNE_PLL_CONTROL_REGS);
+    signal read_data : reg_data_array_t(DSP_TUNE_PLL_REGS);
+    signal read_ack : std_ulogic_vector(DSP_TUNE_PLL_REGS);
     signal adc_data : signed(15 downto 0) := (others => '0');
     -- We're just using 'Z' as a placeholder for unused signals because it shows
     -- as a different colour from 'X' and 'U'.
@@ -44,6 +44,7 @@ architecture arch of testbench is
     signal nco_gain : unsigned(3 downto 0);
     signal nco_enable : std_ulogic;
     signal nco_freq : angle_t;
+    signal interrupt : std_ulogic;
 
     -- Resonant filter
     signal FILTER_CENTRE_FREQ : real := 0.2;
@@ -82,7 +83,8 @@ begin
         blanking_i => blanking,
         nco_gain_o => nco_gain,
         nco_enable_o => nco_enable,
-        nco_freq_o => nco_freq
+        nco_freq_o => nco_freq,
+        interrupt_o => interrupt
     );
 
 

@@ -824,6 +824,39 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             # bits at a time until all bunches have been programmed.
             BUNCH       W
 
+        # Registers for streamed readout of Tune PLL state and history
+        !READOUT
+            *RW
+                STATUS      R
+                    # Returns number of offset values currently in the offset
+                    # FIFO
+                    .OFFSET_COUNT   11
+                    # Returns number of debug values currently in the debug
+                    # FIFO
+                    .DEBUG_COUNT    11
+                    # If set the offset FIFO has overrun and will need to be
+                    # reset
+                    .OFFSET_OVERRUN
+                    # If set the debug FIFO has overrun and will need to be
+                    # reset
+                    .DEBUG_OVERRUN
+                    # These bits are latched if an attempt is made to read from
+                    # the corresponding FIFO when it is empty.
+                    .READ_ERROR     2
+                COMMAND     WP
+                    # Reset the offset FIFO after overrun
+                    .RESET_OFFSET
+                    # Reset the debug FIFO after overrun
+                    .RESET_DEBUG
+                    # Enable offset FIFO ready interrupt
+                    .ENABLE_OFFSET
+                    # Enable debug FIFO ready interrupt
+                    .ENABLE_DEBUG
+                    # Used to reset the READ_ERROR bits
+                    .RESET_READ_ERROR   2
+            OFFSET_FIFO     R
+            DEBUG_FIFO      R
+
 
 # The following interrupt sources are defined
 :INTERRUPTS     R
