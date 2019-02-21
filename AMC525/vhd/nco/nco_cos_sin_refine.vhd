@@ -91,6 +91,9 @@ architecture arch of nco_cos_sin_refine is
     attribute USE_DSP of delta_product : signal is "yes";
 
     -- Pipeline signals numbered by assignment stage
+    -- 0
+    signal cos_sin_in : cos_sin_19_t;
+    signal delta_in : signed(9 downto 0) := (others => '0');
     -- 1
     signal cos_in : signed(18 downto 0) := (others => '0');
     signal sin_in : signed(18 downto 0) := (others => '0');
@@ -125,11 +128,12 @@ begin
 
     -- This is the delay from (cos_sin_i, delta) to cos_sin_o:
     --  cos_sin_i, delta
+    --  0   => cos_sin_in, delta_in
     --  1   => {cos,sin}_in, {cos,sin}_acc_in, delta_mul    |
     --  2   => {cos,sin}_product,  {cos,sin}_acc            | Registers in DSP
     --  3   => {cos,sin}_acc_out                            |
     --  4   => cos_sin_o
-    assert REFINE_DELAY = 4 severity failure;
+    assert REFINE_DELAY = 5 severity failure;
 
     process (clk_i) begin
         if rising_edge(clk_i) then
@@ -142,12 +146,16 @@ begin
             delta <= delta_result(17 downto 8);
             -- At this point delta and cos_sin_i will be in step
 
+            -- 0 - Pipeline from lookup table to DSP
+            cos_sin_in <= cos_sin_i;
+            delta_in <= delta;
+
             -- 1 - DSP Input registers
-            cos_in <= cos_sin_i.cos;
-            sin_in <= cos_sin_i.sin;
-            cos_acc_in <= cos_sin_i.cos & 18X"00000";
-            sin_acc_in <= cos_sin_i.sin & 18X"00000";
-            delta_mul <= delta;
+            cos_in <= cos_sin_in.cos;
+            sin_in <= cos_sin_in.sin;
+            cos_acc_in <= cos_sin_in.cos & 18X"00000";
+            sin_acc_in <= cos_sin_in.sin & 18X"00000";
+            delta_mul <= delta_in;
 
             -- 2 - Compute product and propagate addend
             cos_product <= delta_mul * cos_in;

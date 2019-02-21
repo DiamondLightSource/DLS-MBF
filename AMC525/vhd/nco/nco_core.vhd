@@ -44,7 +44,7 @@ architecture arch of nco_core is
     -- The following delays are checked by the appropriate component below and
     -- need to be used to ensure that the various processing stages are in step.
     constant LOOKUP_DELAY : natural := 2;   -- Defined by lookup_table
-    constant REFINE_DELAY : natural := 4;   -- Defined by refine
+    constant REFINE_DELAY : natural := 5;   -- Defined by refine
     constant RESIDUE_DELAY : natural := 4;  -- Defined by refine
 
 
