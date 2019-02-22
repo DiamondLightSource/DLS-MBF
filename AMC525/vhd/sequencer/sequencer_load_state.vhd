@@ -127,6 +127,8 @@ begin
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_NCO_BIT);
                         seq_state_o.reset_phase <=
                             prog_word(DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT);
+                        seq_state_o.enable_tune_pll <=
+                            prog_word(DSP_SEQ_STATE_CONFIG_ENA_TUNE_PLL_BIT);
                     when DSP_SEQ_STATE_WINDOW_RATE_OVL =>
                         seq_state_o.window_rate <= window_rate_t(prog_word);
                     when DSP_SEQ_STATE_HOLDOFF_OVL =>

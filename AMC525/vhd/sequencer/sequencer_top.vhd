@@ -60,6 +60,7 @@ entity sequencer_top is
         seq_start_adc_o : out std_ulogic;   -- Resets detector at start of dwell
         seq_write_adc_o : out std_ulogic;   -- End of dwell interval
 
+        pll_freq_i : in angle_t;        -- Tune PLL frequency
         hom_freq_o : out angle_t;       -- NCO frequency
         hom_reset_o : out std_ulogic;
         hom_gain_o : out unsigned(3 downto 0);  -- NCO gain
@@ -212,7 +213,9 @@ begin
         delta_freq_i => seq_state.delta_freq,
         capture_count_i => seq_state.capture_count,
         reset_phase_i => seq_state.reset_phase,
+        add_pll_freq_i => seq_state.enable_tune_pll,
         last_turn_i => last_turn,
+        pll_freq_i => pll_freq_i,
 
         state_end_o => state_end,
         hom_freq_o => hom_freq_o,

@@ -663,6 +663,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .ENA_NCO
                     # Reset NCO phase
                     .RESET_PHASE
+                    # Enable Tune PLL offset
+                    .ENA_TUNE_PLL
                 # Detector window advance.
                 WINDOW_RATE
                 HOLDOFF
@@ -771,7 +773,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # 1     Scaled FIR data
                     # 2     Input compensated ADC data after fill pattern
                     #       rejection
-                    # ========================================================
+                    # ===== ====================================================
                     .SELECT         2
                     # Readout shift for detector
                     .DET_SHIFT      2

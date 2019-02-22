@@ -239,6 +239,7 @@ begin
         seq_start_adc_o => sequencer_start,
         seq_write_adc_o => sequencer_write,
 
+        pll_freq_i => nco_2_phase_advance,
         hom_freq_o => nco_1_phase_advance,
         hom_reset_o => nco_1_reset_phase,
         hom_gain_o => dsp_to_control_o.nco_1_data.gain,

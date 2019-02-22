@@ -25,7 +25,9 @@ entity sequencer_counter is
         delta_freq_i : in angle_t;      -- Output frequency step
         capture_count_i : in capture_count_t;   -- Number of dwells to generate
         reset_phase_i : in std_ulogic;  -- Reset phase at start of sweep
+        add_pll_freq_i : in std_ulogic; -- Option to add Tune PLL frequency
         last_turn_i : in std_ulogic;     -- Dwell is in its last turn
+        pll_freq_i : in angle_t;
 
         state_end_o : out std_ulogic := '0';  -- Set during last turn of state
         hom_freq_o : out angle_t := (others => '0'); -- Output frequency
@@ -79,7 +81,11 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            hom_freq_o <= hom_freq;
+            if add_pll_freq_i = '1' then
+                hom_freq_o <= hom_freq + pll_freq_i;
+            else
+                hom_freq_o <= hom_freq;
+            end if;
             hom_reset_o <= reset_phase_i and turn_clock_i and state_end_o;
         end if;
     end process;
