@@ -33,7 +33,7 @@ entity tune_pll_readout is
         feedback_done_i : in std_ulogic;
         frequency_offset_i : in signed;
 
-        interrupt_o : out std_ulogic
+        interrupt_o : out std_ulogic := '0'
     );
 end;
 
@@ -66,9 +66,6 @@ architecture arch of tune_pll_readout is
     signal detector_done_in : std_ulogic := '0';
     signal debug_write : std_ulogic := '0';
     signal debug_data_in : reg_data_t;
-
-    -- Read error detection
-    signal read_error_event : std_ulogic_vector(1 downto 0);
 
 begin
     registers : entity work.tune_pll_readout_registers port map (
@@ -111,8 +108,9 @@ begin
         -- Status and control
         fifo_depth_o => offset_fifo_depth,
         overrun_o => offset_fifo_overrun,
-        read_error_o => read_error_event(0),
-        reset_i => reset_offset_fifo,
+        reset_overrun_i => reset_offset_fifo,
+        read_error_o => read_error(0),
+        reset_read_error_i => reset_read_error(0),
         -- Interrupt management
         enable_interrupt_i => enable_offset_interrupt,
         interrupt_o => offset_interrupt
@@ -132,17 +130,20 @@ begin
         -- Status and control
         fifo_depth_o => debug_fifo_depth,
         overrun_o => debug_fifo_overrun,
-        read_error_o => read_error_event(1),
-        reset_i => reset_debug_fifo,
+        reset_overrun_i => reset_debug_fifo,
+        read_error_o => read_error(1),
+        reset_read_error_i => reset_read_error(1),
         -- Interrupt management
         enable_interrupt_i => enable_debug_interrupt,
         interrupt_o => debug_interrupt
     );
 
+
     process (clk_i) begin
         if rising_edge(clk_i) then
             interrupt_o <= offset_interrupt or debug_interrupt;
 
+            -- The debug data needs to be written as a burst of two writes.
             detector_done_in <= detector_done_i;
             if detector_done_i = '1' then
                 debug_data_in <= std_logic_vector(iq_i.cos);
@@ -153,10 +154,6 @@ begin
             else
                 debug_write <= '0';
             end if;
-
-            -- Accumulate read errors unless reset
-            read_error <=
-                (read_error or read_error_event) and not reset_read_error;
         end if;
     end process;
 end;

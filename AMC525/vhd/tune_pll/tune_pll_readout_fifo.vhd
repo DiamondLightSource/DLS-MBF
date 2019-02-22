@@ -28,8 +28,9 @@ entity tune_pll_readout_fifo is
         -- Status and control
         fifo_depth_o : out unsigned;
         overrun_o : out std_ulogic;
+        reset_overrun_i : in std_ulogic;
         read_error_o : out std_ulogic := '0';
-        reset_i : in std_ulogic;
+        reset_read_error_i : in std_ulogic;
 
         -- Interrupt management
         enable_interrupt_i : in std_ulogic;
@@ -65,7 +66,7 @@ begin
         read_ready_i => read_ready,
         read_data_o => data_o,
         -- Control and status
-        reset_fifo_i => reset_i,
+        reset_fifo_i => reset_overrun_i,
         fifo_depth_o => fifo_depth_o(READOUT_FIFO_BITS downto 0)
     );
     -- Fill-in for simulation only!
@@ -83,13 +84,13 @@ begin
         if rising_edge(clk_i) then
             case run_state is
                 when RUNNING =>
-                    if reset_i = '1' then
+                    if reset_overrun_i = '1' then
                         run_state <= DELAY;
                     elsif write_i = '1' and write_ready = '0' then
                         run_state <= OVERRUN;
                     end if;
                 when OVERRUN =>
-                    if reset_i = '1' then
+                    if reset_overrun_i = '1' then
                         run_state <= DELAY;
                     end if;
                 when DELAY =>
@@ -100,7 +101,12 @@ begin
                     end if;
             end case;
 
-            read_error_o <= read_i and not read_valid;
+            -- Accumulate read errors until reset
+            if read_i = '1' and read_valid = '0' then
+                read_error_o <= '1';
+            elsif reset_read_error_i = '1' then
+                read_error_o <= '0';
+            end if;
 
             -- Reset interrupt on read until re-enabled
             if read_i = '1' then

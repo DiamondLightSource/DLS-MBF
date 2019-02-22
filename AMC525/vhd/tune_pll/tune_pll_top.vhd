@@ -14,6 +14,9 @@ use work.tune_pll_defs.all;
 
 entity tune_pll_top is
     generic (
+        -- Note: The generic definitions below are for simulation only, the
+        -- default values are suitable for synthesis.
+        --
         -- This default readout IIR shift corresponds to a delay constant of
         -- 2^13 or around 8000.  With an IIR clock at around 0.5MHz this
         -- corresponds to a 3dB point around 60Hz and a settling time to 1% of
@@ -22,7 +25,6 @@ entity tune_pll_top is
         -- Divide the DSP clock by 512 to produce the IIR clock.  This is enough
         -- to ensure we should see all relevant updates.
         READOUT_IIR_CLOCK_BITS : natural := 9;
-
         -- For simulation we want a smaller FIFO, but for normal operation we
         -- want a BRAM sized FIFO.
         READOUT_FIFO_BITS : natural := 10
@@ -90,6 +92,9 @@ architecture arch of tune_pll_top is
     signal feedback_done : std_ulogic;
     signal frequency_offset : signed(31 downto 0);
 
+    -- Frequency out
+    signal nco_frequency : angle_t;
+
 begin
     turn_clock : entity work.dlyreg generic map (
         DLY => 4
@@ -112,7 +117,7 @@ begin
         config_o => config,
         status_i => status,
         -- NCO readback
-        nco_freq_i => nco_freq_o,
+        nco_freq_i => nco_frequency,
         set_frequency_o => set_frequency,
         -- Detector bunch memory
         bunch_start_write_o => bunch_start_write,
@@ -182,7 +187,7 @@ begin
         done_o => feedback_done,
         magnitude_error_o => status.magnitude_error,
         offset_error_o => status.offset_error,
-        frequency_o => nco_freq_o,
+        frequency_o => nco_frequency,
         frequency_offset_o => frequency_offset
     );
 
@@ -248,6 +253,17 @@ begin
         frequency_offset_i => frequency_offset,
         -- Interrupt for readout
         interrupt_o => interrupt_o
+    );
+
+
+    -- Delay line for output frequency
+    freq_delay : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => angle_t'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => std_logic_vector(nco_frequency),
+        angle_t(data_o) => nco_freq_o
     );
 
     nco_gain_o <= config.nco_gain;
