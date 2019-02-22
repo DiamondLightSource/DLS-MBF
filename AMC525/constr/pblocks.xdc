@@ -29,20 +29,30 @@ create_pblock pblock_det
 add_cells_to_pblock [get_pblocks pblock_det] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/detector} \
     {dsp_main/dsp_gen[1].dsp_top/detector}]]
-resize_pblock [get_pblocks pblock_det] -add {DSP48_X0Y0:DSP48_X6Y19}
-resize_pblock [get_pblocks pblock_det] -add {RAMB18_X0Y0:RAMB18_X6Y19}
-resize_pblock [get_pblocks pblock_det] -add {RAMB36_X0Y0:RAMB36_X6Y9}
+resize_pblock [get_pblocks pblock_det] -add {DSP48_X0Y0:DSP48_X4Y19}
+resize_pblock [get_pblocks pblock_det] -add {RAMB18_X0Y0:RAMB18_X4Y19}
+resize_pblock [get_pblocks pblock_det] -add {RAMB36_X0Y0:RAMB36_X4Y9}
 
-# Let's force the MMS blocks into right hand side of tile X1Y2
+# Let's force the MMS blocks into right hand side of tile X1Y1
 create_pblock pblock_mms
 add_cells_to_pblock [get_pblocks pblock_mms] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/adc_top/min_max_sum} \
     {dsp_main/dsp_gen[0].dsp_top/dac_top/min_max_sum} \
     {dsp_main/dsp_gen[1].dsp_top/adc_top/min_max_sum} \
     {dsp_main/dsp_gen[1].dsp_top/dac_top/min_max_sum}]]
-resize_pblock [get_pblocks pblock_mms] -add {DSP48_X15Y40:DSP48_X17Y59}
-resize_pblock [get_pblocks pblock_mms] -add {RAMB18_X11Y40:RAMB18_X14Y59}
-resize_pblock [get_pblocks pblock_mms] -add {RAMB36_X11Y20:RAMB36_X14Y29}
+resize_pblock [get_pblocks pblock_mms] -add {DSP48_X15Y20:DSP48_X17Y39}
+resize_pblock [get_pblocks pblock_mms] -add {RAMB18_X11Y20:RAMB18_X14Y39}
+resize_pblock [get_pblocks pblock_mms] -add {RAMB36_X11Y10:RAMB36_X14Y19}
+
+# Persuade Tune PLL to live in X1Y2
+# For the moment, just fix the major resources
+create_pblock pblock_tune_pll
+add_cells_to_pblock [get_pblocks pblock_tune_pll] [get_cells -quiet [list \
+    {dsp_main/dsp_gen[0].dsp_top/tune_pll} \
+    {dsp_main/dsp_gen[1].dsp_top/tune_pll}]]
+resize_pblock [get_pblocks pblock_tune_pll] -add {DSP48_X7Y40:DSP48_X17Y59}
+resize_pblock [get_pblocks pblock_tune_pll] -add {RAMB18_X7Y40:RAMB18_X14Y59}
+resize_pblock [get_pblocks pblock_tune_pll] -add {RAMB36_X7Y20:RAMB36_X14Y29}
 
 # # A special pblock just for the output AXI Lite register.  The idea here is to
 # # try to protect the interconnect from timing tensions by fixing the output

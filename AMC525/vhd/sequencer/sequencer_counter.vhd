@@ -48,6 +48,12 @@ architecture arch of sequencer_counter is
 
     signal turn_clock_delay : std_ulogic;
 
+    signal add_pll_freq : std_ulogic := '0';
+    signal pll_freq_in : angle_t;
+
+    attribute USE_DSP : string;
+    attribute USE_DSP of hom_freq_o : signal is "yes";
+
 begin
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
@@ -70,6 +76,7 @@ begin
                 elsif last_turn_i = '1' then
                     capture_cntr <= next_capture_cntr;
                     hom_freq <= next_hom_freq;
+                    add_pll_freq <= add_pll_freq_i;
                 end if;
             end if;
 
@@ -81,8 +88,9 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            if add_pll_freq_i = '1' then
-                hom_freq_o <= hom_freq + pll_freq_i;
+            pll_freq_in <= pll_freq_i;
+            if add_pll_freq = '1' then
+                hom_freq_o <= hom_freq + pll_freq_in;
             else
                 hom_freq_o <= hom_freq;
             end if;
