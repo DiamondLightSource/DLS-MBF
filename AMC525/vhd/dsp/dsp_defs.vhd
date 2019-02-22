@@ -54,6 +54,7 @@ package dsp_defs is
         adc_trigger : std_ulogic;
         seq_trigger : std_ulogic;
         seq_busy : std_ulogic;
+        tune_pll_ready : std_ulogic;
     end record;
 
     type control_to_dsp_t is record

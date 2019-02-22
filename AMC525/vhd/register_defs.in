@@ -874,3 +874,5 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     .SEQ_BUSY       2
     # Sequencer complete, no longer busy, one bit for each channel.
     .SEQ_DONE       2
+    # Tune PLL readout ready, one bit per channel
+    .TUNE_PLL_READY 2

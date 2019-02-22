@@ -91,6 +91,7 @@ architecture arch of dsp_control_top is
     signal seq_busy : std_ulogic_vector(CHANNELS);
     signal dram0_trigger : std_ulogic;
     signal dram0_phase : std_ulogic;
+    signal tune_pll_ready : std_ulogic_vector(CHANNELS);
 
 begin
     -- Capture of pulsed bits.
@@ -266,6 +267,7 @@ begin
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
         seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
+        tune_pll_ready(c) <= dsp_to_control_i(c).tune_pll_ready;
         control_to_dsp_o(c).blanking <= blanking_window;
         control_to_dsp_o(c).seq_start <= seq_start(c);
 
@@ -282,6 +284,7 @@ begin
         dram0_trigger_i => dram0_trigger,
         seq_start_i => seq_start,
         seq_busy_i => seq_busy,
+        tune_pll_ready_i => tune_pll_ready,
 
         interrupts_o => interrupts_o
     );

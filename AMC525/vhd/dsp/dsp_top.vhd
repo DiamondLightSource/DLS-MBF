@@ -306,6 +306,8 @@ begin
 
         nco_gain_o => dsp_to_control_o.nco_2_data.gain,
         nco_enable_o => dsp_to_control_o.nco_2_data.enable,
-        nco_freq_o => nco_2_phase_advance
+        nco_freq_o => nco_2_phase_advance,
+
+        interrupt_o => dsp_to_control_o.tune_pll_ready
     );
 end;
