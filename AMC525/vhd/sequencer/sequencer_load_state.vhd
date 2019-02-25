@@ -134,6 +134,8 @@ begin
                     when DSP_SEQ_STATE_HOLDOFF_OVL =>
                         seq_state_o.holdoff_count <= dwell_count_t(
                             prog_word(DSP_SEQ_STATE_HOLDOFF_HOLDOFF_BITS));
+                        seq_state_o.state_holdoff <= dwell_count_t(prog_word(
+                            DSP_SEQ_STATE_HOLDOFF_STATE_HOLDOFF_BITS));
                     when others =>
                 end case;
             end if;

@@ -671,6 +671,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # Number of turns to wait after changing frequency and
                     # before starting detector capture
                     .HOLDOFF        16
+                    # Holdoff at start of state: delay in turns from entry to
+                    # sequencer state to start of first dwell.
+                    .STATE_HOLDOFF  16
 
                 # One extra write is required to pad the state setup to 8
                 # words.

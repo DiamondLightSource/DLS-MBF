@@ -36,6 +36,7 @@ architecture arch of testbench is
     signal seq_busy : std_ulogic;
     signal seq_start : std_ulogic;
     signal seq_write : std_ulogic;
+    signal pll_freq : angle_t := (others => '0');
     signal hom_freq : angle_t;
     signal hom_reset : std_ulogic;
     signal hom_gain : unsigned(3 downto 0);
@@ -83,6 +84,7 @@ begin
         seq_start_adc_o => seq_start,
         seq_write_adc_o => seq_write,
 
+        pll_freq_i => pll_freq,
         hom_freq_o => hom_freq,
         hom_reset_o => hom_reset,
         hom_gain_o => hom_gain,
@@ -129,7 +131,7 @@ begin
         write_reg(DSP_SEQ_WRITE_REG,     X"00020001");  -- 2 dwell, 3 capture
         write_reg(DSP_SEQ_WRITE_REG,     X"00000291");
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00010001");
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
 
         -- Finally bank 2

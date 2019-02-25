@@ -198,6 +198,9 @@ begin
         holdoff_count_i => seq_state.holdoff_count,
         blanking_i => blanking_in,
 
+        state_holdoff_i => seq_state.state_holdoff,
+        state_end_i => state_end,
+
         first_turn_o => first_turn,
         last_turn_o => last_turn
     );

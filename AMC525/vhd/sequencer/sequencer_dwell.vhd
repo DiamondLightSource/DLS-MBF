@@ -35,8 +35,11 @@ entity sequencer_dwell is
         reset_i : in std_ulogic;
 
         dwell_count_i : in dwell_count_t;   -- Dwell duration
-        holdoff_count_i : in dwell_count_t; -- Holdoff duration
-        blanking_i : in std_ulogic;          -- Forces blanking if set
+        holdoff_count_i : in dwell_count_t; -- Holdoff duration for each dwell
+        blanking_i : in std_ulogic;         -- Forces blanking if set
+
+        state_holdoff_i : in dwell_count_t; -- Holdoff at start of state
+        state_end_i : in std_ulogic;        -- Next turn is start of state
 
         first_turn_o : out std_ulogic := '0'; -- Start capture, reset detector
         last_turn_o : out std_ulogic := '0'  -- Set during last turn of a dwell
@@ -48,6 +51,8 @@ architecture arch of sequencer_dwell is
     signal in_holdoff : std_ulogic := '0';
     -- Counts turns during holdoff
     signal holdoff_ctr : dwell_count_t := (others => '0');
+    -- Counts turns during initial holdoff
+    signal state_holdoff_ctr : dwell_count_t := (others => '0');
     -- Counts turns during normal dwell
     signal dwell_ctr : dwell_count_t := (others => '0');
 

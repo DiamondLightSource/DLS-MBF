@@ -28,6 +28,7 @@ package sequencer_defs is
         enable_tune_pll : std_ulogic;   -- Enable Tune PLL frequency offset
         window_rate : window_rate_t;    -- Detector window advance rate
         holdoff_count : dwell_count_t;  -- Holdoff count before each dwell
+        state_holdoff : dwell_count_t;  -- Holdoff at start of state
     end record;
 
     -- Sequencer specific types
@@ -50,7 +51,8 @@ package sequencer_defs is
         reset_phase => '0',
         enable_tune_pll => '0',
         window_rate => (others => '0'),
-        holdoff_count => (others => '0')
+        holdoff_count => (others => '0'),
+        state_holdoff => (others => '0')
     );
 
 end package;
