@@ -533,8 +533,8 @@ static void read_mms(
 
 void hw_write_nco0_frequency(int axis, uint64_t frequency)
 {
-    WRITEL(dsp_regs[axis]->nco0_low, frequency & 0xFFFFFFFF);
-    WRITE_FIELDS(dsp_regs[axis]->nco0_high,
+    WRITEL(dsp_regs[axis]->nco0.low, frequency & 0xFFFFFFFF);
+    WRITE_FIELDS(dsp_regs[axis]->nco0.high,
         .bits = (frequency >> 32) & 0xFFFF,
         .reset_phase = frequency == 0);
 }

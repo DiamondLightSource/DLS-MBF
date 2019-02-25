@@ -35,6 +35,7 @@ architecture arch of register_read_adc is
 
     signal dsp_read_ack : dsp_read_ack_o'SUBTYPE;
     signal read_ack : dsp_read_ack_o'SUBTYPE;
+    signal adc_read_data_in : adc_read_data_i'SUBTYPE;
     signal dsp_read_data : adc_read_data_i'SUBTYPE;
     signal read_data : adc_read_data_i'SUBTYPE;
 
@@ -58,9 +59,17 @@ begin
         );
 
         -- Synchronise and capture ADC data.
+        process (adc_clk_i) begin
+            if rising_edge(adc_clk_i) then
+                if adc_read_ack_i(r) = '1' then
+                    adc_read_data_in(r) <= adc_read_data_i(r);
+                end if;
+            end if;
+        end process;
+
         process (dsp_clk_i) begin
             if rising_edge(dsp_clk_i) then
-                dsp_read_data(r) <= adc_read_data_i(r);
+                dsp_read_data(r) <= adc_read_data_in(r);
                 if dsp_read_ack(r) = '1' then
                     read_data(r) <= dsp_read_data(r);
                 end if;

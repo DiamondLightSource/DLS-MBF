@@ -36,21 +36,21 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "MMS" sim:/testbench/min_max_sum_inst/*
-add wave -group "Bank" sim:/testbench/min_max_sum_inst/min_max_sum_bank_inst/*
-add wave -group "MMS Store" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/*
+set mms sim:/testbench/min_max_sum_inst
+
+add wave -group "MMS" $mms/*
+add wave -group "Bank" $mms/min_max_sum_bank_inst/*
+add wave -group "MMS Store" $mms/min_max_sum_store_inst/*
 add wave -group "mem(0)" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/*
+    $mms/min_max_sum_store_inst/mem_gen(0)/memory_inst/*
 add wave -group "bram(0)" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/bram/*
+    $mms/min_max_sum_store_inst/mem_gen(0)/memory_inst/bram/*
 add wave -group "mem(1)" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(1)/memory_inst/*
-add wave -group "update" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_update_inst/*
-add wave -group "Readout" \
-    sim:/testbench/min_max_sum_inst/readout_inst/*
+    $mms/min_max_sum_store_inst/mem_gen(1)/memory_inst/*
+add wave -group "update" $mms/min_max_sum_update_inst/*
+add wave -group "Readout" $mms/readout_inst/*
 add wave -group "Limit" sim:/testbench/min_max_limit_inst/*
+add wave -group "Read" $mms/register_read_adc/*
 
 add wave sim:*
 

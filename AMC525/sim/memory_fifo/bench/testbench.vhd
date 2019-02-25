@@ -64,7 +64,7 @@ begin
             write_valid <= '1';
             clk_wait;
             write_valid <= '0';
-            clk_wait(5);
+            clk_wait(1);
         end loop;
 
         -- Now write with proper handshaking.  This will wait for reader.

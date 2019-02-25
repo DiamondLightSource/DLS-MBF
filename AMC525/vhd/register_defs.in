@@ -458,7 +458,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # registers.
 !DSP
     # This is a fixed frequency NCO with frequency under manual control only
-    :NCO_FREQ
+    :NCO_FREQ   NCO0
 
     # Input signal processing
     !ADC

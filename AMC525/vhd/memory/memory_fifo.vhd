@@ -46,6 +46,9 @@ architecture arch of memory_fifo is
     signal out_ptr : unsigned(FIFO_BITS-1 downto 0) := (others => '0');
     signal fifo : vector_array(0 to 2**FIFO_BITS-1)(DATA_RANGE);
 
+    attribute RAM_STYLE : string;
+    attribute RAM_STYLE of fifo : signal is "BLOCK";
+
     -- STATE: we detect both "full" and "nearly full" conditions, and so it
     -- turns out that the logic is simpler if we use a full flip-flop to
     -- distinguish between empty and full states.

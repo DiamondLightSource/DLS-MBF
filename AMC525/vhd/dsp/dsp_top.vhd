@@ -73,12 +73,12 @@ begin
     nco_register : entity work.nco_register port map (
         clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(DSP_NCO_FREQ_REGS),
+        write_strobe_i => write_strobe_i(DSP_NCO0_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_NCO_FREQ_REGS),
-        read_strobe_i => read_strobe_i(DSP_NCO_FREQ_REGS),
-        read_data_o => read_data_o(DSP_NCO_FREQ_REGS),
-        read_ack_o => read_ack_o(DSP_NCO_FREQ_REGS),
+        write_ack_o => write_ack_o(DSP_NCO0_REGS),
+        read_strobe_i => read_strobe_i(DSP_NCO0_REGS),
+        read_data_o => read_data_o(DSP_NCO0_REGS),
+        read_ack_o => read_ack_o(DSP_NCO0_REGS),
 
         nco_freq_i => nco_0_phase_advance,
         nco_freq_o => nco_0_phase_advance,
@@ -131,6 +131,7 @@ begin
         cos_sin_o => nco_2_cos_sin
     );
     dsp_to_control_o.nco_2_data.nco <= nco_2_cos_sin;
+    nco_2_reset_phase <= '0';
 
 
     -- -------------------------------------------------------------------------

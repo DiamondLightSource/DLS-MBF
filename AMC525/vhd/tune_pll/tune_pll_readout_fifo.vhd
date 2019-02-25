@@ -114,7 +114,7 @@ begin
             elsif enable_interrupt_i = '1' then
                 interrupt_enabled <= '1';
             end if;
-            interrupt_o <= interrupt_enabled and read_ready;
+            interrupt_o <= interrupt_enabled and read_valid;
         end if;
     end process;
 

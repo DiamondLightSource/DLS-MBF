@@ -119,8 +119,8 @@ begin
         -- Simple test, small ring: just pass NCO0 through to DSP
 
         -- Set a sensible NCO frequency
-        write_reg(DSP_NCO0_LOW_REG,  X"00000000");
-        write_reg(DSP_NCO0_HIGH_REG,  X"00000800");
+        write_reg(DSP_NCO0_REGS'LOW,  X"00000000");
+        write_reg(DSP_NCO0_REGS'LOW + 1,  X"00000800");
 
         -- Enable output of NCO0
         -- .DELAY = 1
@@ -159,8 +159,8 @@ begin
 
         wait for 2 us;
 
-        write_reg(DSP_NCO0_LOW_REG,  X"00100000");
-        write_reg(DSP_NCO0_HIGH_REG,  X"00000800");
+        write_reg(DSP_NCO0_REGS'LOW,  X"00100000");
+        write_reg(DSP_NCO0_REGS'LOW + 1,  X"00000800");
 
         wait;
     end process;

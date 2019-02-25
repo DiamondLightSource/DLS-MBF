@@ -69,6 +69,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/memory/memory_buffer_fast.vhd \
     $vhd_dir/memory/memory_buffer_simple.vhd \
     $vhd_dir/memory/memory_buffer.vhd \
+    $vhd_dir/memory/memory_fifo.vhd \
     $vhd_dir/sequencer/sequencer_defs.vhd \
     $vhd_dir/sequencer/sequencer_registers.vhd \
     $vhd_dir/sequencer/sequencer_super.vhd \
@@ -99,12 +100,18 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/adc/adc_mms_dram_data_source.vhd \
     $vhd_dir/adc/adc_overflow.vhd \
     $vhd_dir/adc/adc_top.vhd \
+    $vhd_dir/tune_pll/tune_pll_defs.vhd \
     $vhd_dir/tune_pll/tune_pll_registers.vhd \
     $vhd_dir/tune_pll/tune_pll_detector.vhd \
     cordic_table.vhd \
     $vhd_dir/tune_pll/tune_pll_cordic.vhd \
     $vhd_dir/tune_pll/tune_pll_feedback.vhd \
     $vhd_dir/tune_pll/tune_pll_control.vhd \
+    $vhd_dir/tune_pll/one_pole_iir.vhd \
+    $vhd_dir/tune_pll/tune_pll_filtered.vhd \
+    $vhd_dir/tune_pll/tune_pll_readout_registers.vhd \
+    $vhd_dir/tune_pll/tune_pll_readout_fifo.vhd \
+    $vhd_dir/tune_pll/tune_pll_readout.vhd \
     $vhd_dir/tune_pll/tune_pll_top.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 
