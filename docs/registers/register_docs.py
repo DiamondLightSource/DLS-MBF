@@ -222,7 +222,7 @@ class register_docs(RegisterDocs):
 
         header = self.doc_text(definition)
 
-        table = Table(self, [11, 9, 11, 25, 80])
+        table = Table(self, [12, 9, 12, 30, 80])
         table.add_header(
             [['Reg'], [], ['Field'], ['Name'], ['Description']])
         methods = GenerateMethods(table)
