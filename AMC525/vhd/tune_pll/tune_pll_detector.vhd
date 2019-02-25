@@ -44,6 +44,7 @@ architecture arch of tune_pll_detector is
     constant DATA_IN_BUFFER_LENGTH : natural := 4;
     constant RESULT_WIDTH : natural := iq_o.cos'LENGTH;
 
+    signal nco_iq_in : nco_iq_i'SUBTYPE;
     signal shift : natural;
     signal bunch_enable : std_ulogic;
     signal data_in : signed(24 downto 0);
@@ -57,6 +58,15 @@ architecture arch of tune_pll_detector is
 begin
     -- Compute shift.
     shift <= 8 * to_integer(shift_i) + 16;
+
+    -- Pipeline NCO input
+    nco_delay : entity work.nco_delay generic map (
+        DELAY => 4
+    ) port map (
+        clk_i => adc_clk_i,
+        cos_sin_i => nco_iq_i,
+        cos_sin_o => nco_iq_in
+    );
 
     -- Bunch select memory
     bunch_select : entity work.detector_bunch_select port map (
@@ -95,7 +105,7 @@ begin
         clk_i => adc_clk_i,
 
         data_i => data_in,
-        iq_i => nco_iq_i,
+        iq_i => nco_iq_in,
         bunch_enable_i => bunch_enable,
 
         shift_i => shift,
