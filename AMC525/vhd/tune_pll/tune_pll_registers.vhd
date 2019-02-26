@@ -62,7 +62,7 @@ begin
         read_ack_o => read_ack_o(DSP_TUNE_PLL_CONTROL_NCO_FREQ_REGS),
         nco_freq_i => nco_freq_i,
         nco_freq_o => config_o.base_frequency,
-        reset_phase_o => open,
+        reset_phase_o => config_o.nco_reset,
         write_freq_o => set_frequency_o
     );
 

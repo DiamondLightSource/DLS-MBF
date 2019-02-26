@@ -57,6 +57,7 @@ entity tune_pll_top is
         -- Control frequency out
         nco_gain_o : out unsigned(3 downto 0);
         nco_enable_o : out std_ulogic;
+        nco_reset_o : out std_ulogic;
         nco_freq_o : out angle_t;
 
         -- Interrupt for readout ready
@@ -268,4 +269,5 @@ begin
 
     nco_gain_o <= config.nco_gain;
     nco_enable_o <= config.nco_enable;
+    nco_reset_o <= config.nco_reset;
 end;

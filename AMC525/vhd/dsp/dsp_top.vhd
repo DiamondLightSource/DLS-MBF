@@ -131,7 +131,6 @@ begin
         cos_sin_o => nco_2_cos_sin
     );
     dsp_to_control_o.nco_2_data.nco <= nco_2_cos_sin;
-    nco_2_reset_phase <= '0';
 
 
     -- -------------------------------------------------------------------------
@@ -308,6 +307,7 @@ begin
 
         nco_gain_o => dsp_to_control_o.nco_2_data.gain,
         nco_enable_o => dsp_to_control_o.nco_2_data.enable,
+        nco_reset_o => nco_2_reset_phase,
         nco_freq_o => nco_2_phase_advance,
 
         interrupt_o => dsp_to_control_o.tune_pll_ready
