@@ -150,11 +150,23 @@ begin
         clk_wait(dsp_clk);
         trigger <= '0';
 
+
         -- Wait for program to complete
         wait until seq_busy = '0';
         clk_wait(dsp_clk);
 
         -- Trigger again!
+        trigger <= '1';
+        clk_wait(dsp_clk);
+        trigger <= '0';
+
+        clk_wait(dsp_clk, 20);
+        write_reg(DSP_SEQ_COMMAND_REG_W, X"00000001");  -- force reset
+
+
+        -- Wait for program to complete and trigger again
+        wait until seq_busy = '0';
+        clk_wait(dsp_clk);
         trigger <= '1';
         clk_wait(dsp_clk);
         trigger <= '0';

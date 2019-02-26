@@ -192,13 +192,14 @@ begin
     dwell : entity work.sequencer_dwell port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock,
+
         reset_i => reset_turn,
+        blanking_i => blanking_in,
 
         dwell_count_i => seq_state.dwell_count,
         holdoff_count_i => seq_state.holdoff_count,
-        blanking_i => blanking_in,
-
         state_holdoff_i => seq_state.state_holdoff,
+
         state_end_i => state_end,
 
         first_turn_o => first_turn,
