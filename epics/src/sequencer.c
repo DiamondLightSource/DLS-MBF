@@ -200,7 +200,9 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
         PUBLISH_WRITE_VAR_P(bo, "ENWIN", entry->enable_window);
         PUBLISH_WRITE_VAR_P(bo, "CAPTURE", entry->write_enable);
         PUBLISH_WRITE_VAR_P(bo, "BLANK", entry->enable_blanking);
+        PUBLISH_WRITE_VAR_P(bo, "TUNE_PLL", entry->use_tune_pll);
         PUBLISH_WRITE_VAR_P(ulongout, "HOLDOFF", entry->holdoff);
+        PUBLISH_WRITE_VAR_P(ulongout, "STATE_HOLDOFF", entry->state_holdoff);
 
         PUBLISH_C_P(ulongout, "DWELL", write_dwell_time, bank);
 
@@ -243,6 +245,7 @@ static bool update_capture_count(void *context, bool *value)
         if (bank->entry->write_enable)
             seq->capture_count += bank->entry->capture_count;
         seq->sequencer_duration +=
+            bank->entry->state_holdoff +
             bank->entry->capture_count *
             (bank->entry->dwell_time + bank->entry->holdoff);
     }
@@ -373,7 +376,6 @@ unsigned int compute_scale_info(
     /* Iterate through super sequencer. */
     unsigned int ix = 0;            // Index into generated vectors
     unsigned int total_time = 0;    // Accumulates time base
-    unsigned int gap_time = 0;      // For non-captured states
     uint64_t f0 = 0;                // Accumulates current frequency
     for (unsigned int super = 0; super < super_count; super ++)
     {
@@ -382,12 +384,11 @@ unsigned int compute_scale_info(
         for (unsigned int state = seq_count; state > 0; state --)
         {
             const struct seq_entry *entry = &seq_config->entries[state - 1];
+            total_time += entry->state_holdoff;
             unsigned int dwell_time = entry->dwell_time + entry->holdoff;
             if (entry->write_enable)
             {
                 f0 = entry->start_freq + super_offset;
-                total_time += gap_time;
-                gap_time = 0;
                 for (unsigned int i = 0; i < entry->capture_count; i ++)
                 {
                     if (start_offset <= ix  &&  ix < end_offset)
@@ -400,7 +401,7 @@ unsigned int compute_scale_info(
                 }
             }
             else
-                gap_time += dwell_time * entry->capture_count;
+                total_time += dwell_time * entry->capture_count;
         }
     }
 

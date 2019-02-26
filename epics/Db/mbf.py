@@ -10,6 +10,7 @@ import detector
 import memory
 import triggers
 import delay
+import tune_pll
 
 system.create_aggregate_pvs()
 

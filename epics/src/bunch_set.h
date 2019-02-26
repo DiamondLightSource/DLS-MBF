@@ -21,9 +21,9 @@ void update_record_with_bunch_set(
 
 #define _id_UPDATE_RECORD_BUNCH_SET(value, type, bunch_set, record, value_in) \
     do { \
-        type value = value_in; \
+        type value = (value_in); \
         update_record_with_bunch_set( \
-            bunch_set, record, waveform_TYPE_##type, \
+            (bunch_set), (record), waveform_TYPE_##type, \
             &value, sizeof(value)); \
     } while(0)
 #define UPDATE_RECORD_BUNCH_SET(type, bunch_set, record, value_in) \

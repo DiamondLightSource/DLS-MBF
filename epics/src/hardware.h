@@ -264,6 +264,7 @@ struct bunch_config {
     bool *fir_enable;       // Enable FIR output for this bunch
     bool *nco0_enable;      // Enable NCO0 output for this bunch
     bool *nco1_enable;      // Enable NCO1 output (swept NCO) for this bunch
+    bool *nco2_enable;      // Enable NCO2 output (Tune PLL NCO) for this bunch
 };
 
 /* Write bunch configuration. */
@@ -327,7 +328,9 @@ struct seq_entry {
     bool write_enable;              // Enable data capture of sequence
     bool enable_blanking;           // Observe trigger holdoff control
     bool reset_phase;               // If set sweep phase is reset at start
+    bool use_tune_pll;              // Enable Tune PLL frequency offset
     unsigned int holdoff;           // Detector holdoff
+    unsigned int state_holdoff;     // Holdoff at start of state
 };
 
 struct seq_config {
@@ -393,3 +396,58 @@ void hw_read_det_events(int axis,
 void hw_read_det_memory(
     int axis, unsigned int result_count, unsigned int offset,
     struct detector_result result[]);
+
+
+/* Tune PLL configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+struct tune_pll_status {
+    bool running;               // Set if feedback currently running
+    /* The following bits are stop reasons recording why feedback is stopped. */
+    bool stopped;               // Stop requested
+    bool overflow;              // Detector overflow
+    bool too_small;             // Magnitude too small
+    bool bad_offset;            // Offset too large
+};
+
+/* Directly sets Tune PLL NCO frequency.  Note that setting this during feedback
+ * will interfere with feedback! */
+void hw_write_pll_nco_frequency(int axis, uint64_t frequency);
+
+/* Reads current Tune PLL frequency. */
+uint64_t hw_read_pll_nco_frequency(int axis);
+
+/* Control over Tune PLL NCO gain and enable. */
+void hw_write_pll_nco_gain(int axis, unsigned int gain);
+void hw_write_pll_nco_enable(int axis, bool enable);
+
+/* Control over operational parameters. */
+void hw_write_pll_dwell_time(int axis, unsigned int dwell);
+void hw_write_pll_target_phase(int axis, int32_t phase);
+void hw_write_pll_integral_factor(int axis, int32_t integral);
+void hw_write_pll_proportional_factor(int axis, int32_t proportional);
+void hw_write_pll_minimum_magnitude(int axis, uint32_t magnitude);
+void hw_write_pll_maximum_offset(int axis, uint32_t offset);
+
+/* Configures the detector. */
+void hw_write_pll_det_config(
+    int axis, unsigned int input_select, unsigned int scaling,
+    unsigned int delay, const bool bunch_enables[]);
+
+/* Readbacks for filtered live data. */
+void hw_read_pll_filtered_readbacks(int axis,
+    int32_t *det_cos, int32_t *det_sin,
+    int32_t *phase, uint32_t *magnitude, int32_t *offset);
+
+/* Rather strangely, the maximum possible PLL readback FIFO capture is 1025
+ * samples.  In practice this will *never* occur, but it is safest to leave the
+ * space anyway.
+ *    For the debug FIFO the number of samples read will be half this value. */
+#define PLL_FIFO_SIZE       1025
+
+/* Read debug and offset FIFO.  If a reset is required then *reset is set.  If
+ * enable_interrupt is set then read ready interrupts are enabled on return. */
+size_t hw_read_pll_debug_fifo(
+    int axis, struct detector_result data[],
+    bool enable_interrupt, bool *reset);
+size_t hw_read_pll_offset_fifo(
+    int axis, int32_t data[], bool enable_interrupt,  bool *reset);

@@ -2,6 +2,18 @@ from common import *
 
 # Bunch selection
 
+def select_from(l):
+    if l:
+        for x in select_from(l[1:]):
+            yield x
+            yield x + [l[0]]
+    else:
+        yield []
+
+def dac_select(*options):
+    selection = list(select_from(options))
+    return ['Off'] + ['+'.join(s) for s in selection[1:]]
+
 
 def bank_pvs(bank):
 
@@ -22,9 +34,7 @@ def bank_pvs(bank):
     # PVs for setting waveforms via user interface
     mbbOut('FIR_SELECT', 'FIR 0', 'FIR 1', 'FIR 2', 'FIR 3',
         DESC = 'Select FIR setting')
-    mbbOut('DAC_SELECT',
-        'Off',   'FIR',    'NCO',    'FIR+NCO',
-        'Sweep', 'Sw+FIR', 'Sw+NCO', 'Sw+NCO+FIR',
+    mbbOut('DAC_SELECT', *dac_select('FIR', 'NCO', 'Sweep', 'PLL'),
         DESC = 'Select DAC output')
     aOut('GAIN_SELECT', PREC = 5, DESC = 'Select bunch gain')
     Action('ALL:SET', DESC = 'Set selected bunches')
