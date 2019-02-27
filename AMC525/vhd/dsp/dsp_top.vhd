@@ -109,7 +109,8 @@ begin
 
     -- Oscillators
     nco_0 : entity work.nco port map (
-        clk_i => adc_clk_i,
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
         phase_advance_i => nco_0_phase_advance,
         reset_phase_i => nco_0_reset_phase,
         cos_sin_o => nco_0_cos_sin
@@ -117,7 +118,8 @@ begin
     dsp_to_control_o.nco_0_data.nco <= nco_0_cos_sin;
 
     nco_1 : entity work.nco port map (
-        clk_i => adc_clk_i,
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
         phase_advance_i => nco_1_phase_advance,
         reset_phase_i => nco_1_reset_phase,
         cos_sin_o => nco_1_cos_sin
@@ -125,7 +127,8 @@ begin
     dsp_to_control_o.nco_1_data.nco <= nco_1_cos_sin;
 
     nco_2 : entity work.nco port map (
-        clk_i => adc_clk_i,
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
         phase_advance_i => nco_2_phase_advance,
         reset_phase_i => nco_2_reset_phase,
         cos_sin_o => nco_2_cos_sin

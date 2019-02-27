@@ -20,9 +20,9 @@ create_pblock pblock_fir
 add_cells_to_pblock [get_pblocks pblock_fir] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/bunch_fir_top} \
     {dsp_main/dsp_gen[1].dsp_top/bunch_fir_top}]]
-resize_pblock [get_pblocks pblock_fir] -add {DSP48_X7Y0:DSP48_X17Y19}
-resize_pblock [get_pblocks pblock_fir] -add {RAMB18_X7Y0:RAMB18_X14Y19}
-resize_pblock [get_pblocks pblock_fir] -add {RAMB36_X7Y0:RAMB36_X14Y9}
+resize_pblock [get_pblocks pblock_fir] -add {DSP48_X11Y0:DSP48_X17Y19}
+resize_pblock [get_pblocks pblock_fir] -add {RAMB18_X9Y0:RAMB18_X14Y19}
+resize_pblock [get_pblocks pblock_fir] -add {RAMB36_X9Y0:RAMB36_X14Y9}
 
 # Put the two detectors in tile X0Y0
 create_pblock pblock_det
@@ -40,23 +40,15 @@ add_cells_to_pblock [get_pblocks pblock_mms] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/dac_top/min_max_sum} \
     {dsp_main/dsp_gen[1].dsp_top/adc_top/min_max_sum} \
     {dsp_main/dsp_gen[1].dsp_top/dac_top/min_max_sum}]]
-resize_pblock [get_pblocks pblock_mms] -add {DSP48_X15Y20:DSP48_X17Y39}
-resize_pblock [get_pblocks pblock_mms] -add {RAMB18_X11Y20:RAMB18_X14Y39}
-resize_pblock [get_pblocks pblock_mms] -add {RAMB36_X11Y10:RAMB36_X14Y19}
+resize_pblock [get_pblocks pblock_mms] -add {DSP48_X14Y20:DSP48_X17Y39}
+resize_pblock [get_pblocks pblock_mms] -add {RAMB18_X10Y20:RAMB18_X14Y39}
+resize_pblock [get_pblocks pblock_mms] -add {RAMB36_X10Y10:RAMB36_X14Y19}
 
 # Put Tune PLL in the right hand of X1Y2
 create_pblock pblock_tune_pll
 add_cells_to_pblock [get_pblocks pblock_tune_pll] [get_cells -quiet [list \
     {dsp_main/dsp_gen[0].dsp_top/tune_pll} \
     {dsp_main/dsp_gen[1].dsp_top/tune_pll}]]
-resize_pblock [get_pblocks pblock_tune_pll] -add {DSP48_X11Y40:DSP48_X17Y59}
-resize_pblock [get_pblocks pblock_tune_pll] -add {RAMB18_X9Y40:RAMB18_X14Y59}
-resize_pblock [get_pblocks pblock_tune_pll] -add {RAMB36_X9Y20:RAMB36_X14Y29}
-
-# # A special pblock just for the output AXI Lite register.  The idea here is to
-# # try to protect the interconnect from timing tensions by fixing the output
-# # register.
-# create_pblock pblock_axi_lite
-# add_cells_to_pblock [get_pblocks pblock_axi_lite] [get_cells -quiet [list \
-#     {interconnect/interconnect_i/axi_lite/axi_register_slice_2}]]
-# resize_pblock [get_pblocks pblock_axi_lite] -add {SLICE_X162Y190:SLICE_X169Y199}
+resize_pblock [get_pblocks pblock_tune_pll] -add {DSP48_X14Y40:DSP48_X17Y59}
+resize_pblock [get_pblocks pblock_tune_pll] -add {RAMB18_X10Y40:RAMB18_X14Y59}
+resize_pblock [get_pblocks pblock_tune_pll] -add {RAMB36_X10Y20:RAMB36_X14Y29}

@@ -72,21 +72,21 @@ begin
         clk_i => clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
         write_strobe_i(1) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
         write_strobe_i(2) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
         write_strobe_i(3) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
         write_strobe_i(4) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG_W),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
         write_strobe_i(5) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
-        write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG_W),
+        write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
         write_ack_o(2) => write_ack_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
         write_ack_o(3) => write_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
-        write_ack_o(4) => write_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG_W),
+        write_ack_o(4) => write_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
         write_ack_o(5) =>
             write_ack_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W),
         register_data_o(0) => config_register,
@@ -100,20 +100,16 @@ begin
     read_data_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= status_register;
     read_ack_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= '1';
 
-    read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_PHASE_REG_R) <= (
-        31 downto 32-PHASE_ANGLE_BITS =>
-            std_ulogic_vector(status_i.filtered_phase),
-        others => '0');
-    read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_PHASE_REG_R) <= '1';
+    read_data_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= (others => '0');
+    read_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= '1';
 
     read_data_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG) <= '1';
     read_data_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG) <= '1';
 
-    read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_MAGNITUDE_REG_R) <=
-        std_ulogic_vector(status_i.filtered_magnitude);
-    read_ack_o(DSP_TUNE_PLL_CONTROL_FILTERED_MAGNITUDE_REG_R) <= '1';
+    read_data_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG) <= (others => '0');
+    read_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG) <= '1';
 
     read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_OFFSET_REG_R) <=
         std_ulogic_vector(status_i.filtered_frequency_offset);
@@ -127,6 +123,10 @@ begin
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_GAIN_BITS));
     config_o.nco_enable <=
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_ENABLE_BIT);
+    config_o.filter_cordic <=
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_FILTER_CORDIC_BIT);
+    config_o.capture_cordic <=
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_CAPTURE_CORDIC_BIT);
     config_o.dwell_time <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS));
 

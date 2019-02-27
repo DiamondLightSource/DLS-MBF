@@ -18,17 +18,27 @@ entity nco_phase is
 end;
 
 architecture arch of nco_phase is
+    signal phase_advance_in : angle_t := (others => '0');
     signal phase_advance : angle_t := (others => '0');
     signal phase : angle_t := (others => '0');
+    signal reset_phase_in : std_ulogic;
+    signal reset_phase : std_ulogic;
 
     attribute USE_DSP : string;
     attribute USE_DSP of phase : signal is "yes";
 
+    attribute DONT_TOUCH : string;
+    attribute DONT_TOUCH of phase_advance_in : signal is "yes";
+
 begin
     process (clk_i) begin
         if rising_edge(clk_i) then
-            phase_advance <= phase_advance_i;
-            if reset_phase_i = '1' then
+            phase_advance_in <= phase_advance_i;
+            phase_advance <= phase_advance_in;
+            reset_phase_in <= reset_phase_i;
+            reset_phase <= reset_phase_in;
+
+            if reset_phase = '1' then
                 phase <= (others => '0');
             else
                 phase <= phase + phase_advance;

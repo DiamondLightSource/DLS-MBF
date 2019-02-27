@@ -751,7 +751,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             *RW
                 # General status
                 STATUS      R
-                    # Set if feedback current enabled
+                    # Set if feedback currently enabled
                     .RUNNING
                     # The following bits are stop reasons, recorded why the PLL
                     # has stopped operation.
@@ -783,24 +783,21 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # NCO gain and output enable
                     .NCO_GAIN       4
                     .NCO_ENABLE
+                    # Debug setting for filtered view of CORDIC output.
+                    .FILTER_CORDIC
+                    # Debug setting for capturing CORDIC output.
+                    .CAPTURE_CORDIC
                     # Number of turns between detector cycles, determines how
                     # fast the PLL tracker runs.
-                    .DWELL_TIME     12
-            *RW
-                # Reads back currently measured phase offset after filtering by
-                # the CORDIC IIR.
-                FILTERED_PHASE  R
-                # Target phase to track.  The top 18 bits of the phase are used
-                TARGET_PHASE    W
+                    .DWELL_TIME     16
+            # Target phase to track.  The top 18 bits of the phase are used
+            TARGET_PHASE    W
             # Integrating factor.  The top 25 bits are used
             INTEGRAL        W
             # Proportional factor.  The top 25 bits are used
             PROPORTIONAL    W
-            *RW
-                # Reads back current filtered magnitude
-                FILTERED_MAGNITUDE  R
-                # Magnitude limit.  Minimum magnitude to allow feedback
-                MIN_MAGNITUDE   W
+            # Magnitude limit.  Minimum magnitude to allow feedback
+            MIN_MAGNITUDE   W
             *RW
                 # Reads back filtered frequency offset
                 FILTERED_OFFSET     R
@@ -834,7 +831,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             *RW
                 STATUS      R
                     # Returns number of offset values currently in the offset
-                    # FIFO
+                    # FIFO.  The maximum possible value is 1025!
                     .OFFSET_COUNT   11
                     # Returns number of debug values currently in the debug
                     # FIFO

@@ -32,8 +32,12 @@ package tune_pll_defs is
         offset_limit : signed(31 downto 0);
         base_frequency : angle_t;
 
+        -- Debux multiplexing options for output
+        filter_cordic : std_ulogic;
+        capture_cordic : std_ulogic;
+
         -- Top level control
-        dwell_time : unsigned(11 downto 0);
+        dwell_time : unsigned(15 downto 0);
     end record;
 
     -- Direct readback values
@@ -53,8 +57,6 @@ package tune_pll_defs is
 
         -- Filtered readback signals
         filtered_iq : cos_sin_32_t;
-        filtered_phase : phase_angle_t;
-        filtered_magnitude : signed(31 downto 0);
         filtered_frequency_offset : signed(31 downto 0);
     end record;
 end;

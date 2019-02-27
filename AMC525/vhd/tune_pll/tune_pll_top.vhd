@@ -227,8 +227,7 @@ begin
         -- CORDIC output
         phase_i => phase_error,
         magnitude_i => cordic_magnitude,
-        filtered_phase_o => status.filtered_phase,
-        filtered_magnitude_o => status.filtered_magnitude,
+        filter_cordic_i => config.filter_cordic,
         -- Feedback output
         frequency_offset_i => frequency_offset,
         filtered_frequency_offset_o => status.filtered_frequency_offset
@@ -249,6 +248,11 @@ begin
         -- Detector output
         detector_done_i => detector_done,
         iq_i => detector_iq,
+        -- CORDIC output
+        cordic_done_i => cordic_done,
+        phase_i => phase_error,
+        magnitude_i => cordic_magnitude,
+        capture_cordic_i => config.capture_cordic,
         -- Feedback output
         feedback_done_i => feedback_done,
         frequency_offset_i => frequency_offset,

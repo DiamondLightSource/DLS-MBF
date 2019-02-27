@@ -9,21 +9,24 @@ vlib msim/xil_defaultlib
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
+    register_defs.vhd \
+    cordic_table.vhd \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
     $vhd_dir/system/pulse_dsp_to_adc.vhd \
+    $vhd_dir/memory/memory_fifo.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
     $vhd_dir/nco/nco_defs.vhd \
+    $vhd_dir/nco/nco_delay.vhd \
     $vhd_dir/detector/detector_defs.vhd \
     $vhd_dir/detector/detector_bunch_mem.vhd \
     $vhd_dir/detector/detector_bunch_select.vhd \
     $vhd_dir/detector/detector_input.vhd \
     $vhd_dir/detector/detector_dsp96.vhd \
     $vhd_dir/detector/detector_core.vhd \
-    register_defs.vhd \
     $vhd_dir/dsp/nco_register.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/all_pulsed_bits.vhd \
@@ -31,14 +34,12 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/tune_pll/tune_pll_defs.vhd \
     $vhd_dir/tune_pll/tune_pll_registers.vhd \
     $vhd_dir/tune_pll/tune_pll_detector.vhd \
-    cordic_table.vhd \
     $vhd_dir/tune_pll/tune_pll_cordic.vhd \
     $vhd_dir/tune_pll/tune_pll_feedback.vhd \
     $vhd_dir/tune_pll/tune_pll_control.vhd \
     $vhd_dir/tune_pll/one_pole_iir.vhd \
     $vhd_dir/tune_pll/tune_pll_filtered.vhd \
     $vhd_dir/tune_pll/tune_pll_readout_registers.vhd \
-    $vhd_dir/memory/memory_fifo.vhd \
     $vhd_dir/tune_pll/tune_pll_readout_fifo.vhd \
     $vhd_dir/tune_pll/tune_pll_readout.vhd \
     $vhd_dir/tune_pll/tune_pll_top.vhd \

@@ -29,6 +29,12 @@ entity tune_pll_readout is
         detector_done_i : in std_ulogic;
         iq_i : in cos_sin_32_t;
 
+        -- CORDIC output
+        cordic_done_i : in std_ulogic;
+        phase_i : in signed;
+        magnitude_i : in unsigned;
+        capture_cordic_i : in std_ulogic;
+
         -- Feedback output
         feedback_done_i : in std_ulogic;
         frequency_offset_i : in signed;
@@ -66,6 +72,12 @@ architecture arch of tune_pll_readout is
     signal detector_done_in : std_ulogic := '0';
     signal debug_write : std_ulogic := '0';
     signal debug_data_in : reg_data_t;
+
+    -- Debug data mux
+    signal debug_done_1 : std_ulogic := '0';
+    signal debug_done_2 : std_ulogic := '0';
+    signal cos_data_in : reg_data_t;
+    signal sin_data_in : reg_data_t;
 
 begin
     registers : entity work.tune_pll_readout_registers port map (
@@ -123,7 +135,7 @@ begin
         -- Simple read/write interface
         data_i => debug_data_in,
         write_i => debug_write,
-        start_i => detector_done_in,
+        start_i => debug_done_2,        -- First debug write
         -- Data is assumed to be valid at the time of reading
         data_o => debug_data,
         read_i => read_debug_data,
@@ -143,13 +155,26 @@ begin
         if rising_edge(clk_i) then
             interrupt_o <= offset_interrupt or debug_interrupt;
 
+            -- Multiplex the debug data
+            if capture_cordic_i = '1' then
+                debug_done_1 <= cordic_done_i;
+                cos_data_in <= (
+                    31 downto 14 => std_logic_vector(phase_i),
+                    13 downto 0 => '0');
+                sin_data_in <= std_logic_vector(magnitude_i);
+            else
+                debug_done_1 <= detector_done_i;
+                cos_data_in <= std_logic_vector(iq_i.cos);
+                sin_data_in <= std_logic_vector(iq_i.sin);
+            end if;
+
             -- The debug data needs to be written as a burst of two writes.
-            detector_done_in <= detector_done_i;
-            if detector_done_i = '1' then
-                debug_data_in <= std_logic_vector(iq_i.cos);
+            debug_done_2 <= debug_done_1;
+            if debug_done_1 = '1' then
+                debug_data_in <= cos_data_in;
                 debug_write <= '1';
-            elsif detector_done_in = '1' then
-                debug_data_in <= std_logic_vector(iq_i.sin);
+            elsif debug_done_2 = '1' then
+                debug_data_in <= sin_data_in;
                 debug_write <= '1';
             else
                 debug_write <= '0';
