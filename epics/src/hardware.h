@@ -409,6 +409,7 @@ struct tune_pll_status {
     bool bad_offset;            // Offset too large
 };
 
+
 /* Directly sets Tune PLL NCO frequency.  Note that setting this during feedback
  * will interfere with feedback! */
 void hw_write_pll_nco_frequency(int axis, uint64_t frequency);
@@ -428,15 +429,18 @@ void hw_write_pll_proportional_factor(int axis, int32_t proportional);
 void hw_write_pll_minimum_magnitude(int axis, uint32_t magnitude);
 void hw_write_pll_maximum_offset(int axis, uint32_t offset);
 
-/* Configures the detector. */
+/* Configures the detector readout scale. */
+void hw_write_pll_det_scaling(int axis, unsigned int scaling);
+
+/* As the detector bunch offset and hence the bunch configuration depend on the
+ * input selection, we have to write both together. */
 void hw_write_pll_det_config(
-    int axis, unsigned int input_select, unsigned int scaling,
-    unsigned int delay, const bool bunch_enables[]);
+    int axis, unsigned int input_select,
+    unsigned int offset, const bool bunch_enables[]);
 
 /* Readbacks for filtered live data. */
-void hw_read_pll_filtered_readbacks(int axis,
-    int32_t *det_cos, int32_t *det_sin,
-    int32_t *phase, uint32_t *magnitude, int32_t *offset);
+void hw_read_pll_filtered_readbacks(
+    int axis, struct detector_result *det, int32_t *offset);
 
 /* Rather strangely, the maximum possible PLL readback FIFO capture is 1025
  * samples.  In practice this will *never* occur, but it is safest to leave the

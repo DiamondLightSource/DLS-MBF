@@ -62,6 +62,10 @@ static const struct config_entry hardware_delays_entries[] = {
     DELAY_ENTRY(DET_ADC_DELAY),
     DELAY_ENTRY(DET_ADC_REJECT_DELAY),
     DELAY_ENTRY(DET_FIR_DELAY),
+
+    DELAY_ENTRY(PLL_ADC_OFFSET),
+    DELAY_ENTRY(PLL_FIR_OFFSET),
+    DELAY_ENTRY(PLL_ADC_REJECT_OFFSET),
 };
 
 

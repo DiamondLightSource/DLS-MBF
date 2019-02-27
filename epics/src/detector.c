@@ -314,9 +314,6 @@ static void write_bunch_enables(
 {
     struct detector_bank *bank = context;
 
-    memcpy(bank->config.bunch_enables, enables, system_config.bunches_per_turn);
-    *length = system_config.bunches_per_turn;
-
     /* Update the bunch count and normalise each enable to 0/1. */
     unsigned int bunch_count = 0;
     FOR_BUNCHES(i)
@@ -326,6 +323,10 @@ static void write_bunch_enables(
             bunch_count += 1;
     }
     bank->bunch_count = bunch_count;
+
+    /* Copy the enables after normalisation. */
+    memcpy(bank->config.bunch_enables, enables, system_config.bunches_per_turn);
+    *length = system_config.bunches_per_turn;
 }
 
 
@@ -352,9 +353,8 @@ static void publish_detector(
     bank->axis = context->axis;
 
     unsigned int detector_length = system_config.detector_length;
-    char *bunch_enables = CALLOC(char, system_config.bunches_per_turn);
 
-    bank->config.bunch_enables = (bool *) bunch_enables;
+    bank->config.bunch_enables = CALLOC(bool, system_config.bunches_per_turn);
     bank->wf_i = CALLOC(float, detector_length);
     bank->wf_q = CALLOC(float, detector_length);
     bank->wf_power = CALLOC(float, detector_length);
@@ -386,8 +386,8 @@ static void publish_detector(
         PUBLISH_READ_VAR(ai, "MAX_POWER", bank->max_power);
 
         bank->bunch_set = create_bunch_set();
-        PUBLISH(bo, "SET_SELECT", enable_selection, .context = bank);
-        PUBLISH(bo, "RESET_SELECT", disable_selection, .context = bank);
+        PUBLISH_C(bo, "SET_SELECT", enable_selection, bank);
+        PUBLISH_C(bo, "RESET_SELECT", disable_selection, bank);
     }
 }
 

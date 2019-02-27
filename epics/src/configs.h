@@ -27,6 +27,10 @@ extern const struct hardware_delays {
     int DET_ADC_DELAY;
     int DET_ADC_REJECT_DELAY;
     int DET_FIR_DELAY;
+
+    unsigned int PLL_ADC_OFFSET;
+    unsigned int PLL_FIR_OFFSET;
+    unsigned int PLL_ADC_REJECT_OFFSET;
 } hardware_delays;
 
 extern const struct system_config {

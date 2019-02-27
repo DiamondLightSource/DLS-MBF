@@ -1007,37 +1007,39 @@ void hw_write_pll_maximum_offset(int axis, uint32_t max_offset)
 }
 
 
+void hw_write_pll_det_scaling(int axis, unsigned int scaling)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
+            det_shift, scaling & 0x3);
+}
+
+
 void hw_write_pll_det_config(
-    int axis, unsigned int input_select, unsigned int scaling,
-    unsigned int delay, const bool bunch_enables[])
+    int axis, unsigned int input_select,
+    unsigned int offset, const bool bunch_enables[])
 {
     WITH_MUTEX(dsp_locks[axis])
     {
-        /* Configure input selection and readout shift. */
-        dsp_mirror[axis].tune_pll_control_config.select = input_select & 0x3;
-        dsp_mirror[axis].tune_pll_control_config.det_shift = scaling & 0x3;
-        WRITEL(
-            dsp_regs[axis]->tune_pll_control_config,
-            dsp_mirror[axis].tune_pll_control_config);
+        /* Configure input selection. */
+        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
+            select, input_select & 0x3);
 
         /* Write the bunch enables array. */
         WRITE_FIELDS(dsp_regs[axis]->tune_pll_control_command,
             .write_bunch = 1);
         write_det_bunch_enable_array(
-            &dsp_regs[axis]->tune_pll_control_bunch, delay, bunch_enables);
+            &dsp_regs[axis]->tune_pll_control_bunch, offset, bunch_enables);
     }
 }
 
 
-void hw_read_pll_filtered_readbacks(int axis,
-    int32_t *det_cos, int32_t *det_sin,
-    int32_t *phase, uint32_t *magnitude, int32_t *offset)
+void hw_read_pll_filtered_readbacks(
+    int axis, struct detector_result *det, int32_t *offset)
 {
-    *det_cos   = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_i;
-    *det_sin   = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_q;
-    *phase     = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_phase;
-    *magnitude = dsp_regs[axis]->tune_pll_control_filtered_magnitude;
-    *offset    = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_offset;
+    det->i = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_i;
+    det->q = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_q;
+    *offset = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_offset;
 }
 
 
