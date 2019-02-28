@@ -50,6 +50,7 @@ architecture arch of tune_pll_readout_fifo is
     signal read_ready : std_ulogic;
 
     -- Interrupt handling
+    signal fifo_half_full : std_ulogic;
     signal interrupt_enabled : std_ulogic := '0';
 
 begin
@@ -79,6 +80,12 @@ begin
 
     -- Similarly, only attept a read if data is already available
     read_ready <= read_valid and read_i;
+
+    -- We'll generate a read interrupt when the FIFO is half full, which in our
+    -- case is when one of the top two bits of the fifo depth are set.  (The
+    -- very top bit only applies when the FIFO is close to completely full.)
+    fifo_half_full <=
+        vector_or(fifo_depth_o(READOUT_FIFO_BITS downto READOUT_FIFO_BITS-1));
 
     process (clk_i) begin
         if rising_edge(clk_i) then
@@ -114,7 +121,7 @@ begin
             elsif enable_interrupt_i = '1' then
                 interrupt_enabled <= '1';
             end if;
-            interrupt_o <= interrupt_enabled and read_valid;
+            interrupt_o <= interrupt_enabled and (fifo_half_full or overrun_o);
         end if;
     end process;
 

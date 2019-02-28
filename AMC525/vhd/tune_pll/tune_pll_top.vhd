@@ -60,8 +60,8 @@ entity tune_pll_top is
         nco_reset_o : out std_ulogic;
         nco_freq_o : out angle_t;
 
-        -- Interrupt for readout ready
-        interrupt_o : out std_ulogic
+        -- Interrupts for readout ready
+        interrupt_o : out std_ulogic_vector(1 downto 0)
     );
 end;
 

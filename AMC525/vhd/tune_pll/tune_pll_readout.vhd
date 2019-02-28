@@ -39,7 +39,7 @@ entity tune_pll_readout is
         feedback_done_i : in std_ulogic;
         frequency_offset_i : in signed;
 
-        interrupt_o : out std_ulogic := '0'
+        interrupt_o : out std_ulogic_vector
     );
 end;
 
@@ -67,8 +67,6 @@ architecture arch of tune_pll_readout is
     signal reset_read_error : std_ulogic_vector(1 downto 0);
 
     -- Overall control
-    signal offset_interrupt : std_ulogic;
-    signal debug_interrupt : std_ulogic;
     signal detector_done_in : std_ulogic := '0';
     signal debug_write : std_ulogic := '0';
     signal debug_data_in : reg_data_t;
@@ -125,7 +123,7 @@ begin
         reset_read_error_i => reset_read_error(0),
         -- Interrupt management
         enable_interrupt_i => enable_offset_interrupt,
-        interrupt_o => offset_interrupt
+        interrupt_o => interrupt_o(0)
     );
 
     debug_fifo : entity work.tune_pll_readout_fifo generic map (
@@ -147,14 +145,12 @@ begin
         reset_read_error_i => reset_read_error(1),
         -- Interrupt management
         enable_interrupt_i => enable_debug_interrupt,
-        interrupt_o => debug_interrupt
+        interrupt_o => interrupt_o(1)
     );
 
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            interrupt_o <= offset_interrupt or debug_interrupt;
-
             -- Multiplex the debug data
             if capture_cordic_i = '1' then
                 debug_done_1 <= cordic_done_i;

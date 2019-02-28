@@ -18,7 +18,7 @@ entity dsp_interrupts is
         dram0_trigger_i : in std_ulogic;
         seq_start_i : in std_ulogic_vector(CHANNELS);
         seq_busy_i : in std_ulogic_vector(CHANNELS);
-        tune_pll_ready_i : in std_ulogic_vector(CHANNELS);
+        tune_pll_ready_i : in vector_array(CHANNELS);
 
         interrupts_o : out std_ulogic_vector
     );
@@ -56,7 +56,8 @@ begin
         INTERRUPTS_SEQ_TRIGGER_BITS => reverse(seq_start),
         INTERRUPTS_SEQ_BUSY_BITS => reverse(seq_busy_i),
         INTERRUPTS_SEQ_DONE_BITS => reverse(not seq_busy_i),
-        INTERRUPTS_TUNE_PLL_READY_BITS => reverse(tune_pll_ready_i),
+        INTERRUPTS_TUNE_PLL0_READY_BITS => tune_pll_ready_i(0),
+        INTERRUPTS_TUNE_PLL1_READY_BITS => tune_pll_ready_i(1),
         others => '0'
     );
 
