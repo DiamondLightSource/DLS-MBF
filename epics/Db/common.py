@@ -34,6 +34,7 @@ BUNCHES_PER_TURN = \
 DETECTOR_LENGTH = Parameter('DETECTOR_LENGTH', 'Detector readout length')
 MEMORY_READOUT_LENGTH = \
     Parameter('MEMORY_READOUT_LENGTH', 'Length of memory readout waveforms')
+TUNE_PLL_LENGTH = Parameter('TUNE_PLL_LENGTH', 'Length of Tune PLL FIFO')
 
 ADC_TAPS = Parameter('ADC_TAPS', 'Number of taps in ADC filter')
 DAC_TAPS = Parameter('DAC_TAPS', 'Number of taps in DAC filter')

@@ -973,7 +973,7 @@ void hw_write_pll_dwell_time(int axis, unsigned int dwell)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            dwell_time, dwell & 0xFFF);
+            dwell_time, (dwell - 1) & 0xFFF);
 }
 
 
@@ -1011,7 +1011,7 @@ void hw_write_pll_det_scaling(int axis, unsigned int scaling)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            det_shift, scaling & 0x3);
+            det_shift, scaling & 0x1);
 }
 
 
@@ -1043,68 +1043,62 @@ void hw_read_pll_filtered_readbacks(
 }
 
 
-static size_t read_pll_fifo_data(
-    volatile uint32_t *read_fifo,
-    const struct dsp_tune_pll_readout_command do_reset,
-    const struct dsp_tune_pll_readout_command do_enable,
-    bool overrun, size_t samples,
-    int axis, int32_t data[], bool enable_interrupt, bool *reset)
+unsigned int hw_read_pll_readout_fifo(
+    int axis, enum pll_readout_fifo fifo,
+    bool enable_interrupt, bool *reset, int32_t data[PLL_FIFO_SIZE])
 {
-    ASSERT_OK(samples <= PLL_FIFO_SIZE);
-
-    *reset = overrun;
-    if (overrun)
-        WRITEL(dsp_regs[axis]->tune_pll_readout_command, do_reset);
-    else
-    {
-        for (size_t i = 0; i < samples; i ++)
-            *data++ = (int32_t) readl(read_fifo);
-    }
-
-    if (enable_interrupt)
-        WRITEL(dsp_regs[axis]->tune_pll_readout_command, do_enable);
-    return overrun ? 0 : samples;
-}
-
-
-size_t hw_read_pll_debug_fifo(
-    int axis, struct detector_result data[],
-    bool enable_interrupt, bool *reset)
-{
-    size_t result;
+    unsigned int samples;
     WITH_MUTEX(dsp_locks[axis])
     {
         struct dsp_tune_pll_readout_status status =
             READL(dsp_regs[axis]->tune_pll_readout_status);
-        result = read_pll_fifo_data(
-            &dsp_regs[axis]->tune_pll_readout_debug_fifo,
-            (struct dsp_tune_pll_readout_command) { .reset_debug = 1 },
-            (struct dsp_tune_pll_readout_command) { .enable_debug = 1 },
-            /* For the debug FIFO we only read an even number of samples.  This
-             * should be fine as the hardware always writes in pairs. */
-            status.debug_overrun, status.debug_count & (size_t) -2,
-            axis, (int32_t *) data, enable_interrupt, reset);
-    }
-    return result / 2;
-}
 
+        /* Set things up to read the selected FIFO. */
+        volatile uint32_t *readout_reg;
+        bool fifo_overrun;
+        struct dsp_tune_pll_readout_command reset_command;
+        struct dsp_tune_pll_readout_command enable_command;
+        switch (fifo)
+        {
+            case PLL_FIFO_DEBUG:
+                readout_reg = &dsp_regs[axis]->tune_pll_readout_debug_fifo;
+                fifo_overrun = status.debug_overrun;
+                samples = status.debug_count;
+                reset_command = (struct dsp_tune_pll_readout_command) {
+                    .reset_debug = 1 };
+                enable_command = (struct dsp_tune_pll_readout_command) {
+                    .enable_debug = 1 };
+                break;
+            case PLL_FIFO_OFFSET:
+                readout_reg = &dsp_regs[axis]->tune_pll_readout_offset_fifo;
+                fifo_overrun = status.offset_overrun;
+                samples = status.offset_count;
+                reset_command = (struct dsp_tune_pll_readout_command) {
+                    .reset_offset = 1 };
+                enable_command = (struct dsp_tune_pll_readout_command) {
+                    .enable_offset = 1 };
+                break;
+            default:
+                ASSERT_FAIL();
+        }
 
-size_t hw_read_pll_offset_fifo(
-    int axis, int32_t data[], bool enable_interrupt, bool *reset)
-{
-    size_t result;
-    WITH_MUTEX(dsp_locks[axis])
-    {
-        struct dsp_tune_pll_readout_status status =
-            READL(dsp_regs[axis]->tune_pll_readout_status);
-        result = read_pll_fifo_data(
-            &dsp_regs[axis]->tune_pll_readout_debug_fifo,
-            (struct dsp_tune_pll_readout_command) { .reset_offset = 1 },
-            (struct dsp_tune_pll_readout_command) { .enable_offset = 1 },
-            status.offset_overrun, status.offset_count,
-            axis, data, enable_interrupt, reset);
+        /* If this fails then the hardware is messing with us! */
+        ASSERT_OK(samples <= PLL_FIFO_SIZE);
+
+        /* Read all the data we're told there is. */
+        for (unsigned int i = 0; i < samples; i ++)
+            *data++ = (int32_t) readl(readout_reg);
+
+        /* Configure FIFO for next read.  If an overrun was detected we need to
+         * reset the FIFO, and enable interrupts if requested.  The reset needs
+         * to be done before enabling interrupts. */
+        *reset = fifo_overrun;
+        if (fifo_overrun)
+            WRITEL(dsp_regs[axis]->tune_pll_readout_command, reset_command);
+        if (enable_interrupt)
+            WRITEL(dsp_regs[axis]->tune_pll_readout_command, enable_command);
     }
-    return result;
+    return samples;
 }
 
 

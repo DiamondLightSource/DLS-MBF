@@ -444,14 +444,15 @@ void hw_read_pll_filtered_readbacks(
 
 /* Rather strangely, the maximum possible PLL readback FIFO capture is 1025
  * samples.  In practice this will *never* occur, but it is safest to leave the
- * space anyway.
- *    For the debug FIFO the number of samples read will be half this value. */
+ * space anyway. */
 #define PLL_FIFO_SIZE       1025
 
 /* Read debug and offset FIFO.  If a reset is required then *reset is set.  If
  * enable_interrupt is set then read ready interrupts are enabled on return. */
-size_t hw_read_pll_debug_fifo(
-    int axis, struct detector_result data[],
-    bool enable_interrupt, bool *reset);
-size_t hw_read_pll_offset_fifo(
-    int axis, int32_t data[], bool enable_interrupt,  bool *reset);
+enum pll_readout_fifo {
+    PLL_FIFO_DEBUG,         // Returns pairs of debug values
+    PLL_FIFO_OFFSET,        // Returns frequency offsets
+};
+unsigned int hw_read_pll_readout_fifo(
+    int axis, enum pll_readout_fifo fifo,
+    bool enable_interrupt, bool *reset, int32_t data[PLL_FIFO_SIZE]);

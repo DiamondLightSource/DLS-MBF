@@ -93,6 +93,7 @@ static const struct config_entry system_config_entries[] = {
     SYSTEM_ENTRY(uint, memory_readout_length),
     SYSTEM_ENTRY(uint, detector_length),
     SYSTEM_ENTRY(uint, data_port),
+    SYSTEM_ENTRY(uint, tune_pll_length),
 };
 
 

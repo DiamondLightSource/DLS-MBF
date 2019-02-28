@@ -17,7 +17,8 @@ for a in axes('PLL', lmbf_mode):
     with name_prefix('DET'):
         mbbOut('SELECT', 'ADC', 'FIR', 'ADC no fill',
             DESC = 'Select detector source')
-        mbbOut('SCALING', DESC = 'Readout scaling', *dBrange(4, -8*6))
+        mbbOut('SCALING', DESC = 'Readout scaling', *dBrange(2, -8*6))
+        longOut('DWELL', 1, 2**16, DESC = 'Dwell time in turns')
 
         bunch_count = longIn('COUNT', DESC = 'Number of enabled bunches')
         WaveformOut('BUNCHES', BUNCHES_PER_TURN, 'CHAR',
@@ -44,3 +45,13 @@ for a in axes('PLL', lmbf_mode):
                 DESC = 'Filtered Tune PLL phase offset'),
             aIn('OFFSET', PREC = 6, EGU = 'tune',
                 DESC = 'Filtered Frequency offset out')))
+
+    # Debug readbacks
+    with name_prefix('DEBUG'):
+        boolOut('ENABLE', 'Off', 'On', DESC = 'Enable debug readbacks')
+        Trigger('READ',
+            Waveform('WFI', TUNE_PLL_LENGTH, 'LONG',
+                DESC = 'Tune PLL detector I'),
+            Waveform('WFQ', TUNE_PLL_LENGTH, 'LONG',
+                DESC = 'Tune PLL detector Q'),
+            overflow('FIFO_OVF', 'Debug FIFO readout overrun'))

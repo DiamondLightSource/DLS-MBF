@@ -50,6 +50,7 @@ extern const struct system_config {
     unsigned int memory_readout_length; // Length of MEM readout PVs
     unsigned int detector_length;       // Length of DET readout PVs
     unsigned int data_port;             // Socket port for fast data readout
+    unsigned int tune_pll_length;       // Readout length for Tune PLL
 } system_config;
 
 

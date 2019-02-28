@@ -12,10 +12,14 @@
 
 #include "error.h"
 #include "epics_device.h"
+#include "epics_extra.h"
 
+#include "register_defs.h"
+#include "hardware.h"
 #include "common.h"
 #include "configs.h"
-#include "hardware.h"
+
+#include "events.h"
 #include "bunch_set.h"
 
 #include "tune_pll.h"
@@ -39,6 +43,9 @@ static struct pll_context {
     double filtered_magnitude;
     double filtered_phase;
     double filtered_freq_offset;
+
+    /* Debug readback. */
+    struct readout_fifo *debug_fifo;
 } pll_context[AXIS_COUNT] = { };
 
 
@@ -144,6 +151,14 @@ static bool write_det_output_scale(void *context, unsigned int *scale)
 }
 
 
+static bool write_det_dwell(void *context, unsigned int *dwell)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_dwell_time(pll->axis, *dwell);
+    return true;
+}
+
+
 static void write_bunch_enables(
     void *context, char enables[], unsigned int *length)
 {
@@ -187,6 +202,168 @@ static bool disable_selection(void *context, bool *_value)
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* FIFO readout. */
+
+struct readout_fifo {
+    /* Hardware FIFO identification. */
+    int axis;                           // Selects which axis
+    enum pll_readout_fifo fifo;         // Selects which hardware FIFO to read
+    /* EPICS processing handshake. */
+    struct epics_interlock *interlock;  // Signal for EPICS processing
+    bool epics_busy;                    // Set if EPICS processing is active
+    /* Buffer of full FIFO capture ready for EPICS processing. */
+    int32_t *buffer;                    // Data captured ready for EPICS output
+    unsigned int buffer_size;           // Buffer capacity
+    unsigned int buffer_count;          // Current number of samples in buffer
+    /* FIFO processing state. */
+    bool enabled;
+    bool overflow;                      // Hardware FIFO overrun detected
+    /* Read buffer for initial data capture. */
+    unsigned int read_buffer_count;     // Number of hold-over samples
+    int32_t read_buffer[PLL_FIFO_SIZE]; // Buffer of hold-over samples
+};
+
+
+static struct readout_fifo *create_readout_fifo(
+    int axis, enum pll_readout_fifo which_fifo, unsigned int buffer_size)
+{
+    struct readout_fifo *fifo = malloc(sizeof(struct readout_fifo));
+    *fifo = (struct readout_fifo) {
+        .axis = axis,
+        .fifo = which_fifo,
+        .interlock = create_interlock("READ", false),
+        .buffer_size = buffer_size,
+        .buffer = CALLOC(int32_t, buffer_size),
+    };
+
+    PUBLISH_READ_VAR(bi, "FIFO_OVF", fifo->overflow);
+    return fifo;
+}
+
+
+/* Start the FIFO readout process by clearing and resetting the FIFO and
+ * enabling interrupts. */
+static void enable_readout_fifo(struct readout_fifo *fifo)
+{
+    /* Read and discard FIFO content.  If necessary this will force a reset. */
+    bool overflow;
+    hw_read_pll_readout_fifo(
+        fifo->axis, fifo->fifo, true, &overflow, fifo->read_buffer);
+
+    /* Reset FIFO state. */
+    ASSERT_OK(!fifo->epics_busy);
+    fifo->buffer_count = 0;
+    fifo->overflow = false;
+}
+
+
+/* Disable the FIFO readout. */
+static void disable_readout_fifo(struct readout_fifo *fifo)
+{
+    printf("disabling FIFO\n");
+}
+
+
+/* This is called when the FIFO is ready to read.  We read what data is
+ * available, update our waveforms and notify EPICS as appropriate, and reenable
+ * interrupts for our next call. */
+static void handle_fifo_ready_event(struct readout_fifo *fifo)
+{
+    /* Ensure that any EPICS processing has completed. */
+    if (fifo->epics_busy)
+    {
+        interlock_wait(fifo->interlock);
+        fifo->epics_busy = false;
+
+        /* Copy any residue from our buffer into the read buffer. */
+        memcpy(fifo->buffer, fifo->read_buffer,
+            fifo->read_buffer_count * sizeof(int32_t));
+        fifo->buffer_count = fifo->read_buffer_count;
+        /* Resetting read_buffer_count is optional as we only observe it when
+         * epics_busy is set! */
+    }
+
+    /* Read what there is to read. */
+    unsigned int samples = hw_read_pll_readout_fifo(
+        fifo->axis, fifo->fifo, true, &fifo->overflow, fifo->read_buffer);
+printf("hw_read => %u (%d)\n", samples, fifo->overflow);
+if (fifo->overflow) printf("Overflow!\n");
+
+    /* Update the buffer. */
+    unsigned int to_copy = MIN(samples, fifo->buffer_size - fifo->buffer_count);
+    memcpy(&fifo->buffer[fifo->buffer_count], fifo->read_buffer,
+        to_copy * sizeof(int32_t));
+    fifo->buffer_count += to_copy;
+
+    /* Emit the buffer if appropriate. */
+    if (fifo->buffer_count == fifo->buffer_size  ||  fifo->overflow)
+    {
+ASSERT_OK(!fifo->epics_busy);
+        interlock_signal(fifo->interlock, NULL);
+        fifo->epics_busy = true;
+
+        /* Hang onto anything we didn't copy. */
+        fifo->read_buffer_count = samples - to_copy;
+        memmove(fifo->read_buffer, &fifo->read_buffer[to_copy],
+            fifo->read_buffer_count * sizeof(int32_t));
+    }
+}
+
+
+static bool enable_debug_fifo(void *context, bool *value)
+{
+    struct pll_context *pll = context;
+    if (*value)
+        enable_readout_fifo(pll->debug_fifo);
+    else
+        disable_readout_fifo(pll->debug_fifo);
+    return true;
+}
+
+
+static void read_debug_wfi(void *context, int *wfi, unsigned int *length)
+{
+    struct pll_context *pll = context;
+    struct readout_fifo *fifo = pll->debug_fifo;
+    *length = fifo->buffer_count / 2;
+    for (unsigned int i = 0; i < *length; i ++)
+        wfi[i] = fifo->buffer[2 * i];
+}
+
+static void read_debug_wfq(void *context, int *wfq, unsigned int *length)
+{
+    struct pll_context *pll = context;
+    struct readout_fifo *fifo = pll->debug_fifo;
+    *length = fifo->buffer_count / 2;
+    for (unsigned int i = 0; i < *length; i ++)
+        wfq[i] = fifo->buffer[2 * i + 1];
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Event handling. */
+
+
+static void handle_fifo_event(struct pll_context *pll, unsigned int event_mask)
+{
+    if (event_mask & 0x2)
+        handle_fifo_ready_event(pll->debug_fifo);
+}
+
+
+static void dispatch_tune_pll_event(void *context, struct interrupts interrupts)
+{
+printf("FIFO event: %08x\n", CAST_TO(uint32_t, interrupts));
+    struct interrupts pll0_ready = INTERRUPTS(.tune_pll0_ready = 3);
+    struct interrupts pll1_ready = INTERRUPTS(.tune_pll1_ready = 3);
+    if (test_intersect(interrupts, pll0_ready))
+        handle_fifo_event(&pll_context[0], interrupts.tune_pll0_ready);
+    if (test_intersect(interrupts, pll1_ready))
+        handle_fifo_event(&pll_context[1], interrupts.tune_pll1_ready);
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Initialisation. */
 
 error__t initialise_tune_pll(void)
@@ -211,6 +388,8 @@ error__t initialise_tune_pll(void)
 
             PUBLISH_C_P(mbbo, "SELECT", write_det_input_select, pll);
             PUBLISH_C_P(mbbo, "SCALING", write_det_output_scale, pll);
+            PUBLISH_C_P(ulongout, "DWELL", write_det_dwell, pll);
+
             PUBLISH_READ_VAR(ulongin, "COUNT", pll->bunch_count);
             pll->enablewf = PUBLISH_WAVEFORM_C_P(
                 char, "BUNCHES", system_config.bunches_per_turn,
@@ -223,6 +402,18 @@ error__t initialise_tune_pll(void)
 //             PUBLISH_READ_VAR(bi, "OUT_OVF", pll->det_ovf);
         }
 
+        WITH_NAME_PREFIX("DEBUG")
+        {
+            unsigned int length = system_config.tune_pll_length;
+            pll->debug_fifo = create_readout_fifo(
+                pll->axis, PLL_FIFO_DEBUG, 2 * length);
+            PUBLISH_C(bo, "ENABLE", enable_debug_fifo, pll);
+            PUBLISH_WAVEFORM(int, "WFI", length,
+                read_debug_wfi, .context = pll);
+            PUBLISH_WAVEFORM(int, "WFQ", length,
+                read_debug_wfq, .context = pll);
+        }
+
         /* Filtered data readbacks. */
         PUBLISH_C(bo, "POLL", read_filtered_readbacks, pll);
         PUBLISH_READ_VAR(ai, "DET:I", pll->filtered_cos);
@@ -231,5 +422,15 @@ error__t initialise_tune_pll(void)
         PUBLISH_READ_VAR(ai, "PHASE", pll->filtered_phase);
         PUBLISH_READ_VAR(ai, "OFFSET", pll->filtered_freq_offset);
     }
-    return ERROR_OK;
+
+    struct interrupts ready_interrupts =
+        system_config.lmbf_mode ?
+            INTERRUPTS(.tune_pll0_ready = 3) :
+            INTERRUPTS(.tune_pll0_ready = 3, .tune_pll1_ready = 3);
+    register_event_handler(
+        INTERRUPT_HANDLER_TUNE_PLL, ready_interrupts,
+        NULL, dispatch_tune_pll_event);
+
+    return TEST_OK_(system_config.tune_pll_length > PLL_FIFO_SIZE,
+        "tune_pll_length too small");
 }
