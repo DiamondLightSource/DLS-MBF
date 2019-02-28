@@ -13,6 +13,9 @@ use work.support.all;
 use work.dsp_defs.all;
 
 entity dsp_control_mux is
+    generic (
+        NCO_DELAY : natural := 4
+    );
     port (
         clk_i : in std_ulogic;
 
@@ -72,7 +75,64 @@ architecture arch of dsp_control_mux is
         end if;
     end;
 
+    signal d2c0_nco_0_data : dsp_nco_to_mux_t;
+    signal d2c0_nco_1_data : dsp_nco_to_mux_t;
+    signal d2c0_nco_2_data : dsp_nco_to_mux_t;
+    signal d2c1_nco_0_data : dsp_nco_to_mux_t;
+    signal d2c1_nco_1_data : dsp_nco_to_mux_t;
+    signal d2c1_nco_2_data : dsp_nco_to_mux_t;
+
 begin
+    -- Delay lines for NCO data in.
+    c0_nco_0_delay : entity work.dsp_nco_to_mux_delay generic map (
+        DELAY => NCO_DELAY
+    ) port map (
+        clk_i => clk_i,
+        data_i => d2c0.nco_0_data,
+        data_o => d2c0_nco_0_data
+    );
+
+    c0_nco_1_delay : entity work.dsp_nco_to_mux_delay generic map (
+        DELAY => NCO_DELAY
+    ) port map (
+        clk_i => clk_i,
+        data_i => d2c0.nco_1_data,
+        data_o => d2c0_nco_1_data
+    );
+
+    c0_nco_2_delay : entity work.dsp_nco_to_mux_delay generic map (
+        DELAY => NCO_DELAY
+    ) port map (
+        clk_i => clk_i,
+        data_i => d2c0.nco_2_data,
+        data_o => d2c0_nco_2_data
+    );
+
+    c1_nco_0_delay : entity work.dsp_nco_to_mux_delay generic map (
+        DELAY => NCO_DELAY
+    ) port map (
+        clk_i => clk_i,
+        data_i => d2c1.nco_0_data,
+        data_o => d2c1_nco_0_data
+    );
+
+    c1_nco_1_delay : entity work.dsp_nco_to_mux_delay generic map (
+        DELAY => NCO_DELAY
+    ) port map (
+        clk_i => clk_i,
+        data_i => d2c1.nco_1_data,
+        data_o => d2c1_nco_1_data
+    );
+
+    c1_nco_2_delay : entity work.dsp_nco_to_mux_delay generic map (
+        DELAY => NCO_DELAY
+    ) port map (
+        clk_i => clk_i,
+        data_i => d2c1.nco_2_data,
+        data_o => d2c1_nco_2_data
+    );
+
+
     -- Data multiplexing control
     process (clk_i) begin
         if rising_edge(clk_i) then
@@ -85,9 +145,9 @@ begin
             end if;
 
             -- NCO output multiplexing
-            nco_mux(nco_0_o, nco_0_mux_i, d2c0.nco_0_data, d2c1.nco_0_data);
-            nco_mux(nco_1_o, nco_1_mux_i, d2c0.nco_1_data, d2c1.nco_1_data);
-            nco_mux(nco_2_o, nco_2_mux_i, d2c0.nco_2_data, d2c1.nco_2_data);
+            nco_mux(nco_0_o, nco_0_mux_i, d2c0_nco_0_data, d2c1_nco_0_data);
+            nco_mux(nco_1_o, nco_1_mux_i, d2c0_nco_1_data, d2c1_nco_1_data);
+            nco_mux(nco_2_o, nco_2_mux_i, d2c0_nco_2_data, d2c1_nco_2_data);
 
             -- Bank selection
             bank_select_o(0) <= d2c0.bank_select;

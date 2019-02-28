@@ -20,6 +20,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/trigger/trigger_phase.vhd \
     $vhd_dir/trigger/trigger_top.vhd \
     $vhd_dir/util/stretch_pulse.vhd \
+    $vhd_dir/dsp/dsp_nco_to_mux_delay.vhd \
     $vhd_dir/dsp/dsp_control_mux.vhd \
     $vhd_dir/dsp/dsp_interrupts.vhd \
     $vhd_dir/dsp/dsp_control_top.vhd \

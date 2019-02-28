@@ -50,6 +50,9 @@ architecture arch of pulse_adc_to_dsp is
     signal pulse_delay : std_ulogic := '0';
     signal pulse_stretch : std_ulogic := '0';
 
+    attribute ASYNC_REG : string;
+    attribute ASYNC_REG of pulse_o : signal is "TRUE";
+
 begin
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then

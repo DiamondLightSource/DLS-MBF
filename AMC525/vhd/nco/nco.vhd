@@ -13,8 +13,8 @@ use work.nco_defs.all;
 
 entity nco is
     generic (
-        IN_DELAY : natural := 2;        -- Input pipeline
-        OUT_DELAY : natural := 8        -- Output pipeline
+        IN_DELAY : natural := 4;        -- Input pipeline
+        OUT_DELAY : natural := 4        -- Output pipeline
     );
     port (
         adc_clk_i : in std_ulogic;

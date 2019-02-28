@@ -45,6 +45,7 @@ architecture arch of detector_body is
     signal bunch_enable : std_ulogic;
 
     signal detector_overflow : std_ulogic;
+    signal overflow_event : std_ulogic;
     signal det_write : std_ulogic;
     signal det_iq : cos_sin_96_t;
     signal iq_shift_in : cos_sin_96_t;
@@ -116,12 +117,19 @@ begin
     end process;
 
 
+    -- Synchronise overflow with write event.
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            overflow_event <= detector_overflow and det_write;
+        end if;
+    end process;
+
     -- Bring overflows over to DSP clock
     detector_to_dsp : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        pulse_i => detector_overflow and det_write,
+        pulse_i => overflow_event,
         pulse_o => detector_overflow_o
     );
 
