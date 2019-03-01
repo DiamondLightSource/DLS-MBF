@@ -39,15 +39,12 @@ view wave
 set mms sim:/testbench/min_max_sum_inst
 
 add wave -group "MMS" $mms/*
-add wave -group "Bank" $mms/min_max_sum_bank_inst/*
-add wave -group "MMS Store" $mms/min_max_sum_store_inst/*
-add wave -group "mem(0)" \
-    $mms/min_max_sum_store_inst/mem_gen(0)/memory_inst/*
-add wave -group "bram(0)" \
-    $mms/min_max_sum_store_inst/mem_gen(0)/memory_inst/bram/*
-add wave -group "mem(1)" \
-    $mms/min_max_sum_store_inst/mem_gen(1)/memory_inst/*
-add wave -group "update" $mms/min_max_sum_update_inst/*
+add wave -group "Bank" $mms/bank/*
+add wave -group "MMS Store" $mms/store/*
+add wave -group "mem(0)" $mms/store/mem_gen(0)/memory_inst/*
+add wave -group "bram(0)" $mms/store/mem_gen(0)/memory_inst/bram/*
+add wave -group "mem(1)" $mms/store/mem_gen(1)/memory_inst/*
+add wave -group "update" $mms/update/*
 add wave -group "Readout" $mms/readout_inst/*
 add wave -group "Limit" sim:/testbench/min_max_limit_inst/*
 add wave -group "Read" $mms/register_read_adc/*

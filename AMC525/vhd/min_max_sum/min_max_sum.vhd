@@ -115,7 +115,7 @@ begin
     -- -------------------------------------------------------------------------
 
     -- Address control and bank switching
-    min_max_sum_bank_inst : entity work.min_max_sum_bank generic map (
+    bank : entity work.min_max_sum_bank generic map (
         READ_DELAY => READ_DELAY,
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
@@ -137,7 +137,7 @@ begin
     );
 
     -- Core memory interface and multiplexing
-    min_max_sum_store_inst : entity work.min_max_sum_store generic map (
+    store : entity work.min_max_sum_store generic map (
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
         clk_i => adc_clk_i,
@@ -156,7 +156,7 @@ begin
 
 
     -- Update min/max/sum
-    min_max_sum_update_inst : entity work.min_max_sum_update generic map (
+    update : entity work.min_max_sum_update generic map (
         UPDATE_DELAY => UPDATE_DELAY
     ) port map (
         clk_i => adc_clk_i,
