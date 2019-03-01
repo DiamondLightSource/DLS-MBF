@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2218
-y 97
-w 1457
-h 981
+x 103
+y 69
+w 1620
+h 1072
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -2267,8 +2267,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 768
-y 248
+x 720
+y 416
 w 320
 h 72
 lineColor index 14
@@ -2282,8 +2282,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 776
-y 264
+x 728
+y 432
 w 30
 h 14
 font "helvetica-bold-r-12.0"
@@ -2302,8 +2302,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 912
-y 264
+x 864
+y 432
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -2322,8 +2322,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 816
-y 264
+x 768
+y 432
 w 88
 h 20
 controlPv "$(device):$(axis):PLL:NCO:FREQ_S"
@@ -2350,8 +2350,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 952
-y 264
+x 904
+y 432
 w 70
 h 22
 fgColor index 14
@@ -2369,8 +2369,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 768
-y 240
+x 720
+y 408
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -2388,8 +2388,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 768
-y 240
+x 720
+y 408
 w 120
 h 16
 lineColor index 14
@@ -2402,8 +2402,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 1024
-y 264
+x 976
+y 432
 w 56
 h 22
 fgColor index 14
@@ -2421,8 +2421,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 816
-y 296
+x 768
+y 464
 w 80
 h 16
 controlPv "$(device):$(axis):PLL:NCO:FREQ"
@@ -2446,8 +2446,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 848
-y 376
+x 800
+y 544
 w 80
 h 16
 controlPv "$(device):$(axis):PLL:DET:I"
@@ -2471,8 +2471,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 848
-y 400
+x 800
+y 568
 w 80
 h 16
 controlPv "$(device):$(axis):PLL:DET:Q"
@@ -2496,8 +2496,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 848
-y 424
+x 800
+y 592
 w 80
 h 16
 controlPv "$(device):$(axis):PLL:DET:MAG"
@@ -2521,8 +2521,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 848
-y 448
+x 800
+y 616
 w 80
 h 16
 controlPv "$(device):$(axis):PLL:PHASE"
@@ -2546,8 +2546,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 848
-y 472
+x 800
+y 640
 w 80
 h 16
 controlPv "$(device):$(axis):PLL:OFFSET"
@@ -2571,8 +2571,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 1352
-y 912
+x 1208
+y 1024
 w 64
 h 24
 fgColor index 46
@@ -2591,8 +2591,8 @@ major 4
 minor 8
 release 0
 # Geometry
-x 928
-y 688
+x 784
+y 800
 w 488
 h 160
 # Appearance
@@ -2641,8 +2641,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 928
-y 864
+x 784
+y 976
 w 416
 h 72
 lineColor index 14
@@ -2656,8 +2656,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 936
-y 880
+x 792
+y 992
 w 184
 h 20
 controlPv "$(device):$(axis):PLL:DET:BUNCH_SELECT_S"
@@ -2684,8 +2684,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 928
-y 856
+x 784
+y 968
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -2703,8 +2703,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 928
-y 856
+x 784
+y 968
 w 120
 h 16
 lineColor index 14
@@ -2717,8 +2717,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 1240
-y 872
+x 1096
+y 984
 w 96
 h 24
 fgColor index 25
@@ -2740,8 +2740,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 984
-y 912
+x 840
+y 1024
 w 240
 h 16
 controlPv "$(device):$(axis):PLL:DET:SELECT_STATUS"
@@ -2764,8 +2764,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 936
-y 912
+x 792
+y 1024
 w 44
 h 14
 font "helvetica-bold-r-12.0"
@@ -2786,8 +2786,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 1240
-y 904
+x 1096
+y 1016
 w 96
 h 24
 fgColor index 25
@@ -2809,8 +2809,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 1072
-y 376
+x 1024
+y 544
 w 120
 h 24
 fgColor index 14
@@ -2828,8 +2828,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 1072
-y 408
+x 1024
+y 576
 w 120
 h 24
 fgColor index 14
@@ -2847,8 +2847,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 1040
-y 656
+x 896
+y 768
 w 80
 h 16
 controlPv "$(device):$(axis):PLL:DET:COUNT"
@@ -2872,8 +2872,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 856
-y 536
+x 808
+y 704
 w 88
 h 20
 controlPv "$(device):$(axis):PLL:DET:DWELL_S"
@@ -2894,61 +2894,14 @@ objType "controls"
 noExecuteClipMask
 endObjectProperties
 
-# (X-Y Graph)
-object xyGraphClass
-beginObjectProperties
-major 4
-minor 8
-release 0
-# Geometry
-x 72
-y 720
-w 656
-h 224
-# Appearance
-graphTitle "Tune PLL Detector Data"
-fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "fromUser"
-xMin 0
-xMax 4096
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMax 1
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 1
-yPv {
-  0 "$(device):$(axis):PLL:DEBUG:WFI"
-}
-plotUpdateMode {
-  0 "y"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 25
-}
-endObjectProperties
-
 # (Menu Button)
 object activeMenuButtonClass
 beginObjectProperties
 major 4
 minor 0
 release 0
-x 1072
-y 488
+x 1024
+y 656
 w 120
 h 24
 fgColor index 14
@@ -2966,8 +2919,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 1088
-y 528
+x 1040
+y 696
 w 184
 h 14
 controlPv "$(device):$(axis):PLL:DEBUG:FIFO_OVF.DESC"
@@ -2990,8 +2943,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 1064
-y 528
+x 1016
+y 696
 w 16
 h 16
 lineColor index 14
@@ -2999,5 +2952,28 @@ fill
 fillColor index 16
 fillAlarm
 alarmPv "$(device):$(axis):PLL:DEBUG:FIFO_OVF"
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 1408
+y 664
+w 72
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Debug"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/tune_pll_debug.edl"
+}
 endObjectProperties
 

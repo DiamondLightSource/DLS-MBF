@@ -218,6 +218,7 @@ struct readout_fifo {
     /* FIFO processing state. */
     bool enabled;
     bool overflow;                      // Hardware FIFO overrun detected
+    pthread_mutex_t mutex;              // Needed for managed access
     /* Read buffer for initial data capture. */
     unsigned int read_buffer_count;     // Number of hold-over samples
     int32_t read_buffer[PLL_FIFO_SIZE]; // Buffer of hold-over samples
@@ -234,6 +235,7 @@ static struct readout_fifo *create_readout_fifo(
         .interlock = create_interlock("READ", false),
         .buffer_size = buffer_size,
         .buffer = CALLOC(int32_t, buffer_size),
+        .mutex = PTHREAD_MUTEX_INITIALIZER,
     };
 
     PUBLISH_READ_VAR(bi, "FIFO_OVF", fifo->overflow);
@@ -241,33 +243,13 @@ static struct readout_fifo *create_readout_fifo(
 }
 
 
-/* Start the FIFO readout process by clearing and resetting the FIFO and
- * enabling interrupts. */
-static void enable_readout_fifo(struct readout_fifo *fifo)
-{
-    /* Read and discard FIFO content.  If necessary this will force a reset. */
-    bool overflow;
-    hw_read_pll_readout_fifo(
-        fifo->axis, fifo->fifo, true, &overflow, fifo->read_buffer);
-
-    /* Reset FIFO state. */
-    ASSERT_OK(!fifo->epics_busy);
-    fifo->buffer_count = 0;
-    fifo->overflow = false;
-}
-
-
-/* Disable the FIFO readout. */
-static void disable_readout_fifo(struct readout_fifo *fifo)
-{
-    printf("disabling FIFO\n");
-}
-
-
-/* This is called when the FIFO is ready to read.  We read what data is
+/* Performs FIFO data processing, triggered either by data ready interrupt or on
+ * disable event (and possibly on timer?).  MUST be called with mutex held.
+ *
+ * This is called when the FIFO is ready to read.  We read what data is
  * available, update our waveforms and notify EPICS as appropriate, and reenable
  * interrupts for our next call. */
-static void handle_fifo_ready_event(struct readout_fifo *fifo)
+static void process_fifo_content(struct readout_fifo *fifo, bool last_read)
 {
     /* Ensure that any EPICS processing has completed. */
     if (fifo->epics_busy)
@@ -285,20 +267,19 @@ static void handle_fifo_ready_event(struct readout_fifo *fifo)
 
     /* Read what there is to read. */
     unsigned int samples = hw_read_pll_readout_fifo(
-        fifo->axis, fifo->fifo, true, &fifo->overflow, fifo->read_buffer);
-printf("hw_read => %u (%d)\n", samples, fifo->overflow);
-if (fifo->overflow) printf("Overflow!\n");
+        fifo->axis, fifo->fifo, !last_read, &fifo->overflow, fifo->read_buffer);
 
     /* Update the buffer. */
-    unsigned int to_copy = MIN(samples, fifo->buffer_size - fifo->buffer_count);
+    unsigned int to_copy =
+        MIN(samples, fifo->buffer_size - fifo->buffer_count);
     memcpy(&fifo->buffer[fifo->buffer_count], fifo->read_buffer,
         to_copy * sizeof(int32_t));
     fifo->buffer_count += to_copy;
 
     /* Emit the buffer if appropriate. */
-    if (fifo->buffer_count == fifo->buffer_size  ||  fifo->overflow)
+    if (fifo->buffer_count == fifo->buffer_size  ||
+        fifo->overflow  ||  last_read)
     {
-ASSERT_OK(!fifo->epics_busy);
         interlock_signal(fifo->interlock, NULL);
         fifo->epics_busy = true;
 
@@ -310,15 +291,74 @@ ASSERT_OK(!fifo->epics_busy);
 }
 
 
+/* Start the FIFO readout process by clearing and resetting the FIFO and
+ * enabling interrupts.  Must be called with mutex held. */
+static void start_readout_fifo(struct readout_fifo *fifo)
+{
+    /* Read and discard FIFO content, resetting if necessary. */
+    bool overflow;
+    hw_read_pll_readout_fifo(
+        fifo->axis, fifo->fifo, true, &overflow, fifo->read_buffer);
+
+    /* First ensure EPICS is not active. */
+    if (fifo->epics_busy)
+    {
+        interlock_wait(fifo->interlock);
+        fifo->epics_busy = false;
+    }
+    /* Reset the FIFO state. */
+    fifo->buffer_count = 0;
+    fifo->overflow = false;
+
+    fifo->enabled = true;
+}
+
+
+/* Disable the FIFO readout.  Must be called with mutex held. */
+static void stop_readout_fifo(struct readout_fifo *fifo)
+{
+    process_fifo_content(fifo, true);
+
+    fifo->enabled = false;
+}
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* The following are the interface methods to the FIFO above. */
+
+
+static void enable_readout_fifo(struct readout_fifo *fifo, bool enable)
+{
+    WITH_MUTEX(fifo->mutex)
+    {
+        if (enable  &&  !fifo->enabled)
+            start_readout_fifo(fifo);
+        else if (!enable  &&  fifo->enabled)
+            stop_readout_fifo(fifo);
+    }
+}
+
+
+static void handle_fifo_ready_event(struct readout_fifo *fifo)
+{
+    WITH_MUTEX(fifo->mutex)
+    {
+        if (fifo->enabled)
+            process_fifo_content(fifo, false);
+    }
+}
+
+
 static bool enable_debug_fifo(void *context, bool *value)
 {
     struct pll_context *pll = context;
-    if (*value)
-        enable_readout_fifo(pll->debug_fifo);
-    else
-        disable_readout_fifo(pll->debug_fifo);
+    enable_readout_fifo(pll->debug_fifo, *value);
     return true;
 }
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Implementations specific to each FIFO. */
 
 
 static void read_debug_wfi(void *context, int *wfi, unsigned int *length)
@@ -346,6 +386,8 @@ static void read_debug_wfq(void *context, int *wfq, unsigned int *length)
 
 static void handle_fifo_event(struct pll_context *pll, unsigned int event_mask)
 {
+//     if (event_mask & 0x1)
+//         handle_fifo_ready_event(pll->readout_fifo);
     if (event_mask & 0x2)
         handle_fifo_ready_event(pll->debug_fifo);
 }
@@ -353,7 +395,6 @@ static void handle_fifo_event(struct pll_context *pll, unsigned int event_mask)
 
 static void dispatch_tune_pll_event(void *context, struct interrupts interrupts)
 {
-printf("FIFO event: %08x\n", CAST_TO(uint32_t, interrupts));
     struct interrupts pll0_ready = INTERRUPTS(.tune_pll0_ready = 3);
     struct interrupts pll1_ready = INTERRUPTS(.tune_pll1_ready = 3);
     if (test_intersect(interrupts, pll0_ready))
