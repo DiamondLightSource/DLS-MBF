@@ -41,7 +41,7 @@ entity tune_pll_detector is
 end;
 
 architecture arch of tune_pll_detector is
-    constant DATA_IN_BUFFER_LENGTH : natural := 4;
+    constant DATA_IN_BUFFER_LENGTH : natural := 6;
     constant RESULT_WIDTH : natural := iq_o.cos'LENGTH;
 
     signal nco_iq_in : nco_iq_i'SUBTYPE;
