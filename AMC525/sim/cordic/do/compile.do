@@ -38,6 +38,6 @@ add wave sim:*
 #                 -height 84 -max 2.0 -min -2.0 -radix decimal}} \
 #     /testbench/difference
 
-run 1us
+run 10us
 
 # vim: set filetype=tcl:

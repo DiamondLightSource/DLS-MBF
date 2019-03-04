@@ -16,8 +16,8 @@ def generate_body():
     result = int_(round_(scale * atan))
 
     for r in result[:-1]:
-        print '        %dX"%09x",' % (BITS, r)
-    print '        %dX"%09x"' % (BITS, result[-1])
+        print '        X"%05x",' % r
+    print '        X"%05x"' % result[-1]
 
 print '''\
 --

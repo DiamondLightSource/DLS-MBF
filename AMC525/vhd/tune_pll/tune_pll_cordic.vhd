@@ -67,7 +67,6 @@ architecture arch of tune_pll_cordic is
 
     -- Inverse tangent
     subtype cordic_angle_t is signed(ATAN_BITS-1 downto 0);
-    signal atan : cordic_angle_t;
     signal angle_update : cordic_angle_t;
 
     -- Cordic state machine.
@@ -106,8 +105,9 @@ begin
 
     -- Angle adustment for step lookup.
     atan_table : entity work.cordic_table port map (
+        clk_i => clk_i,
         addr_i => step_count,
-        dat_o => atan
+        dat_o => angle_update
     );
 
     quadrant <= sign_bit(iq_i.cos) & sign_bit(iq_i.sin);
@@ -167,12 +167,10 @@ begin
                         normalise_shift <= normalise_shift + 1;
                     end if;
 
-
                 when STATE_SHIFT =>
                     state <= STATE_ADD;
                     shifted.cos <= shift_right(iq.cos, to_integer(step_count));
                     shifted.sin <= shift_right(iq.sin, to_integer(step_count));
-                    angle_update <= atan;
 
                 when STATE_ADD =>
                     if step_count = SHIFT_COUNT - 1 then

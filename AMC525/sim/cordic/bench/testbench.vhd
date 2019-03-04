@@ -14,19 +14,13 @@ end testbench;
 
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
-        variable i : natural;
-    begin
-        for i in 0 to count-1 loop
-            wait until rising_edge(clk_i);
-        end loop;
-    end procedure;
-
     signal clk : std_ulogic := '0';
 
     procedure tick_wait(count : natural := 1) is
     begin
-        clk_wait(clk, count);
+        for i in 0 to count-1 loop
+            wait until rising_edge(clk);
+        end loop;
     end procedure;
 
 
@@ -35,7 +29,7 @@ architecture arch of testbench is
     type test_seq_t is array(natural range<>) of test_cos_sin_t;
     signal test_sequence : test_seq_t(0 to 5) := (
         (1, 0),
-        (0, 0),
+        (1, 1),
         (16#40000#, 0),
         (16#7FFFFFFF#, 16#7FFFFFFF#),
         (16#80000000#, 16#80000000#),
@@ -59,12 +53,15 @@ architecture arch of testbench is
     signal magnitude : magnitude_t;
     signal done : std_ulogic;
 
-    signal expected_angle : real;
-    signal expected_magnitude : real;
+    signal expected_angle : angle_t;
+    signal expected_magnitude : magnitude_t;
 
-    signal magnitude_error : real := 0.0;
-    signal angle_error : real := 0.0;
-    signal ok : boolean := true;
+    signal angle_error : signed(ANGLE_BITS downto 0) := (others => '0');
+    signal magnitude_error : signed(MAGNITUDE_BITS downto 0) := (others => '0');
+    signal check_done : std_ulogic := '0';
+    signal angle_ok : boolean := true;
+    signal magnitude_ok : boolean := true;
+    signal ok : boolean;
 
 begin
     clk <= not clk after 1 ns;
@@ -78,40 +75,46 @@ begin
         done_o => done
     );
 
+
     -- Compute expected angle and magnitude from given iq
     process (iq)
         -- Scaling factor for CORDIC magnitude
         constant scaling : real := 1.6467602581210654 / 2.0;
         variable iq_cos : real;
         variable iq_sin : real;
-        variable angle_rad : real;
     begin
         iq_cos := real(to_integer(iq.cos));
         iq_sin := real(to_integer(iq.sin));
-        angle_rad := arctan(iq_sin, iq_cos);
-        expected_angle <= 2.0**(ANGLE_BITS-1) * angle_rad / MATH_PI;
-        expected_magnitude <= sqrt(iq_cos*iq_cos + iq_sin*iq_sin) * scaling;
+        expected_angle <= to_signed(integer(
+            2.0**(ANGLE_BITS-1) * arctan(iq_sin, iq_cos) / MATH_PI),
+            ANGLE_BITS);
+        -- To avoid errors from trying to convert numbers larger than 2^31 we
+        -- fudge the scaling with a further factor of 2 and just force the
+        -- bottom bit of the expected magnitude.
+        expected_magnitude <= to_unsigned(integer(
+            sqrt(iq_cos*iq_cos + iq_sin*iq_sin) * scaling / 2.0),
+            MAGNITUDE_BITS - 1) & '0';
     end process;
 
     -- Compute magnitude of error and set ok flag accordingly
-    process (done)
-        variable real_magnitude : real;
-        variable real_angle : real;
-    begin
-        if rising_edge(done) then
-            -- Annoyingly, because magnitude is unsigned(32) it seems we can't
-            -- convert to real without overflow unless we drop the bottom bit.
-            real_magnitude := 2.0 * real(to_integer(shift_right(magnitude, 1)));
-            real_angle := real(to_integer(angle));
-            magnitude_error <= real_magnitude - expected_magnitude;
-            angle_error <= real_angle - expected_angle;
-        end if;
-        if falling_edge(done) then
-            ok <= abs(magnitude_error) < 6.0 and
-                (real_magnitude = 0.0 or abs(angle_error) < 3.0);
+    process (clk) begin
+        if rising_edge(clk) then
+            check_done <= done;
+            if done = '1' then
+                magnitude_error <=
+                    signed('0' & magnitude) - signed('0' & expected_magnitude);
+                angle_error <= resize(angle, ANGLE_BITS + 1) - expected_angle;
+            end if;
+            if check_done = '1' then
+                magnitude_ok <= magnitude_error < 6;
+                angle_ok <= magnitude = 0 or abs(angle_error) < 3;
+            end if;
         end if;
     end process;
+    ok <= angle_ok and magnitude_ok;
 
+
+    -- Feed test vectors into CORDIC
     process
         variable seed1 : positive := 1;
         variable seed2 : positive := 1;
