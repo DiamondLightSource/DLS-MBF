@@ -84,7 +84,6 @@ architecture arch of tune_pll_top is
 
     -- Cordic signals
     signal cordic_phase : phase_angle_t;
-    signal phase_error : phase_angle_t;
     signal cordic_magnitude : unsigned(31 downto 0);
     signal cordic_done : std_ulogic;
 
@@ -183,7 +182,6 @@ begin
         start_i => cordic_done,
         phase_i => cordic_phase,
         magnitude_i => cordic_magnitude,
-        phase_error_o => phase_error,
         -- Feedback and error flags
         done_o => feedback_done,
         magnitude_error_o => status.magnitude_error,
@@ -225,7 +223,7 @@ begin
         iq_i => detector_iq,
         filtered_iq_o => status.filtered_iq,
         -- CORDIC output
-        phase_i => phase_error,
+        phase_i => cordic_phase,
         magnitude_i => cordic_magnitude,
         filter_cordic_i => config.filter_cordic,
         -- Feedback output
@@ -250,7 +248,7 @@ begin
         iq_i => detector_iq,
         -- CORDIC output
         cordic_done_i => cordic_done,
-        phase_i => phase_error,
+        phase_i => cordic_phase,
         magnitude_i => cordic_magnitude,
         capture_cordic_i => config.capture_cordic,
         -- Feedback output

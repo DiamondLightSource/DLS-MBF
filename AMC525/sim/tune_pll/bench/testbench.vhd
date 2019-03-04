@@ -44,7 +44,7 @@ architecture arch of testbench is
     signal nco_gain : unsigned(3 downto 0);
     signal nco_enable : std_ulogic;
     signal nco_freq : angle_t;
-    signal interrupt : std_ulogic;
+    signal interrupt : std_ulogic_vector(1 downto 0);
 
     -- Resonant filter
     signal FILTER_CENTRE_FREQ : real := 0.2;
@@ -64,7 +64,7 @@ begin
         -- We run the IIR a lot faster for simulation
         READOUT_IIR_SHIFT => "0100",
         READOUT_IIR_CLOCK_BITS => 5,
-        READOUT_FIFO_BITS => 2
+        READOUT_FIFO_BITS => 3
     ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
@@ -169,6 +169,7 @@ begin
         -- Configure dwell time to be long enough for CORDIC to complete
         write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W, (
             DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => X"0008",
+            DSP_TUNE_PLL_CONTROL_CONFIG_CAPTURE_CORDIC_BIT => '1',
             others => '0'));
         -- Effectively disable phase error checking
         write_reg(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W, X"7FFFFFFF");

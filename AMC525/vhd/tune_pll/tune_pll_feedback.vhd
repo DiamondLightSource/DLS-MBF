@@ -39,9 +39,6 @@ entity tune_pll_feedback is
         start_i : in std_ulogic;
         phase_i : in signed;
         magnitude_i : in unsigned;
-        -- We publish the phase error so that this can be filtered for readback:
-        -- this avoids having to filter the phase as a circular value.
-        phase_error_o : out phase_angle_t := (others => '0');
 
         -- Outputs, all strobed by done_o.  Note however that frequency_o will
         -- also change without a strobe event if written to directly.
@@ -136,7 +133,6 @@ begin
             -- error computed at this stage so we'll be subtracting at all
             -- later stages.
             phase_error <= target_phase_i - phase_i;
-            phase_error_o <= phase_error;
 
             -- Next the scale and integrate stage; this is written to fit into a
             -- DSP unit.
