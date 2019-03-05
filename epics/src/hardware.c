@@ -84,8 +84,11 @@ static uint32_t readl(volatile uint32_t *reg)
     WRITEL(target, ((typeof(target)) { fields }))
 
 
-#define WRITE_DSP_MIRROR(axis, reg, field, value) \
-    dsp_mirror[axis].reg.field = (value); \
+/* This is designed to be called thus:
+ *      WRITE_DSP_MIRROR(axis, reg, .field = value)
+ * Unfortunately any syntax errors will produce *very* confusing results! */
+#define WRITE_DSP_MIRROR(axis, reg, field_value) \
+    dsp_mirror[axis].reg field_value; \
     WRITEL(dsp_regs[axis]->reg, dsp_mirror[axis].reg)
 
 
@@ -548,19 +551,19 @@ void hw_write_adc_overflow_threshold(int axis, unsigned int threshold)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(
-            axis, adc_config_limits, threshold, threshold & 0x3FFF);
+            axis, adc_config_limits, .threshold = threshold & 0x3FFF);
 }
 
 void hw_write_adc_delta_threshold(int axis, unsigned int delta)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config_limits, delta, delta & 0xFFFF);
+        WRITE_DSP_MIRROR(axis, adc_config_limits, .delta = delta & 0xFFFF);
 }
 
 void hw_write_adc_reject_shift(int axis, unsigned int shift)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config_config, reject_shift, shift & 0xF);
+        WRITE_DSP_MIRROR(axis, adc_config_config, .reject_shift = shift & 0xF);
 }
 
 void hw_read_adc_events(int axis, struct adc_events *result)
@@ -587,13 +590,13 @@ void hw_write_adc_taps(int axis, const int taps[])
 void hw_write_adc_mms_source(int axis, unsigned int source)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config_config, mms_source, source & 0x3);
+        WRITE_DSP_MIRROR(axis, adc_config_config, .mms_source = source & 0x3);
 }
 
 void hw_write_adc_dram_source(int axis, unsigned int source)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, adc_config_config, dram_source, source & 0x3);
+        WRITE_DSP_MIRROR(axis, adc_config_config, .dram_source = source & 0x3);
 }
 
 void hw_read_adc_mms(int axis, struct mms_result *result)
@@ -647,7 +650,7 @@ void hw_write_bunch_fir_taps(int axis, unsigned int fir, const int taps[])
 {
     WITH_MUTEX(dsp_locks[axis])
     {
-        WRITE_DSP_MIRROR(axis, fir_config, bank, fir & 0x3);
+        WRITE_DSP_MIRROR(axis, fir_config, .bank = fir & 0x3);
         for (unsigned int i = 0; i < hardware_config.bunch_taps; i ++)
             WRITEL(dsp_regs[axis]->fir_taps, (uint32_t) taps[i]);
     }
@@ -665,37 +668,37 @@ bool hw_read_bunch_overflow(int axis)
 void hw_write_dac_delay(int axis, unsigned int delay)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, delay, delay & 0x3FF);
+        WRITE_DSP_MIRROR(axis, dac_config, .delay = delay & 0x3FF);
 }
 
 void hw_write_dac_fir_gain(int axis, unsigned int gain)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, fir_gain, gain & 0xF);
+        WRITE_DSP_MIRROR(axis, dac_config, .fir_gain = gain & 0xF);
 }
 
 void hw_write_dac_nco0_gain(int axis, unsigned int gain)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, nco0_gain, gain & 0xF);
+        WRITE_DSP_MIRROR(axis, dac_config, .nco0_gain = gain & 0xF);
 }
 
 void hw_write_dac_nco0_enable(int axis, bool enable)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, nco0_enable, enable);
+        WRITE_DSP_MIRROR(axis, dac_config, .nco0_enable = enable);
 }
 
 void hw_write_dac_mms_source(int axis, bool after_fir)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, mms_source, after_fir);
+        WRITE_DSP_MIRROR(axis, dac_config, .mms_source = after_fir);
 }
 
 void hw_write_dac_dram_source(int axis, bool after_fir)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, dram_source, after_fir);
+        WRITE_DSP_MIRROR(axis, dac_config, .dram_source = after_fir);
 }
 
 
@@ -764,7 +767,7 @@ static void write_sequencer_entries(
     const struct seq_entry entries[MAX_SEQUENCER_COUNT])
 {
     WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
-    WRITE_DSP_MIRROR(axis, seq_config, target, 0);
+    WRITE_DSP_MIRROR(axis, seq_config, .target = 0);
     write_sequencer_state(axis, &(struct seq_entry) {
         .dwell_time = 1,
         .bunch_bank = bank0,
@@ -780,7 +783,7 @@ static void write_sequencer_entries(
 static void write_sequencer_window(int axis, const int window[])
 {
     WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
-    WRITE_DSP_MIRROR(axis, seq_config, target, 1);
+    WRITE_DSP_MIRROR(axis, seq_config, .target = 1);
     for (unsigned int i = 0; i < DET_WINDOW_LENGTH; i ++)
         WRITEL(dsp_regs[axis]->seq_det_window, (uint32_t) window[i]);
 }
@@ -811,7 +814,7 @@ void hw_write_seq_config(int axis, const struct seq_config *config)
         write_sequencer_window(axis, config->window);
         write_sequencer_super_entries(
             axis, config->super_seq_count, config->super_offsets);
-        WRITE_DSP_MIRROR(axis, seq_config, pc, config->sequencer_pc & 0x7);
+        WRITE_DSP_MIRROR(axis, seq_config, .pc = config->sequencer_pc & 0x7);
     }
 }
 
@@ -824,7 +827,7 @@ void hw_write_seq_bank0(int axis, unsigned int bank0)
 void hw_write_seq_trigger_state(int axis, unsigned int state)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, seq_config, trigger, state & 0x7);
+        WRITE_DSP_MIRROR(axis, seq_config, .trigger = state & 0x7);
 }
 
 void hw_write_seq_abort(int axis)
@@ -957,7 +960,7 @@ void hw_write_pll_nco_gain(int axis, unsigned int gain)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            nco_gain, gain & 0xF);
+            .nco_gain = gain & 0xF);
 }
 
 
@@ -965,7 +968,7 @@ void hw_write_pll_nco_enable(int axis, bool enable)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            nco_enable, enable);
+            .nco_enable = enable);
 }
 
 
@@ -973,7 +976,7 @@ void hw_write_pll_dwell_time(int axis, unsigned int dwell)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            dwell_time, (dwell - 1) & 0xFFF);
+            .dwell_time = (dwell - 1) & 0xFFF);
 }
 
 
@@ -1011,7 +1014,7 @@ void hw_write_pll_det_scaling(int axis, unsigned int scaling)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            det_shift, scaling & 0x1);
+            .det_shift = scaling & 0x1);
 }
 
 
@@ -1023,7 +1026,7 @@ void hw_write_pll_det_config(
     {
         /* Configure input selection. */
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            select, input_select & 0x3);
+            .select = input_select & 0x3);
 
         /* Write the bunch enables array. */
         WRITE_FIELDS(dsp_regs[axis]->tune_pll_control_command,
@@ -1031,6 +1034,47 @@ void hw_write_pll_det_config(
         write_det_bunch_enable_array(
             &dsp_regs[axis]->tune_pll_control_bunch, offset, bunch_enables);
     }
+}
+
+
+void hw_write_pll_filtered_cordic(int axis, bool cordic)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
+            .filter_cordic = cordic);
+}
+
+void hw_write_pll_captured_cordic(int axis, bool cordic)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
+            .capture_cordic = cordic);
+}
+
+
+void hw_read_pll_events(int axis, struct tune_pll_events *result)
+{
+    struct dsp_tune_pll_control_events events =
+        READL(dsp_regs[axis]->tune_pll_control_events);
+    *result = (struct tune_pll_events) {
+        .det_overflow = events.det_ovfl,
+        .magnitude_error = events.mag_error,
+        .offset_error = events.offset_error,
+    };
+}
+
+
+void hw_read_pll_status(int axis, struct tune_pll_status *result)
+{
+    struct dsp_tune_pll_control_status status =
+        READL(dsp_regs[axis]->tune_pll_control_status);
+    *result = (struct tune_pll_status) {
+        .running = status.running,
+        .stopped = status.stop_stop,
+        .overflow = status.stop_overflow,
+        .too_small = status.stop_magnitude,
+        .bad_offset = status.stop_offset,
+    };
 }
 
 

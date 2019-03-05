@@ -79,8 +79,8 @@ def axes(prefix, iq_mode = False):
 def dBrange(count, step, start = 0):
     return ['%sdB' % db for db in range(start, start + count*step, step)]
 
-def overflow(name, desc, **args):
-    return boolIn(name, 'Ok', 'Overflow', OSV = 'MAJOR', DESC = desc, **args)
+def overflow(name, desc, error = 'Overflow', **args):
+    return boolIn(name, 'Ok', error, OSV = 'MAJOR', DESC = desc, **args)
 
 def event(name, desc, **args):
     return boolIn(name, 'No', 'Yes', ZSV = 'MINOR', DESC = desc, **args)

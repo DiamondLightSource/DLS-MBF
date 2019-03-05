@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2198
-y 89
-w 1620
-h 1072
+x 277
+y 280
+w 1160
+h 528
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "Tune Measurement"
+title "Tune PLL Debug"
 showGrid
 snapToGrid
 gridSize 8
@@ -34,7 +34,7 @@ minor 1
 release 1
 x 0
 y 0
-w 672
+w 1160
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -68,139 +68,14 @@ command {
 includeHelpIcon
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 800
-y 544
-w 80
-h 16
-controlPv "$(device):$(axis):PLL:DET:I"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 4
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-showUnits
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 800
-y 568
-w 80
-h 16
-controlPv "$(device):$(axis):PLL:DET:Q"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 4
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-showUnits
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 800
-y 592
-w 80
-h 16
-controlPv "$(device):$(axis):PLL:DET:MAG"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 4
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-showUnits
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 800
-y 616
-w 80
-h 16
-controlPv "$(device):$(axis):PLL:PHASE"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 4
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-showUnits
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 800
-y 640
-w 80
-h 16
-controlPv "$(device):$(axis):PLL:OFFSET"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 4
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-showUnits
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
 # (Exit Button)
 object activeExitButtonClass
 beginObjectProperties
 major 4
 minor 1
 release 0
-x 1448
-y 1000
+x 1088
+y 496
 w 64
 h 24
 fgColor index 46
@@ -212,34 +87,6 @@ font "helvetica-bold-r-12.0"
 3d
 endObjectProperties
 
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 808
-y 704
-w 88
-h 20
-controlPv "$(device):$(axis):PLL:DET:DWELL_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
 # (X-Y Graph)
 object xyGraphClass
 beginObjectProperties
@@ -247,13 +94,13 @@ major 4
 minor 8
 release 0
 # Geometry
-x 72
-y 720
+x 8
+y 40
 w 656
 h 224
 # Appearance
 autoScaleBothDirections
-graphTitle "Tune PLL Detector Data"
+graphTitle "Magnitude"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -275,7 +122,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(axis):PLL:DEBUG:WFQ"
+  0 "$(device):$(axis):PLL:DEBUG:MAG"
 }
 plotUpdateMode {
   0 "y"
@@ -294,8 +141,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 1024
-y 656
+x 688
+y 496
 w 120
 h 24
 fgColor index 14
@@ -313,8 +160,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 1040
-y 696
+x 32
+y 496
 w 184
 h 14
 controlPv "$(device):$(axis):PLL:DEBUG:FIFO_OVF.DESC"
@@ -337,8 +184,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 1016
-y 696
+x 8
+y 496
 w 16
 h 16
 lineColor index 14
@@ -355,7 +202,7 @@ major 4
 minor 8
 release 0
 # Geometry
-x 1088
+x 664
 y 40
 w 488
 h 448
@@ -408,13 +255,13 @@ major 4
 minor 8
 release 0
 # Geometry
-x 72
-y 480
+x 8
+y 264
 w 656
 h 224
 # Appearance
 autoScaleBothDirections
-graphTitle "Tune PLL Detector Data"
+graphTitle "Angle (deg)"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -436,7 +283,10 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(axis):PLL:DEBUG:WFI"
+  0 "$(device):$(axis):PLL:DEBUG:ANGLE"
+}
+plotStyle {
+  0 "point"
 }
 plotUpdateMode {
   0 "y"
@@ -447,5 +297,105 @@ ySigned {
 plotColor {
   0 index 25
 }
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 960
+y 496
+w 120
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):PLL:DEBUG:SELECT_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 592
+y 500
+w 84
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Enable Debug:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 824
+y 500
+w 128
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Select IQ or CORDIC:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 264
+y 496
+w 184
+h 14
+controlPv "$(device):$(axis):PLL:STA:DET_OVF.DESC"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 240
+y 496
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):$(axis):PLL:STA:DET_OVF"
 endObjectProperties
 

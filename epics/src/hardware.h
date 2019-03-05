@@ -400,16 +400,6 @@ void hw_read_det_memory(
 
 /* Tune PLL configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-struct tune_pll_status {
-    bool running;               // Set if feedback currently running
-    /* The following bits are stop reasons recording why feedback is stopped. */
-    bool stopped;               // Stop requested
-    bool overflow;              // Detector overflow
-    bool too_small;             // Magnitude too small
-    bool bad_offset;            // Offset too large
-};
-
-
 /* Directly sets Tune PLL NCO frequency.  Note that setting this during feedback
  * will interfere with feedback! */
 void hw_write_pll_nco_frequency(int axis, uint64_t frequency);
@@ -437,6 +427,32 @@ void hw_write_pll_det_scaling(int axis, unsigned int scaling);
 void hw_write_pll_det_config(
     int axis, unsigned int input_select,
     unsigned int offset, const bool bunch_enables[]);
+
+/* Control over debug readbacks.  If filtered CORDIC is set then the filtered IQ
+ * readback will return CORDIC data, similarly if captured CORDIC is set the
+ * FIFO debug data will be CORDIC data.  Only intended for CORDIC validation. */
+void hw_write_pll_filtered_cordic(int axis, bool cordic);
+void hw_write_pll_captured_cordic(int axis, bool cordic);
+
+
+/* Read back error events. */
+struct tune_pll_events {
+    bool det_overflow;
+    bool magnitude_error;
+    bool offset_error;
+};
+void hw_read_pll_events(int axis, struct tune_pll_events *events);
+
+/* Read running status and stop reasons. */
+struct tune_pll_status {
+    bool running;               // Set if feedback currently running
+    /* The following bits are stop reasons recording why feedback is stopped. */
+    bool stopped;               // Stop requested
+    bool overflow;              // Detector overflow
+    bool too_small;             // Magnitude too small
+    bool bad_offset;            // Offset too large
+};
+void hw_read_pll_status(int axis, struct tune_pll_status *status);
 
 /* Readbacks for filtered live data. */
 void hw_read_pll_filtered_readbacks(

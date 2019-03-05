@@ -3,7 +3,7 @@
 from common import *
 
 for a in axes('PLL', lmbf_mode):
-    pass
+    polled_readbacks = []
 
     # Direct control over NCO
     with name_prefix('NCO'):
@@ -31,27 +31,47 @@ for a in axes('PLL', lmbf_mode):
         Action('SET_SELECT', DESC = 'Enable selected bunches')
         Action('RESET_SELECT', DESC = 'Disable selected bunches')
 
-    # Readbacks of filtered data
-    Action('POLL',
-        DESC = 'Poll Tune PLL readbacks',
-        SCAN = '.1 second', FLNK = create_fanout('FAN',
-            aIn('DET:I', PREC = 8,
-                DESC = 'Filtered Tune PLL detector I'),
-            aIn('DET:Q', PREC = 8,
-                DESC = 'Filtered Tune PLL detector Q'),
-            aIn('DET:MAG', PREC = 8,
-                DESC = 'Filtered Tune PLL detector magnitude'),
-            aIn('PHASE', PREC = 2, EGU = 'deg',
-                DESC = 'Filtered Tune PLL phase offset'),
-            aIn('OFFSET', PREC = 6, EGU = 'tune',
-                DESC = 'Filtered Frequency offset out')))
-
     # Debug readbacks
     with name_prefix('DEBUG'):
         boolOut('ENABLE', 'Off', 'On', DESC = 'Enable debug readbacks')
         Trigger('READ',
-            Waveform('WFI', TUNE_PLL_LENGTH, 'LONG',
+            Waveform('WFI', TUNE_PLL_LENGTH, 'FLOAT',
                 DESC = 'Tune PLL detector I'),
-            Waveform('WFQ', TUNE_PLL_LENGTH, 'LONG',
+            Waveform('WFQ', TUNE_PLL_LENGTH, 'FLOAT',
                 DESC = 'Tune PLL detector Q'),
+            Waveform('ANGLE', TUNE_PLL_LENGTH, 'FLOAT',
+                DESC = 'Tune PLL angle'),
+            Waveform('MAG', TUNE_PLL_LENGTH, 'FLOAT',
+                DESC = 'Tune PLL magnitude'),
             overflow('FIFO_OVF', 'Debug FIFO readout overrun'))
+        boolOut('SELECT', 'IQ', 'CORDIC',
+            DESC = 'Select captured readback values')
+
+    # Filtered readbacks
+    with name_prefix('FILT'):
+        polled_readbacks.extend([
+            aIn('I', PREC = 8,
+                DESC = 'Filtered Tune PLL detector I'),
+            aIn('Q', PREC = 8,
+                DESC = 'Filtered Tune PLL detector Q'),
+            aIn('MAG', PREC = 8,
+                DESC = 'Filtered Tune PLL detector magnitude'),
+            aIn('PHASE', PREC = 2, EGU = 'deg',
+                DESC = 'Filtered Tune PLL phase offset'),
+        ])
+        boolOut('SELECT', 'IQ', 'CORDIC',
+            DESC = 'Select filtered readback values')
+
+    # Status readbacks
+    with name_prefix('STA'):
+        polled_readbacks.extend([
+            overflow('DET_OVF', 'Detector overflow'),
+            overflow('MAG_ERROR', 'Magnitude error', error = 'Too small'),
+            overflow('OFFSET_OVF', 'Offset overflow'),
+        ])
+
+    # Process all the polled readbacks
+    Action('POLL',
+        DESC = 'Poll Tune PLL readbacks',
+        SCAN = '.1 second',
+        FLNK = create_fanout('FAN', *polled_readbacks))
