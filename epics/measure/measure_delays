@@ -21,6 +21,7 @@ class DAC_OUT:
     FIR = 1
     NCO = 2
     SWEEP = 4
+    PLL = 8
 
 # We will work with two predefined FIR settings
 FIR_UNIT = 0
@@ -227,6 +228,21 @@ def binary_search(start, end, test):
     return start
 
 
+# Common core of detector bunch search
+def search_detector_bunch(mbf, bunches_pv, measure):
+    def test(start, end):
+        outwf = numpy.empty(mbf.bunches, dtype = int)
+        outwf[:start] = 0
+        outwf[start:end] = 1
+        outwf[end:] = 0
+        mbf.set(bunches_pv, outwf)
+        return measure()
+
+    # Note that we have to negate the returned delay so that hardware.c can do
+    # the compensation in the most straightforward way.
+    return mbf.fixup_delay(-binary_search(0, mbf.bunches, test))
+
+
 # Performs binary search to discover which bunch is detected for bunch zero
 @MBF.method
 def search_det_bunch(mbf, det_power, source, nco_freq = 0):
@@ -235,26 +251,37 @@ def search_det_bunch(mbf, det_power, source, nco_freq = 0):
     if nco_freq:
         mbf.set('NCO:FREQ_S', nco_freq)
 
-    def test(start, end):
-        outwf = numpy.empty(mbf.bunches, dtype = int)
-        outwf[:start] = 0
-        outwf[start:end] = 1
-        outwf[end:] = 0
-        mbf.set('DET:0:BUNCHES_S', outwf)
-
+    def measure():
         # Fire a capture
         mbf.set('TRG:SEQ:ARM_S', 0)
         mbf.set_shared('TRG:SOFT_S', 0)
 
-        power = det_power.get()
-        return numpy.isfinite(power)
+        return numpy.isfinite(det_power.get())
 
-    # Note that we have to negate the returned delay so that hardware.c can do
-    # the compensation in the most straightforward way.
-    delay = mbf.fixup_delay(-binary_search(0, mbf.bunches, test))
+    return search_detector_bunch(mbf, 'DET:0:BUNCHES_S', measure)
 
     if nco_freq:
         mbf.set('NCO:FREQ_S', 0)
+    return delay
+
+
+# Tune PLL specific detector bunch search
+@MBF.method
+def search_pll_det_bunch(mbf, det_power, source, nco_freq = 0):
+    # Configure source
+    mbf.set('PLL:DET:SELECT_S', source)
+    if nco_freq:
+        mbf.set('PLL:NCO:FREQ_S', nco_freq)
+
+    def measure():
+        oldpower = det_power.get_new()
+        power = det_power.get_new()
+        return power > 1e-4
+
+    delay = search_detector_bunch(mbf, 'PLL:DET:BUNCHES_S', measure)
+
+    if nco_freq:
+        mbf.set('PLL:NCO:FREQ_S', 0)
     return delay
 
 
@@ -399,13 +426,15 @@ def measure_det_bunch(mbf, results):
 
     results.DET_ADC_OFFSET = mbf.search_det_bunch(power, 'ADC')
     results.DET_FIR_OFFSET = mbf.search_det_bunch(power, 'FIR')
-    results.DET_FIR_REJECT_OFFSET = \
+    results.DET_ADC_REJECT_OFFSET = \
         mbf.search_det_bunch(power, 'ADC no fill', nco_freq = 0.51)
 
     power.close()
 
 
 def measure_detector_delay(mbf, results):
+    print >>sys.stderr, 'Measuring Detector Phase Delays'
+
     mbf.state(1, start = 1, step = 0.001, dwell = 20, holdoff = 10)
     mbf.bank_wf(1, 1, FIR_UNIT, DAC_OUT.SWEEP)
     mbf.set('DET:0:BUNCHES_S', numpy.ones(mbf.bunches))
@@ -427,6 +456,27 @@ def measure_detector_delay(mbf, results):
     results.DET_ADC_REJECT_DELAY = get_detector_delay(mbf, 'ADC no fill', pvs)
 
 
+def measure_tune_pll_bunch(mbf, results):
+    print >>sys.stderr, 'Measuring Tune PLL Bunch Offsets'
+
+    # Generate single pulse in DAC zero position
+    mbf.bank_wf(0, 1, 0, mbf.one_bunch(DAC_OUT.PLL, DAC_OUT.OFF))
+
+    # Drive tune PLL NCO output
+    mbf.set('PLL:NCO:FREQ_S', 0)
+    mbf.set('PLL:NCO:GAIN_S', '0dB')
+    mbf.set('PLL:NCO:ENABLE_S', 'On')
+    # Configure detector
+    mbf.set('PLL:DET:DWELL_S', 100)
+    mbf.set('PLL:DET:SCALING_S', '0dB')
+
+    power = mbf.PV('PLL:FILT:MAG')
+
+    results.PLL_ADC_OFFSET = mbf.search_pll_det_bunch(power, 'ADC')
+    results.PLL_FIR_OFFSET = mbf.search_pll_det_bunch(power, 'FIR')
+    results.PLL_ADC_REJECT_OFFSET = \
+        mbf.search_pll_det_bunch(power, 'ADC no fill', nco_freq = 0.51)
+
 
 # ------------------------------------------------------------------------------
 
@@ -435,6 +485,7 @@ actions = [
     'dram',
     'det_bunch',
     'detector_delay',
+    'tune_pll_bunch',
 ]
 
 
