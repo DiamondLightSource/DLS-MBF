@@ -103,6 +103,7 @@ architecture arch of sequencer_top is
     -- Frequency offset from super sequencer
     signal nco_freq_base : angle_t;
     signal super_count : super_count_t;
+    signal pll_freq_in : angle_t;
 
     -- Seq state loading
     --
@@ -120,6 +121,15 @@ architecture arch of sequencer_top is
     signal seq_write : std_ulogic;
 
 begin
+    pll_freq_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => angle_t'LENGTH
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => std_logic_vector(pll_freq_i),
+        signed(data_o) => pll_freq_in
+    );
+
     registers : entity work.sequencer_registers port map (
         dsp_clk_i => dsp_clk_i,
 
@@ -219,7 +229,7 @@ begin
         reset_phase_i => seq_state.reset_phase,
         add_pll_freq_i => seq_state.enable_tune_pll,
         last_turn_i => last_turn,
-        pll_freq_i => pll_freq_i,
+        pll_freq_i => pll_freq_in,
 
         state_end_o => state_end,
         hom_freq_o => hom_freq_o,
