@@ -39,7 +39,8 @@ entity tune_pll_readout is
         feedback_done_i : in std_ulogic;
         frequency_offset_i : in signed;
 
-        interrupt_o : out std_ulogic_vector
+        offset_fifo_ready_o : out std_ulogic;
+        debug_fifo_ready_o : out std_ulogic
     );
 end;
 
@@ -123,7 +124,7 @@ begin
         reset_read_error_i => reset_read_error(0),
         -- Interrupt management
         enable_interrupt_i => enable_offset_interrupt,
-        interrupt_o => interrupt_o(0)
+        interrupt_o => offset_fifo_ready_o
     );
 
     debug_fifo : entity work.tune_pll_readout_fifo generic map (
@@ -145,7 +146,7 @@ begin
         reset_read_error_i => reset_read_error(1),
         -- Interrupt management
         enable_interrupt_i => enable_debug_interrupt,
-        interrupt_o => interrupt_o(1)
+        interrupt_o => debug_fifo_ready_o
     );
 
 

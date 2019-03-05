@@ -877,6 +877,12 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     .SEQ_BUSY       2
     # Sequencer complete, no longer busy, one bit for each channel.
     .SEQ_DONE       2
-    # Tune PLL readout ready, one bit per channel
-    .TUNE_PLL0_READY 2
-    .TUNE_PLL1_READY 2
+    # Tune PLL interrupts.  Each channel supports the following interrupt
+    # sources:
+    # === ======================================================================
+    # 0   Frequency offset readout FIFO half full.
+    # 1   Debug readout FIFO half full.
+    # 2   Tune PLL has stopped.
+    # === ======================================================================
+    .TUNE_PLL0_READY 3
+    .TUNE_PLL1_READY 3

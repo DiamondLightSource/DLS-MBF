@@ -61,7 +61,7 @@ entity tune_pll_top is
         nco_freq_o : out angle_t;
 
         -- Interrupts for readout ready
-        interrupt_o : out std_ulogic_vector(1 downto 0)
+        interrupt_o : out std_ulogic_vector(2 downto 0)
     );
 end;
 
@@ -94,6 +94,10 @@ architecture arch of tune_pll_top is
 
     -- Frequency out
     signal nco_frequency : angle_t;
+
+    -- Interrupts
+    signal offset_fifo_ready : std_ulogic;
+    signal debug_fifo_ready : std_ulogic;
 
 begin
     turn_clock : entity work.dlyreg generic map (
@@ -255,7 +259,8 @@ begin
         feedback_done_i => feedback_done,
         frequency_offset_i => frequency_offset,
         -- Interrupt for readout
-        interrupt_o => interrupt_o
+        offset_fifo_ready_o => offset_fifo_ready,
+        debug_fifo_ready_o => debug_fifo_ready
     );
 
 
@@ -272,4 +277,10 @@ begin
     nco_gain_o <= config.nco_gain;
     nco_enable_o <= config.nco_enable;
     nco_reset_o <= config.nco_reset;
+
+    interrupt_o <= (
+        0 => offset_fifo_ready,
+        1 => debug_fifo_ready,
+        2 => not status.enable_feedback
+    );
 end;
