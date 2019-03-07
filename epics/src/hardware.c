@@ -1052,6 +1052,20 @@ void hw_write_pll_captured_cordic(int axis, bool cordic)
 }
 
 
+void hw_write_pll_start(bool axis0, bool axis1)
+{
+    WRITE_FIELDS(ctrl_regs->trg_control,
+        .start_pll0 = axis0, .start_pll1 = axis1);
+}
+
+
+void hw_write_pll_stop(bool axis0, bool axis1)
+{
+    WRITE_FIELDS(ctrl_regs->trg_control,
+        .stop_pll0 = axis0, .stop_pll1 = axis1);
+}
+
+
 void hw_read_pll_events(int axis, struct tune_pll_events *result)
 {
     struct dsp_tune_pll_control_events events =

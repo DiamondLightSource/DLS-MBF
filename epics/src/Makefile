@@ -73,6 +73,7 @@ mbf_SRCS += trigger_target.c    # Trigger target specific control
 mbf_SRCS += triggers.c          # Trigger control and selection
 mbf_SRCS += detector.c          # I/Q detector
 mbf_SRCS += delay.c             # Fine control over clocking delays
+mbf_SRCS += tune_pll_fifo.c     # Readout FIFO for Tune PLL
 mbf_SRCS += tune_pll.c          # Tune PLL functionality
 
 mbf_SRCS += buffered_file.c     # Helper for buffered file access

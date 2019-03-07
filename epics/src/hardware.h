@@ -434,6 +434,10 @@ void hw_write_pll_det_config(
 void hw_write_pll_filtered_cordic(int axis, bool cordic);
 void hw_write_pll_captured_cordic(int axis, bool cordic);
 
+/* Start and stop Tune PLL feedback. */
+void hw_write_pll_start(bool axis0, bool axis1);
+void hw_write_pll_stop(bool axis0, bool axis1);
+
 
 /* Read back error events. */
 struct tune_pll_events {

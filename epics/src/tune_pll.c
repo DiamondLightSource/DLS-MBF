@@ -21,19 +21,30 @@
 
 #include "events.h"
 #include "bunch_set.h"
+#include "tune_pll_fifo.h"
 
 #include "tune_pll.h"
+
+
+/* CORDIC magnitude correction.  The CORDIC readback is scaled by this value. */
+#define CORDIC_SCALING      (1.6467602581210654 / 2)
 
 
 static struct pll_context {
     int axis;
 
-    struct epics_record *nco_pv;
+    /* Frequency management. */
+    struct readout_fifo *offset_fifo;
+    double mean_offset;                 // Updated when reading waveform
+    struct epics_record *offset_pv;
+    int32_t filtered_offset;
 
     /* Live events. */
     struct tune_pll_events events;
-    /* Status. */
     struct tune_pll_status status;
+    struct epics_record *update_pv;
+
+    /* Feedback control. */
 
     /* Detector configuration. */
     unsigned int input_select;
@@ -58,172 +69,7 @@ static struct pll_context {
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* FIFO readout. */
-
-struct readout_fifo {
-    /* Hardware FIFO identification. */
-    int axis;                           // Selects which axis
-    enum pll_readout_fifo fifo;         // Selects which hardware FIFO to read
-    /* EPICS processing handshake. */
-    struct epics_interlock *interlock;  // Signal for EPICS processing
-    bool epics_busy;                    // Set if EPICS processing is active
-    /* Buffer of full FIFO capture ready for EPICS processing. */
-    int32_t *buffer;                    // Data captured ready for EPICS output
-    unsigned int buffer_size;           // Buffer capacity
-    unsigned int buffer_count;          // Current number of samples in buffer
-    /* FIFO processing state. */
-    bool enabled;
-    bool overflow;                      // Hardware FIFO overrun detected
-    pthread_mutex_t mutex;              // Needed for managed access
-    /* Read buffer for initial data capture. */
-    unsigned int read_buffer_count;     // Number of hold-over samples
-    int32_t read_buffer[PLL_FIFO_SIZE]; // Buffer of hold-over samples
-};
-
-
-static struct readout_fifo *create_readout_fifo(
-    int axis, enum pll_readout_fifo which_fifo, unsigned int buffer_size)
-{
-    struct readout_fifo *fifo = malloc(sizeof(struct readout_fifo));
-    *fifo = (struct readout_fifo) {
-        .axis = axis,
-        .fifo = which_fifo,
-        .interlock = create_interlock("READ", false),
-        .buffer_size = buffer_size,
-        .buffer = CALLOC(int32_t, buffer_size),
-        .mutex = PTHREAD_MUTEX_INITIALIZER,
-    };
-
-    PUBLISH_READ_VAR(bi, "FIFO_OVF", fifo->overflow);
-    return fifo;
-}
-
-
-/* Performs FIFO data processing, triggered either by data ready interrupt or on
- * disable event (and possibly on timer?).  MUST be called with mutex held.
- *
- * This is called when the FIFO is ready to read.  We read what data is
- * available, update our waveforms and notify EPICS as appropriate, and reenable
- * interrupts for our next call. */
-static void process_fifo_content(struct readout_fifo *fifo, bool last_read)
-{
-    /* Ensure that any EPICS processing has completed. */
-    if (fifo->epics_busy)
-    {
-        interlock_wait(fifo->interlock);
-        fifo->epics_busy = false;
-
-        /* Copy any residue from our buffer into the read buffer. */
-        memcpy(fifo->buffer, fifo->read_buffer,
-            fifo->read_buffer_count * sizeof(int32_t));
-        fifo->buffer_count = fifo->read_buffer_count;
-        /* Resetting read_buffer_count is optional as we only observe it when
-         * epics_busy is set! */
-    }
-
-    /* Read what there is to read. */
-    unsigned int samples = hw_read_pll_readout_fifo(
-        fifo->axis, fifo->fifo, !last_read, &fifo->overflow, fifo->read_buffer);
-
-    /* Update the buffer. */
-    unsigned int to_copy =
-        MIN(samples, fifo->buffer_size - fifo->buffer_count);
-    memcpy(&fifo->buffer[fifo->buffer_count], fifo->read_buffer,
-        to_copy * sizeof(int32_t));
-    fifo->buffer_count += to_copy;
-
-    /* Emit the buffer if appropriate. */
-    if (fifo->buffer_count == fifo->buffer_size  ||
-        fifo->overflow  ||  last_read)
-    {
-        interlock_signal(fifo->interlock, NULL);
-        fifo->epics_busy = true;
-
-        /* Hang onto anything we didn't copy. */
-        fifo->read_buffer_count = samples - to_copy;
-        memmove(fifo->read_buffer, &fifo->read_buffer[to_copy],
-            fifo->read_buffer_count * sizeof(int32_t));
-    }
-}
-
-
-/* Start the FIFO readout process by clearing and resetting the FIFO and
- * enabling interrupts.  Must be called with mutex held. */
-static void start_readout_fifo(struct readout_fifo *fifo)
-{
-    /* Read and discard FIFO content, resetting if necessary. */
-    bool overflow;
-    hw_read_pll_readout_fifo(
-        fifo->axis, fifo->fifo, true, &overflow, fifo->read_buffer);
-
-    /* First ensure EPICS is not active. */
-    if (fifo->epics_busy)
-    {
-        interlock_wait(fifo->interlock);
-        fifo->epics_busy = false;
-    }
-    /* Reset the FIFO state. */
-    fifo->buffer_count = 0;
-    fifo->overflow = false;
-
-    fifo->enabled = true;
-}
-
-
-/* Disable the FIFO readout.  Must be called with mutex held. */
-static void stop_readout_fifo(struct readout_fifo *fifo)
-{
-    process_fifo_content(fifo, true);
-
-    fifo->enabled = false;
-}
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* The following are the interface methods to the FIFO above. */
-
-
-/* Enables and disables FIFO capture. */
-static void enable_readout_fifo(struct readout_fifo *fifo, bool enable)
-{
-    WITH_MUTEX(fifo->mutex)
-    {
-        if (enable  &&  !fifo->enabled)
-            start_readout_fifo(fifo);
-        else if (!enable  &&  fifo->enabled)
-            stop_readout_fifo(fifo);
-    }
-}
-
-
-/* Called from interrupt handler to process updates. */
-static void handle_fifo_ready_event(struct readout_fifo *fifo)
-{
-    WITH_MUTEX(fifo->mutex)
-    {
-        if (fifo->enabled)
-            process_fifo_content(fifo, false);
-    }
-}
-
-
-/* Data access method.  Provided as a formality so that we can pretend that
- * readout_fifo is a private structure.  Returns the number of captured samples
- * in the buffer. */
-static unsigned int read_fifo_buffer(
-    struct readout_fifo *fifo, const int32_t **buffer)
-{
-    ASSERT_OK(fifo->epics_busy);
-    *buffer = fifo->buffer;
-    return fifo->buffer_count;
-}
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-/* CORDIC magnitude correction.  The CORDIC readback is scaled by this value. */
-#define CORDIC_SCALING      (2.0 / 1.6467602581210654)
-
+/* NCO management. */
 
 static bool write_nco_frequency(void *context, double *tune)
 {
@@ -248,14 +94,354 @@ static bool write_nco_enable(void *context, bool *enable)
     return true;
 }
 
-static bool read_nco_frequency(void *context, double *tune)
+
+static void read_offset_waveform(
+    void *context, float offsets[], unsigned int *length)
 {
     struct pll_context *pll = context;
-    uint64_t frequency = hw_read_pll_nco_frequency(pll->axis);
-    *tune = freq_to_tune(frequency);
+    struct readout_fifo *fifo = pll->offset_fifo;
+    const int32_t *buffer;
+    *length = read_fifo_buffer(fifo, &buffer);
+
+    /* As well as reading the waveform, update the mean_offset from the same
+     * values. */
+    double offset_sum = 0;
+    for (unsigned int i = 0; i < *length; i ++)
+    {
+        offsets[i] = (float) freq_to_tune_signed(
+            (uint64_t) ((int64_t) buffer[i] << 8));
+        offset_sum += offsets[i];
+    }
+    pll->mean_offset = offset_sum / *length;
+}
+
+
+static bool reset_offset_fifo(void *context, bool *value)
+{
+    struct pll_context *pll = context;
+    reset_readout_fifo(pll->offset_fifo);
     return true;
 }
 
+
+static bool read_nco_frequency(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    uint64_t nco_freq = hw_read_pll_nco_frequency(pll->axis);
+//     if (pll->status.running)
+//         nco_freq += (uint64_t) ((int64_t) pll->filtered_offset << 8);
+    *value = freq_to_tune(nco_freq);
+    return true;
+}
+
+
+/* This is called periodically.  Trigger an update of our offset_pv if we are
+ * running, otherwise do nothing. */
+static void freq_offset_updated(struct pll_context *pll)
+{
+    if (pll->status.running)
+        trigger_record(pll->offset_pv);
+}
+
+
+static void publish_nco(struct pll_context *pll)
+{
+    WITH_NAME_PREFIX("NCO")
+    {
+        /* Setting NCO frequency and configuration. */
+        PUBLISH_C_P(ao, "FREQ", write_nco_frequency, pll);
+        PUBLISH_C_P(mbbo, "GAIN", write_nco_gain, pll);
+        PUBLISH_C_P(bo, "ENABLE", write_nco_enable, pll);
+
+        /* Offset readback FIFO. */
+        unsigned int length = system_config.tune_pll_length;
+        pll->offset_fifo =
+            create_readout_fifo(pll->axis, PLL_FIFO_OFFSET, length);
+        PUBLISH_WAVEFORM(float, "OFFSETWF", length,
+            read_offset_waveform, .context = pll);
+        PUBLISH_READ_VAR(ai, "MEAN_OFFSET", pll->mean_offset);
+        PUBLISH_C(bo, "RESET_FIFO", reset_offset_fifo, pll);
+
+        /* Frequency readback update. */
+        pll->offset_pv =
+            PUBLISH_READ_VAR_I(ai, "OFFSET", pll->filtered_freq_offset);
+        PUBLISH_C(ai, "FREQ", read_nco_frequency, pll);
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Detector configuration. */
+
+/* This is a copy of the corresponding options in detector.c. */
+enum detector_input_select {
+    DET_SELECT_ADC = 0,     // Standard compensated ADC data
+    DET_SELECT_FIR = 1,     // Data after bunch by bunch feedback filter
+    DET_SELECT_REJECT = 2,  // ADC data after filter and fill pattern rejection
+};
+
+
+static unsigned int compute_bunch_offset(unsigned int select)
+{
+    switch (select)
+    {
+        case DET_SELECT_ADC:
+            return hardware_delays.PLL_ADC_OFFSET;
+        case DET_SELECT_FIR:
+            return hardware_delays.PLL_FIR_OFFSET;
+        case DET_SELECT_REJECT:
+            return hardware_delays.PLL_ADC_REJECT_OFFSET;
+        default:
+            ASSERT_FAIL();
+    }
+}
+
+
+static bool write_det_input_select(void *context, unsigned int *select)
+{
+    struct pll_context *pll = context;
+    pll->input_select = *select;
+    hw_write_pll_det_config(
+        pll->axis, pll->input_select,
+        compute_bunch_offset(pll->input_select), pll->bunch_enables);
+    return true;
+}
+
+static bool write_det_output_scale(void *context, unsigned int *scale)
+{
+    struct pll_context *pll = context;
+    pll->readout_scale = *scale;
+    hw_write_pll_det_scaling(pll->axis, pll->readout_scale);
+    return true;
+}
+
+static bool write_det_dwell(void *context, unsigned int *dwell)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_dwell_time(pll->axis, *dwell);
+    return true;
+}
+
+
+static void write_bunch_enables(
+    void *context, char enables[], unsigned int *length)
+{
+    struct pll_context *pll = context;
+
+    /* Update the bunch count and normalise each enable to 0/1. */
+    unsigned int bunch_count = 0;
+    FOR_BUNCHES(i)
+    {
+        enables[i] = (bool) enables[i];
+        if (enables[i])
+            bunch_count += 1;
+    }
+    pll->bunch_count = bunch_count;
+
+    /* Copy the enables after normalisation. */
+    memcpy(pll->bunch_enables, enables, system_config.bunches_per_turn);
+    *length = system_config.bunches_per_turn;
+
+    /* Write the bunch configuration to hardware. */
+    hw_write_pll_det_config(
+        pll->axis, pll->input_select,
+        compute_bunch_offset(pll->input_select), pll->bunch_enables);
+}
+
+
+static bool enable_bunch_selection(void *context, bool *_value)
+{
+    struct pll_context *pll = context;
+    UPDATE_RECORD_BUNCH_SET(char, pll->bunch_set, pll->enablewf, true);
+    return true;
+}
+
+static bool disable_bunch_selection(void *context, bool *_value)
+{
+    struct pll_context *pll = context;
+    UPDATE_RECORD_BUNCH_SET(char, pll->bunch_set, pll->enablewf, false);
+    return true;
+}
+
+
+static void publish_detector(struct pll_context *pll)
+{
+    WITH_NAME_PREFIX("DET")
+    {
+        pll->bunch_enables = CALLOC(bool, system_config.bunches_per_turn);
+
+        PUBLISH_C_P(mbbo, "SELECT", write_det_input_select, pll);
+        PUBLISH_C_P(mbbo, "SCALING", write_det_output_scale, pll);
+        PUBLISH_C_P(ulongout, "DWELL", write_det_dwell, pll);
+
+        PUBLISH_READ_VAR(ulongin, "COUNT", pll->bunch_count);
+        pll->enablewf = PUBLISH_WAVEFORM_C_P(
+            char, "BUNCHES", system_config.bunches_per_turn,
+            write_bunch_enables, pll);
+
+        pll->bunch_set = create_bunch_set();
+        PUBLISH_C(bo, "SET_SELECT", enable_bunch_selection, pll);
+        PUBLISH_C(bo, "RESET_SELECT", disable_bunch_selection, pll);
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Feedback setup and control. */
+
+
+/* Configuration. */
+
+static bool write_ki(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_integral_factor(pll->axis, (int32_t) *value << 7);
+    return true;
+}
+
+static bool write_kp(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_proportional_factor(pll->axis, (int32_t) *value << 7);
+    return true;
+}
+
+static bool write_min_magnitude(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    uint32_t min_mag = (uint32_t) lround(ldexp(*value, 31) * CORDIC_SCALING);
+    hw_write_pll_minimum_magnitude(pll->axis, min_mag);
+    return true;
+}
+
+static bool write_max_offset(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    uint64_t freq = tune_to_freq(*value);
+    uint32_t max_offset = (uint32_t) ((freq >> 8) & 0x7FFFFFFF);
+    *value = freq_to_tune((uint64_t) max_offset << 8);
+    hw_write_pll_maximum_offset(pll->axis, max_offset);
+    return true;
+}
+
+static bool write_target_phase(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    int32_t phase = (int32_t) (lround(ldexp(*value / 360, 32)) & 0xFFFFC000);
+    *value = 360 * ldexp(phase, -32);
+    hw_write_pll_target_phase(pll->axis, phase);
+    return true;
+}
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* Feedback event handling. */
+
+
+/* This is triggered in response to a feedback status change.  The status is
+ * updated. */
+static bool process_status_update(void *context, bool *value)
+{
+    struct pll_context *pll = context;
+
+    bool valid;
+    int invalid_count = 0;
+    do {
+        hw_read_pll_status(pll->axis, &pll->status);
+        /* If all the bits in the status register are zero then we have hit a
+         * nasty race condition: the FPGA is waiting to synchronise feedback
+         * start.  Really we need to go back and read again. */
+        valid =
+            pll->status.running  ||
+            pll->status.stopped  ||
+            pll->status.overflow  ||
+            pll->status.too_small  ||
+            pll->status.bad_offset;
+        if (!valid)
+            invalid_count += 1;
+    } while (!valid);
+if (invalid_count) printf("zero status seen %d times\n", invalid_count);
+    return true;
+}
+
+
+static void handle_pll_start(struct pll_context *pll)
+{
+    printf("start %d requested...\n", pll->axis);
+    trigger_record(pll->update_pv);
+    enable_readout_fifo(pll->offset_fifo, true);
+}
+
+
+static void handle_pll_stop(struct pll_context *pll)
+{
+    printf("PLL %d stop event\n", pll->axis);
+    trigger_record(pll->update_pv);
+    enable_readout_fifo(pll->offset_fifo, false);
+}
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* Start/Stop command interface. */
+
+static void start_both_axes(void)
+{
+    hw_write_pll_start(true, true);
+    handle_pll_start(&pll_context[0]);
+    if (!system_config.lmbf_mode)
+        handle_pll_start(&pll_context[1]);
+}
+
+
+static void stop_both_axes(void)
+{
+    /* For this an unceremonious stop is enough. */
+    hw_write_pll_stop(true, true);
+}
+
+
+static bool start_feedback(void *context, bool *value)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_start(pll->axis == 0, pll->axis == 1);
+    handle_pll_start(pll);
+    return true;
+}
+
+static bool stop_feedback(void *context, bool *value)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_stop(pll->axis == 0, pll->axis == 1);
+    return true;
+}
+
+
+static void publish_control(struct pll_context *pll)
+{
+    WITH_NAME_PREFIX("CTRL")
+    {
+        PUBLISH_C_P(ao, "KI", write_ki, pll);
+        PUBLISH_C_P(ao, "KP", write_kp, pll);
+        PUBLISH_C_P(ao, "MIN_MAG", write_min_magnitude, pll);
+        PUBLISH_C_P(ao, "MAX_OFFSET", write_max_offset, pll);
+        PUBLISH_C_P(ao, "TARGET", write_target_phase, pll);
+
+        PUBLISH_C(bo, "START", start_feedback, pll);
+        PUBLISH_C(bo, "STOP", stop_feedback, pll);
+
+        pll->update_pv = PUBLISH_C(bi, "UPDATE",
+            process_status_update, pll, .io_intr = true);
+        PUBLISH_READ_VAR(bi, "STATUS", pll->status.running);
+        PUBLISH_READ_VAR(bi, "STOP:STOP", pll->status.stopped);
+        PUBLISH_READ_VAR(bi, "STOP:DET_OVF", pll->status.overflow);
+        PUBLISH_READ_VAR(bi, "STOP:MAG_ERROR", pll->status.too_small);
+        PUBLISH_READ_VAR(bi, "STOP:OFFSET_OVF", pll->status.bad_offset);
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Debug readbacks. */
 
 static bool enable_debug_fifo(void *context, bool *value)
 {
@@ -263,6 +449,7 @@ static bool enable_debug_fifo(void *context, bool *value)
     enable_readout_fifo(pll->debug_fifo, *value);
     return true;
 }
+
 
 static void read_debug_wfi(void *context, float *wfi, unsigned int *length)
 {
@@ -324,8 +511,9 @@ static void read_debug_magnitude(
     if (pll->captured_cordic)
         /* In this case the captured waveform is the magnitude readback. */
         for (unsigned int i = 0; i < *length; i ++)
-            magnitude[i] = (float) CORDIC_SCALING *
-                ldexpf((float) (uint32_t) buffer[2 * i + 1], -31);
+            magnitude[i] =
+                ldexpf((float) (uint32_t) buffer[2 * i + 1], -31) /
+                (float) CORDIC_SCALING;
     else
         /* Otherwise compute the magnitude from IQ. */
         for (unsigned int i = 0; i < *length; i ++)
@@ -337,6 +525,40 @@ static void read_debug_magnitude(
 }
 
 
+static bool set_captured_debug(void *context, bool *value)
+{
+    struct pll_context *pll = context;
+    pll->captured_cordic = *value;
+    hw_write_pll_captured_cordic(pll->axis, *value);
+    return true;
+}
+
+
+static void publish_debug(struct pll_context *pll)
+{
+    WITH_NAME_PREFIX("DEBUG")
+    {
+        unsigned int length = system_config.tune_pll_length;
+        pll->debug_fifo = create_readout_fifo(
+            pll->axis, PLL_FIFO_DEBUG, 2 * length);
+        PUBLISH_C(bo, "ENABLE", enable_debug_fifo, pll);
+        PUBLISH_WAVEFORM(float, "WFI", length,
+            read_debug_wfi, .context = pll);
+        PUBLISH_WAVEFORM(float, "WFQ", length,
+            read_debug_wfq, .context = pll);
+        PUBLISH_WAVEFORM(float, "ANGLE", length,
+            read_debug_angle, .context = pll);
+        PUBLISH_WAVEFORM(float, "MAG", length,
+            read_debug_magnitude, .context = pll);
+
+        PUBLISH_C(bo, "SELECT", set_captured_debug, pll);
+    }
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Miscellaneous readbacks. */
+
 static bool read_filtered_readbacks(void *context, bool *value)
 {
     struct pll_context *pll = context;
@@ -344,8 +566,7 @@ static bool read_filtered_readbacks(void *context, bool *value)
     hw_read_pll_events(pll->axis, &pll->events);
 
     struct detector_result det;
-    int32_t offset;
-    hw_read_pll_filtered_readbacks(pll->axis, &det, &offset);
+    hw_read_pll_filtered_readbacks(pll->axis, &det, &pll->filtered_offset);
 
     /* Update each published value. */
     if (pll->filtered_cordic)
@@ -354,119 +575,25 @@ static bool read_filtered_readbacks(void *context, bool *value)
         pll->filtered_cos = nan("");
         pll->filtered_sin = nan("");
         pll->filtered_phase = 360 * ldexp(det.i, -32);
-        pll->filtered_magnitude = CORDIC_SCALING * ldexp(det.q, -31);
+        pll->filtered_magnitude = ldexp(det.q, -31) / CORDIC_SCALING;
     }
     else
     {
+        /* Normal readbacks, compute phase and magnitude from IQ. */
         pll->filtered_cos = ldexp(det.i, -31);
         pll->filtered_sin = ldexp(det.q, -31);
         pll->filtered_phase = 180 / M_PI * atan2(det.q, det.i);
         pll->filtered_magnitude =
             sqrt(SQR(pll->filtered_cos) + SQR(pll->filtered_sin));
     }
+
     /* The frequency offset is a slice out of the middle of the computed
      * frequency, specifically bits 39:8 out of 48 bits.  So we can use
      * freq_to_tune() once we've adjusted the offset. */
     pll->filtered_freq_offset =
-        freq_to_tune_signed((uint64_t) ((int64_t) offset << 8));
+        freq_to_tune_signed((uint64_t) ((int64_t) pll->filtered_offset << 8));
+    freq_offset_updated(pll);
 
-    return true;
-}
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Detector configuration. */
-
-/* This is a copy of the corresponding options in detector.c. */
-enum detector_input_select {
-    DET_SELECT_ADC = 0,     // Standard compensated ADC data
-    DET_SELECT_FIR = 1,     // Data after bunch by bunch feedback filter
-    DET_SELECT_REJECT = 2,  // ADC data after filter and fill pattern rejection
-};
-
-
-static unsigned int compute_bunch_offset(unsigned int select)
-{
-    switch (select)
-    {
-        case DET_SELECT_ADC:
-            return hardware_delays.PLL_ADC_OFFSET;
-        case DET_SELECT_FIR:
-            return hardware_delays.PLL_FIR_OFFSET;
-        case DET_SELECT_REJECT:
-            return hardware_delays.PLL_ADC_REJECT_OFFSET;
-        default:
-            ASSERT_FAIL();
-    }
-}
-
-
-static bool write_det_input_select(void *context, unsigned int *select)
-{
-    struct pll_context *pll = context;
-    pll->input_select = *select;
-    hw_write_pll_det_config(
-        pll->axis, pll->input_select,
-        compute_bunch_offset(pll->input_select), pll->bunch_enables);
-    return true;
-}
-
-
-static bool write_det_output_scale(void *context, unsigned int *scale)
-{
-    struct pll_context *pll = context;
-    pll->readout_scale = *scale;
-    hw_write_pll_det_scaling(pll->axis, pll->readout_scale);
-    return true;
-}
-
-
-static bool write_det_dwell(void *context, unsigned int *dwell)
-{
-    struct pll_context *pll = context;
-    hw_write_pll_dwell_time(pll->axis, *dwell);
-    return true;
-}
-
-
-static void write_bunch_enables(
-    void *context, char enables[], unsigned int *length)
-{
-    struct pll_context *pll = context;
-
-    /* Update the bunch count and normalise each enable to 0/1. */
-    unsigned int bunch_count = 0;
-    FOR_BUNCHES(i)
-    {
-        enables[i] = (bool) enables[i];
-        if (enables[i])
-            bunch_count += 1;
-    }
-    pll->bunch_count = bunch_count;
-
-    /* Copy the enables after normalisation. */
-    memcpy(pll->bunch_enables, enables, system_config.bunches_per_turn);
-    *length = system_config.bunches_per_turn;
-
-    /* Write the bunch configuration to hardware. */
-    hw_write_pll_det_config(
-        pll->axis, pll->input_select,
-        compute_bunch_offset(pll->input_select), pll->bunch_enables);
-}
-
-
-static bool enable_bunch_selection(void *context, bool *_value)
-{
-    struct pll_context *pll = context;
-    UPDATE_RECORD_BUNCH_SET(char, pll->bunch_set, pll->enablewf, true);
-    return true;
-}
-
-
-static bool disable_bunch_selection(void *context, bool *_value)
-{
-    struct pll_context *pll = context;
-    UPDATE_RECORD_BUNCH_SET(char, pll->bunch_set, pll->enablewf, false);
     return true;
 }
 
@@ -479,21 +606,28 @@ static bool set_filtered_debug(void *context, bool *value)
     return true;
 }
 
-static bool set_captured_debug(void *context, bool *value)
+
+static void publish_readbacks(struct pll_context *pll)
 {
-    struct pll_context *pll = context;
-    pll->captured_cordic = *value;
-    hw_write_pll_captured_cordic(pll->axis, *value);
-    return true;
-}
+    /* Filtered data readbacks. */
+    WITH_NAME_PREFIX("FILT")
+    {
+        PUBLISH_READ_VAR(ai, "I", pll->filtered_cos);
+        PUBLISH_READ_VAR(ai, "Q", pll->filtered_sin);
+        PUBLISH_READ_VAR(ai, "MAG", pll->filtered_magnitude);
+        PUBLISH_READ_VAR(ai, "PHASE", pll->filtered_phase);
+        PUBLISH_C(bo, "SELECT", set_filtered_debug, pll);
+    }
 
+    /* Live status. */
+    WITH_NAME_PREFIX("STA")
+    {
+        PUBLISH_READ_VAR(bi, "DET_OVF", pll->events.det_overflow);
+        PUBLISH_READ_VAR(bi, "MAG_ERROR", pll->events.magnitude_error);
+        PUBLISH_READ_VAR(bi, "OFFSET_OVF", pll->events.offset_error);
+    }
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Feedback control. */
-
-static void handle_pll_stop_event(struct pll_context *pll)
-{
-    printf("PLL %d stop event\n", pll->axis);
+    PUBLISH_C(bo, "POLL", read_filtered_readbacks, pll);
 }
 
 
@@ -503,97 +637,45 @@ static void handle_pll_stop_event(struct pll_context *pll)
 
 static void handle_fifo_event(struct pll_context *pll, unsigned int event_mask)
 {
-//     if (event_mask & 0x1)
-//         handle_fifo_ready_event(pll->readout_fifo);
+    if (event_mask & 0x1)
+        handle_fifo_ready(pll->offset_fifo);
     if (event_mask & 0x2)
-        handle_fifo_ready_event(pll->debug_fifo);
+        handle_fifo_ready(pll->debug_fifo);
     if (event_mask & 0x4)
-        handle_pll_stop_event(pll);
+        handle_pll_stop(pll);
 }
-
 
 static void dispatch_tune_pll_event(void *context, struct interrupts interrupts)
 {
-    struct interrupts pll0_ready = INTERRUPTS(.tune_pll0_ready = 3);
-    struct interrupts pll1_ready = INTERRUPTS(.tune_pll1_ready = 3);
-    if (test_intersect(interrupts, pll0_ready))
-        handle_fifo_event(&pll_context[0], interrupts.tune_pll0_ready);
-    if (test_intersect(interrupts, pll1_ready))
-        handle_fifo_event(&pll_context[1], interrupts.tune_pll1_ready);
+    handle_fifo_event(&pll_context[0], interrupts.tune_pll0_ready);
+    handle_fifo_event(&pll_context[1], interrupts.tune_pll1_ready);
 }
 
 
 error__t initialise_tune_pll(void)
 {
+    if (!system_config.lmbf_mode)
+        WITH_NAME_PREFIX("PLL:CTRL")
+        {
+            PUBLISH_ACTION("START", start_both_axes);
+            PUBLISH_ACTION("STOP", stop_both_axes);
+        }
+
     FOR_AXIS_NAMES(axis, "PLL", system_config.lmbf_mode)
     {
         struct pll_context *pll = &pll_context[axis];
         pll->axis = axis;
 
-        WITH_NAME_PREFIX("NCO")
-        {
-            PUBLISH_C_P(ao, "FREQ", write_nco_frequency, pll);
-            pll->nco_pv = PUBLISH_C(ai, "FREQ",
-                read_nco_frequency, pll, .io_intr = true);
-            PUBLISH_C_P(mbbo, "GAIN", write_nco_gain, pll);
-            PUBLISH_C_P(bo, "ENABLE", write_nco_enable, pll);
-        }
-
-        WITH_NAME_PREFIX("DET")
-        {
-            pll->bunch_enables = CALLOC(bool, system_config.bunches_per_turn);
-
-            PUBLISH_C_P(mbbo, "SELECT", write_det_input_select, pll);
-            PUBLISH_C_P(mbbo, "SCALING", write_det_output_scale, pll);
-            PUBLISH_C_P(ulongout, "DWELL", write_det_dwell, pll);
-
-            PUBLISH_READ_VAR(ulongin, "COUNT", pll->bunch_count);
-            pll->enablewf = PUBLISH_WAVEFORM_C_P(
-                char, "BUNCHES", system_config.bunches_per_turn,
-                write_bunch_enables, pll);
-
-            pll->bunch_set = create_bunch_set();
-            PUBLISH_C(bo, "SET_SELECT", enable_bunch_selection, pll);
-            PUBLISH_C(bo, "RESET_SELECT", disable_bunch_selection, pll);
-        }
-
-        WITH_NAME_PREFIX("DEBUG")
-        {
-            unsigned int length = system_config.tune_pll_length;
-            pll->debug_fifo = create_readout_fifo(
-                pll->axis, PLL_FIFO_DEBUG, 2 * length);
-            PUBLISH_C(bo, "ENABLE", enable_debug_fifo, pll);
-            PUBLISH_WAVEFORM(float, "WFI", length,
-                read_debug_wfi, .context = pll);
-            PUBLISH_WAVEFORM(float, "WFQ", length,
-                read_debug_wfq, .context = pll);
-            PUBLISH_WAVEFORM(float, "ANGLE", length,
-                read_debug_angle, .context = pll);
-            PUBLISH_WAVEFORM(float, "MAG", length,
-                read_debug_magnitude, .context = pll);
-
-            PUBLISH_C(bo, "SELECT", set_captured_debug, pll);
-        }
-
-        /* Filtered data readbacks. */
-        WITH_NAME_PREFIX("FILT")
-        {
-            PUBLISH_READ_VAR(ai, "I", pll->filtered_cos);
-            PUBLISH_READ_VAR(ai, "Q", pll->filtered_sin);
-            PUBLISH_READ_VAR(ai, "MAG", pll->filtered_magnitude);
-            PUBLISH_READ_VAR(ai, "PHASE", pll->filtered_phase);
-            PUBLISH_C(bo, "SELECT", set_filtered_debug, pll);
-        }
-
-        /* Live status. */
-        WITH_NAME_PREFIX("STA")
-        {
-            PUBLISH_READ_VAR(bi, "DET_OVF", pll->events.det_overflow);
-            PUBLISH_READ_VAR(bi, "MAG_ERROR", pll->events.magnitude_error);
-            PUBLISH_READ_VAR(bi, "OFFSET_OVF", pll->events.offset_error);
-        }
-
-        PUBLISH_C(bo, "POLL", read_filtered_readbacks, pll);
+        /* NCO management and readback. */
+        publish_nco(pll);
+        /* Detector configuration. */
+        publish_detector(pll);
+        /* Feedback configuration and control. */
+        publish_control(pll);
+        /* Debug readbacks. */
+        publish_debug(pll);
+        /* Miscellaneous readbacks. */
+        publish_readbacks(pll);
     }
 
     struct interrupts ready_interrupts =
@@ -603,6 +685,9 @@ error__t initialise_tune_pll(void)
     register_event_handler(
         INTERRUPT_HANDLER_TUNE_PLL, ready_interrupts,
         NULL, dispatch_tune_pll_event);
+
+    /* Ensure nothing is actually running! */
+    stop_both_axes();
 
     return TEST_OK_(system_config.tune_pll_length > PLL_FIFO_SIZE,
         "tune_pll_length too small");

@@ -2,16 +2,67 @@
 
 from common import *
 
+
+# These two controls act on both axes simultaneously
+if not lmbf_mode:
+    with name_prefix('PLL:CTRL'):
+        Action('START', DESC = 'Start tune PLL')
+        Action('STOP', DESC = 'Stop tune PLL')
+
+
 for a in axes('PLL', lmbf_mode):
+    # All these readbacks are polled at 10 Hz
     polled_readbacks = []
 
     # Direct control over NCO
     with name_prefix('NCO'):
-        aOut('FREQ', PREC = 5, DESC = 'Base Tune PLL NCO frequency')
-        aIn('FREQ', PREC = 5,
-            SCAN = 'I/O Intr', DESC = 'Tune PLL NCO frequency')
+        Trigger('READ',
+            Waveform('OFFSETWF', TUNE_PLL_LENGTH, 'FLOAT',
+                DESC = 'Tune PLL offset'),
+            aIn('MEAN_OFFSET', PREC = 7, EGU = 'tune',
+                DESC = 'Mean tune PLL offset'),
+            overflow('FIFO_OVF', 'Offset FIFO readout overrun'))
+        Action('RESET_FIFO', DESC = 'Reset FIFO readout to force fresh sample')
+
+        # Frequency readbacks
+        nco_freq = aIn('FREQ', PREC = 7, EGU = 'tune',
+            DESC = 'Tune PLL NCO frequency')
+        aIn('OFFSET', PREC = 7, EGU = 'tune',
+            SCAN = 'I/O Intr',
+            FLNK = nco_freq,
+            DESC = 'Filtered frequency offset')
+
+        # NCO control
+        aOut('FREQ', PREC = 7, EGU = 'tune',
+            FLNK = nco_freq,
+            DESC = 'Base Tune PLL NCO frequency')
         mbbOut('GAIN', DESC = 'Tune PLL NCO gain', *dBrange(16, -6))
         boolOut('ENABLE', 'Off', 'On', DESC = 'Enable Tune PLL NCO output')
+
+    # Feedback control
+    with name_prefix('CTRL'):
+        aOut('KI', DESC = 'Integral factor for controller')
+        aOut('KP', DESC = 'Proportional factor for controller')
+        aOut('MIN_MAG', 0, 1, PREC = 5,
+            DESC = 'Minimum magnitude for feedback')
+        aOut('MAX_OFFSET', PREC = 7, EGU = 'tune',
+            DESC = 'Maximum frequency offset for feedback')
+        aOut('TARGET', -180, 180, PREC = 2, DESC = 'Target phase')
+
+        Action('START', DESC = 'Start tune PLL')
+        Action('STOP', DESC = 'Stop tune PLL')
+
+        status_pvs = [
+            boolIn('STATUS', 'Stopped', 'Running',
+                DESC = 'Tune PLL feedback status'),
+            overflow('STOP:STOP', 'Stopped by user', error = 'Stopped'),
+            overflow('STOP:DET_OVF', 'Detector overflow'),
+            overflow('STOP:MAG_ERROR', 'Magnitude error', error = 'Too small'),
+            overflow('STOP:OFFSET_OVF', 'Offset overflow'),]
+        boolIn('UPDATE',
+            FLNK = create_fanout('FAN', *status_pvs),
+            SCAN = 'I/O Intr',
+            DESC = 'Handle run status change')
 
     # Detector control
     with name_prefix('DET'):
@@ -33,7 +84,9 @@ for a in axes('PLL', lmbf_mode):
 
     # Debug readbacks
     with name_prefix('DEBUG'):
-        boolOut('ENABLE', 'Off', 'On', DESC = 'Enable debug readbacks')
+        boolOut('ENABLE', 'Off', 'On',
+            OSV = 'MINOR',
+            DESC = 'Enable debug readbacks')
         Trigger('READ',
             Waveform('WFI', TUNE_PLL_LENGTH, 'FLOAT',
                 DESC = 'Tune PLL detector I'),
