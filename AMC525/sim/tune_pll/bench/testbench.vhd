@@ -20,7 +20,8 @@ architecture arch of testbench is
     signal adc_clk : std_ulogic := '1';
     signal dsp_clk : std_ulogic := '0';
 
-    constant TURN_COUNT : natural := 31;
+--     constant TURN_COUNT : natural := 31;
+    constant TURN_COUNT : natural := 125;
     signal turn_clock : std_ulogic;
 
     -- Device under test signals
@@ -44,7 +45,8 @@ architecture arch of testbench is
     signal nco_gain : unsigned(3 downto 0);
     signal nco_enable : std_ulogic;
     signal nco_freq : angle_t;
-    signal interrupt : std_ulogic_vector(1 downto 0);
+    signal freq_offset : signed(31 downto 0);
+    signal interrupt : std_ulogic_vector(2 downto 0);
 
     -- Resonant filter
     signal FILTER_CENTRE_FREQ : real := 0.2;
@@ -85,6 +87,7 @@ begin
         nco_gain_o => nco_gain,
         nco_enable_o => nco_enable,
         nco_freq_o => nco_freq,
+        freq_offset_o => freq_offset,
         interrupt_o => interrupt
     );
 
@@ -168,7 +171,7 @@ begin
             others => '0'));
         -- Configure dwell time to be long enough for CORDIC to complete
         write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W, (
-            DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => X"0008",
+            DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => X"0002",
             DSP_TUNE_PLL_CONTROL_CONFIG_CAPTURE_CORDIC_BIT => '1',
             others => '0'));
         -- Effectively disable phase error checking
@@ -184,12 +187,6 @@ begin
         write_reg(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG, X"08000000");
         -- Set target phase close to starting phase
         write_reg(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG, X"80000000");
-
-        -- Can now start the detector
-        start <= '1';
-        clk_wait;
-        start <= '0';
-
 
         read_reg(DSP_TUNE_PLL_READOUT_DEBUG_FIFO_REG);
         read_reg(DSP_TUNE_PLL_READOUT_OFFSET_FIFO_REG);
@@ -217,6 +214,37 @@ begin
             DSP_TUNE_PLL_READOUT_COMMAND_RESET_DEBUG_BIT => '1',
             DSP_TUNE_PLL_READOUT_COMMAND_RESET_OFFSET_BIT => '1',
             others => '0'));
+
+        -- Can now start the detector
+        start <= '1';
+        clk_wait;
+        start <= '0';
+
+        -- Let things run until frequency settles, stop and restart
+        wait for 8 us;
+        clk_wait;
+        stop <= '1';
+        clk_wait;
+        stop <= '0';
+
+        -- Write a large magnitude limit to force an error
+        write_reg(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG, X"00800000");
+
+        wait for 1.75 us;
+        clk_wait;
+        start <= '1';
+        clk_wait;
+        start <= '0';
+
+        -- Reset the magnitude limit and start again
+        write_reg(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG, X"00000000");
+
+        wait for 2 us;
+        clk_wait;
+        start <= '1';
+        clk_wait;
+        start <= '0';
+
 
 
         wait for 25 us;

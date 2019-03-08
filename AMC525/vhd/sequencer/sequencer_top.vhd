@@ -60,12 +60,12 @@ entity sequencer_top is
         seq_start_adc_o : out std_ulogic;   -- Resets detector at start of dwell
         seq_write_adc_o : out std_ulogic;   -- End of dwell interval
 
-        pll_freq_i : in angle_t;        -- Tune PLL frequency
-        hom_freq_o : out angle_t;       -- NCO frequency
+        tune_pll_offset_i : in signed(31 downto 0); -- Tune PLL frequency offset
+        hom_freq_o : out angle_t;               -- NCO frequency
         hom_reset_o : out std_ulogic;
         hom_gain_o : out unsigned(3 downto 0);  -- NCO gain
-        hom_enable_o : out std_ulogic;   -- Enable NCO out
-        hom_window_o : out hom_win_t;   -- Detector input window
+        hom_enable_o : out std_ulogic;          -- Enable NCO out
+        hom_window_o : out hom_win_t;           -- Detector input window
         bunch_bank_o : out unsigned(1 downto 0) -- Bunch bank selection
     );
 end;
@@ -103,7 +103,7 @@ architecture arch of sequencer_top is
     -- Frequency offset from super sequencer
     signal nco_freq_base : angle_t;
     signal super_count : super_count_t;
-    signal pll_freq_in : angle_t;
+    signal tune_pll_offset : signed(31 downto 0);
 
     -- Seq state loading
     --
@@ -123,11 +123,11 @@ architecture arch of sequencer_top is
 begin
     pll_freq_delay : entity work.dlyreg generic map (
         DLY => 2,
-        DW => angle_t'LENGTH
+        DW => 32
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => std_logic_vector(pll_freq_i),
-        signed(data_o) => pll_freq_in
+        data_i => std_logic_vector(tune_pll_offset_i),
+        signed(data_o) => tune_pll_offset
     );
 
     registers : entity work.sequencer_registers port map (
@@ -229,7 +229,7 @@ begin
         reset_phase_i => seq_state.reset_phase,
         add_pll_freq_i => seq_state.enable_tune_pll,
         last_turn_i => last_turn,
-        pll_freq_i => pll_freq_in,
+        tune_pll_offset_i => tune_pll_offset,
 
         state_end_o => state_end,
         hom_freq_o => hom_freq_o,

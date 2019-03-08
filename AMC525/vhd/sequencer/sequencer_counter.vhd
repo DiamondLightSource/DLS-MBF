@@ -27,7 +27,7 @@ entity sequencer_counter is
         reset_phase_i : in std_ulogic;  -- Reset phase at start of sweep
         add_pll_freq_i : in std_ulogic; -- Option to add Tune PLL frequency
         last_turn_i : in std_ulogic;     -- Dwell is in its last turn
-        pll_freq_i : in angle_t;
+        tune_pll_offset_i : in signed(31 downto 0);
 
         state_end_o : out std_ulogic := '0';  -- Set during last turn of state
         hom_freq_o : out angle_t := (others => '0'); -- Output frequency
@@ -49,7 +49,7 @@ architecture arch of sequencer_counter is
     signal turn_clock_delay : std_ulogic;
 
     signal add_pll_freq : std_ulogic := '0';
-    signal pll_freq_in : angle_t;
+    signal tune_pll_offset_in : angle_t;
 
     attribute USE_DSP : string;
     attribute USE_DSP of hom_freq_o : signal is "yes";
@@ -88,9 +88,10 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            pll_freq_in <= pll_freq_i;
+            tune_pll_offset_in <=
+                unsigned(resize(tune_pll_offset_i & X"00", angle_t'LENGTH));
             if add_pll_freq = '1' then
-                hom_freq_o <= hom_freq + pll_freq_in;
+                hom_freq_o <= hom_freq + tune_pll_offset_in;
             else
                 hom_freq_o <= hom_freq;
             end if;

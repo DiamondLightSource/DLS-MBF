@@ -50,6 +50,7 @@ architecture arch of dsp_top is
     -- Sequencer and detector
     signal sequencer_start : std_ulogic;
     signal sequencer_write : std_ulogic;
+    signal tune_pll_offset : signed(31 downto 0);
 
     -- Oscillator control
     signal nco_0_phase_advance : angle_t;
@@ -242,7 +243,7 @@ begin
         seq_start_adc_o => sequencer_start,
         seq_write_adc_o => sequencer_write,
 
-        pll_freq_i => nco_2_phase_advance,
+        tune_pll_offset_i => tune_pll_offset,
         hom_freq_o => nco_1_phase_advance,
         hom_reset_o => nco_1_reset_phase,
         hom_gain_o => dsp_to_control_o.nco_1_data.gain,
@@ -312,6 +313,7 @@ begin
         nco_enable_o => dsp_to_control_o.nco_2_data.enable,
         nco_reset_o => nco_2_reset_phase,
         nco_freq_o => nco_2_phase_advance,
+        freq_offset_o => tune_pll_offset,
 
         interrupt_o => dsp_to_control_o.tune_pll_ready
     );

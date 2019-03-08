@@ -59,6 +59,7 @@ entity tune_pll_top is
         nco_enable_o : out std_ulogic;
         nco_reset_o : out std_ulogic;
         nco_freq_o : out angle_t;
+        freq_offset_o : out signed(31 downto 0);
 
         -- Interrupts for readout ready
         interrupt_o : out std_ulogic_vector(2 downto 0)
@@ -272,6 +273,16 @@ begin
         clk_i => dsp_clk_i,
         data_i => std_logic_vector(nco_frequency),
         angle_t(data_o) => nco_freq_o
+    );
+
+    -- Delay line for frequency offset out
+    offset_delay : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => 32
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => std_logic_vector(frequency_offset),
+        signed(data_o) => freq_offset_o
     );
 
     nco_gain_o <= config.nco_gain;
