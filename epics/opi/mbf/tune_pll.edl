@@ -3,7 +3,7 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2175
+x 2048
 y 41
 w 671
 h 704
@@ -1705,52 +1705,6 @@ offLabel "Stop"
 font "helvetica-bold-r-12.0"
 endObjectProperties
 
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 480
-y 656
-w 72
-h 22
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):PLL:CTRL:START_S.PROC"
-pressValue "0"
-onLabel "Starting"
-offLabel "Start All"
-3d
-font "helvetica-bold-r-12.0"
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 560
-y 656
-w 72
-h 22
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):PLL:CTRL:STOP_S.PROC"
-pressValue "0"
-onLabel "Stopping"
-offLabel "Stop All"
-3d
-font "helvetica-bold-r-12.0"
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -1848,6 +1802,114 @@ value {
 autoSize
 endObjectProperties
 
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 96
+y 548
+w 40
+h 16
+controlPv "$(device):$(axis):PLL:DEBUG:ENABLE_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 4
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 224
+y 472
+w 80
+h 16
+controlPv "$(device):$(axis):PLL:FILT:MAG_DB"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 4
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+showUnits
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 376
+y 656
+w 256
+h 22
+
+beginGroup
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 480
+y 656
+w 72
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):PLL:CTRL:START_S.PROC"
+pressValue "0"
+onLabel "Starting"
+offLabel "Start All"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 560
+y 656
+w 72
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):PLL:CTRL:STOP_S.PROC"
+pressValue "0"
+onLabel "Stopping"
+offLabel "Stop All"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -1868,27 +1930,10 @@ value {
 autoSize
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 96
-y 544
-w 40
-h 16
-controlPv "$(device):$(axis):PLL:DEBUG:ENABLE_S"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 4
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-newPos
-objType "monitors"
-noExecuteClipMask
+endGroup
+
+visPv "$(device):INFO:MODE"
+visMin "0"
+visMax "1"
 endObjectProperties
 

@@ -102,15 +102,18 @@ for a in axes('PLL', lmbf_mode):
 
     # Filtered readbacks
     with name_prefix('FILT'):
+        magnitude = aIn('MAG', PREC = 8,
+            DESC = 'Filtered Tune PLL detector magnitude')
         polled_readbacks.extend([
             aIn('I', PREC = 8,
                 DESC = 'Filtered Tune PLL detector I'),
             aIn('Q', PREC = 8,
                 DESC = 'Filtered Tune PLL detector Q'),
-            aIn('MAG', PREC = 8,
-                DESC = 'Filtered Tune PLL detector magnitude'),
             aIn('PHASE', PREC = 2, EGU = 'deg',
                 DESC = 'Filtered Tune PLL phase offset'),
+            magnitude,
+            records.calc('MAG_DB', PREC = 1, EGU = 'dB',
+                CALC = '20*log(A)', INPA = magnitude),
         ])
         boolOut('SELECT', 'IQ', 'CORDIC',
             DESC = 'Select filtered readback values')

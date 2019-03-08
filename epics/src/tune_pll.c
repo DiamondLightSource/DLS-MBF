@@ -128,8 +128,6 @@ static bool read_nco_frequency(void *context, double *value)
 {
     struct pll_context *pll = context;
     uint64_t nco_freq = hw_read_pll_nco_frequency(pll->axis);
-//     if (pll->status.running)
-//         nco_freq += (uint64_t) ((int64_t) pll->filtered_offset << 8);
     *value = freq_to_tune(nco_freq);
     return true;
 }
@@ -343,41 +341,32 @@ static bool write_target_phase(void *context, double *value)
 static bool process_status_update(void *context, bool *value)
 {
     struct pll_context *pll = context;
-
-    bool valid;
-    int invalid_count = 0;
-    do {
-        hw_read_pll_status(pll->axis, &pll->status);
-        /* If all the bits in the status register are zero then we have hit a
-         * nasty race condition: the FPGA is waiting to synchronise feedback
-         * start.  Really we need to go back and read again. */
-        valid =
-            pll->status.running  ||
-            pll->status.stopped  ||
-            pll->status.overflow  ||
-            pll->status.too_small  ||
-            pll->status.bad_offset;
-        if (!valid)
-            invalid_count += 1;
-    } while (!valid);
-if (invalid_count) printf("zero status seen %d times\n", invalid_count);
+    hw_read_pll_status(pll->axis, &pll->status);
+    /* If all the bits in the status register are zero then we are still
+     * starting (waiting for the first dwell to complete).  It is safe to treat
+     * this as a running state. */
+    bool stopped =
+        pll->status.stopped  ||
+        pll->status.overflow  ||
+        pll->status.too_small  ||
+        pll->status.bad_offset;
+    pll->status.running = !stopped;
     return true;
 }
 
 
 static void handle_pll_start(struct pll_context *pll)
 {
-    printf("start %d requested...\n", pll->axis);
-    trigger_record(pll->update_pv);
+    trigger_record(pll->update_pv);     // Update reported status
     enable_readout_fifo(pll->offset_fifo, true);
 }
 
 
 static void handle_pll_stop(struct pll_context *pll)
 {
-    printf("PLL %d stop event\n", pll->axis);
-    trigger_record(pll->update_pv);
     enable_readout_fifo(pll->offset_fifo, false);
+    trigger_record(pll->update_pv);     // Update reported status
+    trigger_record(pll->offset_pv);     // Final frequency and offset update
 }
 
 
