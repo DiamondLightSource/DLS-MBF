@@ -79,7 +79,8 @@ architecture arch of tune_pll_top is
     signal bunch_write_strobe : std_ulogic;
 
     -- Detector control signals
-    signal dwell_clock : std_ulogic;
+    signal start_detector : std_ulogic;
+    signal write_detector : std_ulogic;
     signal detector_done : std_ulogic;
     signal detector_iq : cos_sin_t(cos(31 downto 0), sin(31 downto 0));
 
@@ -148,8 +149,8 @@ begin
         -- Select scaling of detector readout
         shift_i => config.detector_shift,
         -- Detector triggering
-        start_i => dwell_clock,      -- Detector is always running, so
-        write_i => dwell_clock,      -- start and write are the same signal
+        start_i => start_detector,
+        write_i => write_detector,
         -- Results
         detector_overflow_o => status.detector_overflow,
         done_o => detector_done,
@@ -202,7 +203,8 @@ begin
         turn_clock_i => turn_clock_in,
         -- Continuous detector dwell
         dwell_time_i => config.dwell_time,
-        dwell_clock_o => dwell_clock,
+        start_detector_o => start_detector,
+        write_detector_o => write_detector,
         -- Feedback status
         detector_overflow_i => status.detector_overflow,
         magnitude_error_i => status.magnitude_error,
