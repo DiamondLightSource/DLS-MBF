@@ -32,6 +32,10 @@ package tune_pll_defs is
         offset_limit : signed(31 downto 0);
         base_frequency : angle_t;
 
+        -- Dummy debug offset override; also written by proportional register
+        offset_override : std_ulogic;
+        debug_offset : signed(31 downto 0);
+
         -- Debux multiplexing options for output
         filter_cordic : std_ulogic;
         capture_cordic : std_ulogic;

@@ -181,6 +181,9 @@ begin
         target_phase_i => config.target_phase,
         integral_i => config.integral,
         proportional_i => config.proportional,
+        -- Special debug override option
+        offset_override_i => config.offset_override,
+        debug_offset_i => config.debug_offset,
         -- Interface for setting output frequency
         base_frequency_i => config.base_frequency,
         set_frequency_i => set_frequency,

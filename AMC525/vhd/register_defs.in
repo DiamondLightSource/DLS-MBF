@@ -791,6 +791,11 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # Number of turns between detector cycles, determines how
                     # fast the PLL tracker runs.
                     .DWELL_TIME     16
+                    # Special debug mode: if this bit is set the frequency
+                    # offset is directly programmed by the PROPORTIONAL
+                    # register.  This is designed to be used for sequencer
+                    # debugging only.
+                    .OFFSET_OVERRIDE
             # Target phase to track.  The top 18 bits of the phase are used
             TARGET_PHASE    W
             # Integrating factor.  The top 25 bits are used

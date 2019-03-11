@@ -129,6 +129,8 @@ begin
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_CAPTURE_CORDIC_BIT);
     config_o.dwell_time <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS));
+    config_o.offset_override <=
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_OFFSET_OVERRIDE_BIT);
 
     status_register <= (
         DSP_TUNE_PLL_CONTROL_STATUS_RUNNING_BIT =>
@@ -149,6 +151,7 @@ begin
     config_o.proportional <= signed(proportional_register(31 downto 7));
     config_o.magnitude_limit <= unsigned(mag_limit_register);
     config_o.offset_limit <= signed(offset_limit_register);
+    config_o.debug_offset <= signed(proportional_register);
 
     read_data_o(DSP_TUNE_PLL_CONTROL_FILTERED_I_REG) <=
         std_ulogic_vector(status_i.filtered_iq.cos);

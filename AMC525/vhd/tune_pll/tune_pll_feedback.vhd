@@ -29,6 +29,10 @@ entity tune_pll_feedback is
         integral_i : in signed;
         proportional_i : in signed;
 
+        -- Special debug override option
+        offset_override_i : in std_ulogic;
+        debug_offset_i : in signed;
+
         -- This can be used to directly set the output frequency.  This can be
         -- written during normal feedback operation, in which case it will
         -- override the feedback.
@@ -75,6 +79,7 @@ architecture arch of tune_pll_feedback is
     signal update_out : boolean;
     signal update_offset : boolean;
     signal full_frequency_offset : signed_angle_t := (others => '0');
+    signal frequency_offset : frequency_offset_o'SUBTYPE := (others => '0');
     signal offset_overflow : std_ulogic;
 
     -- We slice out a section of the total frequency
@@ -93,8 +98,8 @@ begin
     --      => phase_error, magnitude_error_o
     --      => integral_update, phase_error, start_in
     --      => frequency_integral, frequency_o
-    --      => frequency_offset_o
-    --      => offset_error_o, done_o
+    --      => full_frequency_offset
+    --      => frequency_offset_o, offset_error_o, done_o
     delay_start : entity work.dlyline generic map (
         DLY => 2
     ) port map (
@@ -171,6 +176,13 @@ begin
                 full_frequency_offset <= frequency_out - base_frequency_in;
             end if;
 
+            if offset_override_i = '1' then
+                -- Special debug override: set offset directly
+                frequency_offset_o <= debug_offset_i;
+            else
+                frequency_offset_o <= frequency_offset;
+            end if;
+
             -- Determine if the offset is ok
             offset_error_o <= to_std_ulogic(
                 offset_overflow = '1' or
@@ -180,7 +192,7 @@ begin
     end process;
 
     truncate_result(
-        output => frequency_offset_o,
+        output => frequency_offset,
         overflow => offset_overflow,
         input => full_frequency_offset,
         offset => FREQUENCY_TRUNCATE_OFFSET);
