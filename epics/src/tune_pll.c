@@ -336,21 +336,29 @@ static bool write_target_phase(void *context, double *value)
 /* Feedback event handling. */
 
 
+/* At present the hardware status readback needs a helping hand to cope with an
+ * edge condition... */
+static void read_pll_status(int axis, struct tune_pll_status *status)
+{
+    hw_read_pll_status(axis, status);
+    /* If all the bits in the status register are zero then we are still
+     * starting (waiting for the first dwell to complete).  It is safe to treat
+     * this as a running state. */
+    bool stopped =
+        status->stopped  ||
+        status->overflow  ||
+        status->too_small  ||
+        status->bad_offset;
+    status->running = !stopped;
+}
+
+
 /* This is triggered in response to a feedback status change.  The status is
  * updated. */
 static bool process_status_update(void *context, bool *value)
 {
     struct pll_context *pll = context;
-    hw_read_pll_status(pll->axis, &pll->status);
-    /* If all the bits in the status register are zero then we are still
-     * starting (waiting for the first dwell to complete).  It is safe to treat
-     * this as a running state. */
-    bool stopped =
-        pll->status.stopped  ||
-        pll->status.overflow  ||
-        pll->status.too_small  ||
-        pll->status.bad_offset;
-    pll->status.running = !stopped;
+    read_pll_status(pll->axis, &pll->status);
     return true;
 }
 
@@ -358,15 +366,24 @@ static bool process_status_update(void *context, bool *value)
 static void handle_pll_start(struct pll_context *pll)
 {
     trigger_record(pll->update_pv);     // Update reported status
-    enable_readout_fifo(pll->offset_fifo, true);
+    enable_readout_fifo(pll->offset_fifo, false);
 }
 
 
 static void handle_pll_stop(struct pll_context *pll)
 {
-    enable_readout_fifo(pll->offset_fifo, false);
-    trigger_record(pll->update_pv);     // Update reported status
-    trigger_record(pll->offset_pv);     // Final frequency and offset update
+    /* It is possible that this stop event has arrived late, in which case we
+     * might end up incorrectly halting the readout FIFO.  I think it's safe
+     * enough to say that if the hardware thinks we're running then leave things
+     * alone; another stop event will be along when we really do stop. */
+    struct tune_pll_status status;
+    read_pll_status(pll->axis, &status);
+    if (!status.running)
+    {
+        disable_readout_fifo(pll->offset_fifo);
+        trigger_record(pll->update_pv);     // Update reported status
+        trigger_record(pll->offset_pv);     // Final frequency and offset update
+    }
 }
 
 
@@ -435,7 +452,10 @@ static void publish_control(struct pll_context *pll)
 static bool enable_debug_fifo(void *context, bool *value)
 {
     struct pll_context *pll = context;
-    enable_readout_fifo(pll->debug_fifo, *value);
+    if (*value)
+        enable_readout_fifo(pll->debug_fifo, true);
+    else
+        disable_readout_fifo(pll->debug_fifo);
     return true;
 }
 
@@ -643,6 +663,9 @@ static void dispatch_tune_pll_event(void *context, struct interrupts interrupts)
 
 error__t initialise_tune_pll(void)
 {
+    /* Ensure nothing is actually running! */
+    stop_both_axes();
+
     if (!system_config.lmbf_mode)
         WITH_NAME_PREFIX("PLL:CTRL")
         {
@@ -674,9 +697,6 @@ error__t initialise_tune_pll(void)
     register_event_handler(
         INTERRUPT_HANDLER_TUNE_PLL, ready_interrupts,
         NULL, dispatch_tune_pll_event);
-
-    /* Ensure nothing is actually running! */
-    stop_both_axes();
 
     return TEST_OK_(system_config.tune_pll_length > PLL_FIFO_SIZE,
         "tune_pll_length too small");

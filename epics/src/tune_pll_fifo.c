@@ -61,13 +61,20 @@ static bool ensure_epics_idle(struct readout_fifo *fifo)
 }
 
 
+enum process_stage {
+    PROCESS_START,
+    PROCESS_UPDATE,
+    PROCESS_STOP,
+};
+
 /* Performs FIFO data processing, triggered either by data ready interrupt or on
- * disable event (and possibly on timer?).  MUST be called with mutex held.
+ * disable event.  MUST be called with mutex held.
  *
  * This is called when the FIFO is ready to read.  We read what data is
  * available, update our waveforms and notify EPICS as appropriate, and reenable
  * interrupts for our next call. */
-static void process_fifo_content(struct readout_fifo *fifo, bool last_read)
+static void process_fifo_content(
+    struct readout_fifo *fifo, enum process_stage stage)
 {
     /* Ensure that any EPICS processing has completed. */
     if (ensure_epics_idle(fifo))
@@ -80,9 +87,11 @@ static void process_fifo_content(struct readout_fifo *fifo, bool last_read)
          * epics_busy is set! */
     }
 
-    /* Read what there is to read. */
+    /* Read what there is to read.  Enable interrupts unless stopping. */
+    bool enable_interrupts = stage != PROCESS_STOP;
     unsigned int samples = hw_read_pll_readout_fifo(
-        fifo->axis, fifo->fifo, !last_read, &fifo->overflow, fifo->read_buffer);
+        fifo->axis, fifo->fifo, enable_interrupts,
+        &fifo->overflow, fifo->read_buffer);
 
     /* Update the buffer. */
     unsigned int to_copy =
@@ -91,9 +100,14 @@ static void process_fifo_content(struct readout_fifo *fifo, bool last_read)
         to_copy * sizeof(int32_t));
     fifo->buffer_count += to_copy;
 
-    /* Emit the buffer if appropriate. */
-    if (fifo->buffer_count == fifo->buffer_size  ||
-        fifo->overflow  ||  last_read)
+    /* Emit the buffer if appropriate: if the buffer is full, if this is the
+     * last ready, or if there has been an overflow ... except for the first
+     * read, in which case we ignore the overflow. */
+    bool emit_buffer =
+        stage == PROCESS_STOP  ||
+        fifo->buffer_count == fifo->buffer_size  ||
+        (fifo->overflow  &&  stage != PROCESS_START);
+    if (emit_buffer)
     {
         fifo->epics_busy = true;
         interlock_signal(fifo->interlock, NULL);
@@ -106,34 +120,53 @@ static void process_fifo_content(struct readout_fifo *fifo, bool last_read)
 }
 
 
-/* Start the FIFO readout process by clearing and resetting the FIFO and
- * enabling interrupts.  Must be called with mutex held.
- *
- * Note that this can be called when the FIFO is already enabled, in which case
- * the effect is simply to discard any partially captured data and restart a
- * fifo readout. */
-static void start_readout_fifo(struct readout_fifo *fifo)
+static void reset_fifo(
+    struct readout_fifo *fifo, bool flush_hardware, bool enable_interrupt)
 {
-    /* First ensure EPICS is not active. */
-    ensure_epics_idle(fifo);
-
-    /* Read and discard FIFO content, resetting if necessary. */
-    bool overflow;
-    hw_read_pll_readout_fifo(
-        fifo->axis, fifo->fifo, true, &overflow, fifo->read_buffer);
-
     /* Reset the FIFO state. */
     fifo->buffer_count = 0;
     fifo->overflow = false;
 
+    /* Read and discard FIFO content, resetting if necessary. */
+    if (flush_hardware)
+    {
+        bool overflow;
+        hw_read_pll_readout_fifo(
+            fifo->axis, fifo->fifo, enable_interrupt,
+            &overflow, fifo->read_buffer);
+    }
+}
+
+
+/* Start the FIFO readout process by clearing and resetting the FIFO and
+ * enabling interrupts.  Must be called with mutex held and fifo disabled. */
+static void start_readout_fifo(struct readout_fifo *fifo, bool flush)
+{
+    /* First ensure EPICS is not active. */
+    ensure_epics_idle(fifo);
+
     fifo->enabled = true;
+    reset_fifo(fifo, flush, true);
+
+    /* Set the FIFO running. */
+    process_fifo_content(fifo, PROCESS_START);
+}
+
+
+/* Reset the FIFO by discarding any buffered data.  This is used to arrange for
+ * a completely fresh buffer readout. */
+static void flush_readout_fifo(struct readout_fifo *fifo)
+{
+    /* First ensure EPICS is not active. */
+    ensure_epics_idle(fifo);
+    reset_fifo(fifo, true, true);
 }
 
 
 /* Disable the FIFO readout.  Must be called with mutex held. */
 static void stop_readout_fifo(struct readout_fifo *fifo)
 {
-    process_fifo_content(fifo, true);
+    process_fifo_content(fifo, PROCESS_STOP);
     fifo->enabled = false;
 }
 
@@ -155,20 +188,25 @@ struct readout_fifo *create_readout_fifo(
         .mutex = PTHREAD_MUTEX_INITIALIZER,
     };
 
+    reset_fifo(fifo, true, false);
     PUBLISH_READ_VAR(bi, "FIFO_OVF", fifo->overflow);
     return fifo;
 }
 
 
-void enable_readout_fifo(struct readout_fifo *fifo, bool enable)
+void enable_readout_fifo(struct readout_fifo *fifo, bool flush)
 {
     WITH_MUTEX(fifo->mutex)
-    {
-        if (enable  &&  !fifo->enabled)
-            start_readout_fifo(fifo);
-        else if (!enable  &&  fifo->enabled)
+        if (!fifo->enabled)
+            start_readout_fifo(fifo, flush);
+}
+
+
+void disable_readout_fifo(struct readout_fifo *fifo)
+{
+    WITH_MUTEX(fifo->mutex)
+        if (fifo->enabled)
             stop_readout_fifo(fifo);
-    }
 }
 
 
@@ -176,9 +214,7 @@ void reset_readout_fifo(struct readout_fifo *fifo)
 {
     WITH_MUTEX(fifo->mutex)
         if (fifo->enabled)
-            /* Restarting the FIFO readout is enough to reset and force reading
-             * of a fresh buffer. */
-            start_readout_fifo(fifo);
+            flush_readout_fifo(fifo);
 }
 
 
@@ -186,7 +222,7 @@ void handle_fifo_ready(struct readout_fifo *fifo)
 {
     WITH_MUTEX(fifo->mutex)
         if (fifo->enabled)
-            process_fifo_content(fifo, false);
+            process_fifo_content(fifo, PROCESS_UPDATE);
 }
 
 

@@ -18,9 +18,14 @@ struct readout_fifo *create_readout_fifo(
 /* This should be called each time a FIFO ready read interrupt is seend. */
 void handle_fifo_ready(struct readout_fifo *fifo);
 
-/* Enables or disables the FIFO.  The FIFO should be enabled *before* the
- * hardware is enabled, and disabled *after* the hardware has stopped. */
-void enable_readout_fifo(struct readout_fifo *fifo, bool enable);
+/* Enables the FIFO.  The FIFO should be enabled *before* the hardware is
+ * enabled.  If flush is true then the hardware FIFO is flushed as part of the
+ * startup process. */
+void enable_readout_fifo(struct readout_fifo *fifo, bool flush);
+
+/* Disables the FIFO.  The FIFO should be disabled *after* the hardware has
+ * stopped. */
+void disable_readout_fifo(struct readout_fifo *fifo);
 
 /* Restarts reading of the FIFO by discarding any data currently in hand and
  * reading out and discarding the hardware buffer. */
