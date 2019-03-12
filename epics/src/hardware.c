@@ -1092,12 +1092,17 @@ void hw_read_pll_status(int axis, struct tune_pll_status *result)
 }
 
 
-void hw_read_pll_filtered_readbacks(
-    int axis, struct detector_result *det, int32_t *offset)
+struct detector_result hw_read_pll_filtered_detector(int axis)
 {
-    det->i = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_i;
-    det->q = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_q;
-    *offset = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_offset;
+    return (struct detector_result) {
+        .i = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_i,
+        .q = (int32_t) dsp_regs[axis]->tune_pll_control_filtered_q,
+    };
+}
+
+int32_t hw_read_pll_filtered_offset(int axis)
+{
+    return (int32_t) dsp_regs[axis]->tune_pll_control_filtered_offset;
 }
 
 

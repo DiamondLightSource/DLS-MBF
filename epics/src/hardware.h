@@ -459,8 +459,8 @@ struct tune_pll_status {
 void hw_read_pll_status(int axis, struct tune_pll_status *status);
 
 /* Readbacks for filtered live data. */
-void hw_read_pll_filtered_readbacks(
-    int axis, struct detector_result *det, int32_t *offset);
+struct detector_result hw_read_pll_filtered_detector(int axis);
+int32_t hw_read_pll_filtered_offset(int axis);
 
 /* Rather strangely, the maximum possible PLL readback FIFO capture is 1025
  * samples.  In practice this will *never* occur, but it is safest to leave the

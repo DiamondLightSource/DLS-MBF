@@ -34,7 +34,6 @@ for a in axes('PLL', lmbf_mode):
 
         # NCO control
         aOut('FREQ', PREC = 7, EGU = 'tune',
-            FLNK = nco_freq,
             DESC = 'Base Tune PLL NCO frequency')
         mbbOut('GAIN', DESC = 'Tune PLL NCO gain', *dBrange(16, -6))
         boolOut('ENABLE', 'Off', 'On', DESC = 'Enable Tune PLL NCO output')
@@ -102,14 +101,14 @@ for a in axes('PLL', lmbf_mode):
 
     # Filtered readbacks
     with name_prefix('FILT'):
-        magnitude = aIn('MAG', PREC = 8,
+        magnitude = aIn('MAG', 0, 1, PREC = 8,
             DESC = 'Filtered Tune PLL detector magnitude')
         polled_readbacks.extend([
-            aIn('I', PREC = 8,
+            aIn('I', -1, 1, PREC = 8,
                 DESC = 'Filtered Tune PLL detector I'),
-            aIn('Q', PREC = 8,
+            aIn('Q', -1, 1, PREC = 8,
                 DESC = 'Filtered Tune PLL detector Q'),
-            aIn('PHASE', PREC = 2, EGU = 'deg',
+            aIn('PHASE', -180, 180, PREC = 2, EGU = 'deg',
                 DESC = 'Filtered Tune PLL phase offset'),
             magnitude,
             records.calc('MAG_DB', PREC = 1, EGU = 'dB',

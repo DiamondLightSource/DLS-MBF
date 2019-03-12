@@ -44,19 +44,25 @@ static struct pll_context {
 
     /* Frequency management. */
     struct readout_fifo *offset_fifo;
-    double mean_offset;                 // Updated when reading waveform
     struct epics_record *offset_pv;
-    int32_t filtered_offset;
+    double mean_offset;                 // Mean offset from offset FIFO
+
+    /* The stored frequency is updated by three independent events:
+     *  1. polled readbacks of offset while running
+     *  2. direct writes to NCO:FREQ_S PV
+     *  3. when control stops to read final value */
+    uint64_t nco_freq_set;              // NCO frequency set from PV
+    uint64_t current_nco;               // Current computed NCO frequency
+    double nco_freq_out;                // Current frequency readback
+
+    /* Target phase and delay to be compensated. */
+    unsigned int phase_delay;           // Updated from detector source
+    uint32_t target_phase;              // User specified target phase
 
     /* Live events. */
     struct tune_pll_events events;
     struct tune_pll_status status;
     struct epics_record *update_pv;
-
-    /* Tune PLL configuration. */
-    unsigned int phase_delay;           // Updated from detector source
-    uint64_t current_freq;              // Current NCO frequency as read
-    uint32_t target_phase;              // User specified target phase
 
     /* Detector configuration. */
     enum detector_input_select input_select;
@@ -72,7 +78,6 @@ static struct pll_context {
     bool filtered_cordic;
     double filtered_magnitude;
     double filtered_phase;
-    double filtered_freq_offset;
 
     /* Debug readback. */
     struct readout_fifo *debug_fifo;
@@ -122,7 +127,7 @@ static bool write_max_offset(void *context, double *value)
 static void update_target_phase(struct pll_context *pll)
 {
     uint32_t phase_delta =
-        (uint32_t) ((pll->phase_delay * pll->current_freq) >> 16);
+        (uint32_t) ((pll->phase_delay * pll->current_nco) >> 16);
     hw_write_pll_target_phase(pll->axis,
         (int32_t) (pll->target_phase + phase_delta));
 }
@@ -142,15 +147,6 @@ static bool write_target_phase(void *context, double *value)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* NCO management. */
-
-static bool write_nco_frequency(void *context, double *tune)
-{
-    struct pll_context *pll = context;
-    uint64_t frequency = tune_to_freq(*tune);
-    *tune = freq_to_tune(frequency);
-    hw_write_pll_nco_frequency(pll->axis, frequency);
-    return true;
-}
 
 static bool write_nco_gain(void *context, unsigned int *gain)
 {
@@ -196,24 +192,60 @@ static bool reset_offset_fifo(void *context, bool *value)
 }
 
 
-static bool read_nco_frequency(void *context, double *value)
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* Frequency management and readback. */
+
+static bool write_nco_frequency(void *context, double *tune)
 {
     struct pll_context *pll = context;
-    pll->current_freq = hw_read_pll_nco_frequency(pll->axis);
-    *value = freq_to_tune(pll->current_freq);
-    update_target_phase(pll);
+
+    pll->nco_freq_set = tune_to_freq(*tune);
+    *tune = freq_to_tune(pll->nco_freq_set);
+    hw_write_pll_nco_frequency(pll->axis, pll->nco_freq_set);
+
+    trigger_record(pll->offset_pv);
     return true;
 }
 
 
-/* This is called periodically.  Trigger an update of our offset_pv if we are
- * running, otherwise do nothing. */
-static void freq_offset_updated(struct pll_context *pll)
+/* This is called during readback update while we're running and once when we
+ * receive a stop event. */
+static bool update_nco_frequency(void *context, double *value)
 {
+    struct pll_context *pll = context;
+
+    uint64_t offset_freq;
     if (pll->status.running)
-        trigger_record(pll->offset_pv);
+    {
+        /* During a normal run just read the filtered offset and update the
+         * readback frequency accordingly.
+         * The frequency offset is a slice out of the middle of the computed
+         * frequency, specifically bits 39:8 out of 48 bits. */
+        int32_t filtered_offset = hw_read_pll_filtered_offset(pll->axis);
+        offset_freq = (uint64_t) ((int64_t) filtered_offset << 8);
+        pll->current_nco = pll->nco_freq_set + offset_freq;
+    }
+    else
+    {
+        /* During a stop we ignore the filtered offset, which takes a while to
+         * settle, and instead compute the offset from the hardware readback
+         * frequency. */
+        pll->current_nco = hw_read_pll_nco_frequency(pll->axis);
+        offset_freq = pll->current_nco - pll->nco_freq_set;
+    }
+
+    /* Compute the offset and base frequency readbacks. */
+    *value = freq_to_tune_signed(offset_freq);
+    pll->nco_freq_out = freq_to_tune(pll->current_nco);
+
+    /* Ensure the phase is in step with the target frequency. */
+    update_target_phase(pll);
+
+    return true;
 }
 
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 static void publish_nco(struct pll_context *pll)
 {
@@ -235,8 +267,8 @@ static void publish_nco(struct pll_context *pll)
 
         /* Frequency readback update. */
         pll->offset_pv =
-            PUBLISH_READ_VAR_I(ai, "OFFSET", pll->filtered_freq_offset);
-        PUBLISH_C(ai, "FREQ", read_nco_frequency, pll);
+            PUBLISH_C(ai, "OFFSET", update_nco_frequency, pll, .io_intr = true);
+        PUBLISH_READ_VAR(ai, "FREQ", pll->nco_freq_out);
     }
 }
 
@@ -613,18 +645,14 @@ static bool read_filtered_readbacks(void *context, bool *value)
 
     hw_read_pll_events(pll->axis, &pll->events);
 
-    struct detector_result det;
-    hw_read_pll_filtered_readbacks(pll->axis, &det, &pll->filtered_offset);
-
-    /* The frequency offset is a slice out of the middle of the computed
-     * frequency, specifically bits 39:8 out of 48 bits.  So we can use
-     * freq_to_tune() once we've adjusted the offset. */
-    pll->filtered_freq_offset =
-        freq_to_tune_signed((uint64_t) ((int64_t) pll->filtered_offset << 8));
-    freq_offset_updated(pll);
-
+    /* So long as we're running trigger an update of the offset readback.  We'll
+     * carry on compensating with the current frequency which should be close
+     * enough. */
+    if (pll->status.running)
+        trigger_record(pll->offset_pv);
 
     /* Update each published value. */
+    struct detector_result det = hw_read_pll_filtered_detector(pll->axis);
     double f_cos, f_sin, f_mag;
     if (pll->filtered_cordic)
     {
@@ -644,7 +672,7 @@ static bool read_filtered_readbacks(void *context, bool *value)
 
     /* Apply delay compensation. */
     double phase_offset =
-        pll->phase_delay * 2 * M_PI * ldexp((double) pll->current_freq, -48);
+        pll->phase_delay * 2 * M_PI * ldexp((double) pll->current_nco, -48);
     double rotI = cos(phase_offset);
     double rotQ = sin(phase_offset);
     pll->filtered_cos = rotI * f_cos + rotQ * f_sin;
