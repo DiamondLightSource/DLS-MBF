@@ -285,9 +285,8 @@ def search_pll_det_bunch(mbf, det_power, source, nco_freq = 0):
     return delay
 
 
-# Computes group delay from scaled IQ.
-def compute_group_delay(mbf, scale, iq):
-    angle = numpy.unwrap(numpy.angle(iq))
+def compute_group_delay_angle(mbf, scale, angle):
+    angle = numpy.unwrap(angle)
     fit = numpy.polyfit(scale, angle, 1)
     slope = fit[0]
     mean_error = numpy.std(angle - numpy.polyval(fit, scale))
@@ -296,6 +295,10 @@ def compute_group_delay(mbf, scale, iq):
     # Convert slope into revolutions per bunch to get group delay (frequency
     # scale is in units of tune).
     return int(round(slope/2/numpy.pi * mbf.bunches))
+
+# Computes group delay from scaled IQ.
+def compute_group_delay(mbf, scale, iq):
+    return compute_group_delay_angle(mbf, scale, numpy.angle(iq))
 
 
 def get_detector_delay(mbf, source, pvs):
@@ -310,6 +313,19 @@ def get_detector_delay(mbf, source, pvs):
     s = mbf.get('DET:SCALE')
     return compute_group_delay(mbf, s, iq)
 
+
+def get_pll_detector_delay(mbf, source, start, step, count):
+    mbf.set('PLL:DET:SELECT_S', source)
+    pv = mbf.PV('PLL:FILT:PHASE')
+
+    s = numpy.empty(count)
+    a = numpy.empty(count)
+    for n in range(count):
+        s[n] = start + n * step
+        mbf.set('PLL:NCO:FREQ_S', s[n])
+        a[n] = pv.get_new(0.2)
+
+    return compute_group_delay_angle(mbf, s, numpy.pi/180 * a)
 
 
 # ------------------------------------------------------------------------------
@@ -478,6 +494,28 @@ def measure_tune_pll_bunch(mbf, results):
         mbf.search_pll_det_bunch(power, 'ADC no fill', nco_freq = 0.51)
 
 
+def measure_tune_pll_delay(mbf, results):
+    print >>sys.stderr, 'Measuring Tune PLL Detector delays'
+
+    mbf.bank_wf(0, 1, 0, DAC_OUT.PLL)
+
+    # Configure base NCO setting
+    mbf.set('PLL:NCO:GAIN_S', '0dB')
+    mbf.set('PLL:NCO:ENABLE_S', 'On')
+    # Configure detector
+    mbf.set('PLL:DET:DWELL_S', 100)
+    mbf.set('PLL:DET:SCALING_S', '0dB')
+    mbf.set('PLL:DET:BUNCHES_S', numpy.ones(mbf.bunches, dtype = int))
+    # Configure the ADC fill reject filter
+    mbf.set('ADC:REJECT_COUNT_S', '64 turns')
+
+    N = 10
+    results.PLL_FIR_DELAY = get_pll_detector_delay(mbf, 'FIR', 10, 0.5/N, N)
+    results.PLL_ADC_DELAY = get_pll_detector_delay(mbf, 'ADC', 10, 0.5/N, N)
+    results.PLL_ADC_REJECT_DELAY = \
+        get_pll_detector_delay(mbf, 'ADC no fill', 10.45, 0.1/N, N)
+
+
 # ------------------------------------------------------------------------------
 
 actions = [
@@ -486,6 +524,7 @@ actions = [
     'det_bunch',
     'detector_delay',
     'tune_pll_bunch',
+    'tune_pll_delay',
 ]
 
 

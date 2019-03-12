@@ -20,6 +20,7 @@
 #include "configs.h"
 
 #include "events.h"
+#include "bunch_fir.h"
 #include "bunch_set.h"
 #include "tune_pll_fifo.h"
 
@@ -28,6 +29,14 @@
 
 /* CORDIC magnitude correction.  The CORDIC readback is scaled by this value. */
 #define CORDIC_SCALING      (1.6467602581210654 / 2)
+
+
+/* This is a copy of the corresponding options in detector.c. */
+enum detector_input_select {
+    DET_SELECT_ADC = 0,     // Standard compensated ADC data
+    DET_SELECT_FIR = 1,     // Data after bunch by bunch feedback filter
+    DET_SELECT_REJECT = 2,  // ADC data after filter and fill pattern rejection
+};
 
 
 static struct pll_context {
@@ -44,10 +53,13 @@ static struct pll_context {
     struct tune_pll_status status;
     struct epics_record *update_pv;
 
-    /* Feedback control. */
+    /* Tune PLL configuration. */
+    unsigned int phase_delay;           // Updated from detector source
+    uint64_t current_freq;              // Current NCO frequency as read
+    uint32_t target_phase;              // User specified target phase
 
     /* Detector configuration. */
-    unsigned int input_select;
+    enum detector_input_select input_select;
     unsigned int readout_scale;
     bool *bunch_enables;
     unsigned int bunch_count;
@@ -66,6 +78,66 @@ static struct pll_context {
     struct readout_fifo *debug_fifo;
     bool captured_cordic;
 } pll_context[AXIS_COUNT] = { };
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Feedback setup and control. */
+
+
+/* Configuration. */
+
+static bool write_ki(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_integral_factor(pll->axis, (int32_t) *value << 7);
+    return true;
+}
+
+static bool write_kp(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_proportional_factor(pll->axis, (int32_t) *value << 7);
+    return true;
+}
+
+static bool write_min_magnitude(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    uint32_t min_mag = (uint32_t) lround(ldexp(*value, 31) * CORDIC_SCALING);
+    hw_write_pll_minimum_magnitude(pll->axis, min_mag);
+    return true;
+}
+
+static bool write_max_offset(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    uint64_t freq = tune_to_freq(*value);
+    uint32_t max_offset = (uint32_t) ((freq >> 8) & 0x7FFFFFFF);
+    *value = freq_to_tune((uint64_t) max_offset << 8);
+    hw_write_pll_maximum_offset(pll->axis, max_offset);
+    return true;
+}
+
+
+static void update_target_phase(struct pll_context *pll)
+{
+    uint32_t phase_delta =
+        (uint32_t) ((pll->phase_delay * pll->current_freq) >> 16);
+    hw_write_pll_target_phase(pll->axis,
+        (int32_t) (pll->target_phase + phase_delta));
+}
+
+static bool write_target_phase(void *context, double *value)
+{
+    struct pll_context *pll = context;
+    /* First convert target phase to sensible value for readback. */
+    double target_phase = fmod(*value + 180, 360) - 180;
+    *value = target_phase;
+    /* Convert from degrees to target phase in 2^-32 cycles. */
+    pll->target_phase = (uint32_t) lround(ldexp(*value / 360, 32));
+    update_target_phase(pll);
+    return true;
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -127,8 +199,9 @@ static bool reset_offset_fifo(void *context, bool *value)
 static bool read_nco_frequency(void *context, double *value)
 {
     struct pll_context *pll = context;
-    uint64_t nco_freq = hw_read_pll_nco_frequency(pll->axis);
-    *value = freq_to_tune(nco_freq);
+    pll->current_freq = hw_read_pll_nco_frequency(pll->axis);
+    *value = freq_to_tune(pll->current_freq);
+    update_target_phase(pll);
     return true;
 }
 
@@ -171,15 +244,7 @@ static void publish_nco(struct pll_context *pll)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Detector configuration. */
 
-/* This is a copy of the corresponding options in detector.c. */
-enum detector_input_select {
-    DET_SELECT_ADC = 0,     // Standard compensated ADC data
-    DET_SELECT_FIR = 1,     // Data after bunch by bunch feedback filter
-    DET_SELECT_REJECT = 2,  // ADC data after filter and fill pattern rejection
-};
-
-
-static unsigned int compute_bunch_offset(unsigned int select)
+static unsigned int compute_bunch_offset(enum detector_input_select select)
 {
     switch (select)
     {
@@ -194,6 +259,24 @@ static unsigned int compute_bunch_offset(unsigned int select)
     }
 }
 
+static int compute_detector_delay(enum detector_input_select select)
+{
+    switch (select)
+    {
+        case DET_SELECT_ADC:
+            return hardware_delays.PLL_ADC_DELAY +
+                (int) hardware_config.bunches;
+        case DET_SELECT_FIR:
+            return hardware_delays.PLL_FIR_DELAY +
+                (int) (get_fir_decimation() * hardware_config.bunches);
+        case DET_SELECT_REJECT:
+            return hardware_delays.PLL_ADC_REJECT_DELAY +
+                (int) hardware_config.bunches;
+        default:
+            ASSERT_FAIL();
+    }
+}
+
 
 static bool write_det_input_select(void *context, unsigned int *select)
 {
@@ -202,6 +285,10 @@ static bool write_det_input_select(void *context, unsigned int *select)
     hw_write_pll_det_config(
         pll->axis, pll->input_select,
         compute_bunch_offset(pll->input_select), pll->bunch_enables);
+
+    /* Update the detector phase delay and keep the target phase aligned. */
+    pll->phase_delay = (unsigned int) compute_detector_delay(pll->input_select);
+    update_target_phase(pll);
     return true;
 }
 
@@ -281,54 +368,6 @@ static void publish_detector(struct pll_context *pll)
         PUBLISH_C(bo, "SET_SELECT", enable_bunch_selection, pll);
         PUBLISH_C(bo, "RESET_SELECT", disable_bunch_selection, pll);
     }
-}
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Feedback setup and control. */
-
-
-/* Configuration. */
-
-static bool write_ki(void *context, double *value)
-{
-    struct pll_context *pll = context;
-    hw_write_pll_integral_factor(pll->axis, (int32_t) *value << 7);
-    return true;
-}
-
-static bool write_kp(void *context, double *value)
-{
-    struct pll_context *pll = context;
-    hw_write_pll_proportional_factor(pll->axis, (int32_t) *value << 7);
-    return true;
-}
-
-static bool write_min_magnitude(void *context, double *value)
-{
-    struct pll_context *pll = context;
-    uint32_t min_mag = (uint32_t) lround(ldexp(*value, 31) * CORDIC_SCALING);
-    hw_write_pll_minimum_magnitude(pll->axis, min_mag);
-    return true;
-}
-
-static bool write_max_offset(void *context, double *value)
-{
-    struct pll_context *pll = context;
-    uint64_t freq = tune_to_freq(*value);
-    uint32_t max_offset = (uint32_t) ((freq >> 8) & 0x7FFFFFFF);
-    *value = freq_to_tune((uint64_t) max_offset << 8);
-    hw_write_pll_maximum_offset(pll->axis, max_offset);
-    return true;
-}
-
-static bool write_target_phase(void *context, double *value)
-{
-    struct pll_context *pll = context;
-    int32_t phase = (int32_t) (lround(ldexp(*value / 360, 32)) & 0xFFFFC000);
-    *value = 360 * ldexp(phase, -32);
-    hw_write_pll_target_phase(pll->axis, phase);
-    return true;
 }
 
 
@@ -577,31 +616,42 @@ static bool read_filtered_readbacks(void *context, bool *value)
     struct detector_result det;
     hw_read_pll_filtered_readbacks(pll->axis, &det, &pll->filtered_offset);
 
-    /* Update each published value. */
-    if (pll->filtered_cordic)
-    {
-        /* Special debug mode, the filtered values are from CORDIC. */
-        pll->filtered_cos = nan("");
-        pll->filtered_sin = nan("");
-        pll->filtered_phase = 360 * ldexp(det.i, -32);
-        pll->filtered_magnitude = ldexp(det.q, -31) / CORDIC_SCALING;
-    }
-    else
-    {
-        /* Normal readbacks, compute phase and magnitude from IQ. */
-        pll->filtered_cos = ldexp(det.i, -31);
-        pll->filtered_sin = ldexp(det.q, -31);
-        pll->filtered_phase = 180 / M_PI * atan2(det.q, det.i);
-        pll->filtered_magnitude =
-            sqrt(SQR(pll->filtered_cos) + SQR(pll->filtered_sin));
-    }
-
     /* The frequency offset is a slice out of the middle of the computed
      * frequency, specifically bits 39:8 out of 48 bits.  So we can use
      * freq_to_tune() once we've adjusted the offset. */
     pll->filtered_freq_offset =
         freq_to_tune_signed((uint64_t) ((int64_t) pll->filtered_offset << 8));
     freq_offset_updated(pll);
+
+
+    /* Update each published value. */
+    double f_cos, f_sin, f_mag;
+    if (pll->filtered_cordic)
+    {
+        /* Special debug mode, the filtered values are from CORDIC. */
+        double f_phase = 360 * ldexp(det.i, -32);
+        f_mag = ldexp(det.q, -31) / CORDIC_SCALING;
+        f_cos = cos(180 / M_PI * f_phase) * f_mag;
+        f_sin = sin(180 / M_PI * f_phase) * f_mag;
+    }
+    else
+    {
+        /* Normal readbacks, compute phase and magnitude from IQ. */
+        f_cos = ldexp(det.i, -31);
+        f_sin = ldexp(det.q, -31);
+        f_mag = sqrt(SQR(f_cos) + SQR(f_sin));
+    }
+
+    /* Apply delay compensation. */
+    double phase_offset =
+        pll->phase_delay * 2 * M_PI * ldexp((double) pll->current_freq, -48);
+    double rotI = cos(phase_offset);
+    double rotQ = sin(phase_offset);
+    pll->filtered_cos = rotI * f_cos + rotQ * f_sin;
+    pll->filtered_sin = rotI * f_sin - rotQ * f_cos;
+    pll->filtered_phase =
+        180 / M_PI * atan2(pll->filtered_sin, pll->filtered_cos);
+    pll->filtered_magnitude = f_mag;
 
     return true;
 }

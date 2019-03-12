@@ -66,6 +66,10 @@ static const struct config_entry hardware_delays_entries[] = {
     DELAY_ENTRY(PLL_ADC_OFFSET),
     DELAY_ENTRY(PLL_FIR_OFFSET),
     DELAY_ENTRY(PLL_ADC_REJECT_OFFSET),
+
+    DELAY_ENTRY(PLL_ADC_DELAY),
+    DELAY_ENTRY(PLL_ADC_REJECT_DELAY),
+    DELAY_ENTRY(PLL_FIR_DELAY),
 };
 
 
@@ -140,6 +144,8 @@ static void convert_hardware_config(void)
     CONVERT_FIELD(DET_ADC_OFFSET);
     CONVERT_FIELD(DET_ADC_REJECT_OFFSET);
     CONVERT_FIELD(DET_FIR_OFFSET);
+
+    // Note that the delays are *not* converted
 }
 
 
