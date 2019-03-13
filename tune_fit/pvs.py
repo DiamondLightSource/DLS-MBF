@@ -3,6 +3,7 @@
 import numpy
 import epicsdbbuilder
 from softioc import builder, alarm
+from cothread.catools import *
 
 
 # Helper for DB name prefix.
@@ -217,11 +218,21 @@ def publish_pvs(persist, target, length):
 
 
 class TuneMux:
-    def __init__(self, target, tune_aliases):
+    # Selection options for tune selector mux
+    SEL_FITTED = 0
+    SEL_MAXIMUM = 1
+    SEL_TUNE_PLL = 2
+
+    def __init__(self, target, tune_pll, tune_aliases):
+        if tune_pll:
+            camonitor(tune_pll, self.update_pll, format = FORMAT_TIME)
         with NamePrefix(None, target + ':TUNE', None):
+            selectors = ['Fitted', 'Maximum']
+            if tune_pll:
+                selectors.append('Tune PLL')
             self.selector = builder.mbbOut('SELECT_S',
-                'Fitted', 'Maximum',
-                initial_value = 0)
+                initial_value = 0, on_update = self.update_selector,
+                *selectors)
             self.tune = builder.aIn('TUNE', 0, 1, PREC = 5,
                 DESC = 'Measured tune')
             for alias in tune_aliases:
@@ -230,13 +241,26 @@ class TuneMux:
                 EGU = 'deg', PREC = 1,
                 DESC = 'Measured tune phase')
 
+    def update_selector(self, value):
+        self.tune.set(numpy.nan)
+        self.phase.set(numpy.nan)
+
     def update(self, timestamp, trace):
-        if self.selector.get() == 0:
+        selector = self.selector.get()
+        if selector == self.SEL_FITTED:
             # Use measured tune, as far as possible
             update_pv_value(trace, timestamp, self.tune, 'tune.tune.tune')
             update_pv_value(trace, timestamp, self.phase, 'tune.tune.phase')
-        else:
+        elif selector == self.SEL_MAXIMUM:
             # Fall back to maximum value
             update_pv_value(trace, timestamp, self.tune, 'max_tune')
             self.phase.set(numpy.nan,
                 severity = alarm.INVALID_ALARM, timestamp = timestamp)
+
+    def update_pll(self, value):
+        if self.selector.get() == self.SEL_TUNE_PLL:
+            self.tune.set(
+                value, severity = value.severity, timestamp = value.timestamp)
+            self.phase.set(
+                numpy.nan, severity = alarm.INVALID_ALARM,
+                timestamp = value.timestamp)

@@ -25,7 +25,10 @@ for a in axes('PLL', lmbf_mode):
         Action('RESET_FIFO', DESC = 'Reset FIFO readout to force fresh sample')
 
         # Frequency readbacks
+        tune = aIn('TUNE', 0, 1, PREC = 7, EGU = 'tune',
+            DESC = 'Measured tune frequency')
         nco_freq = aIn('FREQ', PREC = 7, EGU = 'tune',
+            FLNK = tune,
             DESC = 'Tune PLL NCO frequency')
         aIn('OFFSET', PREC = 7, EGU = 'tune',
             SCAN = 'I/O Intr',

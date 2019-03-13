@@ -54,6 +54,7 @@ static struct pll_context {
     uint64_t nco_freq_set;              // NCO frequency set from PV
     uint64_t current_nco;               // Current computed NCO frequency
     double nco_freq_out;                // Current frequency readback
+    double nco_tune;                    // Tune part if running, NaN otherwise
 
     /* Target phase and delay to be compensated. */
     unsigned int phase_delay;           // Updated from detector source
@@ -220,8 +221,9 @@ static bool update_nco_frequency(void *context, double *value)
 {
     struct pll_context *pll = context;
 
+    bool running = pll->status.running;
     uint64_t offset_freq;
-    if (pll->status.running)
+    if (running)
     {
         /* During a normal run just read the filtered offset and update the
          * readback frequency accordingly.
@@ -243,6 +245,10 @@ static bool update_nco_frequency(void *context, double *value)
     /* Compute the offset and base frequency readbacks. */
     *value = freq_to_tune_signed(offset_freq);
     pll->nco_freq_out = freq_to_tune(pll->current_nco);
+    if (running)
+        pll->nco_tune = fmod(pll->nco_freq_out, 1);
+    else
+        pll->nco_tune = nan("");
 
     /* Ensure the phase is in step with the target frequency. */
     update_target_phase(pll);
@@ -275,6 +281,7 @@ static void publish_nco(struct pll_context *pll)
         pll->offset_pv =
             PUBLISH_C(ai, "OFFSET", update_nco_frequency, pll, .io_intr = true);
         PUBLISH_READ_VAR(ai, "FREQ", pll->nco_freq_out);
+        PUBLISH_READ_VAR(ai, "TUNE", pll->nco_tune);
     }
 }
 
