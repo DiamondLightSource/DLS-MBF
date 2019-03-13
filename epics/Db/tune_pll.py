@@ -98,6 +98,8 @@ for a in axes('PLL', lmbf_mode):
             overflow('FIFO_OVF', 'Debug FIFO readout overrun'))
         boolOut('SELECT', 'IQ', 'CORDIC',
             DESC = 'Select captured readback values')
+        boolOut('COMPENSATE', 'Raw', 'Compensated',
+            DESC = 'Compensate debug readbacks')
 
     # Filtered readbacks
     with name_prefix('FILT'):

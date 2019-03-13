@@ -11,9 +11,12 @@ struct readout_fifo;
  *      Trigger('READ',
  *          ...,
  *          overflow('FIFO_OVF', 'FIFO readout overrun'))
+ *
+ * If process_buffer is non null it will be called before triggering reading.
  */
 struct readout_fifo *create_readout_fifo(
-    int axis, enum pll_readout_fifo which_fifo, unsigned int buffer_size);
+    int axis, enum pll_readout_fifo which_fifo, unsigned int buffer_size,
+    void (*process_buffer)(void *context), void *context);
 
 /* This should be called each time a FIFO ready read interrupt is seend. */
 void handle_fifo_ready(struct readout_fifo *fifo);

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 277
-y 280
+x 566
+y 197
 w 1160
 h 528
 font "helvetica-medium-r-18.0"
@@ -141,9 +141,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 688
+x 464
 y 496
-w 120
+w 104
 h 24
 fgColor index 14
 bgColor index 3
@@ -324,16 +324,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 592
+x 416
 y 500
-w 84
+w 43
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Enable Debug:"
+  "Enable:"
 }
 autoSize
 endObjectProperties
@@ -364,10 +364,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 240
 y 496
-w 184
-h 14
+w 152
+h 16
 controlPv "$(device):$(axis):PLL:STA:DET_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
@@ -388,7 +388,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 240
+x 216
 y 496
 w 16
 h 16
@@ -397,5 +397,44 @@ fill
 fillColor index 16
 fillAlarm
 alarmPv "$(device):$(axis):PLL:STA:DET_OVF"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 608
+y 500
+w 77
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Compensate:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 696
+y 496
+w 112
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):PLL:DEBUG:COMPENSATE_S"
+font "helvetica-medium-r-12.0"
 endObjectProperties
 

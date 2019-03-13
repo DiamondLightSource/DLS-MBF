@@ -21,7 +21,6 @@
 #include "tune_pll_fifo.h"
 
 
-
 struct readout_fifo {
     /* Hardware FIFO identification. */
     int axis;                           // Selects which axis
@@ -40,6 +39,10 @@ struct readout_fifo {
     bool enabled;
     bool overflow;                      // Hardware FIFO overrun detected
     pthread_mutex_t mutex;              // Needed for managed access
+
+    /* Optional buffer processing callback. */
+    void (*process_buffer)(void *context);
+    void *context;
 
     /* Read buffer for initial data capture. */
     unsigned int read_buffer_count;     // Number of hold-over samples
@@ -110,6 +113,8 @@ static void process_fifo_content(
     if (emit_buffer)
     {
         fifo->epics_busy = true;
+        if (fifo->process_buffer)
+            fifo->process_buffer(fifo->context);
         interlock_signal(fifo->interlock, NULL);
 
         /* Hang onto anything we didn't copy. */
@@ -176,7 +181,8 @@ static void stop_readout_fifo(struct readout_fifo *fifo)
 
 
 struct readout_fifo *create_readout_fifo(
-    int axis, enum pll_readout_fifo which_fifo, unsigned int buffer_size)
+    int axis, enum pll_readout_fifo which_fifo, unsigned int buffer_size,
+    void (*process_buffer)(void *context), void *context)
 {
     struct readout_fifo *fifo = malloc(sizeof(struct readout_fifo));
     *fifo = (struct readout_fifo) {
@@ -186,6 +192,8 @@ struct readout_fifo *create_readout_fifo(
         .buffer_size = buffer_size,
         .buffer = CALLOC(int32_t, buffer_size),
         .mutex = PTHREAD_MUTEX_INITIALIZER,
+        .process_buffer = process_buffer,
+        .context = context,
     };
 
     reset_fifo(fifo, true, false);

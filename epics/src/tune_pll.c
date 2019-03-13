@@ -81,7 +81,13 @@ static struct pll_context {
 
     /* Debug readback. */
     struct readout_fifo *debug_fifo;
+    unsigned int debug_length;
+    float *debug_i;
+    float *debug_q;
+    float *debug_mag;
+    float *debug_angle;
     bool captured_cordic;
+    bool compensate_debug;
 } pll_context[AXIS_COUNT] = { };
 
 
@@ -259,7 +265,7 @@ static void publish_nco(struct pll_context *pll)
         /* Offset readback FIFO. */
         unsigned int length = system_config.tune_pll_length;
         pll->offset_fifo =
-            create_readout_fifo(pll->axis, PLL_FIFO_OFFSET, length);
+            create_readout_fifo(pll->axis, PLL_FIFO_OFFSET, length, NULL, NULL);
         PUBLISH_WAVEFORM(float, "OFFSETWF", length,
             read_offset_waveform, .context = pll);
         PUBLISH_READ_VAR(ai, "MEAN_OFFSET", pll->mean_offset);
@@ -531,80 +537,6 @@ static bool enable_debug_fifo(void *context, bool *value)
 }
 
 
-static void read_debug_wfi(void *context, float *wfi, unsigned int *length)
-{
-    struct pll_context *pll = context;
-    if (pll->captured_cordic)
-        *length = 0;
-    else
-    {
-        struct readout_fifo *fifo = pll->debug_fifo;
-        const int32_t *buffer;
-        *length = read_fifo_buffer(fifo, &buffer) / 2;
-        for (unsigned int i = 0; i < *length; i ++)
-            wfi[i] = ldexpf((float) buffer[2 * i], -31);
-    }
-}
-
-static void read_debug_wfq(void *context, float *wfq, unsigned int *length)
-{
-    struct pll_context *pll = context;
-    if (pll->captured_cordic)
-        *length = 0;
-    else
-    {
-        struct readout_fifo *fifo = pll->debug_fifo;
-        const int32_t *buffer;
-        *length = read_fifo_buffer(fifo, &buffer) / 2;
-        for (unsigned int i = 0; i < *length; i ++)
-            wfq[i] = ldexpf((float) buffer[2 * i + 1], -31);
-    }
-}
-
-static void read_debug_angle(void *context, float *angle, unsigned int *length)
-{
-    struct pll_context *pll = context;
-    struct readout_fifo *fifo = pll->debug_fifo;
-    const int32_t *buffer;
-    *length = read_fifo_buffer(fifo, &buffer) / 2;
-    if (pll->captured_cordic)
-        /* In this case the captured waveform is the angle readback. */
-        for (unsigned int i = 0; i < *length; i ++)
-            angle[i] = 360 * ldexpf((float) buffer[2 * i], -32);
-    else
-        /* Otherwise compute the angle from IQ. */
-        for (unsigned int i = 0; i < *length; i ++)
-        {
-            float det_i = (float) buffer[2 * i];
-            float det_q = (float) buffer[2 * i + 1];
-            angle[i] = 180 / (float) M_PI * atan2f(det_q, det_i);
-        }
-}
-
-static void read_debug_magnitude(
-    void *context, float *magnitude, unsigned int *length)
-{
-    struct pll_context *pll = context;
-    struct readout_fifo *fifo = pll->debug_fifo;
-    const int32_t *buffer;
-    *length = read_fifo_buffer(fifo, &buffer) / 2;
-    if (pll->captured_cordic)
-        /* In this case the captured waveform is the magnitude readback. */
-        for (unsigned int i = 0; i < *length; i ++)
-            magnitude[i] =
-                ldexpf((float) (uint32_t) buffer[2 * i + 1], -31) /
-                (float) CORDIC_SCALING;
-    else
-        /* Otherwise compute the magnitude from IQ. */
-        for (unsigned int i = 0; i < *length; i ++)
-        {
-            float det_i = ldexpf((float) buffer[2 * i], -31);
-            float det_q = ldexpf((float) buffer[2 * i + 1], -31);
-            magnitude[i] = sqrtf(SQR(det_i) + SQR(det_q));
-        }
-}
-
-
 static bool set_captured_debug(void *context, bool *value)
 {
     struct pll_context *pll = context;
@@ -614,24 +546,98 @@ static bool set_captured_debug(void *context, bool *value)
 }
 
 
+/* Performs conversion from 32-bit integer IQ or CORDIC readings to compensated
+ * IQ and phase and magnitude values. */
+static void convert_detector_values(
+    struct pll_context *pll,
+    bool cordic, bool compensate, unsigned int count,
+    const struct detector_result inputs[],
+    float wf_i[], float wf_q[], float wf_mag[], float wf_angle[])
+{
+    /* First compute the phase compensation factor. */
+    double phase_offset =
+        compensate ?
+        /* If compensation enabled then compensation is basically delay to
+         * compensate multiplied by the current frequency. */
+        pll->phase_delay * 2 * M_PI * ldexp((double) pll->current_nco, -48) :
+        /* If we're not compensating then compensating by zero will serve. */
+        0.0;
+    /* Compensation is by rotation against the introduced group delay. */
+    double rotI = cos(phase_offset);
+    double rotQ = -sin(phase_offset);
+
+    for (unsigned int i = 0; i < count; i ++)
+    {
+        /* Extract and convert input values according to cordic setting. */
+        double val_i, val_q, mag_out;
+        if (cordic)
+        {
+            double phase = 2 * M_PI * ldexp(inputs[i].i, -32);
+            mag_out = ldexp(inputs[i].q, -31) / CORDIC_SCALING;
+            val_i = cos(phase) * mag_out;
+            val_q = sin(phase) * mag_out;
+        }
+        else
+        {
+            val_i = ldexp(inputs[i].i, -31);
+            val_q = ldexp(inputs[i].q, -31);
+            mag_out = sqrt(SQR(val_i) + SQR(val_q));
+        }
+
+        /* Perform phase compensation by rotation. */
+        double i_out = rotI * val_i - rotQ * val_q;
+        double q_out = rotI * val_q + rotQ * val_i;
+        double angle_out = 180 / M_PI * atan2(q_out, i_out);
+
+        /* Here we have one final annoyance: convert results to float. */
+        wf_i[i] = (float) i_out;
+        wf_q[i] = (float) q_out;
+        wf_mag[i] = (float) mag_out;
+        wf_angle[i] = (float) angle_out;
+    }
+}
+
+
+static void process_debug_fifo(void *context)
+{
+    struct pll_context *pll = context;
+    struct readout_fifo *fifo = pll->debug_fifo;
+
+    const struct detector_result *buffer;
+    pll->debug_length = read_fifo_buffer(fifo, (const int32_t **) &buffer) / 2;
+
+    convert_detector_values(
+        pll, pll->captured_cordic, pll->compensate_debug, pll->debug_length,
+        buffer, pll->debug_i, pll->debug_q, pll->debug_mag, pll->debug_angle);
+}
+
+
 static void publish_debug(struct pll_context *pll)
 {
     WITH_NAME_PREFIX("DEBUG")
     {
         unsigned int length = system_config.tune_pll_length;
+
+        pll->debug_i = CALLOC(float, length);
+        pll->debug_q = CALLOC(float, length);
+        pll->debug_mag = CALLOC(float, length);
+        pll->debug_angle = CALLOC(float, length);
+
         pll->debug_fifo = create_readout_fifo(
-            pll->axis, PLL_FIFO_DEBUG, 2 * length);
+            pll->axis, PLL_FIFO_DEBUG, 2 * length, process_debug_fifo, pll);
+
         PUBLISH_C(bo, "ENABLE", enable_debug_fifo, pll);
-        PUBLISH_WAVEFORM(float, "WFI", length,
-            read_debug_wfi, .context = pll);
-        PUBLISH_WAVEFORM(float, "WFQ", length,
-            read_debug_wfq, .context = pll);
-        PUBLISH_WAVEFORM(float, "ANGLE", length,
-            read_debug_angle, .context = pll);
-        PUBLISH_WAVEFORM(float, "MAG", length,
-            read_debug_magnitude, .context = pll);
+        PUBLISH_WF_READ_VAR_LEN(
+            float, "WFI", length, pll->debug_length, pll->debug_i);
+        PUBLISH_WF_READ_VAR_LEN(
+            float, "WFQ", length, pll->debug_length, pll->debug_q);
+        PUBLISH_WF_READ_VAR_LEN(
+            float, "ANGLE", length, pll->debug_length, pll->debug_angle);
+        PUBLISH_WF_READ_VAR_LEN(
+            float, "MAG", length, pll->debug_length, pll->debug_mag);
 
         PUBLISH_C(bo, "SELECT", set_captured_debug, pll);
+        PUBLISH_WRITE_VAR_P(bo, "COMPENSATE", pll->compensate_debug);
     }
 }
 
@@ -653,33 +659,15 @@ static bool read_filtered_readbacks(void *context, bool *value)
 
     /* Update each published value. */
     struct detector_result det = hw_read_pll_filtered_detector(pll->axis);
-    double f_cos, f_sin, f_mag;
-    if (pll->filtered_cordic)
-    {
-        /* Special debug mode, the filtered values are from CORDIC. */
-        double f_phase = 360 * ldexp(det.i, -32);
-        f_mag = ldexp(det.q, -31) / CORDIC_SCALING;
-        f_cos = cos(180 / M_PI * f_phase) * f_mag;
-        f_sin = sin(180 / M_PI * f_phase) * f_mag;
-    }
-    else
-    {
-        /* Normal readbacks, compute phase and magnitude from IQ. */
-        f_cos = ldexp(det.i, -31);
-        f_sin = ldexp(det.q, -31);
-        f_mag = sqrt(SQR(f_cos) + SQR(f_sin));
-    }
-
-    /* Apply delay compensation. */
-    double phase_offset =
-        pll->phase_delay * 2 * M_PI * ldexp((double) pll->current_nco, -48);
-    double rotI = cos(phase_offset);
-    double rotQ = sin(phase_offset);
-    pll->filtered_cos = rotI * f_cos + rotQ * f_sin;
-    pll->filtered_sin = rotI * f_sin - rotQ * f_cos;
-    pll->filtered_phase =
-        180 / M_PI * atan2(pll->filtered_sin, pll->filtered_cos);
+    float f_cos, f_sin, f_mag, f_angle;
+    convert_detector_values(
+        pll, pll->filtered_cordic, true, 1, &det,
+        &f_cos, &f_sin, &f_mag, &f_angle);
+    /* Need to convert floats to doubles for display. */
+    pll->filtered_cos = f_cos;
+    pll->filtered_sin = f_sin;
     pll->filtered_magnitude = f_mag;
+    pll->filtered_phase = f_angle;
 
     return true;
 }
