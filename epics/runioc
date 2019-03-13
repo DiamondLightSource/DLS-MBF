@@ -21,14 +21,14 @@ NO_HARDWARE=0
 while getopts 'vltV:quznh' option; do
     case "$option" in
         v)  DEBUG=(valgrind) ;;
-        l)  DEBUG=("${DEBUG[@]}" --leak-check=full) ;;
-        t)  DEBUG=("${DEBUG[@]}" --track-origins=yes) ;;
-        V)  DEBUG=("${DEBUG[@]}" --$OPTARG) ;;
-        q)  OPTS=("${OPTS[@]}" -q) ;;
-        u)  OPTS=("${OPTS[@]}" -u) ;;
+        l)  DEBUG+=(--leak-check=full) ;;
+        t)  DEBUG+=(--track-origins=yes) ;;
+        V)  DEBUG+=(--"$OPTARG") ;;
+        q)  OPTS+=(-q) ;;
+        u)  OPTS+=(-u) ;;
         z)  HW_CONFIG=() ;;
         n)  NO_HARDWARE=1
-            OPTS=("${OPTS[@]}" -n) ;;
+            OPTS+=(-n) ;;
         h)  cat <<EOF
 Usage: runioc [options] config-file
 Starts MBF IOC with configured options.
