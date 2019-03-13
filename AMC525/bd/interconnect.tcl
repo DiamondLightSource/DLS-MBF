@@ -1866,28 +1866,17 @@ proc create_hier_cell_axi_lite { parentCell nameHier } {
    CONFIG.REG_W {7} \
  ] $axi_register_slice_1
 
-  # Create instance: axi_register_slice_2, and set properties
-  set axi_register_slice_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 axi_register_slice_2 ]
-  set_property -dict [ list \
-   CONFIG.REG_AR {7} \
-   CONFIG.REG_AW {7} \
-   CONFIG.REG_B {7} \
-   CONFIG.REG_R {7} \
-   CONFIG.REG_W {7} \
- ] $axi_register_slice_2
-
   # Create interface connections
   connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins M_INTC_REGS] [get_bd_intf_pins axi_lite_interconnect/M02_AXI]
   connect_bd_intf_net -intf_net S_PCIE_1 [get_bd_intf_pins S_PCIE] [get_bd_intf_pins axi_register_slice_0/S_AXI]
   connect_bd_intf_net -intf_net axi_lite_interconnect_M00_AXI [get_bd_intf_pins axi_lite_interconnect/M00_AXI] [get_bd_intf_pins axi_register_slice_1/S_AXI]
   connect_bd_intf_net -intf_net axi_lite_interconnect_M02_AXI [get_bd_intf_pins M_DMA_REGS] [get_bd_intf_pins axi_lite_interconnect/M01_AXI]
   connect_bd_intf_net -intf_net axi_register_slice_0_M_AXI [get_bd_intf_pins axi_lite_interconnect/S00_AXI] [get_bd_intf_pins axi_register_slice_0/M_AXI]
-  connect_bd_intf_net -intf_net axi_register_slice_1_M_AXI [get_bd_intf_pins axi_register_slice_1/M_AXI] [get_bd_intf_pins axi_register_slice_2/S_AXI]
-  connect_bd_intf_net -intf_net axi_register_slice_2_M_AXI [get_bd_intf_pins M_DSP_REGS] [get_bd_intf_pins axi_register_slice_2/M_AXI]
+  connect_bd_intf_net -intf_net axi_register_slice_1_M_AXI [get_bd_intf_pins M_DSP_REGS] [get_bd_intf_pins axi_register_slice_1/M_AXI]
 
   # Create port connections
-  connect_bd_net -net DSP_CLK_1 [get_bd_pins REG_CLK] [get_bd_pins axi_lite_interconnect/M00_ACLK] [get_bd_pins axi_register_slice_1/aclk] [get_bd_pins axi_register_slice_2/aclk]
-  connect_bd_net -net DSP_RESETN_1 [get_bd_pins REG_RESETN] [get_bd_pins axi_lite_interconnect/M00_ARESETN] [get_bd_pins axi_register_slice_1/aresetn] [get_bd_pins axi_register_slice_2/aresetn]
+  connect_bd_net -net DSP_CLK_1 [get_bd_pins REG_CLK] [get_bd_pins axi_lite_interconnect/M00_ACLK] [get_bd_pins axi_register_slice_1/aclk]
+  connect_bd_net -net DSP_RESETN_1 [get_bd_pins REG_RESETN] [get_bd_pins axi_lite_interconnect/M00_ARESETN] [get_bd_pins axi_register_slice_1/aresetn]
   connect_bd_net -net axi_pcie3_axi_aclk [get_bd_pins PCIE_ACLK] [get_bd_pins axi_lite_interconnect/ACLK] [get_bd_pins axi_lite_interconnect/M01_ACLK] [get_bd_pins axi_lite_interconnect/M02_ACLK] [get_bd_pins axi_lite_interconnect/S00_ACLK] [get_bd_pins axi_register_slice_0/aclk]
   connect_bd_net -net axi_pcie3_axi_aresetn [get_bd_pins PCIE_ARESETN] [get_bd_pins axi_lite_interconnect/ARESETN] [get_bd_pins axi_lite_interconnect/M01_ARESETN] [get_bd_pins axi_lite_interconnect/M02_ARESETN] [get_bd_pins axi_lite_interconnect/S00_ARESETN] [get_bd_pins axi_register_slice_0/aresetn]
 
