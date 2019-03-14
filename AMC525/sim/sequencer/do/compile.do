@@ -53,6 +53,6 @@ add wave -group "Sequencer" sim:sequencer/*
 add wave sim:*
 
 
-run 1500 ns
+run 6 us
 
 # vim: set filetype=tcl:

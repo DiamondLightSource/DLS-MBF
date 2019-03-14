@@ -94,13 +94,13 @@ begin
                 elsif dwell_ctr = 0 then
                     -- End of normal dwell
                     -- Either go into holdoff or straight into dwell
-                    if holdoff_count_i = 0 then
-                        dwell_ctr <= dwell_count_i;
-                        first_turn_o <= '1';
-                    elsif state_holdoff_i > 0 and state_end_i = '1' then
+                    if state_holdoff_i > 0 and state_end_i = '1' then
                         in_holdoff <= '1';
                         in_state_holdoff <= '1';
                         holdoff_ctr <= state_holdoff_i - 1;
+                    elsif holdoff_count_i = 0 then
+                        dwell_ctr <= dwell_count_i;
+                        first_turn_o <= '1';
                     else
                         in_holdoff <= '1';
                         holdoff_ctr <= holdoff_count_i - 1;
