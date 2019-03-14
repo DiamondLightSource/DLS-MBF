@@ -215,9 +215,10 @@ put_axes('ADC:LOOPBACK_S', 'Normal')
 put('SEQ:0:BANK_S', 'Bank 0')
 put('SEQ:RESET_WIN_S', 0)
 
-# Ensure no triggers are running and the sequencer is stopped
+# Ensure no triggers are running and the sequencer and Tune PLL are stopped
 put('TRG:SEQ:DISARM_S', 0)
 put('SEQ:RESET_S', 0)
+put('PLL:CTRL:STOP_S', 0)
 
 # Ensure super sequencer isn't in a strange state
 put('SEQ:SUPER:COUNT_S', 1)
@@ -274,11 +275,13 @@ put('SEQ:1:END_FREQ_S', sweep_end)
 put('SEQ:1:CAPTURE_S', 'Capture')
 put('SEQ:1:BANK_S', 'Bank 1')
 put('SEQ:1:HOLDOFF_S', setup.sweep_holdoff)
+put('SEQ:1:STATE_HOLDOFF_S', setup.state_holdoff)
 put('SEQ:1:DWELL_S', setup.sweep_dwell_time)
 put('SEQ:1:GAIN_S', setup.sweep_gain)
 put('SEQ:1:ENABLE_S', 'On')
 put('SEQ:1:ENWIN_S', 'Windowed')
 put('SEQ:1:BLANK_S', 'Blanking')
+put('SEQ:1:TUNE_PLL_S', 'Ignore')
 
 # Ensure the associated tune fitter is fitting the entire sweep and is running
 # with the appropriate selection
