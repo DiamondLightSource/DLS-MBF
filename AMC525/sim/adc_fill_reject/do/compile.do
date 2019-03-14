@@ -14,6 +14,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/bunch_fir/bunch_fir_delay.vhd \
     $vhd_dir/adc/adc_fill_reject_counter.vhd \
+    $vhd_dir/adc/adc_fill_reject_core.vhd \
     $vhd_dir/adc/adc_fill_reject.vhd
 
 vcom -64 -2008 -work xil_defaultlib \
@@ -24,8 +25,8 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "Counter" fill_reject/counter/*
-add wave -group "Reject" fill_reject/*
+add wave -group "Counter" fill_reject/core/counter/*
+add wave -group "Reject" fill_reject/core/*
 add wave -group "Top" sim:*
 add wave sim:*
 # add wave sim:/testbench/axi_burst_master_inst/*
