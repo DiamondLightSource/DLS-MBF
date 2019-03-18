@@ -45,7 +45,6 @@ static struct pll_context {
     /* Frequency management. */
     struct readout_fifo *offset_fifo;
     struct epics_record *offset_pv;
-    double mean_offset;                 // Mean offset from offset FIFO
 
     /* The stored frequency is updated by three independent events:
      *  1. polled readbacks of offset while running
@@ -54,6 +53,7 @@ static struct pll_context {
     uint64_t nco_freq_set;              // NCO frequency set from PV
     uint64_t current_nco;               // Current computed NCO frequency
     double nco_freq_out;                // Current frequency readback
+    double mean_offset;                 // Mean offset from offset FIFO
     double nco_tune;                    // Tune part if running, NaN otherwise
 
     /* Target phase and delay to be compensated. */
@@ -63,7 +63,7 @@ static struct pll_context {
     /* Live events. */
     struct tune_pll_events events;
     struct tune_pll_status status;
-    struct epics_record *update_pv;
+    struct epics_interlock *update_status;
 
     /* Detector configuration. */
     enum detector_input_select input_select;
@@ -183,11 +183,22 @@ static void read_offset_waveform(
     double offset_sum = 0;
     for (unsigned int i = 0; i < *length; i ++)
     {
-        offsets[i] = (float) freq_to_tune_signed(
+        double offset = freq_to_tune_signed(
             (uint64_t) ((int64_t) buffer[i] << 8));
-        offset_sum += offsets[i];
+        offset_sum += offset;
+        offsets[i] = (float) offset;
     }
     pll->mean_offset = offset_sum / *length;
+
+    /* Also update the NCO tune. */
+    if (pll->status.running)
+    {
+        double mean_nco = freq_to_tune(pll->nco_freq_set) + pll->mean_offset;
+        pll->nco_tune = fmod(mean_nco, 1);
+    }
+    else
+        pll->nco_tune = nan("");
+
 }
 
 
@@ -221,9 +232,8 @@ static bool update_nco_frequency(void *context, double *value)
 {
     struct pll_context *pll = context;
 
-    bool running = pll->status.running;
     uint64_t offset_freq;
-    if (running)
+    if (pll->status.running)
     {
         /* During a normal run just read the filtered offset and update the
          * readback frequency accordingly.
@@ -245,10 +255,6 @@ static bool update_nco_frequency(void *context, double *value)
     /* Compute the offset and base frequency readbacks. */
     *value = freq_to_tune_signed(offset_freq);
     pll->nco_freq_out = freq_to_tune(pll->current_nco);
-    if (running)
-        pll->nco_tune = fmod(pll->nco_freq_out, 1);
-    else
-        pll->nco_tune = nan("");
 
     /* Ensure the phase is in step with the target frequency. */
     update_target_phase(pll);
@@ -275,13 +281,13 @@ static void publish_nco(struct pll_context *pll)
         PUBLISH_WAVEFORM(float, "OFFSETWF", length,
             read_offset_waveform, .context = pll);
         PUBLISH_READ_VAR(ai, "MEAN_OFFSET", pll->mean_offset);
+        PUBLISH_READ_VAR(ai, "TUNE", pll->nco_tune);
         PUBLISH_C(bo, "RESET_FIFO", reset_offset_fifo, pll);
 
         /* Frequency readback update. */
         pll->offset_pv =
             PUBLISH_C(ai, "OFFSET", update_nco_frequency, pll, .io_intr = true);
         PUBLISH_READ_VAR(ai, "FREQ", pll->nco_freq_out);
-        PUBLISH_READ_VAR(ai, "TUNE", pll->nco_tune);
     }
 }
 
@@ -422,34 +428,26 @@ static void publish_detector(struct pll_context *pll)
 
 /* At present the hardware status readback needs a helping hand to cope with an
  * edge condition... */
-static void read_pll_status(int axis, struct tune_pll_status *status)
+static void update_pll_status(struct pll_context *pll)
 {
-    hw_read_pll_status(axis, status);
+    interlock_wait(pll->update_status);
+    hw_read_pll_status(pll->axis, &pll->status);
     /* If all the bits in the status register are zero then we are still
      * starting (waiting for the first dwell to complete).  It is safe to treat
      * this as a running state. */
     bool stopped =
-        status->stopped  ||
-        status->overflow  ||
-        status->too_small  ||
-        status->bad_offset;
-    status->running = !stopped;
-}
-
-
-/* This is triggered in response to a feedback status change.  The status is
- * updated. */
-static bool process_status_update(void *context, bool *value)
-{
-    struct pll_context *pll = context;
-    read_pll_status(pll->axis, &pll->status);
-    return true;
+        pll->status.stopped  ||
+        pll->status.overflow  ||
+        pll->status.too_small  ||
+        pll->status.bad_offset;
+    pll->status.running = !stopped;
+    interlock_signal(pll->update_status, NULL);
 }
 
 
 static void handle_pll_start(struct pll_context *pll)
 {
-    trigger_record(pll->update_pv);     // Update reported status
+    update_pll_status(pll);
     enable_readout_fifo(pll->offset_fifo, false);
 }
 
@@ -460,12 +458,10 @@ static void handle_pll_stop(struct pll_context *pll)
      * might end up incorrectly halting the readout FIFO.  I think it's safe
      * enough to say that if the hardware thinks we're running then leave things
      * alone; another stop event will be along when we really do stop. */
-    struct tune_pll_status status;
-    read_pll_status(pll->axis, &status);
-    if (!status.running)
+    update_pll_status(pll);
+    if (!pll->status.running)
     {
         disable_readout_fifo(pll->offset_fifo);
-        trigger_record(pll->update_pv);     // Update reported status
         trigger_record(pll->offset_pv);     // Final frequency and offset update
     }
 }
@@ -519,8 +515,7 @@ static void publish_control(struct pll_context *pll)
         PUBLISH_C(bo, "START", start_feedback, pll);
         PUBLISH_C(bo, "STOP", stop_feedback, pll);
 
-        pll->update_pv = PUBLISH_C(bi, "UPDATE",
-            process_status_update, pll, .io_intr = true);
+        pll->update_status = create_interlock("UPDATE_STATUS", false);
         PUBLISH_READ_VAR(bi, "STATUS", pll->status.running);
         PUBLISH_READ_VAR(bi, "STOP:STOP", pll->status.stopped);
         PUBLISH_READ_VAR(bi, "STOP:DET_OVF", pll->status.overflow);

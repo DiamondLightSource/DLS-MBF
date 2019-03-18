@@ -21,14 +21,13 @@ for a in axes('PLL', lmbf_mode):
                 DESC = 'Tune PLL offset'),
             aIn('MEAN_OFFSET', PREC = 7, EGU = 'tune',
                 DESC = 'Mean tune PLL offset'),
+            aIn('TUNE', 0, 1, PREC = 7, EGU = 'tune',
+                DESC = 'Measured tune frequency'),
             overflow('FIFO_OVF', 'Offset FIFO readout overrun'))
         Action('RESET_FIFO', DESC = 'Reset FIFO readout to force fresh sample')
 
         # Frequency readbacks
-        tune = aIn('TUNE', 0, 1, PREC = 7, EGU = 'tune',
-            DESC = 'Measured tune frequency')
         nco_freq = aIn('FREQ', PREC = 7, EGU = 'tune',
-            FLNK = tune,
             DESC = 'Tune PLL NCO frequency')
         aIn('OFFSET', PREC = 7, EGU = 'tune',
             SCAN = 'I/O Intr',
@@ -54,17 +53,13 @@ for a in axes('PLL', lmbf_mode):
         Action('START', DESC = 'Start tune PLL')
         Action('STOP', DESC = 'Stop tune PLL')
 
-        status_pvs = [
+        Trigger('UPDATE_STATUS',
             boolIn('STATUS', 'Stopped', 'Running',
                 DESC = 'Tune PLL feedback status'),
             overflow('STOP:STOP', 'Stopped by user', error = 'Stopped'),
             overflow('STOP:DET_OVF', 'Detector overflow'),
             overflow('STOP:MAG_ERROR', 'Magnitude error', error = 'Too small'),
-            overflow('STOP:OFFSET_OVF', 'Offset overflow'),]
-        boolIn('UPDATE',
-            FLNK = create_fanout('FAN', *status_pvs),
-            SCAN = 'I/O Intr',
-            DESC = 'Handle run status change')
+            overflow('STOP:OFFSET_OVF', 'Offset overflow'))
 
     # Detector control
     with name_prefix('DET'):
