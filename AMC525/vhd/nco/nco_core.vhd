@@ -12,6 +12,12 @@ use work.defines.all;
 use work.nco_defs.all;
 
 entity nco_core is
+    generic (
+        -- This delay must match the NCO core delay.  This is the sum of
+        -- LOOKUP_DELAY and REFINE_DELAY defined in nco_core plus any delay
+        -- added by nco_cos_sin_prepare and nco_cos_sin_octant.
+        PROCESS_DELAY : natural
+    );
     port (
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
@@ -47,6 +53,14 @@ architecture arch of nco_core is
     constant REFINE_DELAY : natural := 5;   -- Defined by refine
     constant RESIDUE_DELAY : natural := 4;  -- Defined by refine
 
+    -- Total delay for external check
+    constant PHASE_DELAY : natural := 3;    -- Defined by phase
+    constant PREPARE_DELAY : natural := 1;  -- Defined by prepare
+    constant OCTANT_DELAY : natural := 3;   -- Defined by octant
+    constant TOTAL_DELAY : natural :=
+        PHASE_DELAY + PREPARE_DELAY + RESIDUE_DELAY + REFINE_DELAY +
+        OCTANT_DELAY;
+
 
     signal phase : angle_t;
 
@@ -60,8 +74,12 @@ architecture arch of nco_core is
     signal cos_sin_refined : cos_sin_18_t;
 
 begin
+    assert PROCESS_DELAY = TOTAL_DELAY severity failure;
+
     -- Phase advance computation for NCO
-    nco_phase : entity work.nco_phase port map (
+    nco_phase : entity work.nco_phase generic map (
+        PHASE_DELAY => PHASE_DELAY
+    ) port map (
         clk_i => clk_i,
         phase_advance_i => phase_advance_i,
         reset_phase_i => reset_phase_i,
@@ -71,6 +89,7 @@ begin
     -- Split angle into octant, lookup and residue.  The returned octant is
     -- delayed as appropriate for the final correction.
     prepare : entity work.nco_cos_sin_prepare generic map (
+        PREPARE_DELAY => PREPARE_DELAY,
         LOOKUP_DELAY => LOOKUP_DELAY,
         RESIDUE_DELAY => RESIDUE_DELAY,
         REFINE_DELAY => REFINE_DELAY
@@ -103,7 +122,9 @@ begin
     );
 
     -- Flip the final result into place according to the original octant
-    fixup_octant : entity work.nco_cos_sin_octant port map (
+    fixup_octant : entity work.nco_cos_sin_octant generic map (
+        OCTANT_DELAY => OCTANT_DELAY
+    ) port map (
         clk_i => clk_i,
         octant_i => octant,
         cos_sin_i => cos_sin_refined,

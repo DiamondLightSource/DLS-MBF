@@ -14,7 +14,9 @@ use work.nco_defs.all;
 entity nco is
     generic (
         IN_DELAY : natural := 4;        -- Input pipeline
-        OUT_DELAY : natural := 4        -- Output pipeline
+        OUT_DELAY : natural := 4;       -- Output pipeline
+        -- This is passed down to nco_core for validation
+        PROCESS_DELAY : natural := 16
     );
     port (
         adc_clk_i : in std_ulogic;
@@ -44,13 +46,15 @@ begin
     reset_dly : entity work.dlyreg generic map (
         DLY => IN_DELAY
     ) port map (
-        clk_i => adc_clk_i,
+        clk_i => dsp_clk_i,
         data_i(0) => reset_phase_i,
         data_o(0) => reset_phase
     );
 
 
-    nco_core : entity work.nco_core port map (
+    nco_core : entity work.nco_core generic map (
+        PROCESS_DELAY => PROCESS_DELAY
+    ) port map (
         clk_i => adc_clk_i,
         phase_advance_i => phase_advance,
         reset_phase_i => reset_phase,

@@ -10,6 +10,10 @@ use work.nco_defs.all;
 
 entity nco_cos_sin_prepare is
     generic (
+        -- This is the delay of the residue_o signal for validation
+        PREPARE_DELAY : natural;
+        -- The following determine the precise timing of the lookup_o and
+        -- octant_o signals.
         LOOKUP_DELAY : natural;     -- Time to look up addr in memory
         RESIDUE_DELAY : natural;    -- Lead time required on residue
         REFINE_DELAY : natural      -- Delay for final octant correction
@@ -27,10 +31,6 @@ entity nco_cos_sin_prepare is
 end;
 
 architecture arch of nco_cos_sin_prepare is
-    -- Delay in this block:
-    --  angle_i => lookup_out, residue_o
-    constant PREPARE_DELAY : natural := 1;
-
     -- In order to meet the timing relationships documented in nco_core the
     -- octant_o and lookup_o delays need to be delayed by the times computed
     -- below.
@@ -56,6 +56,10 @@ architecture arch of nco_cos_sin_prepare is
     signal residue : residue_t;
 
 begin
+    -- Delay in this block:
+    --  angle_i => lookup_out, residue_o
+    assert PREPARE_DELAY = 1 severity failure;
+
     -- Split the input angle into its three components
     --
     --   31    29 28    19 18      0

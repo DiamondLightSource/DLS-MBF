@@ -9,6 +9,10 @@ use work.defines.all;
 use work.nco_defs.all;
 
 entity nco_phase is
+    generic (
+        -- Delay from phase in to first output at new frequency, for checking
+        PHASE_DELAY : natural
+    );
     port (
         clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
@@ -31,6 +35,12 @@ architecture arch of nco_phase is
     attribute DONT_TOUCH of phase_advance_in : signal is "yes";
 
 begin
+    -- phase_advance_i
+    --  1   => phase_advance_in
+    --  2   => phase_advance
+    --  3   => phase = phase_o
+    assert PHASE_DELAY = 3 severity failure;
+
     process (clk_i) begin
         if rising_edge(clk_i) then
             phase_advance_in <= phase_advance_i;

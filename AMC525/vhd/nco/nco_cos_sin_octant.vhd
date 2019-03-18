@@ -9,6 +9,9 @@ use work.defines.all;
 use work.nco_defs.all;
 
 entity nco_cos_sin_octant is
+    generic (
+        OCTANT_DELAY : natural
+    );
     port (
         clk_i : in std_ulogic;
 
@@ -30,6 +33,13 @@ architecture arch of nco_cos_sin_octant is
     signal sin : signed(17 downto 0) := (others => '0');
 
 begin
+    -- Processing delay:
+    -- octant_i, cos_sin_i =>
+    --  1   octant_in, cos_sin_in =>
+    --  2   octant, {m,p}_{cos,sin} =>
+    --  3   cos, sin = cos_sin_o
+    assert OCTANT_DELAY = 3 severity failure;
+
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- A little pipelining

@@ -36,10 +36,17 @@ architecture arch of testbench is
     signal difference : cos_sin_18_t;
     signal sim_error : boolean;
 
+    -- This delay must match the NCO core delay.  This is the sum of
+    -- LOOKUP_DELAY and REFINE_DELAY defined in nco_core plus any delay added
+    -- by nco_cos_sin_prepare and nco_cos_sin_octant.
+    constant PROCESS_DELAY : natural := 16;
+
 begin
     clk <= not clk after 1 ns;
 
-    nco : entity work.nco_core port map (
+    nco : entity work.nco_core generic map (
+        PROCESS_DELAY => PROCESS_DELAY
+    ) port map (
         clk_i => clk,
         phase_advance_i => phase_advance,
         reset_phase_i => reset_phase,
@@ -48,7 +55,9 @@ begin
 
 
     -- Compare simulation with reference
-    sim_nco : entity work.sim_nco port map (
+    sim_nco : entity work.sim_nco generic map (
+        PROCESS_DELAY => PROCESS_DELAY
+    ) port map (
         clk_i => clk,
         phase_advance_i => phase_advance,
         reset_phase_i => reset_phase,
@@ -79,7 +88,7 @@ begin
         reset_phase <= '0';
         tick_wait;
 
-        phase_advance <= X"00147AE10000";
+        phase_advance <= X"147AE1000000";
         wait;
     end process;
 end;
