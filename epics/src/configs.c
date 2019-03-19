@@ -145,6 +145,10 @@ static void convert_hardware_config(void)
     CONVERT_FIELD(DET_ADC_REJECT_OFFSET);
     CONVERT_FIELD(DET_FIR_OFFSET);
 
+    CONVERT_FIELD(PLL_ADC_OFFSET);
+    CONVERT_FIELD(PLL_FIR_OFFSET);
+    CONVERT_FIELD(PLL_ADC_REJECT_OFFSET);
+
     // Note that the delays are *not* converted
 }
 

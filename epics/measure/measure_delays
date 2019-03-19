@@ -156,8 +156,8 @@ def one_bunch(mbf, value, other, bunch = 0):
 @MBF.method
 def fixup_delay(mbf, value):
     if value < 0:
-        return value + mbf.bunches
-    elif value >= mbf.bunches / 2:
+        value += mbf.bunches
+    if value >= mbf.bunches / 2:
         return value - mbf.bunches
     else:
         return value
