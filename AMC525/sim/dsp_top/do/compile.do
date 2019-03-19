@@ -38,6 +38,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/min_max_sum/min_max_sum_update.vhd \
     $vhd_dir/min_max_sum/min_max_sum_readout.vhd \
     $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_core.vhd \
     $vhd_dir/min_max_sum/min_max_sum.vhd \
     $vhd_dir/min_max_sum/min_max_limit.vhd \
     $vhd_dir/bunch/bunch_defs.vhd \
@@ -57,6 +58,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/dac/dac_mms_dram_data_source.vhd \
     $vhd_dir/dac/dac_nco_delay.vhd \
+    $vhd_dir/dac/dac_bunch_config_delay.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
     $vhd_dir/dac/dac_top.vhd \
     $vhd_dir/bunch_fir/bunch_fir_dsp.vhd \
@@ -94,8 +96,11 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_top.vhd \
     $vhd_dir/dsp/nco_register.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
+    $vhd_dir/dsp/dsp_nco_to_mux_delay.vhd \
+    $vhd_dir/dsp/dsp_control_mux.vhd \
     $vhd_dir/adc/adc_registers.vhd \
     $vhd_dir/adc/adc_fill_reject_counter.vhd \
+    $vhd_dir/adc/adc_fill_reject_core.vhd \
     $vhd_dir/adc/adc_fill_reject.vhd \
     $vhd_dir/adc/adc_mms_dram_data_source.vhd \
     $vhd_dir/adc/adc_overflow.vhd \

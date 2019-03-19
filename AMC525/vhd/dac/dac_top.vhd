@@ -73,6 +73,7 @@ architecture arch of dac_top is
     signal nco_0_data_in : nco_0_data_i'SUBTYPE;
     signal nco_1_data_in : nco_1_data_i'SUBTYPE;
     signal nco_2_data_in : nco_2_data_i'SUBTYPE;
+    signal bunch_config_in : bunch_config_t;
 
     -- Overflow detection
     signal fir_overflow_in : std_ulogic;
@@ -176,6 +177,14 @@ begin
         data_o => nco_2_data_in
     );
 
+    bunch_delay : entity work.dac_bunch_config_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY + NCO1_GAIN_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => bunch_config_i,
+        data_o => bunch_config_in
+    );
+
 
     -- -------------------------------------------------------------------------
     -- Output preparation
@@ -237,7 +246,7 @@ begin
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        bunch_config_i => bunch_config_i,
+        bunch_config_i => bunch_config_in,
 
         fir_data_i => fir_data,
         fir_overflow_i => fir_overflow_in,

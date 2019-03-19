@@ -82,6 +82,18 @@ architecture arch of dsp_control_mux is
     signal d2c1_nco_1_data : dsp_nco_to_mux_t;
     signal d2c1_nco_2_data : dsp_nco_to_mux_t;
 
+    -- Outputs so that we can zero initialise for simulation
+    signal adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE) :=
+        (others => (others => '0'));
+    signal nco_0_out : dsp_nco_from_mux_array_t :=
+        (others => dsp_nco_from_mux_reset);
+    signal nco_1_out : dsp_nco_from_mux_array_t :=
+        (others => dsp_nco_from_mux_reset);
+    signal nco_2_out : dsp_nco_from_mux_array_t :=
+        (others => dsp_nco_from_mux_reset);
+    signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0) :=
+        (others => (others => '0'));
+
 begin
     -- Delay lines for NCO data in.
     c0_nco_0_delay : entity work.dsp_nco_to_mux_delay generic map (
@@ -137,25 +149,31 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- ADC input multiplexing
-            adc_o(0) <= d2c0.adc_data;
+            adc_out(0) <= d2c0.adc_data;
             if adc_mux_i = '1' then
-                adc_o(1) <= d2c0.adc_data;
+                adc_out(1) <= d2c0.adc_data;
             else
-                adc_o(1) <= d2c1.adc_data;
+                adc_out(1) <= d2c1.adc_data;
             end if;
 
             -- NCO output multiplexing
-            nco_mux(nco_0_o, nco_0_mux_i, d2c0_nco_0_data, d2c1_nco_0_data);
-            nco_mux(nco_1_o, nco_1_mux_i, d2c0_nco_1_data, d2c1_nco_1_data);
-            nco_mux(nco_2_o, nco_2_mux_i, d2c0_nco_2_data, d2c1_nco_2_data);
+            nco_mux(nco_0_out, nco_0_mux_i, d2c0_nco_0_data, d2c1_nco_0_data);
+            nco_mux(nco_1_out, nco_1_mux_i, d2c0_nco_1_data, d2c1_nco_1_data);
+            nco_mux(nco_2_out, nco_2_mux_i, d2c0_nco_2_data, d2c1_nco_2_data);
 
             -- Bank selection
-            bank_select_o(0) <= d2c0.bank_select;
+            bank_select_out(0) <= d2c0.bank_select;
             if bank_mux_i = '1' then
-                bank_select_o(1) <= d2c0.bank_select;
+                bank_select_out(1) <= d2c0.bank_select;
             else
-                bank_select_o(1) <= d2c1.bank_select;
+                bank_select_out(1) <= d2c1.bank_select;
             end if;
         end if;
     end process;
+
+    adc_o <= adc_out;
+    nco_0_o <= nco_0_out;
+    nco_1_o <= nco_1_out;
+    nco_2_o <= nco_2_out;
+    bank_select_o <= bank_select_out;
 end;

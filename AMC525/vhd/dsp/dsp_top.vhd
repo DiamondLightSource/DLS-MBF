@@ -41,8 +41,6 @@ entity dsp_top is
 end;
 
 architecture arch of dsp_top is
-    signal nco0_register : reg_data_t;
-
     -- Bunch control
     signal bunch_config : bunch_config_t;
     signal detector_window : hom_win_t;
@@ -66,6 +64,18 @@ architecture arch of dsp_top is
     -- Data flow
     signal fir_data : signed(FIR_DATA_RANGE);
     signal fill_reject_adc : signed(ADC_DATA_RANGE);
+
+    -- The following delays are needed to configure the sequencer so that the
+    -- sweep output and other controls are aligned at the DAC output.
+    --
+    -- Delay from nco phase control to cos/sin output, validated by NCO core
+    constant NCO_PROCESS_DELAY : natural := 16;
+    -- Total delay through NCO including 4 tick NCO output pipeline
+    constant NCO1_DELAY : natural := NCO_PROCESS_DELAY + 4;
+    -- Delay from bunch bank selection to bank configuration
+    constant BUNCH_SELECT_DELAY : natural := 10;
+    -- Extra daly for the bunch bank select taking NCO delays into account
+    constant BANK_DELAY : natural := NCO1_DELAY + 4 - BUNCH_SELECT_DELAY;
 
 begin
     -- -------------------------------------------------------------------------
@@ -91,7 +101,9 @@ begin
     -- Miscellaneous control
 
     -- Bunch specific control
-    bunch_select : entity work.bunch_select port map (
+    bunch_select : entity work.bunch_select generic map (
+        BUNCH_SELECT_DELAY => BUNCH_SELECT_DELAY
+    ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => control_to_dsp_i.turn_clock,
@@ -118,7 +130,11 @@ begin
     );
     dsp_to_control_o.nco_0_data.nco <= nco_0_cos_sin;
 
-    nco_1 : entity work.nco port map (
+    nco_1 : entity work.nco generic map (
+        PROCESS_DELAY => NCO_PROCESS_DELAY,
+        IN_DELAY => 0,
+        OUT_DELAY => 4
+    ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         phase_advance_i => nco_1_phase_advance,
@@ -221,7 +237,10 @@ begin
     -- -------------------------------------------------------------------------
     -- Sequencer and detector
 
-    sequencer : entity work.sequencer_top port map (
+    sequencer : entity work.sequencer_top generic map (
+        NCO_DELAY => NCO1_DELAY,
+        BANK_DELAY => BANK_DELAY
+    ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 

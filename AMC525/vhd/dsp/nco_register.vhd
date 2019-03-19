@@ -27,9 +27,9 @@ entity nco_register is
 
         -- Current frequency
         nco_freq_i : in angle_t;
-        nco_freq_o : out angle_t;
-        reset_phase_o : out std_ulogic;
-        write_freq_o : out std_ulogic
+        nco_freq_o : out angle_t := (others => '0');
+        reset_phase_o : out std_ulogic := '0';
+        write_freq_o : out std_ulogic := '0'
     );
 end;
 

@@ -79,12 +79,19 @@ package dsp_defs is
         stop_tune_pll : std_ulogic;
     end record;
 
+
     -- Convenient reset value for simulation
+    constant dsp_nco_from_mux_reset : dsp_nco_from_mux_t := (
+        nco => (others => '0'),
+        gain => X"0",
+        enable => '0'
+    );
+
     constant control_to_dsp_reset : control_to_dsp_t := (
         adc_data   => (others => '0'),
-        nco_0_data => (nco => (others => '0'), gain => X"0", enable => '0'),
-        nco_1_data => (nco => (others => '0'), gain => X"0", enable => '0'),
-        nco_2_data => (nco => (others => '0'), gain => X"0", enable => '0'),
+        nco_0_data => dsp_nco_from_mux_reset,
+        nco_1_data => dsp_nco_from_mux_reset,
+        nco_2_data => dsp_nco_from_mux_reset,
         bank_select => (others => '0'),
         dram1_ready => '0',
         blanking => '0',

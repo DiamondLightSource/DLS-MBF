@@ -11,6 +11,10 @@ use work.register_defs.all;
 use work.bunch_defs.all;
 
 entity bunch_select is
+    generic (
+        -- Delay from bank_select_i to bunch_config_o for validation
+        BUNCH_SELECT_DELAY : natural := 10
+    );
     port (
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
@@ -40,7 +44,17 @@ architecture arch of bunch_select is
     signal bunch_config : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
     signal config_out : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
 
+    -- Lookup delay
+    constant STORE_DELAY : natural := 6;
+    -- Pipeline for output
+    constant DELAY_OUT : natural := 4;
+
 begin
+    -- bank_select_i =>
+    --  =(STORE_DELAY)=> bunch_config
+    --  =(DELAY_OUT)=> config_out = bunch_config_o
+    assert BUNCH_SELECT_DELAY = STORE_DELAY + DELAY_OUT severity failure;
+
     -- Register management
     register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
@@ -65,7 +79,9 @@ begin
     );
 
     -- Bunch bank memory
-    bunch_store : entity work.bunch_store port map (
+    bunch_store : entity work.bunch_store generic map (
+        BUNCH_STORE_DELAY => STORE_DELAY
+    ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -82,7 +98,7 @@ begin
 
     -- Pipeline the bunch configuration
     bunch_delay : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => DELAY_OUT,
         DW  => BUNCH_CONFIG_BITS
     ) port map (
        clk_i => adc_clk_i,

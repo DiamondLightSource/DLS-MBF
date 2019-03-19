@@ -63,7 +63,9 @@ begin
 
     blanking <= '0';
 
-    sequencer : entity work.sequencer_top port map (
+    sequencer : entity work.sequencer_top generic map (
+        NCO_DELAY => 20
+    ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
 

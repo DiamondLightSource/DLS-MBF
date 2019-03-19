@@ -33,6 +33,10 @@ use work.sequencer_defs.all;
 use work.register_defs.all;
 
 entity sequencer_top is
+    generic (
+        NCO_DELAY : natural;
+        BANK_DELAY : natural
+    );
     port (
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
@@ -258,7 +262,10 @@ begin
     );
 
     -- Fine tuning to output
-    delays : entity work.sequencer_delays port map (
+    delays : entity work.sequencer_delays generic map (
+        NCO_DELAY => NCO_DELAY,
+        BANK_DELAY => BANK_DELAY
+    ) port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock,
         seq_state_i => seq_state,

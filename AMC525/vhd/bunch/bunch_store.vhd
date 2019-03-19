@@ -9,6 +9,10 @@ use work.defines.all;
 use work.bunch_defs.all;
 
 entity bunch_store is
+    generic (
+        -- Processing delay bank_select_i => config_o for validation
+        BUNCH_STORE_DELAY : natural
+    );
     port (
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
@@ -44,11 +48,23 @@ architecture arch of bunch_store is
     signal config : data_t := (others => '0');
     signal config_out : data_t := (others => '0');
 
+    -- Block memory read delay
+    constant READ_DELAY : natural := 2;
+
 begin
+    -- bank_select_i
+    --  => bank_select_in
+    --  => read_addr
+    --  =(READ_DELAY)=> read_data
+    --  => config
+    --  => config_out = config_o
+    assert BUNCH_STORE_DELAY = READ_DELAY + 4 severity failure;
+
     -- Bunch memory for each line
     memory_inst : entity work.block_memory generic map (
         ADDR_BITS => ADDR_BITS,
-        DATA_BITS => BUNCH_CONFIG_BITS
+        DATA_BITS => BUNCH_CONFIG_BITS,
+        READ_DELAY => READ_DELAY
     ) port map (
         read_clk_i => adc_clk_i,
         read_addr_i => read_addr,
