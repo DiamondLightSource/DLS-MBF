@@ -82,7 +82,7 @@ $(DIR_TARGETS):
 
 
 $(DEFS_PATH):
-	make -C python
+	make -C python mbf/defs_path.py
 
 epics: $(DEFS_PATH)
 tune_fit: $(DEFS_PATH)
