@@ -89,6 +89,8 @@ architecture arch of dac_output_mux is
         return result;
     end;
 
+    constant INPUT_DELAY : natural := 4;
+
 begin
     fir_enable   <= bunch_config_i.fir_enable;
     nco_0_enable <= nco_0_enable_i and bunch_config_i.nco_0_enable;
@@ -96,7 +98,7 @@ begin
     nco_2_enable <= nco_2_enable_i and bunch_config_i.nco_2_enable;
 
     prepare_fir : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => INPUT_DELAY,
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
@@ -105,7 +107,7 @@ begin
     );
 
     prepare_nco_0 : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => INPUT_DELAY,
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
@@ -114,7 +116,7 @@ begin
     );
 
     prepare_nco_1 : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => INPUT_DELAY,
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
@@ -123,7 +125,7 @@ begin
     );
 
     prepare_nco_2 : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => INPUT_DELAY,
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
@@ -131,15 +133,22 @@ begin
         signed(data_o) => nco_2_data
     );
 
+    prepare_gain : entity work.dlyreg generic map (
+        DLY => INPUT_DELAY,
+        DW => bunch_config_i.gain'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(bunch_config_i.gain),
+        signed(data_o) => bunch_gain_in
+    );
+
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             fir_overflow <= fir_overflow_i and fir_enable;
             -- Also pipeline the gain so that the selection and gain match
-            -- Probably not necessary
-            bunch_gain_pl <= bunch_config_i.gain;
-            bunch_gain_in <= bunch_gain_pl;
-            bunch_gain <= bunch_gain_in;
+            bunch_gain_pl <= bunch_gain_in;
+            bunch_gain <= bunch_gain_pl;
 
             -- Add all four inputs together, continue with gain pipeline
             accum_pl <= fir_data + nco_0_data + nco_1_data + nco_2_data;

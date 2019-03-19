@@ -41,7 +41,7 @@ begin
     -- We have to halve the BANK_DELAY and NCO_DELAY, as these are in ADC clocks
 
     bunch_bank_delay : entity work.dlyline generic map (
-        DLY => BANK_DELAY / 2
+        DLY => BANK_DELAY / 2 - 1
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => turn_clock_i,

@@ -169,7 +169,7 @@ begin
             others => '0'));
         for n in 1 to TURN_COUNT loop
             write_reg(DSP_BUNCH_BANK_REG, (
-                DSP_BUNCH_BANK_GAIN_BITS => 18X"00FFF",
+                DSP_BUNCH_BANK_GAIN_BITS => 18X"03FFF",
                 DSP_BUNCH_BANK_NCO1_ENABLE_BIT => '1',
                 others => '0'));
         end loop;
@@ -183,22 +183,22 @@ begin
             DSP_SEQ_COMMAND_WRITE_BIT => '1',
             others => '0'));
 
-        -- First write bank 0.  This is the idle state, needs most fields
+        -- First write state 0.  This is the idle state, needs most fields
         -- zero.  We enable the phase reset bit in the idle state
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- start freq
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- delta freq
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- high bits of freq
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- dwell and capture
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT => '1',
             others => '0'));
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- window rate
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- holdoff time
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- (padding)
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
 
-        -- Next write bank.  1 dwell 1 capture, different NCO frequency
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        -- Next write state 1.  1 dwell 1 capture, different NCO frequency
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- start freq (bottom
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- delta freq  bits)
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS => X"1000",
             DSP_SEQ_STATE_HIGH_BITS_DELTA_HIGH_BITS => X"0000"));
@@ -207,7 +207,7 @@ begin
             DSP_SEQ_STATE_TIME_CAPTURE_BITS => X"0000"));
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_CONFIG_BANK_BITS => "01",
-            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => "0001",
+            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => "0011",
             DSP_SEQ_STATE_CONFIG_ENA_NCO_BIT => '1',
             others => '0'));
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
