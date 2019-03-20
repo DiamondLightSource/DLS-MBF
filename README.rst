@@ -13,6 +13,7 @@ first operation.
 ..  _MBF Documentation: https://confluence.diamond.ac.uk/x/9obCB
 ..  _Bringing up MBF: https://confluence.diamond.ac.uk/x/_obCB
 
+
 LICENSING
 ---------
 
@@ -25,6 +26,7 @@ redistributed and may not be commercially exploited.
 This restriction does not apply to any of the other files in this repository.
 
 ..  _Europractice: http://www.europractice.stfc.ac.uk/welcome.html
+
 
 MBF Components
 --------------
@@ -66,3 +68,47 @@ Tune Fitter
     =============== ======= ====================================================
     pythonIoc       2.11    https://github.com/Araneidae/pythonIoc
     =============== ======= ====================================================
+
+
+Release Notes
+-------------
+
+1.0.0 May 2018
+..............
+
+This was the first working release deployed at DLS.
+
+1.0.1 June 2018
+...............
+
+Minor bug fixes and refinements.
+
+1.1.0 August 2018
+.................
+
+Bug fixes, some structural renaming: at this point LMBF was renamed to MBF
+throughout the project.
+
+1.1.2 January 2019
+..................
+
+Minor changes:
+
+* Some improvements to the tune fitting algorithm to improve robustness.
+* Add selector to tune fitter to just take maximum value as proxy for peak.
+* Bunch-by-bunch control waveform editing has been improved.
+
+1.2.0 March 2019
+................
+
+The firmware for this release is strictly incompatibly with the 1.0 and 1.1
+releases, and this is now checked during startup.  The following features have
+been added:
+
+* Tune PLL tracking is now available.  This is the major change in this release.
+* NCO frequencies are now 48 bits wide (rather than 32 bits).  This means that
+  frequency resolution will no longer be an issue anywhere.
+* Bunch by bunch gain control now has option for up to +30dB of extra gain.
+* New bunch rejection filter added for detector data.
+* Two changes to sequencer: now have optional holdoff at start of dwell, and can
+  optionally apply tune PLL offset as extra offset to sweep frequency.
