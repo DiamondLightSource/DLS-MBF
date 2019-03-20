@@ -779,8 +779,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # ===== ====================================================
                     .SELECT         2
                     # Readout shift for detector
-                    .DET_SHIFT      1
-                    -               1
+                    .DET_SHIFT      2
                     # NCO gain and output enable
                     .NCO_GAIN       4
                     .NCO_ENABLE

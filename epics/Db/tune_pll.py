@@ -65,7 +65,7 @@ for a in axes('PLL', lmbf_mode):
     with name_prefix('DET'):
         mbbOut('SELECT', 'ADC', 'FIR', 'ADC no fill',
             DESC = 'Select detector source')
-        mbbOut('SCALING', DESC = 'Readout scaling', *dBrange(2, -8*6))
+        mbbOut('SCALING', DESC = 'Readout scaling', *dBrange(4, -6*6, 8*6))
         longOut('DWELL', 1, 2**16, DESC = 'Dwell time in turns')
 
         bunch_count = longIn('COUNT', DESC = 'Number of enabled bunches')

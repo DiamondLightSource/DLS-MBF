@@ -57,7 +57,7 @@ architecture arch of tune_pll_detector is
 
 begin
     -- Compute shift.
-    shift <= 8 * to_integer(shift_i) + 24;
+    shift <= 6 * to_integer(shift_i) + 16;
 
     -- Pipeline NCO input
     nco_delay : entity work.nco_delay generic map (

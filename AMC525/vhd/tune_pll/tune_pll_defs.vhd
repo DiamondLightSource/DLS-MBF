@@ -22,7 +22,7 @@ package tune_pll_defs is
 
         -- Detector control and status
         data_select : std_logic_vector(1 downto 0);
-        detector_shift : unsigned(0 downto 0);
+        detector_shift : unsigned(1 downto 0);
 
         -- Feedback control and status
         target_phase : phase_angle_t;

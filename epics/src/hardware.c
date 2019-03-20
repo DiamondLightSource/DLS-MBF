@@ -1014,7 +1014,7 @@ void hw_write_pll_det_scaling(int axis, unsigned int scaling)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            .det_shift = scaling & 0x1);
+            .det_shift = scaling & 0x3);
 }
 
 

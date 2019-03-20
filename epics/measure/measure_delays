@@ -484,7 +484,7 @@ def measure_tune_pll_bunch(mbf, results):
     mbf.set('PLL:NCO:ENABLE_S', 'On')
     # Configure detector
     mbf.set('PLL:DET:DWELL_S', 100)
-    mbf.set('PLL:DET:SCALING_S', '0dB')
+    mbf.set('PLL:DET:SCALING_S', '12dB')
 
     power = mbf.PV('PLL:FILT:MAG')
 
@@ -504,7 +504,7 @@ def measure_tune_pll_delay(mbf, results):
     mbf.set('PLL:NCO:ENABLE_S', 'On')
     # Configure detector
     mbf.set('PLL:DET:DWELL_S', 100)
-    mbf.set('PLL:DET:SCALING_S', '0dB')
+    mbf.set('PLL:DET:SCALING_S', '-24dB')
     mbf.set('PLL:DET:BUNCHES_S', numpy.ones(mbf.bunches, dtype = int))
     # Configure the ADC fill reject filter
     mbf.set('ADC:REJECT_COUNT_S', '64 turns')
