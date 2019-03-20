@@ -55,5 +55,9 @@ set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]
 set_property STEPS.SYNTH_DESIGN.TCL.PRE \
     $src_dir/tcl/make_version.tcl [get_runs synth_1]
 
+# Try a little harder to close timing
+set_property STEPS.OPT_DESIGN.ARGS.DIRECTIVE ExploreSequentialArea \
+    [get_runs impl_1]
+
 launch_runs impl_1 -to_step write_bitstream -jobs 6
 wait_on_run impl_1
