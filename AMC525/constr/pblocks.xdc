@@ -66,9 +66,9 @@ add_cells_to_pblock $pblock_fir [get_cells [list \
 
 # Put the two detectors in tile X0Y0
 set pblock_det [create_pblock pblock_det]
-resize_pblock $pblock_det -add {DSP48_X0Y0:DSP48_X5Y19}
-resize_pblock $pblock_det -add {RAMB18_X0Y0:RAMB18_X5Y19}
-resize_pblock $pblock_det -add {RAMB36_X0Y0:RAMB36_X5Y9}
+resize_pblock $pblock_det -add {DSP48_X0Y0:DSP48_X6Y19}
+resize_pblock $pblock_det -add {RAMB18_X0Y0:RAMB18_X6Y19}
+resize_pblock $pblock_det -add {RAMB36_X0Y0:RAMB36_X6Y9}
 add_cells_to_pblock $pblock_det [get_cells [list \
     {dsp_main/dsp_gen[0].dsp_top/detector} \
     {dsp_main/dsp_gen[1].dsp_top/detector} \
@@ -89,18 +89,18 @@ add_cells_to_pblock $pblock_mms [get_cells [list \
 ]]
 
 
-# Prevent the ADC/DAC FIRs from being pulled apart
-set pblock_fast_fir [create_pblock pblock_fast_fir]
-resize_pblock $pblock_fast_fir -add {SLICE_X106Y50:SLICE_X157Y99}
-resize_pblock $pblock_fast_fir -add {DSP48_X7Y20:DSP48_X13Y39}
-resize_pblock $pblock_fast_fir -add {RAMB18_X7Y20:RAMB18_X9Y39}
-resize_pblock $pblock_fast_fir -add {RAMB36_X7Y10:RAMB36_X9Y19}
-add_cells_to_pblock $pblock_fast_fir [get_cells [list \
-    {dsp_main/dsp_gen[0].dsp_top/adc_top/fast_fir/fast_fir} \
-    {dsp_main/dsp_gen[0].dsp_top/dac_top/fast_fir/fast_fir} \
-    {dsp_main/dsp_gen[1].dsp_top/adc_top/fast_fir/fast_fir} \
-    {dsp_main/dsp_gen[1].dsp_top/dac_top/fast_fir/fast_fir} \
-]]
+# # Prevent the ADC/DAC FIRs from being pulled apart
+# set pblock_fast_fir [create_pblock pblock_fast_fir]
+# resize_pblock $pblock_fast_fir -add {SLICE_X106Y50:SLICE_X157Y99}
+# resize_pblock $pblock_fast_fir -add {DSP48_X7Y20:DSP48_X13Y39}
+# resize_pblock $pblock_fast_fir -add {RAMB18_X7Y20:RAMB18_X9Y39}
+# resize_pblock $pblock_fast_fir -add {RAMB36_X7Y10:RAMB36_X9Y19}
+# add_cells_to_pblock $pblock_fast_fir [get_cells [list \
+#     {dsp_main/dsp_gen[0].dsp_top/adc_top/fast_fir/fast_fir} \
+#     {dsp_main/dsp_gen[0].dsp_top/dac_top/fast_fir/fast_fir} \
+#     {dsp_main/dsp_gen[1].dsp_top/adc_top/fast_fir/fast_fir} \
+#     {dsp_main/dsp_gen[1].dsp_top/dac_top/fast_fir/fast_fir} \
+# ]]
 
 
 # Put sequencer and its NCO above the detector
@@ -120,15 +120,17 @@ remove_cells_from_pblock $pblock_seq [get_cells [list \
 ]]
 
 
-# Keep BRAMs and input registers together for fill_reject
-set pblock_extra [create_pblock pblock_extra]
-resize_pblock $pblock_extra -add {SLICE_X52Y100:SLICE_X105Y149}
-resize_pblock $pblock_extra -add {RAMB18_X4Y40:RAMB18_X6Y59}
-resize_pblock $pblock_extra -add {RAMB36_X4Y20:RAMB36_X6Y29}
-add_cells_to_pblock $pblock_extra [get_cells [list \
-    {dsp_main/dsp_gen[0].dsp_top/adc_top/fill_reject/core} \
-    {dsp_main/dsp_gen[1].dsp_top/adc_top/fill_reject/core} \
-]]
+# # Keep BRAMs and input registers together for fill_reject
+# set pblock_extra [create_pblock pblock_extra]
+# resize_pblock $pblock_extra -add {SLICE_X52Y100:SLICE_X105Y149}
+# resize_pblock $pblock_extra -add {RAMB18_X4Y40:RAMB18_X6Y59}
+# resize_pblock $pblock_extra -add {RAMB36_X4Y20:RAMB36_X6Y29}
+# add_cells_to_pblock $pblock_extra [get_cells [list \
+#     {dsp_main/dsp_gen[0].dsp_top/adc_top/fill_reject/core} \
+#     {dsp_main/dsp_gen[1].dsp_top/adc_top/fill_reject/core} \
+#     {dsp_main/dsp_gen[0].dsp_top/dac_top/long_delay} \
+#     {dsp_main/dsp_gen[1].dsp_top/dac_top/long_delay} \
+# ]]
 
 
 # Put Tune PLL in the right hand of X1Y2

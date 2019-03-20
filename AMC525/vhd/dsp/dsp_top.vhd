@@ -73,7 +73,7 @@ architecture arch of dsp_top is
     -- Total delay through NCO including 4 tick NCO output pipeline
     constant NCO1_DELAY : natural := NCO_PROCESS_DELAY + 4;
     -- Delay from bunch bank selection to bank configuration
-    constant BUNCH_SELECT_DELAY : natural := 10;
+    constant BUNCH_SELECT_DELAY : natural := 8;
     -- Extra daly for the bunch bank select taking NCO delays into account
     constant BANK_DELAY : natural := NCO1_DELAY + 4 - BUNCH_SELECT_DELAY;
 

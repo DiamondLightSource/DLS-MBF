@@ -13,7 +13,7 @@ use work.bunch_defs.all;
 entity bunch_select is
     generic (
         -- Delay from bank_select_i to bunch_config_o for validation
-        BUNCH_SELECT_DELAY : natural := 10
+        BUNCH_SELECT_DELAY : natural
     );
     port (
         adc_clk_i : in std_ulogic;
@@ -45,7 +45,7 @@ architecture arch of bunch_select is
     signal config_out : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
 
     -- Lookup delay
-    constant STORE_DELAY : natural := 6;
+    constant STORE_DELAY : natural := 4;
     -- Pipeline for output
     constant DELAY_OUT : natural := 4;
 

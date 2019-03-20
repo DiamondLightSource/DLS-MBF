@@ -114,7 +114,7 @@ architecture arch of nco_cos_sin_refine is
     attribute DONT_TOUCH : string;
     attribute DONT_TOUCH of residue_i : signal is "yes";
     attribute DONT_TOUCH of delta : signal is "yes";
-    attribute DONT_TOUCH of cos_sin_i : signal is "yes";
+    attribute DONT_TOUCH of cos_sin_in : signal is "yes";
 
 begin
     -- We align cos_sin_i and delta: the delay from residue_i to delta must

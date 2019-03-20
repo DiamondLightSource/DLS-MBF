@@ -31,6 +31,10 @@ architecture arch of detector_bunch_mem is
     signal read_word : reg_data_t;
     signal read_word_bits : reg_data_t := (others => '0');
 
+    signal write_strobe_in : std_ulogic;
+    signal write_addr_in : write_addr_i'SUBTYPE;
+    signal write_data_in : write_data_i'SUBTYPE;
+
     -- Delay read_addr =(2)=> read_word
     constant READ_WORD_DELAY : natural := 2;
     -- Delay read_addr
@@ -51,9 +55,9 @@ begin
         read_data_o => read_word,
 
         write_clk_i => write_clk_i,
-        write_strobe_i => write_strobe_i,
-        write_addr_i => write_addr_i,
-        write_data_i => write_data_i
+        write_strobe_i => write_strobe_in,
+        write_addr_i => write_addr_in,
+        write_data_i => write_data_in
     );
 
     delay : entity work.dlyline generic map (
@@ -72,6 +76,15 @@ begin
         if rising_edge(read_clk_i) then
             read_word_bits <= read_word;
             read_data_o <= read_word_bits(to_integer(read_addr_bit));
+        end if;
+    end process;
+
+    -- Pipeline the write
+    process (write_clk_i) begin
+        if rising_edge(write_clk_i) then
+            write_strobe_in <= write_strobe_i;
+            write_addr_in <= write_addr_i;
+            write_data_in <= write_data_i;
         end if;
     end process;
 end;
