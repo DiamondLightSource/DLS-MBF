@@ -54,6 +54,7 @@ static struct pll_context {
     uint64_t current_nco;               // Current computed NCO frequency
     double nco_freq_out;                // Current frequency readback
     double mean_offset;                 // Mean offset from offset FIFO
+    double std_offset;                  // Standard deviation of offset
     double nco_tune;                    // Tune part if running, NaN otherwise
 
     /* Target phase and delay to be compensated. */
@@ -190,6 +191,16 @@ static void read_offset_waveform(
     }
     pll->mean_offset = offset_sum / *length;
 
+    /* Now we have the mean, compute the standard deviation. */
+    double std_sum = 0;
+    for (unsigned int i = 0; i < *length; i ++)
+    {
+        double offset = freq_to_tune_signed(
+            (uint64_t) ((int64_t) buffer[i] << 8));
+        std_sum += SQR(offset - pll->mean_offset);
+    }
+    pll->std_offset = sqrt(std_sum / *length);
+
     /* Also update the NCO tune. */
     if (pll->status.running)
     {
@@ -281,6 +292,7 @@ static void publish_nco(struct pll_context *pll)
         PUBLISH_WAVEFORM(float, "OFFSETWF", length,
             read_offset_waveform, .context = pll);
         PUBLISH_READ_VAR(ai, "MEAN_OFFSET", pll->mean_offset);
+        PUBLISH_READ_VAR(ai, "STD_OFFSET", pll->std_offset);
         PUBLISH_READ_VAR(ai, "TUNE", pll->nco_tune);
         PUBLISH_C(bo, "RESET_FIFO", reset_offset_fifo, pll);
 
@@ -358,6 +370,13 @@ static bool write_det_dwell(void *context, unsigned int *dwell)
     return true;
 }
 
+static bool write_det_blanking(void *context, bool *blanking)
+{
+    struct pll_context *pll = context;
+    hw_write_pll_blanking(pll->axis, *blanking);
+    return true;
+}
+
 
 static void write_bunch_enables(
     void *context, char enables[], unsigned int *length)
@@ -409,6 +428,7 @@ static void publish_detector(struct pll_context *pll)
         PUBLISH_C_P(mbbo, "SELECT", write_det_input_select, pll);
         PUBLISH_C_P(mbbo, "SCALING", write_det_output_scale, pll);
         PUBLISH_C_P(ulongout, "DWELL", write_det_dwell, pll);
+        PUBLISH_C_P(bo, "BLANKING", write_det_blanking, pll);
 
         PUBLISH_READ_VAR(ulongin, "COUNT", pll->bunch_count);
         pll->enablewf = PUBLISH_WAVEFORM_C_P(
@@ -675,15 +695,6 @@ static bool read_filtered_readbacks(void *context, bool *value)
 }
 
 
-static bool set_filtered_debug(void *context, bool *value)
-{
-    struct pll_context *pll = context;
-    pll->filtered_cordic = *value;
-    hw_write_pll_filtered_cordic(pll->axis, *value);
-    return true;
-}
-
-
 static void publish_readbacks(struct pll_context *pll)
 {
     /* Filtered data readbacks. */
@@ -693,7 +704,6 @@ static void publish_readbacks(struct pll_context *pll)
         PUBLISH_READ_VAR(ai, "Q", pll->filtered_sin);
         PUBLISH_READ_VAR(ai, "MAG", pll->filtered_magnitude);
         PUBLISH_READ_VAR(ai, "PHASE", pll->filtered_phase);
-        PUBLISH_C(bo, "SELECT", set_filtered_debug, pll);
     }
 
     /* Live status. */

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2049
-y 42
+x 625
+y 65
 w 671
 h 704
 font "helvetica-medium-r-18.0"
@@ -551,7 +551,7 @@ major 4
 minor 1
 release 1
 x 168
-y 320
+y 324
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -793,9 +793,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 440
+x 432
 y 320
-w 120
+w 112
 h 22
 fgColor index 14
 bgColor index 3
@@ -812,9 +812,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 440
+x 432
 y 344
-w 120
+w 112
 h 22
 fgColor index 14
 bgColor index 3
@@ -857,10 +857,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 440
+x 424
 y 376
-w 88
-h 20
+w 64
+h 24
 controlPv "$(device):$(axis):PLL:DET:DWELL_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -900,25 +900,6 @@ numDsps 1
 displayFileName {
   0 "mbf/tune_pll_debug.edl"
 }
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 232
-y 544
-w 120
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):PLL:FILT:SELECT_S"
-font "helvetica-medium-r-12.0"
 endObjectProperties
 
 # (Related Display)
@@ -986,7 +967,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 384
+x 376
 y 320
 w 46
 h 14
@@ -1006,7 +987,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 384
+x 376
 y 344
 w 31
 h 14
@@ -1026,8 +1007,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 384
-y 376
+x 376
+y 380
 w 37
 h 14
 font "helvetica-bold-r-12.0"
@@ -1036,26 +1017,6 @@ bgColor index 0
 useDisplayBg
 value {
   "Dwell:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 536
-y 376
-w 27
-h 14
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "turns"
 }
 autoSize
 endObjectProperties
@@ -1480,26 +1441,6 @@ value {
 autoSize
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 160
-y 552
-w 66
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "IQ/CORDIC"
-}
-autoSize
-endObjectProperties
-
 # (Message Button)
 object activeMessageButtonClass
 beginObjectProperties
@@ -1553,11 +1494,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 224
-y 384
-w 80
+x 216
+y 368
+w 112
 h 16
-controlPv "$(device):$(axis):PLL:NCO:MEAN_OFFSET"
+controlPv "$(device):$(axis):PLL:NCO:STD_OFFSET"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -1597,16 +1538,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 176
-y 384
-w 36
+x 168
+y 368
+w 25
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Mean:"
+  "Std:"
 }
 autoSize
 endObjectProperties
@@ -1943,9 +1884,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 224
-y 352
-w 96
+x 216
+y 384
+w 112
 h 16
 controlPv "$(device):$(axis):PLL:NCO:TUNE"
 font "helvetica-medium-r-14.0"
@@ -1967,8 +1908,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 176
-y 352
+x 168
+y 384
 w 33
 h 14
 font "helvetica-bold-r-12.0"
@@ -1977,6 +1918,89 @@ bgColor index 0
 useDisplayBg
 value {
   "Tune:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 568
+y 376
+w 88
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):PLL:DET:BLANKING_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 504
+y 380
+w 54
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Blanking:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 216
+y 352
+w 112
+h 16
+controlPv "$(device):$(axis):PLL:NCO:MEAN_OFFSET"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 4
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 168
+y 352
+w 36
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Mean:"
 }
 autoSize
 endObjectProperties

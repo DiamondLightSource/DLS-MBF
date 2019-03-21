@@ -980,6 +980,14 @@ void hw_write_pll_dwell_time(int axis, unsigned int dwell)
 }
 
 
+void hw_write_pll_blanking(int axis, bool blanking)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
+            .blanking = blanking);
+}
+
+
 void hw_write_pll_target_phase(int axis, int32_t phase)
 {
     dsp_regs[axis]->tune_pll_control_target_phase = (uint32_t) phase;
@@ -1036,13 +1044,6 @@ void hw_write_pll_det_config(
     }
 }
 
-
-void hw_write_pll_filtered_cordic(int axis, bool cordic)
-{
-    WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            .filter_cordic = cordic);
-}
 
 void hw_write_pll_captured_cordic(int axis, bool cordic)
 {

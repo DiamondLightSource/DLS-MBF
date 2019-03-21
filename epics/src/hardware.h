@@ -413,6 +413,7 @@ void hw_write_pll_nco_enable(int axis, bool enable);
 
 /* Control over operational parameters. */
 void hw_write_pll_dwell_time(int axis, unsigned int dwell);
+void hw_write_pll_blanking(int axis, bool blanking);
 void hw_write_pll_target_phase(int axis, int32_t phase);
 void hw_write_pll_integral_factor(int axis, int32_t integral);
 void hw_write_pll_proportional_factor(int axis, int32_t proportional);
@@ -428,10 +429,8 @@ void hw_write_pll_det_config(
     int axis, unsigned int input_select,
     unsigned int offset, const bool bunch_enables[]);
 
-/* Control over debug readbacks.  If filtered CORDIC is set then the filtered IQ
- * readback will return CORDIC data, similarly if captured CORDIC is set the
- * FIFO debug data will be CORDIC data.  Only intended for CORDIC validation. */
-void hw_write_pll_filtered_cordic(int axis, bool cordic);
+/* Control over debug readbacks.  If captured CORDIC is set the FIFO debug data
+ * will be CORDIC data.  Only intended for CORDIC validation. */
 void hw_write_pll_captured_cordic(int axis, bool cordic);
 
 /* Start and stop Tune PLL feedback. */

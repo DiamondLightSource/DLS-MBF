@@ -21,6 +21,8 @@ for a in axes('PLL', lmbf_mode):
                 DESC = 'Tune PLL offset'),
             aIn('MEAN_OFFSET', PREC = 7, EGU = 'tune',
                 DESC = 'Mean tune PLL offset'),
+            aIn('STD_OFFSET', PREC = 7, EGU = 'tune',
+                DESC = 'Standard deviation of offset'),
             aIn('TUNE', 0, 1, PREC = 7, EGU = 'tune',
                 DESC = 'Measured tune frequency'),
             overflow('FIFO_OVF', 'Offset FIFO readout overrun'))
@@ -67,6 +69,8 @@ for a in axes('PLL', lmbf_mode):
             DESC = 'Select detector source')
         mbbOut('SCALING', DESC = 'Readout scaling', *dBrange(4, -6*6, 8*6))
         longOut('DWELL', 1, 2**16, DESC = 'Dwell time in turns')
+        boolOut('BLANKING', 'Ignore', 'Blanking',
+            DESC = 'Response to blanking trigger')
 
         bunch_count = longIn('COUNT', DESC = 'Number of enabled bunches')
         WaveformOut('BUNCHES', BUNCHES_PER_TURN, 'CHAR',
@@ -114,8 +118,6 @@ for a in axes('PLL', lmbf_mode):
             records.calc('MAG_DB', PREC = 1, EGU = 'dB',
                 CALC = '20*log(A)', INPA = magnitude),
         ])
-        boolOut('SELECT', 'IQ', 'CORDIC',
-            DESC = 'Select filtered readback values')
 
     # Status readbacks
     with name_prefix('STA'):
