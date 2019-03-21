@@ -29,6 +29,11 @@ entity tune_pll_control is
         magnitude_error_o : out std_ulogic;
         offset_error_o : out std_ulogic;
 
+        -- Blanking control
+        blanking_i : in std_ulogic;
+        blanking_enable_i : in std_ulogic;
+        blanking_o : out std_ulogic := '0';
+
         -- Start and stop feedback
         start_i : in std_ulogic;
         stop_i : in std_ulogic;
@@ -60,6 +65,9 @@ architecture arch of tune_pll_control is
     signal sync_request_dsp : std_ulogic := '0';
     signal sync_done : std_ulogic;
     signal sync_done_adc : std_ulogic;
+
+    -- Simple pipeline of blanking to help timing
+    signal blanking_in : std_ulogic := '0';
 
 begin
     -- The detector start signal is generated on the ADC clock.
@@ -181,6 +189,12 @@ begin
                 detector_overflow_o <= '0';
                 magnitude_error_o <= '0';
                 offset_error_o <= '0';
+            end if;
+
+            -- Use dwell_start to register blanking.
+            blanking_in <= blanking_i;
+            if dwell_start = '1' then
+                blanking_o <= blanking_in and blanking_enable_i;
             end if;
         end if;
     end process;

@@ -161,6 +161,7 @@ begin
     begin
         write_strobe <= (others => '0');
         read_strobe <= (others => '0');
+        blanking <= '0';
 
         clk_wait;
 
@@ -173,6 +174,7 @@ begin
         write_reg(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W, (
             DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS => X"0002",
             DSP_TUNE_PLL_CONTROL_CONFIG_CAPTURE_CORDIC_BIT => '1',
+            DSP_TUNE_PLL_CONTROL_CONFIG_BLANKING_BIT => '1',
             others => '0'));
         -- Effectively disable phase error checking
         write_reg(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W, X"7FFFFFFF");
@@ -220,8 +222,16 @@ begin
         clk_wait;
         start <= '0';
 
+        -- Quick blanking test
+        wait for 1 us;
+        clk_wait;
+        blanking <= '1';
+        wait for 3 us;
+        clk_wait;
+        blanking <= '0';
+
         -- Let things run until frequency settles, stop and restart
-        wait for 8 us;
+        wait for 4 us;
         clk_wait;
         stop <= '1';
         clk_wait;

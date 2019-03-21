@@ -795,6 +795,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # register.  This is designed to be used for sequencer
                     # debugging only.
                     .OFFSET_OVERRIDE
+                    # This flag can be set to enable the blanking signal, in
+                    # which case the input signal is ignored during the blanking
+                    # interval.
+                    .BLANKING
             # Target phase to track.  The top 18 bits of the phase are used
             TARGET_PHASE    W
             # Integrating factor.  The top 25 bits are used

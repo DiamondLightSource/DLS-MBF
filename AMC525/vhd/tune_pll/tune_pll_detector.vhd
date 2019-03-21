@@ -32,6 +32,7 @@ entity tune_pll_detector is
         shift_i : in unsigned;
         start_i : in std_ulogic;
         write_i : in std_ulogic;
+        blanking_i : in std_ulogic;
 
         -- Result
         detector_overflow_o : out std_ulogic;
@@ -137,7 +138,7 @@ begin
             iq_out <= iq;
 
             -- Note that it is safe to use the done strobe at this point
-            if done = '1' then
+            if done = '1' and blanking_i = '0' then
                 iq_o.cos <=
                     shift_right(iq_out.cos, shift)(RESULT_WIDTH-1 downto 0);
                 iq_o.sin <=

@@ -131,6 +131,8 @@ begin
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DWELL_TIME_BITS));
     config_o.offset_override <=
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_OFFSET_OVERRIDE_BIT);
+    config_o.blanking_enable <=
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_BLANKING_BIT);
 
     status_register <= (
         DSP_TUNE_PLL_CONTROL_STATUS_RUNNING_BIT =>

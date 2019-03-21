@@ -83,6 +83,7 @@ architecture arch of tune_pll_top is
     signal write_detector : std_ulogic;
     signal detector_done : std_ulogic;
     signal detector_iq : cos_sin_t(cos(31 downto 0), sin(31 downto 0));
+    signal blanking : std_ulogic;
 
     -- Cordic signals
     signal cordic_phase : phase_angle_t;
@@ -151,6 +152,7 @@ begin
         -- Detector triggering
         start_i => start_detector,
         write_i => write_detector,
+        blanking_i => blanking,
         -- Results
         detector_overflow_o => status.detector_overflow,
         done_o => detector_done,
@@ -172,7 +174,7 @@ begin
         clk_i => dsp_clk_i,
         -- Controls whether to update frequency.
         enable_i => status.enable_feedback,
-        blanking_i => blanking_i,
+        blanking_i => blanking,
         detector_overflow_i => status.detector_overflow,
         -- Limits for feedback
         magnitude_limit_i => config.magnitude_limit,
@@ -217,6 +219,10 @@ begin
         detector_overflow_o => status.stop_detector_overflow,
         magnitude_error_o => status.stop_magnitude_error,
         offset_error_o => status.stop_offset_error,
+        -- Blanking control
+        blanking_i => blanking_i,
+        blanking_enable_i => config.blanking_enable,
+        blanking_o => blanking,
         -- Feedback operation
         start_i => start_i,
         stop_i => stop_i,
