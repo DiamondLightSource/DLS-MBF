@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <time.h>
@@ -307,9 +308,9 @@ static void publish_nco(struct pll_context *pll)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Detector configuration. */
 
-static unsigned int compute_bunch_offset(enum detector_input_select select)
+static unsigned int compute_bunch_offset(enum detector_input_select selection)
 {
-    switch (select)
+    switch (selection)
     {
         case DET_SELECT_ADC:
             return hardware_delays.PLL_ADC_OFFSET;
@@ -322,9 +323,9 @@ static unsigned int compute_bunch_offset(enum detector_input_select select)
     }
 }
 
-static int compute_detector_delay(enum detector_input_select select)
+static int compute_detector_delay(enum detector_input_select selection)
 {
-    switch (select)
+    switch (selection)
     {
         case DET_SELECT_ADC:
             return hardware_delays.PLL_ADC_DELAY +
@@ -341,10 +342,10 @@ static int compute_detector_delay(enum detector_input_select select)
 }
 
 
-static bool write_det_input_select(void *context, unsigned int *select)
+static bool write_det_input_select(void *context, unsigned int *selection)
 {
     struct pll_context *pll = context;
-    pll->input_select = *select;
+    pll->input_select = *selection;
     hw_write_pll_det_config(
         pll->axis, pll->input_select,
         compute_bunch_offset(pll->input_select), pll->bunch_enables);
