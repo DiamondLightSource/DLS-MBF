@@ -17,6 +17,6 @@ clean:
 # Install the built egg
 install: dist
 	$(PYTHON) setup.py easy_install -m \
-			--record=installed.files \
-			--install-dir=$(PYMOD_INSTALL_DIR) \
-			dist/*.egg
+            --record=installed.files \
+            --install-dir=$(PYMOD_INSTALL_DIR) \
+            dist/*.egg
