@@ -1,6 +1,8 @@
 PYTHON = python
 
 MBF_TOP := $(shell readlink -f '$(CURDIR)/../..')
+
+MUST_DEFINE += PYMOD_INSTALL_DIR
 include $(MBF_TOP)/Makefile.common
 
 # This is run when we type make
