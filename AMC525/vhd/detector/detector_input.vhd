@@ -12,16 +12,18 @@ use work.detector_defs.all;
 
 entity detector_input is
     generic (
-        BUFFER_LENGTH : natural
+        BUFFER_LENGTH : natural;
+        USE_WINDOW : boolean := true
     );
     port (
         clk_i : in std_ulogic;
 
         -- Control
-        data_select_i : in std_ulogic;
+        data_select_i : in std_ulogic_vector(1 downto 0);
 
         -- Data in
         adc_data_i : in signed;
+        adc_fill_reject_i : in signed;
         fir_data_i : in signed;
         window_i : in signed;
 
@@ -33,8 +35,10 @@ end;
 architecture arch of detector_input is
     signal fir_data_in : fir_data_i'SUBTYPE;
     signal adc_data_in : adc_data_i'SUBTYPE;
+    signal adc_fill_reject_in : adc_fill_reject_i'SUBTYPE;
     signal window_in : window_i'SUBTYPE;
     signal scaled_adc_data : data_o'SUBTYPE;
+    signal scaled_adc_fill_reject : data_o'SUBTYPE;
 
     signal data_in : data_o'SUBTYPE := (others => '0');
 
@@ -61,42 +65,60 @@ begin
         signed(data_o) => adc_data_in
     );
 
-    window_buffer : entity work.dlyreg generic map (
+    adc_fill_reject_buffer : entity work.dlyreg generic map (
         DLY => BUFFER_LENGTH,
-        DW => window_i'LENGTH
+        DW => adc_fill_reject_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_ulogic_vector(window_i),
-        signed(data_o) => window_in
+        data_i => std_ulogic_vector(adc_fill_reject_i),
+        signed(data_o) => adc_fill_reject_in
     );
 
 
     scaled_adc_data <=
         shift_left(resize(adc_data_in, data_o'LENGTH), ADC_SHIFT);
+    scaled_adc_fill_reject <=
+        shift_left(resize(adc_fill_reject_in, data_o'LENGTH), ADC_SHIFT);
 
     -- Input multiplexer
     process (clk_i) begin
         if rising_edge(clk_i) then
             case data_select_i is
-                when '0' =>
+                when "00" =>
                     data_in <= scaled_adc_data;
-                when '1' =>
+                when "01" =>
                     data_in <= resize(fir_data_in, data_o'LENGTH);
+                when "10" =>
+                    data_in <= scaled_adc_fill_reject;
                 when others =>
             end case;
         end if;
     end process;
 
 
-    -- Multiply incoming data by window for final output.  We discard the
-    -- top-most bit of the product, as this is only significant if both input
-    -- terms are min-int, and the FIR value never will be.
-    product : entity work.rounded_product generic map (
-        DISCARD_TOP => 1
-    ) port map (
-        clk_i => clk_i,
-        a_i => window_in,
-        b_i => data_in,
-        ab_o => data_o
-    );
+    gen_window : if USE_WINDOW generate
+        window_buffer : entity work.dlyreg generic map (
+            DLY => BUFFER_LENGTH,
+            DW => window_i'LENGTH
+        ) port map (
+            clk_i => clk_i,
+            data_i => std_ulogic_vector(window_i),
+            signed(data_o) => window_in
+        );
+
+        -- Multiply incoming data by window for final output.  We discard the
+        -- top-most bit of the product, as this is only significant if both
+        -- input terms are min-int, and the FIR value never will be.
+        product : entity work.rounded_product generic map (
+            DISCARD_TOP => 1
+        ) port map (
+            clk_i => clk_i,
+            a_i => window_in,
+            b_i => data_in,
+            ab_o => data_o
+        );
+    else generate
+        -- Bypass window if not being used
+        data_o <= data_in;
+    end generate;
 end;

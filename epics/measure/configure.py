@@ -27,7 +27,7 @@ class PV:
     # Waits for a reasonably fresh value to arrive.  No guarantees, but it will
     # be fresher than the last value!
     def get(self):
-        return self.event.Wait(1)
+        return self.event.Wait(2)
 
     # Waits for a value at least as old as the given age to arrive.
     def get_new(self, age = 0, now = None):
@@ -125,9 +125,14 @@ class DRAM:
         b = self.wf1.get()[:length]
         return a, b
 
-    def get_peaks(self, sources):
+    def get_peaks(self, sources, nco_freq = 0):
+        if nco_freq:
+            self.mbf.set('NCO:FREQ_S', nco_freq)
         a, b = self.get(sources)
-        return self.mbf.find_one_peak(a), self.mbf.find_one_peak(b)
+        peaks = self.mbf.find_one_peak(a), self.mbf.find_one_peak(b)
+        if nco_freq:
+            self.mbf.set('NCO:FREQ_S', 0)
+        return peaks
 
     def __del__(self):
         self.wf0.close()

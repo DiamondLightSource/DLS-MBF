@@ -69,7 +69,8 @@ for a in axes('DET', lmbf_mode):
     Trigger('UPDATE', *updates)
 
 
-    boolOut('SELECT', 'ADC', 'FIR', DESC = 'Select detector source')
+    mbbOut('SELECT', 'ADC', 'FIR', 'ADC no fill',
+        DESC = 'Select detector source')
     aOut('FIR_DELAY', PREC = 1, EGU = 'turns',
         DESC = 'FIR nominal group delay')
 

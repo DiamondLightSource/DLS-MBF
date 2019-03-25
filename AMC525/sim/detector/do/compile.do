@@ -53,6 +53,8 @@ add wave -group "Body(0) Bunch Mem" \
     sim:detector/detectors(0)/detector_body/bunch_select/bunch_mem/*
 add wave -group "Body(0) Bunch" \
     sim:detector/detectors(0)/detector_body/bunch_select/*
+add wave -group "Body(0) Core" \
+    sim:detector/detectors(0)/detector_body/detector/*
 add wave -group "Body(0) Output" \
     sim:detector/detectors(0)/detector_body/output/*
 add wave -group "Body(0)" sim:detector/detectors(0)/detector_body/*

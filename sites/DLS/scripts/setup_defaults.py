@@ -6,6 +6,7 @@ bunch = 450
 # Default tune selection
 
 sweep_holdoff = 0
+state_holdoff = 0
 sweep_dwell_time = 100
 
 blanking_interval = 10000

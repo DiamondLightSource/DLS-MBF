@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 655
-y 44
-w 544
-h 433
+x 2185
+y 66
+w 584
+h 432
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -34,7 +34,7 @@ minor 0
 release 0
 x 8
 y 224
-w 528
+w 568
 h 136
 lineColor index 14
 fill
@@ -49,7 +49,7 @@ minor 1
 release 1
 x 0
 y 0
-w 544
+w 584
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -66,7 +66,7 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 472
+x 512
 y 400
 w 64
 h 24
@@ -148,7 +148,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 320
+x 344
 y 240
 w 53
 h 14
@@ -170,7 +170,7 @@ minor 1
 release 0
 x 16
 y 256
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -198,7 +198,7 @@ minor 1
 release 0
 x 16
 y 280
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -226,7 +226,7 @@ minor 1
 release 0
 x 16
 y 304
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -254,7 +254,7 @@ minor 1
 release 0
 x 16
 y 328
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -315,7 +315,7 @@ minor 0
 release 0
 x 8
 y 48
-w 528
+w 568
 h 160
 lineColor index 14
 fill
@@ -363,7 +363,7 @@ minor 1
 release 0
 x 16
 y 80
-w 512
+w 552
 h 48
 fgColor index 14
 bgColor index 3
@@ -389,7 +389,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 40
+x 16
 y 64
 w 74
 h 14
@@ -409,7 +409,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 120
+x 96
 y 64
 w 71
 h 14
@@ -429,7 +429,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 184
+x 104
 y 128
 w 63
 h 14
@@ -449,10 +449,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 40
+x 32
 y 128
-w 46
-h 14
+w 48
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -469,16 +469,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 304
+x 264
 y 64
-w 61
+w 92
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Magnitude"
+  "NCO Magnitude"
 }
 autoSize
 endObjectProperties
@@ -489,7 +489,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 440
+x 400
 y 64
 w 69
 h 14
@@ -529,7 +529,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 208
+x 184
 y 64
 w 66
 h 14
@@ -549,16 +549,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 120
+x 184
 y 128
-w 43
+w 125
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Holdoff"
+  "Holdoff (state/dwell)"
 }
 autoSize
 endObjectProperties
@@ -569,7 +569,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 360
+x 400
 y 128
 w 78
 h 14
@@ -589,7 +589,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 448
+x 488
 y 128
 w 77
 h 14
@@ -609,7 +609,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 440
+x 480
 y 152
 w 88
 h 22
@@ -628,7 +628,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 352
+x 392
 y 152
 w 82
 h 14
@@ -648,7 +648,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 440
+x 480
 y 176
 w 88
 h 22
@@ -806,7 +806,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 280
+x 320
 y 128
 w 50
 h 14
@@ -826,8 +826,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 88
-y 152
+x 96
+y 156
 w 16
 h 16
 controlPv "$(device):$(axis):SEQ:PC"
@@ -850,7 +850,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 56
+x 64
 y 152
 w 24
 h 22
@@ -899,7 +899,7 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 120
+x 144
 y 152
 w 72
 h 22
@@ -922,7 +922,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 56
+x 64
 y 176
 w 56
 h 22
@@ -951,8 +951,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 120
-y 176
+x 128
+y 180
 w 64
 h 16
 controlPv "$(device):$(axis):SEQ:SUPER:COUNT"
@@ -976,7 +976,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 296
 y 152
 w 88
 h 16
@@ -1001,7 +1001,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 200
+x 232
 y 152
 w 50
 h 14
@@ -1021,7 +1021,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 200
+x 232
 y 168
 w 54
 h 14
@@ -1041,9 +1041,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 296
 y 168
-w 120
+w 104
 h 16
 controlPv "$(device):$(axis):SEQ:TOTAL:DURATION:S"
 font "helvetica-medium-r-14.0"
@@ -1087,9 +1087,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 296
 y 184
-w 120
+w 104
 h 16
 controlPv "$(device):$(axis):SEQ:SUPER:OFFSET_S"
 font "helvetica-medium-r-14.0"
@@ -1113,7 +1113,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 200
+x 232
 y 184
 w 43
 h 14
@@ -1152,7 +1152,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 368
+x 408
 y 176
 w 70
 h 22
@@ -1175,7 +1175,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 464
+x 504
 y 368
 w 72
 h 22
@@ -1201,7 +1201,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 424
+x 464
 y 368
 w 32
 h 22
@@ -1229,7 +1229,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 352
+x 392
 y 368
 w 65
 h 14
@@ -1239,6 +1239,26 @@ bgColor index 0
 useDisplayBg
 value {
   "Seq event:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 488
+y 64
+w 55
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Tune PLL"
 }
 autoSize
 endObjectProperties

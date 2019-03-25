@@ -29,6 +29,7 @@ architecture arch of testbench is
     signal read_data : reg_data_array_t(DSP_DET_REGS);
     signal read_ack : std_ulogic_vector(DSP_DET_REGS);
     signal adc_data : signed(15 downto 0);
+    signal adc_fill_reject : signed(15 downto 0);
     signal fir_data : signed(35 downto 0);
     signal nco_iq : cos_sin_18_t;
     signal window : signed(17 downto 0);
@@ -80,6 +81,7 @@ begin
         read_data_o => read_data,
         read_ack_o => read_ack,
         adc_data_i => adc_data,
+        adc_fill_reject_i => adc_fill_reject,
         fir_data_i => fir_data,
         nco_iq_i => nco_iq,
         window_i => window,

@@ -36,7 +36,7 @@ static void write_dac_taps(void *context, float array[], unsigned int *length)
     *length = hardware_config.dac_taps;
 
     int taps[hardware_config.dac_taps];
-    float_array_to_int(hardware_config.dac_taps, array, taps, 32, 0);
+    float_array_to_int(hardware_config.dac_taps, array, taps, 32, 31);
 
     hw_write_dac_taps(dac->axis, taps);
 }

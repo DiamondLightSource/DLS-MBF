@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 500
-y 1023
+x 501
+y 1024
 w 610
 h 161
 font "helvetica-medium-r-18.0"
@@ -129,6 +129,12 @@ numDsps 1
 displayFileName {
   0 "mbf/det_bunches.edl"
 }
+symbols {
+  0 "device=$(device),axis=$(axis),det=DET:$(det)"
+}
+replaceSymbols {
+  0 1
+}
 endObjectProperties
 
 # (Menu Button)
@@ -252,7 +258,7 @@ minor 1
 release 1
 x 0
 y 16
-w 56
+w 72
 h 16
 font "helvetica-bold-r-14.0"
 fgColor index 14

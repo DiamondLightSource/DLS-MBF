@@ -75,7 +75,7 @@ begin
 
 
     -- The compensation filter itself
-    fast_fir_inst : entity work.fast_fir generic map (
+    fast_fir : entity work.fast_fir generic map (
         TAP_COUNT => TAP_COUNT
     ) port map (
         adc_clk_i => adc_clk_i,
@@ -97,7 +97,7 @@ begin
     );
 
     -- Bring any overflow pulse to the DSP clock domain
-    pulse_adc_to_dsp_inst : entity work.pulse_adc_to_dsp port map (
+    pulse_adc_to_dsp : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 

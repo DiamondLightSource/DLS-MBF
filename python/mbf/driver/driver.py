@@ -49,10 +49,11 @@ class RawRegisters:
         #   0x2800..0x2FFF  (unused)
         #   0x3000..0x37FF  DSP 0 control
         #   0x3800..0x3FFF  DSP 1 control
-        # For convenience we just export the first 32 registers in each block.
+        # For the SYS and CTRL blocks 32 registers is enough, but the DSP block
+        # needs more, so we export 64.
         self.reg_system   = regs[0x0000:0x0020]
         self.reg_dsp_ctrl = regs[0x2000:0x2020]
-        self.reg_dsp      = [regs[0x3000:0x3020], regs[0x3800:0x3820]]
+        self.reg_dsp      = [regs[0x3000:0x3040], regs[0x3800:0x3840]]
 
     def __del__(self):
         if hasattr(self, 'reg_file'):

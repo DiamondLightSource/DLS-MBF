@@ -25,6 +25,8 @@ def bank_pvs(update_count):
         FLNK = update_count, DESC = 'Sweep count')
     longOut('HOLDOFF', 0, (1<<16) - 1,
         FLNK = update_count, DESC = 'Detector holdoff')
+    longOut('STATE_HOLDOFF', 0, (1<<16) - 1,
+        FLNK = update_count, DESC = 'Single holdoff on entry to state')
     mbbOut('BANK', 'Bank 0', 'Bank 1', 'Bank 2', 'Bank 3',
         DESC = 'Bunch bank selection')
     mbbOut('GAIN', DESC = 'Sweep NCO gain', *dBrange(16, -6))
@@ -35,6 +37,8 @@ def bank_pvs(update_count):
         FLNK = update_count, DESC = 'Enable data capture')
     boolOut('BLANK', 'Off', 'Blanking',
         DESC = 'Detector blanking control')
+    boolOut('TUNE_PLL', 'Ignore', 'Follow',
+        DESC = 'Track Tune PLL frequency offset')
 
 
 # The super sequencer is controlled by two settings: the OFFSET waveform which

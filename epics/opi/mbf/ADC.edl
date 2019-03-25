@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1998
-y 603
+x 2903
+y 111
 w 641
 h 360
 font "helvetica-medium-r-18.0"
@@ -458,16 +458,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 376
+x 360
 y 328
-w 74
+w 86
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "DRAM input:"
+  "Memory input:"
 }
 autoSize
 endObjectProperties
@@ -496,5 +496,45 @@ displayFileName {
 symbols {
   0 "part=ADC"
 }
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 320
+w 98
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Fill reject length:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 120
+y 320
+w 96
+h 22
+fgColor index 14
+fgAlarm
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):ADC:REJECT_COUNT_S"
+font "helvetica-medium-r-12.0"
 endObjectProperties
 

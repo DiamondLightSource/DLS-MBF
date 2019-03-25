@@ -31,6 +31,9 @@ architecture arch of pulse_dsp_to_adc is
     signal pulse_pl : std_ulogic := '0';
     signal pulse_in : std_ulogic := '0';
 
+    attribute ASYNC_REG : string;
+    attribute ASYNC_REG of pulse_pl : signal is "TRUE";
+
 begin
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then

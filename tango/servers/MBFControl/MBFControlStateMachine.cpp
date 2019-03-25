@@ -226,21 +226,41 @@ bool MBFControl::is_SweepDwellTime_allowed(TANGO_UNUSED(Tango::AttReqType type))
 
 //--------------------------------------------------------
 /**
- *	Method      : MBFControl::is_SweepGain_allowed()
- *	Description : Execution allowed for SweepGain attribute
+ *	Method      : MBFControl::is_SweepGainSingleBunch_allowed()
+ *	Description : Execution allowed for SweepGainSingleBunch attribute
  */
 //--------------------------------------------------------
-bool MBFControl::is_SweepGain_allowed(TANGO_UNUSED(Tango::AttReqType type))
+bool MBFControl::is_SweepGainSingleBunch_allowed(TANGO_UNUSED(Tango::AttReqType type))
 {
-	//	Not any excluded states for SweepGain attribute in Write access.
-	/*----- PROTECTED REGION ID(MBFControl::SweepGainStateAllowed_WRITE) ENABLED START -----*/
+	//	Not any excluded states for SweepGainSingleBunch attribute in Write access.
+	/*----- PROTECTED REGION ID(MBFControl::SweepGainSingleBunchStateAllowed_WRITE) ENABLED START -----*/
 	
-	/*----- PROTECTED REGION END -----*/	//	MBFControl::SweepGainStateAllowed_WRITE
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::SweepGainSingleBunchStateAllowed_WRITE
 
-	//	Not any excluded states for SweepGain attribute in read access.
-	/*----- PROTECTED REGION ID(MBFControl::SweepGainStateAllowed_READ) ENABLED START -----*/
+	//	Not any excluded states for SweepGainSingleBunch attribute in read access.
+	/*----- PROTECTED REGION ID(MBFControl::SweepGainSingleBunchStateAllowed_READ) ENABLED START -----*/
 	
-	/*----- PROTECTED REGION END -----*/	//	MBFControl::SweepGainStateAllowed_READ
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::SweepGainSingleBunchStateAllowed_READ
+	return true;
+}
+
+//--------------------------------------------------------
+/**
+ *	Method      : MBFControl::is_SweepGainAllBunches_allowed()
+ *	Description : Execution allowed for SweepGainAllBunches attribute
+ */
+//--------------------------------------------------------
+bool MBFControl::is_SweepGainAllBunches_allowed(TANGO_UNUSED(Tango::AttReqType type))
+{
+	//	Not any excluded states for SweepGainAllBunches attribute in Write access.
+	/*----- PROTECTED REGION ID(MBFControl::SweepGainAllBunchesStateAllowed_WRITE) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::SweepGainAllBunchesStateAllowed_WRITE
+
+	//	Not any excluded states for SweepGainAllBunches attribute in read access.
+	/*----- PROTECTED REGION ID(MBFControl::SweepGainAllBunchesStateAllowed_READ) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::SweepGainAllBunchesStateAllowed_READ
 	return true;
 }
 
@@ -345,6 +365,26 @@ bool MBFControl::is_ModeList_allowed(TANGO_UNUSED(Tango::AttReqType type))
 	/*----- PROTECTED REGION ID(MBFControl::ModeListStateAllowed_READ) ENABLED START -----*/
 	
 	/*----- PROTECTED REGION END -----*/	//	MBFControl::ModeListStateAllowed_READ
+	return true;
+}
+
+//--------------------------------------------------------
+/**
+ *	Method      : MBFControl::is_CleaningPattern_allowed()
+ *	Description : Execution allowed for CleaningPattern attribute
+ */
+//--------------------------------------------------------
+bool MBFControl::is_CleaningPattern_allowed(TANGO_UNUSED(Tango::AttReqType type))
+{
+	//	Not any excluded states for CleaningPattern attribute in Write access.
+	/*----- PROTECTED REGION ID(MBFControl::CleaningPatternStateAllowed_WRITE) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::CleaningPatternStateAllowed_WRITE
+
+	//	Not any excluded states for CleaningPattern attribute in read access.
+	/*----- PROTECTED REGION ID(MBFControl::CleaningPatternStateAllowed_READ) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	MBFControl::CleaningPatternStateAllowed_READ
 	return true;
 }
 

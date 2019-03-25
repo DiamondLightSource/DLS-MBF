@@ -12,7 +12,6 @@ use work.dsp_defs.all;
 use work.bunch_defs.all;
 use work.nco_defs.all;
 use work.sequencer_defs.all;
-use work.register_defs.all;
 
 entity dsp_top is
     port (
@@ -42,8 +41,6 @@ entity dsp_top is
 end;
 
 architecture arch of dsp_top is
-    signal nco0_register : reg_data_t;
-
     -- Bunch control
     signal bunch_config : bunch_config_t;
     signal detector_window : hom_win_t;
@@ -51,40 +48,62 @@ architecture arch of dsp_top is
     -- Sequencer and detector
     signal sequencer_start : std_ulogic;
     signal sequencer_write : std_ulogic;
+    signal tune_pll_offset : signed(31 downto 0);
 
     -- Oscillator control
     signal nco_0_phase_advance : angle_t;
+    signal nco_0_reset_phase : std_ulogic;
     signal nco_0_cos_sin : cos_sin_18_t;
     signal nco_1_phase_advance : angle_t;
+    signal nco_1_reset_phase : std_ulogic;
     signal nco_1_cos_sin : cos_sin_18_t;
+    signal nco_2_phase_advance : angle_t;
+    signal nco_2_reset_phase : std_ulogic;
+    signal nco_2_cos_sin : cos_sin_18_t;
 
     -- Data flow
     signal fir_data : signed(FIR_DATA_RANGE);
+    signal fill_reject_adc : signed(ADC_DATA_RANGE);
+
+    -- The following delays are needed to configure the sequencer so that the
+    -- sweep output and other controls are aligned at the DAC output.
+    --
+    -- Delay from nco phase control to cos/sin output, validated by NCO core
+    constant NCO_PROCESS_DELAY : natural := 16;
+    -- Total delay through NCO including 4 tick NCO output pipeline
+    constant NCO1_DELAY : natural := NCO_PROCESS_DELAY + 4;
+    -- Delay from bunch bank selection to bank configuration
+    constant BUNCH_SELECT_DELAY : natural := 8;
+    -- Extra daly for the bunch bank select taking NCO delays into account
+    constant BANK_DELAY : natural := NCO1_DELAY + 4 - BUNCH_SELECT_DELAY;
 
 begin
     -- -------------------------------------------------------------------------
     -- General register handling
 
-    register_file : entity work.register_file generic map (
-        UNTIMED => false
-    ) port map (
+    nco_register : entity work.nco_register port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_NCO0_FREQ_REG),
+
+        write_strobe_i => write_strobe_i(DSP_NCO0_REGS),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_NCO0_FREQ_REG),
-        register_data_o(0) => nco0_register
+        write_ack_o => write_ack_o(DSP_NCO0_REGS),
+        read_strobe_i => read_strobe_i(DSP_NCO0_REGS),
+        read_data_o => read_data_o(DSP_NCO0_REGS),
+        read_ack_o => read_ack_o(DSP_NCO0_REGS),
+
+        nco_freq_i => nco_0_phase_advance,
+        nco_freq_o => nco_0_phase_advance,
+        reset_phase_o => nco_0_reset_phase,
+        write_freq_o => open
     );
-    read_data_o(DSP_NCO0_FREQ_REG) <= nco0_register;
-    read_ack_o(DSP_NCO0_FREQ_REG) <= '1';
-
-    nco_0_phase_advance <= angle_t(nco0_register);
-
 
     -- -------------------------------------------------------------------------
     -- Miscellaneous control
 
     -- Bunch specific control
-    bunch_select : entity work.bunch_select port map (
+    bunch_select : entity work.bunch_select generic map (
+        BUNCH_SELECT_DELAY => BUNCH_SELECT_DELAY
+    ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => control_to_dsp_i.turn_clock,
@@ -103,18 +122,35 @@ begin
 
     -- Oscillators
     nco_0 : entity work.nco port map (
-        clk_i => adc_clk_i,
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
         phase_advance_i => nco_0_phase_advance,
+        reset_phase_i => nco_0_reset_phase,
         cos_sin_o => nco_0_cos_sin
     );
     dsp_to_control_o.nco_0_data.nco <= nco_0_cos_sin;
 
-    nco_1 : entity work.nco port map (
-        clk_i => adc_clk_i,
+    nco_1 : entity work.nco generic map (
+        PROCESS_DELAY => NCO_PROCESS_DELAY,
+        IN_DELAY => 0,
+        OUT_DELAY => 4
+    ) port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
         phase_advance_i => nco_1_phase_advance,
+        reset_phase_i => nco_1_reset_phase,
         cos_sin_o => nco_1_cos_sin
     );
     dsp_to_control_o.nco_1_data.nco <= nco_1_cos_sin;
+
+    nco_2 : entity work.nco port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        phase_advance_i => nco_2_phase_advance,
+        reset_phase_i => nco_2_reset_phase,
+        cos_sin_o => nco_2_cos_sin
+    );
+    dsp_to_control_o.nco_2_data.nco <= nco_2_cos_sin;
 
 
     -- -------------------------------------------------------------------------
@@ -130,6 +166,7 @@ begin
 
         data_i => adc_data_i,
         data_o => dsp_to_control_o.adc_data,
+        fill_reject_o => fill_reject_adc,
         data_store_o => dsp_to_control_o.store_adc_data,
 
         write_strobe_i => write_strobe_i(DSP_ADC_REGS),
@@ -179,7 +216,9 @@ begin
         fir_data_i => fir_data,
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
+        nco_2_data_i => control_to_dsp_i.nco_2_data,
 
+        -- These controls are here mainly as an accident of register assignment
         nco_0_gain_o => dsp_to_control_o.nco_0_data.gain,
         nco_0_enable_o => dsp_to_control_o.nco_0_data.enable,
 
@@ -198,7 +237,10 @@ begin
     -- -------------------------------------------------------------------------
     -- Sequencer and detector
 
-    sequencer : entity work.sequencer_top port map (
+    sequencer : entity work.sequencer_top generic map (
+        NCO_DELAY => NCO1_DELAY,
+        BANK_DELAY => BANK_DELAY
+    ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -220,7 +262,9 @@ begin
         seq_start_adc_o => sequencer_start,
         seq_write_adc_o => sequencer_write,
 
+        tune_pll_offset_i => tune_pll_offset,
         hom_freq_o => nco_1_phase_advance,
+        hom_reset_o => nco_1_reset_phase,
         hom_gain_o => dsp_to_control_o.nco_1_data.gain,
         hom_enable_o => dsp_to_control_o.nco_1_data.enable,
         hom_window_o => detector_window,
@@ -248,6 +292,7 @@ begin
         read_ack_o => read_ack_o(DSP_DET_REGS),
 
         adc_data_i => control_to_dsp_i.adc_data,
+        adc_fill_reject_i => fill_reject_adc,
         fir_data_i => fir_data,
         nco_iq_i => nco_1_cos_sin,
         window_i => detector_window,
@@ -259,5 +304,36 @@ begin
         mem_ready_i => control_to_dsp_i.dram1_ready,
         mem_addr_o => dsp_to_control_o.dram1_address,
         mem_data_o => dsp_to_control_o.dram1_data
+    );
+
+
+    tune_pll : entity work.tune_pll_top port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        turn_clock_i => control_to_dsp_i.turn_clock,
+
+        write_strobe_i => write_strobe_i(DSP_TUNE_PLL_REGS),
+        write_data_i => write_data_i,
+        write_ack_o => write_ack_o(DSP_TUNE_PLL_REGS),
+        read_strobe_i => read_strobe_i(DSP_TUNE_PLL_REGS),
+        read_data_o => read_data_o(DSP_TUNE_PLL_REGS),
+        read_ack_o => read_ack_o(DSP_TUNE_PLL_REGS),
+
+        adc_data_i => control_to_dsp_i.adc_data,
+        adc_fill_reject_i => fill_reject_adc,
+        fir_data_i => fir_data,
+        nco_iq_i => nco_2_cos_sin,
+
+        start_i => control_to_dsp_i.start_tune_pll,
+        stop_i => control_to_dsp_i.stop_tune_pll,
+        blanking_i => control_to_dsp_i.blanking,
+
+        nco_gain_o => dsp_to_control_o.nco_2_data.gain,
+        nco_enable_o => dsp_to_control_o.nco_2_data.enable,
+        nco_reset_o => nco_2_reset_phase,
+        nco_freq_o => nco_2_phase_advance,
+        freq_offset_o => tune_pll_offset,
+
+        interrupt_o => dsp_to_control_o.tune_pll_ready
     );
 end;

@@ -23,7 +23,7 @@ entity detector_registers is
         read_ack_o : out std_ulogic_vector(DSP_DET_REGS);
 
         -- Controls
-        data_select_o : out std_ulogic;
+        data_select_o : out std_ulogic_vector;
         start_write_o : out std_ulogic;
         bunch_write_o : out std_ulogic_vector(DETECTOR_RANGE);
         output_scaling_o : out unsigned_array(DETECTOR_RANGE)(0 downto 0);
@@ -97,7 +97,7 @@ begin
     address_reset_o <= command_bits(DSP_DET_COMMAND_RESET_BIT);
 
     -- Control fields
-    data_select_o <= register_file(DSP_DET_CONFIG_SELECT_BIT);
+    data_select_o <= register_file(DSP_DET_CONFIG_SELECT_BITS);
     output_scaling_o(0) <= unsigned(register_file(DSP_DET_CONFIG_SCALE0_BITS));
     input_enable_o(0) <= register_file(DSP_DET_CONFIG_ENABLE0_BIT);
     output_scaling_o(1) <= unsigned(register_file(DSP_DET_CONFIG_SCALE1_BITS));

@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 108
-y 88
+x 109
+y 89
 w 680
 h 914
 font "helvetica-medium-r-18.0"
@@ -137,8 +137,13 @@ lineThickness {
 plotSymbolType {
   0 "circle"
 }
+xSigned {
+  0 1
+  1 1
+}
 ySigned {
   0 1
+  1 1
 }
 plotColor {
   0 index 27

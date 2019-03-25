@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 191
-y 729
-w 599
-h 64
+x 2585
+y 610
+w 646
+h 190
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -31,7 +31,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 24
+x 0
 y 0
 w 72
 h 22
@@ -59,7 +59,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 104
+x 80
 y 0
 w 80
 h 22
@@ -87,10 +87,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 168
+x 88
 y 24
-w 72
-h 22
+w 64
+h 24
 controlPv "$(device):$(axis):SEQ:$(state):DWELL_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -115,10 +115,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 24
+x 16
 y 24
-w 56
-h 22
+w 64
+h 24
 controlPv "$(device):$(axis):SEQ:$(state):COUNT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -143,9 +143,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 424
+x 384
 y 0
-w 88
+w 86
 h 22
 fgColor index 14
 bgColor index 3
@@ -162,7 +162,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 288
+x 248
 y 0
 w 70
 h 22
@@ -182,7 +182,7 @@ major 4
 minor 1
 release 1
 x 0
-y 0
+y 26
 w 52
 h 16
 font "helvetica-bold-r-14.0"
@@ -201,7 +201,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 344
+x 384
 y 24
 w 86
 h 22
@@ -220,7 +220,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 192
+x 168
 y 0
 w 72
 h 22
@@ -249,7 +249,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 432
+x 472
 y 24
 w 80
 h 22
@@ -268,7 +268,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 104
+x 232
 y 24
 w 56
 h 22
@@ -296,16 +296,16 @@ beginObjectProperties
 major 4
 minor 0
 release 1
-x 16
+x 0
 y 50
-w 568
+w 600
 h 0
 lineColor index 9
 fillColor index 0
 numPoints 2
 xPoints {
-  0 16
-  1 584
+  0 0
+  1 600
 }
 yPoints {
   0 50
@@ -319,7 +319,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 264
+x 304
 y 24
 w 78
 h 22
@@ -338,7 +338,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 360
+x 320
 y 0
 w 48
 h 22
@@ -348,6 +348,53 @@ inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
 controlPv "$(device):$(axis):SEQ:$(state):ENABLE_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 168
+y 24
+w 56
+h 20
+controlPv "$(device):$(axis):SEQ:$(state):STATE_HOLDOFF_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 472
+y 0
+w 80
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):SEQ:$(state):TUNE_PLL_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 

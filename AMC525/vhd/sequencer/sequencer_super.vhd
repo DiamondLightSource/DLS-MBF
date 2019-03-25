@@ -24,18 +24,20 @@ entity sequencer_super is
 end;
 
 architecture arch of sequencer_super is
-    type freq_memory_t is array(0 to 2**super_count_t'LENGTH-1) of angle_t;
-    signal freq_memory : freq_memory_t := (others => (others => '0'));
-    attribute ram_style : string;
-    attribute ram_style of freq_memory : signal is "BLOCK";
-
 begin
-    process (dsp_clk_i) begin
-        if rising_edge(dsp_clk_i) then
-            if write_strobe_i = '1' then
-                freq_memory(to_integer(write_addr_i)) <= angle_t(write_data_i);
-            end if;
-            nco_freq_base_o <= freq_memory(to_integer(super_state_i));
-        end if;
-    end process;
+    super_memory : entity work.block_memory generic map (
+        ADDR_BITS => super_count_t'LENGTH,
+        DATA_BITS => 32
+    ) port map (
+        read_clk_i => dsp_clk_i,
+        read_addr_i => super_state_i,
+        unsigned(read_data_o) => nco_freq_base_o(47 downto 16),
+
+        write_clk_i => dsp_clk_i,
+        write_strobe_i => write_strobe_i,
+        write_addr_i => write_addr_i,
+        write_data_i => write_data_i
+    );
+
+    nco_freq_base_o(15 downto 0) <= (others => '0');
 end;

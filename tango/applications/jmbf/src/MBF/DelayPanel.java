@@ -363,11 +363,13 @@ public class DelayPanel extends javax.swing.JFrame implements INumberScalarListe
   }// </editor-fold>//GEN-END:initComponents
 
   private void stepButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepButtonActionPerformed
-    Utils.execCommand(MainPanel.mfdbkGEpicsDevName,"DLY_DAC_STEP_S");    
+    Utils.execCommand(MainPanel.mfdbkGEpicsDevName,"DLY_DAC_STEP_S");
+    Utils.resetSetpoint(MainPanel.mfdbkGEpicsDevName);
   }//GEN-LAST:event_stepButtonActionPerformed
 
   private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
     Utils.execCommand(MainPanel.mfdbkGEpicsDevName,"DLY_DAC_RESET_S");
+    Utils.resetSetpoint(MainPanel.mfdbkGEpicsDevName);
   }//GEN-LAST:event_resetButtonActionPerformed
 
   private void dismissButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dismissButtonActionPerformed

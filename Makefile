@@ -82,7 +82,7 @@ $(DIR_TARGETS):
 
 
 $(DEFS_PATH):
-	make -C python
+	make -C python mbf/defs_path.py
 
 epics: $(DEFS_PATH)
 tune_fit: $(DEFS_PATH)
@@ -94,6 +94,10 @@ opi: epics
 
 # The db files are required to built Epics to Tango bridges
 tango: epics
+
+install-python:
+	make -C python install
+.PHONY: install-python
 
 
 # Note that because we use pattern matching for our subdirectory clean targets,

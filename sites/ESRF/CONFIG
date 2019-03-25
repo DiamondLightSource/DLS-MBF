@@ -4,7 +4,7 @@ SITE = ESRF
 
 # Override default and install targets for make
 DEFAULT_TARGETS = driver python epics matlab tune_fit iocs tango
-INSTALL_TARGETS = 
+INSTALL_TARGETS = $(DEFAULT_TARGETS) install-python
 
 
 # Place the FPGA build in /scratch
@@ -25,6 +25,9 @@ EPICS_BASE = /opt/dserver/epics/base-3.14.12.7
 
 # Directory for Tango Device Server binaries
 INSTALL_DIR = /users/dserver/bin
+
+# Directory for python modules
+PYMOD_INSTALL_DIR = /operation/dserver/python/modules
 
 # Permissions for the driver
 DRV_GROUP = comp

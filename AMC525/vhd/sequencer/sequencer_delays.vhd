@@ -4,9 +4,6 @@
 -- control outputs we need to add some delays to the bank output, the window
 -- control and the detector start stop events.
 
--- NOTE: This code has not been updated since porting from TMBF and is out of
--- date!!!
-
 library ieee;
 
 use ieee.std_logic_1164.all;
@@ -18,6 +15,10 @@ use work.support.all;
 use work.sequencer_defs.all;
 
 entity sequencer_delays is
+    generic (
+        NCO_DELAY : natural;
+        BANK_DELAY : natural
+    );
     port (
         dsp_clk_i : in std_ulogic;
         turn_clock_i : in std_ulogic;
@@ -37,15 +38,23 @@ architecture arch of sequencer_delays is
     signal load_hom_gain : std_ulogic;
 
 begin
-    bunch_bank_delay:
-    entity work.dlyline generic map (DLY => 6) port map (
-        clk_i => dsp_clk_i,
-        data_i(0) => turn_clock_i, data_o(0) => load_bunch_bank);
+    -- We have to halve the BANK_DELAY and NCO_DELAY, as these are in ADC clocks
 
-    hom_gain_delay:
-    entity work.dlyline generic map (DLY => 1) port map (
+    bunch_bank_delay : entity work.dlyline generic map (
+        DLY => BANK_DELAY / 2 - 1
+    ) port map (
         clk_i => dsp_clk_i,
-        data_i(0) => turn_clock_i, data_o(0) => load_hom_gain);
+        data_i(0) => turn_clock_i,
+        data_o(0) => load_bunch_bank
+    );
+
+    hom_gain_delay : entity work.dlyline generic map (
+        DLY => NCO_DELAY / 2 - 1
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i(0) => turn_clock_i,
+        data_o(0) => load_hom_gain
+    );
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then

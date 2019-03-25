@@ -109,11 +109,11 @@ static void read_and_convert_frequency(
     *lhs = create_double_array(samples, 1, &frequency, NULL);
     while (samples > 0)
     {
-        uint32_t buffer[BUFFER_SIZE];
+        uint64_t buffer[BUFFER_SIZE];
         size_t samples_read = fill_buffer(
-            sock, buffer, sizeof(uint32_t), BUFFER_SIZE, samples);
+            sock, buffer, sizeof(uint64_t), BUFFER_SIZE, samples);
         for (size_t i = 0; i < samples_read; i ++)
-            *frequency++ = ldexp(buffer[i], -32) * bunches;
+            *frequency++ = ldexp((double) buffer[i], -48) * bunches;
         samples -= samples_read;
     }
 }
@@ -149,7 +149,7 @@ static void do_send_command(
 {
     char command[64];
     char *command_in = command;
-    command_in += sprintf(command_in, "D%uFS", axis);
+    command_in += sprintf(command_in, "D%uFSL", axis);
     if (timebase)
         command_in += sprintf(command_in, "T");
 

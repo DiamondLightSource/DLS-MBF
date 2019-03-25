@@ -44,6 +44,7 @@ architecture arch of bunch_fir_delay is
 
 begin
     assert data_i'LENGTH = data_o'LENGTH severity failure;
+    assert WRITE_DELAY >= 0 severity failure;
 
     -- Delay the turn clock to help with distribution
     turn_clock_delay : entity work.dlyreg generic map (

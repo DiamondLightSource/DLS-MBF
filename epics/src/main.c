@@ -38,6 +38,7 @@
 #include "detector.h"
 #include "socket_server.h"
 #include "delay.h"
+#include "tune_pll.h"
 
 
 /* External declaration of DBD binding. */
@@ -167,6 +168,7 @@ static error__t load_database(const char *database)
     database_add_macro(
         "MEMORY_READOUT_LENGTH", "%d", system_config.memory_readout_length);
     database_add_macro("DETECTOR_LENGTH", "%d", system_config.detector_length);
+    database_add_macro("TUNE_PLL_LENGTH", "%d", system_config.tune_pll_length);
     return database_load_file(database);
 }
 
@@ -271,6 +273,7 @@ static error__t initialise_subsystems(void)
         initialise_memory()  ?:
         initialise_triggers()  ?:
         initialise_detector()  ?:
+        initialise_tune_pll()  ?:
 
         /* Post initialisation startup. */
         start_mms_handlers()  ?:

@@ -381,7 +381,8 @@ package body support is
     end;
 
 
-    function reverse(data : in std_ulogic_vector) return std_ulogic_vector is
+    function reverse(data : in std_ulogic_vector) return std_ulogic_vector
+    is
         variable result : std_ulogic_vector(data'REVERSE_RANGE);
     begin
         for i in data'RANGE loop

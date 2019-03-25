@@ -144,15 +144,17 @@ static void fir_name(int fir, char result[])
 static void out_name(int out, char result[])
 {
     const char *out_names[] = {
-        "Off",      "FIR",      "NCO",      "NCO+FIR",
-        "Sweep",    "Sw+FIR",   "Sw+NCO",   "Sw+N+F" };
+        "Off",          "FIR",          "NCO",          "NCO+FIR",
+        "Sweep",        "Sw+FIR",       "Sw+NCO",       "Sw+N+F",
+        "Tune PLL",     "PLL+FIR",      "PLL+NCO",      "PLL+NCO+FIR",
+        "PLL+Sweep",    "PLL+Sw+FIR",   "PLL+Sw+NCO",   "PLL+Sw+N+F" };
     ASSERT_OK(0 <= out  &&  out < (int) ARRAY_SIZE(out_names));
     sprintf(result, "%s", out_names[out]);
 }
 
 static void gain_name(int gain, char result[])
 {
-    sprintf(result, "%.3g", ldexp(gain, -31));
+    sprintf(result, "%.3g", ldexp(gain, -12));
 }
 
 
@@ -194,7 +196,8 @@ static bool read_feedback_mode(void *context, EPICS_STRING *result)
     {
         if (config->fir_enable[i])
             all_off = false;
-        if (config->nco0_enable[i]  ||  config->nco1_enable[i])
+        if (config->nco0_enable[i]  ||  config->nco1_enable[i]  ||
+            config->nco2_enable[i])
             all_fir = false;
         if (config->fir_select[i] != config->fir_select[0])
             same_fir = false;
@@ -252,10 +255,11 @@ static void write_out_wf(void *context, char out_enable[], unsigned int *length)
      * synchronous, so no offset conversion is required here. */
     FOR_BUNCHES(i)
     {
-        out_enable[i] = out_enable[i] & 0x7;
+        out_enable[i] = out_enable[i] & 0xF;
         bank->config.fir_enable[i] = out_enable[i] & 1;
         bank->config.nco0_enable[i] = (out_enable[i] >> 1) & 1;
         bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
+        bank->config.nco2_enable[i] = (out_enable[i] >> 3) & 1;
     }
     hw_write_bunch_config(bank->axis, bank->bank, &bank->config);
     if (system_config.lmbf_mode)
@@ -272,7 +276,7 @@ static void write_gain_wf(void *context, float gain[], unsigned int *length)
 
     int scaled_gain[hardware_config.bunches];
     float_array_to_int(
-        hardware_config.bunches, gain, scaled_gain, 32, 0);
+        hardware_config.bunches, gain, scaled_gain, 18, 12);
     update_gain_status(bank, scaled_gain);
 
     FOR_BUNCHES_OFFSET(i, j, hardware_delays.BUNCH_GAIN_OFFSET)
@@ -303,6 +307,7 @@ static void initialise_bank(
         .fir_enable  = CALLOC(bool, bunches),
         .nco0_enable = CALLOC(bool, bunches),
         .nco1_enable = CALLOC(bool, bunches),
+        .nco2_enable = CALLOC(bool, bunches),
     };
 }
 

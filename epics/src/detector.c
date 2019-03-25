@@ -28,6 +28,16 @@
 #include "detector.h"
 
 
+/* The enumeration values here must match the selections defined in
+ * Db/detector.py for DET:SELECT, and must also match the values defined in
+ * register_defs.in for DSP.DET.CONFIG.SELECT. */
+enum detector_input_select {
+    DET_SELECT_ADC = 0,     // Standard compensated ADC data
+    DET_SELECT_FIR = 1,     // Data after bunch by bunch feedback filter
+    DET_SELECT_REJECT = 2,  // ADC data after filter and fill pattern rejection
+};
+
+
 struct detector_bank {
     int axis;
 
@@ -59,7 +69,7 @@ static struct detector_context {
     struct detector_bank banks[DETECTOR_COUNT];
 
     /* Shared detector configuration. */
-    bool input_select;
+    unsigned int input_select;
     /* Phase delay to be compensated, in bunches. */
     int phase_delay;
     /* Nominal extra FIR delay. */
@@ -304,9 +314,6 @@ static void write_bunch_enables(
 {
     struct detector_bank *bank = context;
 
-    memcpy(bank->config.bunch_enables, enables, system_config.bunches_per_turn);
-    *length = system_config.bunches_per_turn;
-
     /* Update the bunch count and normalise each enable to 0/1. */
     unsigned int bunch_count = 0;
     FOR_BUNCHES(i)
@@ -316,6 +323,10 @@ static void write_bunch_enables(
             bunch_count += 1;
     }
     bank->bunch_count = bunch_count;
+
+    /* Copy the enables after normalisation. */
+    memcpy(bank->config.bunch_enables, enables, system_config.bunches_per_turn);
+    *length = system_config.bunches_per_turn;
 }
 
 
@@ -342,9 +353,8 @@ static void publish_detector(
     bank->axis = context->axis;
 
     unsigned int detector_length = system_config.detector_length;
-    char *bunch_enables = CALLOC(char, system_config.bunches_per_turn);
 
-    bank->config.bunch_enables = (bool *) bunch_enables;
+    bank->config.bunch_enables = CALLOC(bool, system_config.bunches_per_turn);
     bank->wf_i = CALLOC(float, detector_length);
     bank->wf_q = CALLOC(float, detector_length);
     bank->wf_power = CALLOC(float, detector_length);
@@ -376,22 +386,36 @@ static void publish_detector(
         PUBLISH_READ_VAR(ai, "MAX_POWER", bank->max_power);
 
         bank->bunch_set = create_bunch_set();
-        PUBLISH(bo, "SET_SELECT", enable_selection, .context = bank);
-        PUBLISH(bo, "RESET_SELECT", disable_selection, .context = bank);
+        PUBLISH_C(bo, "SET_SELECT", enable_selection, bank);
+        PUBLISH_C(bo, "RESET_SELECT", disable_selection, bank);
     }
 }
 
 
-static int compute_detector_delay(struct detector_context *det)
+static void compute_detector_delay_offset(
+    struct detector_context *det, int *delay, unsigned int *offset)
 {
-    if (det->input_select)
-        // FIR
-        return hardware_delays.DET_FIR_DELAY +
-            (int) lround(det->fir_group_delay *
-                (get_fir_decimation() * hardware_config.bunches));
-    else
-        // ADC
-        return hardware_delays.DET_ADC_DELAY + (int) hardware_config.bunches;
+    switch (det->input_select)
+    {
+        case DET_SELECT_ADC:
+            *offset = hardware_delays.DET_ADC_OFFSET;
+            *delay = hardware_delays.DET_ADC_DELAY +
+                (int) hardware_config.bunches;
+            break;
+        case DET_SELECT_FIR:
+            *offset = hardware_delays.DET_FIR_OFFSET;
+            *delay = hardware_delays.DET_FIR_DELAY +
+                (int) lround(det->fir_group_delay *
+                    (get_fir_decimation() * hardware_config.bunches));
+            break;
+        case DET_SELECT_REJECT:
+            *offset = hardware_delays.DET_ADC_REJECT_OFFSET;
+            *delay = hardware_delays.DET_ADC_REJECT_DELAY +
+                (int) hardware_config.bunches;
+            break;
+        default:
+            ASSERT_FAIL();
+    }
 }
 
 
@@ -400,15 +424,18 @@ void prepare_detector(int axis)
 {
     struct detector_context *det = &detector_context[axis];
 
+    /* Compute the delay required for phase correction and the offset requred
+     * for bunch correction. */
+    unsigned int offset;
+    compute_detector_delay_offset(det, &det->phase_delay, &offset);
+
     struct detector_config config[DETECTOR_COUNT];
     for (int i = 0; i < DETECTOR_COUNT; i ++)
     {
         config[i] = det->banks[i].config;
         det->banks[i].enabled = config[i].enable;
     }
-    unsigned int offset = det->input_select ?
-        hardware_delays.DET_FIR_OFFSET :
-        hardware_delays.DET_ADC_OFFSET;
+
     hw_write_det_config(axis, det->input_select, offset, config);
     hw_write_det_start(axis);
 
@@ -423,9 +450,6 @@ void prepare_detector(int axis)
             det->detector_mask |= 1U << i;
         }
     }
-
-    /* Compute the delay required for phase correction. */
-    det->phase_delay = compute_detector_delay(det);
 }
 
 
@@ -451,7 +475,7 @@ error__t initialise_detector(void)
         for (int i = 0; i < DETECTOR_COUNT; i ++)
             publish_detector(det, i, &det->banks[i]);
 
-        PUBLISH_WRITE_VAR_P(bo, "SELECT", det->input_select);
+        PUBLISH_WRITE_VAR_P(mbbo, "SELECT", det->input_select);
 
         PUBLISH_READ_VAR(bi, "UNDERRUN", det->underrun);
 

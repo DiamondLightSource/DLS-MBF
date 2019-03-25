@@ -48,6 +48,11 @@ architecture arch of testbench is
 
     constant BUNCH_COUNT : natural := 12;   -- A very small ring!
 
+    signal min : std_ulogic_vector(15 downto 0);
+    signal max : std_ulogic_vector(15 downto 0);
+    signal sum : std_ulogic_vector(31 downto 0);
+    signal sum2 : std_ulogic_vector(47 downto 0);
+
 begin
     adc_clk <= not adc_clk after 1 ns;
     dsp_clk <= not dsp_clk after 2 ns;
@@ -123,22 +128,18 @@ begin
 
         -- Readout bank
         procedure readout_bank is
-            variable min : std_ulogic_vector(15 downto 0);
-            variable max : std_ulogic_vector(15 downto 0);
-            variable sum : std_ulogic_vector(31 downto 0);
-            variable sum2 : std_ulogic_vector(47 downto 0);
         begin
             -- 4 words for each bunch
             for i in 0 to BUNCH_COUNT-1 loop
                 read_register(1);
-                min := read_result(15 downto 0);
-                max := read_result(31 downto 16);
+                min <= read_result(15 downto 0);
+                max <= read_result(31 downto 16);
                 read_register(1);
-                sum := read_result;
+                sum <= read_result;
                 read_register(1);
-                sum2(31 downto 0) := read_result;
+                sum2(31 downto 0) <= read_result;
                 read_register(1);
-                sum2(47 downto 32) := read_result(15 downto 0);
+                sum2(47 downto 32) <= read_result(15 downto 0);
 
                 report "bunch[" & integer'image(i) & "] = { " &
                     to_hstring(min) & ", " & to_hstring(max) & "; " &

@@ -97,9 +97,16 @@ begin
             if loading_dly = '1' then
                 case to_integer(load_ctr_dly) is
                     when DSP_SEQ_STATE_START_FREQ_OVL =>
-                        seq_state_o.start_freq <= angle_t(prog_word);
+                        seq_state_o.start_freq(31 downto 0)
+                            <= unsigned(prog_word);
                     when DSP_SEQ_STATE_DELTA_FREQ_OVL =>
-                        seq_state_o.delta_freq <= angle_t(prog_word);
+                        seq_state_o.delta_freq(31 downto 0)
+                            <= unsigned(prog_word);
+                    when DSP_SEQ_STATE_HIGH_BITS_OVL =>
+                        seq_state_o.start_freq(47 downto 32) <= unsigned(
+                            prog_word(DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS));
+                        seq_state_o.delta_freq(47 downto 32) <= unsigned(
+                            prog_word(DSP_SEQ_STATE_HIGH_BITS_DELTA_HIGH_BITS));
                     when DSP_SEQ_STATE_TIME_OVL =>
                         seq_state_o.dwell_count <= dwell_count_t(
                             prog_word(DSP_SEQ_STATE_TIME_DWELL_BITS));
@@ -118,11 +125,17 @@ begin
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_BLANK_BIT);
                         seq_state_o.hom_enable <=
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_NCO_BIT);
+                        seq_state_o.reset_phase <=
+                            prog_word(DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT);
+                        seq_state_o.enable_tune_pll <=
+                            prog_word(DSP_SEQ_STATE_CONFIG_ENA_TUNE_PLL_BIT);
                     when DSP_SEQ_STATE_WINDOW_RATE_OVL =>
-                        seq_state_o.window_rate <= angle_t(prog_word);
+                        seq_state_o.window_rate <= window_rate_t(prog_word);
                     when DSP_SEQ_STATE_HOLDOFF_OVL =>
                         seq_state_o.holdoff_count <= dwell_count_t(
                             prog_word(DSP_SEQ_STATE_HOLDOFF_HOLDOFF_BITS));
+                        seq_state_o.state_holdoff <= dwell_count_t(prog_word(
+                            DSP_SEQ_STATE_HOLDOFF_STATE_HOLDOFF_BITS));
                     when others =>
                 end case;
             end if;

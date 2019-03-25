@@ -15,6 +15,8 @@ enum interrupt_handler_index {
      * does occur in this handler) happens after the complete events have been
      * processed by the concerned components above. */
     INTERRUPT_HANDLER_TRIGGER,
+
+    INTERRUPT_HANDLER_TUNE_PLL,
 };
 
 /* This must be no less than the number of handlers above. */

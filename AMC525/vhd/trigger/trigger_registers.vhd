@@ -39,7 +39,13 @@ entity trigger_registers is
 
         -- DRAM0 triggering
         dram0_setup_o : out trigger_setup_t;
-        dram0_readback_i : in trigger_readback_t
+        dram0_readback_i : in trigger_readback_t;
+
+        -- Tune PLL global control
+        start_tune_pll0_o : out std_ulogic;
+        start_tune_pll1_o : out std_ulogic;
+        stop_tune_pll0_o : out std_ulogic;
+        stop_tune_pll1_o : out std_ulogic
     );
 end;
 
@@ -141,6 +147,10 @@ begin
     dram0_setup_o.disarm     <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_DISARM_BIT);
     dram0_setup_o.fire       <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_FIRE_BIT);
     soft_trigger_o           <= strobed_bits(CTRL_TRG_CONTROL_TRIGGER_BIT);
+    start_tune_pll0_o        <= strobed_bits(CTRL_TRG_CONTROL_START_PLL0_BIT);
+    start_tune_pll1_o        <= strobed_bits(CTRL_TRG_CONTROL_START_PLL1_BIT);
+    stop_tune_pll0_o         <= strobed_bits(CTRL_TRG_CONTROL_STOP_PLL0_BIT);
+    stop_tune_pll1_o         <= strobed_bits(CTRL_TRG_CONTROL_STOP_PLL1_BIT);
 
     pulsed_bits <= (
         CTRL_TRG_PULSED_TRIGGERS_BITS => triggers_i,

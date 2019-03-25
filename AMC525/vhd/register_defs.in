@@ -10,10 +10,23 @@
 # that the firmware and software are compatible.
 #
 # Whenever an incompatible change is made to the firmware that can't be checked
-# or handled elsewhere, this version number should be stepped.
+# or handled elsewhere, this version number should be stepped and the table
+# below should be updated accordingly.
 #
-# Note that this is only an 8-bit number, so some discrection is appropriate.
-FIRMWARE_COMPAT_VERSION = 0
+# The following values for this field are reserved:
+#
+# ======= ====================================================================
+# 0       Used for initial MBF 1.0 and 1.1 releases
+# 1       Adds Tune PLL support, used for MBF 1.2 release
+# 254     Use this for unstable MBF firmware versions under development
+# 255     Reserved for non MBF firmware with driver compatibility.  Do not use
+#         for any version of MBF firmware
+# ======= ====================================================================
+FIRMWARE_COMPAT_VERSION = 1
+
+## Do not change this value, leave equal to 254
+FIRMWARE_COMPAT_UNSTABLE = 254
+
 
 :IDELAY     RW
     # Write new IDELAY value, returns current IDELAY setting
@@ -61,6 +74,18 @@ FIRMWARE_COMPAT_VERSION = 0
         SUM2_HIGH
             # High order bits of sum of squares
             .SUM2       16
+
+
+# NCO_FREQ is a 48 bit frequency which is updated by writing to two words.  The
+# low 32 bits of the frequency are first written to the LOW register, and then
+# the high 16 bits are written to the HIGH register.  The frequency is only
+# changed when the high register is written.
+:!NCO_FREQ
+    LOW         RW
+    HIGH        RW
+        .BITS           16
+        -               15
+        .RESET_PHASE
 
 
 # These occupy addresses 0x0000..0x1FFF
@@ -183,6 +208,8 @@ FIRMWARE_COMPAT_VERSION = 0
         .NCO0_MUX
         # NCO1 mux: if set channel 1 NCO1 has sin data from channel 0
         .NCO1_MUX
+        # NCO2 mux: if set channel 1 NCO2 has sin data from channel 0
+        .NCO2_MUX
         # Bank mux: if set channel 1 bank selection is copy of bank selection
         # from channel 0.
         .BANK_MUX
@@ -332,6 +359,12 @@ FIRMWARE_COMPAT_VERSION = 0
                 # Generate soft trigger event
                 .TRIGGER
 
+                # Controls for the two Tune PLL units
+                .START_PLL0
+                .START_PLL1
+                .STOP_PLL0
+                .STOP_PLL1
+
         # Trigger status readbacks
         STATUS      R
             # Start clock synchronisation busy
@@ -424,36 +457,53 @@ FIRMWARE_COMPAT_VERSION = 0
 # Used for channel specific DSP control, each channel has its own bank of
 # registers.
 !DSP
-    # Sets NCO0 frequency
-    NCO0_FREQ   RW
+    # This is a fixed frequency NCO with frequency under manual control only
+    :NCO_FREQ   NCO0
 
     # Input signal processing
     !ADC
-        CONFIG       W
-            # Input threshold for reporting input overflow
-            .THRESHOLD  14
-            # Choose source of MMS data: before or after FIR
-            .MMS_SOURCE
-            # Choose source of DRAM0 data: before or after FIR
-            .DRAM_SOURCE
-            # Limit threshold for min/max/sum bunch motion event detector
-            .DELTA      16
-        *RW
-            EVENTS      R
-                # Set if input data exceeds ADC input limit setting
-                .INP_OVF
-                # Set if overflow detected during input compensation filter
-                .FIR_OVF
-                # Placeholder for obsolete bit
-                -
-                # Set when ADC min/max/sum motion exceeds configured threshold
-                .DELTA
-            # Writing to this register generates a pulse on the selected bits
-            COMMAND      WP
-                # Starts block write to ADC fast FIR taps
-                .WRITE
-                # Resets ADC min/max event detector to enable further events
-                .RESET_DELTA
+        !CONFIG
+            CONFIG       W
+                # Choose source of MMS data: before or after FIR or after fill
+                # pattern rejection, according to the following table:
+                #
+                # ===== ========================================================
+                # \     Data source
+                # ===== ========================================================
+                # 0     ADC data before input compensation
+                # 1     ADC data after input compensation
+                # 2     ADC data after input compensation and fill pattern
+                #       rejection filtering
+                # ===== ========================================================
+                .MMS_SOURCE     2
+                # Choose source of DRAM0 data: before or after FIR or after fill
+                # pattern rejection.  The possible values are the same as
+                # documented above for ``MMS_SOURCE``.
+                .DRAM_SOURCE    2
+                # Fill pattern rejection shift factor
+                .REJECT_SHIFT   4
+            LIMITS      W
+                # Input threshold for reporting input overflow
+                .THRESHOLD  14
+                -           2
+                # Limit threshold for min/max/sum bunch motion event detector
+                .DELTA      16
+            *RW
+                EVENTS      R
+                    # Set if input data exceeds ADC input limit setting
+                    .INP_OVF
+                    # Set if overflow detected during input compensation filter
+                    .FIR_OVF
+                    # Set when ADC min/max/sum motion exceeds configured
+                    # threshold
+                    .DELTA
+                # Writing to this register generates a pulse on the selected
+                # bits
+                COMMAND      WP
+                    # Starts block write to ADC fast FIR taps
+                    .WRITE
+                    # Resets ADC min/max event detector to enable further events
+                    .RESET_DELTA
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W
@@ -471,14 +521,16 @@ FIRMWARE_COMPAT_VERSION = 0
         BANK        W
             # Selects FIR to apply to this bunch
             .FIR_SELECT     2
-            # Output gain
-            .GAIN           13
+            # Output gain.  This is scaled as a 6.12 fixed point number
+            .GAIN           18
             # Enable FIR output for this bunch
             .FIR_ENABLE
             # Enable NCO0 output
             .NCO0_ENABLE
             # Enable NCO1 output
             .NCO1_ENABLE
+            # Enable NCO2 output
+            .NCO2_ENABLE
 
 
     # Bunch by bunch filter
@@ -581,10 +633,16 @@ FIRMWARE_COMPAT_VERSION = 0
             # required to write a complete state, and so a sequence of 64 writes
             # updates the sequencer program memory.
             *OVERLAY    STATE       W
-                # Starting frequency for this sweep
+                # Starting frequency for this sweep (low order 32 bits)
                 START_FREQ
-                # Frequency step for this sweep
+                    .LOW_BITS       32
+                # Frequency step for this sweep (low order 32 bits)
                 DELTA_FREQ
+                    .LOW_BITS       32
+                # High order bits for the sweep
+                HIGH_BITS
+                    .START_HIGH     16
+                    .DELTA_HIGH     16
                 TIME
                     # Number of turns to capture for one detector cycle
                     .DWELL          16
@@ -603,14 +661,21 @@ FIRMWARE_COMPAT_VERSION = 0
                     .ENA_BLANK
                     # Sweep output enable
                     .ENA_NCO
+                    # Reset NCO phase
+                    .RESET_PHASE
+                    # Enable Tune PLL offset
+                    .ENA_TUNE_PLL
                 # Detector window advance.
                 WINDOW_RATE
                 HOLDOFF
                     # Number of turns to wait after changing frequency and
                     # before starting detector capture
                     .HOLDOFF        16
+                    # Holdoff at start of state: delay in turns from entry to
+                    # sequencer state to start of first dwell.
+                    .STATE_HOLDOFF  16
 
-                # Two extra writes are required to pad the state setup to 8
+                # One extra write is required to pad the state setup to 8
                 # words.
                 PADDING
 
@@ -626,9 +691,16 @@ FIRMWARE_COMPAT_VERSION = 0
     !DET
         # Configures global behaviour of the four detectors
         CONFIG      RW
-            # Select data input source: 0 selects ADC data, 1 selects scaled
-            # FIR data
-            .SELECT
+            # Select data input source according to the following table:
+            #
+            # ===== ========================================================
+            # \     Data source
+            # ===== ========================================================
+            # 0     Input compensated ADC data
+            # 1     Scaled FIR data
+            # 2     Input compensated ADC data after fill pattern rejection
+            # ===== ========================================================
+            .SELECT     2
             # Output scaling for detector 0
             .SCALE0     1
             # Output enable for detector 0
@@ -670,6 +742,133 @@ FIRMWARE_COMPAT_VERSION = 0
         BUNCH       W
 
 
+    # Tune PLL control
+    !TUNE_PLL
+        !CONTROL
+            # Can be used to set the base frequency.  Setting this while
+            # feedback is running may confuse the controller.
+            :NCO_FREQ
+            *RW
+                # General status
+                STATUS      R
+                    # Set if feedback currently enabled
+                    .RUNNING
+                    # The following bits are stop reasons, recorded why the PLL
+                    # has stopped operation.
+                    #
+                    # This bit is set if stop was requested.
+                    .STOP_STOP
+                    # This bit is set if the detector overflowed
+                    .STOP_OVERFLOW
+                    # This bit is set if the detector magnitude is too small
+                    .STOP_MAGNITUDE
+                    # This bit is set if the frequency offset has grown too
+                    # large.
+                    .STOP_OFFSET
+                # General configuration settings
+                CONFIG      W
+                    # Select data input source according to the following table:
+                    #
+                    # ===== ====================================================
+                    # \     Data source
+                    # ===== ====================================================
+                    # 0     Input compensated ADC data
+                    # 1     Scaled FIR data
+                    # 2     Input compensated ADC data after fill pattern
+                    #       rejection
+                    # ===== ====================================================
+                    .SELECT         2
+                    # Readout shift for detector
+                    .DET_SHIFT      2
+                    # NCO gain and output enable
+                    .NCO_GAIN       4
+                    .NCO_ENABLE
+                    # Debug setting for filtered view of CORDIC output.
+                    .FILTER_CORDIC
+                    # Debug setting for capturing CORDIC output.
+                    .CAPTURE_CORDIC
+                    # Number of turns between detector cycles, determines how
+                    # fast the PLL tracker runs.
+                    .DWELL_TIME     16
+                    # Special debug mode: if this bit is set the frequency
+                    # offset is directly programmed by the PROPORTIONAL
+                    # register.  This is designed to be used for sequencer
+                    # debugging only.
+                    .OFFSET_OVERRIDE
+                    # This flag can be set to enable the blanking signal, in
+                    # which case the input signal is ignored during the blanking
+                    # interval.
+                    .BLANKING
+            # Target phase to track.  The top 18 bits of the phase are used
+            TARGET_PHASE    W
+            # Integrating factor.  The top 25 bits are used
+            INTEGRAL        W
+            # Proportional factor.  The top 25 bits are used
+            PROPORTIONAL    W
+            # Magnitude limit.  Minimum magnitude to allow feedback
+            MIN_MAGNITUDE   W
+            *RW
+                # Reads back filtered frequency offset
+                FILTERED_OFFSET     R
+                # Offset error limit.  The integrated frequency offset must be
+                # less than this to allow feedback.
+                MAX_OFFSET_ERROR W
+            *RW
+                # Captures events generated by tune PLL, reset on readout
+                EVENTS      R
+                    # Set if detector readout overflows
+                    .DET_OVFL
+                    # Set if feedback magnitude is too small
+                    .MAG_ERROR
+                    # Set if phase error detected
+                    .OFFSET_ERROR
+                COMMAND     WP
+                    # Triggers start of write to detector bunch enable memory.
+                    .WRITE_BUNCH
+            # Reads back filtered IQ data
+            FILTERED_I      R
+            FILTERED_Q      R
+
+            # Writing to this register programs the bunch enable memory for the
+            # tune PLL detector.  To write the memory reset the address by
+            # setting ``DSP.TUNE_PLL.COMMAND.WRITE`` and then write 32 enable
+            # bits at a time until all bunches have been programmed.
+            BUNCH       W
+
+        # Registers for streamed readout of Tune PLL state and history
+        !READOUT
+            *RW
+                STATUS      R
+                    # Returns number of offset values currently in the offset
+                    # FIFO.  The maximum possible value is 1025!
+                    .OFFSET_COUNT   11
+                    # Returns number of debug values currently in the debug
+                    # FIFO
+                    .DEBUG_COUNT    11
+                    # If set the offset FIFO has overrun and will need to be
+                    # reset
+                    .OFFSET_OVERRUN
+                    # If set the debug FIFO has overrun and will need to be
+                    # reset
+                    .DEBUG_OVERRUN
+                    # These bits are latched if an attempt is made to read from
+                    # the corresponding FIFO when it is empty.
+                    .READ_ERROR     2
+                COMMAND     WP
+                    # Reset the offset FIFO after overrun
+                    .RESET_OFFSET
+                    # Reset the debug FIFO after overrun
+                    .RESET_DEBUG
+                    # Enable offset FIFO ready interrupt
+                    .ENABLE_OFFSET
+                    # Enable debug FIFO ready interrupt
+                    .ENABLE_DEBUG
+                    # Used to reset the READ_ERROR bits
+                    .RESET_READ_ERROR   2
+            OFFSET_FIFO     R
+            DEBUG_FIFO      R
+
+
 # The following interrupt sources are defined
 :INTERRUPTS     R
     # DRAM0 data capture becomes busy
@@ -686,3 +885,12 @@ FIRMWARE_COMPAT_VERSION = 0
     .SEQ_BUSY       2
     # Sequencer complete, no longer busy, one bit for each channel.
     .SEQ_DONE       2
+    # Tune PLL interrupts.  Each channel supports the following interrupt
+    # sources:
+    # === ======================================================================
+    # 0   Frequency offset readout FIFO half full.
+    # 1   Debug readout FIFO half full.
+    # 2   Tune PLL has stopped.
+    # === ======================================================================
+    .TUNE_PLL0_READY 3
+    .TUNE_PLL1_READY 3

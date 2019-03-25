@@ -52,6 +52,15 @@ public class Utils {
     }
   }
   
+  public static void resetSetpoint(String devName) {
+    try {
+      DeviceProxy ds = DeviceFactory.getInstance().getDevice(devName);
+      ds.command_inout("ResetSetpoint");
+    } catch(ConnectionException | DevFailed e1) {
+      ErrorPane.showErrorMessage(null, devName, e1);
+    }
+  }
+  
   public static void showhADCPanel() {
      if(hADCPanel==null) hADCPanel = new ADCSetupPanel(mfdbkHEpicsDevName); 
      hADCPanel.setVisible(true);    

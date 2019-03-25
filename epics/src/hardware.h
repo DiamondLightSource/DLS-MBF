@@ -219,7 +219,7 @@ struct mms_result {
 };
 
 /* Directly sets the fixed frequency oscillator. */
-void hw_write_nco0_frequency(int axis, unsigned int frequency);
+void hw_write_nco0_frequency(int axis, uint64_t frequency);
 
 
 /* ADC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -236,6 +236,9 @@ void hw_write_adc_overflow_threshold(int axis, unsigned int threshold);
 /* Sets the threshold for generating ADC bunch motion event. */
 void hw_write_adc_delta_threshold(int axis, unsigned int delta);
 
+/* Sets shift factor for ADC fill pattern reject filter. */
+void hw_write_adc_reject_shift(int axis, unsigned int shift);
+
 /* Polls the ADC events: input overflow, FIR overflow, min/max/sum overflow,
  * bunch motion event. */
 void hw_read_adc_events(int axis, struct adc_events *events);
@@ -245,8 +248,8 @@ void hw_read_adc_events(int axis, struct adc_events *events);
 void hw_write_adc_taps(int axis, const int taps[]);
 
 /* Set output source for ADC MMS. */
-void hw_write_adc_mms_source(int axis, bool after_fir);
-void hw_write_adc_dram_source(int axis, bool after_fir);
+void hw_write_adc_mms_source(int axis, unsigned int source);
+void hw_write_adc_dram_source(int axis, unsigned int source);
 
 /* Reads min/max/sum for ADC. */
 void hw_read_adc_mms(int axis, struct mms_result *result);
@@ -261,6 +264,7 @@ struct bunch_config {
     bool *fir_enable;       // Enable FIR output for this bunch
     bool *nco0_enable;      // Enable NCO0 output for this bunch
     bool *nco1_enable;      // Enable NCO1 output (swept NCO) for this bunch
+    bool *nco2_enable;      // Enable NCO2 output (Tune PLL NCO) for this bunch
 };
 
 /* Write bunch configuration. */
@@ -312,8 +316,8 @@ void hw_read_dac_mms(int axis, struct mms_result *result);
 /* Sequencer configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 struct seq_entry {
-    unsigned int start_freq;        // NCO start frequency
-    unsigned int delta_freq;        // Frequency step for sweep
+    uint64_t start_freq;            // NCO start frequency
+    uint64_t delta_freq;            // Frequency step for sweep
     unsigned int dwell_time;        // Dwell time at each step
     unsigned int capture_count;     // Number of sweep points to capture
     unsigned int bunch_bank;        // Bunch bank selection
@@ -323,7 +327,10 @@ struct seq_entry {
     bool enable_window;             // Enable detector windowing
     bool write_enable;              // Enable data capture of sequence
     bool enable_blanking;           // Observe trigger holdoff control
+    bool reset_phase;               // If set sweep phase is reset at start
+    bool use_tune_pll;              // Enable Tune PLL frequency offset
     unsigned int holdoff;           // Detector holdoff
+    unsigned int state_holdoff;     // Holdoff at start of state
 };
 
 struct seq_config {
@@ -375,7 +382,7 @@ struct detector_result {
 
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
-    int axis, bool input_select, unsigned int delay,
+    int axis, unsigned int input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT]);
 
 /* Resets detector capture address. */
@@ -389,3 +396,82 @@ void hw_read_det_events(int axis,
 void hw_read_det_memory(
     int axis, unsigned int result_count, unsigned int offset,
     struct detector_result result[]);
+
+
+/* Tune PLL configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Directly sets Tune PLL NCO frequency.  Note that setting this during feedback
+ * will interfere with feedback! */
+void hw_write_pll_nco_frequency(int axis, uint64_t frequency);
+
+/* Reads current Tune PLL frequency. */
+uint64_t hw_read_pll_nco_frequency(int axis);
+
+/* Control over Tune PLL NCO gain and enable. */
+void hw_write_pll_nco_gain(int axis, unsigned int gain);
+void hw_write_pll_nco_enable(int axis, bool enable);
+
+/* Control over operational parameters. */
+void hw_write_pll_dwell_time(int axis, unsigned int dwell);
+void hw_write_pll_blanking(int axis, bool blanking);
+void hw_write_pll_target_phase(int axis, int32_t phase);
+void hw_write_pll_integral_factor(int axis, int32_t integral);
+void hw_write_pll_proportional_factor(int axis, int32_t proportional);
+void hw_write_pll_minimum_magnitude(int axis, uint32_t magnitude);
+void hw_write_pll_maximum_offset(int axis, uint32_t offset);
+
+/* Configures the detector readout scale. */
+void hw_write_pll_det_scaling(int axis, unsigned int scaling);
+
+/* As the detector bunch offset and hence the bunch configuration depend on the
+ * input selection, we have to write both together. */
+void hw_write_pll_det_config(
+    int axis, unsigned int input_select,
+    unsigned int offset, const bool bunch_enables[]);
+
+/* Control over debug readbacks.  If captured CORDIC is set the FIFO debug data
+ * will be CORDIC data.  Only intended for CORDIC validation. */
+void hw_write_pll_captured_cordic(int axis, bool cordic);
+
+/* Start and stop Tune PLL feedback. */
+void hw_write_pll_start(bool axis0, bool axis1);
+void hw_write_pll_stop(bool axis0, bool axis1);
+
+
+/* Read back error events. */
+struct tune_pll_events {
+    bool det_overflow;
+    bool magnitude_error;
+    bool offset_error;
+};
+void hw_read_pll_events(int axis, struct tune_pll_events *events);
+
+/* Read running status and stop reasons. */
+struct tune_pll_status {
+    bool running;               // Set if feedback currently running
+    /* The following bits are stop reasons recording why feedback is stopped. */
+    bool stopped;               // Stop requested
+    bool overflow;              // Detector overflow
+    bool too_small;             // Magnitude too small
+    bool bad_offset;            // Offset too large
+};
+void hw_read_pll_status(int axis, struct tune_pll_status *status);
+
+/* Readbacks for filtered live data. */
+struct detector_result hw_read_pll_filtered_detector(int axis);
+int32_t hw_read_pll_filtered_offset(int axis);
+
+/* Rather strangely, the maximum possible PLL readback FIFO capture is 1025
+ * samples.  In practice this will *never* occur, but it is safest to leave the
+ * space anyway. */
+#define PLL_FIFO_SIZE       1025
+
+/* Read debug and offset FIFO.  If a reset is required then *reset is set.  If
+ * enable_interrupt is set then read ready interrupts are enabled on return. */
+enum pll_readout_fifo {
+    PLL_FIFO_DEBUG,         // Returns pairs of debug values
+    PLL_FIFO_OFFSET,        // Returns frequency offsets
+};
+unsigned int hw_read_pll_readout_fifo(
+    int axis, enum pll_readout_fifo fifo,
+    bool enable_interrupt, bool *reset, int32_t data[PLL_FIFO_SIZE]);

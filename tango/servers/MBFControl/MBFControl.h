@@ -80,6 +80,9 @@ class MBFControl : public TANGO_BASE_CLASS
 		bool is_srv_starting();
     short find_mode(string mode);
     string get_date();
+    string get_pattern_string();
+    void split(vector<string> &tokens, const string &text, char sep);
+    int pattern_length;
 
 /*----- PROTECTED REGION END -----*/	//	MBFControl::Data Members
 
@@ -108,13 +111,15 @@ public:
 	Tango::DevDouble	*attr_Harmonic_read;
 	Tango::DevDouble	*attr_SweepRange_read;
 	Tango::DevLong	*attr_SweepDwellTime_read;
-	Tango::DevShort	*attr_SweepGain_read;
+	Tango::DevShort	*attr_SweepGainSingleBunch_read;
+	Tango::DevShort	*attr_SweepGainAllBunches_read;
 	Tango::DevLong	*attr_BlankingInterval_read;
 	Tango::DevBoolean	*attr_TuneOnSingleBunch_read;
 	Tango::DevShort	*attr_TuneBunch_read;
 	Tango::DevState	*attr_SweepState_read;
 	Tango::DevString	*attr_MacroHistory_read;
 	Tango::DevString	*attr_ModeList_read;
+	Tango::DevShort	*attr_CleaningPattern_read;
 
 //	Constructors and destructors
 public:
@@ -273,15 +278,25 @@ public:
 	virtual void write_SweepDwellTime(Tango::WAttribute &attr);
 	virtual bool is_SweepDwellTime_allowed(Tango::AttReqType type);
 /**
- *	Attribute SweepGain related methods
+ *	Attribute SweepGainSingleBunch related methods
  *	Description: 
  *
  *	Data type:	Tango::DevShort
  *	Attr type:	Scalar
  */
-	virtual void read_SweepGain(Tango::Attribute &attr);
-	virtual void write_SweepGain(Tango::WAttribute &attr);
-	virtual bool is_SweepGain_allowed(Tango::AttReqType type);
+	virtual void read_SweepGainSingleBunch(Tango::Attribute &attr);
+	virtual void write_SweepGainSingleBunch(Tango::WAttribute &attr);
+	virtual bool is_SweepGainSingleBunch_allowed(Tango::AttReqType type);
+/**
+ *	Attribute SweepGainAllBunches related methods
+ *	Description: 
+ *
+ *	Data type:	Tango::DevShort
+ *	Attr type:	Scalar
+ */
+	virtual void read_SweepGainAllBunches(Tango::Attribute &attr);
+	virtual void write_SweepGainAllBunches(Tango::WAttribute &attr);
+	virtual bool is_SweepGainAllBunches_allowed(Tango::AttReqType type);
 /**
  *	Attribute BlankingInterval related methods
  *	Description: 
@@ -338,6 +353,16 @@ public:
  */
 	virtual void read_ModeList(Tango::Attribute &attr);
 	virtual bool is_ModeList_allowed(Tango::AttReqType type);
+/**
+ *	Attribute CleaningPattern related methods
+ *	Description: 
+ *
+ *	Data type:	Tango::DevShort
+ *	Attr type:	Spectrum max = 1024
+ */
+	virtual void read_CleaningPattern(Tango::Attribute &attr);
+	virtual void write_CleaningPattern(Tango::WAttribute &attr);
+	virtual bool is_CleaningPattern_allowed(Tango::AttReqType type);
 
 
 	//--------------------------------------------------------

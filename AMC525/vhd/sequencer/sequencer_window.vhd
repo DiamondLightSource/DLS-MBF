@@ -22,7 +22,7 @@ entity sequencer_window is
         write_data_i : in reg_data_t;
 
         -- Settings for current state
-        window_rate_i : in angle_t;         -- Window phase advance per tick
+        window_rate_i : in window_rate_t;   -- Window phase advance per tick
         enable_window_i : in std_ulogic;     -- Window or rectangle
         write_enable_i : in std_ulogic;
 
@@ -48,13 +48,13 @@ architecture arch of sequencer_window is
 
     -- The rate and enable parameters are loaded early, but need to be valid
     -- during the entire turn, so load working copies at start of each turn.
-    signal window_rate : angle_t := (others => '0');
+    signal window_rate : window_rate_t := (others => '0');
     signal enable_window : std_ulogic := '0';
     signal write_enable : std_ulogic := '0';
 
     -- Generate window from appropriate triggered start.
     signal start_window : std_ulogic;
-    signal window_phase : angle_t := (others => '0');
+    signal window_phase : window_rate_t := (others => '0');
     signal enable_window_delay : std_ulogic := '0';
 
     signal seq_write_in : std_ulogic;

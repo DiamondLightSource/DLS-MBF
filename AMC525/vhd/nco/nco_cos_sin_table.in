@@ -28,9 +28,8 @@ architecture arch of nco_cos_sin_table is
     attribute ram_style : string;
     attribute ram_style of table : signal is "BLOCK";
 
-    signal addr : cos_sin_addr_t := (others => '0');
-    signal data : cos_sin_data_t := (others => '0');
-    signal data_pl : cos_sin_data_t := (others => '0');
+    signal data : cos_sin_data_t;
+    signal cos_sin : cos_sin_data_t;
 
     function bits_to_cos_sin(data : std_ulogic_vector) return cos_sin_19_t is
         variable result : cos_sin_19_t;
@@ -42,19 +41,19 @@ architecture arch of nco_cos_sin_table is
 
 begin
     -- To ensure that all the required registers are folded into the lookup
-    -- table, we need the following 4 stages:
-    --      addr_i => addr => data_pl => data => cos_sin_o
-    assert LOOKUP_DELAY = 4 severity failure;
+    -- table, we need the following 2 stages:
+    --      addr_i => data => cos_sin = cos_sin_o
+    assert LOOKUP_DELAY = 2 severity failure;
 
     -- Double-buffered table lookup to help with BRAM registers.
     process (clk_i) begin
         if rising_edge(clk_i) then
-            addr <= addr_i;
-            data_pl <= table(to_integer(addr));
-            data <= data_pl;
-            cos_sin_o <= bits_to_cos_sin(data);
+            data <= table(to_integer(addr_i));
+            cos_sin <= data;
         end if;
     end process;
+
+    cos_sin_o <= bits_to_cos_sin(cos_sin);
 end;
 
 -- vim: set filetype=vhdl:

@@ -799,30 +799,55 @@ void MBFControlClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	sweepdwelltime->set_memorized_init(true);
 	att_list.push_back(sweepdwelltime);
 
-	//	Attribute : SweepGain
-	SweepGainAttrib	*sweepgain = new SweepGainAttrib();
-	Tango::UserDefaultAttrProp	sweepgain_prop;
-	//	description	not set for SweepGain
-	//	label	not set for SweepGain
-	//	unit	not set for SweepGain
-	//	standard_unit	not set for SweepGain
-	//	display_unit	not set for SweepGain
-	//	format	not set for SweepGain
-	//	max_value	not set for SweepGain
-	//	min_value	not set for SweepGain
-	//	max_alarm	not set for SweepGain
-	//	min_alarm	not set for SweepGain
-	//	max_warning	not set for SweepGain
-	//	min_warning	not set for SweepGain
-	//	delta_t	not set for SweepGain
-	//	delta_val	not set for SweepGain
+	//	Attribute : SweepGainSingleBunch
+	SweepGainSingleBunchAttrib	*sweepgainsinglebunch = new SweepGainSingleBunchAttrib();
+	Tango::UserDefaultAttrProp	sweepgainsinglebunch_prop;
+	//	description	not set for SweepGainSingleBunch
+	//	label	not set for SweepGainSingleBunch
+	//	unit	not set for SweepGainSingleBunch
+	//	standard_unit	not set for SweepGainSingleBunch
+	//	display_unit	not set for SweepGainSingleBunch
+	//	format	not set for SweepGainSingleBunch
+	//	max_value	not set for SweepGainSingleBunch
+	//	min_value	not set for SweepGainSingleBunch
+	//	max_alarm	not set for SweepGainSingleBunch
+	//	min_alarm	not set for SweepGainSingleBunch
+	//	max_warning	not set for SweepGainSingleBunch
+	//	min_warning	not set for SweepGainSingleBunch
+	//	delta_t	not set for SweepGainSingleBunch
+	//	delta_val	not set for SweepGainSingleBunch
 	
-	sweepgain->set_default_properties(sweepgain_prop);
+	sweepgainsinglebunch->set_default_properties(sweepgainsinglebunch_prop);
 	//	Not Polled
-	sweepgain->set_disp_level(Tango::OPERATOR);
-	sweepgain->set_memorized();
-	sweepgain->set_memorized_init(true);
-	att_list.push_back(sweepgain);
+	sweepgainsinglebunch->set_disp_level(Tango::OPERATOR);
+	sweepgainsinglebunch->set_memorized();
+	sweepgainsinglebunch->set_memorized_init(true);
+	att_list.push_back(sweepgainsinglebunch);
+
+	//	Attribute : SweepGainAllBunches
+	SweepGainAllBunchesAttrib	*sweepgainallbunches = new SweepGainAllBunchesAttrib();
+	Tango::UserDefaultAttrProp	sweepgainallbunches_prop;
+	//	description	not set for SweepGainAllBunches
+	//	label	not set for SweepGainAllBunches
+	//	unit	not set for SweepGainAllBunches
+	//	standard_unit	not set for SweepGainAllBunches
+	//	display_unit	not set for SweepGainAllBunches
+	//	format	not set for SweepGainAllBunches
+	//	max_value	not set for SweepGainAllBunches
+	//	min_value	not set for SweepGainAllBunches
+	//	max_alarm	not set for SweepGainAllBunches
+	//	min_alarm	not set for SweepGainAllBunches
+	//	max_warning	not set for SweepGainAllBunches
+	//	min_warning	not set for SweepGainAllBunches
+	//	delta_t	not set for SweepGainAllBunches
+	//	delta_val	not set for SweepGainAllBunches
+	
+	sweepgainallbunches->set_default_properties(sweepgainallbunches_prop);
+	//	Not Polled
+	sweepgainallbunches->set_disp_level(Tango::OPERATOR);
+	sweepgainallbunches->set_memorized();
+	sweepgainallbunches->set_memorized_init(true);
+	att_list.push_back(sweepgainallbunches);
 
 	//	Attribute : BlankingInterval
 	BlankingIntervalAttrib	*blankinginterval = new BlankingIntervalAttrib();
@@ -969,6 +994,30 @@ void MBFControlClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	modelist->set_disp_level(Tango::OPERATOR);
 	//	Not Memorized
 	att_list.push_back(modelist);
+
+	//	Attribute : CleaningPattern
+	CleaningPatternAttrib	*cleaningpattern = new CleaningPatternAttrib();
+	Tango::UserDefaultAttrProp	cleaningpattern_prop;
+	//	description	not set for CleaningPattern
+	//	label	not set for CleaningPattern
+	//	unit	not set for CleaningPattern
+	//	standard_unit	not set for CleaningPattern
+	//	display_unit	not set for CleaningPattern
+	//	format	not set for CleaningPattern
+	//	max_value	not set for CleaningPattern
+	//	min_value	not set for CleaningPattern
+	//	max_alarm	not set for CleaningPattern
+	//	min_alarm	not set for CleaningPattern
+	//	max_warning	not set for CleaningPattern
+	//	min_warning	not set for CleaningPattern
+	//	delta_t	not set for CleaningPattern
+	//	delta_val	not set for CleaningPattern
+	
+	cleaningpattern->set_default_properties(cleaningpattern_prop);
+	//	Not Polled
+	cleaningpattern->set_disp_level(Tango::OPERATOR);
+	//	Not Memorized
+	att_list.push_back(cleaningpattern);
 
 
 	//	Create a list of static attributes

@@ -110,9 +110,9 @@ def convert_command_script(root):
         command
     '''
     for widget in find_widgets(root, path):
-        # If command is run-command add the special -P flag
+        # If command is mbf-run-command add the special -P flag
         widget.text = re.sub(
-            '^run-command', 'run-command -P', widget.text)
+            '^mbf-run-command', 'mbf-run-command -P', widget.text)
         # Add explicit path to script
         widget.text = re.sub('^', '../scripts/', widget.text)
 

@@ -153,7 +153,7 @@ static void set_fir_taps(void *context, float *taps, unsigned int *length)
     struct fir_bank *bank = context;
     *length = hardware_config.bunch_taps;
 
-    float_array_to_int(*length, taps, bank->set_taps, 32, 0);
+    float_array_to_int(*length, taps, bank->set_taps, 32, 31);
     if (bank->use_waveform)
         update_bank_taps(bank);
 }
