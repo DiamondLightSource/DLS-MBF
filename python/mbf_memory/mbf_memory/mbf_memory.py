@@ -27,7 +27,7 @@ Example     :
             import PyTango
         elif layer == 'epics':
             from cothread import catools
-        
+
         if layer == 'tango':
             dev_tango = PyTango.DeviceProxy(device_name)
             self.dev_tango = dev_tango
@@ -38,12 +38,11 @@ Example     :
             self.bunch_nb = catools.caget(device_name + ":INFO:BUNCHES")
             hostname_l = catools.caget(device_name + ":INFO:HOSTNAME")
             port = catools.caget(device_name + ":INFO:SOCKET")
-        
+
         self.device_name = device_name
         hostname = "".join(map(chr, hostname_l))
         hostname = hostname.rstrip("\0")
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(1.)
         self.s.connect((hostname, port))
 
     def __del__(self):
@@ -59,10 +58,10 @@ Example     :
         min_turn = np.ceil(((runout-1)*2.**29)/self.bunch_nb)
         max_turn = np.floor((runout*2.**29)/self.bunch_nb)
         return min_turn, max_turn
-    
+
     def get_turns_max(self, decimate):
         return ((2**29)//self.bunch_nb)//decimate
-    
+
     def get_max_decimate(self):
         READ_BUFFER_BYTES = 2**20-64
         sizeof_uint32 = 4
@@ -82,19 +81,14 @@ Example     :
         return d.mean(0)
 
     def __read_buffer(self, data_size):
-        recv_bytes = 0
         data = ""
-        while recv_bytes < data_size:
-            while True:
-                buffer_size = min(data_size-recv_bytes, self.BUFFER_SIZE)
-                try:
-                    d = self.s.recv(buffer_size)
-                except socket.timeout:
-                    continue
-                else:
-                    break
+        while data_size > 0:
+            d = self.s.recv(data_size)
+            if not d:
+                # Early end of input
+                break
             data += d
-            recv_bytes += len(d)
+            data_size -= len(d)
         return data
 
     def __get_tpe(self, type_str):
@@ -192,7 +186,7 @@ NameError
             cmd_str += "L"
             if lock > 0:
                 cmd_str += "W{:.0f}".format(lock*1000)
-        
+
         if verbose:
             print "cmd_str:", cmd_str, " | ", expected_msg_len
 
@@ -212,11 +206,11 @@ NameError
             dtype=self.__get_tpe('uint16'))[0]
         header_sample_format = np.frombuffer(data[7:9],
             dtype=self.__get_tpe('uint16'))[0]
-        
+
         bytes_per_sample = {0: 2, 1: 4, 2: 8}
         expected_msg_len_bis = header_samples*header_ch_per_samples
         expected_msg_len_bis *= bytes_per_sample[header_sample_format]
-        
+
         if verbose:
             print "samples:", header_samples
             print "ch_per_sample", header_ch_per_samples
@@ -273,12 +267,12 @@ NameError
             cmd_str += "L"
             if lock > 0:
                 cmd_str += "W{:.0f}".format(lock*1000)
-        
+
         if verbose:
             print "cmd_str:", cmd_str
 
         self.s.send(cmd_str + '\n')
-        
+
         # First read the header
         data = self.__read_buffer(self.BUFFER_SIZE)
 
@@ -300,16 +294,16 @@ NameError
             dtype=self.__get_tpe('int32'))[0]
         header_bunches = np.frombuffer(data[9:13],
             dtype=self.__get_tpe('int32'))[0]
-        
+
         expected_msg_len = header_nb_detec*header_N*8
-        
+
         if verbose:
             print "N: ", header_N
             print "Nb of detectors: ", header_nb_detec
             print "bunches:", header_bunches
             print "Compensation delay:", header_comp_delay
             print "expected_msg_len: ", expected_msg_len
-        
+
         data = data[13:]
         recv_bytes = len(data)
         data += self.__read_buffer(expected_msg_len-recv_bytes)
@@ -318,7 +312,7 @@ NameError
         d.shape = (header_N, header_nb_detec, 2)
         d_cmpl = d[:, :, 0] + 1j*d[:, :, 1]
         d_cmpl /= 2**31
-        
+
         expected_msg_len = 4*header_N
         data = self.__read_buffer(expected_msg_len)
         s = np.frombuffer(data, dtype=self.__get_tpe('uint32'))
@@ -337,21 +331,21 @@ NameError
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Read memory buffer.")
     parser.add_argument("-c", default=None, type=int,
-            help="Channel number", dest="channel")
+        help="Channel number", dest="channel")
     parser.add_argument("-d", type=str,
-            help="TMBF device name (EPICS or Tango)", dest="device_name")
+        help="TMBF device name (EPICS or Tango)", dest="device_name")
     parser.add_argument("-l", default="epics", type=str,
-            help="Layer: 'tango' or 'epics'", dest="layer")
+        help="Layer: 'tango' or 'epics'", dest="layer")
     parser.add_argument("-t", default=None, type=float,
-            help="Frequency for homodyne detection (in SR turns units)",
-            dest="tune")
+        help="Frequency for homodyne detection (in SR turns units)",
+        dest="tune")
     args = parser.parse_args()
-    
+
     device_name = args.device_name
     layer = args.layer
     tune = args.tune
     channel = args.channel
-    
+
     mbf = MBF_mem(device_name, layer=layer)
 
     bunch = None

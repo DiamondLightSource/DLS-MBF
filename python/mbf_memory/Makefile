@@ -1,6 +1,8 @@
 PYTHON = python
 
 MBF_TOP := $(shell readlink -f '$(CURDIR)/../..')
+
+MUST_DEFINE += PYMOD_INSTALL_DIR
 include $(MBF_TOP)/Makefile.common
 
 # This is run when we type make
@@ -17,6 +19,6 @@ clean:
 # Install the built egg
 install: dist
 	$(PYTHON) setup.py easy_install -m \
-			--record=installed.files \
-			--install-dir=$(PYMOD_INSTALL_DIR) \
-			dist/*.egg
+            --record=installed.files \
+            --install-dir=$(PYMOD_INSTALL_DIR) \
+            dist/*.egg
