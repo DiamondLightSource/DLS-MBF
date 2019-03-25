@@ -5,8 +5,17 @@ MBF_TOP := $(shell readlink -f '$(CURDIR)/../..')
 MUST_DEFINE += PYMOD_INSTALL_DIR
 include $(MBF_TOP)/Makefile.common
 
+include $(MBF_TOP)/VERSION
+
+
+default: dist
+.PHONY: default
+
+mbf_memory/__init__.py: mbf_memory/__init__.py.in $(MBF_TOP)/VERSION
+	sed 's/@@VERSION@@/$(MBF_VERSION)/' $< >$@
+
 # This is run when we type make
-dist: setup.py $(wildcard mbf_memory/*)
+dist: setup.py mbf_memory/__init__.py $(wildcard mbf_memory/*.py)
 	$(PYTHON) setup.py bdist_egg
 	touch dist
 
@@ -15,6 +24,8 @@ clean:
 	$(PYTHON) setup.py clean
 	-rm -rf build dist *egg-info installed.files
 	-find -name '*.pyc' -exec rm {} \;
+	rm -f mbf_memory/__init__.py
+.PHONY: clean
 
 # Install the built egg
 install: dist
@@ -22,3 +33,4 @@ install: dist
             --record=installed.files \
             --install-dir=$(PYMOD_INSTALL_DIR) \
             dist/*.egg
+.PHONY: install
