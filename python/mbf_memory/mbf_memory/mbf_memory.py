@@ -43,7 +43,6 @@ Example     :
         hostname = "".join(map(chr, hostname_l))
         hostname = hostname.rstrip("\0")
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(1.)
         self.s.connect((hostname, port))
 
     def __del__(self):
@@ -82,19 +81,14 @@ Example     :
         return d.mean(0)
 
     def __read_buffer(self, data_size):
-        recv_bytes = 0
         data = ""
-        while recv_bytes < data_size:
-            while True:
-                buffer_size = min(data_size-recv_bytes, self.BUFFER_SIZE)
-                try:
-                    d = self.s.recv(buffer_size)
-                except socket.timeout:
-                    continue
-                else:
-                    break
+        while data_size > 0:
+            d = self.s.recv(data_size)
+            if not d:
+                # Early end of input
+                break
             data += d
-            recv_bytes += len(d)
+            data_size -= len(d)
         return data
 
     def __get_tpe(self, type_str):
