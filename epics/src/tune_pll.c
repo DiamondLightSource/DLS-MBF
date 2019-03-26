@@ -78,7 +78,6 @@ static struct pll_context {
     /* Filtered readbacks. */
     double filtered_cos;
     double filtered_sin;
-    bool filtered_cordic;
     double filtered_magnitude;
     double filtered_phase;
 
@@ -684,7 +683,7 @@ static bool read_filtered_readbacks(void *context, bool *value)
     struct detector_result det = hw_read_pll_filtered_detector(pll->axis);
     float f_cos, f_sin, f_mag, f_angle;
     convert_detector_values(
-        pll, pll->filtered_cordic, true, 1, &det,
+        pll, false, true, 1, &det,
         &f_cos, &f_sin, &f_mag, &f_angle);
     /* Need to convert floats to doubles for display. */
     pll->filtered_cos = f_cos;
