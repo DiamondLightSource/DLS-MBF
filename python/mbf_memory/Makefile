@@ -8,7 +8,7 @@ include $(MBF_TOP)/Makefile.common
 include $(MBF_TOP)/VERSION
 
 
-default: dist
+default: mbf_memory/__init__.py
 .PHONY: default
 
 mbf_memory/__init__.py: mbf_memory/__init__.py.in $(MBF_TOP)/VERSION
