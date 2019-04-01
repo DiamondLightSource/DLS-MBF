@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 450
-y 237
+x 451
+y 238
 w 447
-h 432
+h 408
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -35,7 +35,7 @@ release 0
 x 8
 y 304
 w 360
-h 120
+h 96
 lineColor index 14
 fill
 fillColor index 4
@@ -115,7 +115,7 @@ major 4
 minor 1
 release 0
 x 376
-y 400
+y 376
 w 64
 h 24
 fgColor index 46
@@ -308,7 +308,7 @@ major 4
 minor 6
 release 0
 x 112
-y 400
+y 376
 w 72
 h 16
 controlPv "$(device):$(axis):DET:UNDERRUN"
@@ -332,7 +332,7 @@ major 4
 minor 0
 release 0
 x 88
-y 400
+y 376
 w 16
 h 16
 lineColor index 14
@@ -349,7 +349,7 @@ major 4
 minor 6
 release 0
 x 88
-y 376
+y 352
 w 88
 h 16
 controlPv "$(device):$(axis):DET:SAMPLES"
@@ -374,7 +374,7 @@ major 4
 minor 1
 release 1
 x 16
-y 376
+y 352
 w 57
 h 14
 font "helvetica-bold-r-12.0"
@@ -427,7 +427,7 @@ major 4
 minor 1
 release 1
 x 16
-y 400
+y 376
 w 58
 h 14
 font "helvetica-bold-r-12.0"
@@ -515,7 +515,7 @@ major 4
 minor 0
 release 0
 x 264
-y 392
+y 368
 w 96
 h 22
 fgColor index 14
@@ -534,7 +534,7 @@ major 4
 minor 1
 release 1
 x 184
-y 400
+y 376
 w 71
 h 14
 font "helvetica-bold-r-12.0"
@@ -600,45 +600,5 @@ symbols {
 replaceSymbols {
   0 1
 }
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 264
-y 352
-w 96
-h 22
-fgColor index 14
-fgAlarm
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):ADC:REJECT_COUNT_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 152
-y 354
-w 105
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "ADC no fill length:"
-}
-autoSize
 endObjectProperties
 
