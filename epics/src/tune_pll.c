@@ -9,6 +9,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <complex.h>
 #include <pthread.h>
 
 #include "error.h"
@@ -88,6 +89,8 @@ static struct pll_context {
     float *debug_q;
     float *debug_mag;
     float *debug_angle;
+    double debug_relative_std;
+    double debug_relative_std_abs;
     bool captured_cordic;
     bool compensate_debug;
 } pll_context[AXIS_COUNT] = { };
@@ -631,6 +634,32 @@ static void process_debug_fifo(void *context)
     convert_detector_values(
         pll, pll->captured_cordic, pll->compensate_debug, pll->debug_length,
         buffer, pll->debug_i, pll->debug_q, pll->debug_mag, pll->debug_angle);
+
+    /* Compute standard deviations over the captured data.  First compute means,
+     * then another loop to compute the deviations. */
+    double complex mean_iq = 0;
+    double mean_abs = 0;
+    for (unsigned int i = 0; i < pll->debug_length; i ++)
+    {
+        mean_iq += pll->debug_i[i] + I * pll->debug_q[i];
+        mean_abs += pll->debug_mag[i];
+    }
+    mean_iq /= pll->debug_length;
+    mean_abs /= pll->debug_length;
+
+    double std_iq = 0;
+    double std_abs = 0;
+    for (unsigned int i = 0; i < pll->debug_length; i ++)
+    {
+        std_iq +=
+            SQR(pll->debug_i[i] - creal(mean_iq)) +
+            SQR(pll->debug_q[i] - cimag(mean_iq));
+        std_abs += SQR(pll->debug_mag[i] - mean_abs);
+    }
+    pll->debug_relative_std =
+        sqrt(std_iq / pll->debug_length) / cabs(mean_iq);
+    pll->debug_relative_std_abs =
+        sqrt(std_abs / pll->debug_length) / mean_abs;
 }
 
 
@@ -657,6 +686,8 @@ static void publish_debug(struct pll_context *pll)
             float, "ANGLE", length, pll->debug_length, pll->debug_angle);
         PUBLISH_WF_READ_VAR_LEN(
             float, "MAG", length, pll->debug_length, pll->debug_mag);
+        PUBLISH_READ_VAR(ai, "RSTD", pll->debug_relative_std);
+        PUBLISH_READ_VAR(ai, "RSTD_ABS", pll->debug_relative_std_abs);
 
         PUBLISH_C(bo, "SELECT", set_captured_debug, pll);
         PUBLISH_WRITE_VAR_P(bo, "COMPENSATE", pll->compensate_debug);

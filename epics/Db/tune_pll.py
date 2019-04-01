@@ -3,6 +3,11 @@
 from common import *
 
 
+def db_record(name, source, **kargs):
+    return records.calc(name, PREC = 1, EGU = 'dB',
+        CALC = '20*log(A)', INPA = source, **kargs)
+
+
 # These two controls act on both axes simultaneously
 if not lmbf_mode:
     with name_prefix('PLL:CTRL'):
@@ -88,6 +93,10 @@ for a in axes('PLL', lmbf_mode):
         boolOut('ENABLE', 'Off', 'On',
             OSV = 'MINOR',
             DESC = 'Enable debug readbacks')
+        relative_std = aIn('RSTD', PREC = 2,
+            DESC = 'Relative standard deviation')
+        relative_std_abs = aIn('RSTD_ABS', PREC = 2,
+            DESC = 'Relative deviation of magnitude')
         Trigger('READ',
             Waveform('WFI', TUNE_PLL_LENGTH, 'FLOAT',
                 DESC = 'Tune PLL detector I'),
@@ -97,7 +106,11 @@ for a in axes('PLL', lmbf_mode):
                 DESC = 'Tune PLL angle'),
             Waveform('MAG', TUNE_PLL_LENGTH, 'FLOAT',
                 DESC = 'Tune PLL magnitude'),
-            overflow('FIFO_OVF', 'Debug FIFO readout overrun'))
+            overflow('FIFO_OVF', 'Debug FIFO readout overrun'),
+            relative_std,
+            db_record('RSTD_DB', relative_std),
+            relative_std_abs,
+            db_record('RSTD_ABS_DB', relative_std_abs))
         boolOut('SELECT', 'IQ', 'CORDIC',
             DESC = 'Select captured readback values')
         boolOut('COMPENSATE', 'Raw', 'Compensated',
@@ -115,8 +128,7 @@ for a in axes('PLL', lmbf_mode):
             aIn('PHASE', -180, 180, PREC = 2, EGU = 'deg',
                 DESC = 'Filtered Tune PLL phase offset'),
             magnitude,
-            records.calc('MAG_DB', PREC = 1, EGU = 'dB',
-                CALC = '20*log(A)', INPA = magnitude),
+            db_record('MAG_DB', magnitude, LOW = -16*6, LSV = 'MINOR'),
         ])
 
     # Status readbacks
