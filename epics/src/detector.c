@@ -178,7 +178,6 @@ static void extend_wf_iq(
     unsigned int samples,
     const bool enables[DETECTOR_COUNT],
     float *wf_i[DETECTOR_COUNT], float *wf_q[DETECTOR_COUNT])
-
 {
     unsigned int detector_length = system_config.detector_length;
     for (int i = 0; i < DETECTOR_COUNT; i ++)
