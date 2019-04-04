@@ -14,6 +14,13 @@
 function bar = progress_bar(title, show_bar)
     bar = {};
 
+    % If show_bar is < 0 we bypass all the tricky work below and return a bar
+    % that does nothing at all.
+    if show_bar < 0
+        bar.advance = @(n) true;
+        return;
+    end
+
     % Advances the GUI waitbar
     function ok = advance_waitbar(fraction)
         waitbar(fraction, bar.wb);
@@ -23,7 +30,10 @@ function bar = progress_bar(title, show_bar)
     % Advances the console only waitbar replacement.  Alas, cannot catch Ctrl-C
     % in any useful way here, so isn't cancellable.
     function ok = show_advance(fraction)
-        fprintf(2, '%5.2f%%\r', 100 * fraction)
+        % First erase the previous string
+        fprintf(2, '%s', repmat(char(8), 1, bar.count));
+        % Remember how much we've written for the next time
+        bar.count = fprintf(2, '%5.2f%%', 100 * fraction);
         ok = true;
     end
 
@@ -35,8 +45,9 @@ function bar = progress_bar(title, show_bar)
     end
 
     if headless
-        bar.cleanup = onCleanup(@() fprintf(2, 'Done   \n'));
+        bar.cleanup = onCleanup(@() fprintf(2, '\nDone\n'));
         bar.advance = @show_advance;
+        bar.count = 0;
     else
         bar.wb = waitbar(0, title, ...
             'CreateCancelBtn', 'setappdata(gcbf, ''cancelling'', 1)');
