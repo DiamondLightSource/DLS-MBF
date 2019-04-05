@@ -94,9 +94,9 @@ for a in axes('PLL', lmbf_mode):
             OSV = 'MINOR',
             DESC = 'Enable debug readbacks')
         relative_std = aIn('RSTD', PREC = 2,
-            DESC = 'Relative standard deviation')
+            DESC = 'IQ relative standard deviation')
         relative_std_abs = aIn('RSTD_ABS', PREC = 2,
-            DESC = 'Relative deviation of magnitude')
+            DESC = 'Magnitude relative standard deviation')
         Trigger('READ',
             Waveform('WFI', TUNE_PLL_LENGTH, 'FLOAT',
                 DESC = 'Tune PLL detector I'),
