@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 239
-y 341
+x 2999
+y 285
 w 648
 h 616
 font "helvetica-medium-r-18.0"
@@ -253,7 +253,7 @@ minor 6
 release 0
 x 16
 y 552
-w 184
+w 280
 h 24
 controlPv "$(device):$(axis):BUN:$(bank):BUNCH_SELECT_S"
 font "helvetica-medium-r-14.0"
@@ -829,29 +829,6 @@ controlPv "$(device):$(axis):BUN:$(bank):GAINWF:SET_S.PROC"
 pressValue "0"
 onLabel "Set gain"
 offLabel "Set gain"
-3d
-font "helvetica-bold-r-12.0"
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 208
-y 552
-w 96
-h 24
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):$(axis):BUN:$(bank):ALL:SET_S.PROC"
-pressValue "0"
-onLabel "Set All"
-offLabel "Set All"
 3d
 font "helvetica-bold-r-12.0"
 endObjectProperties

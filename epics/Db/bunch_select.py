@@ -37,7 +37,6 @@ def bank_pvs(bank):
     mbbOut('DAC_SELECT', *dac_select('FIR', 'NCO', 'Sweep', 'PLL'),
         DESC = 'Select DAC output')
     aOut('GAIN_SELECT', PREC = 5, DESC = 'Select bunch gain')
-    Action('ALL:SET', DESC = 'Set selected bunches')
 
     stringOut('BUNCH_SELECT', DESC = 'Select bunch to set',
         FLNK = stringIn('SELECT_STATUS', DESC = 'Status of selection'))
