@@ -178,8 +178,9 @@ struct pll_0x143 {
 #define READ_PLL(reg, type) \
     CAST_TO(type, hw_read_fmc500_spi(FMC500_SPI_PLL, reg))
 
-#define WRITE_PLL(reg, value) \
-    hw_write_fmc500_spi(FMC500_SPI_PLL, reg, CAST_TO(uint8_t, value))
+#define WRITE_PLL(reg, type, value) \
+    hw_write_fmc500_spi(FMC500_SPI_PLL, reg, \
+        CAST_FROM_TO(type, uint8_t, (type) value))
 
 
 /* All access to the PLL is managed under this mutex. */
@@ -218,10 +219,10 @@ static void pll_sync(void)
 {
     struct pll_0x143 value = READ_PLL(0x143, struct pll_0x143);
     value.SYNC_POL = 1;
-    WRITE_PLL(0x143, value);
+    WRITE_PLL(0x143, struct pll_0x143, value);
     usleep(10000);              // Allow enough time
     value.SYNC_POL = 0;
-    WRITE_PLL(0x143, value);
+    WRITE_PLL(0x143, struct pll_0x143, value);
 }
 
 
@@ -282,7 +283,7 @@ static void set_fine_delay(unsigned int base, unsigned int delay)
     /* Read and update so we don't disturb the existing settings. */
     struct pll_0x3 value = READ_PLL(base + 3, struct pll_0x3);
     value.DCLK_ADLY = delay & 0x1F;
-    WRITE_PLL(base + 3, value);
+    WRITE_PLL(base + 3, struct pll_0x3, value);
 }
 
 static void slew_fine_delay(
@@ -326,8 +327,8 @@ static bool set_coarse_delay(unsigned int target)
     {
         if (target > dac_coarse_delay)
         {
-            WRITE_PLL(0x141, (struct pll_0x141) { .DDLYd4_EN = 1 });
-            WRITE_PLL(0x142, (struct pll_0x142) {
+            WRITE_PLL(0x141, struct pll_0x141, { .DDLYd4_EN = 1 });
+            WRITE_PLL(0x142, struct pll_0x142, {
                 .DDLYd_STEP_CNT = (target - dac_coarse_delay) & 0xF });
             dac_coarse_delay = target;
         }

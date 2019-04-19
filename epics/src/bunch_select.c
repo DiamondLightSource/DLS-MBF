@@ -339,14 +339,6 @@ static bool update_gain_waveform(void *context, bool *_value)
     return true;
 }
 
-static bool update_all_waveforms(void *context, bool *value)
-{
-    update_fir_waveform(context, value);
-    update_out_waveform(context, value);
-    update_gain_waveform(context, value);
-    return true;
-}
-
 
 static void publish_bank(unsigned int ix, struct bunch_bank *bank)
 {
@@ -373,8 +365,6 @@ static void publish_bank(unsigned int ix, struct bunch_bank *bank)
         PUBLISH_WRITE_VAR(mbbo, "FIR_SELECT", bank->fir_select);
         PUBLISH_WRITE_VAR(mbbo, "DAC_SELECT", bank->dac_select);
         PUBLISH_WRITE_VAR(ao, "GAIN_SELECT", bank->gain_select);
-
-        PUBLISH(bo, "ALL:SET", update_all_waveforms, .context = bank);
 
         /* Initialise the bunch set and set a sensible default gain. */
         bank->bunch_set = create_bunch_set();
