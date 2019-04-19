@@ -112,3 +112,9 @@ been added:
 * New bunch rejection filter added for detector data.
 * Two changes to sequencer: now have optional holdoff at start of dwell, and can
   optionally apply tune PLL offset as extra offset to sweep frequency.
+
+1.2.1 April 2019
+................
+
+Minor tweaks, no change to firmware.  `mbf_memory` Python library merged.
+`mbf_read_tune_pll.m` script rewritten and API changed.
