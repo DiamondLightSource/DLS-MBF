@@ -11,7 +11,7 @@ resource_files: $(IOCS_RES)
 .PHONY: resource_files
 
 %.res: $(CONFIG_DIR)/%.config
-	make_res $(CONFIG_DIR)/$*.config >$@
+	./make_res $(CONFIG_DIR)/$*.config >$@
 	mv $@ ../resources/$(DSERVER_NAME)_$@
 
 clean:
