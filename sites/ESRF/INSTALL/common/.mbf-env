@@ -1,0 +1,12 @@
+export PATH=$PATH:/opt/os/epics/base-3.14.12.7/bin/linux-x86_64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/os/epics/base-3.14.12.7/lib/linux-x86_64
+export PYTHONPATH=$PYTHONPATH:/opt/os/epics/python-modules
+export PYTHONPATH=$PYTHONPATH:/opt/os/python/bliss_modules/debian9
+export EPICS_CA_MAX_ARRAY_BYTES=1048576
+export EPICS_CA_ADDR_LIST=$HOSTNAME
+export EPICS_CAS_AUTO_BEACON_ADDR_LIST=NO
+export EPICS_CAS_BEACON_ADDR_LIST=$HOSTNAME
+export HERE=/opt/os/epics/pythonIoc
+export EPICS_BASE=/opt/os/epics/base-3.14.12.7
+export EPICS_HOST_ARCH='linux-x86_64'
+

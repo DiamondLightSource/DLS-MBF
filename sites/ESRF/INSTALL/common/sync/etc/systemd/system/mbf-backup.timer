@@ -1,0 +1,8 @@
+[Unit]
+Description=Run mbf-backup service every day
+
+[Timer]
+OnCalendar=*-*-* 03:14:15
+
+[Install]
+WantedBy=timers.target
