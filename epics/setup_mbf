@@ -35,8 +35,10 @@ regs = driver.Registers(device_address)
 # Check firmware version first
 FIRMWARE_COMPAT_VERSION = driver.constants.FIRMWARE_COMPAT_VERSION
 assert regs.SYS.VERSION.FIRMWARE == FIRMWARE_COMPAT_VERSION, \
-    "Firmware version mismatch: read %u, expected %u" % (
+    'Firmware version mismatch: read %u, expected %u' % (
         regs.SYS.VERSION.FIRMWARE, FIRMWARE_COMPAT_VERSION)
+if FIRMWARE_COMPAT_VERSION == driver.constants.FIRMWARE_COMPAT_UNSTABLE:
+    print 'UNSTABLE FIRMWARE VERSION'
 
 # Before touching the hardware and clocks ensure the DAC output is off
 regs.CTRL.CONTROL.OUTPUT = 0

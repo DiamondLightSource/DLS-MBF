@@ -24,10 +24,14 @@ entity sequencer_counter is
         start_freq_i : in angle_t;      -- Initial output frequency
         delta_freq_i : in angle_t;      -- Output frequency step
         capture_count_i : in capture_count_t;   -- Number of dwells to generate
+        reset_phase_i : in std_ulogic;  -- Reset phase at start of sweep
+        add_pll_freq_i : in std_ulogic; -- Option to add Tune PLL frequency
         last_turn_i : in std_ulogic;     -- Dwell is in its last turn
+        tune_pll_offset_i : in signed(31 downto 0);
 
         state_end_o : out std_ulogic := '0';  -- Set during last turn of state
-        hom_freq_o : out angle_t := (others => '0')  -- Output frequency
+        hom_freq_o : out angle_t := (others => '0'); -- Output frequency
+        hom_reset_o : out std_ulogic := '0'
     );
 end;
 
@@ -43,6 +47,12 @@ architecture arch of sequencer_counter is
     signal capture_cntr_zero : std_ulogic;   -- Set when capture_cntr is zero
 
     signal turn_clock_delay : std_ulogic;
+
+    signal add_pll_freq : std_ulogic := '0';
+    signal tune_pll_offset_in : angle_t;
+
+    attribute USE_DSP : string;
+    attribute USE_DSP of hom_freq_o : signal is "yes";
 
 begin
     process (dsp_clk_i) begin
@@ -66,6 +76,7 @@ begin
                 elsif last_turn_i = '1' then
                     capture_cntr <= next_capture_cntr;
                     hom_freq <= next_hom_freq;
+                    add_pll_freq <= add_pll_freq_i;
                 end if;
             end if;
 
@@ -77,7 +88,14 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            hom_freq_o <= hom_freq;
+            tune_pll_offset_in <=
+                unsigned(resize(tune_pll_offset_i & X"00", angle_t'LENGTH));
+            if add_pll_freq = '1' then
+                hom_freq_o <= hom_freq + tune_pll_offset_in;
+            else
+                hom_freq_o <= hom_freq;
+            end if;
+            hom_reset_o <= reset_phase_i and turn_clock_i and state_end_o;
         end if;
     end process;
 end;

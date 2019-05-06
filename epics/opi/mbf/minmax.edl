@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2341
-y 72
+x 2342
+y 73
 w 641
 h 849
 font "helvetica-medium-r-18.0"
@@ -363,7 +363,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 288
+x 272
 y 784
 w 160
 h 14
@@ -546,7 +546,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 240
+x 224
 y 784
 w 44
 h 14
@@ -566,7 +566,7 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 240
+x 224
 y 800
 w 72
 h 22
@@ -599,6 +599,46 @@ bgColor index 0
 useDisplayBg
 value {
   "/"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 376
+y 816
+w 96
+h 24
+fgColor index 14
+fgAlarm
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):$(part):MMS_SOURCE_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 320
+y 822
+w 46
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Source:"
 }
 autoSize
 endObjectProperties

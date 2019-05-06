@@ -16,6 +16,7 @@ BDDIR = $(SRCDIR)/bd
 VPATH = $(SRCDIR)
 VPATH += $(SRCDIR)/vhd
 VPATH += $(SRCDIR)/vhd/nco      # Needed for nco_cos_sin_table.vhd
+VPATH += $(SRCDIR)/vhd/tune_pll # Needed for cordic_table.vhd
 VPATH += $(PYTHONDIR)           # Needed for generated files
 
 
@@ -23,6 +24,7 @@ BUILT_FILES += built/top_entity.vhd
 BUILT_FILES += built/register_defs.vhd
 BUILT_FILES += built/nco_cos_sin_table.vhd
 BUILT_FILES += built/version.vhd
+BUILT_FILES += built/cordic_table.vhd
 
 SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/vhd/*/*.vhd)

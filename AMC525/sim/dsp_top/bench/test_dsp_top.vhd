@@ -17,7 +17,7 @@ architecture arch of testbench is
     signal adc_clk : std_ulogic := '1';
     signal dsp_clk : std_ulogic := '0';
 
-    constant TURN_COUNT : natural := 64;
+    constant TURN_COUNT : natural := 55;
     signal turn_clock : std_ulogic;
 
     signal adc_data : signed(13 downto 0) := (others => '0');
@@ -32,7 +32,14 @@ architecture arch of testbench is
 
     signal control_to_dsp : control_to_dsp_t := control_to_dsp_reset;
     signal dsp_to_control : dsp_to_control_t;
+    signal dsp_to_control_array : dsp_to_control_array_t;
     signal dsp_event : std_ulogic;
+
+    signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
+    signal mux_nco_0_out : dsp_nco_from_mux_array_t;
+    signal mux_nco_1_out : dsp_nco_from_mux_array_t;
+    signal mux_nco_2_out : dsp_nco_from_mux_array_t;
+    signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -41,8 +48,8 @@ begin
     -- Simple ADC data simulation: we just generate a ramp.
     process (adc_clk) begin
         if rising_edge(adc_clk) then
-            adc_data <= dac_data(15 downto 2);  -- Loopback
---             adc_data <= adc_data + 1;
+--             adc_data <= dac_data(15 downto 2);  -- Loopback
+            adc_data <= adc_data + 1;
         end if;
     end process;
 
@@ -82,23 +89,31 @@ begin
     end process;
 
 
-    -- Simple pass-through of control interface
-    process (adc_clk) begin
-        if rising_edge(adc_clk) then
-            control_to_dsp.adc_data   <= dsp_to_control.adc_data;
-            control_to_dsp.nco_0_data <= (
-                nco => dsp_to_control.nco_0_data.nco.cos,
-                gain => dsp_to_control.nco_0_data.gain,
-                enable => dsp_to_control.nco_0_data.enable
-            );
-            control_to_dsp.nco_1_data <= (
-                nco => dsp_to_control.nco_1_data.nco.cos,
-                gain => dsp_to_control.nco_1_data.gain,
-                enable => dsp_to_control.nco_1_data.enable
-            );
-            control_to_dsp.turn_clock <= turn_clock;
-        end if;
-    end process;
+    -- Pass control through DSP mux for more realistic timing
+    dsp_to_control_array(0) <= dsp_to_control;
+    dsp_control_mux : entity work.dsp_control_mux port map (
+        clk_i => adc_clk,
+
+        adc_mux_i => '0',
+        nco_0_mux_i => '0',
+        nco_1_mux_i => '0',
+        nco_2_mux_i => '0',
+        bank_mux_i => '0',
+
+        dsp_to_control_i => dsp_to_control_array,
+
+        adc_o => mux_adc_out,
+        nco_0_o => mux_nco_0_out,
+        nco_1_o => mux_nco_1_out,
+        nco_2_o => mux_nco_2_out,
+        bank_select_o => bank_select_out
+    );
+    control_to_dsp.adc_data <= mux_adc_out(0);
+    control_to_dsp.nco_0_data <= mux_nco_0_out(0);
+    control_to_dsp.nco_1_data <= mux_nco_1_out(0);
+    control_to_dsp.nco_2_data <= mux_nco_2_out(0);
+    control_to_dsp.bank_select <= bank_select_out(0);
+    control_to_dsp.turn_clock <= turn_clock;
 
 
     -- Register control testbench
@@ -112,53 +127,97 @@ begin
         begin
             read_reg(dsp_clk, read_data, read_strobe, read_ack, reg);
         end;
+
     begin
 
         clk_wait(dsp_clk, 10);
 
         -- Simple test, small ring: just pass NCO0 through to DSP
 
-        -- Set a sensible NCO frequency
-        write_reg(DSP_NCO0_FREQ_REG,  X"08000000");
-
-        -- Enable output of NCO0
-        -- .DELAY = 1
-        -- .FIR_GAIN = 0
-        -- .NCO0_GAIN = 0
-        -- .FIR_ENABLE = 0
-        -- .NCO0_ENABLE = 1
-        -- .NCO1_ENABLE = 0
-        write_reg(DSP_DAC_CONFIG_REG, X"00040001");
+        -- Initialise ADC FIR
+        write_reg(DSP_ADC_CONFIG_COMMAND_REG_W,  X"00000001");
+        write_reg(DSP_ADC_TAPS_REG, X"7FFFFFFF");
 
         -- Initialise DAC FIR
         write_reg(DSP_DAC_COMMAND_REG_W,  X"00000001");
         write_reg(DSP_DAC_TAPS_REG, X"7FFFFFFF");
 
-        -- Configure bunch control
-        write_reg(DSP_BUNCH_CONFIG_REG,  X"00000000");
+        -- Set a sensible NCO frequency, reset the phase
+        write_reg(DSP_NCO0_REGS'LOW, X"00000000");
+        write_reg(DSP_NCO0_REGS'LOW + 1, (
+            NCO_FREQ_HIGH_BITS_BITS => X"0800",
+            NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
+            others => '0'));
+        -- Enable output of NCO0
+        write_reg(DSP_DAC_CONFIG_REG, (
+            DSP_DAC_CONFIG_NCO0_ENABLE_BIT => '1',
+            others => '0'));
+
+        -- Configure bunch control: bank 0 for NCO
+        write_reg(DSP_BUNCH_CONFIG_REG, (
+            DSP_BUNCH_CONFIG_BANK_BITS => "00",
+            others => '0'));
         for n in 1 to TURN_COUNT loop
-            -- .FIR_SELECT = 0
-            -- .GAIN = 0x0FFF
-            -- .FIR_ENABLE = 0
-            -- .NCO0_ENABLE = 1
-            -- .NCO1_ENABLE = 0
-            write_reg(DSP_BUNCH_BANK_REG, X"00013FFC");
+            write_reg(DSP_BUNCH_BANK_REG, (
+                DSP_BUNCH_BANK_GAIN_BITS => 18X"00FFF",
+                DSP_BUNCH_BANK_NCO0_ENABLE_BIT => '1',
+                others => '0'));
+        end loop;
+        -- Bank 1 for sweep
+        write_reg(DSP_BUNCH_CONFIG_REG, (
+            DSP_BUNCH_CONFIG_BANK_BITS => "01",
+            others => '0'));
+        for n in 1 to TURN_COUNT loop
+            write_reg(DSP_BUNCH_BANK_REG, (
+                DSP_BUNCH_BANK_GAIN_BITS => 18X"03FFF",
+                DSP_BUNCH_BANK_NCO1_ENABLE_BIT => '1',
+                others => '0'));
         end loop;
 
-        -- Write FIR 0 taps
-        write_reg(DSP_FIR_CONFIG_REG_W, X"00000000");
-        write_reg(DSP_FIR_TAPS_REG,   X"5a827980");
---         write_reg(DSP_FIR_TAPS_REG,   X"5a827980");
-        write_reg(DSP_FIR_TAPS_REG,   X"a57d8680");
---         write_reg(DSP_FIR_TAPS_REG,   X"a57d8680");
+        -- Configure sequencer
+        write_reg(DSP_SEQ_CONFIG_REG, (
+            DSP_SEQ_CONFIG_PC_BITS => "001",
+            DSP_SEQ_CONFIG_TARGET_BITS => "00",
+            others => '0'));
+        write_reg(DSP_SEQ_COMMAND_REG_W, ( -- start write
+            DSP_SEQ_COMMAND_WRITE_BIT => '1',
+            others => '0'));
 
-        -- Initialise ADC FIR
-        write_reg(DSP_ADC_COMMAND_REG_W,  X"00000001");
-        write_reg(DSP_ADC_TAPS_REG, X"7FFFFFFF");
+        -- First write state 0.  This is the idle state, needs most fields
+        -- zero.  We enable the phase reset bit in the idle state
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG, (
+            DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT => '1',
+            others => '0'));
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
 
-        wait for 2 us;
+        -- Next write state 1.  1 dwell 1 capture, different NCO frequency
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- start freq (bottom
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- delta freq  bits)
+        write_reg(DSP_SEQ_WRITE_REG, (
+            DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS => X"1000",
+            DSP_SEQ_STATE_HIGH_BITS_DELTA_HIGH_BITS => X"0000"));
+        write_reg(DSP_SEQ_WRITE_REG, (
+            DSP_SEQ_STATE_TIME_DWELL_BITS => X"0000",
+            DSP_SEQ_STATE_TIME_CAPTURE_BITS => X"0000"));
+        write_reg(DSP_SEQ_WRITE_REG, (
+            DSP_SEQ_STATE_CONFIG_BANK_BITS => "01",
+            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => "0011",
+            DSP_SEQ_STATE_CONFIG_ENA_NCO_BIT => '1',
+            others => '0'));
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
 
-        write_reg(DSP_NCO0_FREQ_REG,  X"08000010");
+        -- We should be ready to go.  Now start the sequencer
+        control_to_dsp.seq_start <= '1';
+        clk_wait(dsp_clk, 1);
+        control_to_dsp.seq_start <= '0';
 
         wait;
     end process;

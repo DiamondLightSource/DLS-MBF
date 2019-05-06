@@ -45,16 +45,16 @@ architecture arch of detector_body is
     signal bunch_enable : std_ulogic;
 
     signal detector_overflow : std_ulogic;
+    signal overflow_event : std_ulogic;
     signal det_write : std_ulogic;
     signal det_iq : cos_sin_96_t;
+    signal iq_shift_in : cos_sin_96_t;
     signal iq_shift : cos_sin_96_t;
     signal iq_out : cos_sin_32_t;
 
-    signal shift : integer;
-    signal base_mask : unsigned(95 downto 0) := (others => '1');
-    signal overflow_mask : signed(95 downto 0);
-    signal preload : signed(95 downto 0);
+    signal shift : integer := 0;
 
+    signal det_write_dsp_in : std_ulogic;
     signal det_write_dsp : std_ulogic;
     signal det_write_out : std_ulogic;
 
@@ -75,11 +75,6 @@ begin
 
     -- Compute preload and overflow detection mask for output shift.
     shift <= 8 * to_integer(output_scaling_i) + 24;
-    preload <= shift_left(96X"0_0000_0000_0000_0000_0000_0001", shift - 1);
-    -- The overflow mask determines which bits will be used for overflow
-    -- detection: we need to include all discarded bits plus our generated sign
-    -- bit, hence the base shift of 65 = 96 - 32 - 1.
-    overflow_mask <= signed(shift_right(base_mask, 65 - shift));
 
 
     -- IQ Detector
@@ -91,8 +86,7 @@ begin
         bunch_enable_i => bunch_enable,
         detector_overflow_o => detector_overflow,
 
-        overflow_mask_i => overflow_mask,
-        preload_i => preload,
+        shift_i => shift,
 
         start_i => start_i,
         write_i => write_i,
@@ -105,13 +99,15 @@ begin
         dsp_clk_i => dsp_clk_i,
 
         pulse_i => det_write,
-        pulse_o => det_write_dsp
+        pulse_o => det_write_dsp_in
     );
 
     -- Shift of detector output
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            iq_shift <= det_iq;
+            iq_shift_in <= det_iq;
+            iq_shift <= iq_shift_in;
+            det_write_dsp <= det_write_dsp_in;
             if det_write_dsp = '1' then
                 iq_out.cos <= shift_right(iq_shift.cos, shift)(31 downto 0);
                 iq_out.sin <= shift_right(iq_shift.sin, shift)(31 downto 0);
@@ -121,12 +117,19 @@ begin
     end process;
 
 
+    -- Synchronise overflow with write event.
+    process (adc_clk_i) begin
+        if rising_edge(adc_clk_i) then
+            overflow_event <= detector_overflow and det_write;
+        end if;
+    end process;
+
     -- Bring overflows over to DSP clock
     detector_to_dsp : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        pulse_i => detector_overflow,
+        pulse_i => overflow_event,
         pulse_o => detector_overflow_o
     );
 

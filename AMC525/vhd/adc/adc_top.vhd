@@ -23,12 +23,7 @@ entity adc_top is
         -- Clocking
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
-        turn_clock_i : in std_ulogic;    -- start of machine revolution
-
-        -- Data flow
-        data_i : in signed;
-        data_o : out signed;
-        data_store_o : out signed;      -- Data to be stored to memory
+        turn_clock_i : in std_ulogic;   -- start of machine revolution
 
         -- General register interface
         write_strobe_i : in std_ulogic_vector(DSP_ADC_REGS);
@@ -38,73 +33,63 @@ entity adc_top is
         read_data_o : out reg_data_array_t(DSP_ADC_REGS);
         read_ack_o : out std_ulogic_vector(DSP_ADC_REGS);
 
-        delta_event_o : out std_ulogic       -- bunch movement over threshold
+        -- Data flow
+        data_i : in signed;
+        data_o : out signed;            -- Processed ADC data
+        fill_reject_o : out signed;     -- Fill pattern reject filtered data
+        data_store_o : out signed;      -- Data to be stored to memory
+
+        delta_event_o : out std_ulogic  -- bunch movement over threshold
     );
 end;
 
 architecture arch of adc_top is
-    signal config_register : reg_data_t;
+    -- Maximum permissible shift for fill pattern rejection filter
+    constant MAX_FILL_REJECT_SHIFT : natural := 12;
+
     signal input_limit : unsigned(13 downto 0);
     signal delta_limit : unsigned(15 downto 0);
-    signal mms_source : std_ulogic;
-    signal dram_source : std_ulogic;
+    signal mms_source : std_ulogic_vector(1 downto 0);
+    signal dram_source : std_ulogic_vector(1 downto 0);
+    signal fill_reject_shift : unsigned(3 downto 0);
 
-    signal command_bits : reg_data_t;
     signal write_start : std_ulogic;
     signal delta_reset : std_ulogic;
 
-    signal event_bits : reg_data_t;
     signal input_overflow : std_ulogic;
     signal fir_overflow : std_ulogic;
 
     signal filtered_data : data_o'SUBTYPE;
+    signal fill_reject_data : fill_reject_o'SUBTYPE;
     signal data_in : data_i'SUBTYPE;
     signal mms_data : data_o'SUBTYPE;
     signal mms_delta : unsigned(data_o'RANGE);
 
 begin
-    -- Limit register.
-    register_file : entity work.register_file port map (
+    -- Register interface
+    registers : entity work.adc_registers port map (
         clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_ADC_CONFIG_REG),
+
+        write_strobe_i => write_strobe_i(DSP_ADC_CONFIG_REGS),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_ADC_CONFIG_REG),
-        register_data_o(0) => config_register
-    );
-    read_data_o(DSP_ADC_CONFIG_REG) <= (others => '0');
-    read_ack_o(DSP_ADC_CONFIG_REG) <= '1';
+        write_ack_o => write_ack_o(DSP_ADC_CONFIG_REGS),
+        read_strobe_i => read_strobe_i(DSP_ADC_CONFIG_REGS),
+        read_data_o => read_data_o(DSP_ADC_CONFIG_REGS),
+        read_ack_o => read_ack_o(DSP_ADC_CONFIG_REGS),
 
-    -- Command register: start write and reset limit
-    command : entity work.strobed_bits port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(DSP_ADC_COMMAND_REG_W),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_ADC_COMMAND_REG_W),
-        strobed_bits_o => command_bits
-    );
+        mms_source_o => mms_source,
+        dram_source_o => dram_source,
+        reject_shift_o => fill_reject_shift,
 
-    -- Event detection register
-    events : entity work.all_pulsed_bits port map (
-        clk_i => dsp_clk_i,
-        read_strobe_i => read_strobe_i(DSP_ADC_EVENTS_REG_R),
-        read_data_o => read_data_o(DSP_ADC_EVENTS_REG_R),
-        read_ack_o => read_ack_o(DSP_ADC_EVENTS_REG_R),
-        pulsed_bits_i => event_bits
-    );
+        input_limit_o => input_limit,
+        delta_limit_o => delta_limit,
 
-    input_limit <= unsigned(config_register(DSP_ADC_CONFIG_THRESHOLD_BITS));
-    mms_source  <= config_register(DSP_ADC_CONFIG_MMS_SOURCE_BIT);
-    dram_source  <= config_register(DSP_ADC_CONFIG_DRAM_SOURCE_BIT);
-    delta_limit <= unsigned(config_register(DSP_ADC_CONFIG_DELTA_BITS));
+        write_start_o => write_start,
+        delta_reset_o => delta_reset,
 
-    write_start <= command_bits(DSP_ADC_COMMAND_WRITE_BIT);
-    delta_reset <= command_bits(DSP_ADC_COMMAND_RESET_DELTA_BIT);
-
-    event_bits <= (
-        DSP_ADC_EVENTS_INP_OVF_BIT => input_overflow,
-        DSP_ADC_EVENTS_FIR_OVF_BIT => fir_overflow,
-        DSP_ADC_EVENTS_DELTA_BIT   => delta_event_o,
-        others => '0'
+        input_overflow_i => input_overflow,
+        fir_overflow_i => fir_overflow,
+        delta_event_i => delta_event_o
     );
 
 
@@ -150,12 +135,25 @@ begin
     read_ack_o(DSP_ADC_TAPS_REG) <= '1';
 
 
+    -- Fill pattern rejection
+    fill_reject : entity work.adc_fill_reject generic map (
+        MAX_SHIFT => MAX_FILL_REJECT_SHIFT
+    ) port map (
+        clk_i => adc_clk_i,
+        turn_clock_i => turn_clock_i,
+        shift_i => fill_reject_shift,
+        data_i => filtered_data,
+        data_o => fill_reject_data
+    );
+
+
     -- Select sources for stored and MMS data
-    source_mux : entity work.mms_dram_data_source port map (
+    source_mux : entity work.adc_mms_dram_data_source port map (
         adc_clk_i => adc_clk_i,
 
         unfiltered_data_i(15 downto 0) => data_in & "00",
         filtered_data_i => filtered_data,
+        fill_reject_data_i => fill_reject_data,
 
         mms_source_i => mms_source,
         mms_data_o => mms_data,
@@ -163,7 +161,6 @@ begin
         dram_source_i => dram_source,
         dram_data_o => data_store_o
     );
-
 
 
     -- Min/Max/Sum
@@ -202,5 +199,14 @@ begin
         clk_i => adc_clk_i,
         data_i => std_ulogic_vector(filtered_data),
         signed(data_o) => data_o
+    );
+
+    reject_delay : entity work.dlyreg generic map (
+        DLY => OUT_BUFFER_LENGTH,
+        DW => fill_reject_o'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(fill_reject_data),
+        signed(data_o) => fill_reject_o
     );
 end;

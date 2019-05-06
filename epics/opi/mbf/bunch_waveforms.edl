@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2109
-y 497
+x 2999
+y 285
 w 648
-h 634
+h 616
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -35,55 +35,10 @@ release 0
 x 320
 y 536
 w 320
-h 88
+h 72
 lineColor index 14
 fill
 fillColor index 4
-endObjectProperties
-
-# (Menu Mux PV)
-object menuMuxPVClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 640
-w 152
-h 40
-fgColour index 14
-bgColour index 0
-topShadowColour index 0
-botShadowColour index 14
-font "helvetica-medium-r-18.0"
-numItems 1
-symbolTag {
-  0 "convert"
-}
-symbol0 {
-  0 "gain"
-}
-PV0 {
-  0 "LOC\\gain=d:1"
-}
-symbol1 {
-  0 "out"
-}
-PV1 {
-  0 "LOC\\out=e:0,Off,FIR,NCO,FIR+NCO,Sweep,Sw+FIR,Sw+NCO,Sw+NCO+FIR"
-}
-symbol2 {
-  0 "fir"
-}
-PV2 {
-  0 "LOC\\fir=e:0,FIR 0,FIR 1,FIR 2,FIR 3"
-}
-symbol3 {
-  0 "bunch"
-}
-PV3 {
-  0 "LOC\\bunch=i:0"
-}
 endObjectProperties
 
 # (Rectangle)
@@ -95,7 +50,7 @@ release 0
 x 8
 y 536
 w 304
-h 88
+h 72
 lineColor index 14
 fill
 fillColor index 4
@@ -127,7 +82,7 @@ xMin -10
 xMax 1024
 # Y axis properties
 showYAxis
-yAxisSrc "fromUser"
+yAxisSrc "AutoScale"
 yMin -1
 yMax 1
 # Y2 axis properties
@@ -166,25 +121,6 @@ bgColor index 73
 value {
   "$(device):$(axis) Bank $(bank) Bunch Selection"
 }
-endObjectProperties
-
-# (Exit Button)
-object activeExitButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 576
-y 4
-w 64
-h 24
-fgColor index 46
-bgColor index 3
-topShadowColor index 1
-botShadowColor index 11
-label "EXIT"
-font "helvetica-bold-r-12.0"
-3d
 endObjectProperties
 
 # (Shell Command)
@@ -273,7 +209,7 @@ y 200
 w 488
 h 160
 # Appearance
-graphTitle "Output Selection: 1=FIR, 2=NCO, 4=Sweep"
+graphTitle "Output Selection: 1=FIR, 2=NCO, 4=Sweep, 8=Tune PLL"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -289,7 +225,7 @@ xMax 1024
 showYAxis
 yAxisSrc "fromUser"
 yMin -0.5
-yMax 7.5
+yMax 15.5
 # Y2 axis properties
 y2AxisSrc "AutoScale"
 y2Max 1
@@ -315,76 +251,26 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 248
-y 568
-w 56
-h 20
-controlPv "LOC\\gain"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 104
-y 592
-w 56
-h 20
-controlPv "LOC\\bunch"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
 x 16
-y 592
-w 80
+y 552
+w 280
 h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set One"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) one $(bunch) $(fir) $(out) $(gain)"
-}
+controlPv "$(device):$(axis):BUN:$(bank):BUNCH_SELECT_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
 endObjectProperties
 
 # (Static Text)
@@ -402,7 +288,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Set Bunch"
+  "Set Bunches"
 }
 endObjectProperties
 
@@ -418,88 +304,6 @@ w 120
 h 16
 lineColor index 14
 fillColor index 0
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 56
-y 552
-w 20
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 136
-y 552
-w 88
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "DAC out select"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 248
-y 552
-w 53
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "DAC gain"
-}
-autoSize
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 208
-y 592
-w 96
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set All"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) all $(fir) $(out) $(gain)"
-}
 endObjectProperties
 
 # (Text Monitor)
@@ -534,7 +338,7 @@ major 4
 minor 6
 release 0
 x 408
-y 576
+y 568
 w 224
 h 16
 controlPv "$(device):$(axis):BUN:$(bank):OUTWF:STA"
@@ -559,7 +363,7 @@ major 4
 minor 6
 release 0
 x 408
-y 600
+y 584
 w 224
 h 16
 controlPv "$(device):$(axis):BUN:$(bank):GAINWF:STA"
@@ -604,7 +408,7 @@ major 4
 minor 1
 release 1
 x 328
-y 576
+y 568
 w 66
 h 14
 font "helvetica-bold-r-12.0"
@@ -624,7 +428,7 @@ major 4
 minor 1
 release 1
 x 328
-y 600
+y 584
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -765,56 +569,6 @@ fill
 fillColor index 4
 endObjectProperties
 
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 512
-y 96
-w 48
-h 24
-controlPv "LOC\\bunch"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 568
-y 96
-w 64
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set One"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) fir_one $(bunch) $(fir)"
-}
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -846,28 +600,6 @@ w 120
 h 16
 lineColor index 14
 fillColor index 0
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 512
-y 160
-w 96
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set All"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) fir_all $(fir)"
-}
 endObjectProperties
 
 # (Rectangle)
@@ -976,7 +708,7 @@ x 512
 y 384
 w 104
 h 20
-controlPv "LOC\\gain"
+controlPv "$(device):$(axis):BUN:$(bank):GAIN_SELECT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -1000,35 +732,16 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 16
-y 568
-w 80
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "LOC\\fir"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
 x 512
 y 64
-w 104
+w 112
 h 24
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "LOC\\fir"
+controlPv "$(device):$(axis):BUN:$(bank):FIR_SELECT_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -1047,170 +760,141 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "LOC\\out"
+controlPv "$(device):$(axis):BUN:$(bank):DAC_SELECT_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
+# (Message Button)
+object activeMessageButtonClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 120
-y 568
-w 112
-h 22
+x 512
+y 96
+w 96
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:$(bank):FIRWF:SET_S.PROC"
+pressValue "0"
+onLabel "Set FIR"
+offLabel "Set FIR"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 512
+y 256
+w 96
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:$(bank):OUTWF:SET_S.PROC"
+pressValue "0"
+onLabel "Set DAC"
+offLabel "Set DAC"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 512
+y 408
+w 96
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:$(bank):GAINWF:SET_S.PROC"
+pressValue "0"
+onLabel "Set gain"
+offLabel "Set gain"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 64
+y 584
+w 240
+h 16
+controlPv "$(device):$(axis):BUN:$(bank):SELECT_STATUS"
+font "helvetica-medium-r-14.0"
 fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 584
+w 44
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+alarmPv "$(device):$(axis):BUN:$(bank):SELECT_STATUS"
+value {
+  "Status:"
+}
+autoSize
+endObjectProperties
+
+# (Exit Button)
+object activeExitButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 576
+y 4
+w 64
+h 24
+fgColor index 46
 bgColor index 3
-inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "LOC\\out"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 512
-y 256
-w 48
-h 24
-controlPv "LOC\\bunch"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 568
-y 256
-w 64
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
+label "EXIT"
 font "helvetica-bold-r-12.0"
-buttonLabel "Set One"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) out_one $(bunch) $(out)"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 512
-y 320
-w 96
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set All"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) out_all $(out)"
-}
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 512
-y 416
-w 48
-h 24
-controlPv "LOC\\bunch"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 568
-y 416
-w 64
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set One"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) gain_one $(bunch) $(gain)"
-}
-endObjectProperties
-
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 512
-y 480
-w 96
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set All"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-one-bunch $(device) $(axis) $(bank) gain_all $(gain)"
-}
+3d
 endObjectProperties
 

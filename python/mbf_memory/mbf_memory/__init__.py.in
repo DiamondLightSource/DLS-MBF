@@ -1,0 +1,3 @@
+from .mbf_memory import *
+
+__version__ = '@@VERSION@@'

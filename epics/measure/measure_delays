@@ -21,6 +21,7 @@ class DAC_OUT:
     FIR = 1
     NCO = 2
     SWEEP = 4
+    PLL = 8
 
 # We will work with two predefined FIR settings
 FIR_UNIT = 0
@@ -78,6 +79,8 @@ def configure_timing_test(mbf, compensate = False):
     # Configure ADC and DAC filters with identity filters.
     mbf.set('ADC:FILTER_S', unit_fir(mbf.adc_taps))
     mbf.set('DAC:FILTER_S', unit_fir(mbf.dac_taps))
+    # Configure fill reject filter with minimum length
+    mbf.set('ADC:REJECT_COUNT_S', '1 turns')
 
 
     # For a sensible starting state, disable the sequencer and select bank 0.
@@ -153,8 +156,8 @@ def one_bunch(mbf, value, other, bunch = 0):
 @MBF.method
 def fixup_delay(mbf, value):
     if value < 0:
-        return value + mbf.bunches
-    elif value >= mbf.bunches / 2:
+        value += mbf.bunches
+    if value >= mbf.bunches / 2:
         return value - mbf.bunches
     else:
         return value
@@ -174,8 +177,13 @@ def find_second_peak(value):
 
 
 @MBF.method
-def find_mms_peak(mbf, mms):
-    return mbf.find_one_peak(mms.get_new(0.25))
+def find_mms_peak(mbf, mms, nco_freq = 0):
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', nco_freq)
+    peak = mbf.find_one_peak(mms.get_new(0.25))
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', 0)
+    return peak
 
 
 # ------------------------------------------------------------------------------
@@ -220,34 +228,65 @@ def binary_search(start, end, test):
     return start
 
 
-# Performs binary search to discover which bunch is detected for bunch zero
-@MBF.method
-def search_det_bunch(mbf, det_power, source):
-    # Configure source
-    mbf.set('DET:SELECT_S', source)
-
+# Common core of detector bunch search
+def search_detector_bunch(mbf, bunches_pv, measure):
     def test(start, end):
         outwf = numpy.empty(mbf.bunches, dtype = int)
         outwf[:start] = 0
         outwf[start:end] = 1
         outwf[end:] = 0
-        mbf.set('DET:0:BUNCHES_S', outwf)
-
-        # Fire a capture
-        mbf.set('TRG:SEQ:ARM_S', 0)
-        mbf.set_shared('TRG:SOFT_S', 0)
-
-        power = det_power.get()
-        return numpy.isfinite(power)
+        mbf.set(bunches_pv, outwf)
+        return measure()
 
     # Note that we have to negate the returned delay so that hardware.c can do
     # the compensation in the most straightforward way.
     return mbf.fixup_delay(-binary_search(0, mbf.bunches, test))
 
 
-# Computes group delay from scaled IQ.
-def compute_group_delay(mbf, scale, iq):
-    angle = numpy.unwrap(numpy.angle(iq))
+# Performs binary search to discover which bunch is detected for bunch zero
+@MBF.method
+def search_det_bunch(mbf, det_power, source, nco_freq = 0):
+    # Configure source
+    mbf.set('DET:SELECT_S', source)
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', nco_freq)
+
+    def measure():
+        # Fire a capture
+        mbf.set('TRG:SEQ:ARM_S', 0)
+        mbf.set_shared('TRG:SOFT_S', 0)
+
+        return numpy.isfinite(det_power.get())
+
+    return search_detector_bunch(mbf, 'DET:0:BUNCHES_S', measure)
+
+    if nco_freq:
+        mbf.set('NCO:FREQ_S', 0)
+    return delay
+
+
+# Tune PLL specific detector bunch search
+@MBF.method
+def search_pll_det_bunch(mbf, det_power, source, nco_freq = 0):
+    # Configure source
+    mbf.set('PLL:DET:SELECT_S', source)
+    if nco_freq:
+        mbf.set('PLL:NCO:FREQ_S', nco_freq)
+
+    def measure():
+        oldpower = det_power.get_new()
+        power = det_power.get_new()
+        return power > 1e-4
+
+    delay = search_detector_bunch(mbf, 'PLL:DET:BUNCHES_S', measure)
+
+    if nco_freq:
+        mbf.set('PLL:NCO:FREQ_S', 0)
+    return delay
+
+
+def compute_group_delay_angle(mbf, scale, angle):
+    angle = numpy.unwrap(angle)
     fit = numpy.polyfit(scale, angle, 1)
     slope = fit[0]
     mean_error = numpy.std(angle - numpy.polyval(fit, scale))
@@ -256,6 +295,10 @@ def compute_group_delay(mbf, scale, iq):
     # Convert slope into revolutions per bunch to get group delay (frequency
     # scale is in units of tune).
     return int(round(slope/2/numpy.pi * mbf.bunches))
+
+# Computes group delay from scaled IQ.
+def compute_group_delay(mbf, scale, iq):
+    return compute_group_delay_angle(mbf, scale, numpy.angle(iq))
 
 
 def get_detector_delay(mbf, source, pvs):
@@ -266,10 +309,23 @@ def get_detector_delay(mbf, source, pvs):
 
     wf_i = pvs.det_i
     wf_q = pvs.det_q
-    s = pvs.scale
     iq = wf_i + 1j * wf_q
+    s = mbf.get('DET:SCALE')
     return compute_group_delay(mbf, s, iq)
 
+
+def get_pll_detector_delay(mbf, source, start, step, count):
+    mbf.set('PLL:DET:SELECT_S', source)
+    pv = mbf.PV('PLL:FILT:PHASE')
+
+    s = numpy.empty(count)
+    a = numpy.empty(count)
+    for n in range(count):
+        s[n] = start + n * step
+        mbf.set('PLL:NCO:FREQ_S', s[n])
+        a[n] = pv.get_new(0.2)
+
+    return compute_group_delay_angle(mbf, s, numpy.pi/180 * a)
 
 
 # ------------------------------------------------------------------------------
@@ -323,8 +379,13 @@ def measure_dac_mms(mbf, results):
     mbf.set('ADC:MMS_SOURCE_S', 'After FIR')
     results.MMS_ADC_FIR_DELAY = mbf.find_mms_peak(maxadc)
 
+    # For the fill pattern reject measurement we need to use an NCO frequency
+    # that will get through the filter.
+    mbf.set('ADC:MMS_SOURCE_S', 'FIR no fill')
+    results.MMS_ADC_REJECT_DELAY = mbf.find_mms_peak(maxadc, nco_freq = 0.51)
+
     # Measure gain skew: configure NCO on all bunches, but unit gain only on
-    # bunch zer0, zero gain elsewhere.
+    # bunch zero, zero gain elsewhere.
     mbf.bank_wf(0, mbf.one_bunch(1, 0), FIR_UNIT, DAC_OUT.NCO)
     results.BUNCH_GAIN_OFFSET = mbf.find_mms_peak(maxdac) - dac_minmax_delay
 
@@ -355,6 +416,10 @@ def measure_dram(mbf, results):
     results.DRAM_ADC_FIR_DELAY, results.DRAM_DAC_FIR_DELAY = \
         dram.get_peaks('ADC0/DAC0')
 
+    # One last sample for the ADC fill reject delay
+    mbf.set('ADC:DRAM_SOURCE_S', 'FIR no fill')
+    results.DRAM_ADC_REJECT_DELAY, _ = dram.get_peaks('ADC0/DAC0', 0.51)
+
     # Now get the FIR delay
     base_fir_delay, _ = dram.get_peaks('FIR0/DAC0')
     results.DRAM_FIR_DELAY = base_fir_delay
@@ -377,11 +442,15 @@ def measure_det_bunch(mbf, results):
 
     results.DET_ADC_OFFSET = mbf.search_det_bunch(power, 'ADC')
     results.DET_FIR_OFFSET = mbf.search_det_bunch(power, 'FIR')
+    results.DET_ADC_REJECT_OFFSET = \
+        mbf.search_det_bunch(power, 'ADC no fill', nco_freq = 0.51)
 
     power.close()
 
 
 def measure_detector_delay(mbf, results):
+    print >>sys.stderr, 'Measuring Detector Phase Delays'
+
     mbf.state(1, start = 1, step = 0.001, dwell = 20, holdoff = 10)
     mbf.bank_wf(1, 1, FIR_UNIT, DAC_OUT.SWEEP)
     mbf.set('DET:0:BUNCHES_S', numpy.ones(mbf.bunches))
@@ -390,11 +459,61 @@ def measure_detector_delay(mbf, results):
     pvs = PV_set(mbf)
     pvs.det_i = 'DET:0:I'
     pvs.det_q = 'DET:0:Q'
-    pvs.scale = 'DET:SCALE'
 
     results.DET_FIR_DELAY = get_detector_delay(mbf, 'FIR', pvs)
     results.DET_ADC_DELAY = get_detector_delay(mbf, 'ADC', pvs)
 
+    # For the fill pattern reject filter we have to work a bit harder.  We'll
+    # use the super-sequencer to sweep over a range of central regions
+    mbf.state(1, start = 0.45, step = 0.1/512, count = 512, dwell = 128)
+    mbf.set('SEQ:SUPER:COUNT_S', 8)
+    mbf.set('SEQ:SUPER:RESET_S', 0)
+    mbf.set('ADC:REJECT_COUNT_S', '64 turns')
+    results.DET_ADC_REJECT_DELAY = get_detector_delay(mbf, 'ADC no fill', pvs)
+
+
+def measure_tune_pll_bunch(mbf, results):
+    print >>sys.stderr, 'Measuring Tune PLL Bunch Offsets'
+
+    # Generate single pulse in DAC zero position
+    mbf.bank_wf(0, 1, 0, mbf.one_bunch(DAC_OUT.PLL, DAC_OUT.OFF))
+
+    # Drive tune PLL NCO output
+    mbf.set('PLL:NCO:FREQ_S', 0)
+    mbf.set('PLL:NCO:GAIN_S', '0dB')
+    mbf.set('PLL:NCO:ENABLE_S', 'On')
+    # Configure detector
+    mbf.set('PLL:DET:DWELL_S', 100)
+    mbf.set('PLL:DET:SCALING_S', '12dB')
+
+    power = mbf.PV('PLL:FILT:MAG')
+
+    results.PLL_ADC_OFFSET = mbf.search_pll_det_bunch(power, 'ADC')
+    results.PLL_FIR_OFFSET = mbf.search_pll_det_bunch(power, 'FIR')
+    results.PLL_ADC_REJECT_OFFSET = \
+        mbf.search_pll_det_bunch(power, 'ADC no fill', nco_freq = 0.51)
+
+
+def measure_tune_pll_delay(mbf, results):
+    print >>sys.stderr, 'Measuring Tune PLL Detector delays'
+
+    mbf.bank_wf(0, 1, 0, DAC_OUT.PLL)
+
+    # Configure base NCO setting
+    mbf.set('PLL:NCO:GAIN_S', '0dB')
+    mbf.set('PLL:NCO:ENABLE_S', 'On')
+    # Configure detector
+    mbf.set('PLL:DET:DWELL_S', 100)
+    mbf.set('PLL:DET:SCALING_S', '-24dB')
+    mbf.set('PLL:DET:BUNCHES_S', numpy.ones(mbf.bunches, dtype = int))
+    # Configure the ADC fill reject filter
+    mbf.set('ADC:REJECT_COUNT_S', '64 turns')
+
+    N = 10
+    results.PLL_FIR_DELAY = get_pll_detector_delay(mbf, 'FIR', 10, 0.5/N, N)
+    results.PLL_ADC_DELAY = get_pll_detector_delay(mbf, 'ADC', 10, 0.5/N, N)
+    results.PLL_ADC_REJECT_DELAY = \
+        get_pll_detector_delay(mbf, 'ADC no fill', 10.45, 0.1/N, N)
 
 
 # ------------------------------------------------------------------------------
@@ -404,6 +523,8 @@ actions = [
     'dram',
     'det_bunch',
     'detector_delay',
+    'tune_pll_bunch',
+    'tune_pll_delay',
 ]
 
 

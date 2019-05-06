@@ -28,7 +28,7 @@ void read_detector_scale_info(
  * destination waveform can be NULL, and only samples starting at position
  * offset are written. */
 unsigned int compute_scale_info(
-    int axis, unsigned int frequency[], unsigned int timebase[],
+    int axis, uint64_t frequency[], unsigned int timebase[],
     unsigned int offset, unsigned int length);
 
 /* Returns currently configured bank zero for given axis. */

@@ -12,7 +12,7 @@ while getopts 'wPh' option; do
     w)  SEP=\; ;;
     P)  PATH_FIXUP=1 ;;
     h)  cat <<'EOF'
-Usage: run-command [-w] [-P] <title> <command> ...
+Usage: mbf-run-command [-w] [-P] <title> <command> ...
 Runs given command in an xterm, optionally waits for user before closing.
     -w  wait for user action before closing xterm, otherwise only waits if
         command exited with non zero exit code

@@ -28,8 +28,8 @@
 --      0         1          2          3        4
 --      data_i -> data_in -> product -> accum -> sum_o
 --
--- Perhaps somewhat more to the point is the four and five tick delay from
--- start_i to sum_o and overflow_o as shown below:
+-- Perhaps somewhat more to the point is the four tick delay from start_i to
+-- sum_o and overflow_o as shown below:
 --
 --  clk_i           /       /       /       /       /       /       /       /
 --                    _______   1       2       3       4       5
@@ -49,7 +49,7 @@
 --  detect_high      / Pn-3  / Pn-2  / Pn-1  / Pn    / xxxxx / P0    / P1    /
 --
 --  sum_o            / Pn-3  / Pn-2  / Pn-1  / Pn    / P0    / P1    / P2    /
---  overflow_o       / Pn-4  / Pn-3  / Pn-2  / Pn-1  / Pn    / xxxxx / P0    /
+--  overflow_o       / Pn-3  / Pn-2  / Pn-1  / Pn    / xxxxx / P1    / P2    /
 --
 --  delay from start    0       1       2       3       4       5
 --
@@ -58,7 +58,8 @@
 -- pattern compare masks share the C register, this means that immediately after
 -- loading P the pattern detect bits are invalid; fortunately, the pattern we're
 -- actually interested in (the last updated value) is valid.  Finally, in this
--- design there is a skew between sum_o and overflow_o.
+-- design to avoid skew between sum_o and overflow_o the overflow_o value is
+-- combinatorial and must be registered by the caller.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -68,6 +69,9 @@ library unisim;
 use unisim.vcomponents.all;
 
 entity detector_dsp96 is
+    generic (
+        WRITE_DELAY : natural
+    );
     port (
         clk_i : in std_ulogic;
 
@@ -110,6 +114,10 @@ architecture arch of detector_dsp96 is
     signal detect_high_bar : std_ulogic;
 
 begin
+    -- The delay from start_i to sum_o and overflow_o valid for the previous
+    -- cycle is validated here.
+    assert WRITE_DELAY = 3 severity failure;
+
     -- Both the OPMODE and CARRYINSEL controls are registered, so we need to
     -- manage our timing carefully.  Both low and high units need to be
     -- programmed differently when starting, and the high unit needs to be
@@ -164,13 +172,27 @@ begin
 
             detect_low_pl <= detect_low;
             detect_low_bar_pl <= detect_low_bar;
-
-            -- Detect overflow if we don't get perfect pattern match.
-            overflow_o <= not (
-                (detect_low_pl and detect_high) or
-                (detect_low_bar_pl and detect_high_bar));
         end if;
     end process;
+
+    -- Detect overflow if we don't get perfect pattern match.  Note that this is
+    -- NOT registered, so that it can be synchronous with sum_o; it is the
+    -- responsibility of the caller to register this value.
+    --
+    -- To explain the calculation here: first note that the DSP pattern
+    -- detection logic is documented on page 39 of UG479 as follows:
+    --      PATTERNDETECT  = vector_and((P = PATTERN) | MASK)
+    --      PATTERNBDETECT = vector_and((P = ~PATTERN) | MASK)
+    -- (For conciseness write D = PATTERNDETECT, DB = PATTERNBDETECT.)
+    -- In our application with PATTERN=all zeros and MASK used to mask out the
+    -- low order bits of P this amounts to:
+    --      PATTERNDETECT  => P is valid positive value
+    --      PATTERNBDETECT => P is valid negative value
+    -- Therefore for a valid two register value we require both values are valid
+    -- positive or both are valid negative.
+    overflow_o <= not (
+        (detect_low_pl and detect_high) or          -- Both parts valid +ve
+        (detect_low_bar_pl and detect_high_bar));   -- Both parts valid -ve
 
 
     -- Low order multiply/accumlate unit.  This accumulates the bottom 48 bits
@@ -291,8 +313,8 @@ begin
         MULTSIGNOUT => open,
         OVERFLOW => open,
         signed(P) => sum_o(95 downto 48),
-        PATTERNBDETECT => detect_high,
-        PATTERNDETECT => detect_high_bar,
+        PATTERNBDETECT => detect_high_bar,
+        PATTERNDETECT => detect_high,
         PCOUT => open,
         UNDERFLOW => open
     );

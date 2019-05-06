@@ -17,9 +17,9 @@ add wave -group "Sequencer" sim:dsp_top/sequencer/*
 add wave -group "Detector" sim:dsp_top/detector/*
 add wave -group "DSP Top" sim:dsp_top/*
 
-add wave *
+add wave -group "Bench" *
 
 
-run 1000 ns
+run 2 us
 
 # vim: set filetype=tcl:

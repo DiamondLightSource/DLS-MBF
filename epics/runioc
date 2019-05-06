@@ -1,19 +1,5 @@
 #!/bin/bash
 
-# It would appear that EPICS 3.14 normally generates bogus beacon messages in
-# the presence of multiple network adapters (particularly if the active network
-# isn't the first one).  Fortunately this can be suppressed by setting two
-# EPICS_CAS_ variables, as below, but to do this we need to know our broadcast
-# network address.  Here we assume that the service network is plugged into port
-# enp1s0f3.
-BCAST="$(
-    ip address show enp1s0f3 |
-    sed -n '/ inet /{ s/.* brd //; s/ .*//; p}')"
-if [[ -n $BCAST ]]; then
-    export EPICS_CAS_AUTO_BEACON_ADDR_LIST=NO
-    export EPICS_CAS_BEACON_ADDR_LIST=$BCAST
-fi
-
 # Need more than 16KB for waveform buffers; 1MB should suffice
 export EPICS_CA_MAX_ARRAY_BYTES=1048576
 
@@ -35,14 +21,14 @@ NO_HARDWARE=0
 while getopts 'vltV:quznh' option; do
     case "$option" in
         v)  DEBUG=(valgrind) ;;
-        l)  DEBUG=("${DEBUG[@]}" --leak-check=full) ;;
-        t)  DEBUG=("${DEBUG[@]}" --track-origins=yes) ;;
-        V)  DEBUG=("${DEBUG[@]}" --$OPTARG) ;;
-        q)  OPTS=("${OPTS[@]}" -q) ;;
-        u)  OPTS=("${OPTS[@]}" -u) ;;
+        l)  DEBUG+=(--leak-check=full) ;;
+        t)  DEBUG+=(--track-origins=yes) ;;
+        V)  DEBUG+=(--"$OPTARG") ;;
+        q)  OPTS+=(-q) ;;
+        u)  OPTS+=(-u) ;;
         z)  HW_CONFIG=() ;;
         n)  NO_HARDWARE=1
-            OPTS=("${OPTS[@]}" -n) ;;
+            OPTS+=(-n) ;;
         h)  cat <<EOF
 Usage: runioc [options] config-file
 Starts MBF IOC with configured options.

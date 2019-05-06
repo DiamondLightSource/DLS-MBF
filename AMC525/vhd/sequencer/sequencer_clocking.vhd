@@ -36,7 +36,7 @@ entity sequencer_clocking is
 end;
 
 architecture arch of sequencer_clocking is
-    signal bunch_bank : bunch_bank_o'SUBTYPE;
+    signal turn_clock_adc : std_ulogic;
 
     -- Local declarations just so we can assign default values of zero
     signal hom_gain_adc_out : hom_gain_adc_o'SUBTYPE := (others => '0');
@@ -45,10 +45,19 @@ architecture arch of sequencer_clocking is
     signal bunch_bank_out : bunch_bank_o'SUBTYPE := (others => '0');
 
 begin
+    -- Delay line on turn clock
+    turn_clock_delay : entity work.dlyreg generic map (
+        DLY => 4
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i(0) => turn_clock_adc_i,
+        data_o(0) => turn_clock_adc
+    );
+
     turn_clock : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        pulse_i => turn_clock_adc_i,
+        pulse_i => turn_clock_adc,
         pulse_o => turn_clock_dsp_o
     );
 
@@ -66,22 +75,12 @@ begin
         pulse_o => seq_write_adc_o
     );
 
-    -- Delay line on bunch bank to relax timing before clock domain crossing
-    bank_delay : entity work.dlyreg generic map (
-        DLY => 2,
-        DW => bunch_bank_i'LENGTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(bunch_bank_i),
-        unsigned(data_o) => bunch_bank
-    );
-
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             hom_gain_adc_out <= hom_gain_dsp_i;
             hom_enable_adc_out <= hom_enable_dsp_i;
             hom_window_adc_out <= hom_window_dsp_i;
-            bunch_bank_out <= bunch_bank;
+            bunch_bank_out <= bunch_bank_i;
         end if;
     end process;
     hom_gain_adc_o <= hom_gain_adc_out;

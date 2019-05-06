@@ -51,6 +51,17 @@ def load_replay(filename, max_n = 0):
     return result
 
 
+def load_replay_mat(filename, max_n = 0):
+    from scipy.io import loadmat
+    replay = loadmat(filename, squeeze_me = True)
+    iq = replay['iq'].T
+    s = replay['s']
+    if max_n > 0:
+        iq = iq[:max_n]
+    # Return values as a list
+    return [(s, r_iq) for r_iq in iq]
+
+
 def replay_s_iq(s_iq, fit_tune):
     for s, iq in s_iq:
         try:

@@ -7,7 +7,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity mms_dram_data_source is
+entity dac_mms_dram_data_source is
     generic (
         PIPELINE_IN : natural := 4
     );
@@ -25,7 +25,7 @@ entity mms_dram_data_source is
     );
 end;
 
-architecture arch of mms_dram_data_source is
+architecture arch of dac_mms_dram_data_source is
     signal unfiltered_data_in : unfiltered_data_i'SUBTYPE;
     signal filtered_data_in : filtered_data_i'SUBTYPE;
     signal dram_data_out : dram_data_o'SUBTYPE := (others => '0');

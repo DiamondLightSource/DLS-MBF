@@ -49,7 +49,7 @@ architecture arch of sequencer_pc is
     signal trigger : std_ulogic := '0';
     signal trigger_in : std_ulogic := '0';
 
-    -- When we see last_turn_i we should advance the program counter and then
+    -- When we see state_end_i we should advance the program counter and then
     -- pulse start_load_o to trigger loading of configuration for the new state.
     signal loading : std_ulogic := '0';
     signal super_count : super_count_t := (others => '0');

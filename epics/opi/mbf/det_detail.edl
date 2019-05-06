@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 224
-y 162
+x 225
+y 163
 w 505
 h 529
 font "helvetica-medium-r-18.0"
@@ -128,6 +128,9 @@ yPv {
 }
 plotStyle {
   0 "point"
+}
+xSigned {
+  0 1
 }
 ySigned {
   0 1

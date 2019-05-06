@@ -25,6 +25,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/min_max_sum/min_max_sum_store.vhd \
     $vhd_dir/min_max_sum/min_max_sum_update.vhd \
     $vhd_dir/min_max_sum/min_max_sum_readout.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_core.vhd \
     $vhd_dir/min_max_sum/min_max_sum.vhd \
     $vhd_dir/min_max_sum/min_max_limit.vhd \
 
@@ -36,21 +37,19 @@ vsim -novopt -t 1ps -lib xil_defaultlib testbench
 
 view wave
 
-add wave -group "MMS" sim:/testbench/min_max_sum_inst/*
-add wave -group "Bank" sim:/testbench/min_max_sum_inst/min_max_sum_bank_inst/*
-add wave -group "MMS Store" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/*
-add wave -group "mem(0)" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/*
-add wave -group "bram(0)" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(0)/memory_inst/bram/*
-add wave -group "mem(1)" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_store_inst/mem_gen(1)/memory_inst/*
-add wave -group "update" \
-    sim:/testbench/min_max_sum_inst/min_max_sum_update_inst/*
-add wave -group "Readout" \
-    sim:/testbench/min_max_sum_inst/readout_inst/*
+set mms sim:/testbench/min_max_sum_inst
+set mms_core $mms/core
+
+add wave -group "MMS" $mms_core/*
+add wave -group "Bank" $mms_core/bank/*
+add wave -group "MMS Store" $mms_core/store/*
+add wave -group "mem(0)" $mms_core/store/mem_gen(0)/memory_inst/*
+add wave -group "bram(0)" $mms_core/store/mem_gen(0)/memory_inst/bram/*
+add wave -group "mem(1)" $mms_core/store/mem_gen(1)/memory_inst/*
+add wave -group "update" $mms_core/update/*
+add wave -group "Readout" $mms_core/readout_inst/*
 add wave -group "Limit" sim:/testbench/min_max_limit_inst/*
+add wave -group "Read" $mms/register_read_adc/*
 
 add wave sim:*
 

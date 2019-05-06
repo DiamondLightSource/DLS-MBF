@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2159
-y 293
-w 648
-h 208
+x 364
+y 112
+w 504
+h 296
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -19,45 +19,12 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(axis):DET:$(det) Bunch Enables"
+title "$(device):$(axis):$(det) Bunch Enables"
 showGrid
 snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
-
-# (Menu Mux PV)
-object menuMuxPVClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 216
-w 152
-h 40
-fgColour index 14
-bgColour index 0
-topShadowColour index 0
-botShadowColour index 14
-font "helvetica-medium-r-18.0"
-numItems 1
-symbolTag {
-  0 "convert"
-}
-symbol0 {
-  0 "bunch"
-}
-PV0 {
-  0 "LOC\\bunch=i:0"
-}
-symbol1 {
-  0 "enable"
-}
-PV1 {
-  0 "LOC\\enable=e:1,Disable,Enable"
-}
-endObjectProperties
 
 # (Static Text)
 object activeXTextClass
@@ -67,14 +34,14 @@ minor 1
 release 1
 x 0
 y 0
-w 648
+w 504
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(axis):DET:$(det) Bunch Enables"
+  "$(device):$(axis):$(det) Bunch Enables"
 }
 endObjectProperties
 
@@ -84,8 +51,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 576
-y 176
+x 432
+y 264
 w 64
 h 24
 fgColor index 46
@@ -158,7 +125,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(axis):DET:$(det):BUNCHES_S"
+  0 "$(device):$(axis):$(det):BUNCHES_S"
 }
 plotUpdateMode {
   0 "y"
@@ -177,10 +144,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 504
-y 48
-w 136
-h 120
+x 8
+y 216
+w 416
+h 72
 lineColor index 14
 fill
 fillColor index 4
@@ -192,11 +159,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 512
-y 96
-w 48
-h 22
-controlPv "LOC\\bunch"
+x 16
+y 232
+w 184
+h 20
+controlPv "$(device):$(axis):$(det):BUNCH_SELECT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -214,36 +181,14 @@ objType "controls"
 noExecuteClipMask
 endObjectProperties
 
-# (Shell Command)
-object shellCmdClass
-beginObjectProperties
-major 4
-minor 3
-release 0
-x 568
-y 96
-w 64
-h 24
-fgColor index 25
-bgColor index 4
-topShadowColor index 1
-botShadowColor index 11
-font "helvetica-bold-r-12.0"
-buttonLabel "Set One"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-waveform $(device):$(axis):DET:$(det):BUNCHES_S $(enable) $(bunch)"
-}
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
 major 4
 minor 1
 release 1
-x 504
-y 40
+x 8
+y 208
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -251,7 +196,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Set Enables"
+  "Set Bunches"
 }
 endObjectProperties
 
@@ -261,52 +206,103 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 504
-y 40
+x 8
+y 208
 w 120
 h 16
 lineColor index 14
 fillColor index 0
 endObjectProperties
 
-# (Shell Command)
-object shellCmdClass
+# (Message Button)
+object activeMessageButtonClass
 beginObjectProperties
 major 4
-minor 3
+minor 1
 release 0
-x 512
-y 136
+x 320
+y 224
 w 96
 h 24
 fgColor index 25
-bgColor index 4
+onColor index 4
+offColor index 3
 topShadowColor index 1
-botShadowColor index 11
+botShadowColor index 14
+controlPv "$(device):$(axis):$(det):SET_SELECT_S.PROC"
+pressValue "0"
+onLabel "Enable"
+offLabel "Enable"
+3d
 font "helvetica-bold-r-12.0"
-buttonLabel "Set All"
-numCmds 1
-command {
-  0 "run-command 'Set bunch' mbf-set-waveform $(device):$(axis):DET:$(det):BUNCHES_S $(enable)"
-}
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
+# (Text Monitor)
+object activeXTextDspClass:noedit
 beginObjectProperties
 major 4
-minor 0
+minor 6
 release 0
-x 512
-y 64
-w 104
-h 24
+x 64
+y 264
+w 240
+h 16
+controlPv "$(device):$(axis):$(det):SELECT_STATUS"
+font "helvetica-medium-r-14.0"
 fgColor index 14
-bgColor index 3
-inconsistentColor index 0
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 264
+w 44
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+alarmPv "$(device):$(axis):$(det):SELECT_STATUS"
+value {
+  "Status:"
+}
+autoSize
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 320
+y 256
+w 96
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
 topShadowColor index 1
-botShadowColor index 11
-controlPv "LOC\\enable"
-font "helvetica-medium-r-12.0"
+botShadowColor index 14
+controlPv "$(device):$(axis):$(det):RESET_SELECT_S.PROC"
+pressValue "0"
+onLabel "Disable"
+offLabel "Disable"
+3d
+font "helvetica-bold-r-12.0"
 endObjectProperties
 

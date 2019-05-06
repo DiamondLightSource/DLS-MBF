@@ -3,10 +3,9 @@
 from pkg_resources import require, VersionConflict, DistributionNotFound
 
 try:
-    require('numpy==1.11.1')
+#     require('numpy==1.11.1')
     require('cothread==2.14')
     require('epicsdbbuilder==1.2')
-    require('matplotlib')
 
 except (VersionConflict, DistributionNotFound) as e:
     # The following extremely dirty code is used to automatically switch to the

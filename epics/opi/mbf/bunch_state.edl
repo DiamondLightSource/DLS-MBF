@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 248
-y 44
-w 599
-h 26
+x 2230
+y 613
+w 707
+h 180
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -51,7 +51,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 440
+x 480
 y 0
 w 72
 h 22
@@ -101,7 +101,7 @@ minor 6
 release 0
 x 120
 y 0
-w 184
+w 208
 h 16
 controlPv "$(device):$(axis):BUN:$(bank):OUTWF:STA"
 font "helvetica-medium-r-14.0"
@@ -124,9 +124,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 304
+x 328
 y 0
-w 136
+w 144
 h 16
 controlPv "$(device):$(axis):BUN:$(bank):GAINWF:STA"
 font "helvetica-medium-r-14.0"

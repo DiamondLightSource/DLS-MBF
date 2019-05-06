@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2054
-y 230
+x 2527
+y 118
 w 370
-h 496
+h 560
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -33,9 +33,9 @@ major 4
 minor 0
 release 0
 x 8
-y 136
+y 152
 w 352
-h 320
+h 368
 lineColor index 14
 fill
 fillColor index 4
@@ -92,7 +92,7 @@ release 0
 x 8
 y 48
 w 352
-h 72
+h 88
 lineColor index 14
 fill
 fillColor index 4
@@ -230,7 +230,7 @@ major 4
 minor 6
 release 0
 x 72
-y 184
+y 200
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:TUNE"
@@ -256,7 +256,7 @@ major 4
 minor 1
 release 1
 x 16
-y 184
+y 200
 w 33
 h 14
 font "helvetica-bold-r-12.0"
@@ -276,7 +276,7 @@ major 4
 minor 1
 release 1
 x 16
-y 168
+y 184
 w 32
 h 14
 font "helvetica-bold-r-12.0"
@@ -296,7 +296,7 @@ major 4
 minor 6
 release 0
 x 72
-y 168
+y 184
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:VALID"
@@ -322,7 +322,7 @@ major 4
 minor 1
 release 1
 x 128
-y 152
+y 168
 w 24
 h 14
 font "helvetica-bold-r-12.0"
@@ -342,7 +342,7 @@ major 4
 minor 6
 release 0
 x 72
-y 200
+y 216
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:PHASE"
@@ -368,7 +368,7 @@ major 4
 minor 1
 release 1
 x 16
-y 200
+y 216
 w 40
 h 14
 font "helvetica-bold-r-12.0"
@@ -388,7 +388,7 @@ major 4
 minor 6
 release 0
 x 72
-y 216
+y 232
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:POWER"
@@ -415,7 +415,7 @@ major 4
 minor 1
 release 1
 x 16
-y 216
+y 232
 w 42
 h 14
 font "helvetica-bold-r-12.0"
@@ -435,7 +435,7 @@ major 4
 minor 6
 release 0
 x 72
-y 232
+y 248
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:WIDTH"
@@ -462,7 +462,7 @@ major 4
 minor 1
 release 1
 x 16
-y 232
+y 248
 w 36
 h 14
 font "helvetica-bold-r-12.0"
@@ -482,7 +482,7 @@ major 4
 minor 6
 release 0
 x 168
-y 184
+y 200
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:CENTRE:TUNE"
@@ -508,7 +508,7 @@ major 4
 minor 6
 release 0
 x 168
-y 168
+y 184
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:CENTRE:VALID"
@@ -534,7 +534,7 @@ major 4
 minor 1
 release 1
 x 208
-y 152
+y 168
 w 39
 h 14
 font "helvetica-bold-r-12.0"
@@ -554,7 +554,7 @@ major 4
 minor 6
 release 0
 x 168
-y 200
+y 216
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:CENTRE:PHASE"
@@ -580,7 +580,7 @@ major 4
 minor 6
 release 0
 x 168
-y 216
+y 232
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:CENTRE:POWER"
@@ -607,7 +607,7 @@ major 4
 minor 6
 release 0
 x 168
-y 232
+y 248
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:CENTRE:WIDTH"
@@ -634,7 +634,7 @@ major 4
 minor 6
 release 0
 x 264
-y 184
+y 200
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:TUNE"
@@ -660,7 +660,7 @@ major 4
 minor 6
 release 0
 x 264
-y 168
+y 184
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:VALID"
@@ -686,7 +686,7 @@ major 4
 minor 1
 release 1
 x 312
-y 152
+y 168
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -706,7 +706,7 @@ major 4
 minor 6
 release 0
 x 264
-y 200
+y 216
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:PHASE"
@@ -732,7 +732,7 @@ major 4
 minor 6
 release 0
 x 264
-y 216
+y 232
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:POWER"
@@ -759,7 +759,7 @@ major 4
 minor 6
 release 0
 x 264
-y 232
+y 248
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:WIDTH"
@@ -786,7 +786,7 @@ major 4
 minor 1
 release 1
 x 8
-y 128
+y 144
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -805,7 +805,7 @@ major 4
 minor 0
 release 0
 x 8
-y 128
+y 144
 w 120
 h 16
 lineColor index 14
@@ -819,7 +819,7 @@ major 4
 minor 6
 release 0
 x 72
-y 248
+y 264
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:HEIGHT"
@@ -846,7 +846,7 @@ major 4
 minor 1
 release 1
 x 16
-y 248
+y 264
 w 42
 h 14
 font "helvetica-bold-r-12.0"
@@ -866,7 +866,7 @@ major 4
 minor 6
 release 0
 x 168
-y 248
+y 264
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:CENTRE:HEIGHT"
@@ -893,7 +893,7 @@ major 4
 minor 6
 release 0
 x 264
-y 248
+y 264
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:HEIGHT"
@@ -920,7 +920,7 @@ major 4
 minor 6
 release 0
 x 104
-y 280
+y 296
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:DTUNE"
@@ -946,7 +946,7 @@ major 4
 minor 1
 release 1
 x 16
-y 280
+y 296
 w 68
 h 14
 font "helvetica-bold-r-12.0"
@@ -966,7 +966,7 @@ major 4
 minor 6
 release 0
 x 104
-y 296
+y 312
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:DPHASE"
@@ -992,7 +992,7 @@ major 4
 minor 1
 release 1
 x 16
-y 296
+y 312
 w 75
 h 14
 font "helvetica-bold-r-12.0"
@@ -1012,7 +1012,7 @@ major 4
 minor 6
 release 0
 x 104
-y 312
+y 328
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:RPOWER"
@@ -1038,7 +1038,7 @@ major 4
 minor 1
 release 1
 x 16
-y 312
+y 328
 w 69
 h 14
 font "helvetica-bold-r-12.0"
@@ -1058,7 +1058,7 @@ major 4
 minor 6
 release 0
 x 104
-y 344
+y 360
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:RHEIGHT"
@@ -1084,7 +1084,7 @@ major 4
 minor 1
 release 1
 x 16
-y 344
+y 360
 w 69
 h 14
 font "helvetica-bold-r-12.0"
@@ -1104,7 +1104,7 @@ major 4
 minor 6
 release 0
 x 224
-y 280
+y 296
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:DTUNE"
@@ -1130,7 +1130,7 @@ major 4
 minor 6
 release 0
 x 224
-y 296
+y 312
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:DPHASE"
@@ -1156,7 +1156,7 @@ major 4
 minor 6
 release 0
 x 224
-y 312
+y 328
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:RPOWER"
@@ -1182,7 +1182,7 @@ major 4
 minor 6
 release 0
 x 224
-y 344
+y 360
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:RHEIGHT"
@@ -1208,7 +1208,7 @@ major 4
 minor 6
 release 0
 x 160
-y 376
+y 392
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:SYNCTUNE"
@@ -1234,7 +1234,7 @@ major 4
 minor 1
 release 1
 x 16
-y 376
+y 392
 w 108
 h 14
 font "helvetica-bold-r-12.0"
@@ -1254,7 +1254,7 @@ major 4
 minor 6
 release 0
 x 104
-y 328
+y 344
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:LEFT:RWIDTH"
@@ -1280,7 +1280,7 @@ major 4
 minor 1
 release 1
 x 16
-y 328
+y 344
 w 63
 h 14
 font "helvetica-bold-r-12.0"
@@ -1300,7 +1300,7 @@ major 4
 minor 6
 release 0
 x 224
-y 328
+y 344
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:RIGHT:RWIDTH"
@@ -1326,7 +1326,7 @@ major 4
 minor 1
 release 0
 x 296
-y 464
+y 528
 w 64
 h 24
 fgColor index 46
@@ -1345,7 +1345,7 @@ major 4
 minor 6
 release 0
 x 88
-y 416
+y 432
 w 248
 h 16
 controlPv "$(tune_prefix):TUNE:LAST_ERROR"
@@ -1370,7 +1370,7 @@ major 4
 minor 1
 release 1
 x 16
-y 416
+y 432
 w 45
 h 14
 font "helvetica-bold-r-12.0"
@@ -1390,7 +1390,7 @@ major 4
 minor 4
 release 0
 x 208
-y 464
+y 528
 w 80
 h 24
 fgColor index 43
@@ -1413,7 +1413,7 @@ major 4
 minor 6
 release 0
 x 88
-y 432
+y 448
 w 248
 h 16
 controlPv "$(tune_prefix):TUNE:FIT_ERROR"
@@ -1438,7 +1438,7 @@ major 4
 minor 1
 release 1
 x 16
-y 432
+y 448
 w 52
 h 14
 font "helvetica-bold-r-12.0"
@@ -1458,7 +1458,7 @@ major 4
 minor 4
 release 0
 x 120
-y 464
+y 528
 w 80
 h 24
 fgColor index 43
@@ -1472,5 +1472,135 @@ numDsps 1
 displayFileName {
   0 "tune_fit/tune_config.edl"
 }
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 88
+y 464
+w 248
+h 16
+controlPv "$(tune_prefix):TUNE:FIT_LENGTH"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 464
+w 59
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Fit length:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 160
+y 496
+w 80
+h 16
+controlPv "$(tune_prefix):TUNE:ATMAX"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 496
+w 119
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Tune at max power:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 96
+y 104
+w 104
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(tune_prefix):TUNE:SELECT_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 108
+w 72
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Select tune:"
+}
+autoSize
 endObjectProperties
 

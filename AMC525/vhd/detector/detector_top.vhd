@@ -34,6 +34,7 @@ entity detector_top is
 
         -- Data in
         adc_data_i : in signed;
+        adc_fill_reject_i : in signed;
         fir_data_i : in signed;
         nco_iq_i : in cos_sin_t;
         window_i : in signed;
@@ -52,7 +53,7 @@ end;
 
 architecture arch of detector_top is
     -- Register control settings
-    signal data_select : std_ulogic;
+    signal data_select : std_ulogic_vector(1 downto 0);
     signal start_write : std_ulogic;
     signal bunch_write : std_ulogic_vector(DETECTOR_RANGE);
     signal output_scaling : unsigned_array(DETECTOR_RANGE)(0 downto 0);
@@ -103,6 +104,7 @@ begin
         data_select_i => data_select,
 
         adc_data_i => adc_data_i,
+        adc_fill_reject_i => adc_fill_reject_i,
         fir_data_i => fir_data_i,
         window_i => window_i,
 

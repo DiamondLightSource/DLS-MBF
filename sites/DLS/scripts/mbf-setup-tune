@@ -124,6 +124,9 @@ parser.add_argument(
     '-t', dest = 'tune', default = None, type = float,
     help = 'Specify tune, otherwise config file will be consulted')
 parser.add_argument(
+    '-g', dest = 'gain', default = '-42dB',
+    help = 'Specify FIR gain, otherwise default -42dB will be used')
+parser.add_argument(
     '-n', dest = 'dry_run', default = False, action = 'store_true',
     help = 'Dry run, don\'t actually write to device')
 parser.add_argument('device', help = 'TMBF device name to configure')
@@ -212,9 +215,10 @@ put_axes('ADC:LOOPBACK_S', 'Normal')
 put('SEQ:0:BANK_S', 'Bank 0')
 put('SEQ:RESET_WIN_S', 0)
 
-# Ensure no triggers are running and the sequencer is stopped
+# Ensure no triggers are running and the sequencer and Tune PLL are stopped
 put('TRG:SEQ:DISARM_S', 0)
 put('SEQ:RESET_S', 0)
+put('PLL:CTRL:STOP_S', 0)
 
 # Ensure super sequencer isn't in a strange state
 put('SEQ:SUPER:COUNT_S', 1)
@@ -228,7 +232,7 @@ _put('TRG:BLANKING_S', setup.blanking_interval)
 put('FIR:0:LENGTH_S', setup.length)
 put('FIR:0:CYCLES_S', setup.cycles)
 put('FIR:0:USEWF_S', 'Settings')
-put('FIR:GAIN_S', '-42dB')
+put('FIR:GAIN_S', args.gain)
 
 # Configure bunch bank #0 for FIR and selected operation
 put('BUN:0:FIRWF_S', BUNCH_ZEROS)
@@ -271,11 +275,19 @@ put('SEQ:1:END_FREQ_S', sweep_end)
 put('SEQ:1:CAPTURE_S', 'Capture')
 put('SEQ:1:BANK_S', 'Bank 1')
 put('SEQ:1:HOLDOFF_S', setup.sweep_holdoff)
+put('SEQ:1:STATE_HOLDOFF_S', setup.state_holdoff)
 put('SEQ:1:DWELL_S', setup.sweep_dwell_time)
 put('SEQ:1:GAIN_S', setup.sweep_gain)
 put('SEQ:1:ENABLE_S', 'On')
 put('SEQ:1:ENWIN_S', 'Windowed')
 put('SEQ:1:BLANK_S', 'Blanking')
+put('SEQ:1:TUNE_PLL_S', 'Ignore')
+
+# Ensure the associated tune fitter is fitting the entire sweep and is running
+# with the appropriate selection
+put('TUNE:CONFIG:WINDOW_START_S', 0)
+put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
+put('TUNE:SELECT_S', 'Fitted')
 
 put('SEQ:PC_S', 1)
 
