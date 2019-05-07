@@ -6,6 +6,9 @@ SITE = ESRF
 DEFAULT_TARGETS = driver python epics matlab tune_fit iocs tango
 INSTALL_TARGETS = $(DEFAULT_TARGETS) install-python
 
+# Place the driver build on the local filesystem
+# so that root have write access
+DRIVER_BUILD_DIR = /tmp/mbf/build
 
 # Place the FPGA build in /scratch
 FPGA_BUILD_DIR = /segfs/tango/cppserver/machine/diagnostic/MBF/build/fpga
