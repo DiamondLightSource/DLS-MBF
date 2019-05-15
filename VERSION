@@ -8,6 +8,7 @@ VERSION_PATCH = 1
 
 # Compute the git version string
 GIT_VERSION = $(shell \
+    cd $(MBF_TOP); \
     set -o pipefail; \
     if VERSION=$$(git rev-parse HEAD 2>/dev/null | cut -b -7); then \
         git diff --shortstat --quiet HEAD  ||  VERSION=$$VERSION-dirty; \
