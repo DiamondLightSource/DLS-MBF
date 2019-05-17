@@ -33,7 +33,7 @@ PYMOD_INSTALL_DIR = /operation/dserver/python/modules
 DRV_GROUP = comp
 
 # Location of Matlab compiler
-/usr/local/Matlab-2018b/bin/mex
+MEX = /usr/local/Matlab-2018b/bin/mex
 
 # Path to Python Soft IOC
 PYTHON_IOC = /usr/local/epics/pythonIoc/pythonIoc
