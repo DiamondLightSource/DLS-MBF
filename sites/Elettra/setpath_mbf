@@ -1,0 +1,15 @@
+#! /bin/bash
+
+MACHARCH=`/csadmin/common/scripts/get_os`
+
+export PATH=$PATH:/opt/dserver/epics/base-3.14.12.7/bin/linux-x86_64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/dserver/epics/base-3.14.12.7/lib/linux-x86_64
+export PYTHONPATH=$PYTHONPATH:/opt/dserver/epics/python-modules
+export PYTHONPATH=$PYTHONPATH:/operation/dserver/python/bliss_modules/$MACHARCH
+export EPICS_CA_MAX_ARRAY_BYTES=1048576
+export EPICS_CA_ADDR_LIST=$HOSTNAME
+export EPICS_CAS_AUTO_BEACON_ADDR_LIST=NO
+export EPICS_CAS_BEACON_ADDR_LIST=$HOSTNAME
+export HERE=/opt/dserver/epics/pythonIoc
+export EPICS_BASE=/opt/dserver/epics/base-3.14.12.7
+export EPICS_HOST_ARCH='linux-x86_64'
