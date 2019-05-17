@@ -1,6 +1,6 @@
 # Config settings for building at ESRF
 
-SITE = ESRF
+SITE = Elettra
 
 # Override default and install targets for make
 DEFAULT_TARGETS = driver python epics matlab tune_fit iocs tango
@@ -20,11 +20,11 @@ AMC525_SERVER = l-c31-3 199
 
 # Definitions needed for EPICS driver build
 #
-EPICS_DEVICE = /opt/dserver/epics/epics_device
-EPICS_BASE = /opt/dserver/epics/base-3.14.12.7
+EPICS_DEVICE = /usr/local/epics/epics_device
+EPICS_BASE = /usr/local/epics/base-3.14.12.8
 
 # Directory for Tango Device Server binaries
-INSTALL_DIR = /users/dserver/bin
+INSTALL_DIR = /runtime/servers/bin
 
 # Directory for python modules
 PYMOD_INSTALL_DIR = /operation/dserver/python/modules
@@ -33,9 +33,9 @@ PYMOD_INSTALL_DIR = /operation/dserver/python/modules
 DRV_GROUP = comp
 
 # Location of Matlab compiler
-MEX = /sware/com/matlab_2017a/bin/mex
+/usr/local/Matlab-2018b/bin/mex
 
 # Path to Python Soft IOC
-PYTHON_IOC = /opt/dserver/epics/pythonIoc/pythonIoc
+PYTHON_IOC = /usr/local/epics/pythonIoc/pythonIoc
 
 # vim: set filetype=make:
