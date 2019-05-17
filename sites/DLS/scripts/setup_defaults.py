@@ -20,10 +20,7 @@ single_bunch = False            # Set to true for single bunch mode
 detector_input = 'FIR'
 det_gain = '0dB'
 
-
-# The following tune fit management parameters are currently not implemented
-tune_select = 'Peak Fit'
-alarm_range = 0.01
+fir_decimation = 25             # Only valid for LMBF
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
