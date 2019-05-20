@@ -128,7 +128,7 @@ void check_result(int sock)
     {
         /* Whoops, we have an error message to read. */
         size_t bytes_read = read_buffer(sock, message + 1, sizeof(message) - 1);
-        close(sock);
+        IGNORE(close(sock));
 
         TEST_OK(message[bytes_read] == '\n');
         message[bytes_read] = '\0';
