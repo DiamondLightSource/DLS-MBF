@@ -56,7 +56,7 @@ fi
 
 # Symlink creation
 fn_create_link_file /home/dserver/mbf/sites/ESRF/CONFIG /home/dserver/mbf/CONFIG
-fn_create_link_file /home/dserver/mbf/sites/ESRF/tango/config.py.$HOSTNAME /home/dserver/mbf/tools/config.py
+fn_create_link_file /home/dserver/mbf/sites/ESRF/tango/config.py.$HOSTNAME /home/dserver/mbf/tango/tools/config.py
 
 # Copy MBF file to host
 fn_sync_files /home/dserver/mbf/sites/ESRF/INSTALL/common/ /home/dserver/
