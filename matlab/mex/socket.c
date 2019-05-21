@@ -80,6 +80,21 @@ int connect_server(const char *hostname, int port)
 }
 
 
+/* Perhaps a little over pedantic (and we're still not checking for EINTR), but
+ * it is conceivable that write() returns with only part of the buffer written,
+ * so here's the usual loop until done dance. */
+static void write_all(int sock, const void *buffer, size_t count)
+{
+    while (count > 0)
+    {
+        ssize_t written = write(sock, buffer, count);
+        TEST_SOCK(sock, written > 0);
+        count -= (size_t) written;
+        buffer += (size_t) written;
+    }
+}
+
+
 void send_command(int sock, const char *format, ...)
 {
     char command[64];
@@ -88,8 +103,8 @@ void send_command(int sock, const char *format, ...)
     size_t length = (size_t) vsnprintf(command, sizeof(command), format, args);
     va_end(args);
 
-    write(sock, command, length);
-    shutdown(sock, SHUT_WR);
+    write_all(sock, command, length);
+    IGNORE(shutdown(sock, SHUT_WR));
 }
 
 
