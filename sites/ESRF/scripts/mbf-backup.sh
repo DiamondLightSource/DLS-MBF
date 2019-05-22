@@ -8,11 +8,8 @@ save_state () {
         fi
 }
 
-
-mkdir -p /home/dserver/autosave/TMBF
 cd /home/dserver/autosave/TMBF
 save_state
-mkdir -p /home/dserver/autosave/TFIT
 cd /home/dserver/autosave/TFIT
 save_state
 
