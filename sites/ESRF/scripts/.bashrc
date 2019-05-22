@@ -4,6 +4,10 @@
 
 . ./.mbf-env
 
+# Make sure state backup folder exists
+mkdir -p /home/dserver/autosave/TMBF
+mkdir -p /home/dserver/autosave/TFIT
+
 padding='                                        '
 PADDED_HOSTNAME=$(printf "%s %s" "$HOSTNAME" "${padding:${#HOSTNAME}}")
 
