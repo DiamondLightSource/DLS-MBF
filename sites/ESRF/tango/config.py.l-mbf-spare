@@ -30,6 +30,7 @@ vars_users = {
         'BUNCHES_PER_TURN': '992',
         'DETECTOR_LENGTH': '4096',
         'BUNCH_TAPS': '16',
-        'REVOLUTION_FREQUENCY': '355042' }
+        'REVOLUTION_FREQUENCY': '355214',
+        'TUNE_PLL_LENGTH': '4096' }
 
 # vim: set filetype=python:

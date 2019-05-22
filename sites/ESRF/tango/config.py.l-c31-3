@@ -3,22 +3,22 @@
 horizontal_axis_number = 1
 
 tmbf_dev_name = {
-        'horizontal': 'sr/d-mfdbk/utca-horizontal',
-        'vertical': 'sr/d-mfdbk/utca-vertical',
-        'global': 'sr/d-mfdbk/utca-global' }
+        'horizontal': 'srdiag/mbf/utca-horizontal',
+        'vertical': 'srdiag/mbf/utca-vertical',
+        'global': 'srdiag/mbf/utca-global' }
 
 tmbf_instance_name = {
-        'horizontal': 'mfdbk-h',
-        'vertical': 'mfdbk-v',
-        'global': 'mfdbk-global' }
+        'horizontal': 'mbf-h',
+        'vertical': 'mbf-v',
+        'global': 'mbf-global' }
 
 tfit_dev_name = {
-        'horizontal': 'sr/d-mtune/h',
-        'vertical': 'sr/d-mtune/v' }
+        'horizontal': 'srdiag/mtune/h',
+        'vertical': 'srdiag/mtune/v' }
 
 tfit_instance_name = {
-        'horizontal': 'mfdbk-tuneh',
-        'vertical': 'mfdbk-tunev' }
+        'horizontal': 'mbf-tuneh',
+        'vertical': 'mbf-tunev' }
 
 vars_users = {
         'DEVICE': 'SR-TMBF',
@@ -30,6 +30,7 @@ vars_users = {
         'BUNCHES_PER_TURN': '992',
         'DETECTOR_LENGTH': '4096',
         'BUNCH_TAPS': '16',
-        'REVOLUTION_FREQUENCY': '355042' }
+        'REVOLUTION_FREQUENCY': '355214',
+        'TUNE_PLL_LENGTH': '4096' }
 
 # vim: set filetype=python:
