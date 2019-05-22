@@ -9,8 +9,10 @@ save_state () {
 }
 
 
-cd /home/dserver/autosave/SR-TMBF
+mkdir -p /home/dserver/autosave/TMBF
+cd /home/dserver/autosave/TMBF
 save_state
-cd /home/dserver/autosave/SR-TFIT
+mkdir -p /home/dserver/autosave/TFIT
+cd /home/dserver/autosave/TFIT
 save_state
 

@@ -13,13 +13,10 @@ fn_create_link_file (){
    dst_path=$2
    echo "TASK: create symlink from $src_path to $dst_path"
    if [ -f "$src_path" ]; then
-      if [ -f "$dst_path" ]; then
-         echo " ERROR: file already exist on target link creation !"
-      else
-         ln -sf "$src_path" "$dst_path"
-      fi
+      ln -sf "$src_path" "$dst_path"
    else
       echo " ERROR no source file found !"
+      exit 1
    fi
 }
 
@@ -32,6 +29,7 @@ fn_sync_files (){
       /usr/bin/rsync -acvh "$src_path" "$dst_path"
    else
       echo " ERROR: source or destination folder not found !"
+      exit 1
    fi
 }
 
@@ -56,6 +54,10 @@ fi
 
 # Symlink creation
 fn_create_link_file /home/dserver/mbf/sites/ESRF/CONFIG /home/dserver/mbf/CONFIG
+fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/.bashrc /home/dserver/
+fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/.mbf-env /home/dserver/
+fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/amc525-firmware.sh /home/dserver/script/
+fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/mbf-backup.sh /home/dserver/script/
 fn_create_link_file /home/dserver/mbf/sites/ESRF/tango/config.py.$HOSTNAME /home/dserver/mbf/tango/tools/config.py
 
 # Copy MBF file to host
