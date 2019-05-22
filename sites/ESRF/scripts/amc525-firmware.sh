@@ -14,7 +14,9 @@ case "$1" in
    startpre)
       if ! lspci -v | grep -q "Xilinx"; then
          echo "Xilinx not found, check AMC525 network availibility..."
-         while ! ping -c 1 -W 1 $amc_ip &> /dev/null ; do
+         
+         #while ! ping -c 1 -W 1 $amc_ip &> /dev/null ; do
+         while ! ssh $amc_ip date &> /dev/null ; do
             echo "Unable to join AMC525 at IP $amc_ip (attempt $try_nbr): retring in $try_wait seconds" >&2
             (( try_nbr++ ))
             if [[ $try_nbr -le $try_max ]]; then
@@ -24,13 +26,30 @@ case "$1" in
                exit 1
             fi
          done
-         echo "AMC525 access ok, loading Xilinx firmware..."
-         if [ -f $mbf_esrf/firmware/amc525_mbf.bit ]; then
-            eval $mbf_tools/load_fpga -f "$mbf_esrf/firmware/amc525_mbf.bit" $amc_ip_tail
-            sleep 4
-         else
-            echo "Error, firmware: $mbf_esrf/firmware/amc525_mbf.bit not found !"
-         fi
+         
+         try_nbr=1
+         while ! [ -e $mbf_esrf/firmware/amc525_mbf.bit ] ; do
+            echo "Firmware: $mbf_esrf/firmware/amc525_mbf.bit not found (attempt $try_nbr): retring in $try_wait seconds" >&2
+            (( try_nbr++ ))
+            if [[ $try_nbr -le $try_max ]]; then
+               sleep $try_wait
+            else
+               echo "Error, firmware: $mbf_esrf/firmware/amc525_mbf.bit not found: aborting"
+               exit 1
+            fi
+         done
+         
+         eval $mbf_tools/load_fpga -f "$mbf_esrf/firmware/amc525_mbf.bit" $amc_ip_tail
+         sleep 4
+         
+         #echo "AMC525 access ok, loading Xilinx firmware..."
+         #if ; then
+         #   eval $mbf_tools/load_fpga -f "$mbf_esrf/firmware/amc525_mbf.bit" $amc_ip_tail
+         #   sleep 4
+         #else
+         #   echo "Error, firmware: $mbf_esrf/firmware/amc525_mbf.bit not found !"
+         #   exit 1
+         #fi
       fi
    ;;
 
