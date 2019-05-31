@@ -1,0 +1,47 @@
+#! /bin/bash
+
+cd "$(dirname "$0")"
+cd ../..
+MBF_HOME="$(pwd -P)"
+MBF_DIR=$(basename "$MBF_HOME")
+
+HOSTNAME=$(hostname)
+
+# Check if we are on a crate or just on a developper's computer
+path1=$(realpath ~dserver)
+path2=$(realpath $MBF_HOME/..)
+test $path1 != $path2
+RUN_ON_CRATE=$?
+
+if [ "$RUN_ON_CRATE" -eq 0 ]; then
+	echo "Not running on a real crate"
+fi
+
+ln_and_test () {
+	local MY_FILE=$1
+	local MY_LINK=$2
+	ln -sf $MY_FILE $MY_LINK
+	if [ ! -f $MY_LINK ] ; then
+		MY_FILE_RP=$(realpath "$(dirname $MY_LINK)/$MY_FILE")
+		>&2 echo "Error, file $MY_FILE_RP does not exist"
+	fi
+}
+
+ln_and_test sites/ESRF/CONFIG CONFIG
+MY_FILE=../../sites/ESRF/tango/config.py.$HOSTNAME
+MY_LINK=tango/tools/config.py
+ln_and_test $MY_FILE $MY_LINK
+
+if [ "$RUN_ON_CRATE" -ne 0 ]; then
+	ln_and_test $MBF_DIR/sites/ESRF/cratestartup ../cratestartup
+	ln_and_test $MBF_DIR/sites/ESRF/setpath_mbf ../setpath_mbf
+	ln_and_test $MBF_DIR/sites/ESRF/.bashrc ../.bashrc
+
+	mkdir -p ../autosave/SR-TMBF
+	mkdir -p ../autosave/SR-TFIT
+	mkdir -p ../autosave/T-TMBF
+	mkdir -p ../autosave/T-TFIT
+	MY_FILE=../$MBF_DIR/sites/ESRF/cron_daily_backup.sh
+	MY_LINK=../autosave/cron_daily_backup.sh
+	ln_and_test $MY_FILE $MY_LINK
+fi

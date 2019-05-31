@@ -129,6 +129,9 @@ parser.add_argument(
 parser.add_argument(
     '-n', dest = 'dry_run', default = False, action = 'store_true',
     help = 'Dry run, don\'t actually write to device')
+parser.add_argument(
+    '-s', dest = 'skip_tune', default = False, action = 'store_true',
+    help = 'Omit update for TUNE settings')
 parser.add_argument('device', help = 'TMBF device name to configure')
 parser.add_argument('mode',
     help = 'Configuration mode, must be one of %s' % ', '.join(VALID_MODES))
@@ -180,7 +183,7 @@ else:
 
 # Compute best matching filter.  For LMBF mode need to scale matched target by
 # configured decimation.
-decimation = get('IQ:FIR:DECIMATION_S') if LMBF_MODE else 1
+decimation = setup.fir_decimation if LMBF_MODE else 1
 setup.cycles, setup.length = compute_filter_size(setup.tune * decimation)
 
 
@@ -229,6 +232,8 @@ _put('TRG:BLANKING_S', setup.blanking_interval)
 
 
 # Configure FIR as selected
+if LMBF_MODE:
+    put('FIR:DECIMATION_S', setup.fir_decimation)
 put('FIR:0:LENGTH_S', setup.length)
 put('FIR:0:CYCLES_S', setup.cycles)
 put('FIR:0:USEWF_S', 'Settings')
@@ -285,9 +290,10 @@ put('SEQ:1:TUNE_PLL_S', 'Ignore')
 
 # Ensure the associated tune fitter is fitting the entire sweep and is running
 # with the appropriate selection
-put('TUNE:CONFIG:WINDOW_START_S', 0)
-put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
-put('TUNE:SELECT_S', 'Fitted')
+if not args.skip_tune:
+    put('TUNE:CONFIG:WINDOW_START_S', 0)
+    put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
+    put('TUNE:SELECT_S', 'Fitted')
 
 put('SEQ:PC_S', 1)
 

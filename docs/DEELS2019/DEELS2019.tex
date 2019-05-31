@@ -1,0 +1,288 @@
+\documentclass[xcolor=table]{beamer}
+
+\usepackage{graphbox}       % For centre alignment of graphics
+\usepackage{textcomp}       % Text companion fonts
+\usepackage{tikz}
+
+\input{common.tikz}
+
+\setbeamertemplate{navigation symbols}{}
+
+\hyphenpenalty 4000 \sloppy
+
+
+\title{%
+    High speed Tune Measurement using \\
+    Phase Following on Multi-Bunch Feedback}
+\author{Michael Abbott}
+\institute{Diamond Light Source}
+\date{Tuesday 4\textsuperscript{th} June 2019}
+
+
+\begin{document}
+
+\frame{\titlepage}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{TMBF and LMBF at Diamond Light Source}
+
+\tikzset{
+    actuator/.style={circle, inner sep=1pt, highlight fill, draw=black}}
+
+\begin{centering}
+\input{overview.tikz}
+\end{centering}
+
+\bigskip
+\smallbox[actuator]{B} EBPM pickup;
+\smallbox[actuator]{C} Longitudinal cavity;
+\smallbox[actuator]{S} Transverse striplines.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{MBF Signal Processing Chain}
+
+\input{processing.tikz}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Measuring Beam Frequency Response}
+
+\begin{centering}
+\input{detector-core.tikz}
+\end{centering}
+
+\bigskip
+
+By exciting the beam at a selected frequency $f$ and measuring the response of
+the beam at that frequency, we compute the \emph{transfer function} of the
+machine at the selected frequency.
+
+\begin{equation*}
+    R(f) = \sum_{t\in\text{dwell}} e^{2\pi i f t} x_t
+\end{equation*}
+
+This can be expressed as phase and magnitude, or equivalently as a
+complex number, or in digital processing terms as a pair (I,Q).
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Implementation of Detector}
+
+\input{detector.tikz}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Typical Tune Sweep Response}
+
+\includegraphics[width=\linewidth]{tune-sweep-complex.png}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Measuring Tune by Tracking Phase}
+
+\begin{itemize}
+\item Define desired target phase response (eg, 180\textdegree).
+\item Excite selected region of beam with Tune PLL NCO at selected single
+    frequency.
+\item Measure phase response at this frequency.
+\item Use difference between measured and target phase to update frequency (a
+    simple PI controller is sufficient).
+\item Repeat.
+\end{itemize}
+
+This is implemented on the FPGA, and can run at more than 100\,kHz; however most
+tune motion seems to be concentrated between $10^2$ and $10^{-2}$\,Hz, and a
+sensible rate is around 2\,kHz.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Tune PLL Implementation}
+
+\input{tune-pll.tikz}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{High Resolution Tune Measurement}
+
+\hspace{0.05\linewidth}
+\includegraphics[width=0.9\linewidth]{tune-f40s2-3h.png}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Disturbance to Tune Sweeps}
+
+\begin{tikzpicture}[
+    spy using outlines={
+        circle, orange, magnification=3, size=50mm, connect spies}]
+\node {\includegraphics[width=\linewidth]{PLL_small_bunch_sweep1.png}};
+\spy on (-0.1,1.8) in node [left] at (5.1,-0.8);
+\end{tikzpicture}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Compensating for Tune motion}
+
+\begin{itemize}
+\item Tune disturbance is global (all bunches see the same disturbance).
+\item Can use PLL to track tune on part of fill.
+\item Tune offset then dynamically compensates tune sweep.
+\item Can now perform very long sweeps on low current parts of fill.
+\end{itemize}
+
+\medskip
+\begin{centering}
+\input{compensate.tikz}
+\end{centering}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Using Bunch Enables}
+
+Machine fill pattern
+
+\includegraphics[width=\linewidth]{buckets.png}
+
+\medskip
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{>{\raggedright}p{0.5\linewidth}l}
+    FIR (feedback) output enable, Tune PLL (NCO\textsubscript3) output enable,
+    Tune PLL detector enable. &
+    \raisebox{-0.8\height}{
+        \includegraphics[width=0.4\linewidth]{enable-fill.png}}
+    \\
+    Sweep (NCO\textsubscript2) output enable, Sweep detector enable. &
+    \raisebox{-0.8\height}{
+        \includegraphics[width=0.4\linewidth]{enable-bunch.png}}
+    \\
+\end{tabular}
+}
+
+\medskip
+\footnotesize
+With this setup we can do long slow sweeps on the single bunch.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Compensated vs Uncompensated Tune Sweeps}
+
+\includegraphics[width=\linewidth]{PLL_small_bunch_sweep4.png}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{High resolution slow sweeps}
+
+Slow tune sweeps of 50\,pC single bunch with varying chromaticity.
+
+\includegraphics[width=\linewidth]{chro-scan.png}
+
+Now ready to investigate inference of machine chromaticity from high resolution
+tune sweep.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Fin}
+
+\vskip0pt plus 1filll
+\footnotesize
+Some extra slides follow.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Equation for Detector Operation}
+
+\begin{equation*}
+    \text{iq}_n = \sum_{t=nDT}^{(n+1)DT-1}
+    e^{2\pi i \frac{f_n}{T} t}
+        \cdot B(t\mathbin{\text{mod}} T) \cdot x_t
+\end{equation*}
+
+\bigskip
+
+\begin{tabular}{>{$}l<{$}l}
+n & Number of captured dwell \\
+D & Dwell time in turns \\
+f_n & Excitation frequency in cycles per machine revolution ($T$ ticks) \\
+T & Number of bunches per turn (936 at DLS) \\
+t & Time in bunch clock ticks \\
+B(b) & Bunch enable for selected bunch $b$ \\
+x_t & Sample at time $t$ \\
+\end{tabular}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Tune PLL 3 hour Cumulative Sum}
+
+\includegraphics[width=\linewidth]{tune-c-3h.png}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Feedback Residual}
+
+How much noise is the feedback loop introducing?
+
+\includegraphics[width=\linewidth]{tune-residual.png}
+
+\end{frame}
+
+
+\end{document}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{}
+
+\end{frame}

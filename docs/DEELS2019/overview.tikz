@@ -1,0 +1,58 @@
+\begin{tikzpicture}[
+    amplifier/.style={
+        draw=black, isosceles triangle, highlight fill,
+        shape border rotate=90, isosceles triangle apex angle=60,
+        thick, minimum width=8mm
+    },
+    tmbf/.style={accent fill, minimum width=20mm, minimum height=7mm, draw},
+    box/.append style={minimum height=8mm},
+    adc-dac/.append style={minimum height=6mm},
+    x=20mm, y=20mm]
+
+
+\path
+    node (beam) [
+        accent fill, ellipse, minimum height=15mm, minimum width=30mm] {Beam}
+    ++(-2,0) node (hybrid) [box] {RF Hybrid}
+    ++(0,-1) node (front end) [box] {Front End}
+    (beam) ++(2,-1)
+    +(-5mm,0) node (tmbf amp) [amplifier] {}
+    +(+5mm,0) node (lmbf amp) [amplifier] {}
+    (beam) +(0,-1.8) node (dsp) [
+        background fill, minimum height=25mm, minimum width=53mm] {};
+
+\path
+    (dsp.north) node [anchor=south, font=\Large] {DLS MBF}
+    (beam.west) node [actuator] (bpm) {B}
+    (beam.-20) node [actuator] (stripline) {S}
+    (beam.20) node [actuator] (cavity) {C}
+    (dsp)
+    +(0,5mm) node [tmbf] (tmbf) {TMBF}
+    +(0,-5mm) node [tmbf] (lmbf) {LMBF}
+    (dsp.west |- tmbf) +(1mm,0) node (adc) [adc-dac=west, anchor=west] {ADC}
+    (dsp.west |- lmbf) +(1mm,0) node [adc-dac=west, anchor=west] {ADC}
+    (dsp.east |- tmbf) +(-1mm,0) node (dac) [adc-dac=east, anchor=east] {DAC}
+    (dsp.east |- lmbf) +(-1mm,0) node [adc-dac=east, anchor=east] {DAC}
+    (dsp -| adc) node [font=\tiny] {500\,Ms/s}
+    (dsp) node [font=\tiny] {FPGA}
+    (dsp -| dac) node [font=\tiny] {500\,Ms/s};
+
+\draw [bus] (bpm) -- (hybrid)
+    node [pos=0.4, above, font=\scriptsize, align=left] {A,B,\\C,D};
+\draw [bus] (hybrid) -- (front end)
+    node [midway, left, font=\scriptsize] {X,Y,S};
+\draw [bus] (front end.south) +(5mm,0) |- (dsp.west |- tmbf)
+    node [at end, anchor=north east, font=\scriptsize] {X,Y};
+\draw [bus] (front end.south) +(-5mm,0) |- (dsp.west |- lmbf)
+    node [at end, anchor=north east, font=\scriptsize] {
+        S\textsubscript0,S\textsubscript{90}};
+\draw [bus] (dsp.east |- tmbf) -| (tmbf amp) |- (stripline);
+\draw [bus] (dsp.east |- lmbf) -| (lmbf amp) |- (cavity);
+
+\draw (lmbf amp.lower side)
+    node [anchor=north, actuator, inner sep=0pt] {$\times$};
+
+
+\end{tikzpicture}
+
+% vim: filetype=tex:

@@ -161,21 +161,18 @@ static void compute_phase(void)
     read_mms_mean(adc_context[0].mms, mean_i);
     read_mms_mean(adc_context[1].mms, mean_q);
 
-    float max_mag = 0;
-    float sum_mag = 0;
+    double sum_mag = 0;
     FOR_BUNCHES(i)
     {
         phase.magnitude[i] = sqrtf(SQR(mean_i[i]) + SQR(mean_q[i]));
-        max_mag = MAX(max_mag, phase.magnitude[i]);
         sum_mag += phase.magnitude[i];
     }
-    phase.mean_magnitude = sum_mag / (float) bunches;
+    phase.mean_magnitude = sum_mag / bunches;
 
-    float threshold = (float) phase.threshold * max_mag;
-    float sum_i = 0, sum_q = 0;
+    double sum_i = 0, sum_q = 0;
     FOR_BUNCHES(i)
     {
-        if (phase.magnitude[i] > threshold)
+        if (phase.magnitude[i] > phase.threshold)
         {
             phase.phase[i] = 180 / (float) M_PI * atan2f(-mean_i[i], mean_q[i]);
             sum_i += mean_i[i];
@@ -184,7 +181,7 @@ static void compute_phase(void)
         else
             phase.phase[i] = 0;
     }
-    phase.mean_phase = 180 / (float) M_PI * atan2f(-sum_i, sum_q);
+    phase.mean_phase = 180 / M_PI * atan2(-sum_i, sum_q);
 }
 
 

@@ -1,0 +1,59 @@
+\begin{tikzpicture}[
+    queue box/.style={
+        highlight fill,
+        inner sep=1pt,
+        node contents={\includegraphics[width=3ex]{queue.png}}},
+    x=20mm, y=26mm]
+
+\tikzset{
+    % An attempt to draw a simple queue.  Not all that great, to be honest
+    queue/.pic={\scoped [x=2mm,y=1.5mm] {
+        \path [highlight fill] (-1.3,-2.3) rectangle (1.3,2.3);
+        \draw [thick]
+            (-1,-2) -- +(0,4)
+            (1,-2) -- +(0,4)
+            (-0.8,-1.5) foreach \x in {-1,...,2} { -- +(1.6,0) ++(0,1) };
+    }}
+}
+
+\path
+    (0,0) node [box] (nco) {NCO}
+    (1,0.6) node [accent fill, ellipse] (beam) {Beam}
+    (2,0) node [box] (detector) {Detector}
+    (2,-1) node [box] (cordic) {CORDIC}
+    +(1,-0.6) node (debug out) {Debug}
+    (1,-1) node [mul, inner sep=1pt] (ref diff) {$-$}
+    +(0,-0.5) node [font=\footnotesize, background fill]
+        (ref phase) {Reference\\Phase}
+    (0,-1) node [box] (control) {PI\\Control}
+    +(-1,-0.6) node (tune out) {Tune\\Offset}
+    (-1,-0.5) node [mul, inner sep=1pt] (tune diff) {$-$}
+    +(0,0.5) node [font=\footnotesize, background fill]
+        (ref tune) {Reference\\Tune}
+    +(-0.8,-0.2) node [font=\footnotesize] (sweep) {Sweep\\Adjust};
+
+\path
+    (cordic) +(1,0) pic [local bounding box=debug queue] {queue}
+    (control) +(-1,0) pic [local bounding box=tune queue] {queue};
+
+\draw [bus] (nco) |- (beam);
+\draw [bus] (beam) -| (detector);
+\draw [bus] (control) -- node [right, font=\footnotesize] {PLL\\tune} (nco);
+\draw [bus] (nco) -- node [above] {cos, sin} (detector);
+\draw [bus] (detector) -- node [left] {IQ} (cordic);
+\draw [bus] (ref phase) -- (ref diff);
+\draw [bus] (cordic) -- node [above] {$\measuredangle$} (ref diff);
+\draw [bus] (ref diff) -- (control);
+
+\draw [bus] ($(detector)!0.5!(cordic)$) -| (debug queue);
+\draw [bus] (debug queue) -- (debug out);
+
+\draw [bus] (ref tune) -- (tune diff);
+\draw [bus] (nco |- tune diff) -- (tune diff);
+\draw [bus] (tune diff) |- (sweep);
+\draw [bus] (tune diff) -- (tune queue);
+\draw [bus] (tune queue) -- (tune out);
+
+\end{tikzpicture}
+
+% vim: filetype=tex:

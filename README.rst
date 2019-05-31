@@ -113,8 +113,12 @@ been added:
 * Two changes to sequencer: now have optional holdoff at start of dwell, and can
   optionally apply tune PLL offset as extra offset to sweep frequency.
 
-1.2.1 April 2019
-................
+1.2.1 June 2019
+...............
 
 Minor tweaks, no change to firmware.  `mbf_memory` Python library merged.
-`mbf_read_tune_pll.m` script rewritten and API changed.
+`mbf_read_tune_pll.m` script rewritten and API changed.  Minor PV changes:
+
+* Remove `BUN:n:ALL:SET_S` PV: too easy to press by mistake and really somewhat
+  redundant.
+* Change semantics of `ADC:THRESHOLD_S` (LMBF only).

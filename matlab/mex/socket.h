@@ -22,12 +22,14 @@
 #define TEST_SOCK_(sock, test, id, error...) \
     do if (!(test)) \
     { \
-        close(sock); \
+        IGNORE(close(sock)); \
         FAIL_(id, error); \
     } while (0)
 #define TEST_SOCK(sock, test) \
     TEST_SOCK_(sock, test, "unexpected", "Unexpected error")
 
+/* For ignoring return values even when warn_unused_result is in force. */
+#define IGNORE(e)       do if(e) {} while (0)
 
 /* Creates and returns matlab array and returns pointers to real and imaginary
  * parts.  If imags is NULL then a real array is created. */

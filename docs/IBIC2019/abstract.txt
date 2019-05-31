@@ -1,0 +1,23 @@
+Tune Computation via Model Fitting to Swept Machine Response Measurement
+
+Michael Abbott
+
+IBIC 2019, 8-12 September 2019, MAX IV
+
+At Diamond Light Source we compute the horizontal and vertical tunes by fitting
+a simple multi-pole resonator model to the measured electron beam frequency
+response.  The transverse (and longitudinal) tune response is measured by
+sweeping an excitation across the range of possible tune frequencies and
+synchronously measuring the IQ response.
+
+The multi-pole resonator model is a good physical fit to the measured behaviour,
+but the fitting process is surprisingly challenging.  Problems include noisy
+measurements, very complex beam responses in the presence of increasing
+chromaticity, poor data when the beam is close to instability, and a number of
+challenges with the stability of the algorithm.
+
+The tune fitting algorithm now in use at Diamond has been developed and refined
+over many years.  It is finally stable enough to work reliably throughout most
+beam operating conditions.  The algorithm involves alternating peak finding and
+non-linear fitting, with a fairly naive mathematical approach; the main focus is
+on providing reliable results.

@@ -1,0 +1,18 @@
+High speed Tune Measurement using Phase Following on Multi-Bunch Feedback
+
+Michael Abbott
+
+DEELS 2019, 3-5 June 2019, ESRF
+
+A newly re-implemented feature of the Diamond Multi-Bunch Feedback processor
+(DLS MBF) uses the ability to measure the betatron/synchrotron tunes using a
+phase locked loop approach, which produces tune readings at many kHz rate.
+
+This function (which we call Tune PLL) provides insight into the dynamic
+behaviour of systems affecting the machine tunes.
+
+A new application of the Tune PLL measurement is to simultaneously correct the
+swept tune measurement for dynamic tune shifts during measurement sweeps,
+allowing for very high precision measurements of the detailed tune profile.
+This enables also very slow sweeps allowing the measurement of tunes spectra of
+extremely weak bunches with high fidelity.

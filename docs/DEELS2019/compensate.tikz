@@ -1,0 +1,28 @@
+\begin{tikzpicture}[
+    x=24mm, y=20mm]
+
+\path
+    (0,0) node [box] (tune pll) {Tune\\PLL}
+    ++(2,0) node [small box] (nco3) {NCO\textsubscript3}
+    ++(1,0) node (reference) {Reference\\Bunches}
+    (tune pll)
+    ++(1,-0.5) node [mul, inner sep=1pt] (sum pll) {$-$}
+    ++(0.8,0) node [font=\scriptsize] (ref tune) {Reference\\Tune}
+    (tune pll)
+    ++(0,-1) node [box] (sweep) {Sweep}
+    ++(1,0) node [mul, inner sep=1pt] (sum sweep) {$+$}
+    ++(1,0) node [small box] (nco2) {NCO\textsubscript2}
+    ++(1,0) node (target) {Swept\\Bunches};
+
+\draw [bus] (tune pll) -- (nco3);
+\draw [bus] (nco3) -- (reference);
+\draw [bus] (tune pll) -| (sum pll);
+\draw [bus] (ref tune) -- (sum pll);
+\draw [bus] (sum pll) -- (sum sweep);
+\draw [bus] (sweep) -- (sum sweep);
+\draw [bus] (sum sweep) -- (nco2);
+\draw [bus] (nco2) -- (target);
+
+\end{tikzpicture}
+
+% vim: filetype=tex:
