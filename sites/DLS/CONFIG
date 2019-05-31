@@ -19,9 +19,8 @@ AMC525_SERVER = ts-di-mserv-02 199
 
 # Definitions needed for EPICS driver build
 #
-# EPICS_DEVICE = /home/mga83/epics/epics_device
-EPICS_DEVICE = /dls_sw/prod/R3.14.12.3/support/epics_device/1-4
-EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
+EPICS_DEVICE = /dls_sw/prod/R3.14.12.7/support/epics_device/1.4
+EPICS_BASE = /dls_sw/epics/R3.14.12.7/base
 
 CFLAGS_EXTRA += -Werror
 
