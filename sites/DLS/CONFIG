@@ -28,9 +28,9 @@ CFLAGS_EXTRA += -Werror
 DRV_GROUP = 500
 
 # Location of Matlab compiler
-MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
+MEX = /dls_sw/prod/tools/RHEL7-x86_64/matlab/R2019a/prefix/bin/mex
 
 # Path to Python Soft IOC
-PYTHON_IOC = /dls_sw/prod/R3.14.12.3/support/pythonSoftIoc/2-11/pythonIoc
+PYTHON_IOC = /dls_sw/prod/R3.14.12.7/support/pythonIoc/2-15/pythonIoc
 
 # vim: set filetype=make:
