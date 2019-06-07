@@ -62,12 +62,16 @@ def load_replay_mat(filename, max_n = 0):
     return [(s, r_iq) for r_iq in iq]
 
 
-def replay_s_iq(s_iq, fit_tune):
+def replay_s_iq(s_iq, fit_tune, keep_traces):
+    traces = []
     for s, iq in s_iq:
         try:
-            fit_tune(s, iq)
+            trace = fit_tune(s, iq)
+            if keep_traces:
+                traces.append(trace)
         except KeyboardInterrupt:
             raise
         except:
             print >>sys.stderr, 'Fit failed'
             traceback.print_exc()
+    return traces

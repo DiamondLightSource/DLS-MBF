@@ -43,6 +43,15 @@ def parse_args():
         help = '''Load replay file from matlab format file.  The file must
             contain a two dimensional array of iq values and a single matching
             one dimensional s value.''')
+    parser.add_argument('-P', '--no-plot',
+        default = False, action = 'store_true',
+        help = 'Suppress plotting of overall results')
+    parser.add_argument('-w', '--write',
+        default = None, type = str,
+        help = 'Write conversion results to specified file')
+    parser.add_argument('-v', '--verbose',
+        default = False, action = 'store_true',
+        help = 'Enable verbose output')
 
     parser.add_argument('filename',
         help = 'Name of file to replay')
@@ -55,8 +64,16 @@ def parse_args():
     return parser.parse_args()
 
 
+def save_result(filename, traces):
+    from scipy.io import savemat
+
+    output = dict(result = [t._flatten() for t in traces])
+    savemat(filename, output, do_compression = True, oned_as = 'column')
+
+
 args = parse_args()
-print args
+if args.verbose:
+    print args
 
 # Load requested number of samples from the given file and extract the replay
 # subset if requred.
@@ -71,17 +88,22 @@ if args.peaks:
     args.config.append(('MAX_PEAKS', args.peaks))
 config = support.Config(**dict(args.config))
 fitter = plotting.Fitter(
-    len(s_iq), config, plot_each, args.plot_all, args.plot_dd)
+    len(s_iq), config, plot_each, args.plot_all, args.plot_dd, args.verbose)
 
 start_time = time.time()
-replay.replay_s_iq(s_iq, fitter.fit_tune)
+traces = replay.replay_s_iq(s_iq, fitter.fit_tune, args.write)
 duration = time.time() - start_time
-print 'Took %.3f seconds, %.2f ms per fit' % (
-    duration, 1e3 * duration / len(s_iq))
+if args.verbose:
+    print 'Took %.3f seconds, %.2f ms per fit' % (
+        duration, 1e3 * duration / len(s_iq))
+    print fitter.fits
 
 # If not plotting each individual fit, plot the final result.
-if not plot_each:
+if not plot_each and not args.no_plot:
     plotting.plot_fits(fitter.fits, fitter.tunes, fitter.errors)
     pyplot.show()
+
+if args.write:
+    save_result(args.write, traces)
 
 # vim: set filetype=python:

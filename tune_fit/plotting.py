@@ -177,11 +177,12 @@ def plot_fits(fits, tunes, errors):
 
 
 class Fitter:
-    def __init__(self, samples, config, plot_each, plot_all, plot_dd):
+    def __init__(self, samples, config, plot_each, plot_all, plot_dd, verbose):
         self.config = config
         self.plot_each = plot_each
         self.plot_all = plot_all
         self.plot_dd = plot_dd
+        self.verbose = verbose
 
         self.fits = numpy.empty(
             (samples, config.MAX_PEAKS, 2), dtype = numpy.complex)
@@ -198,11 +199,12 @@ class Fitter:
 
     def fit_tune(self, scale, iq):
         n = self.n
-        print 'fit_tune', n
+        if self.verbose:
+            print 'fit_tune', n
         self.n = n + 1
 
         trace = tune_fit.fit_tune(self.config, scale, iq)
-        if trace.last_error:
+        if trace.last_error and self.verbose:
             print trace.last_error
 
         if self.plot_each:
@@ -225,6 +227,8 @@ class Fitter:
         self.tunes[n] = [
             trace.tune.left.tune, trace.tune.centre.tune, trace.tune.right.tune]
         self.errors[n] = trace.fit_error
+
+        return trace
 
 
 # f.set_size_inches(11.69, 8.27)

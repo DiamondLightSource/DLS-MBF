@@ -22,6 +22,15 @@ class Trace:
             else:
                 print '%s%s: %s' % (indent, k, v)
 
+    def _flatten(self):
+        result = {}
+        for k, v in self.__dict__.items():
+            if isinstance(v, Trace):
+                result[k] = v._flatten()
+            else:
+                result[k] = v
+        return result
+
 
 # Reads lines from given file but joins lines ending with \
 def read_joined_lines(filename):
