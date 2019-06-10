@@ -60,9 +60,8 @@ def eval_derivative(scale, model):
 
 
 def step_refine_fits(scale, iq, model, lam):
-    w = iq
-    e  = w * (eval_model(scale, model) - iq)
-    de = w * eval_derivative(scale, model)
+    e  = eval_model(scale, model) - iq
+    de = eval_derivative(scale, model)
 
     # Convert two part model into a single array
     fits, offset = model
@@ -80,7 +79,7 @@ def step_refine_fits(scale, iq, model, lam):
         new_fit = a_new[:-1].reshape(-1, 2)
         offset = a_new[-1]
 
-        e_new = w * (eval_model(scale, (new_fit, offset)) - iq)
+        e_new = eval_model(scale, (new_fit, offset)) - iq
         Eout2 = abs2(e_new).sum()
 
         if Eout2 >= Ein2:
