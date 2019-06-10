@@ -22,11 +22,25 @@ class Trace:
             else:
                 print '%s%s: %s' % (indent, k, v)
 
-    def _flatten(self):
+    @staticmethod
+    def _is_trace_list(v):
+        if isinstance(v, list):
+            for x in v:
+                if not isinstance(x, Trace):
+                    return False
+            return True
+        else:
+            return False
+
+    def _flatten(self, remove_none = False):
         result = {}
         for k, v in self.__dict__.items():
             if isinstance(v, Trace):
                 result[k] = v._flatten()
+            elif self._is_trace_list(v):
+                result[k] = [x._flatten(remove_none) for x in v]
+            elif v is None:
+                result[k] = []
             else:
                 result[k] = v
         return result

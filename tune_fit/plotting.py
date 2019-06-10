@@ -220,12 +220,15 @@ class Fitter:
                 plot_refine(iq, refine)
             pyplot.show()
 
-        fit, offset = trace.fit
-        self.fits[n, :len(fit)] = fit
-        self.offsets[n] = offset
+        if trace.fit:
+            fit, offset = trace.fit
+            self.fits[n, :len(fit)] = fit
+            self.offsets[n] = offset
+            self.tunes[n] = [
+                trace.tune.left.tune,
+                trace.tune.centre.tune,
+                trace.tune.right.tune]
         self.scale_offsets[n] = trace.scale_offset
-        self.tunes[n] = [
-            trace.tune.left.tune, trace.tune.centre.tune, trace.tune.right.tune]
         self.errors[n] = trace.fit_error
 
         return trace
