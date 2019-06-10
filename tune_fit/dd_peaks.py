@@ -41,9 +41,14 @@ def find_peak_limits(power, peak_ix):
     return (left, right)
 
 
-def get_next_peak(power, smoothing):
+def get_next_peak(power, smoothing, exclude):
     smoothed = smooth_waveform(power, smoothing)
     dd = compute_dd(smoothed)
+
+    # Knock out the exclusion regions
+    exclude = exclude / smoothing
+    for l, r in exclude:
+        dd[l:r] = 0
 
     peak_ix = numpy.argmin(dd)
     left, right = find_peak_limits(smoothed, peak_ix)

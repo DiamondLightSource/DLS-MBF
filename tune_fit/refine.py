@@ -26,6 +26,16 @@ MAX_STEPS = 20
 REFINE_FRACTION = 1e-3
 
 
+# Computes intervals (as index into scale) around the peaks of the model,
+# according to the specified minimum spacing
+def find_intervals(scale, model, spacing):
+    centres = numpy.sort(model[0][:, 1].real)
+    gap = spacing / 2
+    return numpy.stack((
+        numpy.searchsorted(scale, centres - gap),
+        numpy.searchsorted(scale, centres + gap, side = 'right')), 1)
+
+
 # Computes model for a single fit
 def eval_one_peak(fit, s):
     a, b = fit
@@ -112,11 +122,14 @@ def refine_fits(scale, iq, fit):
 
 # Adds one further pole to the given fit
 def add_one_pole(config, scale, iq, model):
+    # Compute excluded intervals from existing model and peak interval
+    exclude = find_intervals(scale, model, config.MINIMUM_SPACING)
+
     # Compute the residue to fit and take the most peaky peak from the residue
     fit, offset = model
     residue = iq - eval_model(scale, model)
     power = abs2(residue)
-    (l, r), dd_trace = dd_peaks.get_next_peak(power, config.SMOOTHING)
+    (l, r), dd_trace = dd_peaks.get_next_peak(power, config.SMOOTHING, exclude)
 
     # Compute an initial fit
     peak = prefit.fit_one_pole(scale[l:r], residue[l:r], power[l:r])
