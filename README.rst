@@ -66,7 +66,7 @@ Tune Fitter
     =============== ======= ====================================================
     Component       Version Download from
     =============== ======= ====================================================
-    pythonIoc       2.11    https://github.com/Araneidae/pythonIoc
+    pythonIoc       2.15    https://github.com/Araneidae/pythonIoc
     =============== ======= ====================================================
 
 
@@ -101,7 +101,7 @@ Minor changes:
 1.2.0 March 2019
 ................
 
-The firmware for this release is strictly incompatibly with the 1.0 and 1.1
+The firmware for this release is strictly incompatible with the 1.0 and 1.1
 releases, and this is now checked during startup.  The following features have
 been added:
 
@@ -116,9 +116,9 @@ been added:
 1.2.1 June 2019
 ...............
 
-Minor tweaks, no change to firmware.  `mbf_memory` Python library merged.
-`mbf_read_tune_pll.m` script rewritten and API changed.  Minor PV changes:
+Minor tweaks, no change to firmware.  ``mbf_memory`` Python library merged.
+``mbf_read_tune_pll.m`` script rewritten and API changed.  Minor PV changes:
 
-* Remove `BUN:n:ALL:SET_S` PV: too easy to press by mistake and really somewhat
-  redundant.
-* Change semantics of `ADC:THRESHOLD_S` (LMBF only).
+* Remove ``BUN:n:ALL:SET_S`` PV: too easy to press by mistake and really
+  somewhat redundant.
+* Change semantics of ``ADC:THRESHOLD_S`` (LMBF only).
