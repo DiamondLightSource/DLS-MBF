@@ -1,0 +1,3 @@
+# Work around slightly irritating language assignment by github.
+*.c linguist-language=C
+*.h linguist-language=C
