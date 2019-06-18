@@ -10,6 +10,9 @@ function helpers = help_fit(fits)
     helpers.plot_fit = @(n) plot_fit(helpers, n);
     helpers.plot_fits = @(varargin) plot_fits(helpers, varargin{:});
     helpers.raw_model = @(fit, s) model(fit{1}, fit{2}, s);
+    helpers.get_fits = @(varargin) get_fits(helpers, varargin{:});
+    helpers.export_fits = ...
+        @(filename, varargin) export_fits(helpers, filename, varargin{:});
 end
 
 function m = model(fit, offset, s)
@@ -42,4 +45,49 @@ function plot_fits(h, range)
         subplot(count, 1, n)
         h.plot_fit(range(n))
     end
+end
+
+function [fits, residuals, offsets] = get_fits(h, range)
+    if ~exist('range', 'var')
+        range = 1:length(h.fits);
+    end
+    n_fits = length(range);
+    n_poles = size(h.fits{1}.fit{1}, 1);
+
+    fits = nan(n_fits, n_poles, 2);
+    residuals = nan(n_fits, 1);
+    offsets = nan(n_fits, 1);
+
+    for n = 1:n_fits
+        result = h.fits{range(n)};
+        fit = result.fit{1};
+        [~, ix] = sort(real(fit(:, 2)));
+        fits(n, :, :) = fit(ix, :);
+        residuals(n) = result.fit{2};
+        offsets(n) = result.scale_offset;
+    end
+end
+
+function export_fits(h, filename, varargin)
+    [fits, residuals, offsets] = h.get_fits(varargin{:});
+
+    f = fopen(filename, 'w');
+    fprintf(f, '# tune-offset residual (scaling, pole)*n\n');
+
+    for n = 1:size(fits, 1)
+        fprintf(f, '%+10.3e ', offsets(n));
+        print_complex(f, residuals(n));
+        for k = 1:size(fits, 2)
+            for j = 1:2
+                print_complex(f, fits(n, k, j));
+            end
+        end
+        fprintf(f, '\n');
+    end
+
+    fclose(f);
+end
+
+function print_complex(f, z)
+    fprintf(f, '%+10.3e + I%+10.3e ', real(z), imag(z));
 end
