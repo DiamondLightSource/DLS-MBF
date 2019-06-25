@@ -16,6 +16,7 @@ e2t_mode = {
 'mbbi': 'READ_ONLY',
 'mbbo': 'READ_WRITE',
 'stringin': 'READ_ONLY',
+'stringout': 'READ_WRITE',
 'waveform': 'READ_ONLY'}
 
 re_replace_vars = re.compile('(\$\([^\(\)\s]+\))')
@@ -180,7 +181,7 @@ class EPICS_db:
                 pv_type = 'Enum'
             else:
                 pv_type = 'Int'
-        elif dico_db[pv]['__type__'] in ['stringin']:
+        elif dico_db[pv]['__type__'] in ['stringin','stringout']:
             pv_type = 'String'
         elif dico_db[pv]['__type__'] in ['ai', 'ao', 'calc']:
             pv_type = 'Double'
