@@ -1,5 +1,5 @@
 #
-# Resource backup , created Tue Sep 18 17:49:20 CEST 2018
+# Resource backup , created Fri Jun 28 15:06:24 CEST 2019
 #
 
 #---------------------------------------------------------
@@ -11,27 +11,23 @@ Tango2Epics/mfdbk-global/DEVICE/Tango2Epics: "sr/d-mfdbk/utca-global"
 
 # --- sr/d-mfdbk/utca-global properties
 
+sr/d-mfdbk/utca-global->ArrayAccessTimeout: 0.3
 sr/d-mfdbk/utca-global->polled_attr: dly_turn_errors,\ 
                                      1000,\ 
                                      sta_vcxo,\ 
                                      1000,\ 
-                                     git_version,\ 
-                                     10000,\ 
-                                     fpga_git_version,\ 
-                                     1000
+                                     state,\ 
+                                     3000,\ 
+                                     status,\ 
+                                     3000
+sr/d-mfdbk/utca-global->ScalarAccessTimeout: 0.2
+sr/d-mfdbk/utca-global->SubscriptionCycle: 0.4
 sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN,\ 
                                    SR-TMBF:ADC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN1,\ 
                                    SR-TMBF:ADC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_S,\ 
-                                   SR-TMBF:ADC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*ADC_TAPS,\ 
-                                   SR-TMBF:INFO:AXIS0*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS0,\ 
-                                   SR-TMBF:INFO:AXIS1*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS1,\ 
-                                   SR-TMBF:INFO:BUNCHES*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCHES,\ 
-                                   SR-TMBF:INFO:BUNCH_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCH_TAPS,\ 
-                                   SR-TMBF:DAC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_S,\ 
                                    SR-TMBF:DAC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN,\ 
                                    SR-TMBF:DAC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN1,\ 
-                                   SR-TMBF:DAC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*DAC_TAPS,\ 
-                                   SR-TMBF:INFO:DEVICE*Scalar*String*READ_ONLY*ATTRIBUTE*DEVICE,\ 
+                                   SR-TMBF:DAC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_S,\ 
                                    SR-TMBF:DLY:DAC:COARSE_DELAY_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_DAC_COARSE_DELAY_S,\ 
                                    SR-TMBF:DLY:DAC:DELAY_PS*Scalar*Double*READ_ONLY*ATTRIBUTE*DLY_DAC_DELAY_PS,\ 
                                    SR-TMBF:DLY:DAC:FIFO*Scalar*Int*READ_ONLY*ATTRIBUTE*DLY_DAC_FIFO,\ 
@@ -49,13 +45,23 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:DLY:TURN:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*DLY_TURN_STATUS,\ 
                                    SR-TMBF:DLY:TURN:SYNC_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_TURN_SYNC_S,\ 
                                    SR-TMBF:DLY:TURN:TURNS*Scalar*Int*READ_ONLY*ATTRIBUTE*DLY_TURN_TURNS,\ 
-                                   SR-TMBF:INFO:DRIVER_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*DRIVER_VERSION,\ 
                                    SR-TMBF:FIR:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*FIR_EVENTS_FAN,\ 
                                    SR-TMBF:FIR:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*FIR_EVENTS_S,\ 
+                                   SR-TMBF:INFO:ADC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*INFO_ADC_TAPS,\ 
+                                   SR-TMBF:INFO:AXIS0*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS0,\ 
+                                   SR-TMBF:INFO:AXIS1*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS1,\ 
+                                   SR-TMBF:INFO:BUNCHES*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCHES,\ 
+                                   SR-TMBF:INFO:BUNCH_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCH_TAPS,\ 
+                                   SR-TMBF:INFO:DAC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*INFO_DAC_TAPS,\ 
+                                   SR-TMBF:INFO:DEVICE*Scalar*String*READ_ONLY*ATTRIBUTE*DEVICE,\ 
+                                   SR-TMBF:INFO:DRIVER_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*DRIVER_VERSION,\ 
                                    SR-TMBF:INFO:FPGA_GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_GIT_VERSION,\ 
                                    SR-TMBF:INFO:FPGA_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_VERSION,\ 
                                    SR-TMBF:INFO:GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*GIT_VERSION,\ 
-                                   SR-TMBF:INFO:HOSTNAME*Scalar*String*READ_ONLY*ATTRIBUTE*HOSTNAME,\ 
+                                   SR-TMBF:INFO:HOSTNAME*Array:256*Int*READ_ONLY*ATTRIBUTE*HOSTNAME,\ 
+                                   SR-TMBF:INFO:MODE*Scalar*Enum*READ_ONLY*ATTRIBUTE*MODE,\ 
+                                   SR-TMBF:INFO:SOCKET*Scalar*Int*READ_ONLY*ATTRIBUTE*SOCKET,\ 
+                                   SR-TMBF:INFO:VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*VERSION,\ 
                                    SR-TMBF:MEM:BUSY*Scalar*Enum*READ_ONLY*ATTRIBUTE*MEM_BUSY,\ 
                                    SR-TMBF:MEM:CAPTURE_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*MEM_CAPTURE_S,\ 
                                    SR-TMBF:MEM:FIR0_GAIN_S*Scalar*Enum*READ_WRITE*ATTRIBUTE*MEM_FIR0_GAIN_S,\ 
@@ -75,8 +81,8 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:MEM:WF0*Array:16384*Int*READ_ONLY*ATTRIBUTE*MEM_WF0,\ 
                                    SR-TMBF:MEM:WF1*Array:16384*Int*READ_ONLY*ATTRIBUTE*MEM_WF1,\ 
                                    SR-TMBF:MEM:WRITE_GAIN_S*Scalar*Int*READ_WRITE*ATTRIBUTE*MEM_WRITE_GAIN_S,\ 
-                                   SR-TMBF:INFO:MODE*Scalar*Enum*READ_ONLY*ATTRIBUTE*MODE,\ 
-                                   SR-TMBF:INFO:SOCKET*Scalar*Int*READ_ONLY*ATTRIBUTE*SOCKET,\ 
+                                   SR-TMBF:PLL:CTRL:START_S*Scalar*Int*READ_WRITE*ATTRIBUTE*PLL_CTRL_START_S,\ 
+                                   SR-TMBF:PLL:CTRL:STOP_S*Scalar*Int*READ_WRITE*ATTRIBUTE*PLL_CTRL_STOP_S,\ 
                                    SR-TMBF:STA:CLOCK*Scalar*Enum*READ_ONLY*ATTRIBUTE*STA_CLOCK,\ 
                                    SR-TMBF:STA:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*STA_FAN,\ 
                                    SR-TMBF:STA:POLL_S*Scalar*Int*READ_WRITE*ATTRIBUTE*STA_POLL_S,\ 
@@ -129,10 +135,9 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:TRG:SEQ1:IN*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_SEQ1_IN,\ 
                                    SR-TMBF:TRG:SHARED*Scalar*String*READ_ONLY*ATTRIBUTE*TRG_SHARED,\ 
                                    SR-TMBF:TRG:SOFT:IN*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_SOFT_IN,\ 
-                                   SR-TMBF:TRG:SOFT_S.SCAN*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_S,\ 
                                    SR-TMBF:TRG:SOFT_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_CMD,\ 
-                                   SR-TMBF:TRG:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_STATUS,\ 
-                                   SR-TMBF:INFO:VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*VERSION
+                                   SR-TMBF:TRG:SOFT_S.SCAN*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_S,\ 
+                                   SR-TMBF:TRG:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_STATUS
 
 # --- sr/d-mfdbk/utca-global attribute properties
 
@@ -174,7 +179,7 @@ sr/d-mfdbk/utca-global/DLY_TURN_OFFSET_S->format: %3d
 sr/d-mfdbk/utca-global/DLY_TURN_POLL_S->description: "Update turn status"
 sr/d-mfdbk/utca-global/DLY_TURN_RATE->description: "Clock error rate"
 sr/d-mfdbk/utca-global/DLY_TURN_RATE->format: %.3f
-sr/d-mfdbk/utca-global/DLY_TURN_STATUS->description: "Turn clock synchronisation status"
+sr/d-mfdbk/utca-global/DLY_TURN_STATUS->description: "Turn clock status"
 sr/d-mfdbk/utca-global/DLY_TURN_STATUS->EnumLabels: Armed,\ 
                                                     Synced,\ 
                                                     "Sync Errors"
@@ -188,6 +193,8 @@ sr/d-mfdbk/utca-global/FPGA_VERSION->description: "Firmware version"
 sr/d-mfdbk/utca-global/GIT_VERSION->archive_period: 86400000
 sr/d-mfdbk/utca-global/GIT_VERSION->description: "Software git version"
 sr/d-mfdbk/utca-global/HOSTNAME->description: "Host name of MBF IOC"
+sr/d-mfdbk/utca-global/INFO_ADC_TAPS->description: "Length of ADC compensation filter"
+sr/d-mfdbk/utca-global/INFO_DAC_TAPS->description: "Length of DAC pre-emphasis filter"
 sr/d-mfdbk/utca-global/MEM_BUSY->description: "Capture status"
 sr/d-mfdbk/utca-global/MEM_BUSY->EnumLabels: Ready,\ 
                                              Busy
@@ -253,20 +260,22 @@ sr/d-mfdbk/utca-global/MEM_WRITE_GAIN_S->description: "Write FIR gain"
 sr/d-mfdbk/utca-global/MODE->description: "Operational mode"
 sr/d-mfdbk/utca-global/MODE->EnumLabels: TMBF,\ 
                                          LMBF
+sr/d-mfdbk/utca-global/PLL_CTRL_START_S->description: "Start tune PLL"
+sr/d-mfdbk/utca-global/PLL_CTRL_STOP_S->description: "Stop tune PLL"
 sr/d-mfdbk/utca-global/SOCKET->description: "Socket number for data server"
 sr/d-mfdbk/utca-global/STA_CLOCK->description: "ADC clock status"
 sr/d-mfdbk/utca-global/STA_CLOCK->EnumLabels: Unlocked,\ 
                                               Locked
 sr/d-mfdbk/utca-global/STA_POLL_S->description: "Poll system status"
 sr/d-mfdbk/utca-global/STA_VCO->description: "VCO clock status"
-sr/d-mfdbk/utca-global/STA_VCO->EnumLabels: "Unlocked (MAJOR)",\ 
+sr/d-mfdbk/utca-global/STA_VCO->EnumLabels: Unlocked,\ 
                                             Locked,\ 
                                             Passthrough
 sr/d-mfdbk/utca-global/STA_VCXO->archive_abs_change: -1,\ 
                                                      1
 sr/d-mfdbk/utca-global/STA_VCXO->archive_period: 3600000
 sr/d-mfdbk/utca-global/STA_VCXO->description: "VCXO clock status"
-sr/d-mfdbk/utca-global/STA_VCXO->EnumLabels: "Unlocked (MAJOR)",\ 
+sr/d-mfdbk/utca-global/STA_VCXO->EnumLabels: Unlocked,\ 
                                              Locked,\ 
                                              Passthrough
 sr/d-mfdbk/utca-global/TRG_ADC0_IN->description: "Y ADC event input"
@@ -310,6 +319,7 @@ sr/d-mfdbk/utca-global/TRG_MEM_ADC1_HIT->EnumLabels: No,\
 sr/d-mfdbk/utca-global/TRG_MEM_ARM_S->description: "Arm trigger"
 sr/d-mfdbk/utca-global/TRG_MEM_BL_S->description: "Write blanking"
 sr/d-mfdbk/utca-global/TRG_MEM_DELAY_S->description: "Trigger delay"
+sr/d-mfdbk/utca-global/TRG_MEM_DELAY_S->format: %5d
 sr/d-mfdbk/utca-global/TRG_MEM_DELAY_S->max_value: 65535.0
 sr/d-mfdbk/utca-global/TRG_MEM_DELAY_S->min_value: 0.0
 sr/d-mfdbk/utca-global/TRG_MEM_DISARM_S->description: "Disarm trigger"
@@ -382,6 +392,7 @@ sr/d-mfdbk/utca-global/TRG_SEQ1_IN->description: "X SEQ event input"
 sr/d-mfdbk/utca-global/TRG_SEQ1_IN->EnumLabels: No,\ 
                                                 Yes
 sr/d-mfdbk/utca-global/TRG_SHARED->description: "List of shared targets"
+sr/d-mfdbk/utca-global/TRG_SOFT_CMD->description: "Soft trigger"
 sr/d-mfdbk/utca-global/TRG_SOFT_IN->description: "Soft trigger input"
 sr/d-mfdbk/utca-global/TRG_SOFT_IN->EnumLabels: No,\ 
                                                 Yes
