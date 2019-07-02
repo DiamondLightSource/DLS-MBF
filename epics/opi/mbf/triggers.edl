@@ -304,9 +304,6 @@ numDsps 1
 displayFileName {
   0 "mbf/trigger_$(mode).edl"
 }
-symbols {
-  0 "bank=0"
-}
 noScroll
 endObjectProperties
 
