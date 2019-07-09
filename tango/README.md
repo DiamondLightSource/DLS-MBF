@@ -29,9 +29,13 @@ Tango servers can only be installed once the EPICS layer on MBF crate is working
 1. Add some configuration parameters.
 * Both epics and tune_fit IOC require some extra parameters in their configuration files (those parameters are not require for the EPICS layer). See examples:
   * epics: [SR-TMBF.config](https://github.com/DLS-Controls-Private-org/DLS-MBF/blob/ESRF/sites/ESRF/iocs/SR-TMBF.config "SR-TMBF.config")
+  * epics lmbf: [SR-LMBF.config](https://github.com/DLS-Controls-Private-org/DLS-MBF/blob/ESRF/sites/ESRF/iocs/SR-TMBF.config "SR-TMBF.config")
   * tune_fit: [SR-TFIT.config](https://github.com/DLS-Controls-Private-org/DLS-MBF/blob/ESRF/sites/ESRF/iocs/SR-TFIT.config "SR-TFIT.config")
 * Create a `$MBF_HOME/tango/tools/config.py`.
-An example of this file can be found here: [config.py.l-c31-3](https://github.com/DLS-Controls-Private-org/DLS-MBF/blob/ESRF/sites/ESRF/tango/config.py.l-c31-3 "config.py.l-c31-3")
+* Create a `$MBF_HOME/tango/tools/lmbf_config.py`.
+* 
+An example of this files can be found here: [config.py.l-c31-3](https://github.com/DLS-Controls-Private-org/DLS-MBF/blob/ESRF/sites/ESRF/tango/config.py.l-c31-3 "config.py.l-c31-3")
+[lmbf_config.py](https://github.com/DLS-Controls-Private-org/DLS-MBF/blob/ESRF/sites/Elettra/tango/lmbf_config.py "lmbf_config.py")
 3. Make the resources files to create Tango devices.
 `cd $MBF_HOME/tango`
 `make`

@@ -112,6 +112,7 @@ class EPICS_db:
                 pv = rout.group(2)
                 pv_short = pv.replace("$(DEVICE):$(AXIS0):", "")
                 pv_short = pv_short.replace("$(DEVICE):$(AXIS1):", "")
+                pv_short = pv_short.replace("$(DEVICE):$(AXIS01):", "")
                 pv_short = pv_short.replace("$(DEVICE):", "")
                 d = {}
                 dico_db[pv] = d
