@@ -137,6 +137,8 @@ def publish_config(pvs):
             DESC = 'Degree of smoothing for 2D peak detect')
         pvs.aOut('MINIMUM_WIDTH', 0, 1, initial_value = 1e-5, PREC = 2,
             DESC = 'Reject peaks narrower than this')
+        pvs.aOut('MAXIMUM_WIDTH', 0, 1, initial_value = 1e-2, PREC = 2,
+            DESC = 'Reject peaks wider than this')
         pvs.aOut('MINIMUM_SPACING', 0, 0.5, initial_value = 1e-3, PREC = 4,
             DESC = 'Reject peaks closer than this')
         pvs.aOut('MINIMUM_HEIGHT', 0, 1, initial_value = 0.1, PREC = 3,

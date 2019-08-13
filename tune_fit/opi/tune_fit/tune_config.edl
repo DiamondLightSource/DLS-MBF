@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2121
-y 631
+x 726
+y 567
 w 370
-h 209
+h 232
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -77,7 +77,7 @@ release 0
 x 8
 y 48
 w 352
-h 120
+h 144
 lineColor index 14
 fill
 fillColor index 4
@@ -219,7 +219,7 @@ major 4
 minor 1
 release 1
 x 16
-y 112
+y 136
 w 74
 h 14
 font "helvetica-bold-r-12.0"
@@ -239,7 +239,7 @@ major 4
 minor 6
 release 0
 x 104
-y 112
+y 136
 w 80
 h 24
 controlPv "$(tune_prefix):TUNE:CONFIG:MINIMUM_SPACING_S"
@@ -314,8 +314,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 272
-y 88
+x 104
+y 112
 w 80
 h 20
 controlPv "$(tune_prefix):TUNE:CONFIG:MINIMUM_WIDTH_S"
@@ -343,8 +343,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 192
-y 88
+x 16
+y 112
 w 62
 h 14
 font "helvetica-bold-r-12.0"
@@ -364,7 +364,7 @@ major 4
 minor 6
 release 0
 x 272
-y 112
+y 136
 w 80
 h 20
 controlPv "$(tune_prefix):TUNE:CONFIG:MAXIMUM_FIT_ERROR_S"
@@ -392,7 +392,7 @@ major 4
 minor 1
 release 1
 x 192
-y 112
+y 136
 w 62
 h 14
 font "helvetica-bold-r-12.0"
@@ -412,7 +412,7 @@ major 4
 minor 1
 release 0
 x 296
-y 176
+y 200
 w 64
 h 24
 fgColor index 46
@@ -431,7 +431,7 @@ major 4
 minor 1
 release 1
 x 16
-y 136
+y 160
 w 82
 h 14
 font "helvetica-bold-r-12.0"
@@ -451,7 +451,7 @@ major 4
 minor 6
 release 0
 x 104
-y 136
+y 160
 w 80
 h 20
 controlPv "$(tune_prefix):TUNE:CONFIG:WINDOW_START_S"
@@ -479,7 +479,7 @@ major 4
 minor 6
 release 0
 x 272
-y 136
+y 160
 w 80
 h 20
 controlPv "$(tune_prefix):TUNE:CONFIG:WINDOW_LENGTH_S"
@@ -507,7 +507,7 @@ major 4
 minor 1
 release 1
 x 192
-y 136
+y 160
 w 70
 h 14
 font "helvetica-bold-r-12.0"
@@ -516,6 +516,55 @@ bgColor index 0
 useDisplayBg
 value {
   "Window len:"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 272
+y 112
+w 80
+h 20
+controlPv "$(tune_prefix):TUNE:CONFIG:MAXIMUM_WIDTH_S"
+format "exponential"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 192
+y 112
+w 66
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Max width:"
 }
 autoSize
 endObjectProperties

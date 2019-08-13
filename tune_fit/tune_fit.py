@@ -104,9 +104,11 @@ def assess_fit(config, scale, fit):
     centres = bb.real
     widths = -bb.imag
 
-    # First ensure that no peaks are below the minimum width
+    # First ensure that no peaks are below the minimum width or above maximum
     if (widths < config.MINIMUM_WIDTH).any():
         return 'Peak too narrow'
+    if (widths > config.MAXIMUM_WIDTH).any():
+        return 'Peak too wide'
 
     # Check peak hasn't fallen out of range
     lr = scale[[0, -1]]
