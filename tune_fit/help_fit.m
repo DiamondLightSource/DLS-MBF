@@ -52,9 +52,8 @@ function [fits, residuals, offsets] = get_fits(h, range)
         range = 1:length(h.fits);
     end
     n_fits = length(range);
-    n_poles = size(h.fits{1}.fit{1}, 1);
 
-    fits = nan(n_fits, n_poles, 2);
+    fits = {};
     residuals = nan(n_fits, 1);
     offsets = nan(n_fits, 1);
 
@@ -62,9 +61,15 @@ function [fits, residuals, offsets] = get_fits(h, range)
         result = h.fits{range(n)};
         fit = result.fit{1};
         [~, ix] = sort(real(fit(:, 2)));
-        fits(n, :, :) = fit(ix, :);
+        fits{n} = fit(ix, :);
         residuals(n) = result.fit{2};
         offsets(n) = result.scale_offset;
+    end
+
+    % A nasty matlab style hack: if only one fit being returned, unwrap it from
+    % its cell array.
+    if n_fits == 1
+        fits = fits{1};
     end
 end
 

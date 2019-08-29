@@ -46,8 +46,7 @@ def get_next_peak(power, smoothing, exclude):
     dd = compute_dd(smoothed)
 
     # Knock out the exclusion regions
-    exclude = exclude / smoothing
-    for l, r in exclude:
+    for l, r in exclude / smoothing:
         dd[l:r] = 0
 
     peak_ix = numpy.argmin(dd)

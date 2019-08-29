@@ -60,6 +60,9 @@ def parse_args():
     parser.add_argument('-s', '--samples',
         default = 0, type = int,
         help = 'Limit number of samples to replay')
+    parser.add_argument('-c', '--conj',
+        default = False, action = 'store_true',
+        help = '''Take conjugate of iq data.''')
 
     parser.add_argument('filename',
         help = 'Name of file to replay')
@@ -80,7 +83,7 @@ args = parse_args()
 
 # Load requested number of samples from the given file and extract the replay
 # subset if requred.
-s_iq = args.load_replay(args.filename, args.samples)
+s_iq = args.load_replay(args.filename, args.samples, args.conj)
 if args.subset:
     s_iq = [s_iq[ix] for ix in args.subset]
 
