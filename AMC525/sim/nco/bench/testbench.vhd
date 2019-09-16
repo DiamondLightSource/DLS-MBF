@@ -3,7 +3,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
 use work.support.all;
-use work.defines.all;
 use work.nco_defs.all;
 
 entity testbench is

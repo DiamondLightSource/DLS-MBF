@@ -8,7 +8,6 @@ vlib msim/xil_defaultlib
 
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
-    $vhd_dir/defines.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/nco/nco_defs.vhd \
