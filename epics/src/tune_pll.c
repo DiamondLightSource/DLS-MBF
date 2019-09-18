@@ -92,7 +92,6 @@ static struct pll_context {
     double debug_relative_std;
     double debug_relative_std_abs;
     bool captured_cordic;
-    bool compensate_debug;
 } pll_context[AXIS_COUNT] = { };
 
 
@@ -575,18 +574,14 @@ static bool set_captured_debug(void *context, bool *value)
  * IQ and phase and magnitude values. */
 static void convert_detector_values(
     struct pll_context *pll,
-    bool cordic, bool compensate, unsigned int count,
+    bool cordic, unsigned int count,
     const struct detector_result inputs[],
     float wf_i[], float wf_q[], float wf_mag[], float wf_angle[])
 {
-    /* First compute the phase compensation factor. */
+    /* First compute the phase compensation factor: delay to compensate
+     * multiplied by the current frequency. */
     double phase_offset =
-        compensate ?
-        /* If compensation enabled then compensation is basically delay to
-         * compensate multiplied by the current frequency. */
-        pll->phase_delay * 2 * M_PI * ldexp((double) pll->current_nco, -48) :
-        /* If we're not compensating then compensating by zero will serve. */
-        0.0;
+        pll->phase_delay * 2 * M_PI * ldexp((double) pll->current_nco, -48);
     /* Compensation is by rotation against the introduced group delay. */
     double rotI = cos(phase_offset);
     double rotQ = -sin(phase_offset);
@@ -614,7 +609,8 @@ static void convert_detector_values(
         double q_out = rotI * val_q + rotQ * val_i;
         double angle_out = 180 / M_PI * atan2(-q_out, i_out);
 
-        /* Here we have one final annoyance: convert results to float. */
+        /* Here we have one final annoyance: convert results to float.  At this
+         * point we also correct for detector reversal. */
         wf_i[i] = (float) i_out;
         wf_q[i] = (float) -q_out;
         wf_mag[i] = (float) mag_out;
@@ -632,7 +628,7 @@ static void process_debug_fifo(void *context)
     pll->debug_length = read_fifo_buffer(fifo, (const int32_t **) &buffer) / 2;
 
     convert_detector_values(
-        pll, pll->captured_cordic, pll->compensate_debug, pll->debug_length,
+        pll, pll->captured_cordic, pll->debug_length,
         buffer, pll->debug_i, pll->debug_q, pll->debug_mag, pll->debug_angle);
 
     /* Compute standard deviations over the captured data.  First compute means,
@@ -690,7 +686,6 @@ static void publish_debug(struct pll_context *pll)
         PUBLISH_READ_VAR(ai, "RSTD_ABS", pll->debug_relative_std_abs);
 
         PUBLISH_C(bo, "SELECT", set_captured_debug, pll);
-        PUBLISH_WRITE_VAR_P(bo, "COMPENSATE", pll->compensate_debug);
     }
 }
 
@@ -714,8 +709,7 @@ static bool read_filtered_readbacks(void *context, bool *value)
     struct detector_result det = hw_read_pll_filtered_detector(pll->axis);
     float f_cos, f_sin, f_mag, f_angle;
     convert_detector_values(
-        pll, false, true, 1, &det,
-        &f_cos, &f_sin, &f_mag, &f_angle);
+        pll, false, 1, &det, &f_cos, &f_sin, &f_mag, &f_angle);
     /* Need to convert floats to doubles for display. */
     pll->filtered_cos = f_cos;
     pll->filtered_sin = f_sin;
