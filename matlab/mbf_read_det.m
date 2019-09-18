@@ -22,5 +22,5 @@ function [d, s, varargout] = mbf_read_det(mbf, varargin)
         mex_mbf_detector_(server, port, axis, locking);
 
     % Phase correction of captured data
-    d = repmat(exp(-1i * g * s), 1, size(d, 2)) .* d;
+    d = repmat(exp(1i * g * s), 1, size(d, 2)) .* d;
 end

@@ -102,7 +102,7 @@ def assess_fit(config, scale, fit):
     aa = peaks[:, 0]
     bb = peaks[:, 1]
     centres = bb.real
-    widths = -bb.imag
+    widths = bb.imag
 
     # First ensure that no peaks are below the minimum width or above maximum
     if (widths < config.MINIMUM_WIDTH).any():
@@ -138,7 +138,7 @@ def assess_fit(config, scale, fit):
 
 def peaks_power(peaks):
     aa, bb = peaks.T
-    return support.abs2(aa) / -bb.imag
+    return support.abs2(aa) / bb.imag
 
 def sort_by_frequency(peaks):
     return peaks[numpy.argsort(peaks[:, 1].real)]
@@ -167,13 +167,13 @@ def compute_peak_info(peak):
         a, b = peak
         valid = True
 
-    width = -b.imag
+    width = b.imag
     power = support.abs2(a) / width
     height = power / width
     return support.Trace(
         valid = valid,
         tune = numpy.mod(b.real, 1),
-        phase = 180 / numpy.pi * numpy.angle(-1j * a),
+        phase = 180 / numpy.pi * numpy.angle(1j * a),
         width = width,
         power = power,
         height = numpy.sqrt(power / width))

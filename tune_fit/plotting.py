@@ -88,7 +88,7 @@ def plot_refine(iq, trace):
     plot_complex(aa.reshape(1, N), 'o')
     pyplot.legend(['p%d' % n for n in range(N)])
     plot_complex(numpy.stack([numpy.zeros(N), aa]), ':k')
-    plot_complex(numpy.mean(aa * -bb.imag) / numpy.mean(-bb.imag), 'x')
+    plot_complex(numpy.mean(aa * bb.imag) / numpy.mean(bb.imag), 'x')
     pyplot.axis('equal')
 
     print 'fit', fit_out
@@ -143,7 +143,7 @@ def plot_fits(fits, tunes, errors):
 
     pyplot.subplot(512)
     pyplot.title('Normalised peak power')
-    power = support.abs2(aa) / -bb.imag
+    power = support.abs2(aa) / bb.imag
     max_power = numpy.nanmax(power, 1)
     pyplot.semilogy(power / max_power[:, None], '.')
 
@@ -161,15 +161,15 @@ def plot_fits(fits, tunes, errors):
         mask = numpy.zeros(deltas.shape, dtype = bool)
         numpy.fill_diagonal(mask, True)
         deltas = numpy.ma.array(deltas, mask = mask)
-        dmax[n] = numpy.min(deltas / numpy.maximum(-bb1.imag, -bb2.imag))
-        dsum[n] = numpy.min(deltas / - (bb1.imag + bb2.imag))
+        dmax[n] = numpy.min(deltas / numpy.minimum(bb1.imag, bb2.imag))
+        dsum[n] = numpy.min(deltas / (bb1.imag + bb2.imag))
     pyplot.plot(dmax)
     pyplot.plot(dsum)
     pyplot.legend(['max', 'sum'])
 
     pyplot.subplot(515)
     pyplot.title('Normalised peak height')
-    height = numpy.abs(aa) / -bb.imag
+    height = numpy.abs(aa) / bb.imag
     max_height = numpy.nanmax(height, 1)
     pyplot.semilogy(height / max_height[:, None], '.')
 

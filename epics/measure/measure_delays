@@ -309,7 +309,14 @@ def get_detector_delay(mbf, source, pvs):
 
     wf_i = pvs.det_i
     wf_q = pvs.det_q
-    iq = wf_i + 1j * wf_q
+    # We take the conjugate of the detector delay to restore historical
+    # behaviour for this measurement.  The story is that the firmware computes
+    # the IQ response as Sum exp(i f t) x(t) -- there is in effect a missing -
+    # sign on the exponent, which means we compute negative frequencies, or
+    # equivalently, our phases are negative.
+    #   This is now compensated for in the result measured here, but for this
+    # low level measurement we need to restore the original behaviour.
+    iq = wf_i - 1j * wf_q
     s = mbf.get('DET:SCALE')
     return compute_group_delay(mbf, s, iq)
 
@@ -323,7 +330,8 @@ def get_pll_detector_delay(mbf, source, start, step, count):
     for n in range(count):
         s[n] = start + n * step
         mbf.set('PLL:NCO:FREQ_S', s[n])
-        a[n] = pv.get_new(0.2)
+        # As above, restore historical negative phase measurement
+        a[n] = -pv.get_new(0.2)
 
     return compute_group_delay_angle(mbf, s, numpy.pi/180 * a)
 

@@ -140,7 +140,7 @@ static void update_target_phase(struct pll_context *pll)
     uint32_t phase_delta =
         (uint32_t) ((pll->phase_delay * pll->current_nco) >> 16);
     hw_write_pll_target_phase(pll->axis,
-        (int32_t) (pll->target_phase + phase_delta));
+        (int32_t) (-pll->target_phase + phase_delta));
 }
 
 static bool write_target_phase(void *context, double *value)
@@ -612,11 +612,11 @@ static void convert_detector_values(
         /* Perform phase compensation by rotation. */
         double i_out = rotI * val_i - rotQ * val_q;
         double q_out = rotI * val_q + rotQ * val_i;
-        double angle_out = 180 / M_PI * atan2(q_out, i_out);
+        double angle_out = 180 / M_PI * atan2(-q_out, i_out);
 
         /* Here we have one final annoyance: convert results to float. */
         wf_i[i] = (float) i_out;
-        wf_q[i] = (float) q_out;
+        wf_q[i] = (float) -q_out;
         wf_mag[i] = (float) mag_out;
         wf_angle[i] = (float) angle_out;
     }
