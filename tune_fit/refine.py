@@ -69,9 +69,14 @@ def eval_derivative(scale, model):
     return numpy.array(result)
 
 
-def step_refine_fits(scale, iq, model, lam):
+def step_refine_fits(scale, iq, model, lam, do_weight):
     e  = eval_model(scale, model) - iq
     de = eval_derivative(scale, model)
+    if do_weight:
+        # If weighting requested weigh the data by itself so that we focus more
+        # on the peaks.  This can make a significant difference to the fit.
+        e *= iq
+        de *= iq
 
     # Convert two part model into a single array
     fits, offset = model
@@ -90,6 +95,8 @@ def step_refine_fits(scale, iq, model, lam):
         offset = a_new[-1]
 
         e_new = eval_model(scale, (new_fit, offset)) - iq
+        if do_weight:
+            e_new *= iq
         Eout2 = abs2(e_new).sum()
 
         if Eout2 >= Ein2:
@@ -102,14 +109,14 @@ def step_refine_fits(scale, iq, model, lam):
     return (None, 0, 0)
 
 
-def refine_fits(scale, iq, fit):
+def refine_fits(scale, iq, fit, do_weight):
     offset = (iq - eval_model(scale, (fit, 0))).mean()
     model = (fit, offset)
 
     all_fits = [model]
     lam = 1
     for n in range(MAX_STEPS):
-        model, lam, change = step_refine_fits(scale, iq, model, lam)
+        model, lam, change = step_refine_fits(scale, iq, model, lam, do_weight)
         if model is None:
             break
         all_fits.append(model)
@@ -137,7 +144,7 @@ def add_one_pole(config, scale, iq, model):
         return (None, dd_trace, ())
 
     fit = numpy.append(fit, numpy.array(peak).reshape((1, 2)), 0)
-    model, refine_trace = refine_fits(scale, iq, fit)
+    model, refine_trace = refine_fits(scale, iq, fit, config.WEIGHT_DATA)
 
     return (model, dd_trace, refine_trace)
 

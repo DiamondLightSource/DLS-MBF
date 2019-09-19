@@ -89,6 +89,7 @@ class Config:
     MAXIMUM_FIT_ERROR = 0.2
     WINDOW_START = 0
     WINDOW_LENGTH = 0
+    WEIGHT_DATA = True
 
 
     def __init__(self, **kargs):

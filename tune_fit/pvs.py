@@ -127,6 +127,7 @@ class PvSet:
     aOut    = make_config_pv_builder('aOut', float)
     longOut = make_config_pv_builder('longOut', int)
     mbbOut  = make_config_pv_builder('mbbOut', int)
+    boolOut = make_config_pv_builder('boolOut', bool)
 
 
 def publish_config(pvs):
@@ -149,6 +150,9 @@ def publish_config(pvs):
             DESC = 'First point to fit')
         pvs.longOut('WINDOW_LENGTH', initial_value = 0,
             DESC = 'Length of window (0 means all)')
+        pvs.boolOut('WEIGHT_DATA', 'Unweighted', 'Weighted',
+            initial_value = True,
+            DESC = 'Whether to weight data during fit')
 
 
 def publish_tune(pvs):

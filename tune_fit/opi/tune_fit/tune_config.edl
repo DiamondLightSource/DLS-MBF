@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 726
-y 567
+x 1933
+y 609
 w 370
 h 232
 font "helvetica-medium-r-18.0"
@@ -565,6 +565,45 @@ bgColor index 0
 useDisplayBg
 value {
   "Max width:"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 248
+y 88
+w 104
+h 22
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(tune_prefix):TUNE:CONFIG:WEIGHT_DATA_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 192
+y 88
+w 32
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Data:"
 }
 autoSize
 endObjectProperties
