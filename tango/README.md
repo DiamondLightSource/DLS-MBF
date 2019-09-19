@@ -1,4 +1,4 @@
-﻿# Tango Layer for the Diamond Light Source MBF
+# Tango Layer for the Diamond Light Source MBF
 The Tango layer for MBF is an extra layer added on top of the EPICS layer. EPICS layer (together with EDM screens) can still be used in combination the the Tango Layer. Having a Tango layer have two main advantages:
 1. The EPICS environment can be installed on MBF crate only.
 2. MBF is then compatible with usual Tango tools (HDB for datalogging, ATKmoni for real-time graph plotting, etc.)
