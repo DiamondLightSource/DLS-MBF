@@ -226,7 +226,11 @@ def fit_tune(config, scale, iq):
     scale, iq = compute_window(config, scale, iq)
 
     power = support.abs2(iq)
-    input_trace = support.Trace(scale = scale, iq = iq, power = power)
+    input_trace = support.Trace(
+        scale = scale,
+        iq = iq,
+        magnitude = numpy.abs(iq),
+        phase = 180/numpy.pi * numpy.angle(iq))
 
     # Find maximum point.  This is always valid!
     max_tune = numpy.mod(scale[numpy.argmax(power)], 1)
@@ -241,7 +245,8 @@ def fit_tune(config, scale, iq):
     if fit_info:
         output_trace = support.Trace(
             model = fit_info.model,
-            model_power = support.abs2(fit_info.model),
+            model_magnitude = numpy.abs(fit_info.model),
+            model_phase = 180/numpy.pi * numpy.angle(fit_info.model),
             residue = fit_info.residue)
         fit_error = fit_info.fit_error
     else:

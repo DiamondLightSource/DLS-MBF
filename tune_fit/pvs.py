@@ -194,10 +194,12 @@ def publish_peaks(pvs):
 
 def publish_graphs(pvs, length):
     pvs.Waveform('input.scale', 'SCALE', length)
-    pvs.Waveform('input.power', 'POWER', length)
+    pvs.Waveform('input.magnitude', 'DMAGNITUDE', length)
+    pvs.Waveform('input.phase', 'DPHASE', length)
     pvs.Waveform('input.iq.real', 'I', length)
     pvs.Waveform('input.iq.imag', 'Q', length)
-    pvs.Waveform('output.model_power', 'MPOWER', length)
+    pvs.Waveform('output.model_magnitude', 'MMAGNITUDE', length)
+    pvs.Waveform('output.model_phase', 'MPHASE', length)
     pvs.Waveform('output.model.real', 'MI', length)
     pvs.Waveform('output.model.imag', 'MQ', length)
     pvs.Waveform('output.residue', 'RESIDUE', length)
