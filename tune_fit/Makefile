@@ -7,7 +7,7 @@ default: runioc
 .PHONY: default
 
 
-runioc: runioc.in
+runioc: runioc.in $(MBF_TOP)/CONFIG
 	sed 's:@@PYTHON_IOC@@:$(PYTHON_IOC):' $< >$@
 	chmod +x $@
 

@@ -1,0 +1,18 @@
+\begin{tikzpicture}[x=20mm, y=20mm]
+
+\path
+    (0,0) node [box] (nco) {NCO}
+    +(-1,0) node (f) {$\omega$}
+    (1,1) node [accent fill, ellipse] (beam) {Beam}
+    (2,0) node [box] (detector) {Detector}
+    +(1,0) node (iq) {IQ};
+
+\draw [bus] (f) -- (nco);
+\draw [bus] (nco) |- (beam) node [pos=0.25, left] {cos};
+\draw [bus] (beam) -| (detector);
+\draw [bus] (nco) -- (detector) node [midway, above] {cos, sin};
+\draw [bus] (detector) -- (iq);
+
+\end{tikzpicture}
+
+% vim: filetype=tex:

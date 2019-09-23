@@ -149,8 +149,11 @@ static void compute_wf_iq(
                  * understand. */
                 double ri = ldexp(result->i, -31);
                 double rq = ldexp(result->q, -31);
+                /* Need complex conjugate of IQ to account for slightly
+                 * embarassing fact that the detector computes responses for
+                 * *negative* frequencies! */
                 wf_i[j][i] = (float) (rotI * ri + rotQ * rq);
-                wf_q[j][i] = (float) (rotI * rq - rotQ * ri);
+                wf_q[j][i] = - (float) (rotI * rq - rotQ * ri);
                 result += 1;
             }
         scale += 1;

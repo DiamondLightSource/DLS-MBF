@@ -70,8 +70,10 @@ static void convert_samples(
     {
         for (unsigned int j = 0; j < channels; j ++)
         {
+            /* Take conjugate of captured data here to compensate for capture of
+             * "negative" frequencies in detector. */
             *reals[j]++ = ldexp(buffer->i, -31);
-            *imags[j]++ = ldexp(buffer->q, -31);
+            *imags[j]++ = -ldexp(buffer->q, -31);
             buffer += 1;
         }
     }

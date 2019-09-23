@@ -253,7 +253,8 @@ NameError
         data = self.s.read(sample_count * det_count * 8)
         d = np.frombuffer(data, dtype=np.int32)
         d.shape = (sample_count, det_count, 2)
-        d_cmpl = d[:, :, 0] + 1j*d[:, :, 1]
+        # Compute conjugate of detector data to compensate for detector
+        d_cmpl = d[:, :, 0] - 1j*d[:, :, 1]
         d_cmpl *= 2**-31
 
         # Next the frequency scale
@@ -267,7 +268,7 @@ NameError
 
         # Compute corrected data
         group_delay = 2.0 * np.pi * compensation_delay / bunch_count
-        correction = np.exp(-1j * group_delay * s)
+        correction = np.exp(1j * group_delay * s)
         d_cmpl *= correction[:, np.newaxis]
 
         return (d_cmpl.T, s, t)

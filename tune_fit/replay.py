@@ -17,7 +17,7 @@ def fromstring(line):
         return numpy.fromstring(line, sep = ' ')
 
 
-def load_replay(filename, max_n = 0):
+def load_replay(filename, max_n = 0, conj = False):
     s_valid = False
     ts_i = ''
     ts_q = ''
@@ -42,7 +42,10 @@ def load_replay(filename, max_n = 0):
                 s_valid = True
 
         if ts_i == ts_q == time and s_valid:
-            result.append((value_s, value_i + 1j * value_q))
+            iq = value_i + 1j * value_q
+            if conj:
+                iq = numpy.conj(iq)
+            result.append((value_s, iq))
             N += 1
 
             if max_n and N >= max_n:
@@ -51,23 +54,39 @@ def load_replay(filename, max_n = 0):
     return result
 
 
-def load_replay_mat(filename, max_n = 0):
+def load_replay_mat(filename, max_n = 0, conj = False):
     from scipy.io import loadmat
     replay = loadmat(filename, squeeze_me = True)
-    iq = replay['iq'].T
     s = replay['s']
+    iq = replay['iq']
+    if conj:
+        iq = numpy.conj(iq)
+    # Try and figure out which way round iq is.  We want iq.shape[1]==len(s),
+    # and we need a two dimensional array (to treat as a list of values).
+    if len(iq.shape) == 1:
+        iq = iq.reshape(1, -1)
+    elif iq.shape[0] == len(s):
+        # Probably wrong way round
+        iq = iq.T
     if max_n > 0:
         iq = iq[:max_n]
     # Return values as a list
     return [(s, r_iq) for r_iq in iq]
 
 
-def replay_s_iq(s_iq, fit_tune):
+def replay_s_iq(s_iq, fit_tune, keep_traces, filter_trace=None):
+    traces = []
     for s, iq in s_iq:
         try:
-            fit_tune(s, iq)
+            trace = fit_tune(s, iq)
         except KeyboardInterrupt:
             raise
         except:
             print >>sys.stderr, 'Fit failed'
             traceback.print_exc()
+
+        if filter_trace:
+            trace = filter_trace(trace)
+        if keep_traces:
+            traces.append(trace)
+    return traces

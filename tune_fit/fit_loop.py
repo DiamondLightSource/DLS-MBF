@@ -24,11 +24,12 @@ class Gather:
     # gathered updated on for processing.
     updates = ['I', 'Q', 'S']
 
-    def __init__(self, pv_i, pv_q, pv_s):
+    def __init__(self, pv_i, pv_q, pv_s, conj):
         self.event = cothread.Event()
         self.monitor('I', pv_i)
         self.monitor('Q', pv_q)
         self.monitor('S', pv_s)
+        self.conj = conj
 
     def monitor(self, key, pv):
         camonitor(pv, lambda v: self.update(key, v), format = FORMAT_TIME)
@@ -46,6 +47,8 @@ class Gather:
         else:
             if do_emit:
                 iq = numpy.complex128(self.I + 1j * self.Q)
+                if self.conj:
+                    iq = numpy.conj(iq)
                 if len(iq) > 0:
                     self.event.Signal((timestamp, self.S, iq))
 
@@ -77,8 +80,9 @@ class TuneFitLoop:
         target  = config[source + '_t']
         tune_aliases = config.get(source + '_a', '')
         pv_pll  = config.get(source + '_p')
+        conj    = bool(config.get(source + '_c', False))
 
-        self.gather = Gather(pv_i, pv_q, pv_s)
+        self.gather = Gather(pv_i, pv_q, pv_s, conj)
         self.pvs = pvs.publish_pvs(persist, target, LENGTH)
         self.mux = pvs.TuneMux(target, pv_pll, tune_aliases.split())
 

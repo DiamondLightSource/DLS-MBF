@@ -11,4 +11,4 @@ java -Dedm2xml.colorsFile="$HERE"/converter/colours.list \
     org.csstudio.opibuilder.converter.EdmConverter \
     "$INPUT" "$OUTPUT"  &&
 
-dls-python fixup-css.py "$OUTPUT" "$@"
+dls-python "$HERE"/fixup-css.py "$OUTPUT" "$@"

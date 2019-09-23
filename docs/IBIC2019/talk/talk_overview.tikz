@@ -1,0 +1,40 @@
+\begin{tikzpicture}[
+    start chain, node distance=1mm]
+
+\path
+    node [on chain] (orbit-view) {%
+        \includegraphics[width=3.2cm]{orbit-view.png}}
+    node [anchor=south, text width=4cm] at (orbit-view.north) {%
+        Machine Betatron and Synchrotron Tunes}
+
+    node [anchor=north, text width=4cm] at (orbit-view.south) {%
+        \small Tune excitation and measurement at a single location.}
+
+    node [on chain, single arrow, draw, minimum height=0.6cm] {}
+
+    node [on chain] (raw) [text width=3.5cm] {}
+    node [anchor=south, label={above:\small Measured Magnitude}] at (raw) {%
+        \includegraphics[width=3.5cm]{raw-iq-power.png}}
+    node [anchor=north, label={below:\small Measured IQ}] at (raw) {%
+        \includegraphics[width=2cm]{raw-iq.png}}
+
+    node [on chain, single arrow, draw, minimum height=0.6cm] {}
+
+    node [on chain, yshift=1.2cm] (fitted) {%
+        \includegraphics[width=4.5cm]{fitted-power.png}}
+    node [anchor=south, text width=5cm] at (fitted.north) {%
+        Model fitted to tune sweep}
+
+    [continue chain=going below, node distance=5mm]
+    node [on chain,
+        single arrow, draw, minimum height=0.6cm,
+        rotate=-90, anchor=center] {}
+
+    node [on chain, very thick, draw=red, shift={(4mm,-2mm)},
+        label={below:\small Tune Measurement}] {
+        Tune = 0.2768\\Phase = 159\textdegree}
+    ;
+
+\end{tikzpicture}
+
+% vim: filetype=tex:

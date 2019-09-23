@@ -113,8 +113,6 @@ for a in axes('PLL', lmbf_mode):
             db_record('RSTD_ABS_DB', relative_std_abs))
         boolOut('SELECT', 'IQ', 'CORDIC',
             DESC = 'Select captured readback values')
-        boolOut('COMPENSATE', 'Raw', 'Compensated',
-            DESC = 'Compensate debug readbacks')
 
     # Filtered readbacks
     with name_prefix('FILT'):

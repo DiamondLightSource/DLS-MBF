@@ -24,6 +24,9 @@ MUST_DEFINE += PYTHON_IOC
 # MTCA server followed by list of AMC IPs
 MUST_DEFINE += AMC525_SERVER
 
+# Driver group for amc525_mbf device nodes
+MUST_DEFINE += DRV_GROUP
+
 
 # The following defaults can be overridden in the CONFIG file
 

@@ -22,6 +22,29 @@ class Trace:
             else:
                 print '%s%s: %s' % (indent, k, v)
 
+    @staticmethod
+    def _is_trace_list(v):
+        if isinstance(v, list):
+            for x in v:
+                if not isinstance(x, Trace):
+                    return False
+            return True
+        else:
+            return False
+
+    def _flatten(self, remove_none = False):
+        result = {}
+        for k, v in self.__dict__.items():
+            if isinstance(v, Trace):
+                result[k] = v._flatten()
+            elif self._is_trace_list(v):
+                result[k] = [x._flatten(remove_none) for x in v]
+            elif v is None:
+                result[k] = []
+            else:
+                result[k] = v
+        return result
+
 
 # Reads lines from given file but joins lines ending with \
 def read_joined_lines(filename):
@@ -60,11 +83,13 @@ class Config:
     MAX_PEAKS = 3
     SMOOTHING = 32
     MINIMUM_WIDTH = 1e-5
+    MAXIMUM_WIDTH = 1e-2
     MINIMUM_SPACING = 1e-3
     MINIMUM_HEIGHT = 0.1
     MAXIMUM_FIT_ERROR = 0.2
     WINDOW_START = 0
     WINDOW_LENGTH = 0
+    WEIGHT_DATA = True
 
 
     def __init__(self, **kargs):
