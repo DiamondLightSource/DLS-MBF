@@ -63,7 +63,15 @@ def parse_args():
     parser.add_argument('-c', '--conj',
         default = False, action = 'store_true',
         help = '''Take conjugate of iq data.''')
-
+    parser.add_argument('-f', '--filter_trace',
+        action = 'append_const', const = 'tune',
+        help = '''Only store final tune fit results in trace.  Not consistent
+            with plotting, as the necessary fields are not stored.  Equivalent
+            to `-t tune`.''')
+    parser.add_argument('-t', dest = 'filter_trace',
+        action = 'append',
+        help = '''Select individual top level trace elements to be stored in the
+            output trace.''')
     parser.add_argument('filename',
         help = 'Name of file to replay')
     parser.add_argument('subset', nargs = argparse.REMAINDER, type = int,
@@ -79,7 +87,13 @@ def save_result(filename, traces):
     savemat(filename, output, do_compression = True, oned_as = 'column')
 
 
+def filter_trace(trace):
+    return support.Trace(**dict(
+        (key, getattr(trace, key)) for key in args.filter_trace))
+
+
 args = parse_args()
+
 
 # Load requested number of samples from the given file and extract the replay
 # subset if requred.
@@ -97,7 +111,9 @@ fitter = plotting.Fitter(
     len(s_iq), config, plot_each, args.plot_all, args.plot_dd, args.verbose)
 
 start_time = time.time()
-traces = replay.replay_s_iq(s_iq, fitter.fit_tune, args.write)
+traces = replay.replay_s_iq(
+    s_iq, fitter.fit_tune, args.write,
+    filter_trace if args.filter_trace else None)
 duration = time.time() - start_time
 if args.verbose:
     print 'Took %.3f seconds, %.2f ms per fit' % (
