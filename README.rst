@@ -122,3 +122,17 @@ Minor tweaks, no change to firmware.  ``mbf_memory`` Python library merged.
 * Remove ``BUN:n:ALL:SET_S`` PV: too easy to press by mistake and really
   somewhat redundant.
 * Change semantics of ``ADC:THRESHOLD_S`` (LMBF only).
+
+1.3.0 September 2019
+....................
+
+Mostly small changes to tune fitting, however the graphs have changed to show
+magnitude and phase rather than power, and data weighting during fit is
+configurable.
+
+One incompatible change is to correct the calculation of detector phase, which
+now correctly advances in the negative direction with increasing frequency.
+This affects the detector IQ and phase waveforms as well as the tune fitting.
+
+This software is compatible with version 1.2.0 of the firmware which has not
+changed.
