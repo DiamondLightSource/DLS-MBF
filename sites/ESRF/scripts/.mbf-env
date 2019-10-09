@@ -16,3 +16,5 @@ export EPICS_CAS_BEACON_ADDR_LIST=$HOSTNAME
 export EPICS_BASE=/opt/os/epics/local
 export EPICS_HOST_ARCH='linux-x86_64'
 
+# For caget, caput, etc.
+export PATH=$EPICS_BASE/bin/linux-x86_64:$PATH
