@@ -22,20 +22,6 @@ bool _enter_axis_step(int axis, const char *prefix, bool lmbf_mode);
 void _exit_axis_step(void);
 
 
-/* Similar tricksy code to wrap enter and leave functions around a block of
- * code. */
-#define _id_WITH_ENTER_LEAVE(loop, enter, leave) \
-    for (bool loop = (enter, true); loop; leave, loop = false)
-#define _WITH_ENTER_LEAVE(enter, leave) \
-    _id_WITH_ENTER_LEAVE(UNIQUE_ID(), enter, leave) \
-
-
-/* This executes a block of code with the given record name prefix and ensures
- * that the prefix is safely popped when done. */
-#define WITH_NAME_PREFIX(prefix) \
-    _WITH_ENTER_LEAVE(push_record_name_prefix(prefix), pop_record_name_prefix())
-
-
 
 /* This simply loops through the configured bunches. */
 #define FOR_BUNCHES(i) \
@@ -91,23 +77,9 @@ double _pure freq_to_tune_signed(uint64_t freq);
     _id_FOR_DOWN_FROM(UNIQUE_ID(), i, n)
 
 
-/* Mutex locking is common and doesn't need to be so long winded. */
-#define LOCK(mutex)     pthread_mutex_lock(&mutex)
-#define UNLOCK(mutex)   pthread_mutex_unlock(&mutex)
-
-#define WITH_MUTEX(mutex)   _WITH_ENTER_LEAVE(LOCK(mutex), UNLOCK(mutex))
-
-
 /* Generic squaring function. */
 #define _id_SQR(temp, x)    ( { typeof(x) temp = (x); temp * temp; } )
 #define SQR(x)  _id_SQR(UNIQUE_ID(), x)
 
 /* Type aware calloc. */
 #define CALLOC(type, nelm)      (type *) calloc(nelm, sizeof(type))
-
-
-/* Helper function for formatting an EPICS string.  Probably belongs in
- * epics_device at some point.  Returns false if the string was truncated. */
-struct epics_string;    // Aliased as EPICS_STRING
-bool format_epics_string(struct epics_string *s, const char *format, ...)
-    __attribute__((format(printf, 2, 3)));
