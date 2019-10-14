@@ -30,10 +30,10 @@ const struct hardware_config hardware_config;
 
 static int dram0_device = -1;
 static int dram1_device = -1;
-/* We share the dram1 device between two axes under a lock, as there is
+/* We share the dram devices between two axes under a single lock, as there is
  * absolutely no benefit in running two copies of this file handle -- there's
  * only one underlying DMA device anyway. */
-static pthread_mutex_t dram1_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t dram_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -125,14 +125,19 @@ static uint32_t write_selected_bit(
 static error__t read_dma_memory(
     int device, off_t seek_offset, size_t read_request, void *result)
 {
-    error__t error = TEST_IO(lseek(device, seek_offset, SEEK_SET));
-    while (!error  &&  read_request > 0)
+    error__t error;
+    WITH_MUTEX(dram_mutex)
     {
-        ssize_t read_size;
-        error = TEST_IO(read_size = read(device, result, read_request));
-        result += read_size;
-        read_request -= (size_t) read_size;
-        if (read_size == 0) break;          // Shouldn't happen.
+        error = TEST_IO(lseek(device, seek_offset, SEEK_SET));
+        while (!error  &&  read_request > 0)
+        {
+            ssize_t read_size;
+            error =
+                TEST_IO(read_size = read(device, result, read_request))  ?:
+                TEST_OK_(read_size > 0, "Unexpected end of file");
+            result += read_size;
+            read_request -= (size_t) read_size;
+        }
     }
     return error;
 }
@@ -925,11 +930,9 @@ void hw_read_det_memory(
     int axis, unsigned int result_count, unsigned int offset,
     struct detector_result result[])
 {
-    error__t error;
-    WITH_MUTEX(dram1_mutex)
-        error = read_dma_memory(
-            dram1_device, (unsigned int) axis * (DRAM1_LENGTH / 2) + offset,
-            result_count * sizeof(struct detector_result), result);
+    error__t error = read_dma_memory(
+        dram1_device, (unsigned int) axis * (DRAM1_LENGTH / 2) + offset,
+        result_count * sizeof(struct detector_result), result);
     ERROR_REPORT(error, "Error reading from DRAM1");
 }
 
