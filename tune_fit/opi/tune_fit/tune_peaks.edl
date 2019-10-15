@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2527
-y 118
+x 821
+y 134
 w 370
-h 560
+h 576
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -35,7 +35,7 @@ release 0
 x 8
 y 152
 w 352
-h 368
+h 384
 lineColor index 14
 fill
 fillColor index 4
@@ -1326,7 +1326,7 @@ major 4
 minor 1
 release 0
 x 296
-y 528
+y 544
 w 64
 h 24
 fgColor index 46
@@ -1390,7 +1390,7 @@ major 4
 minor 4
 release 0
 x 208
-y 528
+y 544
 w 80
 h 24
 fgColor index 43
@@ -1458,7 +1458,7 @@ major 4
 minor 4
 release 0
 x 120
-y 528
+y 544
 w 80
 h 24
 fgColor index 43
@@ -1526,7 +1526,7 @@ major 4
 minor 6
 release 0
 x 160
-y 496
+y 512
 w 80
 h 16
 controlPv "$(tune_prefix):TUNE:ATMAX"
@@ -1552,7 +1552,7 @@ major 4
 minor 1
 release 1
 x 16
-y 496
+y 512
 w 119
 h 14
 font "helvetica-bold-r-12.0"
@@ -1600,6 +1600,52 @@ bgColor index 0
 useDisplayBg
 value {
   "Select tune:"
+}
+autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 88
+y 480
+w 248
+h 16
+controlPv "$(tune_prefix):TUNE:FIT_TIME"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+showUnits
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 480
+w 49
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Fit time:"
 }
 autoSize
 endObjectProperties

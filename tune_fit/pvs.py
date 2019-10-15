@@ -209,6 +209,7 @@ def publish_info(pvs):
     pvs.stringIn('last_error', 'LAST_ERROR')
     pvs.aIn('fit_error', 'FIT_ERROR', PREC = 5)
     pvs.longIn('fit_length', 'FIT_LENGTH')
+    pvs.aIn('fit_time', 'FIT_TIME', PREC = 3, EGU = 's')
 
 
 def publish_pvs(persist, target, length):

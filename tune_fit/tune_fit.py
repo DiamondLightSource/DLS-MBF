@@ -1,5 +1,6 @@
 # Top level tune fitting
 
+import time
 import numpy
 from collections import namedtuple
 
@@ -223,6 +224,7 @@ def compute_window(config, scale, iq):
 
 
 def fit_tune(config, scale, iq):
+    start_time = time.time()
     scale, iq = compute_window(config, scale, iq)
 
     power = support.abs2(iq)
@@ -259,6 +261,7 @@ def fit_tune(config, scale, iq):
         tune = compute_tune_result(config, fit[0] + [0, scale_offset])
     else:
         tune = None
+    end_time = time.time()
 
     return support.Trace(
         # The following values are published as PVs
@@ -269,6 +272,7 @@ def fit_tune(config, scale, iq):
         fit_error = fit_error,
         last_error = fit_status,
         fit_length = len(iq),
+        fit_time = end_time - start_time,
 
         # These are needed for extra information during development
         scale_offset = scale_offset,
