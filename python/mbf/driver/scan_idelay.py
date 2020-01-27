@@ -15,8 +15,8 @@ def setup_scan(regs):
     regs.ADC_SPI[0x550] = 4
 
     # Configure DRAM capture using unprocessed ADC channels
-    regs.DSP0.ADC.CONFIG.CONFIG.DRAM_SOURCE = 0    # Before FIR
-    regs.DSP1.ADC.CONFIG.CONFIG.DRAM_SOURCE = 0
+    regs.DSP0.ADC.CONFIG.DRAM_SOURCE = 0    # Before FIR
+    regs.DSP1.ADC.CONFIG.DRAM_SOURCE = 0
     regs.CTRL.MEM.CONFIG.MUX_SELECT = 0     # ADC0/ADC1
     regs.CTRL.CONTROL.LOOPBACK = 0          # Ensure loopback not set
 

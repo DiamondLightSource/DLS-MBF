@@ -21,7 +21,7 @@
 
 /* The enumeration values here must match the selections defined in Db/adc.py
  * for ADC:MMS_SOURCE and ADC:DRAM_SOURCE, and must also match the values
- * defined in register_defs.in for DSP.ADC.CONFIG.CONFIG for the corresponding
+ * defined in register_defs.in for DSP.ADC.CONFIG for the corresponding
  * fields. */
 enum adc_output_select {
     ADC_SELECT_RAW = 0,     // ADC data before compensation filter

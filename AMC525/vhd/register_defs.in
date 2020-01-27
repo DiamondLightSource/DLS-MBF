@@ -462,7 +462,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 
     # Input signal processing
     !ADC
-        !CONFIG
+        !!REGISTERS
             CONFIG       W
                 # Choose source of MMS data: before or after FIR or after fill
                 # pattern rejection, according to the following table:
