@@ -72,7 +72,9 @@ class GenerateMethods(parse.register_defs.WalkParse):
                 [[format_range(group.range)],
                  trim_text(group.doc)],
                 more_cols = [0, 3])
-        self.walk_subgroups(context + [group.name], group)
+        if not group.hidden:
+            context = context + [group.name]
+        self.walk_subgroups(context, group)
 
     def walk_rw_pair(self, context, rw_pair):
         for register in rw_pair.registers:
