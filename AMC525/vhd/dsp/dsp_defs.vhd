@@ -52,6 +52,7 @@ package dsp_defs is
 
         -- Internally generated events
         adc_trigger : std_ulogic;
+        dac_trigger : std_ulogic;
         seq_trigger : std_ulogic;
         seq_busy : std_ulogic;
         tune_pll_ready : std_ulogic_vector(2 downto 0);

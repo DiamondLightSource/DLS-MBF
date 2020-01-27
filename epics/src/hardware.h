@@ -287,7 +287,11 @@ struct dac_events {
     bool fir_ovf;
     bool mux_ovf;
     bool out_ovf;
+    bool delta_event;
 };
+
+/* Sets the threshold for generating ADC bunch motion event. */
+void hw_write_dac_delta_threshold(int axis, unsigned int delta);
 
 /* Set DAC output delay. */
 void hw_write_dac_delay(int axis, unsigned int delay);

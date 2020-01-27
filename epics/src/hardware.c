@@ -669,6 +669,13 @@ bool hw_read_bunch_overflow(int axis)
 /* DAC registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
+void hw_write_dac_delta_threshold(int axis, unsigned int delta)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        WRITE_DSP_MIRROR(axis, dac_limits, .delta = delta & 0xFFFF);
+}
+
+
 void hw_write_dac_delay(int axis, unsigned int delay)
 {
     WITH_MUTEX(dsp_locks[axis])
@@ -713,6 +720,7 @@ void hw_read_dac_events(int axis, struct dac_events *result)
         .fir_ovf = events.fir_ovf,
         .mux_ovf = events.mux_ovf,
         .out_ovf = events.out_ovf,
+        .delta_event = events.delta,
     };
 }
 
@@ -729,6 +737,8 @@ void hw_write_dac_taps(int axis, const int taps[])
 void hw_read_dac_mms(int axis, struct mms_result *result)
 {
     read_mms(axis, &dsp_regs[axis]->dac_mms, result);
+    /* Re-arm delta event after mms readout. */
+    WRITE_FIELDS(dsp_regs[axis]->dac_command, .reset_delta = 1);
 }
 
 

@@ -230,7 +230,9 @@ begin
         write_ack_o => write_ack_o(DSP_DAC_REGS),
         read_strobe_i => read_strobe_i(DSP_DAC_REGS),
         read_data_o => read_data_o(DSP_DAC_REGS),
-        read_ack_o => read_ack_o(DSP_DAC_REGS)
+        read_ack_o => read_ack_o(DSP_DAC_REGS),
+
+        delta_event_o => dsp_to_control_o.dac_trigger
     );
 
 

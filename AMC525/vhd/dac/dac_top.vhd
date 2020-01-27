@@ -45,13 +45,16 @@ entity dac_top is
         write_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
         read_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
         read_data_o : out reg_data_array_t(DSP_DAC_REGS);
-        read_ack_o : out std_ulogic_vector(DSP_DAC_REGS)
+        read_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
+
+        delta_event_o : out std_ulogic  -- bunch movement over threshold
     );
 end;
 
 architecture arch of dac_top is
     -- Configuration settings from register
     signal config_register : reg_data_t;
+    signal limits_register : reg_data_t;
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(3 downto 0);
     signal nco_0_enable : std_ulogic;
@@ -59,9 +62,11 @@ architecture arch of dac_top is
     signal nco_2_enable : std_ulogic;
     signal mms_source : std_ulogic;
     signal store_source : std_ulogic;
+    signal delta_limit : unsigned(15 downto 0);
 
     signal command_bits : reg_data_t;
     signal write_start : std_ulogic;
+    signal delta_reset : std_ulogic;
 
     signal event_bits : reg_data_t;
     signal fir_overflow : std_ulogic;
@@ -87,6 +92,7 @@ architecture arch of dac_top is
     signal data_out : data_o'SUBTYPE;
     signal filtered_data : data_o'SUBTYPE;
     signal mms_data_in : data_o'SUBTYPE;
+    signal mms_delta : unsigned(data_o'RANGE);
 
     -- Delay from gain control to data change
     constant NCO1_GAIN_DELAY : natural := 4;
@@ -99,12 +105,17 @@ begin
     register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
         write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG),
+        write_strobe_i(1) => write_strobe_i(DSP_DAC_LIMITS_REG),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_DAC_CONFIG_REG),
-        register_data_o(0) => config_register
+        write_ack_o(1) => write_ack_o(DSP_DAC_LIMITS_REG),
+        register_data_o(0) => config_register,
+        register_data_o(1) => limits_register
     );
     read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
+    read_data_o(DSP_DAC_LIMITS_REG) <= (others => '0');
     read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
+    read_ack_o(DSP_DAC_LIMITS_REG) <= '1';
 
     -- Command register: start write and reset limit
     command : entity work.strobed_bits port map (
@@ -130,13 +141,16 @@ begin
     nco_0_enable_o <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
     mms_source   <= config_register(DSP_DAC_CONFIG_MMS_SOURCE_BIT);
     store_source <= config_register(DSP_DAC_CONFIG_DRAM_SOURCE_BIT);
+    delta_limit <= unsigned(limits_register(DSP_DAC_LIMITS_DELTA_BITS));
 
     write_start <= command_bits(DSP_DAC_COMMAND_WRITE_BIT);
+    delta_reset <= command_bits(DSP_DAC_COMMAND_RESET_DELTA_BIT);
 
     event_bits <= (
         DSP_DAC_EVENTS_FIR_OVF_BIT => fir_overflow,
         DSP_DAC_EVENTS_MUX_OVF_BIT => mux_overflow,
         DSP_DAC_EVENTS_OUT_OVF_BIT => preemph_overflow,
+        DSP_DAC_EVENTS_DELTA_BIT => delta_event_o,
         others => '0'
     );
 
@@ -288,13 +302,25 @@ begin
         turn_clock_i => turn_clock_i,
 
         data_i => mms_data_in,
-        delta_o => open,
+        delta_o => mms_delta,
 
         read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS),
         read_data_o => read_data_o(DSP_DAC_MMS_REGS),
         read_ack_o => read_ack_o(DSP_DAC_MMS_REGS)
     );
     write_ack_o(DSP_DAC_MMS_REGS) <= (others => '1');
+
+    -- Bunch movement detection
+    min_max_limit : entity work.min_max_limit port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        delta_i => mms_delta,
+        limit_i => delta_limit,
+        reset_event_i => delta_reset,
+
+        limit_event_o => delta_event_o
+    );
 
 
     -- Compensation filter

@@ -5,6 +5,9 @@
 ##  - register_defs.h used to build control system interface
 ##  - structured definitions used by driver.py for control debugging
 ##  - registers.pdf/.html for documentation
+##
+## Comments preceded with # go into the generated documented, comments preceded
+## with ## are ignored during document generation.
 
 # This constant is read from the firmware and is checked by software to ensure
 # that the firmware and software are compatible.
@@ -15,14 +18,15 @@
 #
 # The following values for this field are reserved:
 #
-# ======= ====================================================================
-# 0       Used for initial MBF 1.0 and 1.1 releases
-# 1       Adds Tune PLL support, used for MBF 1.2 release
-# 254     Use this for unstable MBF firmware versions under development
-# 255     Reserved for non MBF firmware with driver compatibility.  Do not use
-#         for any version of MBF firmware
-# ======= ====================================================================
-FIRMWARE_COMPAT_VERSION = 1
+# ===== ========================================================================
+# 0     Used for initial MBF 1.0 and 1.1 releases
+# 1     Adds Tune PLL support, used for MBF 1.2 release
+# 2     Reserved for MBF 1.4 release
+# 254   Use this for unstable MBF firmware versions under development
+# 255   Reserved for non MBF firmware with kernel driver compatibility.  Do not
+#       use for any version of MBF firmware
+# ===== ========================================================================
+FIRMWARE_COMPAT_VERSION = 254
 
 ## Do not change this value, leave equal to 254
 FIRMWARE_COMPAT_UNSTABLE = 254
@@ -569,6 +573,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             .MMS_SOURCE
             # Select stored data source, before or after output FIR.
             .DRAM_SOURCE
+        # MMS event threshold
+        LIMITS      W
+            # Limit threshold for min/max/sum bunch motion event detector
+            .DELTA          16
         *RW
             EVENTS      R
                 # Set when overflow in FIR data detected in DAC output
@@ -579,10 +587,14 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 -
                 # Set if overflow detected during output preemphasis filter
                 .OUT_OVF
+                # Set when DAC min/max/sum motion exceeds configured threshold
+                .DELTA
             # Writing to this register generates a pulse on the selected bits
             COMMAND      WP
                 # Starts block write to DAC fast FIR taps
                 .WRITE
+                # Resets DAC min/max event detector to enable further events
+                .RESET_DELTA
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W
@@ -887,10 +899,11 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     .SEQ_DONE       2
     # Tune PLL interrupts.  Each channel supports the following interrupt
     # sources:
-    # === ======================================================================
+    # (needed to work around generator bug)
+    # === ==================================================================
     # 0   Frequency offset readout FIFO half full.
     # 1   Debug readout FIFO half full.
     # 2   Tune PLL has stopped.
-    # === ======================================================================
+    # === ==================================================================
     .TUNE_PLL0_READY 3
     .TUNE_PLL1_READY 3

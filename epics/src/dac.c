@@ -42,6 +42,14 @@ static void write_dac_taps(void *context, float array[], unsigned int *length)
 }
 
 
+static bool set_dac_delta_threshold(void *context, double *value)
+{
+    struct dac_context *dac = context;
+    hw_write_dac_delta_threshold(dac->axis, double_to_uint(value, 16, 15));
+    return true;
+}
+
+
 static bool write_dac_delay(void *context, unsigned int *value)
 {
     struct dac_context *dac = context;
@@ -142,6 +150,7 @@ error__t initialise_dac(void)
         PUBLISH_WAVEFORM_C_P(float, "FILTER",
             hardware_config.dac_taps, write_dac_taps, dac);
 
+        PUBLISH_C_P(ao, "EVENT_LIMIT", set_dac_delta_threshold, dac);
         PUBLISH_C_P(ulongout, "DELAY", write_dac_delay, dac);
         PUBLISH_C_P(bo, "ENABLE",      write_dac_output_enable, dac);
         PUBLISH_C_P(bo, "MMS_SOURCE",  write_dac_mms_source, dac);
@@ -151,6 +160,7 @@ error__t initialise_dac(void)
         PUBLISH_READ_VAR(bi, "MUX_OVF", dac->events.mux_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
         PUBLISH_READ_VAR(bi, "OVF",     dac->overflow);
+        PUBLISH_READ_VAR(bi, "EVENT",   dac->events.delta_event);
 
         dac->mms = create_mms_handler("DAC", axis, hw_read_dac_mms);
     }
