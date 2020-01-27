@@ -558,43 +558,46 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 
     # Output signal processing
     !DAC
-        # Output to DAC configuration control
-        CONFIG      W
-            # Output delay for final DAC output
-            .DELAY          10
-            # Gain for FIR output
-            .FIR_GAIN       4
-            # Gain for NCO0 output (NCO1 gain is under sequencer control)
-            .NCO0_GAIN      4
-            # Global control for NCO0 enable
-            .NCO0_ENABLE
-            # Select MMS source: before or after output FIR.  If 0 we select the
-            # output before the filter
-            .MMS_SOURCE
-            # Select stored data source, before or after output FIR.
-            .DRAM_SOURCE
-        # MMS event threshold
-        LIMITS      W
-            # Limit threshold for min/max/sum bunch motion event detector
-            .DELTA          16
-        *RW
-            EVENTS      R
-                # Set when overflow in FIR data detected in DAC output
-                .FIR_OVF
-                # Set when DAC output multiplexer detects overflow
-                .MUX_OVF
-                # Placeholder for obsolete bit
-                -
-                # Set if overflow detected during output preemphasis filter
-                .OUT_OVF
-                # Set when DAC min/max/sum motion exceeds configured threshold
-                .DELTA
-            # Writing to this register generates a pulse on the selected bits
-            COMMAND      WP
-                # Starts block write to DAC fast FIR taps
-                .WRITE
-                # Resets DAC min/max event detector to enable further events
-                .RESET_DELTA
+        !!REGISTERS
+            # Output to DAC configuration control
+            CONFIG      W
+                # Output delay for final DAC output
+                .DELAY          10
+                # Gain for FIR output
+                .FIR_GAIN       4
+                # Gain for NCO0 output (NCO1 gain is under sequencer control)
+                .NCO0_GAIN      4
+                # Global control for NCO0 enable
+                .NCO0_ENABLE
+                # Select MMS source: before or after output FIR.  If 0 we select
+                # the output before the filter
+                .MMS_SOURCE
+                # Select stored data source, before or after output FIR.
+                .DRAM_SOURCE
+            # MMS event threshold
+            LIMITS      W
+                # Limit threshold for min/max/sum bunch motion event detector
+                .DELTA          16
+            *RW
+                EVENTS      R
+                    # Set when overflow in FIR data detected in DAC output
+                    .FIR_OVF
+                    # Set when DAC output multiplexer detects overflow
+                    .MUX_OVF
+                    # Placeholder for obsolete bit
+                    -
+                    # Set if overflow detected during output preemphasis filter
+                    .OUT_OVF
+                    # Set when DAC min/max/sum motion exceeds configured
+                    # threshold
+                    .DELTA
+                # Writing to this register generates a pulse on the selected
+                # bits
+                COMMAND      WP
+                    # Starts block write to DAC fast FIR taps
+                    .WRITE
+                    # Resets DAC min/max event detector to enable further events
+                    .RESET_DELTA
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W

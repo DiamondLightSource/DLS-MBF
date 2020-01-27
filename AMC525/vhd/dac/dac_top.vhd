@@ -52,9 +52,7 @@ entity dac_top is
 end;
 
 architecture arch of dac_top is
-    -- Configuration settings from register
-    signal config_register : reg_data_t;
-    signal limits_register : reg_data_t;
+    -- Configuration settings from registers
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(3 downto 0);
     signal nco_0_enable : std_ulogic;
@@ -64,11 +62,9 @@ architecture arch of dac_top is
     signal store_source : std_ulogic;
     signal delta_limit : unsigned(15 downto 0);
 
-    signal command_bits : reg_data_t;
     signal write_start : std_ulogic;
     signal delta_reset : std_ulogic;
 
-    signal event_bits : reg_data_t;
     signal fir_overflow : std_ulogic;
     signal mux_overflow : std_ulogic;
     signal preemph_overflow : std_ulogic;
@@ -101,57 +97,31 @@ architecture arch of dac_top is
     constant INPUT_PIPELINE_DELAY : natural := 4;
 
 begin
-    -- Register mapping
-    register_file : entity work.register_file port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG),
-        write_strobe_i(1) => write_strobe_i(DSP_DAC_LIMITS_REG),
+    -- Register interface
+    registers : entity work.dac_registers port map (
+        dsp_clk_i => dsp_clk_i,
+
+        write_strobe_i => write_strobe_i(DSP_DAC_REGISTERS_REGS),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_DAC_CONFIG_REG),
-        write_ack_o(1) => write_ack_o(DSP_DAC_LIMITS_REG),
-        register_data_o(0) => config_register,
-        register_data_o(1) => limits_register
-    );
-    read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
-    read_data_o(DSP_DAC_LIMITS_REG) <= (others => '0');
-    read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
-    read_ack_o(DSP_DAC_LIMITS_REG) <= '1';
+        write_ack_o => write_ack_o(DSP_DAC_REGISTERS_REGS),
+        read_strobe_i => read_strobe_i(DSP_DAC_REGISTERS_REGS),
+        read_data_o => read_data_o(DSP_DAC_REGISTERS_REGS),
+        read_ack_o => read_ack_o(DSP_DAC_REGISTERS_REGS),
 
-    -- Command register: start write and reset limit
-    command : entity work.strobed_bits port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(DSP_DAC_COMMAND_REG_W),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_DAC_COMMAND_REG_W),
-        strobed_bits_o => command_bits
-    );
+        dac_delay_o => dac_delay,
+        fir_gain_o => fir_gain,
+        nco_0_gain_o => nco_0_gain_o,
+        nco_0_enable_o => nco_0_enable_o,
+        mms_source_o => mms_source,
+        store_source_o => store_source,
+        delta_limit_o => delta_limit,
+        write_start_o => write_start,
+        delta_reset_o => delta_reset,
 
-    -- Event detection register
-    events : entity work.all_pulsed_bits port map (
-        clk_i => dsp_clk_i,
-        read_strobe_i => read_strobe_i(DSP_DAC_EVENTS_REG_R),
-        read_data_o => read_data_o(DSP_DAC_EVENTS_REG_R),
-        read_ack_o => read_ack_o(DSP_DAC_EVENTS_REG_R),
-        pulsed_bits_i => event_bits
-    );
-
-    dac_delay  <= unsigned(config_register(DSP_DAC_CONFIG_DELAY_BITS));
-    fir_gain   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
-    nco_0_gain_o <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
-    nco_0_enable_o <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
-    mms_source   <= config_register(DSP_DAC_CONFIG_MMS_SOURCE_BIT);
-    store_source <= config_register(DSP_DAC_CONFIG_DRAM_SOURCE_BIT);
-    delta_limit <= unsigned(limits_register(DSP_DAC_LIMITS_DELTA_BITS));
-
-    write_start <= command_bits(DSP_DAC_COMMAND_WRITE_BIT);
-    delta_reset <= command_bits(DSP_DAC_COMMAND_RESET_DELTA_BIT);
-
-    event_bits <= (
-        DSP_DAC_EVENTS_FIR_OVF_BIT => fir_overflow,
-        DSP_DAC_EVENTS_MUX_OVF_BIT => mux_overflow,
-        DSP_DAC_EVENTS_OUT_OVF_BIT => preemph_overflow,
-        DSP_DAC_EVENTS_DELTA_BIT => delta_event_o,
-        others => '0'
+        fir_overflow_i => fir_overflow,
+        mux_overflow_i => mux_overflow,
+        preemph_overflow_i => preemph_overflow,
+        delta_event_i => delta_event_o
     );
 
 
