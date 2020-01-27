@@ -102,16 +102,6 @@ static void bits_to_bools(unsigned int count, uint32_t bits, bool bools[])
     }
 }
 
-/* Convert an array of booleans to an array of bits. */
-static uint32_t bools_to_bits(unsigned int count, const bool bools[])
-{
-    uint32_t result = 0;
-    for (unsigned int i = 0; i < count; i ++)
-        result |= (unsigned) bools[i] << i;
-    return result;
-}
-
-
 /* Updates one bit in a bit array.*/
 static uint32_t write_selected_bit(
     uint32_t bits, unsigned int bit, bool value)
@@ -313,6 +303,36 @@ void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[])
 
 /* Trigger registers - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+static uint32_t trigger_sources_to_triggers_in(
+    const struct trigger_sources *sources)
+{
+    struct triggers_in result = (struct triggers_in) {
+        .soft = sources->soft,
+        .ext = sources->ext,
+        .pm = sources->pm,
+        .adc0 = sources->adc0,
+        .adc1 = sources->adc1,
+        .seq0 = sources->seq0,
+        .seq1 = sources->seq1,
+    };
+    return CAST_TO(uint32_t, result);
+}
+
+static void triggers_in_to_trigger_sources(
+    uint32_t triggers, struct trigger_sources *sources)
+{
+    struct triggers_in triggers_in = CAST_TO(struct triggers_in, triggers);
+    *sources = (struct trigger_sources) {
+        .soft = triggers_in.soft,
+        .ext = triggers_in.ext,
+        .pm = triggers_in.pm,
+        .adc0 = triggers_in.adc0,
+        .adc1 = triggers_in.adc1,
+        .seq0 = triggers_in.seq0,
+        .seq1 = triggers_in.seq1,
+    };
+}
+
 
 static void hw_write_bunch_count(unsigned int bunches)
 {
@@ -349,10 +369,10 @@ void hw_write_turn_clock_offset(unsigned int offset)
     }
 }
 
-void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking)
+void hw_read_trigger_events(struct trigger_sources *sources, bool *blanking)
 {
     struct ctrl_trg_pulsed events = READL(ctrl_regs->trg_pulsed);
-    bits_to_bools(TRIGGER_SOURCE_COUNT, events.triggers, sources);
+    triggers_in_to_trigger_sources(events.triggers, sources);
     *blanking = events.blanking;
 }
 
@@ -400,8 +420,7 @@ void hw_read_trigger_status(struct trigger_status *result)
 }
 
 void hw_read_trigger_sources(
-    enum trigger_target_id target,
-    bool sources[TRIGGER_SOURCE_COUNT])
+    enum trigger_target_id target, struct trigger_sources *sources)
 {
     struct ctrl_trg_sources trg_sources = READL(ctrl_regs->trg_sources);
     uint32_t source_mask = 0;
@@ -417,7 +436,7 @@ void hw_read_trigger_sources(
             source_mask = trg_sources.dram0;
             break;
     }
-    bits_to_bools(TRIGGER_SOURCE_COUNT, source_mask, sources);
+    triggers_in_to_trigger_sources(source_mask, sources);
 }
 
 void hw_write_trigger_blanking_duration(unsigned int duration)
@@ -446,10 +465,9 @@ void hw_write_trigger_delay(
 }
 
 void hw_write_trigger_enable_mask(
-    enum trigger_target_id target,
-    const bool sources[TRIGGER_SOURCE_COUNT])
+    enum trigger_target_id target, const struct trigger_sources *sources)
 {
-    uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
+    uint32_t source_mask = trigger_sources_to_triggers_in(sources);
     WITH_MUTEX(ctrl_lock)
     {
         switch (target)
@@ -474,10 +492,9 @@ void hw_write_trigger_enable_mask(
 }
 
 void hw_write_trigger_blanking_mask(
-    enum trigger_target_id target,
-    const bool sources[TRIGGER_SOURCE_COUNT])
+    enum trigger_target_id target, const struct trigger_sources *sources)
 {
-    uint32_t source_mask = bools_to_bits(TRIGGER_SOURCE_COUNT, sources);
+    uint32_t source_mask = trigger_sources_to_triggers_in(sources);
     WITH_MUTEX(ctrl_lock)
     {
         switch (target)

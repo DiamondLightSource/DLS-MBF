@@ -28,7 +28,7 @@ entity trigger_registers is
 
         -- Trigger control
         soft_trigger_o : out std_ulogic;
-        triggers_i : in std_ulogic_vector(TRIGGER_SET);
+        triggers_i : in trigger_set_t;
         blanking_trigger_i : in std_ulogic;
 
         blanking_interval_o : out unsigned;

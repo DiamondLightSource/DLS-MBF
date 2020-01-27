@@ -306,20 +306,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             .ENABLE
 
     # Trigger management and control.  Seven trigger sources are available, and
-    # three trigger targets can be configured.  The following trigger sources
-    # are managed as masks for a variety of registers below:
-    #
-    # ======= ===============================================
-    # Bit     Source
-    # ======= ===============================================
-    # 0       Soft trigger
-    # 1       External event trigger
-    # 2       Postmortem trigger
-    # 3       ADC 0 motion trigger
-    # 4       ADC 1 motion trigger
-    # 5       State 0 trigger
-    # 6       State 1 trigger
-    # ======= ===============================================
+    # three trigger targets can be configured.  The trigger sources are defined
+    # in :TRIGGERS_IN and are managed as masks for a variety of registers below.
     #
     # The following trigger targets are configured here:
     #
@@ -882,6 +870,34 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .RESET_READ_ERROR   2
             OFFSET_FIFO     R
             DEBUG_FIFO      R
+
+
+# The following trigger sources are defined
+#
+# ======= ===============================================
+# Bit     Source
+# ======= ===============================================
+# 0       Soft trigger
+# 1       External event trigger
+# 2       Postmortem trigger
+# 3       ADC 0 motion trigger
+# 4       ADC 1 motion trigger
+# 5       State 0 trigger
+# 6       State 1 trigger
+# ======= ===============================================
+:TRIGGERS_IN    R
+    # Internally generated soft trigger
+    .SOFT
+    # External event trigger
+    .EXT
+    # External postmortem trigger
+    .PM
+    # ADC min/max bunch motion triggers
+    .ADC0
+    .ADC1
+    # Sequencer state entry triggers
+    .SEQ0
+    .SEQ1
 
 
 # The following interrupt sources are defined

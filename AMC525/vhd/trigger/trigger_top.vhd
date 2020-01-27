@@ -64,7 +64,7 @@ architecture arch of trigger_top is
 
     -- Triggers
     signal soft_trigger : std_ulogic;
-    signal triggers : std_ulogic_vector(TRIGGER_SET);
+    signal triggers : trigger_set_t;
 
     -- Sequencer triggering
     signal seq_setup : trigger_setup_channels;

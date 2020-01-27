@@ -28,7 +28,7 @@ entity trigger_setup is
         -- Results
         revolution_clock_o : out std_ulogic;     -- On ADC clock
         blanking_trigger_o : out std_ulogic;
-        trigger_set_o : out std_ulogic_vector(TRIGGER_SET)
+        trigger_set_o : out trigger_set_t
     );
 end;
 
@@ -100,12 +100,12 @@ begin
 
     -- Gather all the triggers into a single trigger source set
     trigger_set_o <= (
-        0 => soft_trigger_delay,
-        1 => event_trigger,
-        2 => postmortem_trigger,
-        3 => adc_trigger_in(0),
-        4 => adc_trigger_in(1),
-        5 => seq_trigger_in(0),
-        6 => seq_trigger_in(1)
+        TRIGGERS_IN_SOFT_BIT => soft_trigger_delay,
+        TRIGGERS_IN_EXT_BIT => event_trigger,
+        TRIGGERS_IN_PM_BIT => postmortem_trigger,
+        TRIGGERS_IN_ADC0_BIT => adc_trigger_in(0),
+        TRIGGERS_IN_ADC1_BIT => adc_trigger_in(1),
+        TRIGGERS_IN_SEQ0_BIT => seq_trigger_in(0),
+        TRIGGERS_IN_SEQ1_BIT => seq_trigger_in(1)
     );
 end;

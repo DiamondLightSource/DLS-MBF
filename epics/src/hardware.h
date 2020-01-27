@@ -11,8 +11,6 @@
 #define DRAM0_LENGTH        0x80000000U     // 2GB
 #define DRAM1_LENGTH        0x08000000U     // 128M
 
-#define TRIGGER_SOURCE_COUNT    7   // Seven distinct possible trigger sources
-
 #define MEM_CHANNEL_COUNT   2       // Memory capture uses two channels
 
 
@@ -147,6 +145,19 @@ struct trigger_status {
     bool dram_armed;
 };
 
+/* Array of trigger sources.  Used for configuring trigger sources and capturing
+ * trigger source events.  This must matche the trigger_in structure in
+ * register_defs.h, but with each bit mapped to a separate boolean. */
+struct trigger_sources {
+    bool soft;
+    bool ext;
+    bool pm;
+    bool adc0;
+    bool adc1;
+    bool seq0;
+    bool seq1;
+};
+
 /* Triggers synchronisation of turn clock to external trigger. */
 void hw_write_turn_clock_sync(void);
 
@@ -158,7 +169,7 @@ void hw_read_turn_clock_counts(
 void hw_write_turn_clock_offset(unsigned int offset);
 
 /* Returns which incoming trigger events have occurred since the last call. */
-void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);
+void hw_read_trigger_events(struct trigger_sources *sources, bool *blanking);
 
 /* Simultaneous arming of the selected trigger targets. */
 void hw_write_trigger_arm(const bool arm[TRIGGER_TARGET_COUNT]);
@@ -177,8 +188,7 @@ void hw_read_trigger_status(struct trigger_status *status);
 
 /* Reads which trigger sources fired the selected target. */
 void hw_read_trigger_sources(
-    enum trigger_target_id target,
-    bool sources[TRIGGER_SOURCE_COUNT]);
+    enum trigger_target_id target, struct trigger_sources *sources);
 
 /* Program duration of blanking window. */
 void hw_write_trigger_blanking_duration(unsigned int duration);
@@ -190,13 +200,11 @@ void hw_write_trigger_delay(
 /* Configure which trigger sources will be used to trigger the selected
  * target. */
 void hw_write_trigger_enable_mask(
-    enum trigger_target_id target,
-    const bool sources[TRIGGER_SOURCE_COUNT]);
+    enum trigger_target_id target, const struct trigger_sources *sources);
 
 /* Configure which trigger sources are blanked for the selected target. */
 void hw_write_trigger_blanking_mask(
-    enum trigger_target_id target,
-    const bool sources[TRIGGER_SOURCE_COUNT]);
+    enum trigger_target_id target, const struct trigger_sources *sources);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
