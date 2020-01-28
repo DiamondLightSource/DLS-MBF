@@ -20,7 +20,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2017.4
+set scripts_vivado_version 2019.2
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -126,7 +126,7 @@ xilinx.com:ip:axi_register_slice:2.1\
 xilinx.com:ip:axi_intc:4.1\
 xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:axi_cdma:4.1\
-xilinx.com:ip:mig_7series:4.0\
+xilinx.com:ip:mig_7series:4.2\
 xilinx.com:ip:util_reduced_logic:2.0\
 xilinx.com:ip:util_vector_logic:2.0\
 xilinx.com:ip:axi_crossbar:2.1\
@@ -528,11 +528,17 @@ proc create_hier_cell_memory_interconnect { parentCell nameHier } {
 
   # Create interface pins
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA_W
+
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DRAM0
+
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DRAM1
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DMA
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM0
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM1
+
 
   # Create pins
   create_bd_pin -dir I -type clk DMA_ACLK
@@ -1534,11 +1540,17 @@ proc create_hier_cell_memory { parentCell nameHier } {
 
   # Create interface pins
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 C0_DDR3
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 C0_SYS_CLK
+
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 C1_DDR3
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 C1_SYS_CLK
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DRAM0
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DRAM1
+
 
   # Create pins
   create_bd_pin -dir I -type clk CLKREF
@@ -1549,7 +1561,7 @@ proc create_hier_cell_memory { parentCell nameHier } {
   create_bd_pin -dir I -type rst SYS_RSTN
 
   # Create instance: mig_7series_0, and set properties
-  set mig_7series_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mig_7series:4.0 mig_7series_0 ]
+  set mig_7series_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mig_7series:4.2 mig_7series_0 ]
 
   # Generate the PRJ File for MIG
   set str_mig_folder [get_property IP_DIR [ get_ips [ get_property CONFIG.Component_Name $mig_7series_0 ] ] ]
@@ -1653,13 +1665,21 @@ proc create_hier_cell_memory_dma { parentCell nameHier } {
 
   # Create interface pins
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 C0_DDR3
+
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 C1_DDR3
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 DRAM0_CLK
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 DRAM1_CLK
+
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA_W
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DMA_REGS
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM0
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM1
+
 
   # Create pins
   create_bd_pin -dir I -type clk CLK200MHZ
@@ -1752,6 +1772,7 @@ proc create_hier_cell_interrupts { parentCell nameHier } {
   # Create interface pins
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_INTC_REGS
 
+
   # Create pins
   create_bd_pin -dir I -from 0 -to 0 In0
   create_bd_pin -dir I -from 30 -to 0 In1
@@ -1827,9 +1848,13 @@ proc create_hier_cell_axi_lite { parentCell nameHier } {
 
   # Create interface pins
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DMA_REGS
+
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DSP_REGS
+
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_INTC_REGS
+
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_PCIE
+
 
   # Create pins
   create_bd_pin -dir I -type clk PCIE_ACLK
@@ -1919,9 +1944,13 @@ proc create_root_design { parentCell } {
 
   # Create interface ports
   set C0_DDR3 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 C0_DDR3 ]
+
   set C1_DDR3 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 C1_DDR3 ]
+
   set CLK533MHZ0 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 CLK533MHZ0 ]
+
   set CLK533MHZ1 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 CLK533MHZ1 ]
+
   set M_DSP_REGS [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_DSP_REGS ]
   set_property -dict [ list \
    CONFIG.ADDR_WIDTH {16} \
@@ -1935,6 +1964,7 @@ proc create_root_design { parentCell } {
    CONFIG.NUM_WRITE_OUTSTANDING {7} \
    CONFIG.PROTOCOL {AXI4LITE} \
    ] $M_DSP_REGS
+
   set S_DSP_DRAM0 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM0 ]
   set_property -dict [ list \
    CONFIG.ADDR_WIDTH {48} \
@@ -1966,6 +1996,7 @@ proc create_root_design { parentCell } {
    CONFIG.WUSER_BITS_PER_BYTE {0} \
    CONFIG.WUSER_WIDTH {0} \
    ] $S_DSP_DRAM0
+
   set S_DSP_DRAM1 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_DSP_DRAM1 ]
   set_property -dict [ list \
    CONFIG.ADDR_WIDTH {48} \
@@ -1997,19 +2028,19 @@ proc create_root_design { parentCell } {
    CONFIG.WUSER_BITS_PER_BYTE {0} \
    CONFIG.WUSER_WIDTH {0} \
    ] $S_DSP_DRAM1
+
   set pcie_mgt [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pcie_mgt ]
 
+
   # Create ports
-  set CLK200MHZ [ create_bd_port -dir I -type clk CLK200MHZ ]
+  set CLK200MHZ [ create_bd_port -dir I -type clk -freq_hz 200000000 CLK200MHZ ]
   set_property -dict [ list \
-   CONFIG.ASSOCIATED_RESET {CLK200MHZ_RSTN} \
-   CONFIG.FREQ_HZ {200000000} \
+   CONFIG.ASSOCIATED_RESET {} \
  ] $CLK200MHZ
-  set DSP_CLK [ create_bd_port -dir I -type clk DSP_CLK ]
+  set DSP_CLK [ create_bd_port -dir I -type clk -freq_hz 250000000 DSP_CLK ]
   set_property -dict [ list \
    CONFIG.ASSOCIATED_BUSIF {S_DSP_DRAM0:S_DSP_DRAM1} \
    CONFIG.ASSOCIATED_RESET {DSP_RESETN} \
-   CONFIG.FREQ_HZ {250000000} \
  ] $DSP_CLK
   set DSP_RESETN [ create_bd_port -dir I -type rst DSP_RESETN ]
   set FCLKA [ create_bd_port -dir I -type clk FCLKA ]
@@ -2022,11 +2053,10 @@ proc create_root_design { parentCell } {
    CONFIG.PortWidth {31} \
    CONFIG.SENSITIVITY {EDGE_RISING} \
  ] $INTR
-  set REG_CLK [ create_bd_port -dir I -type clk REG_CLK ]
+  set REG_CLK [ create_bd_port -dir I -type clk -freq_hz 125000000 REG_CLK ]
   set_property -dict [ list \
    CONFIG.ASSOCIATED_BUSIF {M_DSP_REGS} \
    CONFIG.ASSOCIATED_RESET {REG_RESETN} \
-   CONFIG.FREQ_HZ {125000000} \
  ] $REG_CLK
   set REG_RESETN [ create_bd_port -dir I -type rst REG_RESETN ]
   set nCOLDRST [ create_bd_port -dir I -type rst nCOLDRST ]
@@ -2107,19 +2137,20 @@ proc create_root_design { parentCell } {
   connect_bd_net -net refclk_1 [get_bd_ports FCLKA] [get_bd_pins axi_pcie3_bridge/refclk]
 
   # Create address segments
-  create_bd_addr_seg -range 0x00010000 -offset 0x00010000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] SEG_M_DSP_REGS_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x00020000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] SEG_axi_cdma_0_Reg
-  create_bd_addr_seg -range 0x00001000 -offset 0x00021000 [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/S_AXI/Reg] SEG_axi_intc_Reg
-  create_bd_addr_seg -range 0x800000000000 -offset 0x00000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs axi_pcie3_bridge/S_AXI/BAR0] SEG_axi_pcie3_bridge_BAR0
-  create_bd_addr_seg -range 0x80000000 -offset 0x800000000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
-  create_bd_addr_seg -range 0x08000000 -offset 0x800080000000 [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr
-  create_bd_addr_seg -range 0x80000000 -offset 0x800000000000 [get_bd_addr_spaces S_DSP_DRAM0] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] SEG_mig_7series_0_c0_memaddr
-  create_bd_addr_seg -range 0x08000000 -offset 0x800080000000 [get_bd_addr_spaces S_DSP_DRAM1] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] SEG_mig_7series_0_c1_memaddr
+  assign_bd_address -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs M_DSP_REGS/Reg] -force
+  assign_bd_address -offset 0x00020000 -range 0x00001000 -target_address_space [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs memory_dma/axi_cdma_0/S_AXI_LITE/Reg] -force
+  assign_bd_address -offset 0x00021000 -range 0x00001000 -target_address_space [get_bd_addr_spaces axi_pcie3_bridge/M_AXI] [get_bd_addr_segs interrupts/axi_intc/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x800000000000 -target_address_space [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs axi_pcie3_bridge/S_AXI/BAR0] -force
+  assign_bd_address -offset 0x800000000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] -force
+  assign_bd_address -offset 0x800080000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces memory_dma/axi_cdma_0/Data] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] -force
+  assign_bd_address -offset 0x800000000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces S_DSP_DRAM0] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c0_memmap/c0_memaddr] -force
+  assign_bd_address -offset 0x800080000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces S_DSP_DRAM1] [get_bd_addr_segs memory_dma/memory/mig_7series_0/c1_memmap/c1_memaddr] -force
 
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
+  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
