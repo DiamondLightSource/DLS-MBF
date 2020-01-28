@@ -154,6 +154,8 @@ struct trigger_sources {
     bool pm;
     bool adc0;
     bool adc1;
+    bool dac0;
+    bool dac1;
     bool seq0;
     bool seq1;
 };

@@ -84,6 +84,7 @@ architecture arch of dsp_control_top is
 
     -- Triggering and events interface
     signal adc_trigger : std_ulogic_vector(CHANNELS);
+    signal dac_trigger : std_ulogic_vector(CHANNELS);
     signal seq_trigger : std_ulogic_vector(CHANNELS);
     signal blanking_window : std_ulogic;
     signal turn_clock : std_ulogic;
@@ -247,6 +248,7 @@ begin
         blanking_trigger_i => blanking_trigger_i,
 
         adc_trigger_i => adc_trigger,
+        dac_trigger_i => dac_trigger,
         seq_trigger_i => seq_trigger,
 
         blanking_window_o => blanking_window,
@@ -265,6 +267,7 @@ begin
     gen_channels: for c in CHANNELS generate
         -- ADC clocked signals
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
+        dac_trigger(c) <= dsp_to_control_i(c).dac_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
         seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
         tune_pll_ready(c) <= dsp_to_control_i(c).tune_pll_ready;

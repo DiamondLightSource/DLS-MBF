@@ -22,7 +22,7 @@ package trigger_defs is
     -- A trigger set is used to gather the various available trigger sources.
     -- All sources are treated uniformly.  The assigment of triggers is
     -- defined in the TRIGGERS_IN register, see register_defs.in.
-    subtype trigger_set_t is std_ulogic_vector(6 downto 0);
+    subtype trigger_set_t is std_ulogic_vector(8 downto 0);
 
     -- Programmable trigger configuration
     type trigger_setup_t is record

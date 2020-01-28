@@ -321,7 +321,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             PULSED      R
                 # Each bit records a raw trigger event from the corresponding
                 # trigger source
-                .TRIGGERS   7
+                .TRIGGERS   9
                 # Set if the blanking input has seen a rising edge
                 .BLANKING
             # Pulsed trigger control events
@@ -382,13 +382,13 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # source mask is reset when the target is armed.
         SOURCES     R
             # Sequencer 0 trigger source mask
-            .SEQ0       7
+            .SEQ0       9
             -
             # Sequencer 1 trigger source mask
-            .SEQ1       7
+            .SEQ1       9
             -
             # DRAM0 trigger source mask
-            .DRAM0      7
+            .DRAM0      9
 
         !CONFIG
             # Turn clock configuration setup.  Note that DSP0_OFFSET and
@@ -421,27 +421,24 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 .DELAY          16
 
             # Sequencer trigger configuration
-            TRIG_SEQ    RW
+            TRIG_SEQ0   RW
                 # Sequencer 0 trigger enable mask
-                .ENABLE0        7
-                -
+                .ENABLE         9
                 # Sequencer 0 blanking enable mask
-                .BLANKING0      7
-                -
+                .BLANKING       9
+
+            TRIG_SEQ1   RW
                 # Sequencer 1 trigger enable mask
-                .ENABLE1        7
-                -
+                .ENABLE         9
                 # Sequencer 1 blanking enable mask
-                .BLANKING1      7
+                .BLANKING       9
 
             # DRAM0 trigger configuration
             TRIG_DRAM   RW
                 # Trigger enable mask
-                .ENABLE         7
-                -
+                .ENABLE         9
                 # Blanking enable mask
-                .BLANKING       7
-                -
+                .BLANKING       9
 
 
 # These occupy addresses 0x3000..0x37FF and 0x3800..3FFF
@@ -882,8 +879,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # 2       Postmortem trigger
 # 3       ADC 0 motion trigger
 # 4       ADC 1 motion trigger
-# 5       State 0 trigger
-# 6       State 1 trigger
+# 5       DAC 0 motion trigger
+# 6       DAC 1 motion trigger
+# 7       State 0 trigger
+# 8       State 1 trigger
 # ======= ===============================================
 :TRIGGERS_IN    R
     # Internally generated soft trigger
@@ -895,6 +894,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     # ADC min/max bunch motion triggers
     .ADC0
     .ADC1
+    # DAC min/max bunch motion triggers
+    .DAC0
+    .DAC1
     # Sequencer state entry triggers
     .SEQ0
     .SEQ1

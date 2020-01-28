@@ -312,6 +312,8 @@ static uint32_t trigger_sources_to_triggers_in(
         .pm = sources->pm,
         .adc0 = sources->adc0,
         .adc1 = sources->adc1,
+        .dac0 = sources->dac0,
+        .dac1 = sources->dac1,
         .seq0 = sources->seq0,
         .seq1 = sources->seq1,
     };
@@ -328,6 +330,8 @@ static void triggers_in_to_trigger_sources(
         .pm = triggers_in.pm,
         .adc0 = triggers_in.adc0,
         .adc1 = triggers_in.adc1,
+        .dac0 = triggers_in.dac0,
+        .dac1 = triggers_in.dac1,
         .seq0 = triggers_in.seq0,
         .seq1 = triggers_in.seq1,
     };
@@ -473,14 +477,14 @@ void hw_write_trigger_enable_mask(
         switch (target)
         {
             case TRIGGER_SEQ0:
-                ctrl_mirror.trg_config_trig_seq.enable0 = source_mask & 0x7F;
-                WRITEL(ctrl_regs->trg_config_trig_seq,
-                    ctrl_mirror.trg_config_trig_seq);
+                ctrl_mirror.trg_config_trig_seq0.enable = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq0,
+                    ctrl_mirror.trg_config_trig_seq0);
                 break;
             case TRIGGER_SEQ1:
-                ctrl_mirror.trg_config_trig_seq.enable1 = source_mask & 0x7F;
-                WRITEL(ctrl_regs->trg_config_trig_seq,
-                    ctrl_mirror.trg_config_trig_seq);
+                ctrl_mirror.trg_config_trig_seq0.enable = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq0,
+                    ctrl_mirror.trg_config_trig_seq0);
                 break;
             case TRIGGER_DRAM:
                 ctrl_mirror.trg_config_trig_dram.enable = source_mask & 0x7F;
@@ -500,14 +504,14 @@ void hw_write_trigger_blanking_mask(
         switch (target)
         {
             case TRIGGER_SEQ0:
-                ctrl_mirror.trg_config_trig_seq.blanking0 = source_mask & 0x7F;
-                WRITEL(ctrl_regs->trg_config_trig_seq,
-                    ctrl_mirror.trg_config_trig_seq);
+                ctrl_mirror.trg_config_trig_seq0.blanking = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq0,
+                    ctrl_mirror.trg_config_trig_seq0);
                 break;
             case TRIGGER_SEQ1:
-                ctrl_mirror.trg_config_trig_seq.blanking1 = source_mask & 0x7F;
-                WRITEL(ctrl_regs->trg_config_trig_seq,
-                    ctrl_mirror.trg_config_trig_seq);
+                ctrl_mirror.trg_config_trig_seq1.blanking = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq1,
+                    ctrl_mirror.trg_config_trig_seq1);
                 break;
             case TRIGGER_DRAM:
                 ctrl_mirror.trg_config_trig_dram.blanking = source_mask & 0x7F;

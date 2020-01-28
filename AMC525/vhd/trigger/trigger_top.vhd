@@ -32,6 +32,7 @@ entity trigger_top is
 
         -- Internal trigger sources
         adc_trigger_i : in std_ulogic_vector(CHANNELS);
+        dac_trigger_i : in std_ulogic_vector(CHANNELS);
         seq_trigger_i : in std_ulogic_vector(CHANNELS);
 
         -- Trigger outputs
@@ -122,6 +123,7 @@ begin
 
         soft_trigger_i => soft_trigger,
         adc_trigger_i => adc_trigger_i,
+        dac_trigger_i => dac_trigger_i,
         seq_trigger_i => seq_trigger_i,
 
         blanking_trigger_o => blanking_trigger,

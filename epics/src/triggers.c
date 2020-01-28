@@ -191,7 +191,8 @@ static struct trigger_target_state *sequencer_targets[AXIS_COUNT] = {
 /* This list must match order of definitions in register_defs.in for the
  * TRIGGERS_IN register. */
 static const char *source_names[] = {
-    "SOFT", "EXT", "PM", "ADC0", "ADC1", "SEQ0", "SEQ1", };
+    "SOFT", "EXT", "PM", "ADC0", "ADC1", "DAC0", "DAC1", "SEQ0", "SEQ1", };
+STATIC_COMPILE_ASSERT(ARRAY_SIZE(source_names) == TRIGGER_SOURCE_COUNT);
 
 /* Helper function for looking up a source boolean by offset, used for iterating
  * over the arrays of sources. */
