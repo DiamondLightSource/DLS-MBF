@@ -65,6 +65,12 @@ MMS Registers
 ..  register_docs::
     :group:     MMS
 
+Trigger Sources
+~~~~~~~~~~~~~~~
+
+..  register_docs::
+    :register:  TRIGGERS_IN
+
 Interrupt definitions
 ~~~~~~~~~~~~~~~~~~~~~
 

@@ -211,33 +211,39 @@ class register_docs(RegisterDocs):
         'register' : str,
     }
 
-    def lookup_option(self):
-        if 'section' in self.options:
-            return (register_groups[self.options['section']], True)
-        elif 'group' in self.options:
-            return (group_defs[self.options['group']], True)
-        elif 'register' in self.options:
-            return (register_defs[self.options['register']], False)
+    def doc_text(self, entity):
+        text = [s[1:] for s in entity.doc]
+        return self.parse_text(text)
 
-    def run(self):
-        definition, is_group = self.lookup_option()
-
-        header = self.doc_text(definition)
-
+    def run_group(self, group):
         table = Table(self, [12, 9, 12, 30, 80])
         table.add_header(
             [['Reg'], [], ['Field'], ['Name'], ['Description']])
         methods = GenerateMethods(table)
-        if is_group:
-            methods.walk_group([], definition)
-        else:
-            methods.walk_register([], definition)
+        methods.walk_group([], group)
+        return table.table
 
-        return header + [table.table]
+    def run_register(self, register):
+        table = Table(self, [12, 30, 80])
+        table.add_header([['Field'], ['Name'], ['Description']])
+        for field in register.fields:
+            table.add_row(
+                [[format_range(field.range, True)],
+                 format_name(field), trim_text(field.doc)])
+        return table.table
 
-    def doc_text(self, entity):
-        text = [s[1:] for s in entity.doc]
-        return self.parse_text(text)
+    def lookup_option(self):
+        if 'section' in self.options:
+            return (register_groups[self.options['section']], self.run_group)
+        elif 'group' in self.options:
+            return (group_defs[self.options['group']], self.run_group)
+        elif 'register' in self.options:
+            return (register_defs[self.options['register']], self.run_register)
+
+    def run(self):
+        definition, make_table = self.lookup_option()
+        header = self.doc_text(definition)
+        return header + [make_table(definition)]
 
 
 class constant_docs(RegisterDocs):

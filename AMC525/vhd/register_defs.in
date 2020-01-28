@@ -870,20 +870,6 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 
 
 # The following trigger sources are defined
-#
-# ======= ===============================================
-# Bit     Source
-# ======= ===============================================
-# 0       Soft trigger
-# 1       External event trigger
-# 2       Postmortem trigger
-# 3       ADC 0 motion trigger
-# 4       ADC 1 motion trigger
-# 5       DAC 0 motion trigger
-# 6       DAC 1 motion trigger
-# 7       State 0 trigger
-# 8       State 1 trigger
-# ======= ===============================================
 :TRIGGERS_IN    R
     # Internally generated soft trigger
     .SOFT
@@ -920,7 +906,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     .SEQ_DONE       2
     # Tune PLL interrupts.  Each channel supports the following interrupt
     # sources:
-    # (needed to work around generator bug)
+    #
     # === ==================================================================
     # 0   Frequency offset readout FIFO half full.
     # 1   Debug readout FIFO half full.
