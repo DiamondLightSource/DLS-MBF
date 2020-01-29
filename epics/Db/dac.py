@@ -17,7 +17,7 @@ for a in axes('DAC'):
 
     enable = boolOut('ENABLE', 'Off', 'On',
         ZSV = 'MAJOR', DESC = 'DAC output enable')
-    boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
+    mbbOut('MMS_SOURCE', 'Before FIR', 'After FIR', 'Feedback',
         DESC = 'Source of min/max/sum data')
     boolOut('DRAM_SOURCE', 'Before FIR', 'After FIR',
         DESC = 'Source of memory data')
@@ -29,6 +29,7 @@ for a in axes('DAC'):
     ovf = overflow('OVF', 'DAC overflow')   # Aggregates BUN, MUX, FIR _OVF
     dac_events.extend(overflows)
     dac_events.append(ovf)
+
     dac_events.append(event('EVENT', 'DAC min/max event'))
 
     add_aggregate(a, ovf, enable)

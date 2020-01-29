@@ -402,6 +402,9 @@ def measure_dac_mms(mbf, results):
     mbf.set('DAC:MMS_SOURCE_S', 'After FIR')
     results.MMS_DAC_FIR_DELAY = find_mms_peak(mbf, maxdac)
 
+    mbf.set('DAC:MMS_SOURCE_S', 'Feedback')
+    results.MMS_DAC_FEEDBACK_DELAY = find_mms_peak(mbf, maxdac)
+
     maxdac.close()
     maxadc.close()
 

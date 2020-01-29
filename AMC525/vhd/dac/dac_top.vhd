@@ -58,7 +58,7 @@ architecture arch of dac_top is
     signal nco_0_enable : std_ulogic;
     signal nco_1_enable : std_ulogic;
     signal nco_2_enable : std_ulogic;
-    signal mms_source : std_ulogic;
+    signal mms_source : std_ulogic_vector(1 downto 0);
     signal store_source : std_ulogic;
     signal delta_limit : unsigned(15 downto 0);
 
@@ -253,6 +253,7 @@ begin
 
         unfiltered_data_i => data_out,
         filtered_data_i => filtered_data,
+        fir_data_i => fir_data,
 
         mms_source_i => mms_source,
         mms_data_o => mms_data_in,

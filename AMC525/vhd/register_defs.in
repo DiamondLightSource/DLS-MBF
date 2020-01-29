@@ -554,9 +554,15 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 .NCO0_GAIN      4
                 # Global control for NCO0 enable
                 .NCO0_ENABLE
-                # Select MMS source: before or after output FIR.  If 0 we select
-                # the output before the filter
-                .MMS_SOURCE
+                # Select MMS source: before or after output FIR or a scaled
+                # selection of the feedback FIR.  Options are:
+                #
+                # === ===============================================
+                # 0   Raw DAC output before preemphasis filter.
+                # 1   Final DAC output after filtering.
+                # 2   Scaled feedback FIR data
+                # === ===============================================
+                .MMS_SOURCE     2
                 # Select stored data source, before or after output FIR.
                 .DRAM_SOURCE
             # MMS event threshold
@@ -569,8 +575,6 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .FIR_OVF
                     # Set when DAC output multiplexer detects overflow
                     .MUX_OVF
-                    # Placeholder for obsolete bit
-                    -
                     # Set if overflow detected during output preemphasis filter
                     .OUT_OVF
                     # Set when DAC min/max/sum motion exceeds configured

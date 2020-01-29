@@ -22,7 +22,7 @@
 static struct dac_context {
     int axis;
     bool output_enable;
-    bool mms_after_fir;
+    enum dac_mms_source mms_source;
     bool dram_after_fir;
     bool overflow;
     struct dac_events events;
@@ -98,21 +98,34 @@ bool get_dac_output_enable(int axis)
 }
 
 
+static unsigned int decode_mms_delay(enum dac_mms_source source)
+{
+    switch (source)
+    {
+        case DAC_MMS_BEFORE_PREEMPH:
+            return hardware_delays.MMS_DAC_DELAY;
+        case DAC_MMS_AFTER_PREEMPH:
+            return hardware_delays.MMS_DAC_FIR_DELAY;
+        case DAC_MMS_BB_FIR:
+            return hardware_delays.MMS_DAC_FEEDBACK_DELAY;
+        default:
+            ASSERT_FAIL();
+    }
+}
+
 static void update_delays(struct dac_context *dac)
 {
-    set_mms_offset(dac->mms, dac->mms_after_fir ?
-        hardware_delays.MMS_DAC_FIR_DELAY :
-        hardware_delays.MMS_DAC_DELAY);
+    set_mms_offset(dac->mms, decode_mms_delay(dac->mms_source));
     set_memory_dac_offset(dac->axis, dac->dram_after_fir ?
         hardware_delays.DRAM_DAC_FIR_DELAY :
         hardware_delays.DRAM_DAC_DELAY);
 }
 
-static bool write_dac_mms_source(void *context, bool *after_fir)
+static bool write_dac_mms_source(void *context, unsigned int *source)
 {
     struct dac_context *dac = context;
-    dac->mms_after_fir = *after_fir;
-    hw_write_dac_mms_source(dac->axis, *after_fir);
+    dac->mms_source = *source;
+    hw_write_dac_mms_source(dac->axis, *source);
     update_delays(dac);
     return true;
 }
@@ -153,7 +166,7 @@ error__t initialise_dac(void)
         PUBLISH_C_P(ao, "EVENT_LIMIT", set_dac_delta_threshold, dac);
         PUBLISH_C_P(ulongout, "DELAY", write_dac_delay, dac);
         PUBLISH_C_P(bo, "ENABLE",      write_dac_output_enable, dac);
-        PUBLISH_C_P(bo, "MMS_SOURCE",  write_dac_mms_source, dac);
+        PUBLISH_C_P(mbbo, "MMS_SOURCE",  write_dac_mms_source, dac);
         PUBLISH_C_P(bo, "DRAM_SOURCE", write_dac_dram_source, dac);
 
         PUBLISH_READ_VAR(bi, "BUN_OVF", dac->events.fir_ovf);

@@ -721,10 +721,10 @@ void hw_write_dac_nco0_enable(int axis, bool enable)
         WRITE_DSP_MIRROR(axis, dac_config, .nco0_enable = enable);
 }
 
-void hw_write_dac_mms_source(int axis, bool after_fir)
+void hw_write_dac_mms_source(int axis, enum dac_mms_source source)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, .mms_source = after_fir);
+        WRITE_DSP_MIRROR(axis, dac_config, .mms_source = source & 0x3);
 }
 
 void hw_write_dac_dram_source(int axis, bool after_fir)

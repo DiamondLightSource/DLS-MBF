@@ -314,7 +314,12 @@ void hw_write_dac_nco0_gain(int axis, unsigned int gain);
 void hw_write_dac_nco0_enable(int axis, bool enable);
 
 /* Set output source for DAC memory and MMS. */
-void hw_write_dac_mms_source(int axis, bool after_fir);
+enum dac_mms_source {
+    DAC_MMS_BEFORE_PREEMPH,
+    DAC_MMS_AFTER_PREEMPH,
+    DAC_MMS_BB_FIR,
+};
+void hw_write_dac_mms_source(int axis, enum dac_mms_source source);
 void hw_write_dac_dram_source(int axis, bool after_fir);
 
 /* Returns bunch by bunch, accumulator, min/max/sum, DAC FIR overflow events. */
