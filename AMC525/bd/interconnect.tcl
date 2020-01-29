@@ -2034,9 +2034,6 @@ proc create_root_design { parentCell } {
 
   # Create ports
   set CLK200MHZ [ create_bd_port -dir I -type clk -freq_hz 200000000 CLK200MHZ ]
-  set_property -dict [ list \
-   CONFIG.ASSOCIATED_RESET {} \
- ] $CLK200MHZ
   set DSP_CLK [ create_bd_port -dir I -type clk -freq_hz 250000000 DSP_CLK ]
   set_property -dict [ list \
    CONFIG.ASSOCIATED_BUSIF {S_DSP_DRAM0:S_DSP_DRAM1} \
