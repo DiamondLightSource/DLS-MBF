@@ -26,6 +26,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/nco/nco_delay.vhd \
     $vhd_dir/nco/nco.vhd \
     $vhd_dir/dsp/dsp_defs.vhd \
+    $vhd_dir/tune_pll/tune_pll_offset.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/sequencer/sequencer_defs.vhd \

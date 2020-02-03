@@ -49,10 +49,6 @@ architecture arch of sequencer_counter is
     signal turn_clock_delay : std_ulogic;
 
     signal add_pll_freq : std_ulogic := '0';
-    signal tune_pll_offset_in : angle_t;
-
-    attribute USE_DSP : string;
-    attribute USE_DSP of nco_freq_o : signal is "yes";
 
 begin
     process (dsp_clk_i) begin
@@ -88,14 +84,17 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            tune_pll_offset_in <=
-                unsigned(resize(tune_pll_offset_i & X"00", angle_t'LENGTH));
-            if add_pll_freq = '1' then
-                nco_freq_o <= nco_freq + tune_pll_offset_in;
-            else
-                nco_freq_o <= nco_freq;
-            end if;
             nco_reset_o <= reset_phase_i and turn_clock_i and state_end_o;
         end if;
     end process;
+
+
+    -- Add offset to computed frequency if required
+    add_offset : entity work.tune_pll_offset port map (
+        clk_i => dsp_clk_i,
+        freq_offset_i => tune_pll_offset_i,
+        enable_i => add_pll_freq,
+        freq_i => nco_freq,
+        freq_o => nco_freq_o
+    );
 end;
