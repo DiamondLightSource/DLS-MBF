@@ -22,13 +22,9 @@ entity dac_output_mux is
         -- Input signals with individual enable controls
         fir_data_i : in signed;
         fir_overflow_i : in std_ulogic;
-        nco_0_enable_i : in std_ulogic;
         nco_0_i : in signed;
-        nco_1_enable_i : in std_ulogic;
         nco_1_i : in signed;
-        nco_2_enable_i : in std_ulogic;
         nco_2_i : in signed;
-        nco_3_enable_i : in std_ulogic;
         nco_3_i : in signed;
 
         -- Generated outputs.  Note that the FIR overflow is pipelined through
@@ -44,13 +40,6 @@ architecture arch of dac_output_mux is
     -- So that we can reliably catch the overflow from adding three quantities,
     -- we need two extra bits in the accumulator.
     constant ACCUM_WIDTH : natural := data_o'LENGTH + 2;
-
-    -- Computed input enables
-    signal fir_enable : std_ulogic;
-    signal nco_0_enable : std_ulogic;
-    signal nco_1_enable : std_ulogic;
-    signal nco_2_enable : std_ulogic;
-    signal nco_3_enable : std_ulogic;
 
     -- Selected data, widened for accumulator
     signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
@@ -96,17 +85,13 @@ architecture arch of dac_output_mux is
     constant INPUT_DELAY : natural := 4;
 
 begin
-    fir_enable   <= bunch_config_i.fir_enable;
-    nco_0_enable <= nco_0_enable_i and bunch_config_i.nco_0_enable;
-    nco_1_enable <= nco_1_enable_i and bunch_config_i.nco_1_enable;
-    nco_2_enable <= nco_2_enable_i and bunch_config_i.nco_2_enable;
-
     prepare_fir : entity work.dlyreg generic map (
         DLY => INPUT_DELAY,
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(prepare(fir_data_i, fir_enable)),
+        data_i => std_ulogic_vector(
+            prepare(fir_data_i, bunch_config_i.fir_enable)),
         signed(data_o) => fir_data
     );
 
@@ -115,7 +100,8 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(prepare(nco_0_i, nco_0_enable)),
+        data_i => std_ulogic_vector(
+            prepare(nco_0_i, bunch_config_i.nco_0_enable)),
         signed(data_o) => nco_0_data
     );
 
@@ -124,7 +110,8 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(prepare(nco_1_i, nco_1_enable)),
+        data_i => std_ulogic_vector(
+            prepare(nco_1_i, bunch_config_i.nco_1_enable)),
         signed(data_o) => nco_1_data
     );
 
@@ -133,7 +120,8 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(prepare(nco_2_i, nco_2_enable)),
+        data_i => std_ulogic_vector(
+            prepare(nco_2_i, bunch_config_i.nco_2_enable)),
         signed(data_o) => nco_2_data
     );
 
@@ -142,7 +130,8 @@ begin
         DW => ACCUM_WIDTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(prepare(nco_3_i, nco_3_enable)),
+        data_i => std_ulogic_vector(
+            prepare(nco_3_i, bunch_config_i.nco_3_enable)),
         signed(data_o) => nco_3_data
     );
 
@@ -158,7 +147,7 @@ begin
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            fir_overflow <= fir_overflow_i and fir_enable;
+            fir_overflow <= fir_overflow_i and bunch_config_i.fir_enable;
             -- Also pipeline the gain so that the selection and gain match
             bunch_gain_pl <= bunch_gain_in;
             bunch_gain <= bunch_gain_pl;

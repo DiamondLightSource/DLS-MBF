@@ -16,19 +16,19 @@ package dsp_defs is
     subtype FIR_DATA_RANGE is natural range 24 downto 0;    -- 25 bits
     subtype DAC_DATA_RANGE is natural range 15 downto 0;    -- 16 bits
 
-    subtype nco_gain_t is unsigned(3 downto 0);
+    -- We allocate a generous extra few bits to the NCO gain to help avoiding
+    -- loss of resolution when rounding later on.
+    subtype nco_gain_t is unsigned(19 downto 0);
 
     -- Gather the entire NCO state into a single record
     type dsp_nco_to_mux_t is record
         nco : cos_sin_18_t;
         gain : nco_gain_t;
-        enable : std_ulogic;
     end record;
 
     type dsp_nco_from_mux_t is record
         nco : signed(NCO_DATA_RANGE);
         gain : nco_gain_t;
-        enable : std_ulogic;
     end record;
 
     type dsp_to_control_t is record
@@ -88,8 +88,7 @@ package dsp_defs is
     -- Convenient reset value for simulation
     constant dsp_nco_from_mux_reset : dsp_nco_from_mux_t := (
         nco => (others => '0'),
-        gain => (others => '0'),
-        enable => '0'
+        gain => (others => '0')
     );
 
     constant control_to_dsp_reset : control_to_dsp_t := (

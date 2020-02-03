@@ -18,7 +18,6 @@ package tune_pll_defs is
     type tune_pll_config_t is record
         -- NCO control
         nco_gain : nco_gain_t;
-        nco_enable : std_ulogic;
         nco_reset : std_ulogic;
 
         -- Detector control and status

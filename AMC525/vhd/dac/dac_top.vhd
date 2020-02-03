@@ -22,7 +22,15 @@ entity dac_top is
         -- Clocking
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
-        turn_clock_i : in std_ulogic;       -- start of machine revolution
+        turn_clock_i : in std_ulogic;   -- start of machine revolution
+
+        -- General register interface
+        write_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
+        write_data_i : in reg_data_t;
+        write_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
+        read_data_o : out reg_data_array_t(DSP_DAC_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
 
         -- Data inputs
         bunch_config_i : in bunch_config_t;
@@ -33,17 +41,8 @@ entity dac_top is
         nco_3_data_i : in dsp_nco_from_mux_t;
 
         -- Outputs and overflow detection
-        data_store_o : out signed;          -- Data from intermediate processing
-        data_o : out signed;                -- at ADC data rate
-
-        -- General register interface
-        write_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
-        write_data_i : in reg_data_t;
-        write_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
-        read_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
-        read_data_o : out reg_data_array_t(DSP_DAC_REGS);
-        read_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
-
+        data_store_o : out signed;      -- Data from intermediate processing
+        data_o : out signed;            -- at ADC data rate
         delta_event_o : out std_ulogic  -- bunch movement over threshold
     );
 end;
@@ -52,10 +51,6 @@ architecture arch of dac_top is
     -- Configuration settings from registers
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(3 downto 0);
-    signal nco_0_enable : std_ulogic;
-    signal nco_1_enable : std_ulogic;
-    signal nco_2_enable : std_ulogic;
-    signal nco_3_enable : std_ulogic;
     signal mms_source : std_ulogic_vector(1 downto 0);
     signal store_source : std_ulogic;
     signal delta_limit : unsigned(15 downto 0);
@@ -187,58 +182,34 @@ begin
         overflow_o => fir_overflow_in
     );
 
-    nco_0_gain_control : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2
-    ) port map (
+    nco_0_gain_control : entity work.nco_gain_control port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_0_data_in.gain,
+        gain_i => nco_0_data_in.gain,
         data_i => nco_0_data_in.nco,
-        data_o => nco_0_data,
-        overflow_o => open
+        data_o => nco_0_data
     );
-    nco_0_enable <= nco_0_data_in.enable;
 
-    nco_1_gain_control : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2,
+    nco_1_gain_control : entity work.nco_gain_control generic map (
         GAIN_DELAY => NCO1_GAIN_DELAY
     ) port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_1_data_in.gain,
+        gain_i => nco_1_data_in.gain,
         data_i => nco_1_data_in.nco,
-        data_o => nco_1_data,
-        overflow_o => open
+        data_o => nco_1_data
     );
 
-    nco_2_gain_control : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2
-    ) port map (
+    nco_2_gain_control : entity work.nco_gain_control port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_2_data_in.gain,
+        gain_i => nco_2_data_in.gain,
         data_i => nco_2_data_in.nco,
-        data_o => nco_2_data,
-        overflow_o => open
+        data_o => nco_2_data
     );
-    nco_2_enable <= nco_2_data_in.enable;
 
-    nco_3_gain_control : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2
-    ) port map (
+    nco_3_gain_control : entity work.nco_gain_control port map (
         clk_i => adc_clk_i,
-        gain_sel_i => nco_3_data_in.gain,
+        gain_i => nco_3_data_in.gain,
         data_i => nco_3_data_in.nco,
-        data_o => nco_3_data,
-        overflow_o => open
-    );
-    nco_3_enable <= nco_3_data_in.enable;
-
-
-    -- Align NCO 1 enable with gain control
-    nco_1_enable_delay : entity work.dlyline generic map (
-        DLY => NCO1_GAIN_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i(0) => nco_1_data_in.enable,
-        data_o(0) => nco_1_enable
+        data_o => nco_3_data
     );
 
 
@@ -251,13 +222,9 @@ begin
 
         fir_data_i => fir_data,
         fir_overflow_i => fir_overflow_in,
-        nco_0_enable_i => nco_0_enable,
         nco_0_i => nco_0_data,
-        nco_1_enable_i => nco_1_enable,
         nco_1_i => nco_1_data,
-        nco_2_enable_i => nco_2_enable,
         nco_2_i => nco_2_data,
-        nco_3_enable_i => nco_3_enable,
         nco_3_i => nco_3_data,
 
         data_o => data_out,

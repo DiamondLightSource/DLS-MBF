@@ -308,7 +308,6 @@ begin
         cos_sin_o => nco_data_o.nco
     );
     nco_data_o.gain <= config.nco_gain;
-    nco_data_o.enable <= config.nco_enable;
 
 
     interrupt_o <= (

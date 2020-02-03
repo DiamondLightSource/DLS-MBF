@@ -90,8 +90,6 @@ architecture arch of sequencer_top is
     signal nco_reset : std_ulogic;
     signal nco_gain : nco_gain_t;
     signal nco_gain_adc : nco_gain_t;
-    signal nco_enable : std_ulogic;
-    signal nco_enable_adc : std_ulogic;
     signal detector_window : detector_window_o'SUBTYPE;
     signal bunch_bank : bunch_bank_o'SUBTYPE;
 
@@ -283,7 +281,6 @@ begin
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
         nco_gain_o => nco_gain,
-        nco_enable_o => nco_enable,
         bunch_bank_o => bunch_bank
     );
 
@@ -300,7 +297,6 @@ begin
         cos_sin_o => nco_data_o.nco
     );
     nco_data_o.gain <= nco_gain_adc;
-    nco_data_o.enable <= nco_enable_adc;
 
 
     clocking : entity work.sequencer_clocking port map (
@@ -317,9 +313,7 @@ begin
         seq_write_adc_o => seq_write_adc_o,
 
         nco_gain_dsp_i => nco_gain,
-        nco_enable_dsp_i => nco_enable,
         nco_gain_adc_o => nco_gain_adc,
-        nco_enable_adc_o => nco_enable_adc,
 
         detector_window_dsp_i => detector_window,
         detector_window_adc_o => detector_window_o,

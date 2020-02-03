@@ -41,6 +41,7 @@ end;
 
 architecture arch of tune_pll_registers is
     signal config_register : reg_data_t;
+    signal config_extra_register : reg_data_t;
     signal status_register : reg_data_t;
     signal target_phase_register : reg_data_t;
     signal integral_register : reg_data_t;
@@ -70,35 +71,43 @@ begin
     -- Fixed register settings
     register_file : entity work.register_file port map (
         clk_i => clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
+        write_strobe_i(0) =>
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
         write_strobe_i(1) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_CONFIG_EXTRA_REG),
         write_strobe_i(2) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
         write_strobe_i(3) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
         write_strobe_i(4) =>
-            write_strobe_i(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
         write_strobe_i(5) =>
+            write_strobe_i(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
+        write_strobe_i(6) =>
             write_strobe_i(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W),
         write_data_i => write_data_i,
         write_ack_o(0) => write_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_REG_W),
-        write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
-        write_ack_o(2) => write_ack_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
-        write_ack_o(3) => write_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
-        write_ack_o(4) => write_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
-        write_ack_o(5) =>
+        write_ack_o(1) => write_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_EXTRA_REG),
+        write_ack_o(2) => write_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG),
+        write_ack_o(3) => write_ack_o(DSP_TUNE_PLL_CONTROL_INTEGRAL_REG),
+        write_ack_o(4) => write_ack_o(DSP_TUNE_PLL_CONTROL_PROPORTIONAL_REG),
+        write_ack_o(5) => write_ack_o(DSP_TUNE_PLL_CONTROL_MIN_MAGNITUDE_REG),
+        write_ack_o(6) =>
             write_ack_o(DSP_TUNE_PLL_CONTROL_MAX_OFFSET_ERROR_REG_W),
         register_data_o(0) => config_register,
-        register_data_o(1) => target_phase_register,
-        register_data_o(2) => integral_register,
-        register_data_o(3) => proportional_register,
-        register_data_o(4) => mag_limit_register,
-        register_data_o(5) => offset_limit_register
+        register_data_o(1) => config_extra_register,
+        register_data_o(2) => target_phase_register,
+        register_data_o(3) => integral_register,
+        register_data_o(4) => proportional_register,
+        register_data_o(5) => mag_limit_register,
+        register_data_o(6) => offset_limit_register
     );
 
     read_data_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= status_register;
     read_ack_o(DSP_TUNE_PLL_CONTROL_STATUS_REG_R) <= '1';
+
+    read_data_o(DSP_TUNE_PLL_CONTROL_CONFIG_EXTRA_REG) <= (others => '0');
+    read_ack_o(DSP_TUNE_PLL_CONTROL_CONFIG_EXTRA_REG) <= '1';
 
     read_data_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= (others => '0');
     read_ack_o(DSP_TUNE_PLL_CONTROL_TARGET_PHASE_REG) <= '1';
@@ -120,9 +129,7 @@ begin
     config_o.detector_shift <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DET_SHIFT_BITS));
     config_o.nco_gain <= unsigned(
-        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_GAIN_BITS));
-    config_o.nco_enable <=
-        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_NCO_ENABLE_BIT);
+        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_EXTRA_NCO_GAIN_BITS));
     config_o.filter_cordic <=
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_FILTER_CORDIC_BIT);
     config_o.capture_cordic <=

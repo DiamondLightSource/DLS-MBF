@@ -60,11 +60,9 @@ begin
     read_ack_o(DSP_FIXED_NCO_NCO2_REG) <= '1';
 
     nco1_data_o.gain <= unsigned(nco1_register(DSP_FIXED_NCO_NCO1_GAIN_BITS));
-    nco1_data_o.enable <= nco1_register(DSP_FIXED_NCO_NCO1_ENABLE_BIT);
     enable_pll(1) <= nco1_register(DSP_FIXED_NCO_NCO1_ENA_TUNE_PLL_BIT);
 
     nco2_data_o.gain <= unsigned(nco1_register(DSP_FIXED_NCO_NCO2_GAIN_BITS));
-    nco2_data_o.enable <= nco2_register(DSP_FIXED_NCO_NCO2_ENABLE_BIT);
     enable_pll(2) <= nco2_register(DSP_FIXED_NCO_NCO2_ENA_TUNE_PLL_BIT);
 
 
