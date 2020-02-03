@@ -6,8 +6,7 @@
 -- Output control:
 --
 --  bunch_bank_o    Determines FIR selection, DAC output selection, output gain
---  nco_freq_o      Determines sweep NCO frequency
---  nco_gain_o      Determines sweep NCO output gain
+--  nco_data_o      Generated NCO for output and detector
 --
 -- Detector control:
 --
@@ -29,13 +28,14 @@ use work.defines.all;
 use work.support.all;
 
 use work.nco_defs.all;
+use work.dsp_defs.all;
 use work.sequencer_defs.all;
 use work.register_defs.all;
 
 entity sequencer_top is
     generic (
-        NCO_DELAY : natural;
-        BANK_DELAY : natural
+        -- Delay from bunch bank selection to bank configuration
+        BUNCH_SELECT_DELAY : natural
     );
     port (
         adc_clk_i : in std_ulogic;
@@ -65,10 +65,7 @@ entity sequencer_top is
         seq_write_adc_o : out std_ulogic;   -- End of dwell interval
 
         tune_pll_offset_i : in signed(31 downto 0); -- Tune PLL frequency offset
-        nco_freq_o : out angle_t;               -- NCO frequency
-        nco_reset_o : out std_ulogic;
-        nco_gain_o : out unsigned(3 downto 0);  -- NCO gain
-        nco_enable_o : out std_ulogic;          -- Enable NCO out
+        nco_data_o : out dsp_nco_to_mux_t;
         detector_window_o : out detector_win_t; -- Detector input window
         bunch_bank_o : out unsigned(1 downto 0) -- Bunch bank selection
     );
@@ -89,8 +86,12 @@ architecture arch of sequencer_top is
     signal mem_write_data : reg_data_t;
 
     signal turn_clock : std_ulogic;
-    signal nco_gain : nco_gain_o'SUBTYPE;
+    signal nco_freq : angle_t;
+    signal nco_reset : std_ulogic;
+    signal nco_gain : nco_gain_t;
+    signal nco_gain_adc : nco_gain_t;
     signal nco_enable : std_ulogic;
+    signal nco_enable_adc : std_ulogic;
     signal detector_window : detector_window_o'SUBTYPE;
     signal bunch_bank : bunch_bank_o'SUBTYPE;
 
@@ -123,6 +124,16 @@ architecture arch of sequencer_top is
     -- Pipelined outputs
     signal seq_start : std_ulogic;
     signal seq_write : std_ulogic;
+
+    -- The following delays are needed to configure the sequencer so that the
+    -- sweep output and other controls are aligned at the DAC output.
+    --
+    -- Delay from nco phase control to cos/sin output, validated by NCO core
+    constant NCO_PROCESS_DELAY : natural := 16;
+    -- Total delay through NCO including 4 tick NCO output pipeline
+    constant NCO_DELAY : natural := NCO_PROCESS_DELAY + 4;
+    -- Extra delay for the bunch bank select taking NCO delays into account
+    constant BANK_DELAY : natural := NCO_DELAY + 4 - BUNCH_SELECT_DELAY;
 
 begin
     pll_freq_delay : entity work.dlyreg generic map (
@@ -236,8 +247,8 @@ begin
         tune_pll_offset_i => tune_pll_offset,
 
         state_end_o => state_end,
-        nco_freq_o => nco_freq_o,
-        nco_reset_o => nco_reset_o
+        nco_freq_o => nco_freq,
+        nco_reset_o => nco_reset
     );
 
     -- Generates detector window.
@@ -276,6 +287,21 @@ begin
         bunch_bank_o => bunch_bank
     );
 
+    -- Swept NCO
+    seq_nco : entity work.nco generic map (
+        PROCESS_DELAY => NCO_PROCESS_DELAY,
+        IN_DELAY => 0,
+        OUT_DELAY => 4
+    ) port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        phase_advance_i => nco_freq,
+        reset_phase_i => nco_reset,
+        cos_sin_o => nco_data_o.nco
+    );
+    nco_data_o.gain <= nco_gain_adc;
+    nco_data_o.enable <= nco_enable_adc;
+
 
     clocking : entity work.sequencer_clocking port map (
         adc_clk_i => adc_clk_i,
@@ -292,8 +318,8 @@ begin
 
         nco_gain_dsp_i => nco_gain,
         nco_enable_dsp_i => nco_enable,
-        nco_gain_adc_o => nco_gain_o,
-        nco_enable_adc_o => nco_enable_o,
+        nco_gain_adc_o => nco_gain_adc,
+        nco_enable_adc_o => nco_enable_adc,
 
         detector_window_dsp_i => detector_window,
         detector_window_adc_o => detector_window_o,

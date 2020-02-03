@@ -54,28 +54,14 @@ architecture arch of dsp_top is
     signal nco_0_phase_advance : angle_t;
     signal nco_0_reset_phase : std_ulogic;
     signal nco_0_cos_sin : cos_sin_18_t;
-    signal nco_1_phase_advance : angle_t;
-    signal nco_1_reset_phase : std_ulogic;
-    signal nco_1_cos_sin : cos_sin_18_t;
-    signal nco_2_phase_advance : angle_t;
-    signal nco_2_reset_phase : std_ulogic;
-    signal nco_2_cos_sin : cos_sin_18_t;
 
     -- Data flow
     signal fir_data : signed(FIR_DATA_RANGE);
     signal fill_reject_adc : signed(ADC_DATA_RANGE);
 
-    -- The following delays are needed to configure the sequencer so that the
-    -- sweep output and other controls are aligned at the DAC output.
-    --
-    -- Delay from nco phase control to cos/sin output, validated by NCO core
-    constant NCO_PROCESS_DELAY : natural := 16;
-    -- Total delay through NCO including 4 tick NCO output pipeline
-    constant NCO1_DELAY : natural := NCO_PROCESS_DELAY + 4;
-    -- Delay from bunch bank selection to bank configuration
+    -- Delay from bunch bank selection to bank configuration, validated by
+    -- bunch_select, used by sequencer_top.
     constant BUNCH_SELECT_DELAY : natural := 8;
-    -- Extra daly for the bunch bank select taking NCO delays into account
-    constant BANK_DELAY : natural := NCO1_DELAY + 4 - BUNCH_SELECT_DELAY;
 
 begin
     -- -------------------------------------------------------------------------
@@ -130,27 +116,6 @@ begin
     );
     dsp_to_control_o.nco_0_data.nco <= nco_0_cos_sin;
 
-    nco_1 : entity work.nco generic map (
-        PROCESS_DELAY => NCO_PROCESS_DELAY,
-        IN_DELAY => 0,
-        OUT_DELAY => 4
-    ) port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-        phase_advance_i => nco_1_phase_advance,
-        reset_phase_i => nco_1_reset_phase,
-        cos_sin_o => nco_1_cos_sin
-    );
-    dsp_to_control_o.nco_1_data.nco <= nco_1_cos_sin;
-
-    nco_2 : entity work.nco port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-        phase_advance_i => nco_2_phase_advance,
-        reset_phase_i => nco_2_reset_phase,
-        cos_sin_o => nco_2_cos_sin
-    );
-    dsp_to_control_o.nco_2_data.nco <= nco_2_cos_sin;
 
 
     -- -------------------------------------------------------------------------
@@ -240,8 +205,7 @@ begin
     -- Sequencer and detector
 
     sequencer : entity work.sequencer_top generic map (
-        NCO_DELAY => NCO1_DELAY,
-        BANK_DELAY => BANK_DELAY
+        BUNCH_SELECT_DELAY => BUNCH_SELECT_DELAY
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
@@ -265,10 +229,7 @@ begin
         seq_write_adc_o => sequencer_write,
 
         tune_pll_offset_i => tune_pll_offset,
-        nco_freq_o => nco_1_phase_advance,
-        nco_reset_o => nco_1_reset_phase,
-        nco_gain_o => dsp_to_control_o.nco_1_data.gain,
-        nco_enable_o => dsp_to_control_o.nco_1_data.enable,
+        nco_data_o => dsp_to_control_o.nco_1_data,
         detector_window_o => detector_window,
         bunch_bank_o => dsp_to_control_o.bank_select
     );
@@ -296,7 +257,7 @@ begin
         adc_data_i => control_to_dsp_i.adc_data,
         adc_fill_reject_i => fill_reject_adc,
         fir_data_i => fir_data,
-        nco_iq_i => nco_1_cos_sin,
+        nco_iq_i => dsp_to_control_o.nco_1_data.nco,
         window_i => detector_window,
 
         start_i => sequencer_start,
@@ -324,16 +285,12 @@ begin
         adc_data_i => control_to_dsp_i.adc_data,
         adc_fill_reject_i => fill_reject_adc,
         fir_data_i => fir_data,
-        nco_iq_i => nco_2_cos_sin,
 
         start_i => control_to_dsp_i.start_tune_pll,
         stop_i => control_to_dsp_i.stop_tune_pll,
         blanking_i => control_to_dsp_i.blanking,
 
-        nco_gain_o => dsp_to_control_o.nco_2_data.gain,
-        nco_enable_o => dsp_to_control_o.nco_2_data.enable,
-        nco_reset_o => nco_2_reset_phase,
-        nco_freq_o => nco_2_phase_advance,
+        nco_data_o => dsp_to_control_o.nco_2_data,
         freq_offset_o => tune_pll_offset,
 
         interrupt_o => dsp_to_control_o.tune_pll_ready

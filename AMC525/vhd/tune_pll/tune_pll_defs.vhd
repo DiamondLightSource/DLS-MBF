@@ -6,6 +6,7 @@ use work.support.all;
 use work.defines.all;
 
 use work.nco_defs.all;
+use work.dsp_defs.all;
 use work.detector_defs.all;
 
 package tune_pll_defs is
@@ -16,7 +17,7 @@ package tune_pll_defs is
     -- Control settings
     type tune_pll_config_t is record
         -- NCO control
-        nco_gain : unsigned(3 downto 0);
+        nco_gain : nco_gain_t;
         nco_enable : std_ulogic;
         nco_reset : std_ulogic;
 

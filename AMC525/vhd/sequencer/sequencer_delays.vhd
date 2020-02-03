@@ -12,6 +12,7 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 
+use work.dsp_defs.all;
 use work.sequencer_defs.all;
 
 entity sequencer_delays is
@@ -27,7 +28,7 @@ entity sequencer_delays is
         seq_pc_i : in seq_pc_t;
 
         seq_pc_o : out seq_pc_t := (others => '0');
-        nco_gain_o : out unsigned(3 downto 0) := (others => '0');
+        nco_gain_o : out nco_gain_t := (others => '0');
         nco_enable_o : out std_ulogic;
         bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );

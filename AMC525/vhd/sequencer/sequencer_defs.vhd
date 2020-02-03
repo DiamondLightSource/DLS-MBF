@@ -5,6 +5,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.defines.all;
+use work.dsp_defs.all;
 use work.nco_defs.all;
 
 package sequencer_defs is
@@ -19,7 +20,7 @@ package sequencer_defs is
         dwell_count : dwell_count_t;    -- Dwell count turns per capture
         capture_count : capture_count_t;    -- Number of captures in state
         bunch_bank : unsigned(1 downto 0);  -- Bunch bank selection
-        nco_gain : unsigned(3 downto 0);    -- Sweep NCO gain select
+        nco_gain : nco_gain_t;          -- Sweep NCO gain select
         nco_enable : std_ulogic;        -- Enable sweep output
         enable_window : std_ulogic;     -- Enable detector window
         enable_write : std_ulogic;      -- Enable data capture for this sweep
