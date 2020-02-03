@@ -17,6 +17,15 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
     $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/nco/nco_defs.vhd \
+    nco_cos_sin_table.vhd \
+    $vhd_dir/nco/nco_phase.vhd \
+    $vhd_dir/nco/nco_cos_sin_prepare.vhd \
+    $vhd_dir/nco/nco_cos_sin_octant.vhd \
+    $vhd_dir/nco/nco_cos_sin_refine.vhd \
+    $vhd_dir/nco/nco_core.vhd \
+    $vhd_dir/nco/nco_delay.vhd \
+    $vhd_dir/nco/nco.vhd \
+    $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/sequencer/sequencer_defs.vhd \
