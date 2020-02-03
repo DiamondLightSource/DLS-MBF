@@ -28,6 +28,8 @@ entity dac_output_mux is
         nco_1_i : in signed;
         nco_2_enable_i : in std_ulogic;
         nco_2_i : in signed;
+        nco_3_enable_i : in std_ulogic;
+        nco_3_i : in signed;
 
         -- Generated outputs.  Note that the FIR overflow is pipelined through
         -- so that we know whether to ignore it, if the output was unused.
@@ -48,12 +50,14 @@ architecture arch of dac_output_mux is
     signal nco_0_enable : std_ulogic;
     signal nco_1_enable : std_ulogic;
     signal nco_2_enable : std_ulogic;
+    signal nco_3_enable : std_ulogic;
 
     -- Selected data, widened for accumulator
     signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_0_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_1_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal nco_2_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
+    signal nco_3_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     -- Sum of the three values above
     signal accum_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
     signal accum : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
@@ -133,6 +137,15 @@ begin
         signed(data_o) => nco_2_data
     );
 
+    prepare_nco_3 : entity work.dlyreg generic map (
+        DLY => INPUT_DELAY,
+        DW => ACCUM_WIDTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(prepare(nco_3_i, nco_3_enable)),
+        signed(data_o) => nco_3_data
+    );
+
     prepare_gain : entity work.dlyreg generic map (
         DLY => INPUT_DELAY,
         DW => bunch_config_i.gain'LENGTH
@@ -150,8 +163,10 @@ begin
             bunch_gain_pl <= bunch_gain_in;
             bunch_gain <= bunch_gain_pl;
 
-            -- Add all four inputs together, continue with gain pipeline
-            accum_pl <= fir_data + nco_0_data + nco_1_data + nco_2_data;
+            -- Add all inputs together, continue with gain pipeline
+            -- This is not serious, this will be revisited very shortly.
+            accum_pl <=
+                fir_data + nco_0_data + nco_1_data + nco_2_data + nco_3_data;
             accum <= accum_pl;
 
             -- Apply selected gain

@@ -87,8 +87,11 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 :!NCO_FREQ
     LOW         RW
     HIGH        RW
+        # High order bits, writing this field triggers frequency update.
         .BITS           16
         -               15
+        # Setting this bit triggers a reset of the NCO phase when this is
+        # written.
         .RESET_PHASE
 
 
@@ -214,6 +217,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         .NCO1_MUX
         # NCO2 mux: if set channel 1 NCO2 has sin data from channel 0
         .NCO2_MUX
+        # NCO3 mux: if set channel 1 NCO3 has sin data from channel 0
+        .NCO3_MUX
         # Bank mux: if set channel 1 bank selection is copy of bank selection
         # from channel 0.
         .BANK_MUX
@@ -446,8 +451,23 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # Used for channel specific DSP control, each channel has its own bank of
 # registers.
 !DSP
-    # This is a fixed frequency NCO with frequency under manual control only
-    :NCO_FREQ   NCO0
+    # Two fixed frequency NCOs with manual frequency control and fine grained
+    # gain control.
+    !FIXED_NCO
+        NCO1    W
+            # Gain setting for NCO1
+            .GAIN       4
+            .ENABLE
+            # This bit is set to enable tune PLL tracking for NCO1
+            .ENA_TUNE_PLL
+        NCO2    W
+            # Gain setting for NCO2
+            .GAIN       4
+            .ENABLE
+            # This bit is set to enable tune PLL tracking for NCO2
+            .ENA_TUNE_PLL
+        :NCO_FREQ   NCO1_FREQ
+        :NCO_FREQ   NCO2_FREQ
 
     # Input signal processing
     !ADC
@@ -550,10 +570,6 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 .DELAY          10
                 # Gain for FIR output
                 .FIR_GAIN       4
-                # Gain for NCO0 output (NCO1 gain is under sequencer control)
-                .NCO0_GAIN      4
-                # Global control for NCO0 enable
-                .NCO0_ENABLE
                 # Select MMS source: before or after output FIR or a scaled
                 # selection of the feedback FIR.  Options are:
                 #

@@ -73,6 +73,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/memory/memory_buffer_simple.vhd \
     $vhd_dir/memory/memory_buffer.vhd \
     $vhd_dir/memory/memory_fifo.vhd \
+    $vhd_dir/tune_pll/tune_pll_offset.vhd \
     $vhd_dir/sequencer/sequencer_defs.vhd \
     $vhd_dir/sequencer/sequencer_registers.vhd \
     $vhd_dir/sequencer/sequencer_super.vhd \
@@ -96,6 +97,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_dram_output.vhd \
     $vhd_dir/detector/detector_top.vhd \
     $vhd_dir/dsp/nco_register.vhd \
+    $vhd_dir/dsp/dsp_fixed_nco.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
     $vhd_dir/dsp/dsp_nco_to_mux_delay.vhd \
     $vhd_dir/dsp/dsp_control_mux.vhd \

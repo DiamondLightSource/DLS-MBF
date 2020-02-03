@@ -39,6 +39,7 @@ architecture arch of testbench is
     signal mux_nco_0_out : dsp_nco_from_mux_array_t;
     signal mux_nco_1_out : dsp_nco_from_mux_array_t;
     signal mux_nco_2_out : dsp_nco_from_mux_array_t;
+    signal mux_nco_3_out : dsp_nco_from_mux_array_t;
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
 begin
@@ -98,6 +99,7 @@ begin
         nco_0_mux_i => '0',
         nco_1_mux_i => '0',
         nco_2_mux_i => '0',
+        nco_3_mux_i => '0',
         bank_mux_i => '0',
 
         dsp_to_control_i => dsp_to_control_array,
@@ -106,12 +108,14 @@ begin
         nco_0_o => mux_nco_0_out,
         nco_1_o => mux_nco_1_out,
         nco_2_o => mux_nco_2_out,
+        nco_3_o => mux_nco_3_out,
         bank_select_o => bank_select_out
     );
     control_to_dsp.adc_data <= mux_adc_out(0);
     control_to_dsp.nco_0_data <= mux_nco_0_out(0);
     control_to_dsp.nco_1_data <= mux_nco_1_out(0);
     control_to_dsp.nco_2_data <= mux_nco_2_out(0);
+    control_to_dsp.nco_3_data <= mux_nco_3_out(0);
     control_to_dsp.bank_select <= bank_select_out(0);
     control_to_dsp.turn_clock <= turn_clock;
 
@@ -145,14 +149,14 @@ begin
         write_reg(DSP_DAC_TAPS_REG, X"7FFFFFFF");
 
         -- Set a sensible NCO frequency, reset the phase
-        write_reg(DSP_NCO0_REGS'LOW, X"00000000");
-        write_reg(DSP_NCO0_REGS'LOW + 1, (
+        write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW, X"00000000");
+        write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW + 1, (
             NCO_FREQ_HIGH_BITS_BITS => X"0800",
             NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
             others => '0'));
-        -- Enable output of NCO0
-        write_reg(DSP_DAC_CONFIG_REG, (
-            DSP_DAC_CONFIG_NCO0_ENABLE_BIT => '1',
+        write_reg(DSP_FIXED_NCO_NCO1_REG, (
+            DSP_FIXED_NCO_NCO1_GAIN_BITS => "1000",
+            DSP_FIXED_NCO_NCO1_ENABLE_BIT => '1',
             others => '0'));
 
         -- Configure bunch control: bank 0 for NCO

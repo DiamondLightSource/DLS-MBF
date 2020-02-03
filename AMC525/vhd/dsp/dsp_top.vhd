@@ -50,11 +50,6 @@ architecture arch of dsp_top is
     signal sequencer_write : std_ulogic;
     signal tune_pll_offset : signed(31 downto 0);
 
-    -- Oscillator control
-    signal nco_0_phase_advance : angle_t;
-    signal nco_0_reset_phase : std_ulogic;
-    signal nco_0_cos_sin : cos_sin_18_t;
-
     -- Data flow
     signal fir_data : signed(FIR_DATA_RANGE);
     signal fill_reject_adc : signed(ADC_DATA_RANGE);
@@ -64,27 +59,23 @@ architecture arch of dsp_top is
     constant BUNCH_SELECT_DELAY : natural := 8;
 
 begin
-    -- -------------------------------------------------------------------------
-    -- General register handling
+    -- Fixed frequency NCOs
+    fixed_ncos : entity work.dsp_fixed_nco port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
 
-    nco_register : entity work.nco_register port map (
-        clk_i => dsp_clk_i,
-
-        write_strobe_i => write_strobe_i(DSP_NCO0_REGS),
+        write_strobe_i => write_strobe_i(DSP_FIXED_NCO_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_NCO0_REGS),
-        read_strobe_i => read_strobe_i(DSP_NCO0_REGS),
-        read_data_o => read_data_o(DSP_NCO0_REGS),
-        read_ack_o => read_ack_o(DSP_NCO0_REGS),
+        write_ack_o => write_ack_o(DSP_FIXED_NCO_REGS),
+        read_strobe_i => read_strobe_i(DSP_FIXED_NCO_REGS),
+        read_data_o => read_data_o(DSP_FIXED_NCO_REGS),
+        read_ack_o => read_ack_o(DSP_FIXED_NCO_REGS),
 
-        nco_freq_i => nco_0_phase_advance,
-        nco_freq_o => nco_0_phase_advance,
-        reset_phase_o => nco_0_reset_phase,
-        write_freq_o => open
+        tune_pll_offset_i => tune_pll_offset,
+        nco1_data_o => dsp_to_control_o.nco_0_data,
+        nco2_data_o => dsp_to_control_o.nco_3_data
     );
 
-    -- -------------------------------------------------------------------------
-    -- Miscellaneous control
 
     -- Bunch specific control
     bunch_select : entity work.bunch_select generic map (
@@ -104,18 +95,6 @@ begin
         bank_select_i => control_to_dsp_i.bank_select,
         bunch_config_o => bunch_config
     );
-
-
-    -- Oscillators
-    nco_0 : entity work.nco port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-        phase_advance_i => nco_0_phase_advance,
-        reset_phase_i => nco_0_reset_phase,
-        cos_sin_o => nco_0_cos_sin
-    );
-    dsp_to_control_o.nco_0_data.nco <= nco_0_cos_sin;
-
 
 
     -- -------------------------------------------------------------------------
@@ -182,10 +161,7 @@ begin
         nco_0_data_i => control_to_dsp_i.nco_0_data,
         nco_1_data_i => control_to_dsp_i.nco_1_data,
         nco_2_data_i => control_to_dsp_i.nco_2_data,
-
-        -- These controls are here mainly as an accident of register assignment
-        nco_0_gain_o => dsp_to_control_o.nco_0_data.gain,
-        nco_0_enable_o => dsp_to_control_o.nco_0_data.enable,
+        nco_3_data_i => control_to_dsp_i.nco_3_data,
 
         data_store_o => dsp_to_control_o.dac_data,
         data_o => dac_data_o,

@@ -22,8 +22,6 @@ entity dac_registers is
 
         dac_delay_o : out bunch_count_t;
         fir_gain_o : out unsigned;
-        nco_0_gain_o : out unsigned;
-        nco_0_enable_o : out std_ulogic;
         mms_source_o : out std_ulogic_vector(1 downto 0);
         store_source_o : out std_ulogic;
         delta_limit_o : out unsigned;
@@ -80,8 +78,6 @@ begin
 
     dac_delay_o  <= unsigned(config_register(DSP_DAC_CONFIG_DELAY_BITS));
     fir_gain_o   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
-    nco_0_gain_o <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
-    nco_0_enable_o <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
     mms_source_o   <= config_register(DSP_DAC_CONFIG_MMS_SOURCE_BITS);
     store_source_o <= config_register(DSP_DAC_CONFIG_DRAM_SOURCE_BIT);
     delta_limit_o <= unsigned(limits_register(DSP_DAC_LIMITS_DELTA_BITS));
