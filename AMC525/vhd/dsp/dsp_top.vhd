@@ -43,7 +43,7 @@ end;
 architecture arch of dsp_top is
     -- Bunch control
     signal bunch_config : bunch_config_t;
-    signal detector_window : hom_win_t;
+    signal detector_window : detector_win_t;
 
     -- Sequencer and detector
     signal sequencer_start : std_ulogic;
@@ -265,11 +265,11 @@ begin
         seq_write_adc_o => sequencer_write,
 
         tune_pll_offset_i => tune_pll_offset,
-        hom_freq_o => nco_1_phase_advance,
-        hom_reset_o => nco_1_reset_phase,
-        hom_gain_o => dsp_to_control_o.nco_1_data.gain,
-        hom_enable_o => dsp_to_control_o.nco_1_data.enable,
-        hom_window_o => detector_window,
+        nco_freq_o => nco_1_phase_advance,
+        nco_reset_o => nco_1_reset_phase,
+        nco_gain_o => dsp_to_control_o.nco_1_data.gain,
+        nco_enable_o => dsp_to_control_o.nco_1_data.enable,
+        detector_window_o => detector_window,
         bunch_bank_o => dsp_to_control_o.bank_select
     );
     dsp_event_o <= dsp_to_control_o.seq_trigger;

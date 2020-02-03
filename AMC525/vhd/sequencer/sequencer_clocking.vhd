@@ -22,13 +22,13 @@ entity sequencer_clocking is
         seq_write_dsp_i : in std_ulogic;
         seq_write_adc_o : out std_ulogic;
 
-        hom_gain_dsp_i : in unsigned;
-        hom_enable_dsp_i : in std_ulogic;
-        hom_gain_adc_o : out unsigned;
-        hom_enable_adc_o : out std_ulogic;
+        nco_gain_dsp_i : in unsigned;
+        nco_enable_dsp_i : in std_ulogic;
+        nco_gain_adc_o : out unsigned;
+        nco_enable_adc_o : out std_ulogic;
 
-        hom_window_dsp_i : in signed;
-        hom_window_adc_o : out signed;
+        detector_window_dsp_i : in signed;
+        detector_window_adc_o : out signed;
 
         bunch_bank_i : in unsigned;
         bunch_bank_o : out unsigned
@@ -39,9 +39,10 @@ architecture arch of sequencer_clocking is
     signal turn_clock_adc : std_ulogic;
 
     -- Local declarations just so we can assign default values of zero
-    signal hom_gain_adc_out : hom_gain_adc_o'SUBTYPE := (others => '0');
-    signal hom_enable_adc_out : hom_enable_adc_o'SUBTYPE := '0';
-    signal hom_window_adc_out : hom_window_adc_o'SUBTYPE := (others => '0');
+    signal nco_gain_adc_out : nco_gain_adc_o'SUBTYPE := (others => '0');
+    signal nco_enable_adc_out : nco_enable_adc_o'SUBTYPE := '0';
+    signal detector_window_adc_out : detector_window_adc_o'SUBTYPE
+        := (others => '0');
     signal bunch_bank_out : bunch_bank_o'SUBTYPE := (others => '0');
 
 begin
@@ -77,14 +78,14 @@ begin
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
-            hom_gain_adc_out <= hom_gain_dsp_i;
-            hom_enable_adc_out <= hom_enable_dsp_i;
-            hom_window_adc_out <= hom_window_dsp_i;
+            nco_gain_adc_out <= nco_gain_dsp_i;
+            nco_enable_adc_out <= nco_enable_dsp_i;
+            detector_window_adc_out <= detector_window_dsp_i;
             bunch_bank_out <= bunch_bank_i;
         end if;
     end process;
-    hom_gain_adc_o <= hom_gain_adc_out;
-    hom_enable_adc_o <= hom_enable_adc_out;
-    hom_window_adc_o <= hom_window_adc_out;
+    nco_gain_adc_o <= nco_gain_adc_out;
+    nco_enable_adc_o <= nco_enable_adc_out;
+    detector_window_adc_o <= detector_window_adc_out;
     bunch_bank_o <= bunch_bank_out;
 end;

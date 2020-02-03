@@ -19,8 +19,8 @@ package sequencer_defs is
         dwell_count : dwell_count_t;    -- Dwell count turns per capture
         capture_count : capture_count_t;    -- Number of captures in state
         bunch_bank : unsigned(1 downto 0);  -- Bunch bank selection
-        hom_gain : unsigned(3 downto 0);    -- Sweep NCO gain select
-        hom_enable : std_ulogic;        -- Enable sweep output
+        nco_gain : unsigned(3 downto 0);    -- Sweep NCO gain select
+        nco_enable : std_ulogic;        -- Enable sweep output
         enable_window : std_ulogic;     -- Enable detector window
         enable_write : std_ulogic;      -- Enable data capture for this sweep
         enable_blanking : std_ulogic;   -- Observe blanking input signal
@@ -35,7 +35,7 @@ package sequencer_defs is
     subtype seq_pc_t is unsigned(2 downto 0);
     subtype super_count_t is unsigned(9 downto 0);
 
-    subtype hom_win_t is signed(15 downto 0);
+    subtype detector_win_t is signed(15 downto 0);
 
     constant initial_seq_state : seq_state_t := (
         start_freq => (others => '0'),
@@ -43,8 +43,8 @@ package sequencer_defs is
         dwell_count => (others => '0'),
         capture_count => (others => '0'),
         bunch_bank => (others => '0'),
-        hom_gain => (others => '0'),
-        hom_enable => '0',
+        nco_gain => (others => '0'),
+        nco_enable => '0',
         enable_window => '0',
         enable_write => '0',
         enable_blanking => '0',

@@ -6,12 +6,12 @@
 -- Output control:
 --
 --  bunch_bank_o    Determines FIR selection, DAC output selection, output gain
---  hom_freq_o      Determines sweep NCO frequency
---  hom_gain_o      Determines sweep NCO output gain
+--  nco_freq_o      Determines sweep NCO frequency
+--  nco_gain_o      Determines sweep NCO output gain
 --
 -- Detector control:
 --
---  hom_window_o    Detector window
+--  detector_window_o    Detector window
 --  seq_start_o     Detector dwell start accumulator reset
 --  seq_write_o     Detector dwell end
 --
@@ -65,11 +65,11 @@ entity sequencer_top is
         seq_write_adc_o : out std_ulogic;   -- End of dwell interval
 
         tune_pll_offset_i : in signed(31 downto 0); -- Tune PLL frequency offset
-        hom_freq_o : out angle_t;               -- NCO frequency
-        hom_reset_o : out std_ulogic;
-        hom_gain_o : out unsigned(3 downto 0);  -- NCO gain
-        hom_enable_o : out std_ulogic;          -- Enable NCO out
-        hom_window_o : out hom_win_t;           -- Detector input window
+        nco_freq_o : out angle_t;               -- NCO frequency
+        nco_reset_o : out std_ulogic;
+        nco_gain_o : out unsigned(3 downto 0);  -- NCO gain
+        nco_enable_o : out std_ulogic;          -- Enable NCO out
+        detector_window_o : out detector_win_t; -- Detector input window
         bunch_bank_o : out unsigned(1 downto 0) -- Bunch bank selection
     );
 end;
@@ -89,9 +89,9 @@ architecture arch of sequencer_top is
     signal mem_write_data : reg_data_t;
 
     signal turn_clock : std_ulogic;
-    signal hom_gain : hom_gain_o'SUBTYPE;
-    signal hom_enable : std_ulogic;
-    signal hom_window : hom_window_o'SUBTYPE;
+    signal nco_gain : nco_gain_o'SUBTYPE;
+    signal nco_enable : std_ulogic;
+    signal detector_window : detector_window_o'SUBTYPE;
     signal bunch_bank : bunch_bank_o'SUBTYPE;
 
     -- Program Counter interface
@@ -236,8 +236,8 @@ begin
         tune_pll_offset_i => tune_pll_offset,
 
         state_end_o => state_end,
-        hom_freq_o => hom_freq_o,
-        hom_reset_o => hom_reset_o
+        nco_freq_o => nco_freq_o,
+        nco_reset_o => nco_reset_o
     );
 
     -- Generates detector window.
@@ -258,7 +258,7 @@ begin
 
         seq_start_o => seq_start,
         seq_write_o => seq_write,
-        hom_window_o => hom_window
+        detector_window_o => detector_window
     );
 
     -- Fine tuning to output
@@ -271,8 +271,8 @@ begin
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
-        hom_gain_o => hom_gain,
-        hom_enable_o => hom_enable,
+        nco_gain_o => nco_gain,
+        nco_enable_o => nco_enable,
         bunch_bank_o => bunch_bank
     );
 
@@ -290,13 +290,13 @@ begin
         seq_write_dsp_i => seq_write,
         seq_write_adc_o => seq_write_adc_o,
 
-        hom_gain_dsp_i => hom_gain,
-        hom_enable_dsp_i => hom_enable,
-        hom_gain_adc_o => hom_gain_o,
-        hom_enable_adc_o => hom_enable_o,
+        nco_gain_dsp_i => nco_gain,
+        nco_enable_dsp_i => nco_enable,
+        nco_gain_adc_o => nco_gain_o,
+        nco_enable_adc_o => nco_enable_o,
 
-        hom_window_dsp_i => hom_window,
-        hom_window_adc_o => hom_window_o,
+        detector_window_dsp_i => detector_window,
+        detector_window_adc_o => detector_window_o,
 
         bunch_bank_i => bunch_bank,
         bunch_bank_o => bunch_bank_o

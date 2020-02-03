@@ -27,15 +27,15 @@ entity sequencer_delays is
         seq_pc_i : in seq_pc_t;
 
         seq_pc_o : out seq_pc_t := (others => '0');
-        hom_gain_o : out unsigned(3 downto 0) := (others => '0');
-        hom_enable_o : out std_ulogic;
+        nco_gain_o : out unsigned(3 downto 0) := (others => '0');
+        nco_enable_o : out std_ulogic;
         bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of sequencer_delays is
     signal load_bunch_bank : std_ulogic;
-    signal load_hom_gain : std_ulogic;
+    signal load_nco_gain : std_ulogic;
 
 begin
     -- We have to halve the BANK_DELAY and NCO_DELAY, as these are in ADC clocks
@@ -48,12 +48,12 @@ begin
         data_o(0) => load_bunch_bank
     );
 
-    hom_gain_delay : entity work.dlyline generic map (
+    nco_gain_delay : entity work.dlyline generic map (
         DLY => NCO_DELAY / 2 - 1
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => turn_clock_i,
-        data_o(0) => load_hom_gain
+        data_o(0) => load_nco_gain
     );
 
     process (dsp_clk_i) begin
@@ -66,9 +66,9 @@ begin
                 bunch_bank_o <= seq_state_i.bunch_bank;
             end if;
 
-            if load_hom_gain = '1' then
-                hom_gain_o <= seq_state_i.hom_gain;
-                hom_enable_o <= seq_state_i.hom_enable;
+            if load_nco_gain = '1' then
+                nco_gain_o <= seq_state_i.nco_gain;
+                nco_enable_o <= seq_state_i.nco_enable;
             end if;
         end if;
     end process;

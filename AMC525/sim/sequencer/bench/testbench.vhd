@@ -37,11 +37,11 @@ architecture arch of testbench is
     signal seq_start : std_ulogic;
     signal seq_write : std_ulogic;
     signal tune_pll_offset : signed(31 downto 0) := (others => '0');
-    signal hom_freq : angle_t;
-    signal hom_reset : std_ulogic;
-    signal hom_gain : unsigned(3 downto 0);
-    signal hom_enable : std_ulogic;
-    signal hom_window : hom_win_t;
+    signal nco_freq : angle_t;
+    signal nco_reset : std_ulogic;
+    signal nco_gain : unsigned(3 downto 0);
+    signal nco_enable : std_ulogic;
+    signal detector_window : detector_win_t;
     signal bunch_bank : unsigned(1 downto 0);
 
 begin
@@ -64,7 +64,8 @@ begin
     blanking <= '0';
 
     sequencer : entity work.sequencer_top generic map (
-        NCO_DELAY => 20
+        NCO_DELAY => 20,
+        BANK_DELAY => 24
     ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
@@ -87,11 +88,11 @@ begin
         seq_write_adc_o => seq_write,
 
         tune_pll_offset_i => tune_pll_offset,
-        hom_freq_o => hom_freq,
-        hom_reset_o => hom_reset,
-        hom_gain_o => hom_gain,
-        hom_enable_o => hom_enable,
-        hom_window_o => hom_window,
+        nco_freq_o => nco_freq,
+        nco_reset_o => nco_reset,
+        nco_gain_o => nco_gain,
+        nco_enable_o => nco_enable,
+        detector_window_o => detector_window,
         bunch_bank_o => bunch_bank
     );
 

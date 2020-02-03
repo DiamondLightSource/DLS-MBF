@@ -60,6 +60,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dac/dac_nco_delay.vhd \
     $vhd_dir/dac/dac_bunch_config_delay.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
+    $vhd_dir/dac/dac_registers.vhd \
     $vhd_dir/dac/dac_top.vhd \
     $vhd_dir/bunch_fir/bunch_fir_dsp.vhd \
     $vhd_dir/bunch_fir/bunch_fir_taps.vhd \

@@ -135,7 +135,9 @@ begin
         -- Simple test, small ring: just pass NCO0 through to DSP
 
         -- Initialise ADC FIR
-        write_reg(DSP_ADC_CONFIG_COMMAND_REG_W,  X"00000001");
+        write_reg(DSP_ADC_COMMAND_REG_W,  (
+            DSP_ADC_COMMAND_WRITE_BIT => '1',
+            others => '0'));
         write_reg(DSP_ADC_TAPS_REG, X"7FFFFFFF");
 
         -- Initialise DAC FIR
