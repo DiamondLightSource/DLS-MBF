@@ -454,12 +454,12 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     # Two fixed frequency NCOs with manual frequency control and fine grained
     # gain control.
     !FIXED_NCO
-        NCO1
+        NCO1    W
             # Gain setting for NCO1 as a 20 bit unsigned scalar
             .GAIN       20
             # This bit is set to enable tune PLL tracking for NCO1
             .ENA_TUNE_PLL
-        NCO2
+        NCO2    W
             # Gain setting for NCO2 as a 20 bit unsigned scalar
             .GAIN       20
             # This bit is set to enable tune PLL tracking for NCO2

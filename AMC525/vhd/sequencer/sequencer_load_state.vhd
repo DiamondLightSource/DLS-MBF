@@ -123,8 +123,6 @@ begin
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_WRITE_BIT);
                         seq_state_o.enable_blanking <=
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_BLANK_BIT);
-                        seq_state_o.nco_enable <=
-                            prog_word(DSP_SEQ_STATE_CONFIG_ENA_NCO_BIT);
                         seq_state_o.reset_phase <=
                             prog_word(DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT);
                         seq_state_o.enable_tune_pll <=

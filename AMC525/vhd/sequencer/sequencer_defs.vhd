@@ -21,7 +21,6 @@ package sequencer_defs is
         capture_count : capture_count_t;    -- Number of captures in state
         bunch_bank : unsigned(1 downto 0);  -- Bunch bank selection
         nco_gain : nco_gain_t;          -- Sweep NCO gain select
-        nco_enable : std_ulogic;        -- Enable sweep output
         enable_window : std_ulogic;     -- Enable detector window
         enable_write : std_ulogic;      -- Enable data capture for this sweep
         enable_blanking : std_ulogic;   -- Observe blanking input signal
@@ -45,7 +44,6 @@ package sequencer_defs is
         capture_count => (others => '0'),
         bunch_bank => (others => '0'),
         nco_gain => (others => '0'),
-        nco_enable => '0',
         enable_window => '0',
         enable_write => '0',
         enable_blanking => '0',

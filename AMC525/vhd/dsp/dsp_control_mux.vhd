@@ -50,7 +50,6 @@ architecture arch of dsp_control_mux is
     begin
         result.nco := input.nco.cos;
         result.gain := input.gain;
-        result.enable := input.enable;
         return result;
     end;
 
@@ -59,7 +58,6 @@ architecture arch of dsp_control_mux is
     begin
         result.nco := input.nco.sin;
         result.gain := input.gain;
-        result.enable := input.enable;
         return result;
     end;
 

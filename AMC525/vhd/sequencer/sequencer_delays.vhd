@@ -29,7 +29,6 @@ entity sequencer_delays is
 
         seq_pc_o : out seq_pc_t := (others => '0');
         nco_gain_o : out nco_gain_t := (others => '0');
-        nco_enable_o : out std_ulogic;
         bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );
 end;
@@ -69,7 +68,6 @@ begin
 
             if load_nco_gain = '1' then
                 nco_gain_o <= seq_state_i.nco_gain;
-                nco_enable_o <= seq_state_i.nco_enable;
             end if;
         end if;
     end process;
