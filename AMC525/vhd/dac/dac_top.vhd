@@ -58,38 +58,25 @@ architecture arch of dac_top is
     signal write_start : std_ulogic;
     signal delta_reset : std_ulogic;
 
+    -- Event readbacks to registers
+    signal fir_overflow_adc : std_ulogic;
+    signal mux_overflow_adc : std_ulogic;
     signal fir_overflow : std_ulogic;
     signal mux_overflow : std_ulogic;
     signal preemph_overflow : std_ulogic;
 
-    -- Pipelined input
-    signal fir_data_in : fir_data_i'SUBTYPE;
-    signal nco_0_data_in : nco_0_data_i'SUBTYPE;
-    signal nco_1_data_in : nco_1_data_i'SUBTYPE;
-    signal nco_2_data_in : nco_2_data_i'SUBTYPE;
-    signal nco_3_data_in : nco_3_data_i'SUBTYPE;
-    signal bunch_config_in : bunch_config_t;
-
-    -- Overflow detection
-    signal fir_overflow_in : std_ulogic;
-
-    subtype DATA_RANGE is natural range data_o'RANGE;
-
-    signal fir_data : data_o'SUBTYPE;
-    signal nco_0_data : data_o'SUBTYPE;
-    signal nco_1_data : data_o'SUBTYPE;
-    signal nco_2_data : data_o'SUBTYPE;
-    signal nco_3_data : data_o'SUBTYPE;
+    -- Data flowing through system
+    signal fir_mms_data : data_o'SUBTYPE;
     signal data_out : data_o'SUBTYPE;
     signal filtered_data : data_o'SUBTYPE;
     signal mms_data_in : data_o'SUBTYPE;
     signal mms_delta : unsigned(data_o'RANGE);
 
-    -- Delay from gain control to data change
-    constant NCO1_GAIN_DELAY : natural := 4;
-
-    -- Input delays
-    constant INPUT_PIPELINE_DELAY : natural := 4;
+--     -- Delay from gain control to data change
+--     constant NCO1_GAIN_DELAY : natural := 4;
+-- 
+--     -- Input delays
+--     constant INPUT_PIPELINE_DELAY : natural := 4;
 
 begin
     -- Register interface
@@ -117,121 +104,48 @@ begin
         delta_event_i => delta_event_o
     );
 
-
-    -- -------------------------------------------------------------------------
-    -- Data input pipelines
-
-    fir_delay : entity work.dlyreg generic map (
-        DLY => INPUT_PIPELINE_DELAY,
-        DW => fir_data_i'LENGTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(fir_data_i),
-        signed(data_o) => fir_data_in
-    );
-
-    nco0_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_0_data_i,
-        data_o => nco_0_data_in
-    );
-
-    nco1_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_1_data_i,
-        data_o => nco_1_data_in
-    );
-
-    nco2_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_2_data_i,
-        data_o => nco_2_data_in
-    );
-
-    nco3_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_3_data_i,
-        data_o => nco_3_data_in
-    );
-
-    bunch_delay : entity work.dac_bunch_config_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY + NCO1_GAIN_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => bunch_config_i,
-        data_o => bunch_config_in
-    );
-
-
-    -- -------------------------------------------------------------------------
-    -- Output preparation
-
-    fir_gain_control : entity work.gain_control port map (
-        clk_i => adc_clk_i,
-        gain_sel_i => fir_gain,
-        data_i => fir_data_in,
-        data_o => fir_data,
-        overflow_o => fir_overflow_in
-    );
-
-    nco_0_gain_control : entity work.nco_gain_control port map (
-        clk_i => adc_clk_i,
-        gain_i => nco_0_data_in.gain,
-        data_i => nco_0_data_in.nco,
-        data_o => nco_0_data
-    );
-
-    nco_1_gain_control : entity work.nco_gain_control generic map (
-        GAIN_DELAY => NCO1_GAIN_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        gain_i => nco_1_data_in.gain,
-        data_i => nco_1_data_in.nco,
-        data_o => nco_1_data
-    );
-
-    nco_2_gain_control : entity work.nco_gain_control port map (
-        clk_i => adc_clk_i,
-        gain_i => nco_2_data_in.gain,
-        data_i => nco_2_data_in.nco,
-        data_o => nco_2_data
-    );
-
-    nco_3_gain_control : entity work.nco_gain_control port map (
-        clk_i => adc_clk_i,
-        gain_i => nco_3_data_in.gain,
-        data_i => nco_3_data_in.nco,
-        data_o => nco_3_data
-    );
-
-
-    -- Output multiplexer
-    dac_output_mux : entity work.dac_output_mux port map (
+    -- Convert overflow events to DSP clock for readout
+    fir_to_dsp : entity work.pulse_adc_to_dsp port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-
-        bunch_config_i => bunch_config_in,
-
-        fir_data_i => fir_data,
-        fir_overflow_i => fir_overflow_in,
-        nco_0_i => nco_0_data,
-        nco_1_i => nco_1_data,
-        nco_2_i => nco_2_data,
-        nco_3_i => nco_3_data,
-
-        data_o => data_out,
-        fir_overflow_o => fir_overflow,
-        mux_overflow_o => mux_overflow
+        pulse_i => fir_overflow_adc,
+        pulse_o => fir_overflow
     );
 
+    mux_to_dsp : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => mux_overflow_adc,
+        pulse_o => mux_overflow
+    );
+
+
+    -- -------------------------------------------------------------------------
+    -- Output generation
+
+    -- Output gain control and selection
+    dac_output_mux : entity work.dac_output_mux port map (
+        clk_i => adc_clk_i,
+
+        bunch_config_i => bunch_config_i,
+
+        fir_data_i => fir_data_i,
+        fir_gain_i => fir_gain,
+        nco_0_data_i => nco_0_data_i,
+        nco_1_data_i => nco_1_data_i,
+        nco_2_data_i => nco_2_data_i,
+        nco_3_data_i => nco_3_data_i,
+
+        data_o => data_out,
+        fir_mms_o => fir_mms_data,
+
+        fir_overflow_o => fir_overflow_adc,
+        mux_overflow_o => mux_overflow_adc
+    );
+
+
+    -- -------------------------------------------------------------------------
+    -- MMS processing on selected data
 
     -- Select sources for stored and MMS data
     source_mux : entity work.dac_mms_dram_data_source port map (
@@ -239,7 +153,7 @@ begin
 
         unfiltered_data_i => data_out,
         filtered_data_i => filtered_data,
-        fir_data_i => fir_data,
+        fir_data_i => fir_mms_data,
 
         mms_source_i => mms_source,
         mms_data_o => mms_data_in,
@@ -247,10 +161,6 @@ begin
         dram_source_i => store_source,
         dram_data_o => data_store_o
     );
-
-
-    -- -------------------------------------------------------------------------
-    -- Finalisation of output
 
     -- Min/Max/Sum
     min_max_sum : entity work.min_max_sum port map (
@@ -279,6 +189,9 @@ begin
         limit_event_o => delta_event_o
     );
 
+
+    -- -------------------------------------------------------------------------
+    -- Final output preparation
 
     -- Compensation filter
     fast_fir : entity work.fast_fir_top generic map (

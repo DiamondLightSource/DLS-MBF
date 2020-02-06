@@ -455,13 +455,13 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     # gain control.
     !FIXED_NCO
         NCO1    W
-            # Gain setting for NCO1 as a 20 bit unsigned scalar
-            .GAIN       20
+            # Gain setting for NCO1 as a 18 bit unsigned scalar
+            .GAIN       18
             # This bit is set to enable tune PLL tracking for NCO1
             .ENA_TUNE_PLL
         NCO2    W
-            # Gain setting for NCO2 as a 20 bit unsigned scalar
-            .GAIN       20
+            # Gain setting for NCO2 as a 18 bit unsigned scalar
+            .GAIN       18
             # This bit is set to enable tune PLL tracking for NCO2
             .ENA_TUNE_PLL
         :NCO_FREQ   NCO1_FREQ
@@ -538,6 +538,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             .NCO1_ENABLE
             # Enable NCO2 output
             .NCO2_ENABLE
+            # Enable NCO3 output
+            .NCO3_ENABLE
 
 
     # Bunch by bunch filter
@@ -670,7 +672,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # Bunch bank select for this sequencer state
                     .BANK           2
                     # Select sweep NCO gain
-                    .NCO_GAIN       20
+                    .NCO_GAIN       18
                     # If set the sweep window is enabled
                     .ENA_WINDOW
                     # Whether to store this output from the sequencer
@@ -814,7 +816,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .BLANKING
             CONFIG_EXTRA    W
                 # NCO gain control
-                .NCO_GAIN       20
+                .NCO_GAIN       18
             # Target phase to track.  The top 18 bits of the phase are used
             TARGET_PHASE    W
             # Integrating factor.  The top 25 bits are used

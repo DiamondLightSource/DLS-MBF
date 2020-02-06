@@ -30,6 +30,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/arithmetic/extract_signed.vhd \
     $vhd_dir/arithmetic/gain_control.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
+    $vhd_dir/arithmetic/dsp_mac.vhd \
+    $vhd_dir/arithmetic/saturate.vhd \
     $vhd_dir/fast_fir/fast_fir.vhd \
     $vhd_dir/fast_fir/fast_fir_top.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
@@ -59,6 +61,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/dac/dac_mms_dram_data_source.vhd \
     $vhd_dir/dac/dac_nco_delay.vhd \
     $vhd_dir/dac/dac_bunch_config_delay.vhd \
+    $vhd_dir/dac/dac_fir_gain.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
     $vhd_dir/dac/dac_registers.vhd \
     $vhd_dir/dac/dac_top.vhd \

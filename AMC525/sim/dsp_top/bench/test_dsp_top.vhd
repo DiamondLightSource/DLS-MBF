@@ -155,7 +155,7 @@ begin
             NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
             others => '0'));
         write_reg(DSP_FIXED_NCO_NCO1_REG, (
-            DSP_FIXED_NCO_NCO1_GAIN_BITS => X"10000",
+            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"10000",
             others => '0'));
 
         -- Configure bunch control: bank 0 for NCO
@@ -212,7 +212,7 @@ begin
             DSP_SEQ_STATE_TIME_CAPTURE_BITS => X"0000"));
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_CONFIG_BANK_BITS => "01",
-            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => X"00110",
+            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => 18X"00110",
             others => '0'));
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");

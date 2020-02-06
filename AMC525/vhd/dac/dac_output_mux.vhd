@@ -6,6 +6,8 @@ use ieee.numeric_std.all;
 
 use work.support.all;
 use work.defines.all;
+
+use work.dsp_defs.all;
 use work.bunch_defs.all;
 
 entity dac_output_mux is
@@ -13,192 +15,189 @@ entity dac_output_mux is
         PIPELINE_OUT : natural := 4
     );
     port (
-        adc_clk_i : in std_ulogic;
-        dsp_clk_i : in std_ulogic;
+        clk_i : in std_ulogic;
 
-        -- output selection and gain
+        -- output selection and bunch by bunch gains
         bunch_config_i : in bunch_config_t;
 
-        -- Input signals with individual enable controls
+        -- Input signals with individual "fixed" gains
         fir_data_i : in signed;
-        fir_overflow_i : in std_ulogic;
-        nco_0_i : in signed;
-        nco_1_i : in signed;
-        nco_2_i : in signed;
-        nco_3_i : in signed;
+        fir_gain_i : in unsigned;
+
+        nco_0_data_i : in dsp_nco_from_mux_t;
+        nco_1_data_i : in dsp_nco_from_mux_t;
+        nco_2_data_i : in dsp_nco_from_mux_t;
+        nco_3_data_i : in dsp_nco_from_mux_t;
 
         -- Generated outputs.  Note that the FIR overflow is pipelined through
         -- so that we know whether to ignore it, if the output was unused.
         data_o : out signed;
+        -- This FIR data out is just for the MMS view
+        fir_mms_o : out signed;
+
         fir_overflow_o : out std_ulogic := '0';
         mux_overflow_o : out std_ulogic
     );
 end;
 
 architecture arch of dac_output_mux is
-    constant GAIN_WIDTH : natural := bunch_config_i.gain'LENGTH;
-    -- So that we can reliably catch the overflow from adding three quantities,
-    -- we need two extra bits in the accumulator.
-    constant ACCUM_WIDTH : natural := data_o'LENGTH + 2;
+    -- The processing here involves careful balancing of the available bit
+    -- budget.  First we apply gain adjustment on the 25 bits of FIR data from
+    -- the bunch by bunch FIR: this is done by a shift of between 0 and 15 bits,
+    -- giving a total range of possible values covering 40 bits (25+15).
+    constant MAX_FIR_SHIFT : natural := 2**fir_gain_i'LENGTH - 1;
+    constant SHIFTED_FIR_BITS : natural := fir_data_i'LENGTH + MAX_FIR_SHIFT;
+    signal scaled_fir : signed(SHIFTED_FIR_BITS-1 downto 0);
+    -- At the end of processing, we will extract 16 bits of output corresponding
+    -- to the range of gains of interest.  In our application it turns out that
+    -- we want to be able to output quite high gain.
+    --    Here we choose to be able to shift the bottom 15 bits of the FIR into
+    -- the top bits of the DAC output.
+    constant FIR_MAX_GAIN_BITS : natural := 15;
+    constant FIR_SHIFT_OFFSET : natural :=
+        MAX_FIR_SHIFT + FIR_MAX_GAIN_BITS - data_o'LENGTH;
+    -- At the same time, we are computing products of the NCO inputs and their
+    -- corresponding gains.  Everything is accumulated into the 48-bit DSP
+    -- accumlator, as illustrated in the figure below:
+    --
+    --    +--------------------------------------------+
+    --    |         :                  :               |        Scaled FIR
+    --    +--------------------------------------------+
+    --          NCO (as 1.17)       Gain (as 6.19)
+    --  +-----+-------------------+--------------------------+
+    --  |     | .                 | .                        |  Scaled NCO
+    --  +-----+-------------------+--------------------------+
+    --               +-----------------+
+    --               | .               |                        DAC Output
+    --               +-----------------+
+    -- To allow for overscaling at the bunch-by-bunch level (not yet
+    -- implemented) we treat the gain multiplier as a 6.19 constant.  At present
+    -- we just inject our 18 bit gain into the 0.18 part of this value.
+    subtype NCO_GAIN_RANGE is natural range 18 downto 1;
+    -- Treating the NCO as 1.17 and assuming we want a 1.15 DAC output, we now
+    -- have a 7.36 output and so we want to drop 21 bits from the final output.
+    constant DAC_OUTPUT_OFFSET : natural := 21;
+    -- To align the DAC output offset above with the scaled FIR data, we need an
+    -- extra FIR offset which is applied to the FIR data.
+    constant FIR_INPUT_OFFSET : natural := DAC_OUTPUT_OFFSET - FIR_SHIFT_OFFSET;
 
-    -- Selected data, widened for accumulator
-    signal fir_data   : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    signal nco_0_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    signal nco_1_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    signal nco_2_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    signal nco_3_data : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    -- Sum of the three values above
-    signal accum_pl : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    signal accum : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
+    -- The final output stage adds an extra complication.  We extract 25 bits
+    -- from the output above (keeping two bits for rounding) which we treat as a
+    -- 8.17 value, which means we need to extract the following range:
+    constant RAW_DAC_OUT_TOP : natural := DAC_OUTPUT_OFFSET + 23;
+    subtype RAW_DAC_OUT_RANGE is natural range
+        RAW_DAC_OUT_TOP-1 downto DAC_OUTPUT_OFFSET-2;
+    signal unscaled_dac_out : signed(24 downto 0);
+    -- This is then multiplied by a 6.12 bunch-by-bunch scalar, giving us a
+    -- 14.29 value, from which we want the 1.15 part.
+    constant DAC_RESULT_OFFSET : natural := 12 + 29 - 15;
+    subtype DAC_RESULT_RANGE is natural range
+        DAC_RESULT_OFFSET + 15 downto DAC_RESULT_OFFSET;
 
-    -- Pipeline the gain so that the gain and selection change together
-    signal bunch_gain_in : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
-    signal bunch_gain_pl : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
-    signal bunch_gain : signed(GAIN_WIDTH-1 downto 0) := (others => '0');
+    subtype NCOS is natural range 0 to 3;
+    type dsp_nco_array is array(NCOS) of dsp_nco_from_mux_t;
+    signal nco_data : dsp_nco_array;
+    signal nco_enables_in : std_ulogic_vector(NCOS);
+    signal nco_enables : vector_array(NCOS)(NCOS);
+    signal nco_overflows : std_ulogic_vector(NCOS);
 
-    -- Scaled result
-    constant FULL_PROD_WIDTH : natural := ACCUM_WIDTH + GAIN_WIDTH;
-    signal full_dac_out_pl : signed(FULL_PROD_WIDTH-1 downto 0)
-        := (others => '0');
-    signal full_dac_out : signed(FULL_PROD_WIDTH-1 downto 0) := (others => '0');
-
-    -- To compute the output offset, regard the gain as a signed number with 12
-    -- fraction bits; these have been added in by the multiplication and need to
-    -- be discarded now.
-    constant OUTPUT_OFFSET : natural := 12;
-
-    signal fir_overflow : std_ulogic := '0';
-    signal mux_overflow : std_ulogic;
-    signal data_out : data_o'SUBTYPE;
-
-    -- If enable, widens data to required width, otherwise returns 0.
-    function prepare(data : signed; enable : std_ulogic) return signed
-    is
-        variable result : signed(ACCUM_WIDTH-1 downto 0) := (others => '0');
-    begin
-        if enable = '1' then
-            result := resize(data, ACCUM_WIDTH);
-        end if;
-        return result;
-    end;
-
-    constant INPUT_DELAY : natural := 4;
+    signal accum_signal : signed_array(0 to NCOS'HIGH + 1)(47 downto 0);
+    signal full_dac_out : signed(47 downto 0);
 
 begin
-    prepare_fir : entity work.dlyreg generic map (
-        DLY => INPUT_DELAY,
-        DW => ACCUM_WIDTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(
-            prepare(fir_data_i, bunch_config_i.fir_enable)),
-        signed(data_o) => fir_data
-    );
+    -- Map individual NCOs to arrays for generation
+    nco_data <= (
+        0 => nco_0_data_i,
+        1 => nco_1_data_i,
+        2 => nco_2_data_i,
+        3 => nco_3_data_i);
+    nco_enables_in <= (
+        0 => bunch_config_i.nco_0_enable,
+        1 => bunch_config_i.nco_1_enable,
+        2 => bunch_config_i.nco_2_enable,
+        3 => bunch_config_i.nco_3_enable);
 
-    prepare_nco_0 : entity work.dlyreg generic map (
-        DLY => INPUT_DELAY,
-        DW => ACCUM_WIDTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(
-            prepare(nco_0_i, bunch_config_i.nco_0_enable)),
-        signed(data_o) => nco_0_data
-    );
-
-    prepare_nco_1 : entity work.dlyreg generic map (
-        DLY => INPUT_DELAY,
-        DW => ACCUM_WIDTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(
-            prepare(nco_1_i, bunch_config_i.nco_1_enable)),
-        signed(data_o) => nco_1_data
-    );
-
-    prepare_nco_2 : entity work.dlyreg generic map (
-        DLY => INPUT_DELAY,
-        DW => ACCUM_WIDTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(
-            prepare(nco_2_i, bunch_config_i.nco_2_enable)),
-        signed(data_o) => nco_2_data
-    );
-
-    prepare_nco_3 : entity work.dlyreg generic map (
-        DLY => INPUT_DELAY,
-        DW => ACCUM_WIDTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(
-            prepare(nco_3_i, bunch_config_i.nco_3_enable)),
-        signed(data_o) => nco_3_data
-    );
-
-    prepare_gain : entity work.dlyreg generic map (
-        DLY => INPUT_DELAY,
-        DW => bunch_config_i.gain'LENGTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(bunch_config_i.gain),
-        signed(data_o) => bunch_gain_in
-    );
-
-
-    process (adc_clk_i) begin
-        if rising_edge(adc_clk_i) then
-            fir_overflow <= fir_overflow_i and bunch_config_i.fir_enable;
-            -- Also pipeline the gain so that the selection and gain match
-            bunch_gain_pl <= bunch_gain_in;
-            bunch_gain <= bunch_gain_pl;
-
-            -- Add all inputs together, continue with gain pipeline
-            -- This is not serious, this will be revisited very shortly.
-            accum_pl <=
-                fir_data + nco_0_data + nco_1_data + nco_2_data + nco_3_data;
-            accum <= accum_pl;
-
-            -- Apply selected gain
-            full_dac_out_pl <= bunch_gain * accum;
-            full_dac_out <= full_dac_out_pl;
+    -- Delay each enable so data out and enables align
+    process (clk_i) begin
+        if rising_edge(clk_i) then
+            nco_enables(0) <= nco_enables_in;
+            for i in 0 to NCOS'HIGH-1 loop
+                nco_enables(i+1) <= nco_enables(i);
+            end loop;
         end if;
     end process;
 
-    -- Round and reduce scaled result to final output
-    extract_signed : entity work.extract_signed generic map (
-        OFFSET => OUTPUT_OFFSET
+
+    -- FIR gain
+    fir : entity work.dac_fir_gain generic map (
+        MMS_OFFSET => FIR_SHIFT_OFFSET
     ) port map (
-        clk_i => adc_clk_i,
+        clk_i => clk_i,
+
+        data_i => fir_data_i,
+        gain_i => fir_gain_i,
+        enable_i => bunch_config_i.fir_enable,
+
+        data_o => scaled_fir,
+        mms_o => fir_mms_o,
+        overflow_o => fir_overflow_o
+    );
+    accum_signal(0) <= (
+        47 downto FIR_SHIFT_OFFSET => resize(scaled_fir, 48 - FIR_SHIFT_OFFSET),
+        others => '0');
+
+    -- Accumulate all the NCOs
+    scale_ncos : for i in NCOS generate
+        signal nco_gain : signed(24 downto 0);
+
+    begin
+        nco_gain <= (NCO_GAIN_RANGE => signed(nco_data(i).gain), others => '0');
+        nco_mac : entity work.dsp_mac generic map (
+            -- We only really want the last overflow check
+            TOP_RESULT_BIT => RAW_DAC_OUT_RANGE'LEFT
+        ) port map (
+            clk_i => clk_i,
+            a_i => nco_data(i).nco,
+            b_i => nco_gain,
+            en_ab_i => nco_enables(i)(i),
+            c_i => accum_signal(i),
+            en_c_i => '1',
+            p_o => accum_signal(i + 1),
+            ovf_o => nco_overflows(i)
+        );
+    end generate;
+
+    -- Saturate final output from NCO accumulator chain.  We can't put this off
+    -- until after the next stage, as we've run out of bits to play with.
+    saturate_accum : entity work.saturate generic map (
+        OFFSET => RAW_DAC_OUT_RANGE'RIGHT
+    ) port map (
+        clk_i => clk_i,
+        data_i => accum_signal(NCOS'HIGH),
+        ovf_i => nco_overflows(NCOS'HIGH),
+        data_o => unscaled_dac_out
+    );
+
+    -- Final output scaling
+    dac_mac : entity work.dsp_mac generic map (
+        TOP_RESULT_BIT => DAC_RESULT_RANGE'LEFT
+    ) port map (
+        clk_i => clk_i,
+        a_i => bunch_config_i.gain,
+        b_i => unscaled_dac_out,
+        en_ab_i => '1',
+        c_i => (DAC_RESULT_OFFSET-1 => '1', others => '0'),
+        en_c_i => '1',
+        p_o => full_dac_out,
+        ovf_o => mux_overflow_o
+    );
+
+    saturate_dac : entity work.saturate generic map (
+        OFFSET => DAC_RESULT_RANGE'RIGHT
+    ) port map (
+        clk_i => clk_i,
         data_i => full_dac_out,
-        data_o => data_out,
-        overflow_o => mux_overflow
-    );
-
-    -- Pipeline data out
-    output_delay : entity work.dlyreg generic map (
-        DLY => PIPELINE_OUT,
-        DW => data_o'LENGTH
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => std_ulogic_vector(data_out),
-        signed(data_o) => data_o
-    );
-
-
-    -- Convert the two overflow events to DSP events
-    fir_overflow_dac : entity work.pulse_adc_to_dsp port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-
-        pulse_i => fir_overflow,
-        pulse_o => fir_overflow_o
-    );
-
-    mux_overflow_dac : entity work.pulse_adc_to_dsp port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
-
-        pulse_i => mux_overflow,
-        pulse_o => mux_overflow_o
+        ovf_i => mux_overflow_o,
+        data_o => data_o
     );
 end;

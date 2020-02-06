@@ -18,7 +18,7 @@ package dsp_defs is
 
     -- We allocate a generous extra few bits to the NCO gain to help avoiding
     -- loss of resolution when rounding later on.
-    subtype nco_gain_t is unsigned(19 downto 0);
+    subtype nco_gain_t is unsigned(17 downto 0);
 
     -- Gather the entire NCO state into a single record
     type dsp_nco_to_mux_t is record
