@@ -155,7 +155,7 @@ begin
             NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
             others => '0'));
         write_reg(DSP_FIXED_NCO_NCO1_REG, (
-            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"10000",
+            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"3FFFF",
             others => '0'));
 
         -- Configure bunch control: bank 0 for NCO
@@ -164,8 +164,9 @@ begin
             others => '0'));
         for n in 1 to TURN_COUNT loop
             write_reg(DSP_BUNCH_BANK_REG, (
-                DSP_BUNCH_BANK_GAIN_BITS => 18X"00FFF",
+                DSP_BUNCH_BANK_GAIN_BITS => 18X"01000",
                 DSP_BUNCH_BANK_NCO0_ENABLE_BIT => '1',
+                DSP_BUNCH_BANK_NCO3_ENABLE_BIT => '1',
                 others => '0'));
         end loop;
         -- Bank 1 for sweep
@@ -174,7 +175,7 @@ begin
             others => '0'));
         for n in 1 to TURN_COUNT loop
             write_reg(DSP_BUNCH_BANK_REG, (
-                DSP_BUNCH_BANK_GAIN_BITS => 18X"03FFF",
+                DSP_BUNCH_BANK_GAIN_BITS => 18X"10000",
                 DSP_BUNCH_BANK_NCO1_ENABLE_BIT => '1',
                 others => '0'));
         end loop;
@@ -212,7 +213,7 @@ begin
             DSP_SEQ_STATE_TIME_CAPTURE_BITS => X"0000"));
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_CONFIG_BANK_BITS => "01",
-            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => 18X"00110",
+            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => 18X"04000",
             others => '0'));
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
@@ -222,6 +223,28 @@ begin
         control_to_dsp.seq_start <= '1';
         clk_wait(dsp_clk, 1);
         control_to_dsp.seq_start <= '0';
+
+        -- Now wait for sequencer to start and finish
+        wait until dsp_to_control.seq_busy = '1';
+        wait until dsp_to_control.seq_busy = '0';
+        clk_wait(dsp_clk, 1);
+
+
+        -- Finish by enabling the second fixed NCO
+
+        -- Set a sensible NCO frequency, half gain
+        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW, X"00000000");
+        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW + 1, (
+            NCO_FREQ_HIGH_BITS_BITS => X"0F00",
+            others => '0'));
+        write_reg(DSP_FIXED_NCO_NCO2_REG, (
+            DSP_FIXED_NCO_NCO2_GAIN_BITS => 18X"0FFFF",
+            others => '0'));
+
+        -- Let this run for 0.5us, then turn NCO1 off
+        wait for 0.5 us;
+        clk_wait(dsp_clk, 1);
+        write_reg(DSP_FIXED_NCO_NCO1_REG, (others => '0'));
 
         wait;
     end process;

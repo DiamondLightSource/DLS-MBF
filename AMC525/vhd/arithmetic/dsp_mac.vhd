@@ -47,10 +47,15 @@ architecture arch of dsp_mac is
     signal ab : signed(42 downto 0);
     signal abc : signed(47 downto 0);
 
-    subtype OVF_RANGE is natural range 47 downto 48 - TOP_RESULT_BIT;
+    subtype OVF_RANGE is natural range 47 downto TOP_RESULT_BIT;
     constant ONES_MASK : signed(OVF_RANGE) := (others => '1');
     signal all_ones : boolean;
     signal all_zeros : boolean;
+
+    -- Stop input registers being absorbed into the DSP
+    attribute DONT_TOUCH : string;
+    attribute DONT_TOUCH of a_i : signal is "yes";
+    attribute DONT_TOUCH of b_i : signal is "yes";
 
 begin
     process (clk_i) begin

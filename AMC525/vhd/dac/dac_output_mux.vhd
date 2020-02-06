@@ -90,7 +90,7 @@ architecture arch of dac_output_mux is
     signal unscaled_dac_out : signed(24 downto 0);
     -- This is then multiplied by a 6.12 bunch-by-bunch scalar, giving us a
     -- 14.29 value, from which we want the 1.15 part.
-    constant DAC_RESULT_OFFSET : natural := 12 + 29 - 15;
+    constant DAC_RESULT_OFFSET : natural := 29 - 15;
     subtype DAC_RESULT_RANGE is natural range
         DAC_RESULT_OFFSET + 15 downto DAC_RESULT_OFFSET;
 
@@ -100,6 +100,7 @@ architecture arch of dac_output_mux is
     signal nco_enables_in : std_ulogic_vector(NCOS);
     signal nco_enables : vector_array(NCOS)(NCOS);
     signal nco_overflows : std_ulogic_vector(NCOS);
+    signal scaling_overflow : std_ulogic;
 
     signal accum_signal : signed_array(0 to NCOS'HIGH + 1)(47 downto 0);
     signal full_dac_out : signed(47 downto 0);
@@ -173,7 +174,7 @@ begin
         OFFSET => RAW_DAC_OUT_RANGE'RIGHT
     ) port map (
         clk_i => clk_i,
-        data_i => accum_signal(NCOS'HIGH),
+        data_i => accum_signal(NCOS'HIGH + 1),
         ovf_i => nco_overflows(NCOS'HIGH),
         data_o => unscaled_dac_out
     );
@@ -189,7 +190,7 @@ begin
         c_i => (DAC_RESULT_OFFSET-1 => '1', others => '0'),
         en_c_i => '1',
         p_o => full_dac_out,
-        ovf_o => mux_overflow_o
+        ovf_o => scaling_overflow
     );
 
     saturate_dac : entity work.saturate generic map (
@@ -197,7 +198,9 @@ begin
     ) port map (
         clk_i => clk_i,
         data_i => full_dac_out,
-        ovf_i => mux_overflow_o,
+        ovf_i => scaling_overflow,
         data_o => data_o
     );
+
+    mux_overflow_o <= nco_overflows(NCOS'HIGH) or scaling_overflow;
 end;

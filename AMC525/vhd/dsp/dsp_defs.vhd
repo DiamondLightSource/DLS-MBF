@@ -16,7 +16,7 @@ package dsp_defs is
     subtype FIR_DATA_RANGE is natural range 24 downto 0;    -- 25 bits
     subtype DAC_DATA_RANGE is natural range 15 downto 0;    -- 16 bits
 
-    -- We allocate a generous extra few bits to the NCO gain to help avoiding
+    -- We allocate a couple of extra bits to the NCO gain to help avoiding
     -- loss of resolution when rounding later on.
     subtype nco_gain_t is unsigned(17 downto 0);
 

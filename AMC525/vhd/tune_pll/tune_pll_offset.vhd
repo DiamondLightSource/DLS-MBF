@@ -22,9 +22,9 @@ end;
 architecture arch of tune_pll_offset is
     -- Do all the arithmetic as signed numbers for better match to DSP.  In fact
     -- angle_t is unsigned, but the offset is signed.
-    signal freq_offset_in : signed(angle_t'RANGE);
-    signal freq_in : signed(angle_t'RANGE);
-    signal freq_out : signed(angle_t'RANGE);
+    signal freq_offset_in : signed(angle_t'RANGE) := (others => '0');
+    signal freq_in : signed(angle_t'RANGE) := (others => '0');
+    signal freq_out : signed(angle_t'RANGE) := (others => '0');
 
     -- Use DSP unit for our 48 bit arithmetic here
     attribute USE_DSP : string;

@@ -62,7 +62,7 @@ begin
     nco1_data_o.gain <= unsigned(nco1_register(DSP_FIXED_NCO_NCO1_GAIN_BITS));
     enable_pll(1) <= nco1_register(DSP_FIXED_NCO_NCO1_ENA_TUNE_PLL_BIT);
 
-    nco2_data_o.gain <= unsigned(nco1_register(DSP_FIXED_NCO_NCO2_GAIN_BITS));
+    nco2_data_o.gain <= unsigned(nco2_register(DSP_FIXED_NCO_NCO2_GAIN_BITS));
     enable_pll(2) <= nco2_register(DSP_FIXED_NCO_NCO2_ENA_TUNE_PLL_BIT);
 
 
