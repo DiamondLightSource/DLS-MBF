@@ -48,7 +48,12 @@ architecture arch of sequencer_counter is
 
     signal turn_clock_delay : std_ulogic;
 
+    signal nco_reset : std_ulogic := '0';
     signal add_pll_freq : std_ulogic := '0';
+
+    -- Extra delay neede dto align reset with frequency change.  This is needed
+    -- to ensure that we correctly reset to phase 0 at the right time.
+    constant RESET_DELAY : natural := 2;
 
 begin
     process (dsp_clk_i) begin
@@ -84,17 +89,28 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            nco_reset_o <= reset_phase_i and turn_clock_i and state_end_o;
+            nco_reset <= reset_phase_i and turn_clock_i and state_end_o;
         end if;
     end process;
 
 
     -- Add offset to computed frequency if required
-    add_offset : entity work.tune_pll_offset port map (
+    add_offset : entity work.tune_pll_offset generic map (
+        DELAY => RESET_DELAY
+    ) port map (
         clk_i => dsp_clk_i,
         freq_offset_i => tune_pll_offset_i,
         enable_i => add_pll_freq,
         freq_i => nco_freq,
         freq_o => nco_freq_o
+    );
+
+    -- Delay reset to align with frequency change
+    delay_reset : entity work.dlyline generic map (
+        DLY => RESET_DELAY
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i(0) => nco_reset,
+        data_o(0) => nco_reset_o
     );
 end;

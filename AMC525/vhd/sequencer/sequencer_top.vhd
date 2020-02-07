@@ -88,8 +88,6 @@ architecture arch of sequencer_top is
     signal turn_clock : std_ulogic;
     signal nco_freq : angle_t;
     signal nco_reset : std_ulogic;
-    signal nco_gain : nco_gain_t;
-    signal nco_gain_adc : nco_gain_t;
     signal detector_window : detector_window_o'SUBTYPE;
     signal bunch_bank : bunch_bank_o'SUBTYPE;
 
@@ -129,7 +127,7 @@ architecture arch of sequencer_top is
     -- Delay from nco phase control to cos/sin output, validated by NCO core
     constant NCO_PROCESS_DELAY : natural := 16;
     -- Total delay through NCO including 4 tick NCO output pipeline
-    constant NCO_DELAY : natural := NCO_PROCESS_DELAY + 4;
+    constant NCO_DELAY : natural := NCO_PROCESS_DELAY + 4 + 6;
     -- Extra delay for the bunch bank select taking NCO delays into account
     constant BANK_DELAY : natural := NCO_DELAY + 4 - BUNCH_SELECT_DELAY;
 
@@ -280,7 +278,7 @@ begin
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
-        nco_gain_o => nco_gain,
+        nco_gain_o => nco_data_o.gain,
         bunch_bank_o => bunch_bank
     );
 
@@ -296,7 +294,6 @@ begin
         reset_phase_i => nco_reset,
         cos_sin_o => nco_data_o.nco
     );
-    nco_data_o.gain <= nco_gain_adc;
 
 
     clocking : entity work.sequencer_clocking port map (
@@ -311,9 +308,6 @@ begin
 
         seq_write_dsp_i => seq_write,
         seq_write_adc_o => seq_write_adc_o,
-
-        nco_gain_dsp_i => nco_gain,
-        nco_gain_adc_o => nco_gain_adc,
 
         detector_window_dsp_i => detector_window,
         detector_window_adc_o => detector_window_o,

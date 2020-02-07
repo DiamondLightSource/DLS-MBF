@@ -10,6 +10,10 @@ use work.support.all;
 use work.nco_defs.all;
 
 entity tune_pll_offset is
+    generic (
+        -- Delay from offset and frequency in to output, if you care
+        DELAY : natural := 2
+    );
     port (
         clk_i : in std_ulogic;
         freq_offset_i : in signed(31 downto 0);
@@ -36,6 +40,11 @@ architecture arch of tune_pll_offset is
     attribute DONT_TOUCH of freq_offset_i : signal is "yes";
 
 begin
+    -- freq_i, freq_offset_i
+    --      => freq_in, freq_offset_in
+    --      => freq_out = freq_o
+    assert DELAY = 2 severity failure;
+
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- The frequency offset covers bits [39:8] of the 48 bit angle.
