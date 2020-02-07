@@ -27,15 +27,16 @@ package bunch_defs is
 
     constant BUNCH_CONFIG_BITS : natural := FIR_BANK_BITS + 5 + 18;
     subtype bunch_config_bits_t is
-        std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+        std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
 
-    function to_bunch_config_t(bits : std_logic_vector) return bunch_config_t;
+    function to_bunch_config_t(bits : std_ulogic_vector) return bunch_config_t;
     function from_bunch_config_t(config : bunch_config_t)
         return bunch_config_bits_t;
 end;
 
 package body bunch_defs is
-    function to_bunch_config_t(bits : std_logic_vector) return bunch_config_t is
+    function to_bunch_config_t(bits : std_ulogic_vector)
+        return bunch_config_t is
     begin
         return (
             fir_select => unsigned(bits(DSP_BUNCH_BANK_FIR_SELECT_BITS)),
@@ -52,8 +53,8 @@ package body bunch_defs is
     begin
         return (
             DSP_BUNCH_BANK_FIR_SELECT_BITS =>
-                std_logic_vector(config.fir_select),
-            DSP_BUNCH_BANK_GAIN_BITS => std_logic_vector(config.gain),
+                std_ulogic_vector(config.fir_select),
+            DSP_BUNCH_BANK_GAIN_BITS => std_ulogic_vector(config.gain),
             DSP_BUNCH_BANK_FIR_ENABLE_BIT => config.fir_enable,
             DSP_BUNCH_BANK_NCO0_ENABLE_BIT => config.nco_0_enable,
             DSP_BUNCH_BANK_NCO1_ENABLE_BIT => config.nco_1_enable,

@@ -139,7 +139,7 @@ begin
         DW => 32
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => std_logic_vector(tune_pll_offset_i),
+        data_i => std_ulogic_vector(tune_pll_offset_i),
         signed(data_o) => tune_pll_offset
     );
 

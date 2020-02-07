@@ -21,7 +21,7 @@ package tune_pll_defs is
         nco_reset : std_ulogic;
 
         -- Detector control and status
-        data_select : std_logic_vector(1 downto 0);
+        data_select : std_ulogic_vector(1 downto 0);
         detector_shift : unsigned(1 downto 0);
         blanking_enable : std_ulogic;
 

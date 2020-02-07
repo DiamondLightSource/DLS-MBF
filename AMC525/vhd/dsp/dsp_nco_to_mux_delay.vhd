@@ -35,7 +35,7 @@ begin
         DW => data_i.gain'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(data_i.gain),
+        data_i => std_ulogic_vector(data_i.gain),
         unsigned(data_o) => data_o.gain
     );
 end;

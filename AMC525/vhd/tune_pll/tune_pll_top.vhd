@@ -285,7 +285,7 @@ begin
         DW => angle_t'LENGTH
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => std_logic_vector(nco_frequency),
+        data_i => std_ulogic_vector(nco_frequency),
         angle_t(data_o) => nco_frequency_out
     );
 
@@ -295,7 +295,7 @@ begin
         DW => 32
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => std_logic_vector(frequency_offset),
+        data_i => std_ulogic_vector(frequency_offset),
         signed(data_o) => freq_offset_o
     );
 
