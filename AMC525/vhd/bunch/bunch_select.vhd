@@ -42,6 +42,7 @@ architecture arch of bunch_select is
 
     signal bunch_index : bunch_count_t := (others => '0');
     signal bunch_config : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal bunch_config_out : bunch_config'SUBTYPE;
 
     -- Lookup delay
     constant STORE_DELAY : natural := 4;
@@ -102,6 +103,7 @@ begin
     ) port map (
        clk_i => adc_clk_i,
        data_i => bunch_config,
-       to_bunch_config_t(data_o) => bunch_config_o
+       data_o => bunch_config_out
     );
+    bunch_config_o <= to_bunch_config_t(bunch_config_out);
 end;

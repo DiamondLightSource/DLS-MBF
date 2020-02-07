@@ -94,6 +94,9 @@ architecture arch of dac_output_mux is
     subtype DAC_RESULT_RANGE is natural range
         DAC_RESULT_OFFSET + 15 downto DAC_RESULT_OFFSET;
 
+    constant DAC_RESULT_ROUNDING : signed(47 downto 0)
+        := (DAC_RESULT_OFFSET-1 => '1', others => '0');
+
     subtype NCOS is natural range 0 to 3;
     type dsp_nco_array is array(NCOS) of dsp_nco_from_mux_t;
     signal nco_data : dsp_nco_array;
@@ -104,6 +107,10 @@ architecture arch of dac_output_mux is
 
     signal accum_signal : signed_array(0 to NCOS'HIGH + 1)(47 downto 0);
     signal full_dac_out : signed(47 downto 0);
+
+    -- This is truly strange.  Without this intermediate definition, Vivado
+    -- chokes when trying to elaborate the assignments that use this below!
+    constant ONE : std_ulogic := '1';
 
 begin
     -- Map individual NCOs to arrays for generation
@@ -162,7 +169,7 @@ begin
             b_i => nco_gain,
             en_ab_i => nco_enables(i)(i),
             c_i => accum_signal(i),
-            en_c_i => '1',
+            en_c_i => ONE,
             p_o => accum_signal(i + 1),
             ovf_o => nco_overflows(i)
         );
@@ -186,9 +193,9 @@ begin
         clk_i => clk_i,
         a_i => bunch_config_i.gain,
         b_i => unscaled_dac_out,
-        en_ab_i => '1',
-        c_i => (DAC_RESULT_OFFSET-1 => '1', others => '0'),
-        en_c_i => '1',
+        en_ab_i => ONE,
+        c_i => DAC_RESULT_ROUNDING,
+        en_c_i => ONE,
         p_o => full_dac_out,
         ovf_o => scaling_overflow
     );
