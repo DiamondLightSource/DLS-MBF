@@ -20,6 +20,8 @@ entity dac_bunch_config_delay is
 end;
 
 architecture arch of dac_bunch_config_delay is
+    signal data_out : bunch_config_bits_t;
+
 begin
     delay_line : entity work.dlyreg generic map (
         DLY => DELAY,
@@ -27,6 +29,8 @@ begin
     ) port map (
         clk_i => clk_i,
         data_i => from_bunch_config_t(data_i),
-        to_bunch_config_t(data_o) => data_o
+        data_o => data_out
     );
+
+    data_o <= to_bunch_config_t(data_out);
 end;

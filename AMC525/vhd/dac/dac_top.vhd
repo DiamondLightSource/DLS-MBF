@@ -65,6 +65,11 @@ architecture arch of dac_top is
     signal mux_overflow : std_ulogic;
     signal preemph_overflow : std_ulogic;
 
+    -- Pipelines
+    signal fir_data_in : fir_data_i'SUBTYPE;
+    signal nco_1_data_in : nco_1_data_i'SUBTYPE;
+    signal bunch_config_in : bunch_config_i'SUBTYPE;
+
     -- Data flowing through system
     signal fir_mms_data : data_o'SUBTYPE;
     signal data_out : data_o'SUBTYPE;
@@ -75,8 +80,8 @@ architecture arch of dac_top is
 --     -- Delay from gain control to data change
 --     constant NCO1_GAIN_DELAY : natural := 4;
 -- 
---     -- Input delays
---     constant INPUT_PIPELINE_DELAY : natural := 4;
+    -- Input delays
+    constant INPUT_PIPELINE_DELAY : natural := 2;
 
 begin
     -- Register interface
@@ -121,18 +126,45 @@ begin
 
 
     -- -------------------------------------------------------------------------
-    -- Output generation
+    -- Output generation with selected piplelines
+
+    fir_delay : entity work.dlyreg generic map (
+        DLY => INPUT_PIPELINE_DELAY,
+        DW => fir_data_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(fir_data_i),
+        signed(data_o) => fir_data_in
+    );
+
+    nco1_delay : entity work.dac_nco_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => nco_1_data_i,
+        data_o => nco_1_data_in
+    );
+
+    bunch_delay : entity work.dac_bunch_config_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => bunch_config_i,
+        data_o => bunch_config_in
+    );
+
 
     -- Output gain control and selection
     dac_output_mux : entity work.dac_output_mux port map (
         clk_i => adc_clk_i,
 
-        bunch_config_i => bunch_config_i,
+        bunch_config_i => bunch_config_in,
 
-        fir_data_i => fir_data_i,
+        fir_data_i => fir_data_in,
         fir_gain_i => fir_gain,
+
         nco_0_data_i => nco_0_data_i,
-        nco_1_data_i => nco_1_data_i,
+        nco_1_data_i => nco_1_data_in,
         nco_2_data_i => nco_2_data_i,
         nco_3_data_i => nco_3_data_i,
 

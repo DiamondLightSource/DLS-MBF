@@ -16,7 +16,11 @@ entity saturate is
 
         data_i : in signed;
         ovf_i : in std_ulogic;
-        data_o : out signed
+
+        -- The incoming overflow is registered to keep it in step with the
+        -- outgoing data.
+        data_o : out signed;
+        ovf_o : out std_ulogic
     );
 end;
 
@@ -43,6 +47,7 @@ begin
                 -- All good, output selected range
                 data_out <= data_i(DATA_RANGE);
             end if;
+            ovf_o <= ovf_i;
         end if;
     end process;
 

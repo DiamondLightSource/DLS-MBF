@@ -103,7 +103,9 @@ architecture arch of dac_output_mux is
     signal nco_enables_in : std_ulogic_vector(NCOS);
     signal nco_enables : vector_array(NCOS)(NCOS);
     signal nco_overflows : std_ulogic_vector(NCOS);
+    signal unscaled_overflow_out : std_ulogic;
     signal scaling_overflow : std_ulogic;
+    signal scaling_overflow_out : std_ulogic;
 
     signal accum_signal : signed_array(0 to NCOS'HIGH + 1)(47 downto 0);
     signal full_dac_out : signed(47 downto 0);
@@ -195,7 +197,8 @@ begin
         clk_i => clk_i,
         data_i => accum_signal(NCOS'HIGH + 1),
         ovf_i => nco_overflows(NCOS'HIGH),
-        data_o => unscaled_dac_out
+        data_o => unscaled_dac_out,
+        ovf_o => unscaled_overflow_out
     );
 
     -- Final output scaling
@@ -218,8 +221,9 @@ begin
         clk_i => clk_i,
         data_i => full_dac_out,
         ovf_i => scaling_overflow,
-        data_o => data_o
+        data_o => data_o,
+        ovf_o => scaling_overflow_out
     );
 
-    mux_overflow_o <= nco_overflows(NCOS'HIGH) or scaling_overflow;
+    mux_overflow_o <= unscaled_overflow_out or scaling_overflow_out;
 end;
