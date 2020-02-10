@@ -35,12 +35,12 @@ architecture arch of dac_fir_gain is
         MMS_OFFSET + mms_o'LENGTH - 1 downto MMS_OFFSET;
 
 begin
-    shifted_data <=
-        shift_left(resize(data_i, data_o'LENGTH), to_integer(gain_i));
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Compute output data and overflow detection together, we'll need
             -- this for the saturation stage.
+            shifted_data <=
+                shift_left(resize(data_i, data_o'LENGTH), to_integer(gain_i));
             shifted_data_out <= shifted_data;
             fir_overflow <= overflow_detect(shifted_data(OVERFLOW_RANGE));
 
