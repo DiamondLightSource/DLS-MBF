@@ -156,23 +156,35 @@ begin
 
     -- Accumulate all the NCOs
     scale_ncos : for i in NCOS generate
-        signal nco_gain : signed(24 downto 0);
+        signal a_in : signed(17 downto 0);
+        signal b_in : signed(24 downto 0);
+        signal ab : signed(42 downto 0);
+        signal abc : signed(47 downto 0);
+
+        subtype OVF_RANGE is natural range 47 downto RAW_DAC_OUT_RANGE'LEFT;
+        constant ONES_MASK : signed(OVF_RANGE) := (others => '1');
+        signal all_ones : boolean;
+        signal all_zeros : boolean;
 
     begin
-        nco_gain <= (NCO_GAIN_RANGE => signed(nco_data(i).gain), others => '0');
-        nco_mac : entity work.dsp_mac generic map (
-            -- We only really want the last overflow check
-            TOP_RESULT_BIT => RAW_DAC_OUT_RANGE'LEFT
-        ) port map (
-            clk_i => clk_i,
-            a_i => nco_data(i).nco,
-            b_i => nco_gain,
-            en_ab_i => nco_enables(i)(i),
-            c_i => accum_signal(i),
-            en_c_i => ONE,
-            p_o => accum_signal(i + 1),
-            ovf_o => nco_overflows(i)
-        );
+        process (clk_i) begin
+            if rising_edge(clk_i) then
+                a_in <= nco_data(i).nco;
+                b_in <= (
+                    NCO_GAIN_RANGE => signed(nco_data(i).gain),
+                    others => '0');
+                if nco_enables(i)(i) = '1' then
+                    ab <= a_in * b_in;
+                else
+                    ab <= (others => '0');
+                end if;
+                accum_signal(i + 1) <= abc;
+                all_ones <= abc(OVF_RANGE) = ONES_MASK;
+                all_zeros <= abc(OVF_RANGE) = 0;
+            end if;
+        end process;
+        abc <= resize(ab, 48) + accum_signal(i);
+        nco_overflows(i) <= to_std_ulogic(not all_ones and not all_zeros);
     end generate;
 
     -- Saturate final output from NCO accumulator chain.  We can't put this off
