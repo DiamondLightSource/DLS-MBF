@@ -285,7 +285,7 @@ begin
     -- Swept NCO
     seq_nco : entity work.nco generic map (
         PROCESS_DELAY => NCO_PROCESS_DELAY,
-        IN_DELAY => 0,
+        IN_DELAY => 1,
         OUT_DELAY => 4
     ) port map (
         adc_clk_i => adc_clk_i,

@@ -42,14 +42,14 @@ read_xdc $src_dir/constr/clocks.xdc
 read_xdc $src_dir/constr/post_synth.xdc
 set_property used_in_synthesis false [get_files post_synth.xdc]
 
-read_xdc $src_dir/constr/pblocks.xdc
-set_property used_in_synthesis false [get_files pblocks.xdc]
+# read_xdc $src_dir/constr/pblocks.xdc
+# set_property used_in_synthesis false [get_files pblocks.xdc]
 
 
 # Configure Vivado build options
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 set_property STEPS.SYNTH_DESIGN.ARGS.ASSERT true [get_runs synth_1]
-set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]
+# set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]
 
 # Add script for rebuilding version file to synthesis step
 set_property STEPS.SYNTH_DESIGN.TCL.PRE \
@@ -58,6 +58,8 @@ set_property STEPS.SYNTH_DESIGN.TCL.PRE \
 # Try a little harder to close timing
 set_property flow {Vivado Implementation 2019} [get_runs impl_1]
 set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
+set_property STEPS.OPT_DESIGN.ARGS.DIRECTIVE ExploreSequentialArea \
+    [get_runs impl_1]
 
 launch_runs impl_1 -to_step write_bitstream -jobs 6
 wait_on_run impl_1
