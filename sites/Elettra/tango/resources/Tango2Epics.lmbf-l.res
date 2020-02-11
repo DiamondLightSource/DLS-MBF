@@ -3,18 +3,18 @@
 #
 
 #---------------------------------------------------------
-# SERVER Tango2Epics/mfdbk-l, Tango2Epics device declaration
+# SERVER Tango2Epics/lmbf-l, Tango2Epics device declaration
 #---------------------------------------------------------
 
-Tango2Epics/mfdbk-l/DEVICE/Tango2Epics: "sr/d-mfdbk/utca-longitudinal"
+Tango2Epics/lmbf-l/DEVICE/Tango2Epics: "lmbf/processor/l"
 
 
-# --- sr/d-mfdbk/utca-longitudinal properties
+# --- lmbf/processor/l properties
 
-sr/d-mfdbk/utca-longitudinal->ArrayAccessTimeout: 0.3
-sr/d-mfdbk/utca-longitudinal->ScalarAccessTimeout: 0.2
-sr/d-mfdbk/utca-longitudinal->SubscriptionCycle: 0.4
-sr/d-mfdbk/utca-longitudinal->Variables: SR-LMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN,\ 
+lmbf/processor/l->ArrayAccessTimeout: 0.3
+lmbf/processor/l->ScalarAccessTimeout: 0.2
+lmbf/processor/l->SubscriptionCycle: 0.4
+lmbf/processor/l->Variables: SR-LMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN,\ 
                                          SR-LMBF:ADC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN1,\ 
                                          SR-LMBF:ADC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_S,\ 
                                          SR-LMBF:DAC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN,\ 
@@ -654,68 +654,68 @@ sr/d-mfdbk/utca-longitudinal->Variables: SR-LMBF:ADC:EVENTS:FAN*Scalar*Int*READ_
                                          SR-LMBF:TRG:SOFT_S*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_S,\ 
                                          SR-LMBF:TRG:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_STATUS
 
-# --- sr/d-mfdbk/utca-longitudinal attribute properties
+# --- lmbf/processor/l attribute properties
 
-sr/d-mfdbk/utca-longitudinal/ADC_EVENTS_S->description: "ADC event detect scan"
-sr/d-mfdbk/utca-longitudinal/DAC_EVENTS_S->description: "DAC event detect scan"
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_COARSE_DELAY_S->description: "DAC clock coarse delay"
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_DELAY_PS->unit: ps
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_FIFO->description: "DAC output FIFO depth"
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_FINE_DELAY_S->description: "DAC clock fine delay"
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_FINE_DELAY_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_FINE_DELAY_S->max_value: 23.0
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_FINE_DELAY_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_RESET_S->description: "Reset coarse delay"
-sr/d-mfdbk/utca-longitudinal/DLY_DAC_STEP_S->description: "Advance coarse delay"
-sr/d-mfdbk/utca-longitudinal/DLY_STEP_SIZE->description: "Duration of coarse step"
-sr/d-mfdbk/utca-longitudinal/DLY_STEP_SIZE->unit: ps
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_DELAY_PS->unit: ps
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_DELAY_S->description: "Turn clock input delay"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_DELAY_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_DELAY_S->max_value: 31.0
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_DELAY_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_ERRORS->description: "Turn clock errors"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_OFFSET_S->description: "Turn clock offset"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_POLL_S->description: "Update turn status"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_RATE->description: "Clock error rate"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_STATUS->description: "Turn clock status"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_STATUS->EnumLabels: Armed,\ 
+lmbf/processor/l/ADC_EVENTS_S->description: "ADC event detect scan"
+lmbf/processor/l/DAC_EVENTS_S->description: "DAC event detect scan"
+lmbf/processor/l/DLY_DAC_COARSE_DELAY_S->description: "DAC clock coarse delay"
+lmbf/processor/l/DLY_DAC_DELAY_PS->unit: ps
+lmbf/processor/l/DLY_DAC_FIFO->description: "DAC output FIFO depth"
+lmbf/processor/l/DLY_DAC_FINE_DELAY_S->description: "DAC clock fine delay"
+lmbf/processor/l/DLY_DAC_FINE_DELAY_S->format: %2d
+lmbf/processor/l/DLY_DAC_FINE_DELAY_S->max_value: 23.0
+lmbf/processor/l/DLY_DAC_FINE_DELAY_S->min_value: 0.0
+lmbf/processor/l/DLY_DAC_RESET_S->description: "Reset coarse delay"
+lmbf/processor/l/DLY_DAC_STEP_S->description: "Advance coarse delay"
+lmbf/processor/l/DLY_STEP_SIZE->description: "Duration of coarse step"
+lmbf/processor/l/DLY_STEP_SIZE->unit: ps
+lmbf/processor/l/DLY_TURN_DELAY_PS->unit: ps
+lmbf/processor/l/DLY_TURN_DELAY_S->description: "Turn clock input delay"
+lmbf/processor/l/DLY_TURN_DELAY_S->format: %2d
+lmbf/processor/l/DLY_TURN_DELAY_S->max_value: 31.0
+lmbf/processor/l/DLY_TURN_DELAY_S->min_value: 0.0
+lmbf/processor/l/DLY_TURN_ERRORS->description: "Turn clock errors"
+lmbf/processor/l/DLY_TURN_OFFSET_S->description: "Turn clock offset"
+lmbf/processor/l/DLY_TURN_POLL_S->description: "Update turn status"
+lmbf/processor/l/DLY_TURN_RATE->description: "Clock error rate"
+lmbf/processor/l/DLY_TURN_STATUS->description: "Turn clock status"
+lmbf/processor/l/DLY_TURN_STATUS->EnumLabels: Armed,\ 
                                                           Synced,\ 
                                                           "Sync Errors"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_SYNC_S->description: "Synchronise turn clock"
-sr/d-mfdbk/utca-longitudinal/DLY_TURN_TURNS->description: "Turns sampled"
-sr/d-mfdbk/utca-longitudinal/FIR_EVENTS_S->description: "FIR event detect scan"
-sr/d-mfdbk/utca-longitudinal/INFO_ADC_TAPS->description: "Length of ADC compensation filter"
-sr/d-mfdbk/utca-longitudinal/INFO_AXIS0->description: "Name of first axis"
-sr/d-mfdbk/utca-longitudinal/INFO_AXIS1->description: "Name of second axis"
-sr/d-mfdbk/utca-longitudinal/INFO_BUNCHES->description: "Number of bunches per revolution"
-sr/d-mfdbk/utca-longitudinal/INFO_BUNCH_TAPS->description: "Length of bunch-by-bunch feedback filter"
-sr/d-mfdbk/utca-longitudinal/INFO_DAC_TAPS->description: "Length of DAC pre-emphasis filter"
-sr/d-mfdbk/utca-longitudinal/INFO_DEVICE->description: "Name of AMC525 device"
-sr/d-mfdbk/utca-longitudinal/INFO_DRIVER_VERSION->description: "Kernel driver version"
-sr/d-mfdbk/utca-longitudinal/INFO_FPGA_GIT_VERSION->description: "Firmware git version"
-sr/d-mfdbk/utca-longitudinal/INFO_FPGA_VERSION->description: "Firmware version"
-sr/d-mfdbk/utca-longitudinal/INFO_GIT_VERSION->description: "Software git version"
-sr/d-mfdbk/utca-longitudinal/INFO_HOSTNAME->description: "Host name of MBF IOC"
-sr/d-mfdbk/utca-longitudinal/INFO_MODE->description: "Operational mode"
-sr/d-mfdbk/utca-longitudinal/INFO_MODE->EnumLabels: TMBF,\ 
+lmbf/processor/l/DLY_TURN_SYNC_S->description: "Synchronise turn clock"
+lmbf/processor/l/DLY_TURN_TURNS->description: "Turns sampled"
+lmbf/processor/l/FIR_EVENTS_S->description: "FIR event detect scan"
+lmbf/processor/l/INFO_ADC_TAPS->description: "Length of ADC compensation filter"
+lmbf/processor/l/INFO_AXIS0->description: "Name of first axis"
+lmbf/processor/l/INFO_AXIS1->description: "Name of second axis"
+lmbf/processor/l/INFO_BUNCHES->description: "Number of bunches per revolution"
+lmbf/processor/l/INFO_BUNCH_TAPS->description: "Length of bunch-by-bunch feedback filter"
+lmbf/processor/l/INFO_DAC_TAPS->description: "Length of DAC pre-emphasis filter"
+lmbf/processor/l/INFO_DEVICE->description: "Name of AMC525 device"
+lmbf/processor/l/INFO_DRIVER_VERSION->description: "Kernel driver version"
+lmbf/processor/l/INFO_FPGA_GIT_VERSION->description: "Firmware git version"
+lmbf/processor/l/INFO_FPGA_VERSION->description: "Firmware version"
+lmbf/processor/l/INFO_GIT_VERSION->description: "Software git version"
+lmbf/processor/l/INFO_HOSTNAME->description: "Host name of MBF IOC"
+lmbf/processor/l/INFO_MODE->description: "Operational mode"
+lmbf/processor/l/INFO_MODE->EnumLabels: TMBF,\ 
                                                     LMBF
-sr/d-mfdbk/utca-longitudinal/INFO_SOCKET->description: "Socket number for data server"
-sr/d-mfdbk/utca-longitudinal/INFO_VERSION->description: "Software version"
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_MAGNITUDE->description: "Bunch magnitude"
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_MAGNITUDE_MEAN->description: "Average bunch magnitude"
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_PHASE->description: "Bunch phase"
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_PHASE->unit: deg
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_PHASE_MEAN->description: "Average bunch phase"
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_PHASE_MEAN->unit: deg
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_THRESHOLD_S->description: "Magnitude phase threshold"
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_THRESHOLD_S->format: %1.3f
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_THRESHOLD_S->max_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_THRESHOLD_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_ADC_TRIGGER_S->description: "Update bunch phase"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_DAC_SELECT_S->description: "Select DAC output"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_DAC_SELECT_S->EnumLabels: Off,\ 
+lmbf/processor/l/INFO_SOCKET->description: "Socket number for data server"
+lmbf/processor/l/INFO_VERSION->description: "Software version"
+lmbf/processor/l/IQ_ADC_MAGNITUDE->description: "Bunch magnitude"
+lmbf/processor/l/IQ_ADC_MAGNITUDE_MEAN->description: "Average bunch magnitude"
+lmbf/processor/l/IQ_ADC_PHASE->description: "Bunch phase"
+lmbf/processor/l/IQ_ADC_PHASE->unit: deg
+lmbf/processor/l/IQ_ADC_PHASE_MEAN->description: "Average bunch phase"
+lmbf/processor/l/IQ_ADC_PHASE_MEAN->unit: deg
+lmbf/processor/l/IQ_ADC_THRESHOLD_S->description: "Magnitude phase threshold"
+lmbf/processor/l/IQ_ADC_THRESHOLD_S->format: %1.3f
+lmbf/processor/l/IQ_ADC_THRESHOLD_S->max_value: 1.0
+lmbf/processor/l/IQ_ADC_THRESHOLD_S->min_value: 0.0
+lmbf/processor/l/IQ_ADC_TRIGGER_S->description: "Update bunch phase"
+lmbf/processor/l/IQ_BUN_0_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_BUN_0_DAC_SELECT_S->description: "Select DAC output"
+lmbf/processor/l/IQ_BUN_0_DAC_SELECT_S->EnumLabels: Off,\ 
                                                                 FIR,\ 
                                                                 NCO,\ 
                                                                 NCO+FIR,\ 
@@ -731,26 +731,26 @@ sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_DAC_SELECT_S->EnumLabels: Off,\
                                                                 PLL+Sweep+FIR,\ 
                                                                 PLL+Sweep+NCO,\ 
                                                                 PLL+Sweep+NCO+FIR
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_FIRWF_S->description: "Set 0 FIR bank select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_FIRWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_FIRWF_STA->description: "Bank 0 FIRWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_FIR_SELECT_S->description: "Select FIR setting"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
+lmbf/processor/l/IQ_BUN_0_FIRWF_S->description: "Set 0 FIR bank select"
+lmbf/processor/l/IQ_BUN_0_FIRWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_0_FIRWF_STA->description: "Bank 0 FIRWF status"
+lmbf/processor/l/IQ_BUN_0_FIR_SELECT_S->description: "Select FIR setting"
+lmbf/processor/l/IQ_BUN_0_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
                                                                 "FIR 1",\ 
                                                                 "FIR 2",\ 
                                                                 "FIR 3"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_GAINWF_S->description: "Set 0 DAC output gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_GAINWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_GAINWF_STA->description: "Bank 0 GAINWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_GAIN_SELECT_S->description: "Select bunch gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_GAIN_SELECT_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_OUTWF_S->description: "Set 0 DAC output select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_OUTWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_OUTWF_STA->description: "Bank 0 OUTWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_0_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_DAC_SELECT_S->description: "Select DAC output"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_DAC_SELECT_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_BUN_0_GAINWF_S->description: "Set 0 DAC output gain"
+lmbf/processor/l/IQ_BUN_0_GAINWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_0_GAINWF_STA->description: "Bank 0 GAINWF status"
+lmbf/processor/l/IQ_BUN_0_GAIN_SELECT_S->description: "Select bunch gain"
+lmbf/processor/l/IQ_BUN_0_GAIN_SELECT_S->format: %.5f
+lmbf/processor/l/IQ_BUN_0_OUTWF_S->description: "Set 0 DAC output select"
+lmbf/processor/l/IQ_BUN_0_OUTWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_0_OUTWF_STA->description: "Bank 0 OUTWF status"
+lmbf/processor/l/IQ_BUN_0_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_BUN_1_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_BUN_1_DAC_SELECT_S->description: "Select DAC output"
+lmbf/processor/l/IQ_BUN_1_DAC_SELECT_S->EnumLabels: Off,\ 
                                                                 FIR,\ 
                                                                 NCO,\ 
                                                                 NCO+FIR,\ 
@@ -766,26 +766,26 @@ sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_DAC_SELECT_S->EnumLabels: Off,\
                                                                 PLL+Sweep+FIR,\ 
                                                                 PLL+Sweep+NCO,\ 
                                                                 PLL+Sweep+NCO+FIR
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_FIRWF_S->description: "Set 1 FIR bank select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_FIRWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_FIRWF_STA->description: "Bank 1 FIRWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_FIR_SELECT_S->description: "Select FIR setting"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
+lmbf/processor/l/IQ_BUN_1_FIRWF_S->description: "Set 1 FIR bank select"
+lmbf/processor/l/IQ_BUN_1_FIRWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_1_FIRWF_STA->description: "Bank 1 FIRWF status"
+lmbf/processor/l/IQ_BUN_1_FIR_SELECT_S->description: "Select FIR setting"
+lmbf/processor/l/IQ_BUN_1_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
                                                                 "FIR 1",\ 
                                                                 "FIR 2",\ 
                                                                 "FIR 3"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_GAINWF_S->description: "Set 1 DAC output gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_GAINWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_GAINWF_STA->description: "Bank 1 GAINWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_GAIN_SELECT_S->description: "Select bunch gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_GAIN_SELECT_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_OUTWF_S->description: "Set 1 DAC output select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_OUTWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_OUTWF_STA->description: "Bank 1 OUTWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_1_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_DAC_SELECT_S->description: "Select DAC output"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_DAC_SELECT_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_BUN_1_GAINWF_S->description: "Set 1 DAC output gain"
+lmbf/processor/l/IQ_BUN_1_GAINWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_1_GAINWF_STA->description: "Bank 1 GAINWF status"
+lmbf/processor/l/IQ_BUN_1_GAIN_SELECT_S->description: "Select bunch gain"
+lmbf/processor/l/IQ_BUN_1_GAIN_SELECT_S->format: %.5f
+lmbf/processor/l/IQ_BUN_1_OUTWF_S->description: "Set 1 DAC output select"
+lmbf/processor/l/IQ_BUN_1_OUTWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_1_OUTWF_STA->description: "Bank 1 OUTWF status"
+lmbf/processor/l/IQ_BUN_1_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_BUN_2_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_BUN_2_DAC_SELECT_S->description: "Select DAC output"
+lmbf/processor/l/IQ_BUN_2_DAC_SELECT_S->EnumLabels: Off,\ 
                                                                 FIR,\ 
                                                                 NCO,\ 
                                                                 NCO+FIR,\ 
@@ -801,26 +801,26 @@ sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_DAC_SELECT_S->EnumLabels: Off,\
                                                                 PLL+Sweep+FIR,\ 
                                                                 PLL+Sweep+NCO,\ 
                                                                 PLL+Sweep+NCO+FIR
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_FIRWF_S->description: "Set 2 FIR bank select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_FIRWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_FIRWF_STA->description: "Bank 2 FIRWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_FIR_SELECT_S->description: "Select FIR setting"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
+lmbf/processor/l/IQ_BUN_2_FIRWF_S->description: "Set 2 FIR bank select"
+lmbf/processor/l/IQ_BUN_2_FIRWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_2_FIRWF_STA->description: "Bank 2 FIRWF status"
+lmbf/processor/l/IQ_BUN_2_FIR_SELECT_S->description: "Select FIR setting"
+lmbf/processor/l/IQ_BUN_2_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
                                                                 "FIR 1",\ 
                                                                 "FIR 2",\ 
                                                                 "FIR 3"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_GAINWF_S->description: "Set 2 DAC output gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_GAINWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_GAINWF_STA->description: "Bank 2 GAINWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_GAIN_SELECT_S->description: "Select bunch gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_GAIN_SELECT_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_OUTWF_S->description: "Set 2 DAC output select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_OUTWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_OUTWF_STA->description: "Bank 2 OUTWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_2_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_DAC_SELECT_S->description: "Select DAC output"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_DAC_SELECT_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_BUN_2_GAINWF_S->description: "Set 2 DAC output gain"
+lmbf/processor/l/IQ_BUN_2_GAINWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_2_GAINWF_STA->description: "Bank 2 GAINWF status"
+lmbf/processor/l/IQ_BUN_2_GAIN_SELECT_S->description: "Select bunch gain"
+lmbf/processor/l/IQ_BUN_2_GAIN_SELECT_S->format: %.5f
+lmbf/processor/l/IQ_BUN_2_OUTWF_S->description: "Set 2 DAC output select"
+lmbf/processor/l/IQ_BUN_2_OUTWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_2_OUTWF_STA->description: "Bank 2 OUTWF status"
+lmbf/processor/l/IQ_BUN_2_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_BUN_3_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_BUN_3_DAC_SELECT_S->description: "Select DAC output"
+lmbf/processor/l/IQ_BUN_3_DAC_SELECT_S->EnumLabels: Off,\ 
                                                                 FIR,\ 
                                                                 NCO,\ 
                                                                 NCO+FIR,\ 
@@ -836,207 +836,207 @@ sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_DAC_SELECT_S->EnumLabels: Off,\
                                                                 PLL+Sweep+FIR,\ 
                                                                 PLL+Sweep+NCO,\ 
                                                                 PLL+Sweep+NCO+FIR
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_FIRWF_S->description: "Set 3 FIR bank select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_FIRWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_FIRWF_STA->description: "Bank 3 FIRWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_FIR_SELECT_S->description: "Select FIR setting"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
+lmbf/processor/l/IQ_BUN_3_FIRWF_S->description: "Set 3 FIR bank select"
+lmbf/processor/l/IQ_BUN_3_FIRWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_3_FIRWF_STA->description: "Bank 3 FIRWF status"
+lmbf/processor/l/IQ_BUN_3_FIR_SELECT_S->description: "Select FIR setting"
+lmbf/processor/l/IQ_BUN_3_FIR_SELECT_S->EnumLabels: "FIR 0",\ 
                                                                 "FIR 1",\ 
                                                                 "FIR 2",\ 
                                                                 "FIR 3"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_GAINWF_S->description: "Set 3 DAC output gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_GAINWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_GAINWF_STA->description: "Bank 3 GAINWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_GAIN_SELECT_S->description: "Select bunch gain"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_GAIN_SELECT_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_OUTWF_S->description: "Set 3 DAC output select"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_OUTWF_SET_S->description: "Set selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_OUTWF_STA->description: "Bank 3 OUTWF status"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_3_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_BUN_MODE->description: "Feedback mode"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_BUNCHES_S->description: "Enable bunches for detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_COUNT->description: "Number of enabled bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_ENABLE->description: "Current detector enable state"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_ENABLE->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_BUN_3_GAINWF_S->description: "Set 3 DAC output gain"
+lmbf/processor/l/IQ_BUN_3_GAINWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_3_GAINWF_STA->description: "Bank 3 GAINWF status"
+lmbf/processor/l/IQ_BUN_3_GAIN_SELECT_S->description: "Select bunch gain"
+lmbf/processor/l/IQ_BUN_3_GAIN_SELECT_S->format: %.5f
+lmbf/processor/l/IQ_BUN_3_OUTWF_S->description: "Set 3 DAC output select"
+lmbf/processor/l/IQ_BUN_3_OUTWF_SET_S->description: "Set selected bunches"
+lmbf/processor/l/IQ_BUN_3_OUTWF_STA->description: "Bank 3 OUTWF status"
+lmbf/processor/l/IQ_BUN_3_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_BUN_MODE->description: "Feedback mode"
+lmbf/processor/l/IQ_DET_0_BUNCHES_S->description: "Enable bunches for detector"
+lmbf/processor/l/IQ_DET_0_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_DET_0_COUNT->description: "Number of enabled bunches"
+lmbf/processor/l/IQ_DET_0_ENABLE->description: "Current detector enable state"
+lmbf/processor/l/IQ_DET_0_ENABLE->EnumLabels: Disabled,\ 
                                                           Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_ENABLE_S->description: "Enable use of this detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_ENABLE_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_DET_0_ENABLE_S->description: "Enable use of this detector"
+lmbf/processor/l/IQ_DET_0_ENABLE_S->EnumLabels: Disabled,\ 
                                                             Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_I->description: "Detector I"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_MAX_POWER->description: "Percentage full scale of maximum power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_MAX_POWER->unit: dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_OUT_OVF->description: "Output overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_OUT_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_DET_0_I->description: "Detector I"
+lmbf/processor/l/IQ_DET_0_MAX_POWER->description: "Percentage full scale of maximum power"
+lmbf/processor/l/IQ_DET_0_MAX_POWER->unit: dB
+lmbf/processor/l/IQ_DET_0_OUT_OVF->description: "Output overflow"
+lmbf/processor/l/IQ_DET_0_OUT_OVF->EnumLabels: Ok,\ 
                                                            Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_PHASE->description: "Detector Phase"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_POWER->description: "Detector Power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_Q->description: "Detector Q"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_RESET_SELECT_S->description: "Disable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_SCALING_S->description: "Readout scaling"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_SCALING_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_DET_0_PHASE->description: "Detector Phase"
+lmbf/processor/l/IQ_DET_0_POWER->description: "Detector Power"
+lmbf/processor/l/IQ_DET_0_Q->description: "Detector Q"
+lmbf/processor/l/IQ_DET_0_RESET_SELECT_S->description: "Disable selected bunches"
+lmbf/processor/l/IQ_DET_0_SCALING_S->description: "Readout scaling"
+lmbf/processor/l/IQ_DET_0_SCALING_S->EnumLabels: 0dB,\ 
                                                              -48dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_0_SET_SELECT_S->description: "Enable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_BUNCHES_S->description: "Enable bunches for detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_COUNT->description: "Number of enabled bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_ENABLE->description: "Current detector enable state"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_ENABLE->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_DET_0_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_DET_0_SET_SELECT_S->description: "Enable selected bunches"
+lmbf/processor/l/IQ_DET_1_BUNCHES_S->description: "Enable bunches for detector"
+lmbf/processor/l/IQ_DET_1_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_DET_1_COUNT->description: "Number of enabled bunches"
+lmbf/processor/l/IQ_DET_1_ENABLE->description: "Current detector enable state"
+lmbf/processor/l/IQ_DET_1_ENABLE->EnumLabels: Disabled,\ 
                                                           Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_ENABLE_S->description: "Enable use of this detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_ENABLE_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_DET_1_ENABLE_S->description: "Enable use of this detector"
+lmbf/processor/l/IQ_DET_1_ENABLE_S->EnumLabels: Disabled,\ 
                                                             Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_I->description: "Detector I"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_MAX_POWER->description: "Percentage full scale of maximum power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_MAX_POWER->unit: dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_OUT_OVF->description: "Output overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_OUT_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_DET_1_I->description: "Detector I"
+lmbf/processor/l/IQ_DET_1_MAX_POWER->description: "Percentage full scale of maximum power"
+lmbf/processor/l/IQ_DET_1_MAX_POWER->unit: dB
+lmbf/processor/l/IQ_DET_1_OUT_OVF->description: "Output overflow"
+lmbf/processor/l/IQ_DET_1_OUT_OVF->EnumLabels: Ok,\ 
                                                            Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_PHASE->description: "Detector Phase"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_POWER->description: "Detector Power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_Q->description: "Detector Q"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_RESET_SELECT_S->description: "Disable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_SCALING_S->description: "Readout scaling"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_SCALING_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_DET_1_PHASE->description: "Detector Phase"
+lmbf/processor/l/IQ_DET_1_POWER->description: "Detector Power"
+lmbf/processor/l/IQ_DET_1_Q->description: "Detector Q"
+lmbf/processor/l/IQ_DET_1_RESET_SELECT_S->description: "Disable selected bunches"
+lmbf/processor/l/IQ_DET_1_SCALING_S->description: "Readout scaling"
+lmbf/processor/l/IQ_DET_1_SCALING_S->EnumLabels: 0dB,\ 
                                                              -48dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_1_SET_SELECT_S->description: "Enable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_BUNCHES_S->description: "Enable bunches for detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_COUNT->description: "Number of enabled bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_ENABLE->description: "Current detector enable state"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_ENABLE->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_DET_1_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_DET_1_SET_SELECT_S->description: "Enable selected bunches"
+lmbf/processor/l/IQ_DET_2_BUNCHES_S->description: "Enable bunches for detector"
+lmbf/processor/l/IQ_DET_2_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_DET_2_COUNT->description: "Number of enabled bunches"
+lmbf/processor/l/IQ_DET_2_ENABLE->description: "Current detector enable state"
+lmbf/processor/l/IQ_DET_2_ENABLE->EnumLabels: Disabled,\ 
                                                           Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_ENABLE_S->description: "Enable use of this detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_ENABLE_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_DET_2_ENABLE_S->description: "Enable use of this detector"
+lmbf/processor/l/IQ_DET_2_ENABLE_S->EnumLabels: Disabled,\ 
                                                             Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_I->description: "Detector I"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_MAX_POWER->description: "Percentage full scale of maximum power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_MAX_POWER->unit: dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_OUT_OVF->description: "Output overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_OUT_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_DET_2_I->description: "Detector I"
+lmbf/processor/l/IQ_DET_2_MAX_POWER->description: "Percentage full scale of maximum power"
+lmbf/processor/l/IQ_DET_2_MAX_POWER->unit: dB
+lmbf/processor/l/IQ_DET_2_OUT_OVF->description: "Output overflow"
+lmbf/processor/l/IQ_DET_2_OUT_OVF->EnumLabels: Ok,\ 
                                                            Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_PHASE->description: "Detector Phase"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_POWER->description: "Detector Power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_Q->description: "Detector Q"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_RESET_SELECT_S->description: "Disable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_SCALING_S->description: "Readout scaling"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_SCALING_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_DET_2_PHASE->description: "Detector Phase"
+lmbf/processor/l/IQ_DET_2_POWER->description: "Detector Power"
+lmbf/processor/l/IQ_DET_2_Q->description: "Detector Q"
+lmbf/processor/l/IQ_DET_2_RESET_SELECT_S->description: "Disable selected bunches"
+lmbf/processor/l/IQ_DET_2_SCALING_S->description: "Readout scaling"
+lmbf/processor/l/IQ_DET_2_SCALING_S->EnumLabels: 0dB,\ 
                                                              -48dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_2_SET_SELECT_S->description: "Enable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_BUNCHES_S->description: "Enable bunches for detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_COUNT->description: "Number of enabled bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_ENABLE->description: "Current detector enable state"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_ENABLE->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_DET_2_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_DET_2_SET_SELECT_S->description: "Enable selected bunches"
+lmbf/processor/l/IQ_DET_3_BUNCHES_S->description: "Enable bunches for detector"
+lmbf/processor/l/IQ_DET_3_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_DET_3_COUNT->description: "Number of enabled bunches"
+lmbf/processor/l/IQ_DET_3_ENABLE->description: "Current detector enable state"
+lmbf/processor/l/IQ_DET_3_ENABLE->EnumLabels: Disabled,\ 
                                                           Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_ENABLE_S->description: "Enable use of this detector"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_ENABLE_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_DET_3_ENABLE_S->description: "Enable use of this detector"
+lmbf/processor/l/IQ_DET_3_ENABLE_S->EnumLabels: Disabled,\ 
                                                             Enabled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_I->description: "Detector I"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_MAX_POWER->description: "Percentage full scale of maximum power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_MAX_POWER->unit: dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_OUT_OVF->description: "Output overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_OUT_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_DET_3_I->description: "Detector I"
+lmbf/processor/l/IQ_DET_3_MAX_POWER->description: "Percentage full scale of maximum power"
+lmbf/processor/l/IQ_DET_3_MAX_POWER->unit: dB
+lmbf/processor/l/IQ_DET_3_OUT_OVF->description: "Output overflow"
+lmbf/processor/l/IQ_DET_3_OUT_OVF->EnumLabels: Ok,\ 
                                                            Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_PHASE->description: "Detector Phase"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_POWER->description: "Detector Power"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_Q->description: "Detector Q"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_RESET_SELECT_S->description: "Disable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_SCALING_S->description: "Readout scaling"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_SCALING_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_DET_3_PHASE->description: "Detector Phase"
+lmbf/processor/l/IQ_DET_3_POWER->description: "Detector Power"
+lmbf/processor/l/IQ_DET_3_Q->description: "Detector Q"
+lmbf/processor/l/IQ_DET_3_RESET_SELECT_S->description: "Disable selected bunches"
+lmbf/processor/l/IQ_DET_3_SCALING_S->description: "Readout scaling"
+lmbf/processor/l/IQ_DET_3_SCALING_S->EnumLabels: 0dB,\ 
                                                              -48dB
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_3_SET_SELECT_S->description: "Enable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_FILL_WAVEFORM_S->description: "Treatment of truncated waveforms"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_FILL_WAVEFORM_S->EnumLabels: Truncated,\ 
+lmbf/processor/l/IQ_DET_3_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_DET_3_SET_SELECT_S->description: "Enable selected bunches"
+lmbf/processor/l/IQ_DET_FILL_WAVEFORM_S->description: "Treatment of truncated waveforms"
+lmbf/processor/l/IQ_DET_FILL_WAVEFORM_S->EnumLabels: Truncated,\ 
                                                                  Filled
-sr/d-mfdbk/utca-longitudinal/IQ_DET_FIR_DELAY_S->description: "FIR nominal group delay"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_FIR_DELAY_S->format: %.1f
-sr/d-mfdbk/utca-longitudinal/IQ_DET_FIR_DELAY_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_DET_SAMPLES->description: "Number of captured samples"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_SCALE->description: "Scale for frequency sweep"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_SELECT_S->description: "Select detector source"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_SELECT_S->EnumLabels: ADC,\ 
+lmbf/processor/l/IQ_DET_FIR_DELAY_S->description: "FIR nominal group delay"
+lmbf/processor/l/IQ_DET_FIR_DELAY_S->format: %.1f
+lmbf/processor/l/IQ_DET_FIR_DELAY_S->unit: turns
+lmbf/processor/l/IQ_DET_SAMPLES->description: "Number of captured samples"
+lmbf/processor/l/IQ_DET_SCALE->description: "Scale for frequency sweep"
+lmbf/processor/l/IQ_DET_SELECT_S->description: "Select detector source"
+lmbf/processor/l/IQ_DET_SELECT_S->EnumLabels: ADC,\ 
                                                           FIR,\ 
                                                           "ADC no fill"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_TIMEBASE->description: "Timebase for frequency sweep"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_UNDERRUN->description: "Data output underrun"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_UNDERRUN->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_DET_TIMEBASE->description: "Timebase for frequency sweep"
+lmbf/processor/l/IQ_DET_UNDERRUN->description: "Data output underrun"
+lmbf/processor/l/IQ_DET_UNDERRUN->EnumLabels: Ok,\ 
                                                           Underrun
-sr/d-mfdbk/utca-longitudinal/IQ_DET_UPDATE_DONE_S->description: "UPDATE processing done"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_UPDATE_SCALE_DONE_S->description: "UPDATE_SCALE processing done"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_UPDATE_SCALE_TRIG->description: "UPDATE_SCALE processing trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_DET_UPDATE_TRIG->description: "UPDATE processing trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_CYCLES_S->description: "Cycles in filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_CYCLES_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_CYCLES_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_CYCLES_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_LENGTH_S->description: "Length of filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_LENGTH_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_LENGTH_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_LENGTH_S->min_value: 2.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_PHASE_S->description: "FIR phase"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_PHASE_S->max_value: 360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_PHASE_S->min_value: -360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_RELOAD_S->description: "Reload filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_USEWF_S->description: "Use direct waveform or settings"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_0_USEWF_S->EnumLabels: Settings,\ 
+lmbf/processor/l/IQ_DET_UPDATE_DONE_S->description: "UPDATE processing done"
+lmbf/processor/l/IQ_DET_UPDATE_SCALE_DONE_S->description: "UPDATE_SCALE processing done"
+lmbf/processor/l/IQ_DET_UPDATE_SCALE_TRIG->description: "UPDATE_SCALE processing trigger"
+lmbf/processor/l/IQ_DET_UPDATE_TRIG->description: "UPDATE processing trigger"
+lmbf/processor/l/IQ_FIR_0_CYCLES_S->description: "Cycles in filter"
+lmbf/processor/l/IQ_FIR_0_CYCLES_S->format: %2d
+lmbf/processor/l/IQ_FIR_0_CYCLES_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_0_CYCLES_S->min_value: 1.0
+lmbf/processor/l/IQ_FIR_0_LENGTH_S->description: "Length of filter"
+lmbf/processor/l/IQ_FIR_0_LENGTH_S->format: %2d
+lmbf/processor/l/IQ_FIR_0_LENGTH_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_0_LENGTH_S->min_value: 2.0
+lmbf/processor/l/IQ_FIR_0_PHASE_S->description: "FIR phase"
+lmbf/processor/l/IQ_FIR_0_PHASE_S->max_value: 360.0
+lmbf/processor/l/IQ_FIR_0_PHASE_S->min_value: -360.0
+lmbf/processor/l/IQ_FIR_0_RELOAD_S->description: "Reload filter"
+lmbf/processor/l/IQ_FIR_0_USEWF_S->description: "Use direct waveform or settings"
+lmbf/processor/l/IQ_FIR_0_USEWF_S->EnumLabels: Settings,\ 
                                                            Waveform
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_CYCLES_S->description: "Cycles in filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_CYCLES_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_CYCLES_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_CYCLES_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_LENGTH_S->description: "Length of filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_LENGTH_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_LENGTH_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_LENGTH_S->min_value: 2.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_PHASE_S->description: "FIR phase"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_PHASE_S->max_value: 360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_PHASE_S->min_value: -360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_RELOAD_S->description: "Reload filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_USEWF_S->description: "Use direct waveform or settings"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_1_USEWF_S->EnumLabels: Settings,\ 
+lmbf/processor/l/IQ_FIR_1_CYCLES_S->description: "Cycles in filter"
+lmbf/processor/l/IQ_FIR_1_CYCLES_S->format: %2d
+lmbf/processor/l/IQ_FIR_1_CYCLES_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_1_CYCLES_S->min_value: 1.0
+lmbf/processor/l/IQ_FIR_1_LENGTH_S->description: "Length of filter"
+lmbf/processor/l/IQ_FIR_1_LENGTH_S->format: %2d
+lmbf/processor/l/IQ_FIR_1_LENGTH_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_1_LENGTH_S->min_value: 2.0
+lmbf/processor/l/IQ_FIR_1_PHASE_S->description: "FIR phase"
+lmbf/processor/l/IQ_FIR_1_PHASE_S->max_value: 360.0
+lmbf/processor/l/IQ_FIR_1_PHASE_S->min_value: -360.0
+lmbf/processor/l/IQ_FIR_1_RELOAD_S->description: "Reload filter"
+lmbf/processor/l/IQ_FIR_1_USEWF_S->description: "Use direct waveform or settings"
+lmbf/processor/l/IQ_FIR_1_USEWF_S->EnumLabels: Settings,\ 
                                                            Waveform
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_CYCLES_S->description: "Cycles in filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_CYCLES_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_CYCLES_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_CYCLES_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_LENGTH_S->description: "Length of filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_LENGTH_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_LENGTH_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_LENGTH_S->min_value: 2.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_PHASE_S->description: "FIR phase"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_PHASE_S->max_value: 360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_PHASE_S->min_value: -360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_RELOAD_S->description: "Reload filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_USEWF_S->description: "Use direct waveform or settings"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_2_USEWF_S->EnumLabels: Settings,\ 
+lmbf/processor/l/IQ_FIR_2_CYCLES_S->description: "Cycles in filter"
+lmbf/processor/l/IQ_FIR_2_CYCLES_S->format: %2d
+lmbf/processor/l/IQ_FIR_2_CYCLES_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_2_CYCLES_S->min_value: 1.0
+lmbf/processor/l/IQ_FIR_2_LENGTH_S->description: "Length of filter"
+lmbf/processor/l/IQ_FIR_2_LENGTH_S->format: %2d
+lmbf/processor/l/IQ_FIR_2_LENGTH_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_2_LENGTH_S->min_value: 2.0
+lmbf/processor/l/IQ_FIR_2_PHASE_S->description: "FIR phase"
+lmbf/processor/l/IQ_FIR_2_PHASE_S->max_value: 360.0
+lmbf/processor/l/IQ_FIR_2_PHASE_S->min_value: -360.0
+lmbf/processor/l/IQ_FIR_2_RELOAD_S->description: "Reload filter"
+lmbf/processor/l/IQ_FIR_2_USEWF_S->description: "Use direct waveform or settings"
+lmbf/processor/l/IQ_FIR_2_USEWF_S->EnumLabels: Settings,\ 
                                                            Waveform
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_CYCLES_S->description: "Cycles in filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_CYCLES_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_CYCLES_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_CYCLES_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_LENGTH_S->description: "Length of filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_LENGTH_S->format: %2d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_LENGTH_S->max_value: 16.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_LENGTH_S->min_value: 2.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_PHASE_S->description: "FIR phase"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_PHASE_S->max_value: 360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_PHASE_S->min_value: -360.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_RELOAD_S->description: "Reload filter"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_USEWF_S->description: "Use direct waveform or settings"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_3_USEWF_S->EnumLabels: Settings,\ 
+lmbf/processor/l/IQ_FIR_3_CYCLES_S->description: "Cycles in filter"
+lmbf/processor/l/IQ_FIR_3_CYCLES_S->format: %2d
+lmbf/processor/l/IQ_FIR_3_CYCLES_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_3_CYCLES_S->min_value: 1.0
+lmbf/processor/l/IQ_FIR_3_LENGTH_S->description: "Length of filter"
+lmbf/processor/l/IQ_FIR_3_LENGTH_S->format: %2d
+lmbf/processor/l/IQ_FIR_3_LENGTH_S->max_value: 16.0
+lmbf/processor/l/IQ_FIR_3_LENGTH_S->min_value: 2.0
+lmbf/processor/l/IQ_FIR_3_PHASE_S->description: "FIR phase"
+lmbf/processor/l/IQ_FIR_3_PHASE_S->max_value: 360.0
+lmbf/processor/l/IQ_FIR_3_PHASE_S->min_value: -360.0
+lmbf/processor/l/IQ_FIR_3_RELOAD_S->description: "Reload filter"
+lmbf/processor/l/IQ_FIR_3_USEWF_S->description: "Use direct waveform or settings"
+lmbf/processor/l/IQ_FIR_3_USEWF_S->EnumLabels: Settings,\ 
                                                            Waveform
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_DECIMATION_S->description: "Bunch by bunch decimation"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_DECIMATION_S->format: %3d
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_DECIMATION_S->max_value: 128.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_DECIMATION_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_GAIN_DN_S->description: "Decrease FIR gain"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_GAIN_S->description: "FIR gain select"
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_GAIN_S->EnumLabels: 48dB,\ 
+lmbf/processor/l/IQ_FIR_DECIMATION_S->description: "Bunch by bunch decimation"
+lmbf/processor/l/IQ_FIR_DECIMATION_S->format: %3d
+lmbf/processor/l/IQ_FIR_DECIMATION_S->max_value: 128.0
+lmbf/processor/l/IQ_FIR_DECIMATION_S->min_value: 1.0
+lmbf/processor/l/IQ_FIR_GAIN_DN_S->description: "Decrease FIR gain"
+lmbf/processor/l/IQ_FIR_GAIN_S->description: "FIR gain select"
+lmbf/processor/l/IQ_FIR_GAIN_S->EnumLabels: 48dB,\ 
                                                         42dB,\ 
                                                         36dB,\ 
                                                         30dB,\ 
@@ -1052,14 +1052,14 @@ sr/d-mfdbk/utca-longitudinal/IQ_FIR_GAIN_S->EnumLabels: 48dB,\
                                                         -30dB,\ 
                                                         -36dB,\ 
                                                         -42dB
-sr/d-mfdbk/utca-longitudinal/IQ_FIR_GAIN_UP_S->description: "Increase FIR gain"
-sr/d-mfdbk/utca-longitudinal/IQ_NCO_ENABLE_S->description: "Enable fixed NCO output"
-sr/d-mfdbk/utca-longitudinal/IQ_NCO_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_FIR_GAIN_UP_S->description: "Increase FIR gain"
+lmbf/processor/l/IQ_NCO_ENABLE_S->description: "Enable fixed NCO output"
+lmbf/processor/l/IQ_NCO_ENABLE_S->EnumLabels: Off,\ 
                                                           On
-sr/d-mfdbk/utca-longitudinal/IQ_NCO_FREQ_S->description: "Fixed NCO frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_NCO_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_NCO_GAIN_S->description: "Fixed NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_NCO_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_NCO_FREQ_S->description: "Fixed NCO frequency"
+lmbf/processor/l/IQ_NCO_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_NCO_GAIN_S->description: "Fixed NCO gain"
+lmbf/processor/l/IQ_NCO_GAIN_S->EnumLabels: 0dB,\ 
                                                         -6dB,\ 
                                                         -12dB,\ 
                                                         -18dB,\ 
@@ -1075,101 +1075,101 @@ sr/d-mfdbk/utca-longitudinal/IQ_NCO_GAIN_S->EnumLabels: 0dB,\
                                                         -78dB,\ 
                                                         -84dB,\ 
                                                         -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_KI_S->description: "Integral factor for controller"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_KP_S->description: "Proportional factor for controller"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_MAX_OFFSET_S->description: "Maximum frequency offset for feedback"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_MAX_OFFSET_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_MAX_OFFSET_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_MIN_MAG_S->description: "Minimum magnitude for feedback"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_MIN_MAG_S->format: %1.5f
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_MIN_MAG_S->max_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_MIN_MAG_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_START_S->description: "Start tune PLL"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STATUS->description: "Tune PLL feedback status"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STATUS->EnumLabels: Stopped,\ 
+lmbf/processor/l/IQ_PLL_CTRL_KI_S->description: "Integral factor for controller"
+lmbf/processor/l/IQ_PLL_CTRL_KP_S->description: "Proportional factor for controller"
+lmbf/processor/l/IQ_PLL_CTRL_MAX_OFFSET_S->description: "Maximum frequency offset for feedback"
+lmbf/processor/l/IQ_PLL_CTRL_MAX_OFFSET_S->format: %.7f
+lmbf/processor/l/IQ_PLL_CTRL_MAX_OFFSET_S->unit: tune
+lmbf/processor/l/IQ_PLL_CTRL_MIN_MAG_S->description: "Minimum magnitude for feedback"
+lmbf/processor/l/IQ_PLL_CTRL_MIN_MAG_S->format: %1.5f
+lmbf/processor/l/IQ_PLL_CTRL_MIN_MAG_S->max_value: 1.0
+lmbf/processor/l/IQ_PLL_CTRL_MIN_MAG_S->min_value: 0.0
+lmbf/processor/l/IQ_PLL_CTRL_START_S->description: "Start tune PLL"
+lmbf/processor/l/IQ_PLL_CTRL_STATUS->description: "Tune PLL feedback status"
+lmbf/processor/l/IQ_PLL_CTRL_STATUS->EnumLabels: Stopped,\ 
                                                              Running
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_DET_OVF->description: "Detector overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_DET_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_CTRL_STOP_DET_OVF->description: "Detector overflow"
+lmbf/processor/l/IQ_PLL_CTRL_STOP_DET_OVF->EnumLabels: Ok,\ 
                                                                    Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_MAG_ERROR->description: "Magnitude error"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_MAG_ERROR->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_CTRL_STOP_MAG_ERROR->description: "Magnitude error"
+lmbf/processor/l/IQ_PLL_CTRL_STOP_MAG_ERROR->EnumLabels: Ok,\ 
                                                                      "Too small"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_OFFSET_OVF->description: "Offset overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_OFFSET_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_CTRL_STOP_OFFSET_OVF->description: "Offset overflow"
+lmbf/processor/l/IQ_PLL_CTRL_STOP_OFFSET_OVF->EnumLabels: Ok,\ 
                                                                       Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_S->description: "Stop tune PLL"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_STOP->description: "Stopped by user"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_STOP_STOP->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_CTRL_STOP_S->description: "Stop tune PLL"
+lmbf/processor/l/IQ_PLL_CTRL_STOP_STOP->description: "Stopped by user"
+lmbf/processor/l/IQ_PLL_CTRL_STOP_STOP->EnumLabels: Ok,\ 
                                                                 Stopped
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_TARGET_S->description: "Target phase"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_TARGET_S->format: %3.2f
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_TARGET_S->max_value: 180.0
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_TARGET_S->min_value: -180.0
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_UPDATE_STATUS_DONE_S->description: "UPDATE_STATUS processing done"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_CTRL_UPDATE_STATUS_TRIG->description: "UPDATE_STATUS processing trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_ANGLE->description: "Tune PLL angle"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_COMPENSATE_S->description: "Compensate debug readbacks"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_COMPENSATE_S->EnumLabels: Raw,\ 
+lmbf/processor/l/IQ_PLL_CTRL_TARGET_S->description: "Target phase"
+lmbf/processor/l/IQ_PLL_CTRL_TARGET_S->format: %3.2f
+lmbf/processor/l/IQ_PLL_CTRL_TARGET_S->max_value: 180.0
+lmbf/processor/l/IQ_PLL_CTRL_TARGET_S->min_value: -180.0
+lmbf/processor/l/IQ_PLL_CTRL_UPDATE_STATUS_DONE_S->description: "UPDATE_STATUS processing done"
+lmbf/processor/l/IQ_PLL_CTRL_UPDATE_STATUS_TRIG->description: "UPDATE_STATUS processing trigger"
+lmbf/processor/l/IQ_PLL_DEBUG_ANGLE->description: "Tune PLL angle"
+lmbf/processor/l/IQ_PLL_DEBUG_COMPENSATE_S->description: "Compensate debug readbacks"
+lmbf/processor/l/IQ_PLL_DEBUG_COMPENSATE_S->EnumLabels: Raw,\ 
                                                                     Compensated
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_ENABLE_S->description: "Enable debug readbacks"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_PLL_DEBUG_ENABLE_S->description: "Enable debug readbacks"
+lmbf/processor/l/IQ_PLL_DEBUG_ENABLE_S->EnumLabels: Off,\ 
                                                                 On
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_FIFO_OVF->description: "Debug FIFO readout overrun"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_FIFO_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_DEBUG_FIFO_OVF->description: "Debug FIFO readout overrun"
+lmbf/processor/l/IQ_PLL_DEBUG_FIFO_OVF->EnumLabels: Ok,\ 
                                                                 Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_MAG->description: "Tune PLL magnitude"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_READ_DONE_S->description: "READ processing done"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_READ_TRIG->description: "READ processing trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_RSTD->description: "IQ relative standard deviation"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_RSTD_ABS->description: "Magnitude relative standard deviation"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_RSTD_ABS_DB->unit: dB
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_RSTD_DB->unit: dB
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_SELECT_S->description: "Select captured readback values"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_SELECT_S->EnumLabels: IQ,\ 
+lmbf/processor/l/IQ_PLL_DEBUG_MAG->description: "Tune PLL magnitude"
+lmbf/processor/l/IQ_PLL_DEBUG_READ_DONE_S->description: "READ processing done"
+lmbf/processor/l/IQ_PLL_DEBUG_READ_TRIG->description: "READ processing trigger"
+lmbf/processor/l/IQ_PLL_DEBUG_RSTD->description: "IQ relative standard deviation"
+lmbf/processor/l/IQ_PLL_DEBUG_RSTD_ABS->description: "Magnitude relative standard deviation"
+lmbf/processor/l/IQ_PLL_DEBUG_RSTD_ABS_DB->unit: dB
+lmbf/processor/l/IQ_PLL_DEBUG_RSTD_DB->unit: dB
+lmbf/processor/l/IQ_PLL_DEBUG_SELECT_S->description: "Select captured readback values"
+lmbf/processor/l/IQ_PLL_DEBUG_SELECT_S->EnumLabels: IQ,\ 
                                                                 CORDIC
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_WFI->description: "Tune PLL detector I"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DEBUG_WFQ->description: "Tune PLL detector Q"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_BLANKING_S->description: "Response to blanking trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_BLANKING_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_PLL_DEBUG_WFI->description: "Tune PLL detector I"
+lmbf/processor/l/IQ_PLL_DEBUG_WFQ->description: "Tune PLL detector Q"
+lmbf/processor/l/IQ_PLL_DET_BLANKING_S->description: "Response to blanking trigger"
+lmbf/processor/l/IQ_PLL_DET_BLANKING_S->EnumLabels: Ignore,\ 
                                                                 Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_BUNCHES_S->description: "Enable bunches for detector"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_BUNCH_SELECT_S->description: "Select bunch to set"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_COUNT->description: "Number of enabled bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_DWELL_S->description: "Dwell time in turns"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_RESET_SELECT_S->description: "Disable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_SCALING_S->description: "Readout scaling"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_SCALING_S->EnumLabels: 48dB,\ 
+lmbf/processor/l/IQ_PLL_DET_BUNCHES_S->description: "Enable bunches for detector"
+lmbf/processor/l/IQ_PLL_DET_BUNCH_SELECT_S->description: "Select bunch to set"
+lmbf/processor/l/IQ_PLL_DET_COUNT->description: "Number of enabled bunches"
+lmbf/processor/l/IQ_PLL_DET_DWELL_S->description: "Dwell time in turns"
+lmbf/processor/l/IQ_PLL_DET_DWELL_S->format: %5d
+lmbf/processor/l/IQ_PLL_DET_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_PLL_DET_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_PLL_DET_RESET_SELECT_S->description: "Disable selected bunches"
+lmbf/processor/l/IQ_PLL_DET_SCALING_S->description: "Readout scaling"
+lmbf/processor/l/IQ_PLL_DET_SCALING_S->EnumLabels: 48dB,\ 
                                                                12dB,\ 
                                                                -24dB,\ 
                                                                -60dB
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_SELECT_S->description: "Select detector source"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_SELECT_S->EnumLabels: ADC,\ 
+lmbf/processor/l/IQ_PLL_DET_SELECT_S->description: "Select detector source"
+lmbf/processor/l/IQ_PLL_DET_SELECT_S->EnumLabels: ADC,\ 
                                                               FIR,\ 
                                                               "ADC no fill"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_SELECT_STATUS->description: "Status of selection"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_DET_SET_SELECT_S->description: "Enable selected bunches"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_FILT_I->description: "Filtered Tune PLL detector I"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_FILT_MAG->description: "Filtered Tune PLL detector magnitude"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_FILT_MAG_DB->unit: dB
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_FILT_PHASE->description: "Filtered Tune PLL phase offset"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_FILT_PHASE->unit: deg
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_FILT_Q->description: "Filtered Tune PLL detector Q"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_ENABLE_S->description: "Enable Tune PLL NCO output"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_PLL_DET_SELECT_STATUS->description: "Status of selection"
+lmbf/processor/l/IQ_PLL_DET_SET_SELECT_S->description: "Enable selected bunches"
+lmbf/processor/l/IQ_PLL_FILT_I->description: "Filtered Tune PLL detector I"
+lmbf/processor/l/IQ_PLL_FILT_MAG->description: "Filtered Tune PLL detector magnitude"
+lmbf/processor/l/IQ_PLL_FILT_MAG_DB->unit: dB
+lmbf/processor/l/IQ_PLL_FILT_PHASE->description: "Filtered Tune PLL phase offset"
+lmbf/processor/l/IQ_PLL_FILT_PHASE->unit: deg
+lmbf/processor/l/IQ_PLL_FILT_Q->description: "Filtered Tune PLL detector Q"
+lmbf/processor/l/IQ_PLL_NCO_ENABLE_S->description: "Enable Tune PLL NCO output"
+lmbf/processor/l/IQ_PLL_NCO_ENABLE_S->EnumLabels: Off,\ 
                                                               On
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_FIFO_OVF->description: "Offset FIFO readout overrun"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_FIFO_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_NCO_FIFO_OVF->description: "Offset FIFO readout overrun"
+lmbf/processor/l/IQ_PLL_NCO_FIFO_OVF->EnumLabels: Ok,\ 
                                                               Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_FREQ->description: "Tune PLL NCO frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_FREQ->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_FREQ_S->description: "Base Tune PLL NCO frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_GAIN_S->description: "Tune PLL NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_PLL_NCO_FREQ->description: "Tune PLL NCO frequency"
+lmbf/processor/l/IQ_PLL_NCO_FREQ->unit: tune
+lmbf/processor/l/IQ_PLL_NCO_FREQ_S->description: "Base Tune PLL NCO frequency"
+lmbf/processor/l/IQ_PLL_NCO_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_PLL_NCO_FREQ_S->unit: tune
+lmbf/processor/l/IQ_PLL_NCO_GAIN_S->description: "Tune PLL NCO gain"
+lmbf/processor/l/IQ_PLL_NCO_GAIN_S->EnumLabels: 0dB,\ 
                                                             -6dB,\ 
                                                             -12dB,\ 
                                                             -18dB,\ 
@@ -1185,64 +1185,64 @@ sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_GAIN_S->EnumLabels: 0dB,\
                                                             -78dB,\ 
                                                             -84dB,\ 
                                                             -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_MEAN_OFFSET->description: "Mean tune PLL offset"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_MEAN_OFFSET->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_OFFSET->description: "Filtered frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_OFFSET->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_OFFSETWF->description: "Tune PLL offset"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_READ_DONE_S->description: "READ processing done"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_READ_TRIG->description: "READ processing trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_RESET_FIFO_S->description: "Reset FIFO readout to force fresh sample"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_STD_OFFSET->description: "Standard deviation of offset"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_STD_OFFSET->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_TUNE->description: "Measured tune frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_NCO_TUNE->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_POLL_S->description: "Poll Tune PLL readbacks"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_STA_DET_OVF->description: "Detector overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_STA_DET_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_NCO_MEAN_OFFSET->description: "Mean tune PLL offset"
+lmbf/processor/l/IQ_PLL_NCO_MEAN_OFFSET->unit: tune
+lmbf/processor/l/IQ_PLL_NCO_OFFSET->description: "Filtered frequency offset"
+lmbf/processor/l/IQ_PLL_NCO_OFFSET->unit: tune
+lmbf/processor/l/IQ_PLL_NCO_OFFSETWF->description: "Tune PLL offset"
+lmbf/processor/l/IQ_PLL_NCO_READ_DONE_S->description: "READ processing done"
+lmbf/processor/l/IQ_PLL_NCO_READ_TRIG->description: "READ processing trigger"
+lmbf/processor/l/IQ_PLL_NCO_RESET_FIFO_S->description: "Reset FIFO readout to force fresh sample"
+lmbf/processor/l/IQ_PLL_NCO_STD_OFFSET->description: "Standard deviation of offset"
+lmbf/processor/l/IQ_PLL_NCO_STD_OFFSET->unit: tune
+lmbf/processor/l/IQ_PLL_NCO_TUNE->description: "Measured tune frequency"
+lmbf/processor/l/IQ_PLL_NCO_TUNE->unit: tune
+lmbf/processor/l/IQ_PLL_POLL_S->description: "Poll Tune PLL readbacks"
+lmbf/processor/l/IQ_PLL_STA_DET_OVF->description: "Detector overflow"
+lmbf/processor/l/IQ_PLL_STA_DET_OVF->EnumLabels: Ok,\ 
                                                              Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_STA_MAG_ERROR->description: "Magnitude error"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_STA_MAG_ERROR->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_STA_MAG_ERROR->description: "Magnitude error"
+lmbf/processor/l/IQ_PLL_STA_MAG_ERROR->EnumLabels: Ok,\ 
                                                                "Too small"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_STA_OFFSET_OVF->description: "Offset overflow"
-sr/d-mfdbk/utca-longitudinal/IQ_PLL_STA_OFFSET_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/IQ_PLL_STA_OFFSET_OVF->description: "Offset overflow"
+lmbf/processor/l/IQ_PLL_STA_OFFSET_OVF->EnumLabels: Ok,\ 
                                                                 Overflow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_0_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_0_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_0_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_0_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_1_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_1_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_BLANK_S->description: "Detector blanking control"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_BLANK_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_1_BLANK_S->description: "Detector blanking control"
+lmbf/processor/l/IQ_SEQ_1_BLANK_S->EnumLabels: Off,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_CAPTURE_S->description: "Enable data capture"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_CAPTURE_S->EnumLabels: Discard,\ 
+lmbf/processor/l/IQ_SEQ_1_CAPTURE_S->description: "Enable data capture"
+lmbf/processor/l/IQ_SEQ_1_CAPTURE_S->EnumLabels: Discard,\ 
                                                              Capture
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_COUNT_S->description: "Sweep count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_COUNT_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_COUNT_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_DWELL_S->description: "Sweep dwell time"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_DWELL_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_ENABLE_S->description: "Enable Sweep NCO"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_1_COUNT_S->description: "Sweep count"
+lmbf/processor/l/IQ_SEQ_1_COUNT_S->format: %5d
+lmbf/processor/l/IQ_SEQ_1_COUNT_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_1_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_1_DWELL_S->description: "Sweep dwell time"
+lmbf/processor/l/IQ_SEQ_1_DWELL_S->format: %5d
+lmbf/processor/l/IQ_SEQ_1_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_1_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_1_DWELL_S->unit: turns
+lmbf/processor/l/IQ_SEQ_1_ENABLE_S->description: "Enable Sweep NCO"
+lmbf/processor/l/IQ_SEQ_1_ENABLE_S->EnumLabels: Off,\ 
                                                             On
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_END_FREQ_S->description: "Sweep NCO end frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_END_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_END_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_ENWIN_S->description: "Enable detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_ENWIN_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_SEQ_1_END_FREQ_S->description: "Sweep NCO end frequency"
+lmbf/processor/l/IQ_SEQ_1_END_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_1_END_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_1_ENWIN_S->description: "Enable detector window"
+lmbf/processor/l/IQ_SEQ_1_ENWIN_S->EnumLabels: Disabled,\ 
                                                            Windowed
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_GAIN_S->description: "Sweep NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_SEQ_1_GAIN_S->description: "Sweep NCO gain"
+lmbf/processor/l/IQ_SEQ_1_GAIN_S->EnumLabels: 0dB,\ 
                                                           -6dB,\ 
                                                           -12dB,\ 
                                                           -18dB,\ 
@@ -1258,54 +1258,54 @@ sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_GAIN_S->EnumLabels: 0dB,\
                                                           -78dB,\ 
                                                           -84dB,\ 
                                                           -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_HOLDOFF_S->description: "Detector holdoff"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_START_FREQ_S->description: "Sweep NCO start frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_START_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_START_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_STATE_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_STATE_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_STATE_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_STEP_FREQ_S->description: "Sweep NCO step frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_STEP_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_STEP_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_1_TUNE_PLL_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_SEQ_1_HOLDOFF_S->description: "Detector holdoff"
+lmbf/processor/l/IQ_SEQ_1_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_1_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_1_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_1_START_FREQ_S->description: "Sweep NCO start frequency"
+lmbf/processor/l/IQ_SEQ_1_START_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_1_START_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_1_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
+lmbf/processor/l/IQ_SEQ_1_STATE_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_1_STATE_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_1_STATE_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_1_STEP_FREQ_S->description: "Sweep NCO step frequency"
+lmbf/processor/l/IQ_SEQ_1_STEP_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_SEQ_1_STEP_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_1_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
+lmbf/processor/l/IQ_SEQ_1_TUNE_PLL_S->EnumLabels: Ignore,\ 
                                                               Follow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_2_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_2_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_BLANK_S->description: "Detector blanking control"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_BLANK_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_2_BLANK_S->description: "Detector blanking control"
+lmbf/processor/l/IQ_SEQ_2_BLANK_S->EnumLabels: Off,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_CAPTURE_S->description: "Enable data capture"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_CAPTURE_S->EnumLabels: Discard,\ 
+lmbf/processor/l/IQ_SEQ_2_CAPTURE_S->description: "Enable data capture"
+lmbf/processor/l/IQ_SEQ_2_CAPTURE_S->EnumLabels: Discard,\ 
                                                              Capture
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_COUNT_S->description: "Sweep count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_COUNT_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_COUNT_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_DWELL_S->description: "Sweep dwell time"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_DWELL_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_ENABLE_S->description: "Enable Sweep NCO"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_2_COUNT_S->description: "Sweep count"
+lmbf/processor/l/IQ_SEQ_2_COUNT_S->format: %5d
+lmbf/processor/l/IQ_SEQ_2_COUNT_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_2_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_2_DWELL_S->description: "Sweep dwell time"
+lmbf/processor/l/IQ_SEQ_2_DWELL_S->format: %5d
+lmbf/processor/l/IQ_SEQ_2_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_2_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_2_DWELL_S->unit: turns
+lmbf/processor/l/IQ_SEQ_2_ENABLE_S->description: "Enable Sweep NCO"
+lmbf/processor/l/IQ_SEQ_2_ENABLE_S->EnumLabels: Off,\ 
                                                             On
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_END_FREQ_S->description: "Sweep NCO end frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_END_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_END_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_ENWIN_S->description: "Enable detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_ENWIN_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_SEQ_2_END_FREQ_S->description: "Sweep NCO end frequency"
+lmbf/processor/l/IQ_SEQ_2_END_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_2_END_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_2_ENWIN_S->description: "Enable detector window"
+lmbf/processor/l/IQ_SEQ_2_ENWIN_S->EnumLabels: Disabled,\ 
                                                            Windowed
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_GAIN_S->description: "Sweep NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_SEQ_2_GAIN_S->description: "Sweep NCO gain"
+lmbf/processor/l/IQ_SEQ_2_GAIN_S->EnumLabels: 0dB,\ 
                                                           -6dB,\ 
                                                           -12dB,\ 
                                                           -18dB,\ 
@@ -1321,54 +1321,54 @@ sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_GAIN_S->EnumLabels: 0dB,\
                                                           -78dB,\ 
                                                           -84dB,\ 
                                                           -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_HOLDOFF_S->description: "Detector holdoff"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_START_FREQ_S->description: "Sweep NCO start frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_START_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_START_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_STATE_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_STATE_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_STATE_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_STEP_FREQ_S->description: "Sweep NCO step frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_STEP_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_STEP_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_2_TUNE_PLL_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_SEQ_2_HOLDOFF_S->description: "Detector holdoff"
+lmbf/processor/l/IQ_SEQ_2_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_2_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_2_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_2_START_FREQ_S->description: "Sweep NCO start frequency"
+lmbf/processor/l/IQ_SEQ_2_START_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_2_START_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_2_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
+lmbf/processor/l/IQ_SEQ_2_STATE_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_2_STATE_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_2_STATE_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_2_STEP_FREQ_S->description: "Sweep NCO step frequency"
+lmbf/processor/l/IQ_SEQ_2_STEP_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_SEQ_2_STEP_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_2_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
+lmbf/processor/l/IQ_SEQ_2_TUNE_PLL_S->EnumLabels: Ignore,\ 
                                                               Follow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_3_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_3_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_BLANK_S->description: "Detector blanking control"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_BLANK_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_3_BLANK_S->description: "Detector blanking control"
+lmbf/processor/l/IQ_SEQ_3_BLANK_S->EnumLabels: Off,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_CAPTURE_S->description: "Enable data capture"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_CAPTURE_S->EnumLabels: Discard,\ 
+lmbf/processor/l/IQ_SEQ_3_CAPTURE_S->description: "Enable data capture"
+lmbf/processor/l/IQ_SEQ_3_CAPTURE_S->EnumLabels: Discard,\ 
                                                              Capture
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_COUNT_S->description: "Sweep count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_COUNT_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_COUNT_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_DWELL_S->description: "Sweep dwell time"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_DWELL_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_ENABLE_S->description: "Enable Sweep NCO"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_3_COUNT_S->description: "Sweep count"
+lmbf/processor/l/IQ_SEQ_3_COUNT_S->format: %5d
+lmbf/processor/l/IQ_SEQ_3_COUNT_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_3_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_3_DWELL_S->description: "Sweep dwell time"
+lmbf/processor/l/IQ_SEQ_3_DWELL_S->format: %5d
+lmbf/processor/l/IQ_SEQ_3_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_3_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_3_DWELL_S->unit: turns
+lmbf/processor/l/IQ_SEQ_3_ENABLE_S->description: "Enable Sweep NCO"
+lmbf/processor/l/IQ_SEQ_3_ENABLE_S->EnumLabels: Off,\ 
                                                             On
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_END_FREQ_S->description: "Sweep NCO end frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_END_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_END_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_ENWIN_S->description: "Enable detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_ENWIN_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_SEQ_3_END_FREQ_S->description: "Sweep NCO end frequency"
+lmbf/processor/l/IQ_SEQ_3_END_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_3_END_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_3_ENWIN_S->description: "Enable detector window"
+lmbf/processor/l/IQ_SEQ_3_ENWIN_S->EnumLabels: Disabled,\ 
                                                            Windowed
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_GAIN_S->description: "Sweep NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_SEQ_3_GAIN_S->description: "Sweep NCO gain"
+lmbf/processor/l/IQ_SEQ_3_GAIN_S->EnumLabels: 0dB,\ 
                                                           -6dB,\ 
                                                           -12dB,\ 
                                                           -18dB,\ 
@@ -1384,54 +1384,54 @@ sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_GAIN_S->EnumLabels: 0dB,\
                                                           -78dB,\ 
                                                           -84dB,\ 
                                                           -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_HOLDOFF_S->description: "Detector holdoff"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_START_FREQ_S->description: "Sweep NCO start frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_START_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_START_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_STATE_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_STATE_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_STATE_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_STEP_FREQ_S->description: "Sweep NCO step frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_STEP_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_STEP_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_3_TUNE_PLL_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_SEQ_3_HOLDOFF_S->description: "Detector holdoff"
+lmbf/processor/l/IQ_SEQ_3_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_3_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_3_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_3_START_FREQ_S->description: "Sweep NCO start frequency"
+lmbf/processor/l/IQ_SEQ_3_START_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_3_START_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_3_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
+lmbf/processor/l/IQ_SEQ_3_STATE_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_3_STATE_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_3_STATE_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_3_STEP_FREQ_S->description: "Sweep NCO step frequency"
+lmbf/processor/l/IQ_SEQ_3_STEP_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_SEQ_3_STEP_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_3_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
+lmbf/processor/l/IQ_SEQ_3_TUNE_PLL_S->EnumLabels: Ignore,\ 
                                                               Follow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_4_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_4_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_BLANK_S->description: "Detector blanking control"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_BLANK_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_4_BLANK_S->description: "Detector blanking control"
+lmbf/processor/l/IQ_SEQ_4_BLANK_S->EnumLabels: Off,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_CAPTURE_S->description: "Enable data capture"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_CAPTURE_S->EnumLabels: Discard,\ 
+lmbf/processor/l/IQ_SEQ_4_CAPTURE_S->description: "Enable data capture"
+lmbf/processor/l/IQ_SEQ_4_CAPTURE_S->EnumLabels: Discard,\ 
                                                              Capture
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_COUNT_S->description: "Sweep count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_COUNT_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_COUNT_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_DWELL_S->description: "Sweep dwell time"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_DWELL_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_ENABLE_S->description: "Enable Sweep NCO"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_4_COUNT_S->description: "Sweep count"
+lmbf/processor/l/IQ_SEQ_4_COUNT_S->format: %5d
+lmbf/processor/l/IQ_SEQ_4_COUNT_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_4_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_4_DWELL_S->description: "Sweep dwell time"
+lmbf/processor/l/IQ_SEQ_4_DWELL_S->format: %5d
+lmbf/processor/l/IQ_SEQ_4_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_4_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_4_DWELL_S->unit: turns
+lmbf/processor/l/IQ_SEQ_4_ENABLE_S->description: "Enable Sweep NCO"
+lmbf/processor/l/IQ_SEQ_4_ENABLE_S->EnumLabels: Off,\ 
                                                             On
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_END_FREQ_S->description: "Sweep NCO end frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_END_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_END_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_ENWIN_S->description: "Enable detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_ENWIN_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_SEQ_4_END_FREQ_S->description: "Sweep NCO end frequency"
+lmbf/processor/l/IQ_SEQ_4_END_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_4_END_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_4_ENWIN_S->description: "Enable detector window"
+lmbf/processor/l/IQ_SEQ_4_ENWIN_S->EnumLabels: Disabled,\ 
                                                            Windowed
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_GAIN_S->description: "Sweep NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_SEQ_4_GAIN_S->description: "Sweep NCO gain"
+lmbf/processor/l/IQ_SEQ_4_GAIN_S->EnumLabels: 0dB,\ 
                                                           -6dB,\ 
                                                           -12dB,\ 
                                                           -18dB,\ 
@@ -1447,54 +1447,54 @@ sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_GAIN_S->EnumLabels: 0dB,\
                                                           -78dB,\ 
                                                           -84dB,\ 
                                                           -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_HOLDOFF_S->description: "Detector holdoff"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_START_FREQ_S->description: "Sweep NCO start frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_START_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_START_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_STATE_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_STATE_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_STATE_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_STEP_FREQ_S->description: "Sweep NCO step frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_STEP_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_STEP_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_4_TUNE_PLL_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_SEQ_4_HOLDOFF_S->description: "Detector holdoff"
+lmbf/processor/l/IQ_SEQ_4_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_4_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_4_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_4_START_FREQ_S->description: "Sweep NCO start frequency"
+lmbf/processor/l/IQ_SEQ_4_START_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_4_START_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_4_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
+lmbf/processor/l/IQ_SEQ_4_STATE_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_4_STATE_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_4_STATE_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_4_STEP_FREQ_S->description: "Sweep NCO step frequency"
+lmbf/processor/l/IQ_SEQ_4_STEP_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_SEQ_4_STEP_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_4_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
+lmbf/processor/l/IQ_SEQ_4_TUNE_PLL_S->EnumLabels: Ignore,\ 
                                                               Follow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_5_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_5_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_BLANK_S->description: "Detector blanking control"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_BLANK_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_5_BLANK_S->description: "Detector blanking control"
+lmbf/processor/l/IQ_SEQ_5_BLANK_S->EnumLabels: Off,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_CAPTURE_S->description: "Enable data capture"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_CAPTURE_S->EnumLabels: Discard,\ 
+lmbf/processor/l/IQ_SEQ_5_CAPTURE_S->description: "Enable data capture"
+lmbf/processor/l/IQ_SEQ_5_CAPTURE_S->EnumLabels: Discard,\ 
                                                              Capture
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_COUNT_S->description: "Sweep count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_COUNT_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_COUNT_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_DWELL_S->description: "Sweep dwell time"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_DWELL_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_ENABLE_S->description: "Enable Sweep NCO"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_5_COUNT_S->description: "Sweep count"
+lmbf/processor/l/IQ_SEQ_5_COUNT_S->format: %5d
+lmbf/processor/l/IQ_SEQ_5_COUNT_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_5_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_5_DWELL_S->description: "Sweep dwell time"
+lmbf/processor/l/IQ_SEQ_5_DWELL_S->format: %5d
+lmbf/processor/l/IQ_SEQ_5_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_5_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_5_DWELL_S->unit: turns
+lmbf/processor/l/IQ_SEQ_5_ENABLE_S->description: "Enable Sweep NCO"
+lmbf/processor/l/IQ_SEQ_5_ENABLE_S->EnumLabels: Off,\ 
                                                             On
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_END_FREQ_S->description: "Sweep NCO end frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_END_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_END_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_ENWIN_S->description: "Enable detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_ENWIN_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_SEQ_5_END_FREQ_S->description: "Sweep NCO end frequency"
+lmbf/processor/l/IQ_SEQ_5_END_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_5_END_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_5_ENWIN_S->description: "Enable detector window"
+lmbf/processor/l/IQ_SEQ_5_ENWIN_S->EnumLabels: Disabled,\ 
                                                            Windowed
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_GAIN_S->description: "Sweep NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_SEQ_5_GAIN_S->description: "Sweep NCO gain"
+lmbf/processor/l/IQ_SEQ_5_GAIN_S->EnumLabels: 0dB,\ 
                                                           -6dB,\ 
                                                           -12dB,\ 
                                                           -18dB,\ 
@@ -1510,54 +1510,54 @@ sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_GAIN_S->EnumLabels: 0dB,\
                                                           -78dB,\ 
                                                           -84dB,\ 
                                                           -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_HOLDOFF_S->description: "Detector holdoff"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_START_FREQ_S->description: "Sweep NCO start frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_START_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_START_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_STATE_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_STATE_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_STATE_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_STEP_FREQ_S->description: "Sweep NCO step frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_STEP_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_STEP_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_5_TUNE_PLL_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_SEQ_5_HOLDOFF_S->description: "Detector holdoff"
+lmbf/processor/l/IQ_SEQ_5_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_5_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_5_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_5_START_FREQ_S->description: "Sweep NCO start frequency"
+lmbf/processor/l/IQ_SEQ_5_START_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_5_START_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_5_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
+lmbf/processor/l/IQ_SEQ_5_STATE_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_5_STATE_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_5_STATE_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_5_STEP_FREQ_S->description: "Sweep NCO step frequency"
+lmbf/processor/l/IQ_SEQ_5_STEP_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_SEQ_5_STEP_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_5_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
+lmbf/processor/l/IQ_SEQ_5_TUNE_PLL_S->EnumLabels: Ignore,\ 
                                                               Follow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_6_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_6_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_BLANK_S->description: "Detector blanking control"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_BLANK_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_6_BLANK_S->description: "Detector blanking control"
+lmbf/processor/l/IQ_SEQ_6_BLANK_S->EnumLabels: Off,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_CAPTURE_S->description: "Enable data capture"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_CAPTURE_S->EnumLabels: Discard,\ 
+lmbf/processor/l/IQ_SEQ_6_CAPTURE_S->description: "Enable data capture"
+lmbf/processor/l/IQ_SEQ_6_CAPTURE_S->EnumLabels: Discard,\ 
                                                              Capture
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_COUNT_S->description: "Sweep count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_COUNT_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_COUNT_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_DWELL_S->description: "Sweep dwell time"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_DWELL_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_ENABLE_S->description: "Enable Sweep NCO"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_6_COUNT_S->description: "Sweep count"
+lmbf/processor/l/IQ_SEQ_6_COUNT_S->format: %5d
+lmbf/processor/l/IQ_SEQ_6_COUNT_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_6_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_6_DWELL_S->description: "Sweep dwell time"
+lmbf/processor/l/IQ_SEQ_6_DWELL_S->format: %5d
+lmbf/processor/l/IQ_SEQ_6_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_6_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_6_DWELL_S->unit: turns
+lmbf/processor/l/IQ_SEQ_6_ENABLE_S->description: "Enable Sweep NCO"
+lmbf/processor/l/IQ_SEQ_6_ENABLE_S->EnumLabels: Off,\ 
                                                             On
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_END_FREQ_S->description: "Sweep NCO end frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_END_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_END_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_ENWIN_S->description: "Enable detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_ENWIN_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_SEQ_6_END_FREQ_S->description: "Sweep NCO end frequency"
+lmbf/processor/l/IQ_SEQ_6_END_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_6_END_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_6_ENWIN_S->description: "Enable detector window"
+lmbf/processor/l/IQ_SEQ_6_ENWIN_S->EnumLabels: Disabled,\ 
                                                            Windowed
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_GAIN_S->description: "Sweep NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_SEQ_6_GAIN_S->description: "Sweep NCO gain"
+lmbf/processor/l/IQ_SEQ_6_GAIN_S->EnumLabels: 0dB,\ 
                                                           -6dB,\ 
                                                           -12dB,\ 
                                                           -18dB,\ 
@@ -1573,54 +1573,54 @@ sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_GAIN_S->EnumLabels: 0dB,\
                                                           -78dB,\ 
                                                           -84dB,\ 
                                                           -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_HOLDOFF_S->description: "Detector holdoff"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_START_FREQ_S->description: "Sweep NCO start frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_START_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_START_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_STATE_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_STATE_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_STATE_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_STEP_FREQ_S->description: "Sweep NCO step frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_STEP_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_STEP_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_6_TUNE_PLL_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_SEQ_6_HOLDOFF_S->description: "Detector holdoff"
+lmbf/processor/l/IQ_SEQ_6_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_6_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_6_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_6_START_FREQ_S->description: "Sweep NCO start frequency"
+lmbf/processor/l/IQ_SEQ_6_START_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_6_START_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_6_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
+lmbf/processor/l/IQ_SEQ_6_STATE_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_6_STATE_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_6_STATE_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_6_STEP_FREQ_S->description: "Sweep NCO step frequency"
+lmbf/processor/l/IQ_SEQ_6_STEP_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_SEQ_6_STEP_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_6_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
+lmbf/processor/l/IQ_SEQ_6_TUNE_PLL_S->EnumLabels: Ignore,\ 
                                                               Follow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_BANK_S->description: "Bunch bank selection"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_BANK_S->EnumLabels: "Bank 0",\ 
+lmbf/processor/l/IQ_SEQ_7_BANK_S->description: "Bunch bank selection"
+lmbf/processor/l/IQ_SEQ_7_BANK_S->EnumLabels: "Bank 0",\ 
                                                           "Bank 1",\ 
                                                           "Bank 2",\ 
                                                           "Bank 3"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_BLANK_S->description: "Detector blanking control"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_BLANK_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_7_BLANK_S->description: "Detector blanking control"
+lmbf/processor/l/IQ_SEQ_7_BLANK_S->EnumLabels: Off,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_CAPTURE_S->description: "Enable data capture"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_CAPTURE_S->EnumLabels: Discard,\ 
+lmbf/processor/l/IQ_SEQ_7_CAPTURE_S->description: "Enable data capture"
+lmbf/processor/l/IQ_SEQ_7_CAPTURE_S->EnumLabels: Discard,\ 
                                                              Capture
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_COUNT_S->description: "Sweep count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_COUNT_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_COUNT_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_DWELL_S->description: "Sweep dwell time"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_DWELL_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_DWELL_S->max_value: 65536.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_DWELL_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_DWELL_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_ENABLE_S->description: "Enable Sweep NCO"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/IQ_SEQ_7_COUNT_S->description: "Sweep count"
+lmbf/processor/l/IQ_SEQ_7_COUNT_S->format: %5d
+lmbf/processor/l/IQ_SEQ_7_COUNT_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_7_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_7_DWELL_S->description: "Sweep dwell time"
+lmbf/processor/l/IQ_SEQ_7_DWELL_S->format: %5d
+lmbf/processor/l/IQ_SEQ_7_DWELL_S->max_value: 65536.0
+lmbf/processor/l/IQ_SEQ_7_DWELL_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_7_DWELL_S->unit: turns
+lmbf/processor/l/IQ_SEQ_7_ENABLE_S->description: "Enable Sweep NCO"
+lmbf/processor/l/IQ_SEQ_7_ENABLE_S->EnumLabels: Off,\ 
                                                             On
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_END_FREQ_S->description: "Sweep NCO end frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_END_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_END_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_ENWIN_S->description: "Enable detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_ENWIN_S->EnumLabels: Disabled,\ 
+lmbf/processor/l/IQ_SEQ_7_END_FREQ_S->description: "Sweep NCO end frequency"
+lmbf/processor/l/IQ_SEQ_7_END_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_7_END_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_7_ENWIN_S->description: "Enable detector window"
+lmbf/processor/l/IQ_SEQ_7_ENWIN_S->EnumLabels: Disabled,\ 
                                                            Windowed
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_GAIN_S->description: "Sweep NCO gain"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_GAIN_S->EnumLabels: 0dB,\ 
+lmbf/processor/l/IQ_SEQ_7_GAIN_S->description: "Sweep NCO gain"
+lmbf/processor/l/IQ_SEQ_7_GAIN_S->EnumLabels: 0dB,\ 
                                                           -6dB,\ 
                                                           -12dB,\ 
                                                           -18dB,\ 
@@ -1636,171 +1636,171 @@ sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_GAIN_S->EnumLabels: 0dB,\
                                                           -78dB,\ 
                                                           -84dB,\ 
                                                           -90dB
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_HOLDOFF_S->description: "Detector holdoff"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_START_FREQ_S->description: "Sweep NCO start frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_START_FREQ_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_START_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_STATE_HOLDOFF_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_STATE_HOLDOFF_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_STATE_HOLDOFF_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_STEP_FREQ_S->description: "Sweep NCO step frequency"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_STEP_FREQ_S->format: %.7f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_STEP_FREQ_S->unit: tune
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_7_TUNE_PLL_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_SEQ_7_HOLDOFF_S->description: "Detector holdoff"
+lmbf/processor/l/IQ_SEQ_7_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_7_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_7_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_7_START_FREQ_S->description: "Sweep NCO start frequency"
+lmbf/processor/l/IQ_SEQ_7_START_FREQ_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_7_START_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_7_STATE_HOLDOFF_S->description: "Single holdoff on entry to state"
+lmbf/processor/l/IQ_SEQ_7_STATE_HOLDOFF_S->format: %5d
+lmbf/processor/l/IQ_SEQ_7_STATE_HOLDOFF_S->max_value: 65535.0
+lmbf/processor/l/IQ_SEQ_7_STATE_HOLDOFF_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_7_STEP_FREQ_S->description: "Sweep NCO step frequency"
+lmbf/processor/l/IQ_SEQ_7_STEP_FREQ_S->format: %.7f
+lmbf/processor/l/IQ_SEQ_7_STEP_FREQ_S->unit: tune
+lmbf/processor/l/IQ_SEQ_7_TUNE_PLL_S->description: "Track Tune PLL frequency offset"
+lmbf/processor/l/IQ_SEQ_7_TUNE_PLL_S->EnumLabels: Ignore,\ 
                                                               Follow
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_BUSY->description: "Sequencer busy state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_BUSY->EnumLabels: Idle,\ 
+lmbf/processor/l/IQ_SEQ_BUSY->description: "Sequencer busy state"
+lmbf/processor/l/IQ_SEQ_BUSY->EnumLabels: Idle,\ 
                                                       Busy
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_DURATION->description: "Raw capture duration"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_DURATION->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_DURATION_S->description: "Capture duration"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_DURATION_S->unit: s
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_LENGTH->description: "Sequencer capture count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_MODE->description: "Sequencer mode"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_PC->description: "Current sequencer state"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_PC_S->description: "Sequencer PC"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_PC_S->format: %1d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_PC_S->max_value: 7.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_PC_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_RESET_S->description: "Halt sequencer if busy"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_RESET_WIN_S->description: "Reset detector window to Hamming"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_STATUS_READ_S->description: "Poll sequencer status"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_COUNT->description: "Current super sequencer count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_COUNT_S->description: "Super sequencer count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_COUNT_S->format: %4d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_COUNT_S->max_value: 1024.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_COUNT_S->min_value: 1.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_OFFSET_S->description: "Frequency offsets for super sequencer"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_OFFSET_S->format: %.5f
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_SUPER_RESET_S->description: "Reset super sequencer offsets"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TOTAL_DURATION->description: "Super sequence raw capture duration"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TOTAL_DURATION->unit: turns
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TOTAL_DURATION_S->description: "Super capture duration"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TOTAL_DURATION_S->unit: s
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TOTAL_LENGTH->description: "Super sequencer capture count"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TRIGGER_S->description: "State to generate sequencer trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TRIGGER_S->format: %1d
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TRIGGER_S->max_value: 7.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_TRIGGER_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_UPDATE_COUNT_S->description: "Internal sequencer state update"
-sr/d-mfdbk/utca-longitudinal/IQ_SEQ_WINDOW_S->description: "Detector window"
-sr/d-mfdbk/utca-longitudinal/IQ_STA_STATUS->description: "Axis IQ signal health"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC0_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC0_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/IQ_SEQ_DURATION->description: "Raw capture duration"
+lmbf/processor/l/IQ_SEQ_DURATION->unit: turns
+lmbf/processor/l/IQ_SEQ_DURATION_S->description: "Capture duration"
+lmbf/processor/l/IQ_SEQ_DURATION_S->unit: s
+lmbf/processor/l/IQ_SEQ_LENGTH->description: "Sequencer capture count"
+lmbf/processor/l/IQ_SEQ_MODE->description: "Sequencer mode"
+lmbf/processor/l/IQ_SEQ_PC->description: "Current sequencer state"
+lmbf/processor/l/IQ_SEQ_PC_S->description: "Sequencer PC"
+lmbf/processor/l/IQ_SEQ_PC_S->format: %1d
+lmbf/processor/l/IQ_SEQ_PC_S->max_value: 7.0
+lmbf/processor/l/IQ_SEQ_PC_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_RESET_S->description: "Halt sequencer if busy"
+lmbf/processor/l/IQ_SEQ_RESET_WIN_S->description: "Reset detector window to Hamming"
+lmbf/processor/l/IQ_SEQ_STATUS_READ_S->description: "Poll sequencer status"
+lmbf/processor/l/IQ_SEQ_SUPER_COUNT->description: "Current super sequencer count"
+lmbf/processor/l/IQ_SEQ_SUPER_COUNT_S->description: "Super sequencer count"
+lmbf/processor/l/IQ_SEQ_SUPER_COUNT_S->format: %4d
+lmbf/processor/l/IQ_SEQ_SUPER_COUNT_S->max_value: 1024.0
+lmbf/processor/l/IQ_SEQ_SUPER_COUNT_S->min_value: 1.0
+lmbf/processor/l/IQ_SEQ_SUPER_OFFSET_S->description: "Frequency offsets for super sequencer"
+lmbf/processor/l/IQ_SEQ_SUPER_OFFSET_S->format: %.5f
+lmbf/processor/l/IQ_SEQ_SUPER_RESET_S->description: "Reset super sequencer offsets"
+lmbf/processor/l/IQ_SEQ_TOTAL_DURATION->description: "Super sequence raw capture duration"
+lmbf/processor/l/IQ_SEQ_TOTAL_DURATION->unit: turns
+lmbf/processor/l/IQ_SEQ_TOTAL_DURATION_S->description: "Super capture duration"
+lmbf/processor/l/IQ_SEQ_TOTAL_DURATION_S->unit: s
+lmbf/processor/l/IQ_SEQ_TOTAL_LENGTH->description: "Super sequencer capture count"
+lmbf/processor/l/IQ_SEQ_TRIGGER_S->description: "State to generate sequencer trigger"
+lmbf/processor/l/IQ_SEQ_TRIGGER_S->format: %1d
+lmbf/processor/l/IQ_SEQ_TRIGGER_S->max_value: 7.0
+lmbf/processor/l/IQ_SEQ_TRIGGER_S->min_value: 0.0
+lmbf/processor/l/IQ_SEQ_UPDATE_COUNT_S->description: "Internal sequencer state update"
+lmbf/processor/l/IQ_SEQ_WINDOW_S->description: "Detector window"
+lmbf/processor/l/IQ_STA_STATUS->description: "Axis IQ signal health"
+lmbf/processor/l/IQ_TRG_SEQ_ADC0_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_ADC0_BL_S->EnumLabels: All,\ 
                                                                Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC0_EN_S->description: "Enable I ADC event input"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC0_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_TRG_SEQ_ADC0_EN_S->description: "Enable I ADC event input"
+lmbf/processor/l/IQ_TRG_SEQ_ADC0_EN_S->EnumLabels: Ignore,\ 
                                                                Enable
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC0_HIT->description: "I ADC event source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC0_HIT->EnumLabels: No,\ 
+lmbf/processor/l/IQ_TRG_SEQ_ADC0_HIT->description: "I ADC event source"
+lmbf/processor/l/IQ_TRG_SEQ_ADC0_HIT->EnumLabels: No,\ 
                                                               Yes
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC1_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC1_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/IQ_TRG_SEQ_ADC1_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_ADC1_BL_S->EnumLabels: All,\ 
                                                                Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC1_EN_S->description: "Enable Q ADC event input"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC1_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_TRG_SEQ_ADC1_EN_S->description: "Enable Q ADC event input"
+lmbf/processor/l/IQ_TRG_SEQ_ADC1_EN_S->EnumLabels: Ignore,\ 
                                                                Enable
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC1_HIT->description: "Q ADC event source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ADC1_HIT->EnumLabels: No,\ 
+lmbf/processor/l/IQ_TRG_SEQ_ADC1_HIT->description: "Q ADC event source"
+lmbf/processor/l/IQ_TRG_SEQ_ADC1_HIT->EnumLabels: No,\ 
                                                               Yes
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_ARM_S->description: "Arm trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_BL_S->description: "Write blanking"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_DELAY_S->description: "Trigger delay"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_DELAY_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_DELAY_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_DELAY_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_DISARM_S->description: "Disarm trigger"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_EN_S->description: "Write enables"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_EXT_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_EXT_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/IQ_TRG_SEQ_ARM_S->description: "Arm trigger"
+lmbf/processor/l/IQ_TRG_SEQ_BL_S->description: "Write blanking"
+lmbf/processor/l/IQ_TRG_SEQ_DELAY_S->description: "Trigger delay"
+lmbf/processor/l/IQ_TRG_SEQ_DELAY_S->format: %5d
+lmbf/processor/l/IQ_TRG_SEQ_DELAY_S->max_value: 65535.0
+lmbf/processor/l/IQ_TRG_SEQ_DELAY_S->min_value: 0.0
+lmbf/processor/l/IQ_TRG_SEQ_DISARM_S->description: "Disarm trigger"
+lmbf/processor/l/IQ_TRG_SEQ_EN_S->description: "Write enables"
+lmbf/processor/l/IQ_TRG_SEQ_EXT_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_EXT_BL_S->EnumLabels: All,\ 
                                                               Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_EXT_EN_S->description: "Enable External trigger input"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_EXT_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_TRG_SEQ_EXT_EN_S->description: "Enable External trigger input"
+lmbf/processor/l/IQ_TRG_SEQ_EXT_EN_S->EnumLabels: Ignore,\ 
                                                               Enable
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_EXT_HIT->description: "External trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_EXT_HIT->EnumLabels: No,\ 
+lmbf/processor/l/IQ_TRG_SEQ_EXT_HIT->description: "External trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_EXT_HIT->EnumLabels: No,\ 
                                                              Yes
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_HIT->description: "Update source events"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_MODE_S->description: "Arming mode"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_MODE_S->EnumLabels: "One Shot",\ 
+lmbf/processor/l/IQ_TRG_SEQ_HIT->description: "Update source events"
+lmbf/processor/l/IQ_TRG_SEQ_MODE_S->description: "Arming mode"
+lmbf/processor/l/IQ_TRG_SEQ_MODE_S->EnumLabels: "One Shot",\ 
                                                             Rearm,\ 
                                                             Shared
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_PM_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_PM_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/IQ_TRG_SEQ_PM_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_PM_BL_S->EnumLabels: All,\ 
                                                              Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_PM_EN_S->description: "Enable Postmortem trigger input"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_PM_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_TRG_SEQ_PM_EN_S->description: "Enable Postmortem trigger input"
+lmbf/processor/l/IQ_TRG_SEQ_PM_EN_S->EnumLabels: Ignore,\ 
                                                              Enable
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_PM_HIT->description: "Postmortem trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_PM_HIT->EnumLabels: No,\ 
+lmbf/processor/l/IQ_TRG_SEQ_PM_HIT->description: "Postmortem trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_PM_HIT->EnumLabels: No,\ 
                                                             Yes
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ0_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ0_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SEQ0_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_SEQ0_BL_S->EnumLabels: All,\ 
                                                                Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ0_EN_S->description: "Enable I SEQ event input"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ0_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SEQ0_EN_S->description: "Enable I SEQ event input"
+lmbf/processor/l/IQ_TRG_SEQ_SEQ0_EN_S->EnumLabels: Ignore,\ 
                                                                Enable
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ0_HIT->description: "I SEQ event source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ0_HIT->EnumLabels: No,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SEQ0_HIT->description: "I SEQ event source"
+lmbf/processor/l/IQ_TRG_SEQ_SEQ0_HIT->EnumLabels: No,\ 
                                                               Yes
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ1_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ1_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SEQ1_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_SEQ1_BL_S->EnumLabels: All,\ 
                                                                Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ1_EN_S->description: "Enable Q SEQ event input"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ1_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SEQ1_EN_S->description: "Enable Q SEQ event input"
+lmbf/processor/l/IQ_TRG_SEQ_SEQ1_EN_S->EnumLabels: Ignore,\ 
                                                                Enable
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ1_HIT->description: "Q SEQ event source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SEQ1_HIT->EnumLabels: No,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SEQ1_HIT->description: "Q SEQ event source"
+lmbf/processor/l/IQ_TRG_SEQ_SEQ1_HIT->EnumLabels: No,\ 
                                                               Yes
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SOFT_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SOFT_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SOFT_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_SOFT_BL_S->EnumLabels: All,\ 
                                                                Blanking
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SOFT_EN_S->description: "Enable Soft trigger input"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SOFT_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SOFT_EN_S->description: "Enable Soft trigger input"
+lmbf/processor/l/IQ_TRG_SEQ_SOFT_EN_S->EnumLabels: Ignore,\ 
                                                                Enable
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SOFT_HIT->description: "Soft trigger source"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_SOFT_HIT->EnumLabels: No,\ 
+lmbf/processor/l/IQ_TRG_SEQ_SOFT_HIT->description: "Soft trigger source"
+lmbf/processor/l/IQ_TRG_SEQ_SOFT_HIT->EnumLabels: No,\ 
                                                               Yes
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_STATUS->description: "Trigger target status"
-sr/d-mfdbk/utca-longitudinal/IQ_TRG_SEQ_STATUS->EnumLabels: Idle,\ 
+lmbf/processor/l/IQ_TRG_SEQ_STATUS->description: "Trigger target status"
+lmbf/processor/l/IQ_TRG_SEQ_STATUS->EnumLabels: Idle,\ 
                                                             Armed,\ 
                                                             Busy,\ 
                                                             Locked
-sr/d-mfdbk/utca-longitudinal/I_ADC_DRAM_SOURCE_S->description: "Source of memory data"
-sr/d-mfdbk/utca-longitudinal/I_ADC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/I_ADC_DRAM_SOURCE_S->description: "Source of memory data"
+lmbf/processor/l/I_ADC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                               "After FIR",\ 
                                                               "FIR no fill"
-sr/d-mfdbk/utca-longitudinal/I_ADC_EVENT->description: "ADC min/max event"
-sr/d-mfdbk/utca-longitudinal/I_ADC_EVENT->EnumLabels: No,\ 
+lmbf/processor/l/I_ADC_EVENT->description: "ADC min/max event"
+lmbf/processor/l/I_ADC_EVENT->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/I_ADC_EVENT_LIMIT_S->description: "ADC min/max event threshold"
-sr/d-mfdbk/utca-longitudinal/I_ADC_EVENT_LIMIT_S->format: %1.4f
-sr/d-mfdbk/utca-longitudinal/I_ADC_EVENT_LIMIT_S->max_value: 2.0
-sr/d-mfdbk/utca-longitudinal/I_ADC_EVENT_LIMIT_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/I_ADC_FILTER_S->description: "Input compensation filter"
-sr/d-mfdbk/utca-longitudinal/I_ADC_FIR_OVF->description: "ADC FIR overflow"
-sr/d-mfdbk/utca-longitudinal/I_ADC_FIR_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_ADC_EVENT_LIMIT_S->description: "ADC min/max event threshold"
+lmbf/processor/l/I_ADC_EVENT_LIMIT_S->format: %1.4f
+lmbf/processor/l/I_ADC_EVENT_LIMIT_S->max_value: 2.0
+lmbf/processor/l/I_ADC_EVENT_LIMIT_S->min_value: 0.0
+lmbf/processor/l/I_ADC_FILTER_S->description: "Input compensation filter"
+lmbf/processor/l/I_ADC_FIR_OVF->description: "ADC FIR overflow"
+lmbf/processor/l/I_ADC_FIR_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/I_ADC_INP_OVF->description: "ADC input overflow"
-sr/d-mfdbk/utca-longitudinal/I_ADC_INP_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_ADC_INP_OVF->description: "ADC input overflow"
+lmbf/processor/l/I_ADC_INP_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/I_ADC_LOOPBACK_S->description: "Enable DAC -> ADC loopback"
-sr/d-mfdbk/utca-longitudinal/I_ADC_LOOPBACK_S->EnumLabels: Normal,\ 
+lmbf/processor/l/I_ADC_LOOPBACK_S->description: "Enable DAC -> ADC loopback"
+lmbf/processor/l/I_ADC_LOOPBACK_S->EnumLabels: Normal,\ 
                                                            Loopback
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_DELTA->description: "Max ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_MAX->description: "Max ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_MEAN->description: "Mean ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_MEAN_MEAN->description: "Mean position"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_MIN->description: "Min ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_OVERFLOW->description: "MMS capture overflow status"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_OVERFLOW->EnumLabels: Ok,\ 
+lmbf/processor/l/I_ADC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
+lmbf/processor/l/I_ADC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
+lmbf/processor/l/I_ADC_MMS_DELTA->description: "Max ADC values per bunch"
+lmbf/processor/l/I_ADC_MMS_MAX->description: "Max ADC values per bunch"
+lmbf/processor/l/I_ADC_MMS_MEAN->description: "Mean ADC values per bunch"
+lmbf/processor/l/I_ADC_MMS_MEAN_MEAN->description: "Mean position"
+lmbf/processor/l/I_ADC_MMS_MIN->description: "Min ADC values per bunch"
+lmbf/processor/l/I_ADC_MMS_OVERFLOW->description: "MMS capture overflow status"
+lmbf/processor/l/I_ADC_MMS_OVERFLOW->EnumLabels: Ok,\ 
                                                              "Turns Overflow",\ 
                                                              "Sum Overflow",\ 
                                                              "Turns+Sum Overflow",\ 
@@ -1808,29 +1808,29 @@ sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_OVERFLOW->EnumLabels: Ok,\
                                                              "Turns+Sum2 Overflow",\ 
                                                              "Sum+Sum2 Overflow",\ 
                                                              "Turns+Sum+Sum2 Overflow"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_SCAN_S->description: "ADC min/max scanning"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_SOURCE_S->description: "Source of min/max/sum data"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/I_ADC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
+lmbf/processor/l/I_ADC_MMS_SCAN_S->description: "ADC min/max scanning"
+lmbf/processor/l/I_ADC_MMS_SOURCE_S->description: "Source of min/max/sum data"
+lmbf/processor/l/I_ADC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                              "After FIR",\ 
                                                              "FIR no fill"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_STD->description: "ADC standard deviation per bunch"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_STD_MEAN_DB->unit: dB
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_ADC_MMS_TURNS->description: "Number of turns in this sample"
-sr/d-mfdbk/utca-longitudinal/I_ADC_OVF->description: "ADC overflow"
-sr/d-mfdbk/utca-longitudinal/I_ADC_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_ADC_MMS_STD->description: "ADC standard deviation per bunch"
+lmbf/processor/l/I_ADC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
+lmbf/processor/l/I_ADC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
+lmbf/processor/l/I_ADC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
+lmbf/processor/l/I_ADC_MMS_STD_MEAN_DB->unit: dB
+lmbf/processor/l/I_ADC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
+lmbf/processor/l/I_ADC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
+lmbf/processor/l/I_ADC_MMS_TURNS->description: "Number of turns in this sample"
+lmbf/processor/l/I_ADC_OVF->description: "ADC overflow"
+lmbf/processor/l/I_ADC_OVF->EnumLabels: Ok,\ 
                                                     Overflow
-sr/d-mfdbk/utca-longitudinal/I_ADC_OVF_LIMIT_S->description: "Overflow limit threshold"
-sr/d-mfdbk/utca-longitudinal/I_ADC_OVF_LIMIT_S->format: %1.4f
-sr/d-mfdbk/utca-longitudinal/I_ADC_OVF_LIMIT_S->max_value: 1.0
-sr/d-mfdbk/utca-longitudinal/I_ADC_OVF_LIMIT_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/I_ADC_REJECT_COUNT_S->description: "Samples in fill pattern reject filter"
-sr/d-mfdbk/utca-longitudinal/I_ADC_REJECT_COUNT_S->EnumLabels: "1 turns",\ 
+lmbf/processor/l/I_ADC_OVF_LIMIT_S->description: "Overflow limit threshold"
+lmbf/processor/l/I_ADC_OVF_LIMIT_S->format: %1.4f
+lmbf/processor/l/I_ADC_OVF_LIMIT_S->max_value: 1.0
+lmbf/processor/l/I_ADC_OVF_LIMIT_S->min_value: 0.0
+lmbf/processor/l/I_ADC_REJECT_COUNT_S->description: "Samples in fill pattern reject filter"
+lmbf/processor/l/I_ADC_REJECT_COUNT_S->EnumLabels: "1 turns",\ 
                                                                "2 turns",\ 
                                                                "4 turns",\ 
                                                                "8 turns",\ 
@@ -1843,29 +1843,29 @@ sr/d-mfdbk/utca-longitudinal/I_ADC_REJECT_COUNT_S->EnumLabels: "1 turns",\
                                                                "1024 turns",\ 
                                                                "2048 turns",\ 
                                                                "4096 turns"
-sr/d-mfdbk/utca-longitudinal/I_DAC_BUN_OVF->description: "Bunch FIR overflow"
-sr/d-mfdbk/utca-longitudinal/I_DAC_BUN_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_DAC_BUN_OVF->description: "Bunch FIR overflow"
+lmbf/processor/l/I_DAC_BUN_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/I_DAC_DELAY_S->description: "DAC output delay"
-sr/d-mfdbk/utca-longitudinal/I_DAC_DRAM_SOURCE_S->description: "Source of memory data"
-sr/d-mfdbk/utca-longitudinal/I_DAC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/I_DAC_DELAY_S->description: "DAC output delay"
+lmbf/processor/l/I_DAC_DRAM_SOURCE_S->description: "Source of memory data"
+lmbf/processor/l/I_DAC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                               "After FIR"
-sr/d-mfdbk/utca-longitudinal/I_DAC_ENABLE_S->description: "DAC output enable"
-sr/d-mfdbk/utca-longitudinal/I_DAC_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/I_DAC_ENABLE_S->description: "DAC output enable"
+lmbf/processor/l/I_DAC_ENABLE_S->EnumLabels: Off,\ 
                                                          On
-sr/d-mfdbk/utca-longitudinal/I_DAC_FILTER_S->description: "Output preemphasis filter"
-sr/d-mfdbk/utca-longitudinal/I_DAC_FIR_OVF->description: "DAC FIR overflow"
-sr/d-mfdbk/utca-longitudinal/I_DAC_FIR_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_DAC_FILTER_S->description: "Output preemphasis filter"
+lmbf/processor/l/I_DAC_FIR_OVF->description: "DAC FIR overflow"
+lmbf/processor/l/I_DAC_FIR_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_DELTA->description: "Max DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_MAX->description: "Max DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_MEAN->description: "Mean DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_MEAN_MEAN->description: "Mean position"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_MIN->description: "Min DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_OVERFLOW->description: "MMS capture overflow status"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_OVERFLOW->EnumLabels: Ok,\ 
+lmbf/processor/l/I_DAC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
+lmbf/processor/l/I_DAC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
+lmbf/processor/l/I_DAC_MMS_DELTA->description: "Max DAC values per bunch"
+lmbf/processor/l/I_DAC_MMS_MAX->description: "Max DAC values per bunch"
+lmbf/processor/l/I_DAC_MMS_MEAN->description: "Mean DAC values per bunch"
+lmbf/processor/l/I_DAC_MMS_MEAN_MEAN->description: "Mean position"
+lmbf/processor/l/I_DAC_MMS_MIN->description: "Min DAC values per bunch"
+lmbf/processor/l/I_DAC_MMS_OVERFLOW->description: "MMS capture overflow status"
+lmbf/processor/l/I_DAC_MMS_OVERFLOW->EnumLabels: Ok,\ 
                                                              "Turns Overflow",\ 
                                                              "Sum Overflow",\ 
                                                              "Turns+Sum Overflow",\ 
@@ -1873,79 +1873,79 @@ sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_OVERFLOW->EnumLabels: Ok,\
                                                              "Turns+Sum2 Overflow",\ 
                                                              "Sum+Sum2 Overflow",\ 
                                                              "Turns+Sum+Sum2 Overflow"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_SCAN_S->description: "DAC min/max scanning"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_SOURCE_S->description: "Source of min/max/sum data"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/I_DAC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
+lmbf/processor/l/I_DAC_MMS_SCAN_S->description: "DAC min/max scanning"
+lmbf/processor/l/I_DAC_MMS_SOURCE_S->description: "Source of min/max/sum data"
+lmbf/processor/l/I_DAC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                              "After FIR"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_STD->description: "DAC standard deviation per bunch"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_STD_MEAN_DB->unit: dB
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MMS_TURNS->description: "Number of turns in this sample"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MUX_OVF->description: "DAC output overflow"
-sr/d-mfdbk/utca-longitudinal/I_DAC_MUX_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_DAC_MMS_STD->description: "DAC standard deviation per bunch"
+lmbf/processor/l/I_DAC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
+lmbf/processor/l/I_DAC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
+lmbf/processor/l/I_DAC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
+lmbf/processor/l/I_DAC_MMS_STD_MEAN_DB->unit: dB
+lmbf/processor/l/I_DAC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
+lmbf/processor/l/I_DAC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
+lmbf/processor/l/I_DAC_MMS_TURNS->description: "Number of turns in this sample"
+lmbf/processor/l/I_DAC_MUX_OVF->description: "DAC output overflow"
+lmbf/processor/l/I_DAC_MUX_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/I_DAC_OVF->description: "DAC overflow"
-sr/d-mfdbk/utca-longitudinal/I_DAC_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_DAC_OVF->description: "DAC overflow"
+lmbf/processor/l/I_DAC_OVF->EnumLabels: Ok,\ 
                                                     Overflow
-sr/d-mfdbk/utca-longitudinal/I_FIR_0_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_0_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_1_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_1_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_2_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_2_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_3_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_3_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/I_FIR_OVF->description: "Overflow in I bunch-by-bunch filter"
-sr/d-mfdbk/utca-longitudinal/I_FIR_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/I_FIR_0_TAPS->description: "Current waveform taps"
+lmbf/processor/l/I_FIR_0_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/I_FIR_1_TAPS->description: "Current waveform taps"
+lmbf/processor/l/I_FIR_1_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/I_FIR_2_TAPS->description: "Current waveform taps"
+lmbf/processor/l/I_FIR_2_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/I_FIR_3_TAPS->description: "Current waveform taps"
+lmbf/processor/l/I_FIR_3_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/I_FIR_OVF->description: "Overflow in I bunch-by-bunch filter"
+lmbf/processor/l/I_FIR_OVF->EnumLabels: Ok,\ 
                                                     Overflow
-sr/d-mfdbk/utca-longitudinal/MEM_BUSY->description: "Capture status"
-sr/d-mfdbk/utca-longitudinal/MEM_BUSY->EnumLabels: Ready,\ 
+lmbf/processor/l/MEM_BUSY->description: "Capture status"
+lmbf/processor/l/MEM_BUSY->EnumLabels: Ready,\ 
                                                    Busy
-sr/d-mfdbk/utca-longitudinal/MEM_CAPTURE_S->description: "Untriggered immediate capture"
-sr/d-mfdbk/utca-longitudinal/MEM_FIR0_GAIN_S->description: "FIR 0 capture gain"
-sr/d-mfdbk/utca-longitudinal/MEM_FIR0_GAIN_S->EnumLabels: +54dB,\ 
+lmbf/processor/l/MEM_CAPTURE_S->description: "Untriggered immediate capture"
+lmbf/processor/l/MEM_FIR0_GAIN_S->description: "FIR 0 capture gain"
+lmbf/processor/l/MEM_FIR0_GAIN_S->EnumLabels: +54dB,\ 
                                                           0dB
-sr/d-mfdbk/utca-longitudinal/MEM_FIR0_OVF->description: "FIR 0 capture will overflow"
-sr/d-mfdbk/utca-longitudinal/MEM_FIR0_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/MEM_FIR0_OVF->description: "FIR 0 capture will overflow"
+lmbf/processor/l/MEM_FIR0_OVF->EnumLabels: Ok,\ 
                                                        Overflow
-sr/d-mfdbk/utca-longitudinal/MEM_FIR1_GAIN_S->description: "FIR 1 capture gain"
-sr/d-mfdbk/utca-longitudinal/MEM_FIR1_GAIN_S->EnumLabels: +54dB,\ 
+lmbf/processor/l/MEM_FIR1_GAIN_S->description: "FIR 1 capture gain"
+lmbf/processor/l/MEM_FIR1_GAIN_S->EnumLabels: +54dB,\ 
                                                           0dB
-sr/d-mfdbk/utca-longitudinal/MEM_FIR1_OVF->description: "FIR 1 capture will overflow"
-sr/d-mfdbk/utca-longitudinal/MEM_FIR1_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/MEM_FIR1_OVF->description: "FIR 1 capture will overflow"
+lmbf/processor/l/MEM_FIR1_OVF->EnumLabels: Ok,\ 
                                                        Overflow
-sr/d-mfdbk/utca-longitudinal/MEM_OFFSET_S->description: "Offset of readout"
-sr/d-mfdbk/utca-longitudinal/MEM_OFFSET_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/MEM_READOUT_DONE_S->description: "READOUT processing done"
-sr/d-mfdbk/utca-longitudinal/MEM_READOUT_TRIG->description: "READOUT processing trigger"
-sr/d-mfdbk/utca-longitudinal/MEM_READ_OVF_S->description: "Poll overflow events"
-sr/d-mfdbk/utca-longitudinal/MEM_RUNOUT_S->description: "Post trigger capture count"
-sr/d-mfdbk/utca-longitudinal/MEM_RUNOUT_S->EnumLabels: 12.5%,\ 
+lmbf/processor/l/MEM_OFFSET_S->description: "Offset of readout"
+lmbf/processor/l/MEM_OFFSET_S->unit: turns
+lmbf/processor/l/MEM_READOUT_DONE_S->description: "READOUT processing done"
+lmbf/processor/l/MEM_READOUT_TRIG->description: "READOUT processing trigger"
+lmbf/processor/l/MEM_READ_OVF_S->description: "Poll overflow events"
+lmbf/processor/l/MEM_RUNOUT_S->description: "Post trigger capture count"
+lmbf/processor/l/MEM_RUNOUT_S->EnumLabels: 12.5%,\ 
                                                        25%,\ 
                                                        50%,\ 
                                                        75%,\ 
                                                        99.5%
-sr/d-mfdbk/utca-longitudinal/MEM_SEL0_S->description: "Channel 0 capture selection"
-sr/d-mfdbk/utca-longitudinal/MEM_SEL0_S->EnumLabels: ADC0,\ 
+lmbf/processor/l/MEM_SEL0_S->description: "Channel 0 capture selection"
+lmbf/processor/l/MEM_SEL0_S->EnumLabels: ADC0,\ 
                                                      FIR0,\ 
                                                      DAC0,\ 
                                                      ADC1,\ 
                                                      FIR1,\ 
                                                      DAC1
-sr/d-mfdbk/utca-longitudinal/MEM_SEL1_S->description: "Channel 1 capture selection"
-sr/d-mfdbk/utca-longitudinal/MEM_SEL1_S->EnumLabels: ADC0,\ 
+lmbf/processor/l/MEM_SEL1_S->description: "Channel 1 capture selection"
+lmbf/processor/l/MEM_SEL1_S->EnumLabels: ADC0,\ 
                                                      FIR0,\ 
                                                      DAC0,\ 
                                                      ADC1,\ 
                                                      FIR1,\ 
                                                      DAC1
-sr/d-mfdbk/utca-longitudinal/MEM_SELECT_S->description: "Control memory capture selection"
-sr/d-mfdbk/utca-longitudinal/MEM_SELECT_S->EnumLabels: "ADC0/ADC1",\ 
+lmbf/processor/l/MEM_SELECT_S->description: "Control memory capture selection"
+lmbf/processor/l/MEM_SELECT_S->EnumLabels: "ADC0/ADC1",\ 
                                                        "ADC0/FIR1",\ 
                                                        "ADC0/DAC1",\ 
                                                        "ADC0/FIR0",\ 
@@ -1960,39 +1960,39 @@ sr/d-mfdbk/utca-longitudinal/MEM_SELECT_S->EnumLabels: "ADC0/ADC1",\
                                                        "ADC1/FIR1",\ 
                                                        "FIR1/DAC1",\ 
                                                        "ADC1/DAC1"
-sr/d-mfdbk/utca-longitudinal/MEM_WF0->description: "Capture waveform #0"
-sr/d-mfdbk/utca-longitudinal/MEM_WF1->description: "Capture waveform #1"
-sr/d-mfdbk/utca-longitudinal/MEM_WRITE_GAIN_S->description: "Write FIR gain"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_DRAM_SOURCE_S->description: "Source of memory data"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/MEM_WF0->description: "Capture waveform #0"
+lmbf/processor/l/MEM_WF1->description: "Capture waveform #1"
+lmbf/processor/l/MEM_WRITE_GAIN_S->description: "Write FIR gain"
+lmbf/processor/l/Q_ADC_DRAM_SOURCE_S->description: "Source of memory data"
+lmbf/processor/l/Q_ADC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                               "After FIR",\ 
                                                               "FIR no fill"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_EVENT->description: "ADC min/max event"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_EVENT->EnumLabels: No,\ 
+lmbf/processor/l/Q_ADC_EVENT->description: "ADC min/max event"
+lmbf/processor/l/Q_ADC_EVENT->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/Q_ADC_EVENT_LIMIT_S->description: "ADC min/max event threshold"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_EVENT_LIMIT_S->format: %1.4f
-sr/d-mfdbk/utca-longitudinal/Q_ADC_EVENT_LIMIT_S->max_value: 2.0
-sr/d-mfdbk/utca-longitudinal/Q_ADC_EVENT_LIMIT_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/Q_ADC_FILTER_S->description: "Input compensation filter"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_FIR_OVF->description: "ADC FIR overflow"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_FIR_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_ADC_EVENT_LIMIT_S->description: "ADC min/max event threshold"
+lmbf/processor/l/Q_ADC_EVENT_LIMIT_S->format: %1.4f
+lmbf/processor/l/Q_ADC_EVENT_LIMIT_S->max_value: 2.0
+lmbf/processor/l/Q_ADC_EVENT_LIMIT_S->min_value: 0.0
+lmbf/processor/l/Q_ADC_FILTER_S->description: "Input compensation filter"
+lmbf/processor/l/Q_ADC_FIR_OVF->description: "ADC FIR overflow"
+lmbf/processor/l/Q_ADC_FIR_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/Q_ADC_INP_OVF->description: "ADC input overflow"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_INP_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_ADC_INP_OVF->description: "ADC input overflow"
+lmbf/processor/l/Q_ADC_INP_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/Q_ADC_LOOPBACK_S->description: "Enable DAC -> ADC loopback"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_LOOPBACK_S->EnumLabels: Normal,\ 
+lmbf/processor/l/Q_ADC_LOOPBACK_S->description: "Enable DAC -> ADC loopback"
+lmbf/processor/l/Q_ADC_LOOPBACK_S->EnumLabels: Normal,\ 
                                                            Loopback
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_DELTA->description: "Max ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_MAX->description: "Max ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_MEAN->description: "Mean ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_MEAN_MEAN->description: "Mean position"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_MIN->description: "Min ADC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_OVERFLOW->description: "MMS capture overflow status"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_OVERFLOW->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_ADC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
+lmbf/processor/l/Q_ADC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
+lmbf/processor/l/Q_ADC_MMS_DELTA->description: "Max ADC values per bunch"
+lmbf/processor/l/Q_ADC_MMS_MAX->description: "Max ADC values per bunch"
+lmbf/processor/l/Q_ADC_MMS_MEAN->description: "Mean ADC values per bunch"
+lmbf/processor/l/Q_ADC_MMS_MEAN_MEAN->description: "Mean position"
+lmbf/processor/l/Q_ADC_MMS_MIN->description: "Min ADC values per bunch"
+lmbf/processor/l/Q_ADC_MMS_OVERFLOW->description: "MMS capture overflow status"
+lmbf/processor/l/Q_ADC_MMS_OVERFLOW->EnumLabels: Ok,\ 
                                                              "Turns Overflow",\ 
                                                              "Sum Overflow",\ 
                                                              "Turns+Sum Overflow",\ 
@@ -2000,29 +2000,29 @@ sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_OVERFLOW->EnumLabels: Ok,\
                                                              "Turns+Sum2 Overflow",\ 
                                                              "Sum+Sum2 Overflow",\ 
                                                              "Turns+Sum+Sum2 Overflow"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_SCAN_S->description: "ADC min/max scanning"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_SOURCE_S->description: "Source of min/max/sum data"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/Q_ADC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
+lmbf/processor/l/Q_ADC_MMS_SCAN_S->description: "ADC min/max scanning"
+lmbf/processor/l/Q_ADC_MMS_SOURCE_S->description: "Source of min/max/sum data"
+lmbf/processor/l/Q_ADC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                              "After FIR",\ 
                                                              "FIR no fill"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_STD->description: "ADC standard deviation per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_STD_MEAN_DB->unit: dB
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_MMS_TURNS->description: "Number of turns in this sample"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_OVF->description: "ADC overflow"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_ADC_MMS_STD->description: "ADC standard deviation per bunch"
+lmbf/processor/l/Q_ADC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
+lmbf/processor/l/Q_ADC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
+lmbf/processor/l/Q_ADC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
+lmbf/processor/l/Q_ADC_MMS_STD_MEAN_DB->unit: dB
+lmbf/processor/l/Q_ADC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
+lmbf/processor/l/Q_ADC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
+lmbf/processor/l/Q_ADC_MMS_TURNS->description: "Number of turns in this sample"
+lmbf/processor/l/Q_ADC_OVF->description: "ADC overflow"
+lmbf/processor/l/Q_ADC_OVF->EnumLabels: Ok,\ 
                                                     Overflow
-sr/d-mfdbk/utca-longitudinal/Q_ADC_OVF_LIMIT_S->description: "Overflow limit threshold"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_OVF_LIMIT_S->format: %1.4f
-sr/d-mfdbk/utca-longitudinal/Q_ADC_OVF_LIMIT_S->max_value: 1.0
-sr/d-mfdbk/utca-longitudinal/Q_ADC_OVF_LIMIT_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/Q_ADC_REJECT_COUNT_S->description: "Samples in fill pattern reject filter"
-sr/d-mfdbk/utca-longitudinal/Q_ADC_REJECT_COUNT_S->EnumLabels: "1 turns",\ 
+lmbf/processor/l/Q_ADC_OVF_LIMIT_S->description: "Overflow limit threshold"
+lmbf/processor/l/Q_ADC_OVF_LIMIT_S->format: %1.4f
+lmbf/processor/l/Q_ADC_OVF_LIMIT_S->max_value: 1.0
+lmbf/processor/l/Q_ADC_OVF_LIMIT_S->min_value: 0.0
+lmbf/processor/l/Q_ADC_REJECT_COUNT_S->description: "Samples in fill pattern reject filter"
+lmbf/processor/l/Q_ADC_REJECT_COUNT_S->EnumLabels: "1 turns",\ 
                                                                "2 turns",\ 
                                                                "4 turns",\ 
                                                                "8 turns",\ 
@@ -2035,29 +2035,29 @@ sr/d-mfdbk/utca-longitudinal/Q_ADC_REJECT_COUNT_S->EnumLabels: "1 turns",\
                                                                "1024 turns",\ 
                                                                "2048 turns",\ 
                                                                "4096 turns"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_BUN_OVF->description: "Bunch FIR overflow"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_BUN_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_DAC_BUN_OVF->description: "Bunch FIR overflow"
+lmbf/processor/l/Q_DAC_BUN_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/Q_DAC_DELAY_S->description: "DAC output delay"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_DRAM_SOURCE_S->description: "Source of memory data"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/Q_DAC_DELAY_S->description: "DAC output delay"
+lmbf/processor/l/Q_DAC_DRAM_SOURCE_S->description: "Source of memory data"
+lmbf/processor/l/Q_DAC_DRAM_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                               "After FIR"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_ENABLE_S->description: "DAC output enable"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_ENABLE_S->EnumLabels: Off,\ 
+lmbf/processor/l/Q_DAC_ENABLE_S->description: "DAC output enable"
+lmbf/processor/l/Q_DAC_ENABLE_S->EnumLabels: Off,\ 
                                                          On
-sr/d-mfdbk/utca-longitudinal/Q_DAC_FILTER_S->description: "Output preemphasis filter"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_FIR_OVF->description: "DAC FIR overflow"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_FIR_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_DAC_FILTER_S->description: "Output preemphasis filter"
+lmbf/processor/l/Q_DAC_FIR_OVF->description: "DAC FIR overflow"
+lmbf/processor/l/Q_DAC_FIR_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_DELTA->description: "Max DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_MAX->description: "Max DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_MEAN->description: "Mean DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_MEAN_MEAN->description: "Mean position"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_MIN->description: "Min DAC values per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_OVERFLOW->description: "MMS capture overflow status"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_OVERFLOW->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_DAC_MMS_ARCHIVE_DONE_S->description: "ARCHIVE processing done"
+lmbf/processor/l/Q_DAC_MMS_ARCHIVE_TRIG->description: "ARCHIVE processing trigger"
+lmbf/processor/l/Q_DAC_MMS_DELTA->description: "Max DAC values per bunch"
+lmbf/processor/l/Q_DAC_MMS_MAX->description: "Max DAC values per bunch"
+lmbf/processor/l/Q_DAC_MMS_MEAN->description: "Mean DAC values per bunch"
+lmbf/processor/l/Q_DAC_MMS_MEAN_MEAN->description: "Mean position"
+lmbf/processor/l/Q_DAC_MMS_MIN->description: "Min DAC values per bunch"
+lmbf/processor/l/Q_DAC_MMS_OVERFLOW->description: "MMS capture overflow status"
+lmbf/processor/l/Q_DAC_MMS_OVERFLOW->EnumLabels: Ok,\ 
                                                              "Turns Overflow",\ 
                                                              "Sum Overflow",\ 
                                                              "Turns+Sum Overflow",\ 
@@ -2065,168 +2065,168 @@ sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_OVERFLOW->EnumLabels: Ok,\
                                                              "Turns+Sum2 Overflow",\ 
                                                              "Sum+Sum2 Overflow",\ 
                                                              "Turns+Sum+Sum2 Overflow"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_SCAN_S->description: "DAC min/max scanning"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_SOURCE_S->description: "Source of min/max/sum data"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
+lmbf/processor/l/Q_DAC_MMS_RESET_FAULT_S->description: "Resets MMS fault accumulation"
+lmbf/processor/l/Q_DAC_MMS_SCAN_S->description: "DAC min/max scanning"
+lmbf/processor/l/Q_DAC_MMS_SOURCE_S->description: "Source of min/max/sum data"
+lmbf/processor/l/Q_DAC_MMS_SOURCE_S->EnumLabels: "Before FIR",\ 
                                                              "After FIR"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_STD->description: "DAC standard deviation per bunch"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_STD_MEAN_DB->unit: dB
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MMS_TURNS->description: "Number of turns in this sample"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MUX_OVF->description: "DAC output overflow"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_MUX_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_DAC_MMS_STD->description: "DAC standard deviation per bunch"
+lmbf/processor/l/Q_DAC_MMS_STD_MAX_WF->description: "Maximum of standard deviation"
+lmbf/processor/l/Q_DAC_MMS_STD_MEAN->description: "Mean MMS standard deviation"
+lmbf/processor/l/Q_DAC_MMS_STD_MEAN_DB->description: "Mean MMS deviation in dB"
+lmbf/processor/l/Q_DAC_MMS_STD_MEAN_DB->unit: dB
+lmbf/processor/l/Q_DAC_MMS_STD_MEAN_WF->description: "Power average of standard deviation"
+lmbf/processor/l/Q_DAC_MMS_STD_MIN_WF->description: "Minimum of standard deviation"
+lmbf/processor/l/Q_DAC_MMS_TURNS->description: "Number of turns in this sample"
+lmbf/processor/l/Q_DAC_MUX_OVF->description: "DAC output overflow"
+lmbf/processor/l/Q_DAC_MUX_OVF->EnumLabels: Ok,\ 
                                                         Overflow
-sr/d-mfdbk/utca-longitudinal/Q_DAC_OVF->description: "DAC overflow"
-sr/d-mfdbk/utca-longitudinal/Q_DAC_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_DAC_OVF->description: "DAC overflow"
+lmbf/processor/l/Q_DAC_OVF->EnumLabels: Ok,\ 
                                                     Overflow
-sr/d-mfdbk/utca-longitudinal/Q_FIR_0_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_0_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_1_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_1_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_2_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_2_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_3_TAPS->description: "Current waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_3_TAPS_S->description: "Set waveform taps"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_OVF->description: "Overflow in Q bunch-by-bunch filter"
-sr/d-mfdbk/utca-longitudinal/Q_FIR_OVF->EnumLabels: Ok,\ 
+lmbf/processor/l/Q_FIR_0_TAPS->description: "Current waveform taps"
+lmbf/processor/l/Q_FIR_0_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/Q_FIR_1_TAPS->description: "Current waveform taps"
+lmbf/processor/l/Q_FIR_1_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/Q_FIR_2_TAPS->description: "Current waveform taps"
+lmbf/processor/l/Q_FIR_2_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/Q_FIR_3_TAPS->description: "Current waveform taps"
+lmbf/processor/l/Q_FIR_3_TAPS_S->description: "Set waveform taps"
+lmbf/processor/l/Q_FIR_OVF->description: "Overflow in Q bunch-by-bunch filter"
+lmbf/processor/l/Q_FIR_OVF->EnumLabels: Ok,\ 
                                                     Overflow
-sr/d-mfdbk/utca-longitudinal/STA_CLOCK->description: "ADC clock status"
-sr/d-mfdbk/utca-longitudinal/STA_CLOCK->EnumLabels: Unlocked,\ 
+lmbf/processor/l/STA_CLOCK->description: "ADC clock status"
+lmbf/processor/l/STA_CLOCK->EnumLabels: Unlocked,\ 
                                                     Locked
-sr/d-mfdbk/utca-longitudinal/STA_POLL_S->description: "Poll system status"
-sr/d-mfdbk/utca-longitudinal/STA_VCO->description: "VCO clock status"
-sr/d-mfdbk/utca-longitudinal/STA_VCO->EnumLabels: Unlocked,\ 
+lmbf/processor/l/STA_POLL_S->description: "Poll system status"
+lmbf/processor/l/STA_VCO->description: "VCO clock status"
+lmbf/processor/l/STA_VCO->EnumLabels: Unlocked,\ 
                                                   Locked,\ 
                                                   Passthrough
-sr/d-mfdbk/utca-longitudinal/STA_VCXO->description: "VCXO clock status"
-sr/d-mfdbk/utca-longitudinal/STA_VCXO->EnumLabels: Unlocked,\ 
+lmbf/processor/l/STA_VCXO->description: "VCXO clock status"
+lmbf/processor/l/STA_VCXO->EnumLabels: Unlocked,\ 
                                                    Locked,\ 
                                                    Passthrough
-sr/d-mfdbk/utca-longitudinal/TRG_ADC0_IN->description: "I ADC event input"
-sr/d-mfdbk/utca-longitudinal/TRG_ADC0_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_ADC0_IN->description: "I ADC event input"
+lmbf/processor/l/TRG_ADC0_IN->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/TRG_ADC1_IN->description: "Q ADC event input"
-sr/d-mfdbk/utca-longitudinal/TRG_ADC1_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_ADC1_IN->description: "Q ADC event input"
+lmbf/processor/l/TRG_ADC1_IN->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/TRG_ARM_S->description: "Arm all shared targets"
-sr/d-mfdbk/utca-longitudinal/TRG_BLANKING_S->description: "Blanking duration"
-sr/d-mfdbk/utca-longitudinal/TRG_BLANKING_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/TRG_BLANKING_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/TRG_BLANKING_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/TRG_BLANKING_S->unit: turns
-sr/d-mfdbk/utca-longitudinal/TRG_BLNK_IN->description: "Blanking event"
-sr/d-mfdbk/utca-longitudinal/TRG_BLNK_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_ARM_S->description: "Arm all shared targets"
+lmbf/processor/l/TRG_BLANKING_S->description: "Blanking duration"
+lmbf/processor/l/TRG_BLANKING_S->format: %5d
+lmbf/processor/l/TRG_BLANKING_S->max_value: 65535.0
+lmbf/processor/l/TRG_BLANKING_S->min_value: 0.0
+lmbf/processor/l/TRG_BLANKING_S->unit: turns
+lmbf/processor/l/TRG_BLNK_IN->description: "Blanking event"
+lmbf/processor/l/TRG_BLNK_IN->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/TRG_DISARM_S->description: "Disarm all shared targets"
-sr/d-mfdbk/utca-longitudinal/TRG_EXT_IN->description: "External trigger input"
-sr/d-mfdbk/utca-longitudinal/TRG_EXT_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_DISARM_S->description: "Disarm all shared targets"
+lmbf/processor/l/TRG_EXT_IN->description: "External trigger input"
+lmbf/processor/l/TRG_EXT_IN->EnumLabels: No,\ 
                                                      Yes
-sr/d-mfdbk/utca-longitudinal/TRG_IN_S->description: "Scan input events"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC0_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC0_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/TRG_IN_S->description: "Scan input events"
+lmbf/processor/l/TRG_MEM_ADC0_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/TRG_MEM_ADC0_BL_S->EnumLabels: All,\ 
                                                             Blanking
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC0_EN_S->description: "Enable I ADC event input"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC0_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/TRG_MEM_ADC0_EN_S->description: "Enable I ADC event input"
+lmbf/processor/l/TRG_MEM_ADC0_EN_S->EnumLabels: Ignore,\ 
                                                             Enable
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC0_HIT->description: "I ADC event source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC0_HIT->EnumLabels: No,\ 
+lmbf/processor/l/TRG_MEM_ADC0_HIT->description: "I ADC event source"
+lmbf/processor/l/TRG_MEM_ADC0_HIT->EnumLabels: No,\ 
                                                            Yes
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC1_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC1_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/TRG_MEM_ADC1_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/TRG_MEM_ADC1_BL_S->EnumLabels: All,\ 
                                                             Blanking
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC1_EN_S->description: "Enable Q ADC event input"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC1_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/TRG_MEM_ADC1_EN_S->description: "Enable Q ADC event input"
+lmbf/processor/l/TRG_MEM_ADC1_EN_S->EnumLabels: Ignore,\ 
                                                             Enable
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC1_HIT->description: "Q ADC event source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ADC1_HIT->EnumLabels: No,\ 
+lmbf/processor/l/TRG_MEM_ADC1_HIT->description: "Q ADC event source"
+lmbf/processor/l/TRG_MEM_ADC1_HIT->EnumLabels: No,\ 
                                                            Yes
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_ARM_S->description: "Arm trigger"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_BL_S->description: "Write blanking"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_DELAY_S->description: "Trigger delay"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_DELAY_S->format: %5d
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_DELAY_S->max_value: 65535.0
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_DELAY_S->min_value: 0.0
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_DISARM_S->description: "Disarm trigger"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_EN_S->description: "Write enables"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_EXT_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_EXT_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/TRG_MEM_ARM_S->description: "Arm trigger"
+lmbf/processor/l/TRG_MEM_BL_S->description: "Write blanking"
+lmbf/processor/l/TRG_MEM_DELAY_S->description: "Trigger delay"
+lmbf/processor/l/TRG_MEM_DELAY_S->format: %5d
+lmbf/processor/l/TRG_MEM_DELAY_S->max_value: 65535.0
+lmbf/processor/l/TRG_MEM_DELAY_S->min_value: 0.0
+lmbf/processor/l/TRG_MEM_DISARM_S->description: "Disarm trigger"
+lmbf/processor/l/TRG_MEM_EN_S->description: "Write enables"
+lmbf/processor/l/TRG_MEM_EXT_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/TRG_MEM_EXT_BL_S->EnumLabels: All,\ 
                                                            Blanking
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_EXT_EN_S->description: "Enable External trigger input"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_EXT_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/TRG_MEM_EXT_EN_S->description: "Enable External trigger input"
+lmbf/processor/l/TRG_MEM_EXT_EN_S->EnumLabels: Ignore,\ 
                                                            Enable
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_EXT_HIT->description: "External trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_EXT_HIT->EnumLabels: No,\ 
+lmbf/processor/l/TRG_MEM_EXT_HIT->description: "External trigger source"
+lmbf/processor/l/TRG_MEM_EXT_HIT->EnumLabels: No,\ 
                                                           Yes
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_HIT->description: "Update source events"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_MODE_S->description: "Arming mode"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_MODE_S->EnumLabels: "One Shot",\ 
+lmbf/processor/l/TRG_MEM_HIT->description: "Update source events"
+lmbf/processor/l/TRG_MEM_MODE_S->description: "Arming mode"
+lmbf/processor/l/TRG_MEM_MODE_S->EnumLabels: "One Shot",\ 
                                                          Rearm,\ 
                                                          Shared
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_PM_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_PM_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/TRG_MEM_PM_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/TRG_MEM_PM_BL_S->EnumLabels: All,\ 
                                                           Blanking
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_PM_EN_S->description: "Enable Postmortem trigger input"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_PM_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/TRG_MEM_PM_EN_S->description: "Enable Postmortem trigger input"
+lmbf/processor/l/TRG_MEM_PM_EN_S->EnumLabels: Ignore,\ 
                                                           Enable
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_PM_HIT->description: "Postmortem trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_PM_HIT->EnumLabels: No,\ 
+lmbf/processor/l/TRG_MEM_PM_HIT->description: "Postmortem trigger source"
+lmbf/processor/l/TRG_MEM_PM_HIT->EnumLabels: No,\ 
                                                          Yes
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ0_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ0_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/TRG_MEM_SEQ0_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/TRG_MEM_SEQ0_BL_S->EnumLabels: All,\ 
                                                             Blanking
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ0_EN_S->description: "Enable I SEQ event input"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ0_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/TRG_MEM_SEQ0_EN_S->description: "Enable I SEQ event input"
+lmbf/processor/l/TRG_MEM_SEQ0_EN_S->EnumLabels: Ignore,\ 
                                                             Enable
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ0_HIT->description: "I SEQ event source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ0_HIT->EnumLabels: No,\ 
+lmbf/processor/l/TRG_MEM_SEQ0_HIT->description: "I SEQ event source"
+lmbf/processor/l/TRG_MEM_SEQ0_HIT->EnumLabels: No,\ 
                                                            Yes
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ1_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ1_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/TRG_MEM_SEQ1_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/TRG_MEM_SEQ1_BL_S->EnumLabels: All,\ 
                                                             Blanking
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ1_EN_S->description: "Enable Q SEQ event input"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ1_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/TRG_MEM_SEQ1_EN_S->description: "Enable Q SEQ event input"
+lmbf/processor/l/TRG_MEM_SEQ1_EN_S->EnumLabels: Ignore,\ 
                                                             Enable
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ1_HIT->description: "Q SEQ event source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SEQ1_HIT->EnumLabels: No,\ 
+lmbf/processor/l/TRG_MEM_SEQ1_HIT->description: "Q SEQ event source"
+lmbf/processor/l/TRG_MEM_SEQ1_HIT->EnumLabels: No,\ 
                                                            Yes
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SOFT_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SOFT_BL_S->EnumLabels: All,\ 
+lmbf/processor/l/TRG_MEM_SOFT_BL_S->description: "Enable blanking for trigger source"
+lmbf/processor/l/TRG_MEM_SOFT_BL_S->EnumLabels: All,\ 
                                                             Blanking
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SOFT_EN_S->description: "Enable Soft trigger input"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SOFT_EN_S->EnumLabels: Ignore,\ 
+lmbf/processor/l/TRG_MEM_SOFT_EN_S->description: "Enable Soft trigger input"
+lmbf/processor/l/TRG_MEM_SOFT_EN_S->EnumLabels: Ignore,\ 
                                                             Enable
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SOFT_HIT->description: "Soft trigger source"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_SOFT_HIT->EnumLabels: No,\ 
+lmbf/processor/l/TRG_MEM_SOFT_HIT->description: "Soft trigger source"
+lmbf/processor/l/TRG_MEM_SOFT_HIT->EnumLabels: No,\ 
                                                            Yes
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_STATUS->description: "Trigger target status"
-sr/d-mfdbk/utca-longitudinal/TRG_MEM_STATUS->EnumLabels: Idle,\ 
+lmbf/processor/l/TRG_MEM_STATUS->description: "Trigger target status"
+lmbf/processor/l/TRG_MEM_STATUS->EnumLabels: Idle,\ 
                                                          Armed,\ 
                                                          Busy,\ 
                                                          Locked
-sr/d-mfdbk/utca-longitudinal/TRG_MODE_S->description: "Shared trigger mode"
-sr/d-mfdbk/utca-longitudinal/TRG_MODE_S->EnumLabels: "One Shot",\ 
+lmbf/processor/l/TRG_MODE_S->description: "Shared trigger mode"
+lmbf/processor/l/TRG_MODE_S->EnumLabels: "One Shot",\ 
                                                      Rearm
-sr/d-mfdbk/utca-longitudinal/TRG_PM_IN->description: "Postmortem trigger input"
-sr/d-mfdbk/utca-longitudinal/TRG_PM_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_PM_IN->description: "Postmortem trigger input"
+lmbf/processor/l/TRG_PM_IN->EnumLabels: No,\ 
                                                     Yes
-sr/d-mfdbk/utca-longitudinal/TRG_SEQ0_IN->description: "I SEQ event input"
-sr/d-mfdbk/utca-longitudinal/TRG_SEQ0_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_SEQ0_IN->description: "I SEQ event input"
+lmbf/processor/l/TRG_SEQ0_IN->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/TRG_SEQ1_IN->description: "Q SEQ event input"
-sr/d-mfdbk/utca-longitudinal/TRG_SEQ1_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_SEQ1_IN->description: "Q SEQ event input"
+lmbf/processor/l/TRG_SEQ1_IN->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/TRG_SHARED->description: "List of shared targets"
-sr/d-mfdbk/utca-longitudinal/TRG_SOFT_IN->description: "Soft trigger input"
-sr/d-mfdbk/utca-longitudinal/TRG_SOFT_IN->EnumLabels: No,\ 
+lmbf/processor/l/TRG_SHARED->description: "List of shared targets"
+lmbf/processor/l/TRG_SOFT_IN->description: "Soft trigger input"
+lmbf/processor/l/TRG_SOFT_IN->EnumLabels: No,\ 
                                                       Yes
-sr/d-mfdbk/utca-longitudinal/TRG_SOFT_S->description: "Soft trigger"
-sr/d-mfdbk/utca-longitudinal/TRG_STATUS->description: "Shared trigger target status"
-sr/d-mfdbk/utca-longitudinal/TRG_STATUS->EnumLabels: Idle,\ 
+lmbf/processor/l/TRG_SOFT_S->description: "Soft trigger"
+lmbf/processor/l/TRG_STATUS->description: "Shared trigger target status"
+lmbf/processor/l/TRG_STATUS->EnumLabels: Idle,\ 
                                                      Armed,\ 
                                                      Locked,\ 
                                                      Busy,\ 

@@ -3,18 +3,18 @@
 #
 
 #---------------------------------------------------------
-# SERVER Tango2Epics/mfdbk-tunev, Tango2Epics device declaration
+# SERVER Tango2Epics/tmbf-tune-v, Tango2Epics device declaration
 #---------------------------------------------------------
 
-Tango2Epics/mfdbk-tunev/DEVICE/Tango2Epics: "sr/d-mtune/v"
+Tango2Epics/tmbf-tune-v/DEVICE/Tango2Epics: "tmbf/tune_fit/v"
 
 
-# --- sr/d-mtune/v properties
+# --- tmbf/tune_fit/v properties
 
-sr/d-mtune/v->ArrayAccessTimeout: 0.3
-sr/d-mtune/v->ScalarAccessTimeout: 0.2
-sr/d-mtune/v->SubscriptionCycle: 0.4
-sr/d-mtune/v->Variables: SR-TMBF:Y:TUNE:CENTRE:HEIGHT*Scalar*Double*READ_ONLY*ATTRIBUTE*CENTRE_HEIGHT,\ 
+tmbf/tune_fit/v->ArrayAccessTimeout: 0.3
+tmbf/tune_fit/v->ScalarAccessTimeout: 0.2
+tmbf/tune_fit/v->SubscriptionCycle: 0.4
+tmbf/tune_fit/v->Variables: SR-TMBF:Y:TUNE:CENTRE:HEIGHT*Scalar*Double*READ_ONLY*ATTRIBUTE*CENTRE_HEIGHT,\ 
                          SR-TMBF:Y:TUNE:CENTRE:PHASE*Scalar*Double*READ_ONLY*ATTRIBUTE*CENTRE_PHASE,\ 
                          SR-TMBF:Y:TUNE:CENTRE:POWER*Scalar*Double*READ_ONLY*ATTRIBUTE*CENTRE_POWER,\ 
                          SR-TMBF:Y:TUNE:CENTRE:TUNE*Scalar*Double*READ_ONLY*ATTRIBUTE*CENTRE_TUNE,\ 
@@ -62,67 +62,67 @@ sr/d-mtune/v->Variables: SR-TMBF:Y:TUNE:CENTRE:HEIGHT*Scalar*Double*READ_ONLY*AT
                          SR-TMBF:Y:TUNE:SYNCTUNE*Scalar*Double*READ_ONLY*ATTRIBUTE*SYNCTUNE,\ 
                          SR-TMBF:Y:TUNE:TUNE*Scalar*Double*READ_ONLY*ATTRIBUTE*TUNE
 
-# --- sr/d-mtune/v attribute properties
+# --- tmbf/tune_fit/v attribute properties
 
-sr/d-mtune/v/CENTRE_HEIGHT->description: "Peak height"
-sr/d-mtune/v/CENTRE_PHASE->description: "Peak phase"
-sr/d-mtune/v/CENTRE_PHASE->unit: deg
-sr/d-mtune/v/CENTRE_POWER->description: "Peak power"
-sr/d-mtune/v/CENTRE_TUNE->description: "Peak centre frequency"
-sr/d-mtune/v/CENTRE_VALID->description: "Peak valid"
-sr/d-mtune/v/CENTRE_VALID->EnumLabels: Invalid,\ 
+tmbf/tune_fit/v/CENTRE_HEIGHT->description: "Peak height"
+tmbf/tune_fit/v/CENTRE_PHASE->description: "Peak phase"
+tmbf/tune_fit/v/CENTRE_PHASE->unit: deg
+tmbf/tune_fit/v/CENTRE_POWER->description: "Peak power"
+tmbf/tune_fit/v/CENTRE_TUNE->description: "Peak centre frequency"
+tmbf/tune_fit/v/CENTRE_VALID->description: "Peak valid"
+tmbf/tune_fit/v/CENTRE_VALID->EnumLabels: Invalid,\ 
                                        Ok
-sr/d-mtune/v/CENTRE_WIDTH->description: "Peak width"
-sr/d-mtune/v/CONFIG_MAXIMUM_FIT_ERROR_S->description: "Reject overall fit if error this large"
-sr/d-mtune/v/CONFIG_MAXIMUM_FIT_ERROR_S->format: %.3f
-sr/d-mtune/v/CONFIG_MAX_PEAKS_S->description: "Maximum number of peaks to fit"
-sr/d-mtune/v/CONFIG_MAX_PEAKS_S->format: %1d
-sr/d-mtune/v/CONFIG_MAX_PEAKS_S->max_value: 5.0
-sr/d-mtune/v/CONFIG_MAX_PEAKS_S->min_value: 1.0
-sr/d-mtune/v/CONFIG_MINIMUM_HEIGHT_S->description: "Reject peaks shorter than this"
-sr/d-mtune/v/CONFIG_MINIMUM_HEIGHT_S->format: %.3f
-sr/d-mtune/v/CONFIG_MINIMUM_SPACING_S->description: "Reject peaks closer than this"
-sr/d-mtune/v/CONFIG_MINIMUM_SPACING_S->format: %.4f
-sr/d-mtune/v/CONFIG_MINIMUM_WIDTH_S->description: "Reject peaks narrower than this"
-sr/d-mtune/v/CONFIG_MINIMUM_WIDTH_S->format: %.2f
-sr/d-mtune/v/CONFIG_SMOOTHING_S->description: "Degree of smoothing for 2D peak detect"
-sr/d-mtune/v/CONFIG_SMOOTHING_S->format: %2d
-sr/d-mtune/v/CONFIG_SMOOTHING_S->max_value: 64.0
-sr/d-mtune/v/CONFIG_SMOOTHING_S->min_value: 8.0
-sr/d-mtune/v/LEFT_DPHASE->description: "Delta phase"
-sr/d-mtune/v/LEFT_DPHASE->unit: deg
-sr/d-mtune/v/LEFT_DTUNE->description: "Delta tune"
-sr/d-mtune/v/LEFT_HEIGHT->description: "Peak height"
-sr/d-mtune/v/LEFT_PHASE->description: "Peak phase"
-sr/d-mtune/v/LEFT_PHASE->unit: deg
-sr/d-mtune/v/LEFT_POWER->description: "Peak power"
-sr/d-mtune/v/LEFT_RHEIGHT->description: "Relative height"
-sr/d-mtune/v/LEFT_RPOWER->description: "Relative power"
-sr/d-mtune/v/LEFT_RWIDTH->description: "Relative width"
-sr/d-mtune/v/LEFT_TUNE->description: "Peak centre frequency"
-sr/d-mtune/v/LEFT_VALID->description: "Peak valid"
-sr/d-mtune/v/LEFT_VALID->EnumLabels: Invalid,\ 
+tmbf/tune_fit/v/CENTRE_WIDTH->description: "Peak width"
+tmbf/tune_fit/v/CONFIG_MAXIMUM_FIT_ERROR_S->description: "Reject overall fit if error this large"
+tmbf/tune_fit/v/CONFIG_MAXIMUM_FIT_ERROR_S->format: %.3f
+tmbf/tune_fit/v/CONFIG_MAX_PEAKS_S->description: "Maximum number of peaks to fit"
+tmbf/tune_fit/v/CONFIG_MAX_PEAKS_S->format: %1d
+tmbf/tune_fit/v/CONFIG_MAX_PEAKS_S->max_value: 5.0
+tmbf/tune_fit/v/CONFIG_MAX_PEAKS_S->min_value: 1.0
+tmbf/tune_fit/v/CONFIG_MINIMUM_HEIGHT_S->description: "Reject peaks shorter than this"
+tmbf/tune_fit/v/CONFIG_MINIMUM_HEIGHT_S->format: %.3f
+tmbf/tune_fit/v/CONFIG_MINIMUM_SPACING_S->description: "Reject peaks closer than this"
+tmbf/tune_fit/v/CONFIG_MINIMUM_SPACING_S->format: %.4f
+tmbf/tune_fit/v/CONFIG_MINIMUM_WIDTH_S->description: "Reject peaks narrower than this"
+tmbf/tune_fit/v/CONFIG_MINIMUM_WIDTH_S->format: %.2f
+tmbf/tune_fit/v/CONFIG_SMOOTHING_S->description: "Degree of smoothing for 2D peak detect"
+tmbf/tune_fit/v/CONFIG_SMOOTHING_S->format: %2d
+tmbf/tune_fit/v/CONFIG_SMOOTHING_S->max_value: 64.0
+tmbf/tune_fit/v/CONFIG_SMOOTHING_S->min_value: 8.0
+tmbf/tune_fit/v/LEFT_DPHASE->description: "Delta phase"
+tmbf/tune_fit/v/LEFT_DPHASE->unit: deg
+tmbf/tune_fit/v/LEFT_DTUNE->description: "Delta tune"
+tmbf/tune_fit/v/LEFT_HEIGHT->description: "Peak height"
+tmbf/tune_fit/v/LEFT_PHASE->description: "Peak phase"
+tmbf/tune_fit/v/LEFT_PHASE->unit: deg
+tmbf/tune_fit/v/LEFT_POWER->description: "Peak power"
+tmbf/tune_fit/v/LEFT_RHEIGHT->description: "Relative height"
+tmbf/tune_fit/v/LEFT_RPOWER->description: "Relative power"
+tmbf/tune_fit/v/LEFT_RWIDTH->description: "Relative width"
+tmbf/tune_fit/v/LEFT_TUNE->description: "Peak centre frequency"
+tmbf/tune_fit/v/LEFT_VALID->description: "Peak valid"
+tmbf/tune_fit/v/LEFT_VALID->EnumLabels: Invalid,\ 
                                      Ok
-sr/d-mtune/v/LEFT_WIDTH->description: "Peak width"
-sr/d-mtune/v/PHASE->description: "Measured tune phase"
-sr/d-mtune/v/PHASE->unit: deg
-sr/d-mtune/v/RIGHT_DPHASE->description: "Delta phase"
-sr/d-mtune/v/RIGHT_DPHASE->unit: deg
-sr/d-mtune/v/RIGHT_DTUNE->description: "Delta tune"
-sr/d-mtune/v/RIGHT_HEIGHT->description: "Peak height"
-sr/d-mtune/v/RIGHT_PHASE->description: "Peak phase"
-sr/d-mtune/v/RIGHT_PHASE->unit: deg
-sr/d-mtune/v/RIGHT_POWER->description: "Peak power"
-sr/d-mtune/v/RIGHT_RHEIGHT->description: "Relative height"
-sr/d-mtune/v/RIGHT_RPOWER->description: "Relative power"
-sr/d-mtune/v/RIGHT_RWIDTH->description: "Relative width"
-sr/d-mtune/v/RIGHT_TUNE->description: "Peak centre frequency"
-sr/d-mtune/v/RIGHT_VALID->description: "Peak valid"
-sr/d-mtune/v/RIGHT_VALID->EnumLabels: Invalid,\ 
+tmbf/tune_fit/v/LEFT_WIDTH->description: "Peak width"
+tmbf/tune_fit/v/PHASE->description: "Measured tune phase"
+tmbf/tune_fit/v/PHASE->unit: deg
+tmbf/tune_fit/v/RIGHT_DPHASE->description: "Delta phase"
+tmbf/tune_fit/v/RIGHT_DPHASE->unit: deg
+tmbf/tune_fit/v/RIGHT_DTUNE->description: "Delta tune"
+tmbf/tune_fit/v/RIGHT_HEIGHT->description: "Peak height"
+tmbf/tune_fit/v/RIGHT_PHASE->description: "Peak phase"
+tmbf/tune_fit/v/RIGHT_PHASE->unit: deg
+tmbf/tune_fit/v/RIGHT_POWER->description: "Peak power"
+tmbf/tune_fit/v/RIGHT_RHEIGHT->description: "Relative height"
+tmbf/tune_fit/v/RIGHT_RPOWER->description: "Relative power"
+tmbf/tune_fit/v/RIGHT_RWIDTH->description: "Relative width"
+tmbf/tune_fit/v/RIGHT_TUNE->description: "Peak centre frequency"
+tmbf/tune_fit/v/RIGHT_VALID->description: "Peak valid"
+tmbf/tune_fit/v/RIGHT_VALID->EnumLabels: Invalid,\ 
                                       Ok
-sr/d-mtune/v/RIGHT_WIDTH->description: "Peak width"
-sr/d-mtune/v/SYNCTUNE->description: "Synchrotron tune"
-sr/d-mtune/v/TUNE->description: "Measured tune"
+tmbf/tune_fit/v/RIGHT_WIDTH->description: "Peak width"
+tmbf/tune_fit/v/SYNCTUNE->description: "Synchrotron tune"
+tmbf/tune_fit/v/TUNE->description: "Measured tune"
 
 #---------------------------------------------------------
 # CLASS Tango2Epics properties
