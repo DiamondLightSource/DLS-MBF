@@ -483,9 +483,9 @@ void hw_write_trigger_enable_mask(
                     ctrl_mirror.trg_config_trig_seq0);
                 break;
             case TRIGGER_SEQ1:
-                ctrl_mirror.trg_config_trig_seq0.enable = source_mask & 0x7F;
-                WRITEL(ctrl_regs->trg_config_trig_seq0,
-                    ctrl_mirror.trg_config_trig_seq0);
+                ctrl_mirror.trg_config_trig_seq1.enable = source_mask & 0x7F;
+                WRITEL(ctrl_regs->trg_config_trig_seq1,
+                    ctrl_mirror.trg_config_trig_seq1);
                 break;
             case TRIGGER_DRAM:
                 ctrl_mirror.trg_config_trig_dram.enable = source_mask & 0x7F;
