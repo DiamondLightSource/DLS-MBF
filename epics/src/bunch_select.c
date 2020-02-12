@@ -144,10 +144,15 @@ static void fir_name(int fir, char result[])
 static void out_name(int out, char result[])
 {
     const char *out_names[] = {
-        "Off",          "FIR",          "NCO",          "NCO+FIR",
-        "Sweep",        "Sw+FIR",       "Sw+NCO",       "Sw+N+F",
-        "Tune PLL",     "PLL+FIR",      "PLL+NCO",      "PLL+NCO+FIR",
-        "PLL+Sweep",    "PLL+Sw+FIR",   "PLL+Sw+NCO",   "PLL+Sw+N+F" };
+        "Off",          "FIR",          "NCO1",         "NCO1+FIR",
+        "Sweep",        "Sw+FIR",       "Sw+NCO1",      "Sw+N1+F",
+        "Tune PLL",     "PLL+FIR",      "PLL+NCO1",     "PLL+NCO1+FIR",
+        "PLL+Sweep",    "PLL+Sw+FIR",   "PLL+Sw+NCO1",  "PLL+Sw+N1+F",
+        "NCO2",         "FIR+NCO2",     "NCO1+NCO2",    "NCO1+FIR+NCO2",
+        "Sweep+NCO2",   "Sw+FIR+NCO2",  "Sw+NCO1+NCO2", "Sw+N1+F+N2",
+        "Tune PLL+NCO2", "PLL+FIR+NCO2", "PLL+NCO1+NCO2", "PLL+N1+FIR+N2",
+        "PLL+Sweep+NCO2", "PLL+Sw+FIR+N2", "PLL+Sw+N1+N2",  "PLL+Sw+N1+F+N2"
+    };
     ASSERT_OK(0 <= out  &&  out < (int) ARRAY_SIZE(out_names));
     sprintf(result, "%s", out_names[out]);
 }
@@ -255,7 +260,7 @@ static void write_out_wf(void *context, char out_enable[], unsigned int *length)
      * synchronous, so no offset conversion is required here. */
     FOR_BUNCHES(i)
     {
-        out_enable[i] = out_enable[i] & 0xF;
+        out_enable[i] = out_enable[i] & 0x1F;
         bank->config.fir_enable[i] = out_enable[i] & 1;
         bank->config.nco0_enable[i] = (out_enable[i] >> 1) & 1;
         bank->config.nco1_enable[i] = (out_enable[i] >> 2) & 1;
@@ -365,7 +370,7 @@ static void publish_bank(unsigned int ix, struct bunch_bank *bank)
         PUBLISH(bo, "GAINWF:SET", update_gain_waveform, .context = bank);
 
         PUBLISH_WRITE_VAR(mbbo, "FIR_SELECT", bank->fir_select);
-        PUBLISH_WRITE_VAR(mbbo, "DAC_SELECT", bank->dac_select);
+        PUBLISH_WRITE_VAR(ulongout, "DAC_SELECT", bank->dac_select);
         PUBLISH_WRITE_VAR(ao, "GAIN_SELECT", bank->gain_select);
 
         /* Initialise the bunch set and set a sensible default gain. */

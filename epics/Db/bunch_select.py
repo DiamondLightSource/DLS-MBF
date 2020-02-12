@@ -34,8 +34,7 @@ def bank_pvs(bank):
     # PVs for setting waveforms via user interface
     mbbOut('FIR_SELECT', 'FIR 0', 'FIR 1', 'FIR 2', 'FIR 3',
         DESC = 'Select FIR setting')
-    mbbOut('DAC_SELECT', *dac_select('FIR', 'NCO', 'Sweep', 'PLL'),
-        DESC = 'Select DAC output')
+    longOut('DAC_SELECT', 0, 31, DESC = 'Select DAC output')
     aOut('GAIN_SELECT', PREC = 5, DESC = 'Select bunch gain')
 
     stringOut('BUNCH_SELECT', DESC = 'Select bunch to set',

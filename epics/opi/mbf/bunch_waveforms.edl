@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2999
-y 285
+x 2263
+y 20
 w 648
 h 616
 font "helvetica-medium-r-18.0"
@@ -209,7 +209,7 @@ y 200
 w 488
 h 160
 # Appearance
-graphTitle "Output Selection: 1=FIR, 2=NCO, 4=Sweep, 8=Tune PLL"
+graphTitle "Output Selection: 1=FIR, 2=NCO1, 4=Sweep, 8=Tune PLL, 16=NCO2"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -225,7 +225,7 @@ xMax 1024
 showYAxis
 yAxisSrc "fromUser"
 yMin -0.5
-yMax 15.5
+yMax 32
 # Y2 axis properties
 y2AxisSrc "AutoScale"
 y2Max 1
@@ -745,25 +745,6 @@ controlPv "$(device):$(axis):BUN:$(bank):FIR_SELECT_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 512
-y 224
-w 112
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):BUN:$(bank):DAC_SELECT_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
 # (Message Button)
 object activeMessageButtonClass
 beginObjectProperties
@@ -896,5 +877,33 @@ botShadowColor index 11
 label "EXIT"
 font "helvetica-bold-r-12.0"
 3d
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 512
+y 224
+w 104
+h 20
+controlPv "$(device):$(axis):BUN:$(bank):DAC_SELECT_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
 endObjectProperties
 
