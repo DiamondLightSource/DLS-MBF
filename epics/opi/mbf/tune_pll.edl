@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 125
-y 104
+x 987
+y 288
 w 671
 h 704
 font "helvetica-medium-r-18.0"
@@ -590,25 +590,6 @@ newPos
 inputFocusUpdates
 objType "controls"
 noExecuteClipMask
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 208
-y 320
-w 86
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):PLL:NCO:GAIN_S"
-font "helvetica-medium-r-12.0"
 endObjectProperties
 
 # (Static Text)
@@ -2145,5 +2126,62 @@ showUnits
 newPos
 objType "monitors"
 noExecuteClipMask
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 200
+y 320
+w 88
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 3
+botShadowColor index 3
+font "helvetica-bold-r-12.0"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/nco_gain.edl"
+}
+setPosition {
+  0 "button"
+}
+symbols {
+  0 "nco=$(device):$(axis):PLL:NCO"
+}
+replaceSymbols {
+  0 1
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 208
+y 324
+w 72
+h 16
+controlPv "$(device):$(axis):PLL:NCO:GAIN_DB_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+showUnits
+newPos
+objType "monitors"
 endObjectProperties
 

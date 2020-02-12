@@ -228,8 +228,20 @@ struct mms_result {
     uint64_t *sum2;         // Sum of squares of bunch
 };
 
+
+/* Fixed NCO configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+enum fixed_nco {
+    FIXED_NCO1,
+    FIXED_NCO2
+};
+
 /* Directly sets the fixed frequency oscillator. */
-void hw_write_nco0_frequency(int axis, uint64_t frequency);
+void hw_write_nco_frequency(int axis, enum fixed_nco nco, uint64_t frequency);
+
+/* Set output NCO gain and enable tune PLL tracking. */
+void hw_write_nco_gain(int axis, enum fixed_nco nco, unsigned int gain);
+void hw_write_nco_track_pll(int axis, enum fixed_nco nco, bool enable);
 
 
 /* ADC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -272,9 +284,10 @@ struct bunch_config {
     char *fir_select;       // Select FIR for this bunch
     int *gain;              // Output gain for this bunch
     bool *fir_enable;       // Enable FIR output for this bunch
-    bool *nco0_enable;      // Enable NCO0 output for this bunch
+    bool *nco0_enable;      // Enable NCO0 output (fixed NCO #1) for this bunch
     bool *nco1_enable;      // Enable NCO1 output (swept NCO) for this bunch
     bool *nco2_enable;      // Enable NCO2 output (Tune PLL NCO) for this bunch
+    bool *nco3_enable;      // Enable NCO3 output (fixed NCO #2) for this bunch
 };
 
 /* Write bunch configuration. */
@@ -309,10 +322,6 @@ void hw_write_dac_delay(int axis, unsigned int delay);
 /* Set output FIR gain. */
 void hw_write_dac_fir_gain(int axis, unsigned int gain);
 
-/* Set output NCO0 gain and enable. */
-void hw_write_dac_nco0_gain(int axis, unsigned int gain);
-void hw_write_dac_nco0_enable(int axis, bool enable);
-
 /* Set output source for DAC memory and MMS. */
 enum dac_mms_source {
     DAC_MMS_BEFORE_PREEMPH,
@@ -342,7 +351,6 @@ struct seq_entry {
     unsigned int bunch_bank;        // Bunch bank selection
     unsigned int nco_gain;          // Sweep output gain
     unsigned int window_rate;       // Detector window advance frequency
-    bool nco_enable;                // Enable sweep output
     bool enable_window;             // Enable detector windowing
     bool write_enable;              // Enable data capture of sequence
     bool enable_blanking;           // Observe trigger holdoff control
@@ -426,9 +434,8 @@ void hw_write_pll_nco_frequency(int axis, uint64_t frequency);
 /* Reads current Tune PLL frequency. */
 uint64_t hw_read_pll_nco_frequency(int axis);
 
-/* Control over Tune PLL NCO gain and enable. */
+/* Control over Tune PLL NCO gain. */
 void hw_write_pll_nco_gain(int axis, unsigned int gain);
-void hw_write_pll_nco_enable(int axis, bool enable);
 
 /* Control over operational parameters. */
 void hw_write_pll_dwell_time(int axis, unsigned int dwell);

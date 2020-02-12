@@ -215,6 +215,7 @@ void hw_write_lmbf_mode(bool lmbf_mode)
         ctrl_mirror.control.nco0_mux = lmbf_mode;
         ctrl_mirror.control.nco1_mux = lmbf_mode;
         ctrl_mirror.control.nco2_mux = lmbf_mode;
+        ctrl_mirror.control.nco3_mux = lmbf_mode;
         ctrl_mirror.control.bank_mux = lmbf_mode;
         WRITEL(ctrl_regs->control, ctrl_mirror.control);
     }
@@ -561,12 +562,54 @@ static void read_mms(
 }
 
 
-void hw_write_nco0_frequency(int axis, uint64_t frequency)
+/* Fixed NCO configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+void hw_write_nco_frequency(int axis, enum fixed_nco nco, uint64_t frequency)
 {
-    WRITEL(dsp_regs[axis]->nco0.low, frequency & 0xFFFFFFFF);
-    WRITE_FIELDS(dsp_regs[axis]->nco0.high,
+    volatile struct nco_freq *nco_freq = NULL;
+    switch (nco)
+    {
+        case FIXED_NCO1:
+            nco_freq = &dsp_regs[axis]->fixed_nco_nco1_freq;
+            break;
+        case FIXED_NCO2:
+            nco_freq = &dsp_regs[axis]->fixed_nco_nco2_freq;
+            break;
+    }
+    WRITEL(nco_freq->low, frequency & 0xFFFFFFFF);
+    WRITE_FIELDS(nco_freq->high,
         .bits = (frequency >> 32) & 0xFFFF,
         .reset_phase = frequency == 0);
+}
+
+
+void hw_write_nco_gain(int axis, enum fixed_nco nco, unsigned int gain)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        switch (nco)
+        {
+            case FIXED_NCO1:
+                WRITE_DSP_MIRROR(axis, fixed_nco_nco1, .gain = gain & 0x3FFFF);
+                break;
+            case FIXED_NCO2:
+                WRITE_DSP_MIRROR(axis, fixed_nco_nco2, .gain = gain & 0x3FFFF);
+                break;
+        }
+}
+
+
+void hw_write_nco_track_pll(int axis, enum fixed_nco nco, bool enable)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        switch (nco)
+        {
+            case FIXED_NCO1:
+                WRITE_DSP_MIRROR(axis, fixed_nco_nco1, .ena_tune_pll = enable);
+                break;
+            case FIXED_NCO2:
+                WRITE_DSP_MIRROR(axis, fixed_nco_nco2, .ena_tune_pll = enable);
+                break;
+        }
 }
 
 
@@ -649,7 +692,8 @@ void hw_write_bunch_config(
                 .fir_enable = config->fir_enable[i],
                 .nco0_enable = config->nco0_enable[i],
                 .nco1_enable = config->nco1_enable[i],
-                .nco2_enable = config->nco2_enable[i]);
+                .nco2_enable = config->nco2_enable[i],
+                .nco3_enable = config->nco3_enable[i]);
         }
     }
 }
@@ -707,18 +751,6 @@ void hw_write_dac_fir_gain(int axis, unsigned int gain)
 {
     WITH_MUTEX(dsp_locks[axis])
         WRITE_DSP_MIRROR(axis, dac_config, .fir_gain = gain & 0xF);
-}
-
-void hw_write_dac_nco0_gain(int axis, unsigned int gain)
-{
-    WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, .nco0_gain = gain & 0xF);
-}
-
-void hw_write_dac_nco0_enable(int axis, bool enable)
-{
-    WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, .nco0_enable = enable);
 }
 
 void hw_write_dac_mms_source(int axis, enum dac_mms_source source)
@@ -782,11 +814,10 @@ static void write_sequencer_state(int axis, const struct seq_entry *entry)
         .capture = (entry->capture_count - 1) & 0xFFFF);
     WRITE_FIELDS(target->config,
         .bank = entry->bunch_bank & 0x3,
-        .nco_gain = entry->nco_gain & 0xF,
+        .nco_gain = entry->nco_gain & 0x3FFFF,
         .ena_window = entry->enable_window,
         .ena_write = entry->write_enable,
         .ena_blank = entry->enable_blanking,
-        .ena_nco = entry->nco_enable,
         .reset_phase = entry->reset_phase,
         .ena_tune_pll = entry->use_tune_pll);
     WRITEL(target->window_rate, entry->window_rate);
@@ -992,16 +1023,8 @@ uint64_t hw_read_pll_nco_frequency(int axis)
 void hw_write_pll_nco_gain(int axis, unsigned int gain)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            .nco_gain = gain & 0xF);
-}
-
-
-void hw_write_pll_nco_enable(int axis, bool enable)
-{
-    WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, tune_pll_control_config,
-            .nco_enable = enable);
+        WRITE_DSP_MIRROR(axis, tune_pll_control_config_extra,
+            .nco_gain = gain & 0x3FFFF);
 }
 
 

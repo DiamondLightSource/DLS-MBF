@@ -21,6 +21,7 @@
 #include "trigger_target.h"
 #include "detector.h"
 #include "bunch_select.h"
+#include "nco.h"
 
 #include "sequencer.h"
 
@@ -187,6 +188,14 @@ static bool write_dwell_time(void *context, unsigned int *value)
 }
 
 
+/* This function is called each time the gain is changed. */
+static void set_seq_nco_gain(void *context, unsigned int gain)
+{
+    struct seq_entry *entry = context;
+    entry->nco_gain = gain;
+}
+
+
 static void publish_bank(int ix, struct sequencer_bank *bank)
 {
     char prefix[4];
@@ -195,8 +204,6 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
     {
         struct seq_entry *entry = bank->entry;
         PUBLISH_WRITE_VAR_P(mbbo, "BANK", entry->bunch_bank);
-        PUBLISH_WRITE_VAR_P(mbbo, "GAIN", entry->nco_gain);
-        PUBLISH_WRITE_VAR_P(bo, "ENABLE", entry->nco_enable);
         PUBLISH_WRITE_VAR_P(bo, "ENWIN", entry->enable_window);
         PUBLISH_WRITE_VAR_P(bo, "CAPTURE", entry->write_enable);
         PUBLISH_WRITE_VAR_P(bo, "BLANK", entry->enable_blanking);
@@ -212,6 +219,8 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
         bank->delta_freq_rec =
             PUBLISH_C_P(ao, "STEP_FREQ", write_step_freq, bank);
         bank->end_freq_rec = PUBLISH_C(ao, "END_FREQ", write_end_freq, bank);
+
+        create_gain_manager(entry, set_seq_nco_gain);
     }
 }
 
@@ -515,7 +524,7 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
         status = "Super sequencer active";
     else if (seq->seq_config.sequencer_pc > 1)
         status = "Multi-state sequencer";
-    else if (!entry0->nco_enable)
+    else if (entry0->nco_gain == 0)
         status = "Sequencer NCO off";
     else if (!det_config->enable  ||
              count_bunches_equal_to(true, det_config->bunch_enables) == 0)

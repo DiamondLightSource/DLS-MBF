@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2585
-y 610
+x 333
+y 551
 w 646
 h 190
 font "helvetica-medium-r-18.0"
@@ -143,9 +143,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 384
+x 392
 y 0
-w 86
+w 80
 h 22
 fgColor index 14
 bgColor index 3
@@ -153,25 +153,6 @@ inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
 controlPv "$(device):$(axis):SEQ:$(state):BANK_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 248
-y 0
-w 70
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):SEQ:$(state):GAIN_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -338,7 +319,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 320
+x 336
 y 0
 w 48
 h 22
@@ -396,5 +377,63 @@ topShadowColor index 1
 botShadowColor index 11
 controlPv "$(device):$(axis):SEQ:$(state):TUNE_PLL_S"
 font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 248
+y 0
+w 80
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 3
+botShadowColor index 3
+font "helvetica-bold-r-12.0"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/nco_gain.edl"
+}
+setPosition {
+  0 "button"
+}
+symbols {
+  0 "nco=$(device):$(axis):SEQ:$(state)"
+}
+replaceSymbols {
+  0 1
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 248
+y 2
+w 80
+h 16
+controlPv "$(device):$(axis):SEQ:$(state):GAIN_DB_S"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+showUnits
+newPos
+objType "monitors"
 endObjectProperties
 

@@ -10,7 +10,9 @@
 /* This macro is a little tricky: it's intended to be used for iterating over
  * the set of axis names together with a prefix thus:
  *
- *  FOR_AXIS_NAME(axis, "ADC") { create pvs ...; }
+ *  FOR_AXIS_NAMES(axis, "ADC") { create pvs ...; }
+ * or
+ *  FOR_AXIS_NAMES(axis, "ADC", lmbf_mode) { create pvs ...; }
  *
  * The trickery is in the calling of the exit and enter methods. */
 #define FOR_AXIS_NAMES(axis, prefix, mode...) \
