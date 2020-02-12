@@ -128,8 +128,6 @@ begin
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_SELECT_BITS);
     config_o.detector_shift <= unsigned(
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_DET_SHIFT_BITS));
-    config_o.nco_gain <= unsigned(
-        config_register(DSP_TUNE_PLL_CONTROL_CONFIG_EXTRA_NCO_GAIN_BITS));
     config_o.filter_cordic <=
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_FILTER_CORDIC_BIT);
     config_o.capture_cordic <=
@@ -140,6 +138,8 @@ begin
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_OFFSET_OVERRIDE_BIT);
     config_o.blanking_enable <=
         config_register(DSP_TUNE_PLL_CONTROL_CONFIG_BLANKING_BIT);
+    config_o.nco_gain <= unsigned(
+        config_extra_register(DSP_TUNE_PLL_CONTROL_CONFIG_EXTRA_NCO_GAIN_BITS));
 
     status_register <= (
         DSP_TUNE_PLL_CONTROL_STATUS_RUNNING_BIT =>
