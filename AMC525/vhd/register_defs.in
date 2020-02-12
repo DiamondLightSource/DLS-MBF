@@ -767,21 +767,18 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             # feedback is running may confuse the controller.
             :NCO_FREQ
             *RW
-                # General status
+                # General status.  The stop bits record why the PLL has stopped
+                # operation.
                 STATUS      R
                     # Set if feedback currently enabled
                     .RUNNING
-                    # The following bits are stop reasons, recorded why the PLL
-                    # has stopped operation.
-                    #
-                    # This bit is set if stop was requested.
+                    # Set if stop was requested
                     .STOP_STOP
-                    # This bit is set if the detector overflowed
+                    # Set if the detector overflowed
                     .STOP_OVERFLOW
-                    # This bit is set if the detector magnitude is too small
+                    # Set if the detector magnitude is too small
                     .STOP_MAGNITUDE
-                    # This bit is set if the frequency offset has grown too
-                    # large.
+                    # Set if the frequency offset has grown too large
                     .STOP_OFFSET
                 # General configuration settings
                 CONFIG      W
