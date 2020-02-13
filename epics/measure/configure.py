@@ -127,11 +127,11 @@ class DRAM:
 
     def get_peaks(self, sources, nco_freq = 0):
         if nco_freq:
-            self.mbf.set('NCO:FREQ_S', nco_freq)
+            self.mbf.set('NCO1:FREQ_S', nco_freq)
         a, b = self.get(sources)
         peaks = self.mbf.find_one_peak(a), self.mbf.find_one_peak(b)
         if nco_freq:
-            self.mbf.set('NCO:FREQ_S', 0)
+            self.mbf.set('NCO1:FREQ_S', 0)
         return peaks
 
     def __del__(self):

@@ -19,9 +19,10 @@ class DAC_OUT:
     # Any combination of the values below is valid for a DAC output selection
     OFF = 0
     FIR = 1
-    NCO = 2
+    NCO1 = 2
     SWEEP = 4
     PLL = 8
+    NCO2 = 16
 
 # We will work with two predefined FIR settings
 FIR_UNIT = 0
@@ -91,11 +92,11 @@ def configure_timing_test(mbf, compensate = False):
     mbf.fir_wf(FIR_UNIT, unit_fir(mbf.bunch_taps))
     mbf.fir_wf(FIR_ZERO, numpy.zeros(mbf.bunch_taps))
 
-    # Configure NCO for DC output at maximum gain: this makes a useful pulse
+    # Configure NCO1 for DC output at maximum gain: this makes a useful pulse
     # source when routed into a single bunch.
-    mbf.set('NCO:FREQ_S', 0)
-    mbf.set('NCO:GAIN_S', '0dB')
-    mbf.set('NCO:ENABLE_S', 'On')
+    mbf.set('NCO1:FREQ_S', 0)
+    mbf.set('NCO1:GAIN_S', '0dB')
+    mbf.set('NCO1:ENABLE_S', 'On')
 
     # Reset detector window in case it's been messed with
     mbf.set('SEQ:RESET_WIN_S.PROC', 0)
@@ -179,10 +180,10 @@ def find_second_peak(value):
 @MBF.method
 def find_mms_peak(mbf, mms, nco_freq = 0):
     if nco_freq:
-        mbf.set('NCO:FREQ_S', nco_freq)
+        mbf.set('NCO1:FREQ_S', nco_freq)
     peak = mbf.find_one_peak(mms.get_new(0.25))
     if nco_freq:
-        mbf.set('NCO:FREQ_S', 0)
+        mbf.set('NCO1:FREQ_S', 0)
     return peak
 
 
@@ -190,10 +191,10 @@ def find_mms_peak(mbf, mms, nco_freq = 0):
 # Configuration functions
 
 
-# Configure bank for single pulse output from NCO
+# Configure bank for single pulse output from NCO1
 @MBF.method
 def configure_dac_single_pulse(mbf):
-    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO, DAC_OUT.OFF))
+    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO1, DAC_OUT.OFF))
 
 
 # Configure for closed loop delay measurement: pass all data except reference
@@ -202,7 +203,7 @@ def configure_dac_single_pulse(mbf):
 def configure_dac_measure_loop(mbf):
     mbf.set('DAC:DELAY_S', 0)
     mbf.set('FIR:GAIN_S', '0dB')
-    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO, DAC_OUT.FIR))
+    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO1, DAC_OUT.FIR))
 
 
 # Fetch DRAM buffer
@@ -249,7 +250,7 @@ def search_det_bunch(mbf, det_power, source, nco_freq = 0):
     # Configure source
     mbf.set('DET:SELECT_S', source)
     if nco_freq:
-        mbf.set('NCO:FREQ_S', nco_freq)
+        mbf.set('NCO1:FREQ_S', nco_freq)
 
     def measure():
         # Fire a capture
@@ -261,7 +262,7 @@ def search_det_bunch(mbf, det_power, source, nco_freq = 0):
     return search_detector_bunch(mbf, 'DET:0:BUNCHES_S', measure)
 
     if nco_freq:
-        mbf.set('NCO:FREQ_S', 0)
+        mbf.set('NCO1:FREQ_S', 0)
     return delay
 
 
@@ -392,9 +393,9 @@ def measure_dac_mms(mbf, results):
     mbf.set('ADC:MMS_SOURCE_S', 'FIR no fill')
     results.MMS_ADC_REJECT_DELAY = mbf.find_mms_peak(maxadc, nco_freq = 0.51)
 
-    # Measure gain skew: configure NCO on all bunches, but unit gain only on
+    # Measure gain skew: configure NCO1 on all bunches, but unit gain only on
     # bunch zero, zero gain elsewhere.
-    mbf.bank_wf(0, mbf.one_bunch(1, 0), FIR_UNIT, DAC_OUT.NCO)
+    mbf.bank_wf(0, mbf.one_bunch(1, 0), FIR_UNIT, DAC_OUT.NCO1)
     results.BUNCH_GAIN_OFFSET = mbf.find_mms_peak(maxdac) - dac_minmax_delay
 
     # Now capture the extra FIR delay
@@ -437,7 +438,7 @@ def measure_dram(mbf, results):
 
     # Now work out the FIR select skew.  Output NCO0 on all bunches, only set
     # bunch zero to non zero FIR.
-    mbf.bank_wf(0, 1, mbf.one_bunch(FIR_UNIT, FIR_ZERO), DAC_OUT.NCO)
+    mbf.bank_wf(0, 1, mbf.one_bunch(FIR_UNIT, FIR_ZERO), DAC_OUT.NCO1)
     _, fir = dram.get('ADC0/FIR0')
     results.BUNCH_FIR_OFFSET = mbf.find_one_peak(fir) - base_fir_delay
 
@@ -447,7 +448,7 @@ def measure_det_bunch(mbf, results):
 
     # Set up sequencer to do a small short sweep.  We only sweep bunch 0
     mbf.state(1, bank = 0)
-    mbf.bank_wf(0, 1, 0, mbf.one_bunch(DAC_OUT.NCO, DAC_OUT.OFF))
+    mbf.bank_wf(0, 1, 0, mbf.one_bunch(DAC_OUT.NCO1, DAC_OUT.OFF))
 
     power = mbf.PV('DET:0:MAX_POWER')
 
