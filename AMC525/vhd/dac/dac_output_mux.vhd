@@ -153,7 +153,7 @@ begin
         overflow_o => fir_overflow_o
     );
     accum_signal(0) <= (
-        47 downto FIR_SHIFT_OFFSET => resize(scaled_fir, 48 - FIR_SHIFT_OFFSET),
+        47 downto FIR_INPUT_OFFSET => resize(scaled_fir, 48 - FIR_INPUT_OFFSET),
         others => '0');
 
     -- Accumulate all the NCOs

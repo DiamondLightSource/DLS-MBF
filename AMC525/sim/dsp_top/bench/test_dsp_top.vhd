@@ -20,7 +20,7 @@ architecture arch of testbench is
     constant TURN_COUNT : natural := 55;
     signal turn_clock : std_ulogic;
 
-    signal adc_data : signed(13 downto 0) := (others => '0');
+    signal adc_data : signed(13 downto 0) := 14X"1FFF";
     signal dac_data : signed(15 downto 0);
 
     signal write_strobe : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
@@ -50,7 +50,8 @@ begin
     process (adc_clk) begin
         if rising_edge(adc_clk) then
 --             adc_data <= dac_data(15 downto 2);  -- Loopback
-            adc_data <= adc_data + 1;
+--             adc_data <= adc_data + 1;
+            adc_data <= not adc_data;
         end if;
     end process;
 
@@ -145,8 +146,14 @@ begin
         write_reg(DSP_ADC_TAPS_REG, X"7FFFFFFF");
 
         -- Initialise DAC FIR
-        write_reg(DSP_DAC_COMMAND_REG_W,  X"00000001");
+        write_reg(DSP_DAC_COMMAND_REG_W, (
+            DSP_DAC_COMMAND_WRITE_BIT => '1',
+            others => '0'));
         write_reg(DSP_DAC_TAPS_REG, X"7FFFFFFF");
+
+        -- Initialise Bunch FIR
+        write_reg(DSP_FIR_CONFIG_REG_W, (others => '0'));
+        write_reg(DSP_FIR_TAPS_REG, X"7FFFFFFF");
 
         -- Set a sensible NCO frequency, reset the phase
         write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW, X"00000000");
@@ -165,6 +172,7 @@ begin
         for n in 1 to TURN_COUNT loop
             write_reg(DSP_BUNCH_BANK_REG, (
                 DSP_BUNCH_BANK_GAIN_BITS => 18X"01000",
+                DSP_BUNCH_BANK_FIR_ENABLE_BIT => '1',
                 DSP_BUNCH_BANK_NCO0_ENABLE_BIT => '1',
                 DSP_BUNCH_BANK_NCO3_ENABLE_BIT => '1',
                 others => '0'));
@@ -219,20 +227,16 @@ begin
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
 
-        -- We should be ready to go.  Now start the sequencer
+        -- We should be ready to go.  Start the sequencer
         control_to_dsp.seq_start <= '1';
-        clk_wait(dsp_clk, 1);
+        clk_wait(dsp_clk);
         control_to_dsp.seq_start <= '0';
-
-        -- Now wait for sequencer to start and finish
+        -- Wait for sequencer to start and finish
         wait until dsp_to_control.seq_busy = '1';
         wait until dsp_to_control.seq_busy = '0';
-        clk_wait(dsp_clk, 1);
+        clk_wait(dsp_clk);
 
-
-        -- Finish by enabling the second fixed NCO
-
-        -- Set a sensible NCO frequency, half gain
+        -- Enable second NCO
         write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW, X"00000000");
         write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW + 1, (
             NCO_FREQ_HIGH_BITS_BITS => X"0F00",
@@ -241,9 +245,18 @@ begin
             DSP_FIXED_NCO_NCO2_GAIN_BITS => 18X"0FFFF",
             others => '0'));
 
-        -- Let this run for 0.5us, then turn NCO1 off
-        wait for 0.5 us;
-        clk_wait(dsp_clk, 1);
+        -- Work through the FIR gain settings
+        for i in 0 to 15 loop
+            wait for 100 ns;
+            clk_wait(dsp_clk);
+            write_reg(DSP_DAC_CONFIG_REG, (
+                DSP_DAC_CONFIG_FIR_GAIN_BITS =>
+                    std_logic_vector(to_unsigned(i, 4)),
+                others => '0'));
+        end loop;
+
+        -- Finally turn NCO1 off
+        clk_wait(dsp_clk);
         write_reg(DSP_FIXED_NCO_NCO1_REG, (others => '0'));
 
         wait;

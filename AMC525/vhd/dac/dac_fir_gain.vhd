@@ -26,21 +26,26 @@ entity dac_fir_gain is
 end;
 
 architecture arch of dac_fir_gain is
+    signal data_in : data_o'SUBTYPE;
     signal shifted_data : data_o'SUBTYPE;
     signal shifted_data_out : data_o'SUBTYPE;
     signal fir_overflow : std_ulogic;
     signal data_out : data_o'SUBTYPE;
 
+    constant IN_WIDTH : natural := data_i'LENGTH;
+    constant OUT_WIDTH : natural := data_o'LENGTH;
     subtype OVERFLOW_RANGE is natural range
-        MMS_OFFSET + mms_o'LENGTH - 1 downto MMS_OFFSET;
+        OUT_WIDTH-1 downto MMS_OFFSET + mms_o'LENGTH - 1;
+    subtype SOURCE_RANGE is natural range
+        OUT_WIDTH-1 downto OUT_WIDTH - IN_WIDTH;
 
 begin
+    data_in <= (SOURCE_RANGE => data_i, others => '0');
     process (clk_i) begin
         if rising_edge(clk_i) then
             -- Compute output data and overflow detection together, we'll need
             -- this for the saturation stage.
-            shifted_data <=
-                shift_left(resize(data_i, data_o'LENGTH), to_integer(gain_i));
+            shifted_data <= shift_right(data_in, to_integer(gain_i));
             shifted_data_out <= shifted_data;
             fir_overflow <= overflow_detect(shifted_data(OVERFLOW_RANGE));
 
