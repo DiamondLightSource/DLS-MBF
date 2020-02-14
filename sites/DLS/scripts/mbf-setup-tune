@@ -254,7 +254,8 @@ put('BUN:1:GAINWF_S', BUNCH_ONES)
 
 
 # Disable all sequencer triggers and configure triggering on external trigger
-TRIGGER_SOURCES = ['SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1']
+TRIGGER_SOURCES = [
+    'SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1', 'DAC0', 'DAC1']
 for source in TRIGGER_SOURCES:
     put('TRG:SEQ:%s:EN_S' % source, 'Ignore')
 put('TRG:SEQ:EXT:EN_S', 'Enable')
