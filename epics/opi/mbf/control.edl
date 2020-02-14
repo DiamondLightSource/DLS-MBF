@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2051
-y 404
+x 2052
+y 405
 w 584
 h 481
 font "helvetica-medium-r-18.0"
@@ -673,7 +673,7 @@ minor 0
 release 0
 x 8
 y 376
-w 360
+w 400
 h 96
 lineColor index 14
 fill
@@ -686,7 +686,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 16
+x 64
 y 392
 w 62
 h 14
@@ -706,7 +706,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 120
+x 160
 y 392
 w 27
 h 14
@@ -726,7 +726,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 24
+x 64
 y 408
 w 88
 h 24
@@ -1114,7 +1114,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 216
+x 256
 y 408
 w 56
 h 24
@@ -1250,7 +1250,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 120
+x 160
 y 408
 w 88
 h 24
@@ -1281,7 +1281,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 280
+x 320
 y 408
 w 80
 h 24
@@ -1300,7 +1300,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 128
+x 168
 y 412
 w 72
 h 16
@@ -1326,7 +1326,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 280
+x 320
 y 392
 w 60
 h 14
@@ -1346,7 +1346,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 216
+x 256
 y 392
 w 39
 h 14
@@ -1366,7 +1366,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 24
+x 64
 y 440
 w 88
 h 20
@@ -1394,7 +1394,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 216
+x 256
 y 440
 w 56
 h 24
@@ -1413,7 +1413,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 120
+x 160
 y 440
 w 88
 h 24
@@ -1444,7 +1444,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 280
+x 320
 y 440
 w 80
 h 24
@@ -1463,7 +1463,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 128
+x 168
 y 444
 w 72
 h 16
@@ -1481,5 +1481,45 @@ useHexPrefix
 showUnits
 newPos
 objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 408
+w 34
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "NCO1"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 440
+w 34
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "NCO2"
+}
+autoSize
 endObjectProperties
 
