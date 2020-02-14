@@ -33,11 +33,6 @@ end;
 architecture arch of sequencer_clocking is
     signal turn_clock_adc : std_ulogic;
 
-    -- Local declarations just so we can assign default values of zero
-    signal detector_window_adc_out : detector_window_adc_o'SUBTYPE
-        := (others => '0');
-    signal bunch_bank_out : bunch_bank_o'SUBTYPE := (others => '0');
-
 begin
     -- Delay line on turn clock
     turn_clock_delay : entity work.dlyreg generic map (
@@ -69,12 +64,23 @@ begin
         pulse_o => seq_write_adc_o
     );
 
-    process (adc_clk_i) begin
-        if rising_edge(adc_clk_i) then
-            detector_window_adc_out <= detector_window_dsp_i;
-            bunch_bank_out <= bunch_bank_i;
-        end if;
-    end process;
-    detector_window_adc_o <= detector_window_adc_out;
-    bunch_bank_o <= bunch_bank_out;
+    -- Simultaneously delay and reclock bunch_bank
+    bank_delay : entity work.dlyline generic map (
+        DLY => 2,
+        DW => bunch_bank_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(bunch_bank_i),
+        unsigned(data_o) => bunch_bank_o
+    );
+
+    -- Reclock the detector window
+    window_delay : entity work.dlyline generic map (
+        DLY => 1,
+        DW => detector_window_dsp_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_logic_vector(detector_window_dsp_i),
+        signed(data_o) => detector_window_adc_o
+    );
 end;

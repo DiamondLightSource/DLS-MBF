@@ -125,8 +125,10 @@ architecture arch of sequencer_top is
     -- Delay from turn_clock to NCO output, validated by sequencer_nco
     constant NCO_PROCESS_DELAY : natural := 13;
 
-    -- Extra delay for the bunch bank select taking NCO delays into account
-    constant BANK_DELAY : natural := NCO_PROCESS_DELAY - BUNCH_SELECT_DELAY;
+    -- Extra delay for the bunch bank select taking NCO delays into account.
+    -- There is an extra 1 here I can't account for yet...
+    constant BANK_DELAY : natural :=
+        NCO_PROCESS_DELAY - BUNCH_SELECT_DELAY/2 + 1;
 
 begin
     pll_freq_delay : entity work.dlyreg generic map (

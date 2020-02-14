@@ -36,7 +36,7 @@ architecture arch of sequencer_delays is
 
 begin
     bunch_bank_delay : entity work.dlyline generic map (
-        DLY => BANK_DELAY / 2 - 1
+        DLY => BANK_DELAY
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => turn_clock_i,

@@ -108,6 +108,7 @@ architecture arch of dac_output_mux is
     signal scaling_overflow_out : std_ulogic;
 
     signal accum_signal : signed_array(0 to NCOS'HIGH + 1)(47 downto 0);
+    signal bunch_gain : bunch_config_i.gain'SUBTYPE;
     signal full_dac_out : signed(47 downto 0);
 
     -- This is truly strange.  Without this intermediate definition, Vivado
@@ -201,12 +202,22 @@ begin
         ovf_o => unscaled_overflow_out
     );
 
+
+    delay_bunch_gain : entity work.dlyline generic map (
+        DLY => 6,
+        DW => bunch_config_i.gain'LENGTH
+    ) port map (
+        clk_i => clk_i,
+        data_i => std_logic_vector(bunch_config_i.gain),
+        signed(data_o) => bunch_gain
+    );
+
     -- Final output scaling
     dac_mac : entity work.dsp_mac generic map (
         TOP_RESULT_BIT => DAC_RESULT_RANGE'LEFT
     ) port map (
         clk_i => clk_i,
-        a_i => bunch_config_i.gain,
+        a_i => bunch_gain,
         b_i => unscaled_dac_out,
         en_ab_i => ONE,
         c_i => DAC_RESULT_ROUNDING,
