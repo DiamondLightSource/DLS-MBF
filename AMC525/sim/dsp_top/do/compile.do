@@ -86,6 +86,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/sequencer/sequencer_counter.vhd \
     $vhd_dir/sequencer/sequencer_window.vhd \
     $vhd_dir/sequencer/sequencer_delays.vhd \
+    $vhd_dir/sequencer/sequencer_nco.vhd \
     $vhd_dir/sequencer/sequencer_clocking.vhd \
     $vhd_dir/sequencer/sequencer_top.vhd \
     $vhd_dir/detector/detector_defs.vhd \

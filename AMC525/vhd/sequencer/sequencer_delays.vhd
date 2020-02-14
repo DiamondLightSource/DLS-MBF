@@ -17,7 +17,6 @@ use work.sequencer_defs.all;
 
 entity sequencer_delays is
     generic (
-        NCO_GAIN_DELAY : natural;
         BANK_DELAY : natural
     );
     port (
@@ -28,14 +27,12 @@ entity sequencer_delays is
         seq_pc_i : in seq_pc_t;
 
         seq_pc_o : out seq_pc_t := (others => '0');
-        nco_gain_o : out nco_gain_t := (others => '0');
         bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of sequencer_delays is
     signal load_bunch_bank : std_ulogic;
-    signal load_nco_gain : std_ulogic;
 
 begin
     bunch_bank_delay : entity work.dlyline generic map (
@@ -46,14 +43,6 @@ begin
         data_o(0) => load_bunch_bank
     );
 
-    gain_delay : entity work.dlyline generic map (
-        DLY => NCO_GAIN_DELAY
-    ) port map (
-        clk_i => dsp_clk_i,
-        data_i(0) => turn_clock_i,
-        data_o(0) => load_nco_gain
-    );
-
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
             if turn_clock_i = '1' then
@@ -62,10 +51,6 @@ begin
 
             if load_bunch_bank = '1' then
                 bunch_bank_o <= seq_state_i.bunch_bank;
-            end if;
-
-            if load_nco_gain = '1' then
-                nco_gain_o <= seq_state_i.nco_gain;
             end if;
         end if;
     end process;

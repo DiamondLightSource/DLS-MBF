@@ -26,6 +26,8 @@ entity sequencer_counter is
         tune_pll_offset_i : in signed(31 downto 0);
 
         state_end_o : out std_ulogic := '0';  -- Set during last turn of state
+
+        enable_pll_o : out std_ulogic;
         nco_freq_o : out angle_t := (others => '0'); -- Output frequency
         nco_reset_o : out std_ulogic := '0'
     );
@@ -43,13 +45,6 @@ architecture arch of sequencer_counter is
     signal capture_cntr_zero : std_ulogic;   -- Set when capture_cntr is zero
 
     signal turn_clock_delay : std_ulogic;
-
-    signal nco_reset : std_ulogic := '0';
-    signal add_pll_freq : std_ulogic := '0';
-
-    -- Extra delay neede dto align reset with frequency change.  This is needed
-    -- to ensure that we correctly reset to phase 0 at the right time.
-    constant RESET_DELAY : natural := 2;
 
 begin
     process (dsp_clk_i) begin
@@ -72,8 +67,8 @@ begin
                     capture_cntr <= (others => '0');
                 elsif last_turn_i = '1' then
                     capture_cntr <= next_capture_cntr;
-                    nco_freq <= next_nco_freq;
-                    add_pll_freq <= seq_state_i.enable_tune_pll;
+                    nco_freq_o <= next_nco_freq;
+                    enable_pll_o <= seq_state_i.enable_tune_pll;
                 end if;
             end if;
 
@@ -85,29 +80,8 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            nco_reset <=
+            nco_reset_o <=
                 seq_state_i.reset_phase and turn_clock_i and state_end_o;
         end if;
     end process;
-
-
-    -- Add offset to computed frequency if required
-    add_offset : entity work.tune_pll_offset generic map (
-        DELAY => RESET_DELAY
-    ) port map (
-        clk_i => dsp_clk_i,
-        freq_offset_i => tune_pll_offset_i,
-        enable_i => add_pll_freq,
-        freq_i => nco_freq,
-        freq_o => nco_freq_o
-    );
-
-    -- Delay reset to align with frequency change
-    delay_reset : entity work.dlyline generic map (
-        DLY => RESET_DELAY
-    ) port map (
-        clk_i => dsp_clk_i,
-        data_i(0) => nco_reset,
-        data_o(0) => nco_reset_o
-    );
 end;

@@ -86,6 +86,7 @@ architecture arch of sequencer_top is
     signal mem_write_data : reg_data_t;
 
     signal turn_clock : std_ulogic;
+    signal enable_pll : std_ulogic;
     signal nco_freq : angle_t;
     signal nco_reset : std_ulogic;
     signal detector_window : detector_window_o'SUBTYPE;
@@ -121,21 +122,11 @@ architecture arch of sequencer_top is
     signal seq_start : std_ulogic;
     signal seq_write : std_ulogic;
 
-    -- The following delays are needed to configure the sequencer so that the
-    -- sweep output and other controls are aligned at the DAC output.
-    --
-    -- Delay from nco phase control to cos/sin output, validated by NCO core, in
-    -- ADC clock units.
-    constant NCO_PROCESS_DELAY : natural := 16;
-    -- Delay settings for NCO
-    constant NCO_IN_DELAY : natural := 1;       -- In DSP clocks
-    constant NCO_OUT_DELAY : natural := 4;      -- In ADC clocks
-    -- This is the delay needed on the NCO gain to align with NCO output, in
-    -- DSP clock units.
-    constant NCO_GAIN_DELAY : natural :=
-        NCO_PROCESS_DELAY/2 + NCO_IN_DELAY + NCO_OUT_DELAY/2 + 2;
+    -- Delay from turn_clock to NCO output, validated by sequencer_nco
+    constant NCO_PROCESS_DELAY : natural := 13;
+
     -- Extra delay for the bunch bank select taking NCO delays into account
-    constant BANK_DELAY : natural := NCO_GAIN_DELAY + 4 - BUNCH_SELECT_DELAY;
+    constant BANK_DELAY : natural := NCO_PROCESS_DELAY - BUNCH_SELECT_DELAY;
 
 begin
     pll_freq_delay : entity work.dlyreg generic map (
@@ -245,6 +236,8 @@ begin
         tune_pll_offset_i => tune_pll_offset,
 
         state_end_o => state_end,
+
+        enable_pll_o => enable_pll,
         nco_freq_o => nco_freq,
         nco_reset_o => nco_reset
     );
@@ -272,7 +265,6 @@ begin
 
     -- Fine tuning to output
     delays : entity work.sequencer_delays generic map (
-        NCO_GAIN_DELAY => NCO_GAIN_DELAY,
         BANK_DELAY => BANK_DELAY
     ) port map (
         dsp_clk_i => dsp_clk_i,
@@ -280,21 +272,24 @@ begin
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
-        nco_gain_o => nco_data_o.gain,
         bunch_bank_o => bunch_bank
     );
 
-    -- Swept NCO
-    seq_nco : entity work.nco generic map (
-        PROCESS_DELAY => NCO_PROCESS_DELAY,
-        IN_DELAY => NCO_IN_DELAY,
-        OUT_DELAY => NCO_OUT_DELAY
+    -- NCO output
+    seq_nco : entity work.sequencer_nco generic map (
+        PROCESS_DELAY => NCO_PROCESS_DELAY
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
-        phase_advance_i => nco_freq,
+        turn_clock_i => turn_clock,
+
+        tune_pll_offset_i => tune_pll_offset_i,
+        enable_pll_i => enable_pll,
+        nco_freq_i => nco_freq,
         reset_phase_i => nco_reset,
-        cos_sin_o => nco_data_o.nco
+        nco_gain_i => seq_state.nco_gain,
+
+        nco_data_o => nco_data_o
     );
 
 
