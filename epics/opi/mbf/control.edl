@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2052
-y 405
+x 629
+y 234
 w 584
-h 481
+h 512
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -35,7 +35,7 @@ release 0
 x 8
 y 224
 w 568
-h 136
+h 168
 lineColor index 14
 fill
 fillColor index 4
@@ -67,7 +67,7 @@ major 4
 minor 1
 release 0
 x 512
-y 448
+y 480
 w 64
 h 24
 fgColor index 46
@@ -672,7 +672,7 @@ major 4
 minor 0
 release 0
 x 8
-y 376
+y 408
 w 400
 h 96
 lineColor index 14
@@ -687,7 +687,7 @@ major 4
 minor 1
 release 1
 x 64
-y 392
+y 424
 w 62
 h 14
 font "helvetica-bold-r-12.0"
@@ -707,7 +707,7 @@ major 4
 minor 1
 release 1
 x 160
-y 392
+y 424
 w 27
 h 14
 font "helvetica-bold-r-12.0"
@@ -727,7 +727,7 @@ major 4
 minor 6
 release 0
 x 64
-y 408
+y 440
 w 88
 h 24
 controlPv "$(device):$(axis):NCO1:FREQ_S"
@@ -755,7 +755,7 @@ major 4
 minor 1
 release 1
 x 8
-y 368
+y 400
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -774,7 +774,7 @@ major 4
 minor 0
 release 0
 x 8
-y 368
+y 400
 w 120
 h 16
 lineColor index 14
@@ -1115,7 +1115,7 @@ major 4
 minor 0
 release 0
 x 256
-y 408
+y 440
 w 56
 h 24
 fgColor index 14
@@ -1157,7 +1157,7 @@ major 4
 minor 4
 release 0
 x 504
-y 392
+y 424
 w 72
 h 22
 fgColor index 43
@@ -1183,7 +1183,7 @@ major 4
 minor 6
 release 0
 x 544
-y 368
+y 400
 w 32
 h 22
 controlPv "$(device):$(axis):SEQ:TRIGGER_S"
@@ -1211,7 +1211,7 @@ major 4
 minor 1
 release 1
 x 464
-y 368
+y 400
 w 65
 h 14
 font "helvetica-bold-r-12.0"
@@ -1251,7 +1251,7 @@ major 4
 minor 4
 release 0
 x 160
-y 408
+y 440
 w 88
 h 24
 fgColor index 43
@@ -1282,7 +1282,7 @@ major 4
 minor 0
 release 0
 x 320
-y 408
+y 440
 w 80
 h 24
 fgColor index 14
@@ -1301,7 +1301,7 @@ major 4
 minor 6
 release 0
 x 168
-y 412
+y 444
 w 72
 h 16
 controlPv "$(device):$(axis):NCO1:GAIN_DB_S"
@@ -1327,7 +1327,7 @@ major 4
 minor 1
 release 1
 x 320
-y 392
+y 424
 w 60
 h 14
 font "helvetica-bold-r-12.0"
@@ -1347,7 +1347,7 @@ major 4
 minor 1
 release 1
 x 256
-y 392
+y 424
 w 39
 h 14
 font "helvetica-bold-r-12.0"
@@ -1367,7 +1367,7 @@ major 4
 minor 6
 release 0
 x 64
-y 440
+y 472
 w 88
 h 20
 controlPv "$(device):$(axis):NCO2:FREQ_S"
@@ -1395,7 +1395,7 @@ major 4
 minor 0
 release 0
 x 256
-y 440
+y 472
 w 56
 h 24
 fgColor index 14
@@ -1414,7 +1414,7 @@ major 4
 minor 4
 release 0
 x 160
-y 440
+y 472
 w 88
 h 24
 fgColor index 43
@@ -1445,7 +1445,7 @@ major 4
 minor 0
 release 0
 x 320
-y 440
+y 472
 w 80
 h 24
 fgColor index 14
@@ -1464,7 +1464,7 @@ major 4
 minor 6
 release 0
 x 168
-y 444
+y 476
 w 72
 h 16
 controlPv "$(device):$(axis):NCO2:GAIN_DB_S"
@@ -1490,7 +1490,7 @@ major 4
 minor 1
 release 1
 x 16
-y 408
+y 440
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1510,7 +1510,7 @@ major 4
 minor 1
 release 1
 x 16
-y 440
+y 472
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1521,5 +1521,91 @@ value {
   "NCO2"
 }
 autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 96
+y 360
+w 80
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):BUN:COPY_FROM_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 384
+y 360
+w 80
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):BUN:COPY_TO_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 184
+y 372
+w 184
+h 0
+lineColor index 9
+fillColor index 0
+lineWidth 5
+arrows "to"
+numPoints 2
+xPoints {
+  0 184
+  1 368
+}
+yPoints {
+  0 372
+  1 372
+}
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 232
+y 360
+w 96
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:COPY_BANK_S.PROC"
+pressValue "0"
+onLabel "Copy Bank"
+offLabel "Copy Bank"
+3d
+font "helvetica-bold-r-12.0"
 endObjectProperties
 

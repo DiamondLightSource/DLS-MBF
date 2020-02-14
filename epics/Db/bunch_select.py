@@ -2,21 +2,7 @@ from common import *
 
 # Bunch selection
 
-def select_from(l):
-    if l:
-        for x in select_from(l[1:]):
-            yield x
-            yield x + [l[0]]
-    else:
-        yield []
-
-def dac_select(*options):
-    selection = list(select_from(options))
-    return ['Off'] + ['+'.join(s) for s in selection[1:]]
-
-
 def bank_pvs(bank):
-
     # For each bunch setting there is an associated status string which is
     # updated as the waveform is updated.
     def BunchWaveforms(name, FTVL, desc):
@@ -51,3 +37,10 @@ for a in axes('BUN', lmbf_mode):
     # Feedback mode.  This summarises the quiescent state of the system, when
     # the sequencer is not running.
     stringIn('MODE', SCAN = '1 second', DESC = 'Feedback mode')
+
+    # Provide bank copy PVs
+    mbbOut('COPY_FROM', 'Bank 0', 'Bank 1', 'Bank 2', 'Bank 3',
+        DESC = 'Select source bank to copy')
+    mbbOut('COPY_TO', 'Bank 0', 'Bank 1', 'Bank 2', 'Bank 3',
+        DESC = 'Select target bank to copy')
+    Action('COPY_BANK', DESC = 'Copy bank to bank')

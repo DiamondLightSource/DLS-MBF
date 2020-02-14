@@ -47,6 +47,8 @@ struct bunch_bank {
 
 static struct bunch_context {
     int axis;
+    unsigned int copy_from;
+    unsigned int copy_to;
     struct bunch_bank banks[BUNCH_BANKS];
 } bunch_context[AXIS_COUNT];
 
@@ -300,6 +302,30 @@ const struct bunch_config *get_bunch_config(int axis, unsigned int bank)
 }
 
 
+static bool copy_bank_from_to(void *context, bool *value)
+{
+    struct bunch_context *bun = context;
+    if (bun->copy_from != bun->copy_to)
+    {
+        struct bunch_bank *copy_from = &bun->banks[bun->copy_from];
+        struct bunch_bank *copy_to = &bun->banks[bun->copy_to];
+        /* The safest way to do this is to let the EPICS layer do the copying.
+         * However, we do need a big enough buffer for this.  An array of floats
+         * will be enough, and we can put this on the stack. */
+        unsigned int bunches = hardware_config.bunches;
+        float buffer[bunches];
+        char *char_buffer = (char *) buffer;
+        READ_RECORD_VALUE_WF(char, copy_from->firwf, char_buffer, bunches);
+        WRITE_OUT_RECORD_WF(char, copy_to->firwf, char_buffer, bunches, true);
+        READ_RECORD_VALUE_WF(char, copy_from->outwf, char_buffer, bunches);
+        WRITE_OUT_RECORD_WF(char, copy_to->outwf, char_buffer, bunches, true);
+        READ_RECORD_VALUE_WF(float, copy_from->gainwf, buffer, bunches);
+        WRITE_OUT_RECORD_WF(float, copy_to->gainwf, buffer, bunches, true);
+    }
+    return true;
+}
+
+
 static void initialise_bank(
     int axis, unsigned int ix, struct bunch_bank *bank)
 {
@@ -396,6 +422,10 @@ error__t initialise_bunch_select(void)
         }
 
         PUBLISH_C(stringin, "MODE", read_feedback_mode, bun);
+
+        PUBLISH_WRITE_VAR(mbbo, "COPY_FROM", bun->copy_from);
+        PUBLISH_WRITE_VAR(mbbo, "COPY_TO", bun->copy_to);
+        PUBLISH_C(bo, "COPY_BANK", copy_bank_from_to, bun);
     }
     return ERROR_OK;
 }
