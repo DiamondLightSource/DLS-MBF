@@ -32,7 +32,7 @@ def bunch_fir_pvs():
         with name_prefix('%d' % bank):
             bank_pvs()
 
-    mbbOut('GAIN', DESC = 'FIR gain select', *dBrange(16, -6, 48))
+    mbbOut('GAIN', DESC = 'FIR gain select', *dBrange(16, -6, 42))
     Action('GAIN:UP', DESC = 'Increase FIR gain')
     Action('GAIN:DN', DESC = 'Decrease FIR gain')
 
