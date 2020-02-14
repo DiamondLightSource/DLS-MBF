@@ -17,7 +17,7 @@ use work.sequencer_defs.all;
 
 entity sequencer_delays is
     generic (
-        NCO_DELAY : natural;
+        NCO_GAIN_DELAY : natural;
         BANK_DELAY : natural
     );
     port (
@@ -38,8 +38,6 @@ architecture arch of sequencer_delays is
     signal load_nco_gain : std_ulogic;
 
 begin
-    -- We have to halve the BANK_DELAY and NCO_DELAY, as these are in ADC clocks
-
     bunch_bank_delay : entity work.dlyline generic map (
         DLY => BANK_DELAY / 2 - 1
     ) port map (
@@ -48,8 +46,8 @@ begin
         data_o(0) => load_bunch_bank
     );
 
-    nco_gain_delay : entity work.dlyline generic map (
-        DLY => NCO_DELAY / 2 - 1
+    gain_delay : entity work.dlyline generic map (
+        DLY => NCO_GAIN_DELAY
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => turn_clock_i,

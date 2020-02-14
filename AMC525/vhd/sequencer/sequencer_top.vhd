@@ -124,12 +124,18 @@ architecture arch of sequencer_top is
     -- The following delays are needed to configure the sequencer so that the
     -- sweep output and other controls are aligned at the DAC output.
     --
-    -- Delay from nco phase control to cos/sin output, validated by NCO core
+    -- Delay from nco phase control to cos/sin output, validated by NCO core, in
+    -- ADC clock units.
     constant NCO_PROCESS_DELAY : natural := 16;
-    -- Total delay through NCO including 4 tick NCO output pipeline
-    constant NCO_DELAY : natural := NCO_PROCESS_DELAY + 4 + 6;
+    -- Delay settings for NCO
+    constant NCO_IN_DELAY : natural := 1;       -- In DSP clocks
+    constant NCO_OUT_DELAY : natural := 4;      -- In ADC clocks
+    -- This is the delay needed on the NCO gain to align with NCO output, in
+    -- DSP clock units.
+    constant NCO_GAIN_DELAY : natural :=
+        NCO_PROCESS_DELAY/2 + NCO_IN_DELAY + NCO_OUT_DELAY/2 + 2;
     -- Extra delay for the bunch bank select taking NCO delays into account
-    constant BANK_DELAY : natural := NCO_DELAY + 4 - BUNCH_SELECT_DELAY;
+    constant BANK_DELAY : natural := NCO_GAIN_DELAY + 4 - BUNCH_SELECT_DELAY;
 
 begin
     pll_freq_delay : entity work.dlyreg generic map (
@@ -234,11 +240,7 @@ begin
         reset_i => reset_turn,
 
         freq_base_i => nco_freq_base,
-        start_freq_i => seq_state.start_freq,
-        delta_freq_i => seq_state.delta_freq,
-        capture_count_i => seq_state.capture_count,
-        reset_phase_i => seq_state.reset_phase,
-        add_pll_freq_i => seq_state.enable_tune_pll,
+        seq_state_i => seq_state,
         last_turn_i => last_turn,
         tune_pll_offset_i => tune_pll_offset,
 
@@ -270,7 +272,7 @@ begin
 
     -- Fine tuning to output
     delays : entity work.sequencer_delays generic map (
-        NCO_DELAY => NCO_DELAY,
+        NCO_GAIN_DELAY => NCO_GAIN_DELAY,
         BANK_DELAY => BANK_DELAY
     ) port map (
         dsp_clk_i => dsp_clk_i,
@@ -285,8 +287,8 @@ begin
     -- Swept NCO
     seq_nco : entity work.nco generic map (
         PROCESS_DELAY => NCO_PROCESS_DELAY,
-        IN_DELAY => 1,
-        OUT_DELAY => 4
+        IN_DELAY => NCO_IN_DELAY,
+        OUT_DELAY => NCO_OUT_DELAY
     ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,

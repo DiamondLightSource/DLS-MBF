@@ -60,7 +60,7 @@ add wave -group "Window" sim:sequencer/window/*
 add wave -group "Delays" sim:sequencer/delays/*
 add wave -group "Clocking" sim:sequencer/clocking/*
 add wave -group "Sequencer" sim:sequencer/*
-add wave sim:*
+add wave -group "Bench" sim:*
 
 
 run 8 us

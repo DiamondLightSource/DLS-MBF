@@ -20,12 +20,8 @@ entity sequencer_counter is
         turn_clock_i : in std_ulogic;
         reset_i : in std_ulogic;
 
-        freq_base_i : in angle_t;       -- Frequency base
-        start_freq_i : in angle_t;      -- Initial output frequency
-        delta_freq_i : in angle_t;      -- Output frequency step
-        capture_count_i : in capture_count_t;   -- Number of dwells to generate
-        reset_phase_i : in std_ulogic;  -- Reset phase at start of sweep
-        add_pll_freq_i : in std_ulogic; -- Option to add Tune PLL frequency
+        freq_base_i : in angle_t;
+        seq_state_i : in seq_state_t;
         last_turn_i : in std_ulogic;     -- Dwell is in its last turn
         tune_pll_offset_i : in signed(31 downto 0);
 
@@ -64,11 +60,11 @@ begin
             -- most of the state has already been stable for a while before that
             -- we can precompute a number of values.
             if capture_cntr_zero = '1' then
-                next_capture_cntr <= capture_count_i;
-                next_nco_freq <= start_freq_i + freq_base_i;
+                next_capture_cntr <= seq_state_i.capture_count;
+                next_nco_freq <= seq_state_i.start_freq + freq_base_i;
             else
                 next_capture_cntr <= capture_cntr - 1;
-                next_nco_freq <= nco_freq + delta_freq_i;
+                next_nco_freq <= nco_freq + seq_state_i.delta_freq;
             end if;
 
             if turn_clock_i = '1' then
@@ -77,7 +73,7 @@ begin
                 elsif last_turn_i = '1' then
                     capture_cntr <= next_capture_cntr;
                     nco_freq <= next_nco_freq;
-                    add_pll_freq <= add_pll_freq_i;
+                    add_pll_freq <= seq_state_i.enable_tune_pll;
                 end if;
             end if;
 
@@ -89,7 +85,8 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            nco_reset <= reset_phase_i and turn_clock_i and state_end_o;
+            nco_reset <=
+                seq_state_i.reset_phase and turn_clock_i and state_end_o;
         end if;
     end process;
 
