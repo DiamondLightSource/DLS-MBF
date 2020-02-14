@@ -202,7 +202,7 @@ def configure_dac_single_pulse(mbf):
 @MBF.method
 def configure_dac_measure_loop(mbf):
     mbf.set('DAC:DELAY_S', 0)
-    mbf.set('FIR:GAIN_S', '0dB')
+    mbf.set('FIR:GAIN_S', '-6dB')
     mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO1, DAC_OUT.FIR))
 
 
