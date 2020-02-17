@@ -26,6 +26,7 @@ package sequencer_defs is
         enable_blanking : std_ulogic;   -- Observe blanking input signal
         reset_phase : std_ulogic;       -- Reset NCO phase at start
         enable_tune_pll : std_ulogic;   -- Enable Tune PLL frequency offset
+        disable_super : std_ulogic;     -- Disable super sequencer offset
         window_rate : window_rate_t;    -- Detector window advance rate
         holdoff_count : dwell_count_t;  -- Holdoff count before each dwell
         state_holdoff : dwell_count_t;  -- Holdoff at start of state
@@ -49,6 +50,7 @@ package sequencer_defs is
         enable_blanking => '0',
         reset_phase => '0',
         enable_tune_pll => '0',
+        disable_super => '0',
         window_rate => (others => '0'),
         holdoff_count => (others => '0'),
         state_holdoff => (others => '0')

@@ -672,6 +672,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .RESET_PHASE
                     # Enable Tune PLL offset
                     .ENA_TUNE_PLL
+                    # This bit should be set in state zero and clear in all
+                    # other states to enable operation of the super sequencer
+                    # and to ensure no leakage into state zero operation.
+                    .DIS_SUPER
                 # Detector window advance.
                 WINDOW_RATE
                 HOLDOFF

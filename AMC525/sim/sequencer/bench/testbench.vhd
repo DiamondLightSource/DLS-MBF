@@ -110,6 +110,7 @@ begin
             en_blank : std_ulogic := '0';
             reset_phase : std_ulogic := '0';
             en_tune_pll : std_ulogic := '0';
+            dis_super : std_ulogic := '0';
             window_rate : reg_data_t := (others => '0');
             holdoff : unsigned(15 downto 0) := (others => '0');
             state_holdoff : unsigned(15 downto 0) := (others => '0')) is
@@ -136,6 +137,7 @@ begin
                 DSP_SEQ_STATE_CONFIG_ENA_BLANK_BIT => en_blank,
                 DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT => reset_phase,
                 DSP_SEQ_STATE_CONFIG_ENA_TUNE_PLL_BIT => en_tune_pll,
+                DSP_SEQ_STATE_CONFIG_DIS_SUPER_BIT => dis_super,
                 others => '0'));
             write_reg(DSP_SEQ_WRITE_REG, window_rate);  -- WINDOW_RATE
             write_reg(DSP_SEQ_WRITE_REG, (              -- HOLDOFF
@@ -158,7 +160,7 @@ begin
 
             -- First write bank 0.  This is the idle state, needs most fields
             -- zero.  We enable the phase reset bit in the idle state
-            write_bank(reset_phase => '1');
+            write_bank(reset_phase => '1', dis_super => '1');
         end;
 
         procedure trigger_seq is

@@ -782,7 +782,8 @@ void hw_read_dac_mms(int axis, struct mms_result *result)
 /* Sequencer registers - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Writes a single sequencer state as a sequence of 8 writes. */
-static void write_sequencer_state(int axis, const struct seq_entry *entry)
+static void write_sequencer_state(
+    int axis, bool state0, const struct seq_entry *entry)
 {
     volatile union dsp_seq_state *target = &dsp_regs[axis]->seq_state;
 
@@ -803,7 +804,8 @@ static void write_sequencer_state(int axis, const struct seq_entry *entry)
         .ena_write = entry->write_enable,
         .ena_blank = entry->enable_blanking,
         .reset_phase = entry->reset_phase,
-        .ena_tune_pll = entry->use_tune_pll);
+        .ena_tune_pll = entry->use_tune_pll,
+        .dis_super = state0);
     WRITEL(target->window_rate, entry->window_rate);
     WRITE_FIELDS(target->holdoff,
         .holdoff = entry->holdoff & 0xFFFF,
@@ -818,7 +820,7 @@ static void write_sequencer_entries(
 {
     WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
     WRITE_DSP_MIRROR(axis, seq_config, .target = 0);
-    write_sequencer_state(axis, &(struct seq_entry) {
+    write_sequencer_state(axis, true, &(struct seq_entry) {
         .dwell_time = 1,
         .bunch_bank = bank0,
         .capture_count = 1,
@@ -826,7 +828,7 @@ static void write_sequencer_entries(
     });
     if (entries)
         for (unsigned int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
-            write_sequencer_state(axis, &entries[i]);
+            write_sequencer_state(axis, false, &entries[i]);
 }
 
 /* Writes the sequencer detector window. */

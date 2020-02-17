@@ -57,7 +57,11 @@ begin
             -- we can precompute a number of values.
             if capture_cntr_zero = '1' then
                 next_capture_cntr <= seq_state_i.capture_count;
-                next_nco_freq <= seq_state_i.start_freq + freq_base_i;
+                if seq_state_i.disable_super then
+                    next_nco_freq <= seq_state_i.start_freq;
+                else
+                    next_nco_freq <= seq_state_i.start_freq + freq_base_i;
+                end if;
             else
                 next_capture_cntr <= capture_cntr - 1;
                 next_nco_freq <= nco_freq + seq_state_i.delta_freq;
