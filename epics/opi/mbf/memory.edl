@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 686
-y 72
+x 690
+y 121
 w 641
 h 679
 font "helvetica-medium-r-18.0"
@@ -64,21 +64,6 @@ minor 0
 release 0
 x 8
 y 424
-w 344
-h 72
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 600
 w 344
 h 72
 lineColor index 14
@@ -454,199 +439,6 @@ controlPv "$(device):MEM:RUNOUT_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 248
-y 616
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):MEM:FIR0_OVF"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 272
-y 616
-w 72
-h 16
-controlPv "$(device):MEM:FIR0_OVF"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 248
-y 640
-w 16
-h 16
-lineColor index 14
-fill
-fillColor index 16
-fillAlarm
-alarmPv "$(device):MEM:FIR1_OVF"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 272
-y 640
-w 72
-h 16
-controlPv "$(device):MEM:FIR1_OVF"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 8
-y 592
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "FIR gain"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 8
-y 592
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 616
-w 104
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Channel $(axis0):"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 16
-y 640
-w 104
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Channel $(axis1):"
-}
-autoSize
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 136
-y 640
-w 104
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):MEM:FIR1_GAIN_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 136
-y 616
-w 104
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):MEM:FIR0_GAIN_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -999,9 +791,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 360
-y 568
-w 272
+x 8
+y 600
+w 344
 h 72
 lineColor index 14
 fill
@@ -1014,8 +806,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 424
-y 584
+x 72
+y 616
 w 96
 h 22
 fgColor index 14
@@ -1034,8 +826,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 424
-y 608
+x 72
+y 640
 w 96
 h 22
 fgColor index 14
@@ -1054,10 +846,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 368
-y 584
-w 88
-h 16
+x 16
+y 616
+w 83
+h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1074,10 +866,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 368
-y 608
-w 88
-h 16
+x 16
+y 640
+w 83
+h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1094,8 +886,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 360
-y 560
+x 8
+y 592
 w 128
 h 16
 font "helvetica-medium-r-12.0"
@@ -1113,8 +905,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 360
-y 560
+x 8
+y 592
 w 128
 h 16
 lineColor index 14

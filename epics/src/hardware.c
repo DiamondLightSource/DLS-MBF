@@ -255,16 +255,6 @@ void hw_write_dram_mux(unsigned int mux)
     }
 }
 
-void hw_write_dram_fir_gains(bool gains[AXIS_COUNT])
-{
-    WITH_MUTEX(ctrl_lock)
-    {
-        ctrl_mirror.mem_config.fir0_gain = gains[0];
-        ctrl_mirror.mem_config.fir1_gain = gains[1];
-        WRITEL(ctrl_regs->mem_config, ctrl_mirror.mem_config);
-    }
-}
-
 void hw_write_dram_runout(unsigned int count)
 {
     WRITE_FIELDS(ctrl_regs->mem_count, .count = count & 0xFFFFFFF);
@@ -285,12 +275,6 @@ void hw_write_dram_capture_command(bool start, bool stop)
 bool hw_read_dram_active(void)
 {
     return READL(ctrl_regs->mem_status).enable;
-}
-
-void hw_read_dram_status(bool fir_overflow[AXIS_COUNT])
-{
-    struct ctrl_mem_pulsed pulsed = READL(ctrl_regs->mem_pulsed);
-    bits_to_bools(AXIS_COUNT, pulsed.fir_ovf, fir_overflow);
 }
 
 void hw_read_dram_memory(size_t offset, size_t samples, uint32_t result[])
