@@ -478,17 +478,17 @@ void hw_write_trigger_enable_mask(
         switch (target)
         {
             case TRIGGER_SEQ0:
-                ctrl_mirror.trg_config_trig_seq0.enable = source_mask & 0x7F;
+                ctrl_mirror.trg_config_trig_seq0.enable = source_mask & 0x1FF;
                 WRITEL(ctrl_regs->trg_config_trig_seq0,
                     ctrl_mirror.trg_config_trig_seq0);
                 break;
             case TRIGGER_SEQ1:
-                ctrl_mirror.trg_config_trig_seq1.enable = source_mask & 0x7F;
+                ctrl_mirror.trg_config_trig_seq1.enable = source_mask & 0x1FF;
                 WRITEL(ctrl_regs->trg_config_trig_seq1,
                     ctrl_mirror.trg_config_trig_seq1);
                 break;
             case TRIGGER_DRAM:
-                ctrl_mirror.trg_config_trig_dram.enable = source_mask & 0x7F;
+                ctrl_mirror.trg_config_trig_dram.enable = source_mask & 0x1FF;
                 WRITEL(ctrl_regs->trg_config_trig_dram,
                     ctrl_mirror.trg_config_trig_dram);
                 break;
@@ -505,17 +505,17 @@ void hw_write_trigger_blanking_mask(
         switch (target)
         {
             case TRIGGER_SEQ0:
-                ctrl_mirror.trg_config_trig_seq0.blanking = source_mask & 0x7F;
+                ctrl_mirror.trg_config_trig_seq0.blanking = source_mask & 0x1FF;
                 WRITEL(ctrl_regs->trg_config_trig_seq0,
                     ctrl_mirror.trg_config_trig_seq0);
                 break;
             case TRIGGER_SEQ1:
-                ctrl_mirror.trg_config_trig_seq1.blanking = source_mask & 0x7F;
+                ctrl_mirror.trg_config_trig_seq1.blanking = source_mask & 0x1FF;
                 WRITEL(ctrl_regs->trg_config_trig_seq1,
                     ctrl_mirror.trg_config_trig_seq1);
                 break;
             case TRIGGER_DRAM:
-                ctrl_mirror.trg_config_trig_dram.blanking = source_mask & 0x7F;
+                ctrl_mirror.trg_config_trig_dram.blanking = source_mask & 0x1FF;
                 WRITEL(ctrl_regs->trg_config_trig_dram,
                     ctrl_mirror.trg_config_trig_dram);
                 break;
