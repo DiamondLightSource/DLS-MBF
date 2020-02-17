@@ -34,6 +34,7 @@ entity sequencer_nco is
 end;
 
 architecture arch of sequencer_nco is
+    signal nco_freq_in : angle_t;
     signal nco_freq : angle_t;
     signal reset_phase : std_ulogic;
     signal load_nco_gain : std_ulogic;
@@ -53,9 +54,10 @@ architecture arch of sequencer_nco is
     constant NCO_IN_DELAY : natural := 1;       -- In DSP clocks
     constant NCO_OUT_DELAY : natural := 4;      -- In ADC clocks
     -- This is the delay needed on the NCO gain to align with NCO output, in
-    -- DSP clock units.
+    -- DSP clock units.  We add 1 for the extra input nco_freq input register.
     constant NCO_GAIN_DELAY : natural :=
-        NCO_PROCESS_DELAY/2 + NCO_IN_DELAY + NCO_OUT_DELAY/2 + PLL_OFFSET_DELAY;
+        NCO_PROCESS_DELAY/2 + NCO_IN_DELAY + NCO_OUT_DELAY/2 +
+        PLL_OFFSET_DELAY + 1;
 
 begin
     assert PROCESS_DELAY = NCO_GAIN_DELAY severity failure;
@@ -67,13 +69,13 @@ begin
         clk_i => dsp_clk_i,
         freq_offset_i => tune_pll_offset_i,
         enable_i => enable_pll_i,
-        freq_i => nco_freq_i,
+        freq_i => nco_freq_in,
         freq_o => nco_freq
     );
 
     -- Delay reset to align with frequency change
     delay_reset : entity work.dlyline generic map (
-        DLY => PLL_OFFSET_DELAY
+        DLY => PLL_OFFSET_DELAY + 1
     ) port map (
         clk_i => dsp_clk_i,
         data_i(0) => reset_phase_i,
@@ -107,6 +109,7 @@ begin
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
+            nco_freq_in <= nco_freq_i;
             if load_nco_gain = '1' then
                 nco_gain_out <= nco_gain_i;
             end if;

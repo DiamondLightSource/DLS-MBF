@@ -39,6 +39,7 @@ architecture arch of sequencer_counter is
     -- the capture counter to zero.
     signal capture_cntr : capture_count_t := (others => '0');
     signal nco_freq : angle_t := (others => '0');
+    signal nco_reset : std_ulogic := '0';
 
     signal next_nco_freq : angle_t;
     signal next_capture_cntr : capture_count_t;
@@ -67,7 +68,7 @@ begin
                     capture_cntr <= (others => '0');
                 elsif last_turn_i = '1' then
                     capture_cntr <= next_capture_cntr;
-                    nco_freq_o <= next_nco_freq;
+                    nco_freq <= next_nco_freq;
                     enable_pll_o <= seq_state_i.enable_tune_pll;
                 end if;
             end if;
@@ -80,8 +81,11 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            nco_reset_o <=
+            nco_reset <=
                 seq_state_i.reset_phase and turn_clock_i and state_end_o;
         end if;
     end process;
+
+    nco_freq_o <= nco_freq;
+    nco_reset_o <= nco_reset;
 end;

@@ -123,7 +123,7 @@ architecture arch of sequencer_top is
     signal seq_write : std_ulogic;
 
     -- Delay from turn_clock to NCO output, validated by sequencer_nco
-    constant NCO_PROCESS_DELAY : natural := 13;
+    constant NCO_PROCESS_DELAY : natural := 14;
 
     -- Extra delay for the bunch bank select taking NCO delays into account.
     -- There is an extra 1 here I can't account for yet...
