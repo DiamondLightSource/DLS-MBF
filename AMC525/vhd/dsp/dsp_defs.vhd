@@ -36,8 +36,8 @@ package dsp_defs is
         -- input stage, fir_data and dac_data for capture.
         adc_data : signed(ADC_DATA_RANGE);
         store_adc_data : signed(ADC_DATA_RANGE);
-        fir_data : signed(FIR_DATA_RANGE);
-        dac_data : signed(DAC_DATA_RANGE);
+        store_fir_data : signed(DAC_DATA_RANGE);
+        store_dac_data : signed(DAC_DATA_RANGE);
 
         -- Bank selection from sequencer
         bank_select : unsigned(1 downto 0);

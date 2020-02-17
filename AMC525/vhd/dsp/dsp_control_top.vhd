@@ -271,7 +271,6 @@ begin
 
     -- Map events to individual DSP units
     gen_channels: for c in CHANNELS generate
-        -- ADC clocked signals
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
         dac_trigger(c) <= dsp_to_control_i(c).dac_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
@@ -279,8 +278,6 @@ begin
         tune_pll_ready(c) <= dsp_to_control_i(c).tune_pll_ready;
         control_to_dsp_o(c).blanking <= blanking_window;
         control_to_dsp_o(c).seq_start <= seq_start(c);
-
-        -- DSP clocked signals
         control_to_dsp_o(c).turn_clock <= turn_clock;
     end generate;
 

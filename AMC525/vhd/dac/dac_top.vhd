@@ -41,7 +41,8 @@ entity dac_top is
         nco_3_data_i : in dsp_nco_from_mux_t;
 
         -- Outputs and overflow detection
-        data_store_o : out signed;      -- Data from intermediate processing
+        store_fir_o : out signed;       -- Scaled FIR data
+        store_dac_o : out signed;       -- Data from intermediate processing
         data_o : out signed;            -- at ADC data rate
         delta_event_o : out std_ulogic  -- bunch movement over threshold
     );
@@ -77,9 +78,6 @@ architecture arch of dac_top is
     signal mms_data_in : data_o'SUBTYPE;
     signal mms_delta : unsigned(data_o'RANGE);
 
---     -- Delay from gain control to data change
---     constant NCO1_GAIN_DELAY : natural := 4;
--- 
     -- Input delays
     constant INPUT_PIPELINE_DELAY : natural := 2;
 
@@ -174,6 +172,7 @@ begin
         fir_overflow_o => fir_overflow_adc,
         mux_overflow_o => mux_overflow_adc
     );
+    store_fir_o <= fir_mms_data;
 
 
     -- -------------------------------------------------------------------------
@@ -191,7 +190,7 @@ begin
         mms_data_o => mms_data_in,
 
         dram_source_i => store_source,
-        dram_data_o => data_store_o
+        dram_data_o => store_dac_o
     );
 
     -- Min/Max/Sum

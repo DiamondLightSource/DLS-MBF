@@ -145,7 +145,6 @@ begin
         read_data_o => read_data_o(DSP_FIR_REGS),
         read_ack_o => read_ack_o(DSP_FIR_REGS)
     );
-    dsp_to_control_o.fir_data <= fir_data;
 
 
     -- DAC output processing
@@ -163,7 +162,8 @@ begin
         nco_2_data_i => control_to_dsp_i.nco_2_data,
         nco_3_data_i => control_to_dsp_i.nco_3_data,
 
-        data_store_o => dsp_to_control_o.dac_data,
+        store_fir_o => dsp_to_control_o.store_fir_data,
+        store_dac_o => dsp_to_control_o.store_dac_data,
         data_o => dac_data_o,
 
         write_strobe_i => write_strobe_i(DSP_DAC_REGS),
