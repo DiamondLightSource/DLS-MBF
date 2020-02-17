@@ -28,6 +28,8 @@ architecture arch of saturate is
     constant OUT_WIDTH : natural := data_o'LENGTH;
     subtype DATA_RANGE is natural range OUT_WIDTH+OFFSET-1 downto OFFSET;
 
+    signal data_in : data_i'SUBTYPE;
+    signal ovf_in : std_ulogic;
     signal data_out : data_o'SUBTYPE;
 
 begin
@@ -35,8 +37,11 @@ begin
 
     process (clk_i) begin
         if rising_edge(clk_i) then
-            if ovf_i = '1' then
-                if data_i(data_i'LEFT) = '1' then
+            data_in <= data_i;
+            ovf_in <= ovf_i;
+
+            if ovf_in = '1' then
+                if data_in(data_in'LEFT) = '1' then
                     -- Force to most negative value
                     data_out <= (data_out'LEFT => '1', others => '0');
                 else
@@ -45,9 +50,9 @@ begin
                 end if;
             else
                 -- All good, output selected range
-                data_out <= data_i(DATA_RANGE);
+                data_out <= data_in(DATA_RANGE);
             end if;
-            ovf_o <= ovf_i;
+            ovf_o <= ovf_in;
         end if;
     end process;
 
