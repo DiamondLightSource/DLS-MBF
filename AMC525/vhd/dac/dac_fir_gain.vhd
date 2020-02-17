@@ -40,12 +40,13 @@ architecture arch of dac_fir_gain is
         OUT_WIDTH-1 downto OUT_WIDTH - IN_WIDTH;
 
 begin
-    data_in <= (SOURCE_RANGE => data_i, others => '0');
     process (clk_i) begin
         if rising_edge(clk_i) then
+            data_in <= (SOURCE_RANGE => data_i, others => '0');
+            shifted_data <= shift_right(data_in, to_integer(gain_i));
+
             -- Compute output data and overflow detection together, we'll need
             -- this for the saturation stage.
-            shifted_data <= shift_right(data_in, to_integer(gain_i));
             shifted_data_out <= shifted_data;
             fir_overflow <= overflow_detect(shifted_data(OVERFLOW_RANGE));
 

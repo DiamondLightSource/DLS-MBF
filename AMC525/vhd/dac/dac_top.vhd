@@ -68,7 +68,10 @@ architecture arch of dac_top is
 
     -- Pipelines
     signal fir_data_in : fir_data_i'SUBTYPE;
+    signal nco_0_data_in : nco_0_data_i'SUBTYPE;
     signal nco_1_data_in : nco_1_data_i'SUBTYPE;
+    signal nco_2_data_in : nco_2_data_i'SUBTYPE;
+    signal nco_3_data_in : nco_3_data_i'SUBTYPE;
     signal bunch_config_in : bunch_config_i'SUBTYPE;
 
     -- Data flowing through system
@@ -124,7 +127,7 @@ begin
 
 
     -- -------------------------------------------------------------------------
-    -- Output generation with selected piplelines
+    -- Output generation with selected pipelines
 
     fir_delay : entity work.dlyreg generic map (
         DLY => INPUT_PIPELINE_DELAY,
@@ -135,12 +138,36 @@ begin
         signed(data_o) => fir_data_in
     );
 
+    nco0_delay : entity work.dac_nco_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => nco_0_data_i,
+        data_o => nco_0_data_in
+    );
+
     nco1_delay : entity work.dac_nco_delay generic map (
         DELAY => INPUT_PIPELINE_DELAY
     ) port map (
         clk_i => adc_clk_i,
         data_i => nco_1_data_i,
         data_o => nco_1_data_in
+    );
+
+    nco2_delay : entity work.dac_nco_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => nco_2_data_i,
+        data_o => nco_2_data_in
+    );
+
+    nco3_delay : entity work.dac_nco_delay generic map (
+        DELAY => INPUT_PIPELINE_DELAY
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => nco_3_data_i,
+        data_o => nco_3_data_in
     );
 
     bunch_delay : entity work.dac_bunch_config_delay generic map (
@@ -161,10 +188,10 @@ begin
         fir_data_i => fir_data_in,
         fir_gain_i => fir_gain,
 
-        nco_0_data_i => nco_0_data_i,
+        nco_0_data_i => nco_0_data_in,
         nco_1_data_i => nco_1_data_in,
-        nco_2_data_i => nco_2_data_i,
-        nco_3_data_i => nco_3_data_i,
+        nco_2_data_i => nco_2_data_in,
+        nco_3_data_i => nco_3_data_in,
 
         data_o => data_out,
         fir_mms_o => fir_mms_data,

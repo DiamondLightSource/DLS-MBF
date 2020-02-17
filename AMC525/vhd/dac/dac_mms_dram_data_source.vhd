@@ -9,7 +9,7 @@ use ieee.numeric_std.all;
 
 entity dac_mms_dram_data_source is
     generic (
-        PIPELINE_IN : natural := 2
+        PIPELINE_IN : natural := 4
     );
     port (
         adc_clk_i : in std_ulogic;
