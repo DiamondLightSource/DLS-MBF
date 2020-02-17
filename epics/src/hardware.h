@@ -360,7 +360,7 @@ struct seq_config {
     unsigned int super_seq_count;
     struct seq_entry entries[MAX_SEQUENCER_COUNT];
     int32_t window[DET_WINDOW_LENGTH];
-    uint32_t super_offsets[SUPER_SEQ_STATES];
+    uint64_t super_offsets[SUPER_SEQ_STATES];
 };
 
 struct seq_state {

@@ -305,12 +305,9 @@ static void write_super_offsets(
 
     for (int i = 0; i < SUPER_SEQ_STATES; i ++)
     {
-        /* For the super sequencer offset we take the top 32 bits of the 48 bit
-         * frequency after rounding. */
         uint64_t freq = tune_to_freq(offsets[i]);
-        uint32_t offset = (uint32_t) ((freq + 0x8000) >> 16);
-        seq->seq_config.super_offsets[i] = offset;
-        offsets[i] = freq_to_tune((uint64_t) offset << 16);
+        seq->seq_config.super_offsets[i] = freq;
+        offsets[i] = freq_to_tune(freq);
     }
 
     seq->seq_config_dirty = true;
@@ -388,8 +385,7 @@ unsigned int compute_scale_info(
     uint64_t f0 = 0;                // Accumulates current frequency
     for (unsigned int super = 0; super < super_count; super ++)
     {
-        uint64_t super_offset =
-            (uint64_t) seq_config->super_offsets[super] << 16;
+        uint64_t super_offset = seq_config->super_offsets[super];
         for (unsigned int state = seq_count; state > 0; state --)
         {
             const struct seq_entry *entry = &seq_config->entries[state - 1];

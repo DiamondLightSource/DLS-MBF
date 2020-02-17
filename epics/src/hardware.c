@@ -842,7 +842,7 @@ static void write_sequencer_window(int axis, const int window[])
 
 /* Writes the super sequencer entries. */
 static void write_sequencer_super_entries(
-    int axis, unsigned int super_count, const uint32_t offsets[])
+    int axis, unsigned int super_count, const uint64_t offsets[])
 {
     WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
     dsp_mirror[axis].seq_config.target = 2;
@@ -853,8 +853,12 @@ static void write_sequencer_super_entries(
      * match the fact that states will be read from count down to 0, and we
      * only need to write the states that will actually be used. */
     for (unsigned int i = 0; i < super_count; i ++)
-        WRITEL(dsp_regs[axis]->seq_super_state,
-            offsets[super_count - 1 - i]);
+    {
+        uint64_t offset = offsets[super_count - 1 - i];
+        /* Write offset in two steps, 32-bits then 16-bits. */
+        WRITEL(dsp_regs[axis]->seq_super_state, (uint32_t) offset);
+        WRITEL(dsp_regs[axis]->seq_super_state, (uint32_t) (offset >> 32));
+    }
 }
 
 

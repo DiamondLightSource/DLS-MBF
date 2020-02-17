@@ -695,7 +695,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             DET_WINDOW      W
 
             # Writing to this register updates the super sequencer offset
-            # memory, up to 1024 states can be written
+            # memory, up to 1024 offsets can be written.  Each offset is a
+            # 48-bit frequency and must be written as two separate 32-bit
+            # writes, with the low order 32-bits written first and the high
+            # order 16-bits into the bottom of the second word.
             SUPER_STATE     W
 
     # Detector control

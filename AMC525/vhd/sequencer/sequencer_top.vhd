@@ -82,7 +82,8 @@ architecture arch of sequencer_top is
     constant MEM_WINDOW : natural := 1;
     constant MEM_FREQUENCY : natural := 2;
     signal mem_write_strobe : std_ulogic_vector(0 to 2);
-    signal mem_write_addr : unsigned(9 downto 0);
+    -- We allow an extra address bit
+    signal mem_write_addr : unsigned(BUNCH_NUM_BITS downto 0);
     signal mem_write_data : reg_data_t;
 
     signal turn_clock : std_ulogic;

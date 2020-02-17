@@ -148,15 +148,39 @@ begin
             write_reg(DSP_SEQ_WRITE_REG, X"0000_0000"); -- PADDING
         end;
 
-        procedure write_bank0 is
+        procedure write_super(angle : angle_t) is
+        begin
+            write_reg(DSP_SEQ_WRITE_REG, std_ulogic_vector(angle(31 downto 0)));
+            write_reg(DSP_SEQ_WRITE_REG, (
+                15 downto 0 => std_ulogic_vector(angle(47 downto 32)),
+                others => '0'));
+        end;
+
+        procedure write_config(
+            pc : seq_pc_t := "001";
+            super : super_count_t := (others => '0');
+            trigger : seq_pc_t := "000";
+            target : std_ulogic_vector(1 downto 0) := "00") is
         begin
             write_reg(DSP_SEQ_CONFIG_REG, (         -- write to seq mem
-                DSP_SEQ_CONFIG_PC_BITS => "001",
-                DSP_SEQ_CONFIG_TARGET_BITS => "00",
+                DSP_SEQ_CONFIG_PC_BITS => std_ulogic_vector(pc),
+                DSP_SEQ_CONFIG_TRIGGER_BITS => std_ulogic_vector(trigger),
+                DSP_SEQ_CONFIG_SUPER_COUNT_BITS => std_ulogic_vector(super),
+                DSP_SEQ_CONFIG_TARGET_BITS => target,
                 others => '0'));
+        end;
+
+        procedure start_write is
+        begin
             write_reg(DSP_SEQ_COMMAND_REG_W, (      -- start write
                 DSP_SEQ_COMMAND_WRITE_BIT => '1',
                 others => '0'));
+        end;
+
+        procedure write_bank0 is
+        begin
+            write_config(target => "00");         -- write to seq mem
+            start_write;
 
             -- First write bank 0.  This is the idle state, needs most fields
             -- zero.  We enable the phase reset bit in the idle state
@@ -212,14 +236,18 @@ begin
         wait_until_done;
 
 
-        -- Reload again, state_holdoff now
+        -- Reload again, now run the super sequencer
         write_bank0;
         write_bank(
             start_freq => X"1235_5678_9ABC",
             delta_freq => X"0000_0000_0001",
             dwell => X"0001", capture => X"0002",
-            bank => "01", gain => 18X"3FFFF", en_write => '1',
-            state_holdoff => X"0001");
+            bank => "01", gain => 18X"3FFFF", en_write => '1');
+        -- Load two super sequencer states
+        write_config(target => "10", super => 10X"001");
+        start_write;
+        write_super(X"1111_2222_0000");
+        write_super(X"2222_1111_0000");
 
         -- Trigger again!
         trigger_seq;
