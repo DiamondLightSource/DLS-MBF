@@ -21,12 +21,13 @@
 # ===== ========================================================================
 # 0     Used for initial MBF 1.0 and 1.1 releases
 # 1     Adds Tune PLL support, used for MBF 1.2 release
-# 2     Reserved for MBF 1.4 release
+# 2     MBF 1.4.0 release: two fixed NCOs with scaling and tune tracking
+# 3     Reserved for 1.4.1+ releases
 # 254   Use this for unstable MBF firmware versions under development
 # 255   Reserved for non MBF firmware with kernel driver compatibility.  Do not
 #       use for any version of MBF firmware
 # ===== ========================================================================
-FIRMWARE_COMPAT_VERSION = 254
+FIRMWARE_COMPAT_VERSION = 2
 
 ## Do not change this value, leave equal to 254
 FIRMWARE_COMPAT_UNSTABLE = 254

@@ -36,7 +36,7 @@ This repository contains the following components.
 Firmware
     The firmware is in the ``AMC525`` directory.  The targeted hardware is an
     AMC525 MicroTCA carrier card with an FMC500 ADC/DAC digitiser, and the
-    firmware is built with Vivado 2016.4.
+    firmware is built with Vivado 2019.2.
 
 Kernel Driver
     The control system is designed to be run on a separate processor card on the
@@ -136,3 +136,32 @@ This affects the detector IQ and phase waveforms as well as the tune fitting.
 
 This software is compatible with version 1.2.0 of the firmware which has not
 changed.
+
+1.3.1 January 2020
+..................
+
+Move help pages to public confluence server.  No other change.
+
+1.4.0 February 2020
+...................
+
+This is a place-holder release, and is essentially untested.  This release will
+either be followed with bug fixes or with further significant firmware changes.
+
+Major firmware and control system changes, implementing the following:
+
+* New DAC MMS trigger source available.
+* Generated FIR data now available as input to DAC MMS, and for trigger
+  generation.
+* DRAM FIR source now comes from output scaled FIR data, so the memory FIR gain
+  control and overflow events have been removed.
+* Add second NCO, rename original NCO so now have NCO1 and NCO2.
+* Add option for fine gain control over all four NCOs (NCO1, NCO2, SEQ, PLL).
+* Add option for tune PLL offset tracking to NCO1 and NCO2.
+* Increase available FIR gain by 3dB and recalibrate gain settings so that 0dB
+  corresponds to true unity gain with a trivial unity FIR.  This means that
+  gain settings on 1.3 will need to be reduced by 12dB for 1.4.
+* Controls are provided to make it easy to copy bunch banks.
+* Super sequencer frequency offsets are now 48 bits.
+
+Note that the firmware is now built with Vivado 2019.2.
