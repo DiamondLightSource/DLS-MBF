@@ -70,7 +70,7 @@ begin
         DW => bunch_bank_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(bunch_bank_i),
+        data_i => std_ulogic_vector(bunch_bank_i),
         unsigned(data_o) => bunch_bank_o
     );
 
@@ -80,7 +80,7 @@ begin
         DW => detector_window_dsp_i'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        data_i => std_logic_vector(detector_window_dsp_i),
+        data_i => std_ulogic_vector(detector_window_dsp_i),
         signed(data_o) => detector_window_adc_o
     );
 end;

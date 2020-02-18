@@ -24,7 +24,7 @@ entity sequencer_super is
 end;
 
 architecture arch of sequencer_super is
-    signal write_data : std_logic_vector(angle_t'RANGE);
+    signal write_data : std_ulogic_vector(angle_t'RANGE);
     signal write_strobe : std_ulogic;
 
 begin

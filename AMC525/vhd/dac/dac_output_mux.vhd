@@ -216,7 +216,7 @@ begin
         DW => bunch_config_i.gain'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(bunch_config_i.gain),
+        data_i => std_ulogic_vector(bunch_config_i.gain),
         signed(data_o) => bunch_gain
     );
 
