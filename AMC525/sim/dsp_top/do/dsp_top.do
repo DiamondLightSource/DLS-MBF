@@ -14,6 +14,8 @@ add wave -group "Fixed NCOs" sim:dsp_top/fixed_ncos/*
 add wave -group "Bunch FIR Top" sim:dsp_top/bunch_fir_top/*
 add wave -group "DAC FIR Gain" sim:dsp_top/dac_top/dac_output_mux/fir/*
 add wave -group "DAC Output Mux" sim:dsp_top/dac_top/dac_output_mux/*
+add wave -group "DAC Mux NCO1" \
+    sim:dsp_top/dac_top/dac_output_mux/scale_ncos(1)/*
 add wave -group "DAC Top" sim:dsp_top/dac_top/*
 add wave -group "Sequencer" sim:dsp_top/sequencer/*
 add wave -group "Detector" sim:dsp_top/detector/*

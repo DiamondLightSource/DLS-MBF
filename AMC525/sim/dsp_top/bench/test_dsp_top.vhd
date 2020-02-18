@@ -17,7 +17,7 @@ architecture arch of testbench is
     signal adc_clk : std_ulogic := '1';
     signal dsp_clk : std_ulogic := '0';
 
-    constant TURN_COUNT : natural := 55;
+    constant TURN_COUNT : natural := 50;
     signal turn_clock : std_ulogic;
 
     signal adc_data : signed(13 downto 0) := 14X"1FFF";
@@ -155,14 +155,18 @@ begin
         write_reg(DSP_FIR_CONFIG_REG_W, (others => '0'));
         write_reg(DSP_FIR_TAPS_REG, X"7FFFFFFF");
 
+        -- Set FIR gain reasonably low
+        write_reg(DSP_DAC_CONFIG_REG, (
+            DSP_DAC_CONFIG_FIR_GAIN_BITS => "1100", others => '0'));
+
         -- Set a sensible NCO frequency, reset the phase
         write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW, X"00000000");
         write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW + 1, (
-            NCO_FREQ_HIGH_BITS_BITS => X"0800",
+            NCO_FREQ_HIGH_BITS_BITS => X"1800",
             NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
             others => '0'));
         write_reg(DSP_FIXED_NCO_NCO1_REG, (
-            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"3FFFF",
+            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"10000",
             others => '0'));
 
         -- Configure bunch control: bank 0 for NCO
@@ -174,7 +178,7 @@ begin
                 DSP_BUNCH_BANK_GAIN_BITS => 18X"01000",
                 DSP_BUNCH_BANK_FIR_ENABLE_BIT => '1',
                 DSP_BUNCH_BANK_NCO0_ENABLE_BIT => '1',
-                DSP_BUNCH_BANK_NCO3_ENABLE_BIT => '1',
+--                 DSP_BUNCH_BANK_NCO3_ENABLE_BIT => '1',
                 others => '0'));
         end loop;
         -- Bank 1 for sweep
@@ -246,7 +250,7 @@ begin
             others => '0'));
 
         -- Work through the FIR gain settings
-        for i in 0 to 15 loop
+        for i in 15 downto 0 loop
             wait for 100 ns;
             clk_wait(dsp_clk);
             write_reg(DSP_DAC_CONFIG_REG, (

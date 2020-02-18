@@ -99,7 +99,10 @@ architecture arch of dac_output_mux is
 
     subtype NCOS is natural range 0 to 3;
     type dsp_nco_array is array(NCOS) of dsp_nco_from_mux_t;
-    signal nco_data : dsp_nco_array;
+    type dsp_nco_array_array is array(NCOS) of dsp_nco_array;
+    signal nco_data_in : dsp_nco_array;
+    signal nco_data : dsp_nco_array_array;
+    signal fir_enable : std_ulogic;
     signal nco_enables_in : std_ulogic_vector(NCOS);
     signal nco_enables : vector_array(NCOS)(NCOS);
     signal nco_overflows : std_ulogic_vector(NCOS);
@@ -117,7 +120,7 @@ architecture arch of dac_output_mux is
 
 begin
     -- Map individual NCOs to arrays for generation
-    nco_data <= (
+    nco_data_in <= (
         0 => nco_0_data_i,
         1 => nco_1_data_i,
         2 => nco_2_data_i,
@@ -131,9 +134,12 @@ begin
     -- Delay each enable so data out and enables align
     process (clk_i) begin
         if rising_edge(clk_i) then
+            fir_enable <= bunch_config_i.fir_enable;
+            nco_data(0) <= nco_data_in;
             nco_enables(0) <= nco_enables_in;
             for i in 0 to NCOS'HIGH-1 loop
                 nco_enables(i+1) <= nco_enables(i);
+                nco_data(i+1) <= nco_data(i);
             end loop;
         end if;
     end process;
@@ -147,7 +153,7 @@ begin
 
         data_i => fir_data_i,
         gain_i => fir_gain_i,
-        enable_i => bunch_config_i.fir_enable,
+        enable_i => fir_enable,
 
         data_o => scaled_fir,
         mms_o => fir_mms_o,
@@ -161,6 +167,7 @@ begin
     scale_ncos : for i in NCOS generate
         signal a_in : signed(17 downto 0);
         signal b_in : signed(24 downto 0);
+        signal enable_in : std_ulogic;
         signal ab : signed(42 downto 0);
         signal abc : signed(47 downto 0);
 
@@ -172,11 +179,12 @@ begin
     begin
         process (clk_i) begin
             if rising_edge(clk_i) then
-                a_in <= nco_data(i).nco;
+                a_in <= nco_data(i)(i).nco;
                 b_in <= (
-                    NCO_GAIN_RANGE => signed(nco_data(i).gain),
+                    NCO_GAIN_RANGE => signed(nco_data(i)(i).gain),
                     others => '0');
-                if nco_enables(i)(i) = '1' then
+                enable_in <= nco_enables(i)(i);
+                if enable_in then
                     ab <= a_in * b_in;
                 else
                     ab <= (others => '0');
@@ -204,7 +212,7 @@ begin
 
 
     delay_bunch_gain : entity work.dlyline generic map (
-        DLY => 6,
+        DLY => 9,
         DW => bunch_config_i.gain'LENGTH
     ) port map (
         clk_i => clk_i,
