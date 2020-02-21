@@ -31,6 +31,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/arithmetic/gain_control.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
     $vhd_dir/arithmetic/dsp_mac.vhd \
+    $vhd_dir/arithmetic/dsp48e_mac.vhd \
     $vhd_dir/arithmetic/saturate.vhd \
     $vhd_dir/fast_fir/fast_fir.vhd \
     $vhd_dir/fast_fir/fast_fir_top.vhd \

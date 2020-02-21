@@ -31,8 +31,8 @@ entity dsp_mac is
     );
     port (
         clk_i : in std_ulogic;
-        a_i : in signed(17 downto 0);
-        b_i : in signed(24 downto 0);
+        a_i : in signed(24 downto 0);
+        b_i : in signed(17 downto 0);
         en_ab_i : in std_ulogic;
         c_i : in signed(47 downto 0);
         en_c_i : in std_ulogic;
@@ -42,8 +42,11 @@ entity dsp_mac is
 end;
 
 architecture arch of dsp_mac is
-    signal a_in : signed(17 downto 0);
-    signal b_in : signed(24 downto 0);
+    signal a_in : signed(24 downto 0);
+    signal b_in : signed(17 downto 0);
+    signal en_ab_in : std_ulogic;
+    signal c_in : signed(47 downto 0);
+    signal en_c_in : std_ulogic;
     signal ab : signed(42 downto 0);
     signal abc : signed(47 downto 0);
 
@@ -62,17 +65,21 @@ begin
         if rising_edge(clk_i) then
             a_in <= a_i;
             b_in <= b_i;
-            if en_ab_i = '1' then
+            en_ab_in <= en_ab_i;
+            if en_ab_in = '1' then
                 ab <= a_in * b_in;
             else
                 ab <= (others => '0');
             end if;
+            c_in <= c_i;
+            en_c_in <= en_c_i;
+
             p_o <= abc;
             all_ones <= abc(OVF_RANGE) = ONES_MASK;
             all_zeros <= abc(OVF_RANGE) = 0;
         end if;
     end process;
 
-    abc <= resize(ab, 48) + c_i when en_c_i = '1' else resize(ab, 48);
+    abc <= resize(ab, 48) + c_in when en_c_in = '1' else resize(ab, 48);
     ovf_o <= '0' when all_ones or all_zeros else '1';
 end;

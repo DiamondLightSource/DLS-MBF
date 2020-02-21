@@ -165,37 +165,37 @@ begin
 
     -- Accumulate all the NCOs
     scale_ncos : for i in NCOS generate
-        signal a_in : signed(17 downto 0);
-        signal b_in : signed(24 downto 0);
-        signal enable_in : std_ulogic;
-        signal ab : signed(42 downto 0);
-        signal abc : signed(47 downto 0);
-
-        subtype OVF_RANGE is natural range 47 downto RAW_DAC_OUT_RANGE'LEFT;
-        constant ONES_MASK : signed(OVF_RANGE) := (others => '1');
-        signal all_ones : boolean;
-        signal all_zeros : boolean;
+        signal a_in : signed(24 downto 0);
+        signal c_in : signed(47 downto 0);
+        signal pc_in : signed(47 downto 0);
+        signal p_out : signed(47 downto 0);
+        signal pc_out : signed(47 downto 0);
 
     begin
-        process (clk_i) begin
-            if rising_edge(clk_i) then
-                a_in <= nco_data(i)(i).nco;
-                b_in <= (
-                    NCO_GAIN_RANGE => signed(nco_data(i)(i).gain),
-                    others => '0');
-                enable_in <= nco_enables(i)(i);
-                if enable_in then
-                    ab <= a_in * b_in;
-                else
-                    ab <= (others => '0');
-                end if;
-                accum_signal(i + 1) <= abc;
-                all_ones <= abc(OVF_RANGE) = ONES_MASK;
-                all_zeros <= abc(OVF_RANGE) = 0;
-            end if;
-        end process;
-        abc <= resize(ab, 48) + accum_signal(i);
-        nco_overflows(i) <= to_std_ulogic(not all_ones and not all_zeros);
+        -- Plumbing the C/P/PC signals is a bit painful: the initial value needs
+        -- to go into the C input, and the final result needs to go into P, but
+        -- all the intermediates need to go through PC.
+        c_in <=  accum_signal(i) when i = NCOS'LEFT else (others => '0');
+        pc_in <= (others => '0') when i = NCOS'LEFT else accum_signal(i);
+        accum_signal(i + 1) <= p_out when i = NCOS'RIGHT else pc_out;
+
+        a_in <= (NCO_GAIN_RANGE => signed(nco_data(i)(i).gain), others => '0');
+
+        mac : entity work.dsp48e_mac generic map (
+            TOP_RESULT_BIT => RAW_DAC_OUT_RANGE'LEFT,
+            USE_PCIN => i > 0
+        ) port map (
+            clk_i => clk_i,
+            a_i => a_in,
+            b_i => nco_data(i)(i).nco,
+            en_ab_i => nco_enables(i)(i),
+            c_i => c_in,
+            pc_i => pc_in,
+            en_c_i => ONE,
+            p_o => p_out,
+            pc_o => pc_out,
+            ovf_o => nco_overflows(i)
+        );
     end generate;
 
     -- Saturate final output from NCO accumulator chain.  We can't put this off
@@ -221,12 +221,12 @@ begin
     );
 
     -- Final output scaling
-    dac_mac : entity work.dsp_mac generic map (
+    dac_mac : entity work.dsp48e_mac generic map (
         TOP_RESULT_BIT => DAC_RESULT_RANGE'LEFT
     ) port map (
         clk_i => clk_i,
-        a_i => bunch_gain,
-        b_i => unscaled_dac_out,
+        a_i => unscaled_dac_out,
+        b_i => bunch_gain,
         en_ab_i => ONE,
         c_i => DAC_RESULT_ROUNDING,
         en_c_i => ONE,
