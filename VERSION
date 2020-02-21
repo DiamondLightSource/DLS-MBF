@@ -1,9 +1,9 @@
 # This file contains the global version definition for the MBF project.
 
-VERSION_EXTRA =
+VERSION_EXTRA = -dev
 VERSION_MAJOR = 1
 VERSION_MINOR = 4
-VERSION_PATCH = 0
+VERSION_PATCH = 1
 
 
 # Compute the git version string
