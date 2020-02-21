@@ -72,8 +72,8 @@ begin
         read_ack_o => read_ack_o(DSP_FIXED_NCO_REGS),
 
         tune_pll_offset_i => tune_pll_offset,
-        nco1_data_o => dsp_to_control_o.nco_0_data,
-        nco2_data_o => dsp_to_control_o.nco_3_data
+        nco1_data_o => dsp_to_control_o.nco_iq(NCO_NCO1),
+        nco2_data_o => dsp_to_control_o.nco_iq(NCO_NCO2)
     );
 
 
@@ -157,10 +157,7 @@ begin
 
         bunch_config_i => bunch_config,
         fir_data_i => fir_data,
-        nco_0_data_i => control_to_dsp_i.nco_0_data,
-        nco_1_data_i => control_to_dsp_i.nco_1_data,
-        nco_2_data_i => control_to_dsp_i.nco_2_data,
-        nco_3_data_i => control_to_dsp_i.nco_3_data,
+        nco_data_i => control_to_dsp_i.nco_data,
 
         store_fir_o => dsp_to_control_o.store_fir_data,
         store_dac_o => dsp_to_control_o.store_dac_data,
@@ -205,7 +202,7 @@ begin
         seq_write_adc_o => sequencer_write,
 
         tune_pll_offset_i => tune_pll_offset,
-        nco_data_o => dsp_to_control_o.nco_1_data,
+        nco_data_o => dsp_to_control_o.nco_iq(NCO_SEQ),
         detector_window_o => detector_window,
         bunch_bank_o => dsp_to_control_o.bank_select
     );
@@ -233,7 +230,7 @@ begin
         adc_data_i => control_to_dsp_i.adc_data,
         adc_fill_reject_i => fill_reject_adc,
         fir_data_i => fir_data,
-        nco_iq_i => dsp_to_control_o.nco_1_data.nco,
+        nco_iq_i => dsp_to_control_o.nco_iq(NCO_SEQ).nco,
         window_i => detector_window,
 
         start_i => sequencer_start,
@@ -266,7 +263,7 @@ begin
         stop_i => control_to_dsp_i.stop_tune_pll,
         blanking_i => control_to_dsp_i.blanking,
 
-        nco_data_o => dsp_to_control_o.nco_2_data,
+        nco_data_o => dsp_to_control_o.nco_iq(NCO_PLL),
         freq_offset_o => tune_pll_offset,
 
         interrupt_o => dsp_to_control_o.tune_pll_ready

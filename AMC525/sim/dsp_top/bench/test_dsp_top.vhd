@@ -36,10 +36,7 @@ architecture arch of testbench is
     signal dsp_event : std_ulogic;
 
     signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
-    signal mux_nco_0_out : dsp_nco_from_mux_array_t;
-    signal mux_nco_1_out : dsp_nco_from_mux_array_t;
-    signal mux_nco_2_out : dsp_nco_from_mux_array_t;
-    signal mux_nco_3_out : dsp_nco_from_mux_array_t;
+    signal mux_nco_out : nco_data_array_t;
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
 begin
@@ -97,26 +94,17 @@ begin
         clk_i => adc_clk,
 
         adc_mux_i => '0',
-        nco_0_mux_i => '0',
-        nco_1_mux_i => '0',
-        nco_2_mux_i => '0',
-        nco_3_mux_i => '0',
+        nco_mux_i => "0000",
         bank_mux_i => '0',
 
         dsp_to_control_i => dsp_to_control_array,
 
         adc_o => mux_adc_out,
-        nco_0_o => mux_nco_0_out,
-        nco_1_o => mux_nco_1_out,
-        nco_2_o => mux_nco_2_out,
-        nco_3_o => mux_nco_3_out,
+        nco_data_ch0_o => control_to_dsp.nco_data,
+        nco_data_ch1_o => open,
         bank_select_o => bank_select_out
     );
     control_to_dsp.adc_data <= mux_adc_out(0);
-    control_to_dsp.nco_0_data <= mux_nco_0_out(0);
-    control_to_dsp.nco_1_data <= mux_nco_1_out(0);
-    control_to_dsp.nco_2_data <= mux_nco_2_out(0);
-    control_to_dsp.nco_3_data <= mux_nco_3_out(0);
     control_to_dsp.bank_select <= bank_select_out(0);
     control_to_dsp.turn_clock <= turn_clock;
 

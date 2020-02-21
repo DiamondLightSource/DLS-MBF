@@ -35,10 +35,7 @@ entity dac_top is
         -- Data inputs
         bunch_config_i : in bunch_config_t;
         fir_data_i : in signed;
-        nco_0_data_i : in dsp_nco_from_mux_t;
-        nco_1_data_i : in dsp_nco_from_mux_t;
-        nco_2_data_i : in dsp_nco_from_mux_t;
-        nco_3_data_i : in dsp_nco_from_mux_t;
+        nco_data_i : in nco_data_array_t;
 
         -- Outputs and overflow detection
         store_fir_o : out signed;       -- Scaled FIR data
@@ -68,10 +65,7 @@ architecture arch of dac_top is
 
     -- Pipelines
     signal fir_data_in : fir_data_i'SUBTYPE;
-    signal nco_0_data_in : nco_0_data_i'SUBTYPE;
-    signal nco_1_data_in : nco_1_data_i'SUBTYPE;
-    signal nco_2_data_in : nco_2_data_i'SUBTYPE;
-    signal nco_3_data_in : nco_3_data_i'SUBTYPE;
+    signal nco_data_in : nco_data_i'SUBTYPE;
     signal bunch_config_in : bunch_config_i'SUBTYPE;
 
     -- Data flowing through system
@@ -138,37 +132,15 @@ begin
         signed(data_o) => fir_data_in
     );
 
-    nco0_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_0_data_i,
-        data_o => nco_0_data_in
-    );
-
-    nco1_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_1_data_i,
-        data_o => nco_1_data_in
-    );
-
-    nco2_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_2_data_i,
-        data_o => nco_2_data_in
-    );
-
-    nco3_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_3_data_i,
-        data_o => nco_3_data_in
-    );
+    nco_delays : for i in NCO_SET generate
+        nco_delay : entity work.dac_nco_delay generic map (
+            DELAY => INPUT_PIPELINE_DELAY
+        ) port map (
+            clk_i => adc_clk_i,
+            data_i => nco_data_i(i),
+            data_o => nco_data_in(i)
+        );
+    end generate;
 
     bunch_delay : entity work.dac_bunch_config_delay generic map (
         DELAY => INPUT_PIPELINE_DELAY
@@ -188,10 +160,7 @@ begin
         fir_data_i => fir_data_in,
         fir_gain_i => fir_gain,
 
-        nco_0_data_i => nco_0_data_in,
-        nco_1_data_i => nco_1_data_in,
-        nco_2_data_i => nco_2_data_in,
-        nco_3_data_i => nco_3_data_in,
+        nco_data_i => nco_data_i,
 
         data_o => data_out,
         fir_mms_o => fir_mms_data,

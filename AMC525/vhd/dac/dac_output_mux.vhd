@@ -24,10 +24,7 @@ entity dac_output_mux is
         fir_data_i : in signed;
         fir_gain_i : in unsigned;
 
-        nco_0_data_i : in dsp_nco_from_mux_t;
-        nco_1_data_i : in dsp_nco_from_mux_t;
-        nco_2_data_i : in dsp_nco_from_mux_t;
-        nco_3_data_i : in dsp_nco_from_mux_t;
+        nco_data_i : in nco_data_array_t;
 
         -- Generated outputs.  Note that the FIR overflow is pipelined through
         -- so that we know whether to ignore it, if the output was unused.
@@ -97,20 +94,17 @@ architecture arch of dac_output_mux is
     constant DAC_RESULT_ROUNDING : signed(47 downto 0)
         := (DAC_RESULT_OFFSET-1 => '1', others => '0');
 
-    subtype NCOS is natural range 0 to 3;
-    type dsp_nco_array is array(NCOS) of dsp_nco_from_mux_t;
-    type dsp_nco_array_array is array(NCOS) of dsp_nco_array;
-    signal nco_data_in : dsp_nco_array;
+    type dsp_nco_array_array is array(NCO_SET) of nco_data_array_t;
     signal nco_data : dsp_nco_array_array;
     signal fir_enable : std_ulogic;
-    signal nco_enables_in : std_ulogic_vector(NCOS);
-    signal nco_enables : vector_array(NCOS)(NCOS);
-    signal nco_overflows : std_ulogic_vector(NCOS);
+    signal nco_enables_in : std_ulogic_vector(NCO_SET);
+    signal nco_enables : vector_array(NCO_SET)(NCO_SET);
+    signal nco_overflows : std_ulogic_vector(NCO_SET);
     signal unscaled_overflow_out : std_ulogic;
     signal scaling_overflow : std_ulogic;
     signal scaling_overflow_out : std_ulogic;
 
-    signal accum_signal : signed_array(0 to NCOS'HIGH + 1)(47 downto 0);
+    signal accum_signal : signed_array(0 to NCO_SET'HIGH + 1)(47 downto 0);
     signal bunch_gain : bunch_config_i.gain'SUBTYPE;
     signal full_dac_out : signed(47 downto 0);
 
@@ -119,12 +113,6 @@ architecture arch of dac_output_mux is
     constant ONE : std_ulogic := '1';
 
 begin
-    -- Map individual NCOs to arrays for generation
-    nco_data_in <= (
-        0 => nco_0_data_i,
-        1 => nco_1_data_i,
-        2 => nco_2_data_i,
-        3 => nco_3_data_i);
     nco_enables_in <= (
         0 => bunch_config_i.nco_0_enable,
         1 => bunch_config_i.nco_1_enable,
@@ -135,9 +123,9 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             fir_enable <= bunch_config_i.fir_enable;
-            nco_data(0) <= nco_data_in;
+            nco_data(0) <= nco_data_i;
             nco_enables(0) <= nco_enables_in;
-            for i in 0 to NCOS'HIGH-1 loop
+            for i in 0 to NCO_SET'HIGH-1 loop
                 nco_enables(i+1) <= nco_enables(i);
                 nco_data(i+1) <= nco_data(i);
             end loop;
@@ -164,7 +152,7 @@ begin
         others => '0');
 
     -- Accumulate all the NCOs
-    scale_ncos : for i in NCOS generate
+    scale_ncos : for i in NCO_SET generate
         signal a_in : signed(24 downto 0);
         signal c_in : signed(47 downto 0);
         signal pc_in : signed(47 downto 0);
@@ -175,9 +163,9 @@ begin
         -- Plumbing the C/P/PC signals is a bit painful: the initial value needs
         -- to go into the C input, and the final result needs to go into P, but
         -- all the intermediates need to go through PC.
-        c_in <=  accum_signal(i) when i = NCOS'LEFT else (others => '0');
-        pc_in <= (others => '0') when i = NCOS'LEFT else accum_signal(i);
-        accum_signal(i + 1) <= p_out when i = NCOS'RIGHT else pc_out;
+        c_in <=  accum_signal(i) when i = NCO_SET'LEFT else (others => '0');
+        pc_in <= (others => '0') when i = NCO_SET'LEFT else accum_signal(i);
+        accum_signal(i + 1) <= p_out when i = NCO_SET'RIGHT else pc_out;
 
         a_in <= (NCO_GAIN_RANGE => signed(nco_data(i)(i).gain), others => '0');
 
@@ -204,8 +192,8 @@ begin
         OFFSET => RAW_DAC_OUT_RANGE'RIGHT
     ) port map (
         clk_i => clk_i,
-        data_i => accum_signal(NCOS'HIGH + 1),
-        ovf_i => nco_overflows(NCOS'HIGH),
+        data_i => accum_signal(NCO_SET'HIGH + 1),
+        ovf_i => nco_overflows(NCO_SET'HIGH),
         data_o => unscaled_dac_out,
         ovf_o => unscaled_overflow_out
     );
