@@ -33,6 +33,7 @@ add wave -group "Prepare" sim:/testbench/nco/prepare/*
 add wave -group "Refine" sim:/testbench/nco/refine/*
 add wave -group "Fixup" sim:/testbench/nco/fixup_octant/*
 add wave -group "NCO" sim:/testbench/nco/*
+add wave -group "Sim NCO" sim:/testbench/sim_nco/*
 add wave sim:*
 
 add wave -noupdate \

@@ -33,6 +33,7 @@ architecture arch of testbench is
 
     signal reference : cos_sin_18_t;
     signal difference : cos_sin_18_t;
+    signal enable_check : boolean := false;
     signal sim_error : boolean;
 
     -- This delay must match the NCO core delay.  This is the sum of
@@ -62,10 +63,12 @@ begin
         reset_phase_i => reset_phase,
         cos_sin_o => reference
     );
-    difference.cos <= unscaled.cos - reference.cos;
-    difference.sin <= unscaled.sin - reference.sin;
     process (clk) begin
-        sim_error <= abs(difference.cos) > 1 or abs(difference.sin) > 1;
+        if enable_check then
+            difference.cos <= unscaled.cos - reference.cos;
+            difference.sin <= unscaled.sin - reference.sin;
+            sim_error <= abs(difference.cos) > 1 or abs(difference.sin) > 1;
+        end if;
     end process;
 
 
@@ -73,8 +76,12 @@ begin
     process begin
         phase_advance <= X"001234560000";
         reset_phase <= '1';
-        tick_wait;
+        tick_wait(2);
         reset_phase <= '0';
+        -- We delay checking the result until startup artifacts have finishing
+        -- bubbling through the processing chain.
+        tick_wait(12);
+        enable_check <= true;
 
         for i in 1 to 10 loop
             tick_wait(60);
