@@ -156,7 +156,7 @@ begin
             a_i => scalar,
             b_i => nco_in,
             en_ab_i => '1',
-            pc_i => accum_array(i),
+            c_i => accum_array(i),
             en_c_i => enable_c,
             p_o => p_out,
             pc_o => accum_array(i + 1),

@@ -75,7 +75,6 @@ entity dsp48e_mac is
         en_ab_i : in std_ulogic;
 
         c_i : in signed(47 downto 0) := (others => '0');
-        pc_i : in signed(47 downto 0) := (others => '0');
         en_c_i : in std_ulogic;
 
         p_o : out signed(47 downto 0);
@@ -85,6 +84,9 @@ entity dsp48e_mac is
 end;
 
 architecture arch of dsp48e_mac is
+    signal c_in : signed(47 downto 0);
+    signal pc_in : signed(47 downto 0);
+
     subtype OVF_RANGE is natural range 47 downto TOP_RESULT_BIT;
     constant ONES_MASK : signed(OVF_RANGE) := (others => '1');
     signal all_ones : std_ulogic;
@@ -114,6 +116,14 @@ begin
         "001" when USE_PCIN else        -- Z <= PCIN when using PCIN
         "011";                          -- Z <= C otherwise
 
+    c_input : if USE_PCIN generate
+        c_in <= (others => '0');
+        pc_in <= c_i;
+    else generate
+        c_in <= c_i;
+        pc_in <= (others => '0');
+    end generate;
+
     dsp : DSP48E1 generic map (
         USE_PATTERN_DETECT => "PATDET",
         MASK => pattern_mask,
@@ -124,7 +134,7 @@ begin
         ALUMODE => "0000",
         B => std_ulogic_vector(b_i),
         BCIN => (others => '0'),
-        C => std_ulogic_vector(c_i),
+        C => std_ulogic_vector(c_in),
         CARRYCASCIN => '0',
         CARRYIN => '0',
         CARRYINSEL => "000",
@@ -146,7 +156,7 @@ begin
         INMODE => "00000",
         MULTSIGNIN => '0',
         OPMODE => opmode,
-        PCIN => std_ulogic_vector(pc_i),
+        PCIN => std_ulogic_vector(pc_in),
         RSTA => not en_ab_i,
         RSTALLCARRYIN => '0',
         RSTALUMODE => '0',
