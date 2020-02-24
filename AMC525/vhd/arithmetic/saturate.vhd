@@ -20,7 +20,7 @@ entity saturate is
         -- The incoming overflow is registered to keep it in step with the
         -- outgoing data.
         data_o : out signed;
-        ovf_o : out std_ulogic
+        ovf_o : out std_ulogic := '0'
     );
 end;
 
@@ -28,9 +28,9 @@ architecture arch of saturate is
     constant OUT_WIDTH : natural := data_o'LENGTH;
     subtype DATA_RANGE is natural range OUT_WIDTH+OFFSET-1 downto OFFSET;
 
-    signal data_in : data_i'SUBTYPE;
-    signal ovf_in : std_ulogic;
-    signal data_out : data_o'SUBTYPE;
+    signal data_in : data_i'SUBTYPE := (others => '0');
+    signal ovf_in : std_ulogic := '0';
+    signal data_out : data_o'SUBTYPE := (others => '0');
 
 begin
     assert OUT_WIDTH + OFFSET < data_i'LENGTH severity failure;

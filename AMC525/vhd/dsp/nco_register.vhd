@@ -34,8 +34,8 @@ entity nco_register is
 end;
 
 architecture arch of nco_register is
-    signal freq_low_bits_out : reg_data_t;
-    signal freq_low_bits_in : reg_data_t;
+    signal freq_low_bits_out : reg_data_t := (others => '0');
+    signal freq_low_bits_in : reg_data_t := (others => '0');
 
 begin
     process (clk_i) begin
