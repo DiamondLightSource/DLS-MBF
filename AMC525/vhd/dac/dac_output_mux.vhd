@@ -48,6 +48,7 @@ begin
         fir_data_i => fir_data_i,
         fixed_gain_i => fir_gain_i,
         bb_gain_i => bunch_config_i.fir_gain,
+        fir_enable_i => bunch_config_i.fir_enable,
 
         fir_data_o => scaled_fir_data,
         fir_mms_o => fir_mms_o,

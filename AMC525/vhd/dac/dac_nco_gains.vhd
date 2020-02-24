@@ -33,7 +33,6 @@ architecture arch of dac_nco_gains is
     signal nco_data : nco_array_array_t
         := (NCO_SET => (NCO_SET => dsp_nco_from_mux_reset));
 
-    signal fir_enable : std_ulogic;
     signal mux_overflow : std_ulogic;
 
     -- The FIR data in will be treated as a 13.35 signal.  If we then treat the
@@ -48,14 +47,6 @@ architecture arch of dac_nco_gains is
     -- We pluck out the 1.15 part of the finaly 13.35 signal
     subtype DAC_RESULT_RANGE is natural range 35 downto 20;
 
-    -- The fir_enable signal needs to be delayed so that it lines up with the
-    -- result of the first bb_gain control:
-    --  bunch_config_i.nco0_gain = bb_gains(0) = nco_array(0).scale.a_i
-    --      =(3)=> nco_array(0).full_scalar
-    --      => nco_array(0).scalar = nco_array(0).mac.a_i
-    -- and now we need a fudge factor
-    constant FIR_ENABLE_DELAY : natural := 5;
-
 begin
     -- Bunch by bunch gains and NCO data will be aligned.  Start with the
     -- incoming data.
@@ -66,16 +57,6 @@ begin
         3 => bunch_config_i.nco3_gain);
     nco_data(0) <= nco_data_i;
 
-
-    -- The FIR enable signal must be delayed to align with the bunch by bunch
-    -- change of gain.
-    fir_delay : entity work.dlyline generic map (
-        DLY => FIR_ENABLE_DELAY
-    ) port map (
-        clk_i => clk_i,
-        data_i(0) => bunch_config_i.fir_enable,
-        data_o(0) => fir_enable
-    );
 
     -- Generated the aligned gains and signals.  All the bunch by bunch gains
     -- must be aligned, and the SEQ NCO fixed gain and NCO signal must be also
@@ -105,14 +86,11 @@ begin
         signal scalar : signed(24 downto 0) := (others => '0');
         signal nco_in : signed(17 downto 0);
 
+        constant use_pcin : boolean := i > NCO_SET'LOW;
         signal p_out : signed(47 downto 0);
         signal ovf_out : std_ulogic;
-        signal enable_c : std_ulogic;
 
     begin
-        -- Apply fir_enable signal to first accumulator only
-        enable_c <= fir_enable when i = NCO_SET'LEFT else '1';
-
         -- Compute scalar as product of fixed and bunch by bunch gains
         scale : entity work.dsp48e_mac port map (
             clk_i => clk_i,
@@ -121,9 +99,7 @@ begin
             en_ab_i => '1',
             c_i => ROUND_SCALAR,
             en_c_i => '1',
-            p_o => full_scalar,
-            pc_o => open,
-            ovf_o => open
+            p_o => full_scalar
         );
 
         process (clk_i) begin
@@ -150,14 +126,14 @@ begin
 
         mac : entity work.dsp48e_mac generic map (
             TOP_RESULT_BIT => DAC_RESULT_RANGE'LEFT,
-            USE_PCIN => true
+            USE_PCIN => use_pcin
         ) port map (
             clk_i => clk_i,
             a_i => scalar,
             b_i => nco_in,
             en_ab_i => '1',
             c_i => accum_array(i),
-            en_c_i => enable_c,
+            en_c_i => '1',
             p_o => p_out,
             pc_o => accum_array(i + 1),
             ovf_o => ovf_out
