@@ -58,8 +58,10 @@ architecture arch of dac_top is
 
     -- Event readbacks to registers
     signal fir_overflow_adc : std_ulogic;
+    signal mms_overflow_adc : std_ulogic;
     signal mux_overflow_adc : std_ulogic;
     signal fir_overflow : std_ulogic;
+    signal mms_overflow : std_ulogic;
     signal mux_overflow : std_ulogic;
     signal preemph_overflow : std_ulogic;
 
@@ -99,6 +101,7 @@ begin
         delta_reset_o => delta_reset,
 
         fir_overflow_i => fir_overflow,
+        mms_overflow_i => mms_overflow,
         mux_overflow_i => mux_overflow,
         preemph_overflow_i => preemph_overflow,
         delta_event_i => delta_event_o
@@ -110,6 +113,13 @@ begin
         dsp_clk_i => dsp_clk_i,
         pulse_i => fir_overflow_adc,
         pulse_o => fir_overflow
+    );
+
+    mms_to_dsp : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => mms_overflow_adc,
+        pulse_o => mms_overflow
     );
 
     mux_to_dsp : entity work.pulse_adc_to_dsp port map (
@@ -160,12 +170,13 @@ begin
         fir_data_i => fir_data_in,
         fir_gain_i => fir_gain,
 
-        nco_data_i => nco_data_i,
+        nco_data_i => nco_data_in,
 
         data_o => data_out,
         fir_mms_o => fir_mms_data,
 
         fir_overflow_o => fir_overflow_adc,
+        mms_overflow_o => mms_overflow_adc,
         mux_overflow_o => mux_overflow_adc
     );
     store_fir_o <= fir_mms_data;

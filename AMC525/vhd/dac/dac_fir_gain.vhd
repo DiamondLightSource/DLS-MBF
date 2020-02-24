@@ -9,68 +9,92 @@ use ieee.numeric_std.all;
 use work.support.all;
 
 entity dac_fir_gain is
-    generic (
-        MMS_OFFSET : natural
-    );
     port (
         clk_i : in std_ulogic;
 
-        data_i : in signed;
-        gain_i : in unsigned;
-        enable_i : in std_ulogic;
+        fir_data_i : in signed(24 downto 0);    -- 4.21
+        fixed_gain_i : in unsigned(3 downto 0); -- Treat as x2^7 to x2^-8
+        bb_gain_i : in signed(17 downto 0);     -- 4.14
 
-        data_o : out signed;
-        mms_o : out signed;
-        overflow_o : out std_ulogic
+        fir_data_o : out signed(47 downto 0);   -- 13.35
+        fir_mms_o : out signed(15 downto 0);    -- 1.15
+        fir_overflow_o : out std_ulogic;
+        mms_overflow_o : out std_ulogic
     );
 end;
 
 architecture arch of dac_fir_gain is
-    signal data_in : data_o'SUBTYPE;
-    signal shifted_data : data_o'SUBTYPE;
-    signal shifted_data_out : data_o'SUBTYPE;
-    signal fir_overflow : std_ulogic;
-    signal data_out : data_o'SUBTYPE;
+    signal data_in : signed(39 downto 0) := (others => '0');
+    signal shifted_data : signed(39 downto 0) := (others => '0');
+    signal shifted_data_out : signed(39 downto 0) := (others => '0');
+    signal fir_overflow : std_ulogic := '0';
 
-    constant IN_WIDTH : natural := data_i'LENGTH;
-    constant OUT_WIDTH : natural := data_o'LENGTH;
+    signal shifted_fir : signed(24 downto 0);
+
+    signal full_mms_out : signed(47 downto 0);
+    signal mms_overflow : std_ulogic;
+
+    -- Our output is a 12.35 value packed into a PCOUT wire.  We generate this
+    -- by multiplying a 4.14 bunch by bunch scaling factor into a 4.21 input,
+    -- which was in turn extracted from the 11.29 scaled value.
+    --
+    -- This readout shift determines the position of the binary point in the
+    -- final output.
+    constant BASE_READOUT_SHIFT : natural := 8;
+    subtype BASE_READOUT_RANGE is natural range
+        BASE_READOUT_SHIFT + 24 downto BASE_READOUT_SHIFT;
     subtype OVERFLOW_RANGE is natural range
-        OUT_WIDTH-1 downto MMS_OFFSET + mms_o'LENGTH - 1;
-    subtype SOURCE_RANGE is natural range
-        OUT_WIDTH-1 downto OUT_WIDTH - IN_WIDTH;
+        shifted_data'LEFT downto BASE_READOUT_RANGE'LEFT;
+    -- We extract 1.15 from 12.35
+    subtype MMS_READOUT_RANGE is natural range 35 downto 20;
 
 begin
+    -- Shift the data to apply the fixed gain
     process (clk_i) begin
         if rising_edge(clk_i) then
-            data_in <= (SOURCE_RANGE => data_i, others => '0');
-            shifted_data <= shift_right(data_in, to_integer(gain_i));
-
+            data_in <= (39 downto 15 => fir_data_i, others => '0');
+            shifted_data <= shift_right(data_in, to_integer(fixed_gain_i));
             -- Compute output data and overflow detection together, we'll need
             -- this for the saturation stage.
             shifted_data_out <= shifted_data;
             fir_overflow <= overflow_detect(shifted_data(OVERFLOW_RANGE));
-
-            -- Only report FIR overflow if the data is enabled.  We don't need
-            -- to saturate this data as this will be managed downstream.
-            if enable_i then
-                data_out <= shifted_data_out;
-                overflow_o <= fir_overflow;
-            else
-                data_out <= (others => '0');
-                overflow_o <= '0';
-            end if;
         end if;
     end process;
 
-    -- Saturate the MMS data for a more friendly display.
-    saturate : entity work.saturate generic map (
-        OFFSET => MMS_OFFSET
+    -- Slice 25 bits from the shifted FIR so we can scale it; at this point we
+    -- may suffer an overflow.
+    saturate_fir : entity work.saturate generic map (
+        OFFSET => BASE_READOUT_SHIFT
     ) port map (
         clk_i => clk_i,
         data_i => shifted_data_out,
         ovf_i => fir_overflow,
-        data_o => mms_o
+        data_o => shifted_fir,
+        ovf_o => fir_overflow_o
     );
 
-    data_o <= data_out;
+    -- Next scale the shifted and saturated data by the bunch by bunch factor
+    bb_scale_nco : entity work.dsp48e_mac generic map (
+        TOP_RESULT_BIT => MMS_READOUT_RANGE'LEFT
+    ) port map (
+        clk_i => clk_i,
+        a_i => shifted_fir,
+        b_i => bb_gain_i,
+        en_ab_i => '1',
+        en_c_i => '0',
+        p_o => full_mms_out,
+        pc_o => fir_data_o,
+        ovf_o => mms_overflow
+    );
+
+    -- Finally saturate the displayed MMS output.
+    saturate_mms : entity work.saturate generic map (
+        OFFSET => MMS_READOUT_RANGE'RIGHT
+    ) port map (
+        clk_i => clk_i,
+        data_i => full_mms_out,
+        ovf_i => mms_overflow,
+        data_o => fir_mms_o,
+        ovf_o => mms_overflow_o
+    );
 end;

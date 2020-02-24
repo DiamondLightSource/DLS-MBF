@@ -121,6 +121,42 @@ begin
             read_reg(dsp_clk, read_data, read_strobe, read_ack, reg);
         end;
 
+        procedure write_bank_bunch(
+            fir_select : unsigned(1 downto 0) := "00";
+            fir_gain : unsigned(17 downto 0) := (others => '0');
+            fir_enable : std_ulogic := '0';
+            nco0_gain : unsigned(17 downto 0) := (others => '0');
+            nco1_gain : unsigned(17 downto 0) := (others => '0');
+            nco2_gain : unsigned(17 downto 0) := (others => '0');
+            nco3_gain : unsigned(17 downto 0) := (others => '0')) is
+        begin
+            write_reg(DSP_BUNCH_BANK_REG, (
+                DSP_BUNCH_BANK_NCO01_NCO0_HIGH_BITS =>
+                    std_ulogic_vector(nco0_gain(17 downto 2)),
+                DSP_BUNCH_BANK_NCO01_NCO1_HIGH_BITS =>
+                    std_ulogic_vector(nco1_gain(17 downto 2))));
+            write_reg(DSP_BUNCH_BANK_REG, (
+                DSP_BUNCH_BANK_NCO23_NCO2_HIGH_BITS =>
+                    std_ulogic_vector(nco2_gain(17 downto 2)),
+                DSP_BUNCH_BANK_NCO23_NCO3_HIGH_BITS =>
+                    std_ulogic_vector(nco3_gain(17 downto 2))));
+            write_reg(DSP_BUNCH_BANK_REG, (
+                DSP_BUNCH_BANK_EXTRA_FIR_SELECT_BITS =>
+                    std_ulogic_vector(fir_select),
+                DSP_BUNCH_BANK_EXTRA_FIR_GAIN_BITS =>
+                    std_ulogic_vector(fir_gain),
+                DSP_BUNCH_BANK_EXTRA_FIR_ENABLE_BIT => fir_enable,
+                DSP_BUNCH_BANK_EXTRA_NCO0_LOW_BITS =>
+                    std_ulogic_vector(nco0_gain(1 downto 0)),
+                DSP_BUNCH_BANK_EXTRA_NCO1_LOW_BITS =>
+                    std_ulogic_vector(nco1_gain(1 downto 0)),
+                DSP_BUNCH_BANK_EXTRA_NCO2_LOW_BITS =>
+                    std_ulogic_vector(nco2_gain(1 downto 0)),
+                DSP_BUNCH_BANK_EXTRA_NCO3_LOW_BITS =>
+                    std_ulogic_vector(nco3_gain(1 downto 0)),
+                others => '0'));
+        end;
+
     begin
 
         clk_wait(dsp_clk, 10);
@@ -143,9 +179,9 @@ begin
         write_reg(DSP_FIR_CONFIG_REG_W, (others => '0'));
         write_reg(DSP_FIR_TAPS_REG, X"7FFFFFFF");
 
-        -- Set FIR gain reasonably low
+        -- Set FIR gain to unity gain
         write_reg(DSP_DAC_CONFIG_REG, (
-            DSP_DAC_CONFIG_FIR_GAIN_BITS => "1100", others => '0'));
+            DSP_DAC_CONFIG_FIR_GAIN_BITS => "0111", others => '0'));
 
         -- Set a sensible NCO frequency, reset the phase
         write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW, X"00000000");
@@ -154,7 +190,16 @@ begin
             NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
             others => '0'));
         write_reg(DSP_FIXED_NCO_NCO1_REG, (
-            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"10000",
+            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"15555",
+            others => '0'));
+
+        -- Enable second NCO
+        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW, X"00000000");
+        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW + 1, (
+            NCO_FREQ_HIGH_BITS_BITS => X"0F00",
+            others => '0'));
+        write_reg(DSP_FIXED_NCO_NCO2_REG, (
+            DSP_FIXED_NCO_NCO2_GAIN_BITS => 18X"3FFFF",
             others => '0'));
 
         -- Configure bunch control: bank 0 for NCO
@@ -162,22 +207,18 @@ begin
             DSP_BUNCH_CONFIG_BANK_BITS => "00",
             others => '0'));
         for n in 1 to TURN_COUNT loop
-            write_reg(DSP_BUNCH_BANK_REG, (
-                DSP_BUNCH_BANK_GAIN_BITS => 18X"01000",
-                DSP_BUNCH_BANK_FIR_ENABLE_BIT => '1',
-                DSP_BUNCH_BANK_NCO0_ENABLE_BIT => '1',
---                 DSP_BUNCH_BANK_NCO3_ENABLE_BIT => '1',
-                others => '0'));
+            write_bank_bunch(
+                fir_gain => 18X"04000", fir_enable => '1');
+--                 fir_gain => 18X"01000", fir_enable => '1',
+--                 nco0_gain => 18X"06000",
+--                 nco3_gain => 18X"02000");
         end loop;
         -- Bank 1 for sweep
         write_reg(DSP_BUNCH_CONFIG_REG, (
             DSP_BUNCH_CONFIG_BANK_BITS => "01",
             others => '0'));
         for n in 1 to TURN_COUNT loop
-            write_reg(DSP_BUNCH_BANK_REG, (
-                DSP_BUNCH_BANK_GAIN_BITS => 18X"10000",
-                DSP_BUNCH_BANK_NCO1_ENABLE_BIT => '1',
-                others => '0'));
+            write_bank_bunch(nco1_gain => 18X"04000");
         end loop;
 
         -- Configure sequencer
@@ -197,6 +238,7 @@ begin
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT => '1',
+            DSP_SEQ_STATE_CONFIG_DIS_SUPER_BIT => '1',
             others => '0'));
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
@@ -206,14 +248,14 @@ begin
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- start freq (bottom
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- delta freq  bits)
         write_reg(DSP_SEQ_WRITE_REG, (
-            DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS => X"1000",
+            DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS => X"2000",
             DSP_SEQ_STATE_HIGH_BITS_DELTA_HIGH_BITS => X"0000"));
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_TIME_DWELL_BITS => X"0000",
             DSP_SEQ_STATE_TIME_CAPTURE_BITS => X"0000"));
         write_reg(DSP_SEQ_WRITE_REG, (
             DSP_SEQ_STATE_CONFIG_BANK_BITS => "01",
-            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => 18X"04000",
+            DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => 18X"3FFFF",
             others => '0'));
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
         write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
@@ -227,15 +269,6 @@ begin
         wait until dsp_to_control.seq_busy = '1';
         wait until dsp_to_control.seq_busy = '0';
         clk_wait(dsp_clk);
-
-        -- Enable second NCO
-        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW, X"00000000");
-        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW + 1, (
-            NCO_FREQ_HIGH_BITS_BITS => X"0F00",
-            others => '0'));
-        write_reg(DSP_FIXED_NCO_NCO2_REG, (
-            DSP_FIXED_NCO_NCO2_GAIN_BITS => 18X"0FFFF",
-            others => '0'));
 
         -- Work through the FIR gain settings
         for i in 15 downto 0 loop

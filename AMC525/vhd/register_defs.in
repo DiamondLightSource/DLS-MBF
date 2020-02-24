@@ -27,7 +27,7 @@
 # 255   Reserved for non MBF firmware with kernel driver compatibility.  Do not
 #       use for any version of MBF firmware
 # ===== ========================================================================
-FIRMWARE_COMPAT_VERSION = 2
+FIRMWARE_COMPAT_VERSION = 254
 
 ## Do not change this value, leave equal to 254
 FIRMWARE_COMPAT_UNSTABLE = 254
@@ -513,23 +513,36 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         CONFIG      W
             # Determines bunch bank to be written, resets write pointer
             .BANK       2
+        # The each bunch configuration is packed into three overlaid registers
+        # (to reduce the number of writes required).  Once CONFIG.BANK has been
+        # set, three successive writes to the BANK register will update one
+        # bunch, and repeated writes will update successive bunches.
         # Repeated writes to this register update the configuration for
-        # successive bunches
-        BANK        W
-            # Selects FIR to apply to this bunch
-            .FIR_SELECT     2
-            # Output gain.  This is scaled as a 6.12 fixed point number
-            .GAIN           18
-            # Enable FIR output for this bunch
-            .FIR_ENABLE
-            # Enable NCO0 output
-            .NCO0_ENABLE
-            # Enable NCO1 output
-            .NCO1_ENABLE
-            # Enable NCO2 output
-            .NCO2_ENABLE
-            # Enable NCO3 output
-            .NCO3_ENABLE
+        # successive bunches.
+        #
+        # All the gain factors are scaled as 4.14 18-bit fixed point numbers,
+        # packed into three registers as shown below.
+        *OVERLAY    BANK        W
+            # Basic gains for NCO0 and NCO1
+            NCO01
+                .NCO0_HIGH      16
+                .NCO1_HIGH      16
+            # Basic gains for NCO2 and NCO3
+            NCO23
+                .NCO2_HIGH      16
+                .NCO3_HIGH      16
+            EXTRA
+                # Selects FIR to apply to this bunch
+                .FIR_SELECT     2
+                # Output gain.  This is scaled as a 4.14 fixed point number
+                .FIR_GAIN       18
+                # Enable FIR output for this bunch
+                .FIR_ENABLE
+                # Remaining low order bits for the NCOs
+                .NCO0_LOW       2
+                .NCO1_LOW       2
+                .NCO2_LOW       2
+                .NCO3_LOW       2
 
 
     # Bunch by bunch filter
@@ -577,8 +590,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 .DELTA          16
             *RW
                 EVENTS      R
-                    # Set when overflow in FIR data detected in DAC output
+                    # Set when FIR data is clipped before bunch by bunch scaling
                     .FIR_OVF
+                    # Set when FIR data to MMS generates overflow
+                    .MMS_OVF
                     # Set when DAC output multiplexer detects overflow
                     .MUX_OVF
                     # Set if overflow detected during output preemphasis filter

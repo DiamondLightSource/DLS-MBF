@@ -29,6 +29,7 @@ entity dac_registers is
         delta_reset_o : out std_ulogic;
 
         fir_overflow_i : in std_ulogic;
+        mms_overflow_i : in std_ulogic;
         mux_overflow_i : in std_ulogic;
         preemph_overflow_i : in std_ulogic;
         delta_event_i : in std_ulogic
@@ -87,6 +88,7 @@ begin
 
     event_bits <= (
         DSP_DAC_EVENTS_FIR_OVF_BIT => fir_overflow_i,
+        DSP_DAC_EVENTS_MMS_OVF_BIT => mms_overflow_i,
         DSP_DAC_EVENTS_MUX_OVF_BIT => mux_overflow_i,
         DSP_DAC_EVENTS_OUT_OVF_BIT => preemph_overflow_i,
         DSP_DAC_EVENTS_DELTA_BIT => delta_event_i,

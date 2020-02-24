@@ -38,9 +38,12 @@ architecture arch of bunch_store is
     signal read_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
     signal write_addr : unsigned(ADDR_BITS-1 downto 0) := (others => '0');
 
-    subtype data_t is std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
-    signal write_data : data_t;
+    signal write_word0 : std_ulogic_vector(31 downto 0);
+    signal write_word1 : std_ulogic_vector(31 downto 0);
+    signal write_word2 : std_ulogic_vector(28 downto 0);
 
+    type write_phase_t is (WORD0, WORD1, WORD2);
+    signal write_phase : write_phase_t;
     signal write_bunch : bunch_index_i'SUBTYPE;
     signal write_strobe : std_ulogic := '0';
 
@@ -66,7 +69,7 @@ begin
         write_clk_i => dsp_clk_i,
         write_strobe_i => write_strobe,
         write_addr_i => write_addr,
-        write_data_i => write_data
+        write_data_i => write_word2 & write_word1 & write_word0
     );
 
     -- Bring result to ADC clock
@@ -84,17 +87,30 @@ begin
             if write_start_i = '1' then
                 -- Reset write back to start
                 write_bunch <= (others => '0');
+                write_phase <= WORD0;
             elsif write_strobe_i = '1' then
-                -- Write a single value into the current bunch and lane
-                write_addr <= write_bank_i & write_bunch;
-                write_data <= write_data_i(data_t'RANGE);
+                -- Assemble three words into a single write
+                case write_phase is
+                    when WORD0 =>
+                        write_word0 <= write_data_i;
+                        write_phase <= WORD1;
+                    when WORD1 =>
+                        write_word1 <= write_data_i;
+                        write_phase <= WORD2;
+                    when WORD2 =>
+                        write_word2 <= write_data_i(28 downto 0);
+                        write_phase <= WORD0;
+                end case;
 
-                -- Advance to next entry
-                write_bunch <= write_bunch + 1;
+                if write_phase = WORD2 then
+                    -- Write this word and advance to next entry
+                    write_addr <= write_bank_i & write_bunch;
+                    write_bunch <= write_bunch + 1;
+                end if;
             end if;
 
-            write_strobe <= write_strobe_i;
-
+            write_strobe <=
+                write_strobe_i and to_std_ulogic(write_phase = WORD2);
         end if;
     end process;
 
