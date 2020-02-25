@@ -23,9 +23,6 @@ AMC525_SERVER = l-c31-3 199
 EPICS_DEVICE = /usr/local/epics/epics_device
 EPICS_BASE = /usr/local/epics/base-3.14.12.8
 
-# Directory for Tango Device Server binaries
-INSTALL_DIR = /runtime/servers/bin
-
 # Directory for python modules
 PYMOD_INSTALL_DIR = /operation/dserver/python/modules
 
