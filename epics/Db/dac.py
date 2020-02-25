@@ -31,6 +31,7 @@ for a in axes('DAC'):
     dac_events.append(ovf)
 
     dac_events.append(event('EVENT', 'DAC min/max event'))
+    dac_events.append(overflow('MMS_OVF', 'DAC MMS overflow'))
 
     add_aggregate(a, ovf, enable)
 

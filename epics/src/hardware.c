@@ -670,14 +670,20 @@ void hw_write_bunch_config(
         WRITE_FIELDS(dsp_regs[axis]->bunch_config, .bank = bank & 0x3);
         FOR_BUNCHES(i)
         {
-            WRITE_FIELDS(dsp_regs[axis]->bunch_bank,
-                .fir_select = (unsigned int) config->fir_select[i] & 0x3,
-                .gain = (unsigned int) config->gain[i] & 0x3FFFF,
+            WRITE_FIELDS(dsp_regs[axis]->bunch_bank.nco01,
+                .nco0_high = ((uint32_t) config->nco0_gains[i] >> 2) & 0xFFFF,
+                .nco1_high = ((uint32_t) config->nco1_gains[i] >> 2) & 0xFFFF);
+            WRITE_FIELDS(dsp_regs[axis]->bunch_bank.nco23,
+                .nco2_high = ((uint32_t) config->nco2_gains[i] >> 2) & 0xFFFF,
+                .nco3_high = ((uint32_t) config->nco3_gains[i] >> 2) & 0xFFFF);
+            WRITE_FIELDS(dsp_regs[axis]->bunch_bank.extra,
+                .fir_select = (uint32_t) config->fir_select[i] & 0x3,
+                .fir_gain = (uint32_t) config->fir_gains[i] & 0x3FFFF,
                 .fir_enable = config->fir_enable[i],
-                .nco0_enable = config->nco0_enable[i],
-                .nco1_enable = config->nco1_enable[i],
-                .nco2_enable = config->nco2_enable[i],
-                .nco3_enable = config->nco3_enable[i]);
+                .nco0_low = (uint32_t) config->nco0_gains[i] & 0x3,
+                .nco1_low = (uint32_t) config->nco1_gains[i] & 0x3,
+                .nco2_low = (uint32_t) config->nco2_gains[i] & 0x3,
+                .nco3_low = (uint32_t) config->nco3_gains[i] & 0x3);
         }
     }
 }
@@ -755,6 +761,7 @@ void hw_read_dac_events(int axis, struct dac_events *result)
     struct dsp_dac_events events = READL(dsp_regs[axis]->dac_events);
     *result = (struct dac_events) {
         .fir_ovf = events.fir_ovf,
+        .mms_ovf = events.mms_ovf,
         .mux_ovf = events.mux_ovf,
         .out_ovf = events.out_ovf,
         .delta_event = events.delta,

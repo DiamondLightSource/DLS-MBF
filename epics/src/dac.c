@@ -171,6 +171,7 @@ error__t initialise_dac(void)
 
         PUBLISH_READ_VAR(bi, "BUN_OVF", dac->events.fir_ovf);
         PUBLISH_READ_VAR(bi, "MUX_OVF", dac->events.mux_ovf);
+        PUBLISH_READ_VAR(bi, "MMS_OVF", dac->events.mms_ovf);
         PUBLISH_READ_VAR(bi, "FIR_OVF", dac->events.out_ovf);
         PUBLISH_READ_VAR(bi, "OVF",     dac->overflow);
         PUBLISH_READ_VAR(bi, "EVENT",   dac->events.delta_event);

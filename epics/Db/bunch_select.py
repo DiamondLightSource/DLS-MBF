@@ -3,28 +3,44 @@ from common import *
 # Bunch selection
 
 def bank_pvs(bank):
-    # For each bunch setting there is an associated status string which is
-    # updated as the waveform is updated.
-    def BunchWaveforms(name, FTVL, desc):
-        status = stringIn('%s:STA' % name,
-            DESC = 'Bank %d %s status' % (bank, name))
-        WaveformOut(name, BUNCHES_PER_TURN, FTVL,
-            FLNK = status, DESC = 'Set %d %s' % (bank, desc))
-        Action('%s:SET' % name, DESC = 'Set selected bunches')
+    # The output selection is summarised in a single status PV, this is updated
+    # each time any of the output gain control PVs is updated.
+    status = stringIn('STATUS', DESC = 'Bank %d output status' % bank)
 
-    # Waveform settings with status update
-    BunchWaveforms('FIRWF', 'CHAR', 'FIR bank select')
-    BunchWaveforms('OUTWF', 'CHAR', 'DAC output select')
-    BunchWaveforms('GAINWF', 'FLOAT', 'DAC output gain')
+    # For each of the five output sources we have a similar group of PVs.
+    for output in ['FIR', 'NCO1', 'SEQ', 'PLL', 'NCO2']:
+        with name_prefix(output):
+            # Two waveforms to directly control the output gain and a readback
+            # waveform to show the gain in dB
+            WaveformOut('ENABLE', BUNCHES_PER_TURN, 'CHAR',
+                FLNK = status, DESC = 'Enables for %s output' % output)
+            gain_db = Waveform('GAIN_DB', BUNCHES_PER_TURN, 'FLOAT',
+                EGU = 'dB', FLNK = status,
+                DESC = '%s output gain in dB' % output)
+            WaveformOut('GAIN', BUNCHES_PER_TURN, 'FLOAT',
+                FLNK = gain_db, DESC = 'Gains for %s output' % output)
 
-    # PVs for setting waveforms via user interface
+            # Control PVs for setting waveforms
+            Action('SET_ENABLE', DESC = 'Set enable for %s' % output)
+            Action('SET_DISABLE', DESC = 'Set disable for %s' % output)
+            aOut('GAIN_SELECT', -8, 8, DESC = 'Select %s gain' % output)
+            Action('SET_GAIN', DESC = 'Set %s gain' % output)
+
+    # The FIR control PVs are separate
+    fir_status = stringIn('FIRWF:STA', DESC = 'FIR status')
+    WaveformOut('FIRWF', BUNCHES_PER_TURN, 'CHAR',
+        FLNK = fir_status, DESC = 'FIR bank select')
     mbbOut('FIR_SELECT', 'FIR 0', 'FIR 1', 'FIR 2', 'FIR 3',
         DESC = 'Select FIR setting')
-    longOut('DAC_SELECT', 0, 31, DESC = 'Select DAC output')
-    aOut('GAIN_SELECT', PREC = 5, DESC = 'Select bunch gain')
+    Action('FIRWF:SET', DESC = 'Set selected bunches')
 
+    # Selector for bunch selection editing
     stringOut('BUNCH_SELECT', DESC = 'Select bunch to set',
         FLNK = stringIn('SELECT_STATUS', DESC = 'Status of selection'))
+
+    # Finally we have an aggregate enable PV for the legacy interface
+    WaveformOut('OUTWF', BUNCHES_PER_TURN, 'CHAR',
+        PINI = 'NO', DESC = 'DAC output select')
 
 
 for a in axes('BUN', lmbf_mode):

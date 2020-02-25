@@ -276,12 +276,12 @@ void hw_read_adc_mms(int axis, struct mms_result *result);
 struct bunch_config {
     /* Each of these points to an array of bunches. */
     char *fir_select;       // Select FIR for this bunch
-    int *gain;              // Output gain for this bunch
     bool *fir_enable;       // Enable FIR output for this bunch
-    bool *nco0_enable;      // Enable NCO0 output (fixed NCO #1) for this bunch
-    bool *nco1_enable;      // Enable NCO1 output (swept NCO) for this bunch
-    bool *nco2_enable;      // Enable NCO2 output (Tune PLL NCO) for this bunch
-    bool *nco3_enable;      // Enable NCO3 output (fixed NCO #2) for this bunch
+    int *fir_gains;         // Gains array for FIR
+    int *nco0_gains;        // Gains array for NCO1
+    int *nco1_gains;        // Gains array for SEQ NCO
+    int *nco2_gains;        // Gains array for PLL NCO
+    int *nco3_gains;        // Gains array for NCO2
 };
 
 /* Write bunch configuration. */
@@ -302,6 +302,7 @@ bool hw_read_bunch_overflow(int axis);
 
 struct dac_events {
     bool fir_ovf;
+    bool mms_ovf;
     bool mux_ovf;
     bool out_ovf;
     bool delta_event;

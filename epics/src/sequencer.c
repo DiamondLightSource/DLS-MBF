@@ -503,13 +503,13 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
 
     /* Both the detector and bunch configurations feed into the status. */
     const struct detector_config *det_config = get_detector_config(axis, 0);
-    const struct bunch_config *bunch_config = get_bunch_config(axis, bank);
+    bool nco1_enables[hardware_config.bunches];
+    get_bunch_seq_enables(axis, bank, nco1_enables);
 
     /* Cound how many bunches we're sweeping and overlap with detector. */
-    unsigned int sweeping =
-        count_bunches_equal_to(true, bunch_config->nco1_enable);
-    unsigned int overlap = count_bunches_equal(
-        bunch_config->nco1_enable, det_config->bunch_enables);
+    unsigned int sweeping = count_bunches_equal_to(true, nco1_enables);
+    unsigned int overlap =
+        count_bunches_equal(nco1_enables, det_config->bunch_enables);
 
     /* Start by evaluating the sequencer.  We expect a single sequencer state
      * with data capture, sequencer enabled, and IQ buffer capture. */
@@ -536,8 +536,7 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
 
         if (sweeping == 1)
         {
-            unsigned int single_bunch =
-                find_first_index(true, bunch_config->nco1_enable);
+            unsigned int single_bunch = find_first_index(true, nco1_enables);
             format_epics_string(result,
                 "Sweep: bunch %u (%s)", single_bunch, gain);
         }
