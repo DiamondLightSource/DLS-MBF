@@ -158,6 +158,8 @@ def set_trigger_inputs(mbf, target, axis, *sources):
 # ------------------------------------------------------------------------------
 # Bunch Bank setup
 
+sources = ['FIR', 'NCO1', 'NCO2', 'SEQ', 'PLL']
+
 # Configure selected bank for waveform control with given gain, fir and output
 # waveform or constant values.
 @MBF.method
@@ -171,7 +173,8 @@ def bank_wf(mbf, bank, gain, fir, output):
         assert value.size == mbf.bunches, 'Invalid array length'
         return value
 
-    mbf.set('BUN:%d:GAINWF_S' % bank, bunches(gain))
+    for source in sources:
+        mbf.set('BUN:%d:%s:GAIN_S' % (bank, source), bunches(gain))
     mbf.set('BUN:%d:FIRWF_S' % bank, bunches(fir))
     mbf.set('BUN:%d:OUTWF_S' % bank, bunches(output))
 
