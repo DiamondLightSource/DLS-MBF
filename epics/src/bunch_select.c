@@ -32,6 +32,7 @@ struct bunch_source {
     struct epics_record *gains;
     double gain_select;
 
+    EPICS_STRING status;        // Computed summary string
     float *gains_db;            // Computed gains in dB
 
     /* Copies of enables and gains as written by PVs. */
@@ -262,17 +263,19 @@ static bool read_feedback_mode(void *context, EPICS_STRING *result)
 
 static void update_fir_status(struct bunch_bank *bank, const char fir_select[])
 {
-    format_epics_string(&bank->fir_status, "Not implemented");
+    format_epics_string(&bank->fir_status, "FIR Status Not implemented");
 }
 
-static void update_output_status(struct bunch_bank *bank)
+static void update_output_status(struct bunch_source *source)
 {
-    format_epics_string(&bank->out_status, "Not implemented");
+    format_epics_string(&source->status, "Source Status Not implemented");
+    format_epics_string(&source->bank->out_status,
+        "Out Status Not implemented");
 }
 
 static bool read_feedback_mode(void *context, EPICS_STRING *result)
 {
-    format_epics_string(result, "Not implemented");
+    format_epics_string(result, "Feedback Status Not implemented");
     return true;
 }
 
@@ -399,7 +402,7 @@ static void update_source_gains_enables(struct bunch_source *source)
             source->hw_enables[i] = source->enables_wf[j];
     }
     write_bunch_config(source->bank);
-    update_output_status(source->bank);
+    update_output_status(source);
 }
 
 
@@ -428,7 +431,14 @@ static void write_gains(void *context, float gains[], unsigned int *length)
     float_array_to_int(
         hardware_config.bunches, gains, source->scaled_gains, 18, 14);
     FOR_BUNCHES(i)
-        source->gains_db[i] = 20 * log10f(fabsf(gains[i]));
+    {
+        if (gains[i] == 0)
+            /* Don't allow -inf as a waveform value, as some display managers
+             * (particularly EDM) can't cope with this. */
+            source->gains_db[i] = -85;      // 2^-14 in dB
+        else
+            source->gains_db[i] = 20 * log10f(fabsf(gains[i]));
+    }
 
     update_source_gains_enables(source);
 }
@@ -459,6 +469,17 @@ static bool set_gains(void *context, bool *_value)
 }
 
 
+/* Force all gains to 1. */
+static void reset_source_gains(struct bunch_source *source)
+{
+    unsigned int bunches = hardware_config.bunches;
+    float gains[bunches];
+    FOR_BUNCHES(i)
+        gains[i] = 1;
+    WRITE_OUT_RECORD_WF(float, source->gains, gains, bunches, true);
+}
+
+
 static void publish_bank_source(
     struct bunch_bank *bank,
     struct bunch_source *source, int *hw_gains, bool *hw_enables)
@@ -474,16 +495,18 @@ static void publish_bank_source(
     source->hw_enables = hw_enables;
     source->gain_select = 1;        // A good default value
 
+    PUBLISH_READ_VAR(stringin, "STATUS", source->status);
+
     source->enables = PUBLISH_WAVEFORM(char, "ENABLE", bunches,
         write_enables, .context = source, .persist = true);
     PUBLISH_WF_READ_VAR(float, "GAIN_DB", bunches, source->gains_db);
     source->gains = PUBLISH_WAVEFORM(float, "GAIN", bunches,
         write_gains, .context = source, .persist = true);
 
-    PUBLISH(bo, "SET_ENABLE", set_enables, .context = source);
-    PUBLISH(bo, "SET_DISABLE", reset_enables, .context = source);
+    PUBLISH_C(bo, "SET_ENABLE", set_enables, source);
+    PUBLISH_C(bo, "SET_DISABLE", reset_enables, source);
     PUBLISH_WRITE_VAR(ao, "GAIN_SELECT", source->gain_select);
-    PUBLISH(bo, "SET_GAIN", set_gains, .context = source);
+    PUBLISH_C(bo, "SET_GAIN", set_gains, source);
 }
 
 #define PUBLISH_BANK_SOURCE(bank, source, name, enables) \
@@ -524,6 +547,18 @@ static bool update_fir_waveform(void *context, bool *_value)
 }
 
 
+static bool reset_all_source_gains(void *context, bool *_value)
+{
+    struct bunch_bank *bank = context;
+    reset_source_gains(&bank->fir_source);
+    reset_source_gains(&bank->nco0_source);
+    reset_source_gains(&bank->nco1_source);
+    reset_source_gains(&bank->nco2_source);
+    reset_source_gains(&bank->nco3_source);
+    return true;
+}
+
+
 static void publish_bank(unsigned int ix, struct bunch_bank *bank)
 {
     char prefix[4];
@@ -543,10 +578,13 @@ static void publish_bank(unsigned int ix, struct bunch_bank *bank)
         PUBLISH_READ_VAR(stringin, "FIRWF:STA", bank->fir_status);
         bank->firwf = PUBLISH_WAVEFORM(char, "FIRWF", bunches,
             write_fir_wf, .context = bank, .persist = true);
+        PUBLISH_WRITE_VAR(mbbo, "FIR_SELECT", bank->fir_select);
+        PUBLISH_C(bo, "FIRWF:SET", update_fir_waveform, bank);
+
+        PUBLISH_C(bo, "RESET_GAINS", reset_all_source_gains, bank);
+
         bank->outwf = PUBLISH_WAVEFORM(char, "OUTWF", bunches,
             write_out_wf, .context = bank);
-        PUBLISH_WRITE_VAR(mbbo, "FIR_SELECT", bank->fir_select);
-        PUBLISH(bo, "FIRWF:SET", update_fir_waveform, .context = bank);
 
         /* Initialise the bunch set and set a sensible default gain. */
         bank->bunch_set = create_bunch_set();
