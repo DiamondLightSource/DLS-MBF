@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 629
-y 234
+x 630
+y 235
 w 584
 h 512
 font "helvetica-medium-r-18.0"
@@ -138,26 +138,6 @@ bgColor index 0
 useDisplayBg
 value {
   "DAC out status"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 344
-y 240
-w 53
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "DAC gain"
 }
 autoSize
 endObjectProperties
