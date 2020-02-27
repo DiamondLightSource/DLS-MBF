@@ -53,10 +53,12 @@ EPICS Driver
     Component       Version Download from
     =============== ======= ====================================================
     EPICS           3.14    https://epics.anl.gov/base/index.php
-    epics_device    1.5     https://github.com/Araneidae/epics_device
+    epics_device    1.6     https://github.com/Araneidae/epics_device
     epicsdbbuilder  1.2     https://github.com/Araneidae/epicsdbbuilder
     cothread        2.14    https://github.com/dls-controls/cothread
     =============== ======= ====================================================
+
+    Note that epics_device must be at least the version shown.
 
 Tune Fitter
     A separate EPICS IOC is provided for computing machine tune and sidebands
