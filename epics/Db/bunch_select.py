@@ -28,7 +28,7 @@ def bank_pvs(bank):
             # Control PVs for setting waveforms
             Action('SET_ENABLE', DESC = 'Set enable for %s' % output)
             Action('SET_DISABLE', DESC = 'Set disable for %s' % output)
-            aOut('GAIN_SELECT', -8, 8, PREC = 5,
+            aOut('GAIN_SELECT', -8, 8, PREC = 4,
                  DESC = 'Select %s gain' % output)
             Action('SET_GAIN', DESC = 'Set %s gain' % output)
 

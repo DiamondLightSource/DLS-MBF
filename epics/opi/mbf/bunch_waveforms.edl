@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 104
-y 373
+x 73
+y 457
 w 608
 h 625
 font "helvetica-medium-r-18.0"
@@ -521,6 +521,9 @@ yPv {
 }
 plotUpdateMode {
   0 "y"
+}
+plotSymbolType {
+  0 "circle"
 }
 ySigned {
   0 1

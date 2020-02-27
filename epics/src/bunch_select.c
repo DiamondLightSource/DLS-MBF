@@ -27,6 +27,7 @@
 
 struct bunch_source {
     struct bunch_bank *bank;
+    const char *name;
 
     struct epics_record *enables;
     struct epics_record *gains;
@@ -82,42 +83,81 @@ static struct bunch_context {
 
 
 
-#if 0
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Status string computation. */
+
+static unsigned int count_enables(const bool enables[])
+{
+    if (enables)
+    {
+        unsigned int count = 0;
+        FOR_BUNCHES(i)
+            count += enables[i];
+        return count;
+    }
+    else
+        return system_config.bunches_per_turn;
+}
+
+/* Returns the first enabled index starting from and including the start index.
+ * Returns 0 if nothing found, this is an error. */
+static unsigned int next_enabled_index(const bool enables[], unsigned int start)
+{
+    if (enables)
+    {
+        for (unsigned int i = start; i < hardware_config.bunches; i ++)
+            if (enables[i])
+                return i;
+        /* Caller must not call if nothing enabled! */
+        ASSERT_FAIL();
+        return 0;
+    }
+    else
+        return 0;
+}
 
 /* Helper routine: counts number of instances of given value, not all set,
  * returns index of last non-equal value. */
 static unsigned int count_value(
-    const int wf[], int value, unsigned int *diff_ix)
+    const int wf[], const bool enables[], int value, unsigned int *diff_ix)
 {
     unsigned int count = 0;
     FOR_BUNCHES(i)
-        if (wf[i] == value)
-            count += 1;
-        else
-            *diff_ix = i;
+    {
+        if (!enables  ||  enables[i])
+        {
+            if (wf[i] == value)
+                count += 1;
+            else
+                *diff_ix = i;
+        }
+    }
     return count;
 }
 
 
-/* Status computation.  We support three possibilities:
+/* Status computation.  We support four possibilities:
  *  1.  All one value
  *  2.  All one value except for one different value
- *  3.  Something else: "It's complicated" */
-enum complexity { ALL_SAME, ALL_BUT_ONE, COMPLICATED };
+ *  3.  Something else: "It's complicated"
+ *  4.  All values disabled
+ * The last option can only arise if the option enables[] array is given. */
+enum complexity { ALL_SAME, ALL_BUT_ONE, COMPLICATED, ALL_DISABLED };
 static enum complexity assess_complexity(
-    const int wf[], int *value, int *other, unsigned int *other_ix)
+    const int wf[], const bool enables[],
+    int *value, int *other, unsigned int *other_ix)
 {
-    unsigned int bunches_per_turn = system_config.bunches_per_turn;
-    *value = wf[0];
-    *other_ix = 0;
-    *other = 0;
-    unsigned int count = count_value(wf, *value, other_ix);
-    if (count == bunches_per_turn)
+    unsigned int enable_count = count_enables(enables);
+    if (enable_count == 0)
+        return ALL_DISABLED;
+
+    unsigned int first_valid = next_enabled_index(enables, 0);
+    *value = wf[first_valid];
+
+    unsigned int count = count_value(wf, enables, *value, other_ix);
+    if (count == enable_count)
         return ALL_SAME;
-    else if (count == bunches_per_turn - 1)
+    else if (count == enable_count - 1)
     {
         *other = wf[*other_ix];
         return ALL_BUT_ONE;
@@ -125,9 +165,10 @@ static enum complexity assess_complexity(
     else if (count == 1)
     {
         /* Need to check whether all rest are the same. */
-        *value = wf[1];
-        *other = wf[0];
-        if (count_value(wf, *value, other_ix) == bunches_per_turn - 1)
+        unsigned int next_valid = next_enabled_index(enables, first_valid + 1);
+        *value = wf[next_valid];
+        *other = wf[first_valid];
+        if (count_value(wf, enables, *value, other_ix) == enable_count - 1)
             return ALL_BUT_ONE;
         else
             return COMPLICATED;
@@ -138,16 +179,16 @@ static enum complexity assess_complexity(
 
 
 static void update_status_core(
-    const char *name, const int wf[], EPICS_STRING *status,
-    void (*render)(int, char[]))
+    const char *name, const int wf[], const bool enables[],
+    EPICS_STRING *status, void (*render)(int, char[], size_t))
 {
-    int value, other;
-    unsigned int other_ix;
+    int value = 0, other = 0;
+    unsigned int other_ix = 0;
     enum complexity complexity =
-        assess_complexity(wf, &value, &other, &other_ix);
-    char value_name[20], other_name[20];
-    render(value, value_name);
-    render(other, other_name);
+        assess_complexity(wf, enables, &value, &other, &other_ix);
+    char value_name[40], other_name[40];
+    render(value, value_name, sizeof(value_name));
+    render(other, other_name, sizeof(other_name));
 
     switch (complexity)
     {
@@ -161,69 +202,137 @@ static void update_status_core(
         case COMPLICATED:
             format_epics_string(status, "Mixed %s", name);
             break;
+        case ALL_DISABLED:
+            format_epics_string(status, "%s disabled", name);
     }
 }
 
 
-/* Name rendering methods for calls to update_status_core above.  These three
- * functions are invoked in the macro DEFINE_WRITE_WF below. */
-
-static void fir_name(int fir, char result[])
+static void render_fir(int fir, char result[], size_t length)
 {
-    sprintf(result, "#%d", fir);
+    snprintf(result, length, "#%d", fir);
 }
-
-static void out_name(int out, char result[])
-{
-    const char *out_names[] = {
-        "Off",          "FIR",          "NCO1",         "NCO1+FIR",
-        "Sweep",        "Sw+FIR",       "Sw+NCO1",      "Sw+N1+F",
-        "Tune PLL",     "PLL+FIR",      "PLL+NCO1",     "PLL+NCO1+FIR",
-        "PLL+Sweep",    "PLL+Sw+FIR",   "PLL+Sw+NCO1",  "PLL+Sw+N1+F",
-        "NCO2",         "FIR+NCO2",     "NCO1+NCO2",    "NCO1+FIR+NCO2",
-        "Sweep+NCO2",   "Sw+FIR+NCO2",  "Sw+NCO1+NCO2", "Sw+N1+F+N2",
-        "Tune PLL+NCO2", "PLL+FIR+NCO2", "PLL+NCO1+NCO2", "PLL+N1+FIR+N2",
-        "PLL+Sweep+NCO2", "PLL+Sw+FIR+N2", "PLL+Sw+N1+N2",  "PLL+Sw+N1+F+N2"
-    };
-    ASSERT_OK(0 <= out  &&  out < (int) ARRAY_SIZE(out_names));
-    sprintf(result, "%s", out_names[out]);
-}
-
-static void gain_name(int gain, char result[])
-{
-    sprintf(result, "%.3g", ldexp(gain, -12));
-}
-
-
-/* Quick and dirty helper to convert array of char to array of int. */
-#define CHAR_TO_INT(array_out, array_in) \
-    int array_out[hardware_config.bunches]; \
-    FOR_BUNCHES(i) \
-        array_out[i] = array_in[i]
 
 static void update_fir_status(struct bunch_bank *bank, const char fir_select[])
 {
-    CHAR_TO_INT(fir_wf, fir_select);
-    update_status_core("FIR", fir_wf, &bank->fir_status, fir_name);
+    /* Gather FIR selections into an integer array so that our status checker
+     * can work with it. */
+    int fir_wf[hardware_config.bunches];
+    FOR_BUNCHES(i)
+        fir_wf[i] = fir_select[i];
+    update_status_core("FIR", fir_wf, NULL, &bank->fir_status, render_fir);
 }
 
-static void update_out_status(struct bunch_bank *bank, const char out_enable[])
+
+static void render_gain(int gain, char result[], size_t length)
 {
-    CHAR_TO_INT(out_wf, out_enable);
-    update_status_core("outputs", out_wf, &bank->out_status, out_name);
+    const char *extra = gain < 0 ? " -ve" : "";
+    snprintf(result, length,
+        "Gain %.1f dB%s", 20 * log10(fabs(ldexp(gain, -14))), extra);
 }
 
-static void update_gain_status(struct bunch_bank *bank, const int gain[])
+static void update_gain_status(struct bunch_source *source)
 {
-    update_status_core("gains", gain, &bank->gain_status, gain_name);
+    update_status_core(
+        source->name, source->scaled_gains, source->enables_wf,
+        &source->status, render_gain);
+}
+
+
+static void render_outputs(int outputs, char result[], size_t length)
+{
+    static const char *names[] = {"FIR", "NCO1", "SEQ", "PLL", "NCO2"};
+    if (outputs)
+    {
+        const char *sep = "";
+        result[0] = '\0';
+        for (unsigned int i = 0; i < 5; i ++)
+            if (outputs >> i & 1)
+            {
+                strncat(result, sep, length);
+                strncat(result, names[i], length);
+                sep = "+";
+            }
+    }
+    else
+        strncpy(result, "Off", length);
+}
+
+
+/* Returns true if all enabled bunches have the same gain, in which case *gain
+ * is set to that value. */
+static bool assess_gain(struct bunch_source *source, bool *seen, int *gain)
+{
+    FOR_BUNCHES(i)
+    {
+        if (source->enables_wf[i])
+        {
+            if (*seen)
+            {
+                if (source->scaled_gains[i] != *gain)
+                    return false;
+            }
+            else
+            {
+                *seen = true;
+                *gain = source->scaled_gains[i];
+            }
+        }
+    }
+    /* If we fall through to here then everything we saw had the same value. */
+    return true;
+}
+
+static void update_out_status(struct bunch_bank *bank)
+{
+    /* Gather all the output enables into a waveform. */
+    int out_wf[hardware_config.bunches];
+    FOR_BUNCHES(i)
+        out_wf[i] =
+            bank->fir_source.enables_wf[i]  |
+            bank->nco0_source.enables_wf[i] << 1  |
+            bank->nco1_source.enables_wf[i] << 2  |
+            bank->nco2_source.enables_wf[i] << 3  |
+            bank->nco3_source.enables_wf[i] << 4;
+
+    /* First gather the enabled outputs. */
+    EPICS_STRING enables;
+    update_status_core(
+        "outputs", out_wf, NULL, &enables, render_outputs);
+
+    /* Now look for gain consensus and assemble result. */
+    bool seen = false;
+    int gain = 0;
+    bool all_same =
+        assess_gain(&bank->fir_source,  &seen, &gain)  &&
+        assess_gain(&bank->nco0_source, &seen, &gain)  &&
+        assess_gain(&bank->nco1_source, &seen, &gain)  &&
+        assess_gain(&bank->nco2_source, &seen, &gain)  &&
+        assess_gain(&bank->nco3_source, &seen, &gain);
+    char gain_status[40];
+    if (!seen)
+        strcpy(gain_status, "");
+    else if (!all_same)
+        strcpy(gain_status, "Mixed Gains");
+    else
+        render_gain(gain, gain_status, sizeof(gain_status));
+
+    format_epics_string(&bank->out_status, "%s %s", enables.s, gain_status);
+}
+
+
+static void update_output_status(struct bunch_source *source)
+{
+    update_gain_status(source);
+    update_out_status(source->bank);
 }
 
 
 static bool read_feedback_mode(void *context, EPICS_STRING *result)
 {
     struct bunch_context *bunch = context;
-    unsigned int current_bank = get_seq_idle_bank(bunch->axis);
-    struct bunch_config *config = &bunch->banks[current_bank].config;
+    unsigned int idle_bank = get_seq_idle_bank(bunch->axis);
+    struct bunch_config *config = &bunch->banks[idle_bank].config;
 
     /* Evaluate DAC out and FIR waveforms. */
     bool all_off = true;
@@ -233,8 +342,8 @@ static bool read_feedback_mode(void *context, EPICS_STRING *result)
     {
         if (config->fir_enable[i])
             all_off = false;
-        if (config->nco0_enable[i]  ||  config->nco1_enable[i]  ||
-            config->nco2_enable[i]  ||  config->nco3_enable[i])
+        if (config->nco0_gains[i]  ||  config->nco1_gains[i]  ||
+            config->nco2_gains[i]  ||  config->nco3_gains[i])
             all_fir = false;
         if (config->fir_select[i] != config->fir_select[0])
             same_fir = false;
@@ -259,25 +368,6 @@ static bool read_feedback_mode(void *context, EPICS_STRING *result)
     return true;
 }
 
-#endif
-
-static void update_fir_status(struct bunch_bank *bank, const char fir_select[])
-{
-    format_epics_string(&bank->fir_status, "FIR Status Not implemented");
-}
-
-static void update_output_status(struct bunch_source *source)
-{
-    format_epics_string(&source->status, "Source Status Not implemented");
-    format_epics_string(&source->bank->out_status,
-        "Out Status Not implemented");
-}
-
-static bool read_feedback_mode(void *context, EPICS_STRING *result)
-{
-    format_epics_string(result, "Feedback Status Not implemented");
-    return true;
-}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -481,12 +571,14 @@ static void reset_source_gains(struct bunch_source *source)
 
 
 static void publish_bank_source(
-    struct bunch_bank *bank,
+    struct bunch_bank *bank, const char *name,
     struct bunch_source *source, int *hw_gains, bool *hw_enables)
 {
     unsigned int bunches = hardware_config.bunches;
 
     source->bank = bank;
+    source->name = name;
+
     source->enables_wf = CALLOC(bool, bunches);
     source->scaled_gains = CALLOC(int, bunches);
     source->gains_db = CALLOC(float, bunches);
@@ -512,7 +604,7 @@ static void publish_bank_source(
 #define PUBLISH_BANK_SOURCE(bank, source, name, enables) \
     do { \
         WITH_NAME_PREFIX(name) \
-            publish_bank_source(bank, &bank->source##_source, \
+            publish_bank_source(bank, name, &bank->source##_source, \
                 bank->config.source##_gains, enables); \
     } while (0)
 
