@@ -14,11 +14,15 @@ TMBF_RES += e2t_tmbf_global.res
 TMBF_RES += e2t_tmbf_horizontal.res
 TMBF_RES += e2t_tmbf_vertical.res
 
+
 TFIT_RES =
 TFIT_RES += e2t_tfit_horizontal.res
 TFIT_RES += e2t_tfit_vertical.res
 
-default: $(SCRIPTS) $(TMBF_RES) $(TFIT_RES) install-py mbfstartioc-res macroserver-res mbfcontrol-res
+LMBF_RES = 
+LMBF_RES += e2t_lmbf_longitudinal.res
+
+default: $(SCRIPTS) $(TMBF_RES) $(TFIT_RES) $(LMBF_RES) install-py mbfstartioc-res macroserver-res mbfcontrol-res
 .PHONY: default
 
 $(TMBF_RES): %.res: ../epics/db/tmbf.db
@@ -26,6 +30,9 @@ $(TMBF_RES): %.res: ../epics/db/tmbf.db
 
 $(TFIT_RES): %.res: tools/tune_fit.db
 	tools/T2E_make_res.py tfit tools/tune_fit.db $(subst e2t_tfit_,,$*) > $(RESSOURCE_DIR)/$*.res
+	
+$(LMBF_RES): %.res: ../epics/db/lmbf.db
+	tools/T2E_make_lmbf_res.py lmbf ../epics/db/lmbf.db $(subst e2t_lmbf_,,$*) > $(RESSOURCE_DIR)/$*.res
 
 %.py: $(SCRIPT_DIR)/%.py
 	ln -sf ../../sites/$(SITE)/scripts/tango/$@ macros/$@

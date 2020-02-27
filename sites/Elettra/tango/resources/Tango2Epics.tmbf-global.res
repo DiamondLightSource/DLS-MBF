@@ -1,37 +1,33 @@
 #
-# Resource backup , created Tue Sep 18 17:49:20 CEST 2018
+# Resource backup , created Fri Jun 28 15:06:24 CEST 2019
 #
 
 #---------------------------------------------------------
-# SERVER Tango2Epics/mfdbk-global, Tango2Epics device declaration
+# SERVER Tango2Epics/tmbf-global, Tango2Epics device declaration
 #---------------------------------------------------------
 
-Tango2Epics/mfdbk-global/DEVICE/Tango2Epics: "sr/d-mfdbk/utca-global"
+Tango2Epics/tmbf-global/DEVICE/Tango2Epics: "tmbf/processor/global"
 
 
-# --- sr/d-mfdbk/utca-global properties
+# --- tmbf/processor/global properties
 
-sr/d-mfdbk/utca-global->polled_attr: dly_turn_errors,\ 
+tmbf/processor/global->ArrayAccessTimeout: 0.3
+tmbf/processor/global->polled_attr: dly_turn_errors,\ 
                                      1000,\ 
                                      sta_vcxo,\ 
                                      1000,\ 
-                                     git_version,\ 
-                                     10000,\ 
-                                     fpga_git_version,\ 
-                                     1000
-sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN,\ 
+                                     state,\ 
+                                     3000,\ 
+                                     status,\ 
+                                     3000
+tmbf/processor/global->ScalarAccessTimeout: 0.2
+tmbf/processor/global->SubscriptionCycle: 0.4
+tmbf/processor/global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN,\ 
                                    SR-TMBF:ADC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_FAN1,\ 
                                    SR-TMBF:ADC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*ADC_EVENTS_S,\ 
-                                   SR-TMBF:ADC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*ADC_TAPS,\ 
-                                   SR-TMBF:INFO:AXIS0*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS0,\ 
-                                   SR-TMBF:INFO:AXIS1*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS1,\ 
-                                   SR-TMBF:INFO:BUNCHES*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCHES,\ 
-                                   SR-TMBF:INFO:BUNCH_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCH_TAPS,\ 
-                                   SR-TMBF:DAC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_S,\ 
                                    SR-TMBF:DAC:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN,\ 
                                    SR-TMBF:DAC:EVENTS:FAN1*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_FAN1,\ 
-                                   SR-TMBF:DAC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*DAC_TAPS,\ 
-                                   SR-TMBF:INFO:DEVICE*Scalar*String*READ_ONLY*ATTRIBUTE*DEVICE,\ 
+                                   SR-TMBF:DAC:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DAC_EVENTS_S,\ 
                                    SR-TMBF:DLY:DAC:COARSE_DELAY_S*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_DAC_COARSE_DELAY_S,\ 
                                    SR-TMBF:DLY:DAC:DELAY_PS*Scalar*Double*READ_ONLY*ATTRIBUTE*DLY_DAC_DELAY_PS,\ 
                                    SR-TMBF:DLY:DAC:FIFO*Scalar*Int*READ_ONLY*ATTRIBUTE*DLY_DAC_FIFO,\ 
@@ -49,13 +45,23 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:DLY:TURN:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*DLY_TURN_STATUS,\ 
                                    SR-TMBF:DLY:TURN:SYNC_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*DLY_TURN_SYNC_S,\ 
                                    SR-TMBF:DLY:TURN:TURNS*Scalar*Int*READ_ONLY*ATTRIBUTE*DLY_TURN_TURNS,\ 
-                                   SR-TMBF:INFO:DRIVER_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*DRIVER_VERSION,\ 
                                    SR-TMBF:FIR:EVENTS:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*FIR_EVENTS_FAN,\ 
                                    SR-TMBF:FIR:EVENTS_S*Scalar*Int*READ_WRITE*ATTRIBUTE*FIR_EVENTS_S,\ 
+                                   SR-TMBF:INFO:ADC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*INFO_ADC_TAPS,\ 
+                                   SR-TMBF:INFO:AXIS0*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS0,\ 
+                                   SR-TMBF:INFO:AXIS1*Scalar*String*READ_ONLY*ATTRIBUTE*AXIS1,\ 
+                                   SR-TMBF:INFO:BUNCHES*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCHES,\ 
+                                   SR-TMBF:INFO:BUNCH_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*BUNCH_TAPS,\ 
+                                   SR-TMBF:INFO:DAC_TAPS*Scalar*Int*READ_ONLY*ATTRIBUTE*INFO_DAC_TAPS,\ 
+                                   SR-TMBF:INFO:DEVICE*Scalar*String*READ_ONLY*ATTRIBUTE*DEVICE,\ 
+                                   SR-TMBF:INFO:DRIVER_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*DRIVER_VERSION,\ 
                                    SR-TMBF:INFO:FPGA_GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_GIT_VERSION,\ 
                                    SR-TMBF:INFO:FPGA_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*FPGA_VERSION,\ 
                                    SR-TMBF:INFO:GIT_VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*GIT_VERSION,\ 
-                                   SR-TMBF:INFO:HOSTNAME*Scalar*String*READ_ONLY*ATTRIBUTE*HOSTNAME,\ 
+                                   SR-TMBF:INFO:HOSTNAME*Array:256*Int*READ_ONLY*ATTRIBUTE*HOSTNAME,\ 
+                                   SR-TMBF:INFO:MODE*Scalar*Enum*READ_ONLY*ATTRIBUTE*MODE,\ 
+                                   SR-TMBF:INFO:SOCKET*Scalar*Int*READ_ONLY*ATTRIBUTE*SOCKET,\ 
+                                   SR-TMBF:INFO:VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*VERSION,\ 
                                    SR-TMBF:MEM:BUSY*Scalar*Enum*READ_ONLY*ATTRIBUTE*MEM_BUSY,\ 
                                    SR-TMBF:MEM:CAPTURE_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*MEM_CAPTURE_S,\ 
                                    SR-TMBF:MEM:FIR0_GAIN_S*Scalar*Enum*READ_WRITE*ATTRIBUTE*MEM_FIR0_GAIN_S,\ 
@@ -75,8 +81,8 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:MEM:WF0*Array:16384*Int*READ_ONLY*ATTRIBUTE*MEM_WF0,\ 
                                    SR-TMBF:MEM:WF1*Array:16384*Int*READ_ONLY*ATTRIBUTE*MEM_WF1,\ 
                                    SR-TMBF:MEM:WRITE_GAIN_S*Scalar*Int*READ_WRITE*ATTRIBUTE*MEM_WRITE_GAIN_S,\ 
-                                   SR-TMBF:INFO:MODE*Scalar*Enum*READ_ONLY*ATTRIBUTE*MODE,\ 
-                                   SR-TMBF:INFO:SOCKET*Scalar*Int*READ_ONLY*ATTRIBUTE*SOCKET,\ 
+                                   SR-TMBF:PLL:CTRL:START_S*Scalar*Int*READ_WRITE*ATTRIBUTE*PLL_CTRL_START_S,\ 
+                                   SR-TMBF:PLL:CTRL:STOP_S*Scalar*Int*READ_WRITE*ATTRIBUTE*PLL_CTRL_STOP_S,\ 
                                    SR-TMBF:STA:CLOCK*Scalar*Enum*READ_ONLY*ATTRIBUTE*STA_CLOCK,\ 
                                    SR-TMBF:STA:FAN*Scalar*Int*READ_WRITE*ATTRIBUTE*STA_FAN,\ 
                                    SR-TMBF:STA:POLL_S*Scalar*Int*READ_WRITE*ATTRIBUTE*STA_POLL_S,\ 
@@ -129,110 +135,111 @@ sr/d-mfdbk/utca-global->Variables: SR-TMBF:ADC:EVENTS:FAN*Scalar*Int*READ_WRITE*
                                    SR-TMBF:TRG:SEQ1:IN*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_SEQ1_IN,\ 
                                    SR-TMBF:TRG:SHARED*Scalar*String*READ_ONLY*ATTRIBUTE*TRG_SHARED,\ 
                                    SR-TMBF:TRG:SOFT:IN*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_SOFT_IN,\ 
-                                   SR-TMBF:TRG:SOFT_S.SCAN*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_S,\ 
                                    SR-TMBF:TRG:SOFT_S.PROC*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_CMD,\ 
-                                   SR-TMBF:TRG:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_STATUS,\ 
-                                   SR-TMBF:INFO:VERSION*Scalar*String*READ_ONLY*ATTRIBUTE*VERSION
+                                   SR-TMBF:TRG:SOFT_S.SCAN*Scalar*Int*READ_WRITE*ATTRIBUTE*TRG_SOFT_S,\ 
+                                   SR-TMBF:TRG:STATUS*Scalar*Enum*READ_ONLY*ATTRIBUTE*TRG_STATUS
 
-# --- sr/d-mfdbk/utca-global attribute properties
+# --- tmbf/processor/global attribute properties
 
-sr/d-mfdbk/utca-global/ADC_EVENTS_S->description: "ADC event detect scan"
-sr/d-mfdbk/utca-global/ADC_TAPS->description: "Length of ADC compensation filter"
-sr/d-mfdbk/utca-global/AXIS0->description: "Name of first axis"
-sr/d-mfdbk/utca-global/AXIS1->description: "Name of second axis"
-sr/d-mfdbk/utca-global/BUNCHES->description: "Number of bunches per revolution"
-sr/d-mfdbk/utca-global/BUNCH_TAPS->description: "Length of bunch-by-bunch feedback filter"
-sr/d-mfdbk/utca-global/DAC_EVENTS_S->description: "DAC event detect scan"
-sr/d-mfdbk/utca-global/DAC_TAPS->description: "Length of DAC pre-emphasis filter"
-sr/d-mfdbk/utca-global/DEVICE->description: "Name of AMC525 device"
-sr/d-mfdbk/utca-global/DLY_DAC_COARSE_DELAY_S->description: "DAC clock coarse delay"
-sr/d-mfdbk/utca-global/DLY_DAC_COARSE_DELAY_S->format: %3d
-sr/d-mfdbk/utca-global/DLY_DAC_DELAY_PS->unit: ps
-sr/d-mfdbk/utca-global/DLY_DAC_FIFO->description: "DAC output FIFO depth"
-sr/d-mfdbk/utca-global/DLY_DAC_FINE_DELAY_S->description: "DAC clock fine delay"
-sr/d-mfdbk/utca-global/DLY_DAC_FINE_DELAY_S->format: %2d
-sr/d-mfdbk/utca-global/DLY_DAC_FINE_DELAY_S->max_value: 23.0
-sr/d-mfdbk/utca-global/DLY_DAC_FINE_DELAY_S->min_value: 0.0
-sr/d-mfdbk/utca-global/DLY_DAC_HALF_STEP_S->description: "DAC clock half step control"
-sr/d-mfdbk/utca-global/DLY_DAC_HALF_STEP_S->EnumLabels: 0,\ 
+tmbf/processor/global/ADC_EVENTS_S->description: "ADC event detect scan"
+tmbf/processor/global/ADC_TAPS->description: "Length of ADC compensation filter"
+tmbf/processor/global/AXIS0->description: "Name of first axis"
+tmbf/processor/global/AXIS1->description: "Name of second axis"
+tmbf/processor/global/BUNCHES->description: "Number of bunches per revolution"
+tmbf/processor/global/BUNCH_TAPS->description: "Length of bunch-by-bunch feedback filter"
+tmbf/processor/global/DAC_EVENTS_S->description: "DAC event detect scan"
+tmbf/processor/global/DAC_TAPS->description: "Length of DAC pre-emphasis filter"
+tmbf/processor/global/DEVICE->description: "Name of AMC525 device"
+tmbf/processor/global/DLY_DAC_COARSE_DELAY_S->description: "DAC clock coarse delay"
+tmbf/processor/global/DLY_DAC_COARSE_DELAY_S->format: %3d
+tmbf/processor/global/DLY_DAC_DELAY_PS->unit: ps
+tmbf/processor/global/DLY_DAC_FIFO->description: "DAC output FIFO depth"
+tmbf/processor/global/DLY_DAC_FINE_DELAY_S->description: "DAC clock fine delay"
+tmbf/processor/global/DLY_DAC_FINE_DELAY_S->format: %2d
+tmbf/processor/global/DLY_DAC_FINE_DELAY_S->max_value: 23.0
+tmbf/processor/global/DLY_DAC_FINE_DELAY_S->min_value: 0.0
+tmbf/processor/global/DLY_DAC_HALF_STEP_S->description: "DAC clock half step control"
+tmbf/processor/global/DLY_DAC_HALF_STEP_S->EnumLabels: 0,\ 
                                                         -0.5
-sr/d-mfdbk/utca-global/DLY_DAC_RESET_S->description: "Reset coarse delay"
-sr/d-mfdbk/utca-global/DLY_DAC_STEP_S->description: "Advance coarse delay"
-sr/d-mfdbk/utca-global/DLY_STEP_SIZE->description: "Duration of coarse step"
-sr/d-mfdbk/utca-global/DLY_STEP_SIZE->unit: ps
-sr/d-mfdbk/utca-global/DLY_TURN_DELAY_PS->unit: ps
-sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->description: "Turn clock input delay"
-sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->format: %2d
-sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->max_value: 31.0
-sr/d-mfdbk/utca-global/DLY_TURN_DELAY_S->min_value: 0.0
-sr/d-mfdbk/utca-global/DLY_TURN_ERRORS->archive_abs_change: -1,\ 
+tmbf/processor/global/DLY_DAC_RESET_S->description: "Reset coarse delay"
+tmbf/processor/global/DLY_DAC_STEP_S->description: "Advance coarse delay"
+tmbf/processor/global/DLY_STEP_SIZE->description: "Duration of coarse step"
+tmbf/processor/global/DLY_STEP_SIZE->unit: ps
+tmbf/processor/global/DLY_TURN_DELAY_PS->unit: ps
+tmbf/processor/global/DLY_TURN_DELAY_S->description: "Turn clock input delay"
+tmbf/processor/global/DLY_TURN_DELAY_S->format: %2d
+tmbf/processor/global/DLY_TURN_DELAY_S->max_value: 31.0
+tmbf/processor/global/DLY_TURN_DELAY_S->min_value: 0.0
+tmbf/processor/global/DLY_TURN_ERRORS->archive_abs_change: -1,\ 
                                                             1
-sr/d-mfdbk/utca-global/DLY_TURN_ERRORS->archive_period: 3600000
-sr/d-mfdbk/utca-global/DLY_TURN_ERRORS->description: "Turn clock errors"
-sr/d-mfdbk/utca-global/DLY_TURN_OFFSET_S->description: "Turn clock offset"
-sr/d-mfdbk/utca-global/DLY_TURN_OFFSET_S->format: %3d
-sr/d-mfdbk/utca-global/DLY_TURN_POLL_S->description: "Update turn status"
-sr/d-mfdbk/utca-global/DLY_TURN_RATE->description: "Clock error rate"
-sr/d-mfdbk/utca-global/DLY_TURN_RATE->format: %.3f
-sr/d-mfdbk/utca-global/DLY_TURN_STATUS->description: "Turn clock synchronisation status"
-sr/d-mfdbk/utca-global/DLY_TURN_STATUS->EnumLabels: Armed,\ 
+tmbf/processor/global/DLY_TURN_ERRORS->archive_period: 3600000
+tmbf/processor/global/DLY_TURN_ERRORS->description: "Turn clock errors"
+tmbf/processor/global/DLY_TURN_OFFSET_S->description: "Turn clock offset"
+tmbf/processor/global/DLY_TURN_OFFSET_S->format: %3d
+tmbf/processor/global/DLY_TURN_POLL_S->description: "Update turn status"
+tmbf/processor/global/DLY_TURN_RATE->description: "Clock error rate"
+tmbf/processor/global/DLY_TURN_RATE->format: %.3f
+tmbf/processor/global/DLY_TURN_STATUS->description: "Turn clock status"
+tmbf/processor/global/DLY_TURN_STATUS->EnumLabels: Armed,\ 
                                                     Synced,\ 
                                                     "Sync Errors"
-sr/d-mfdbk/utca-global/DLY_TURN_SYNC_S->description: "Synchronise turn clock"
-sr/d-mfdbk/utca-global/DLY_TURN_TURNS->description: "Turns sampled"
-sr/d-mfdbk/utca-global/DRIVER_VERSION->description: "Kernel driver version"
-sr/d-mfdbk/utca-global/FIR_EVENTS_S->description: "FIR event detect scan"
-sr/d-mfdbk/utca-global/FPGA_GIT_VERSION->archive_period: 86400000
-sr/d-mfdbk/utca-global/FPGA_GIT_VERSION->description: "Firmware git version"
-sr/d-mfdbk/utca-global/FPGA_VERSION->description: "Firmware version"
-sr/d-mfdbk/utca-global/GIT_VERSION->archive_period: 86400000
-sr/d-mfdbk/utca-global/GIT_VERSION->description: "Software git version"
-sr/d-mfdbk/utca-global/HOSTNAME->description: "Host name of MBF IOC"
-sr/d-mfdbk/utca-global/MEM_BUSY->description: "Capture status"
-sr/d-mfdbk/utca-global/MEM_BUSY->EnumLabels: Ready,\ 
+tmbf/processor/global/DLY_TURN_SYNC_S->description: "Synchronise turn clock"
+tmbf/processor/global/DLY_TURN_TURNS->description: "Turns sampled"
+tmbf/processor/global/DRIVER_VERSION->description: "Kernel driver version"
+tmbf/processor/global/FIR_EVENTS_S->description: "FIR event detect scan"
+tmbf/processor/global/FPGA_GIT_VERSION->archive_period: 86400000
+tmbf/processor/global/FPGA_GIT_VERSION->description: "Firmware git version"
+tmbf/processor/global/FPGA_VERSION->description: "Firmware version"
+tmbf/processor/global/GIT_VERSION->archive_period: 86400000
+tmbf/processor/global/GIT_VERSION->description: "Software git version"
+tmbf/processor/global/HOSTNAME->description: "Host name of MBF IOC"
+tmbf/processor/global/INFO_ADC_TAPS->description: "Length of ADC compensation filter"
+tmbf/processor/global/INFO_DAC_TAPS->description: "Length of DAC pre-emphasis filter"
+tmbf/processor/global/MEM_BUSY->description: "Capture status"
+tmbf/processor/global/MEM_BUSY->EnumLabels: Ready,\ 
                                              Busy
-sr/d-mfdbk/utca-global/MEM_CAPTURE_S->description: "Untriggered immediate capture"
-sr/d-mfdbk/utca-global/MEM_FIR0_GAIN_S->description: "FIR 0 capture gain"
-sr/d-mfdbk/utca-global/MEM_FIR0_GAIN_S->EnumLabels: +54dB,\ 
+tmbf/processor/global/MEM_CAPTURE_S->description: "Untriggered immediate capture"
+tmbf/processor/global/MEM_FIR0_GAIN_S->description: "FIR 0 capture gain"
+tmbf/processor/global/MEM_FIR0_GAIN_S->EnumLabels: +54dB,\ 
                                                     0dB
-sr/d-mfdbk/utca-global/MEM_FIR0_OVF->description: "FIR 0 capture will overflow"
-sr/d-mfdbk/utca-global/MEM_FIR0_OVF->EnumLabels: Ok,\ 
+tmbf/processor/global/MEM_FIR0_OVF->description: "FIR 0 capture will overflow"
+tmbf/processor/global/MEM_FIR0_OVF->EnumLabels: Ok,\ 
                                                  Overflow
-sr/d-mfdbk/utca-global/MEM_FIR1_GAIN_S->description: "FIR 1 capture gain"
-sr/d-mfdbk/utca-global/MEM_FIR1_GAIN_S->EnumLabels: +54dB,\ 
+tmbf/processor/global/MEM_FIR1_GAIN_S->description: "FIR 1 capture gain"
+tmbf/processor/global/MEM_FIR1_GAIN_S->EnumLabels: +54dB,\ 
                                                     0dB
-sr/d-mfdbk/utca-global/MEM_FIR1_OVF->description: "FIR 1 capture will overflow"
-sr/d-mfdbk/utca-global/MEM_FIR1_OVF->EnumLabels: Ok,\ 
+tmbf/processor/global/MEM_FIR1_OVF->description: "FIR 1 capture will overflow"
+tmbf/processor/global/MEM_FIR1_OVF->EnumLabels: Ok,\ 
                                                  Overflow
-sr/d-mfdbk/utca-global/MEM_OFFSET_S->description: "Offset of readout"
-sr/d-mfdbk/utca-global/MEM_OFFSET_S->max_value: 5.36870911E8
-sr/d-mfdbk/utca-global/MEM_OFFSET_S->min_value: -5.36870912E8
-sr/d-mfdbk/utca-global/MEM_OFFSET_S->unit: turns
-sr/d-mfdbk/utca-global/MEM_READOUT_DONE_S->description: "READOUT processing done"
-sr/d-mfdbk/utca-global/MEM_READOUT_TRIG->description: "READOUT processing trigger"
-sr/d-mfdbk/utca-global/MEM_READ_OVF_S->description: "Poll overflow events"
-sr/d-mfdbk/utca-global/MEM_RUNOUT_S->description: "Post trigger capture count"
-sr/d-mfdbk/utca-global/MEM_RUNOUT_S->EnumLabels: 12.5%,\ 
+tmbf/processor/global/MEM_OFFSET_S->description: "Offset of readout"
+tmbf/processor/global/MEM_OFFSET_S->max_value: 5.36870911E8
+tmbf/processor/global/MEM_OFFSET_S->min_value: -5.36870912E8
+tmbf/processor/global/MEM_OFFSET_S->unit: turns
+tmbf/processor/global/MEM_READOUT_DONE_S->description: "READOUT processing done"
+tmbf/processor/global/MEM_READOUT_TRIG->description: "READOUT processing trigger"
+tmbf/processor/global/MEM_READ_OVF_S->description: "Poll overflow events"
+tmbf/processor/global/MEM_RUNOUT_S->description: "Post trigger capture count"
+tmbf/processor/global/MEM_RUNOUT_S->EnumLabels: 12.5%,\ 
                                                  25%,\ 
                                                  50%,\ 
                                                  75%,\ 
                                                  99.5%
-sr/d-mfdbk/utca-global/MEM_SEL0_S->description: "Channel 0 capture selection"
-sr/d-mfdbk/utca-global/MEM_SEL0_S->EnumLabels: ADC0,\ 
+tmbf/processor/global/MEM_SEL0_S->description: "Channel 0 capture selection"
+tmbf/processor/global/MEM_SEL0_S->EnumLabels: ADC0,\ 
                                                FIR0,\ 
                                                DAC0,\ 
                                                ADC1,\ 
                                                FIR1,\ 
                                                DAC1
-sr/d-mfdbk/utca-global/MEM_SEL1_S->description: "Channel 1 capture selection"
-sr/d-mfdbk/utca-global/MEM_SEL1_S->EnumLabels: ADC0,\ 
+tmbf/processor/global/MEM_SEL1_S->description: "Channel 1 capture selection"
+tmbf/processor/global/MEM_SEL1_S->EnumLabels: ADC0,\ 
                                                FIR0,\ 
                                                DAC0,\ 
                                                ADC1,\ 
                                                FIR1,\ 
                                                DAC1
-sr/d-mfdbk/utca-global/MEM_SELECT_S->description: "Control memory capture selection"
-sr/d-mfdbk/utca-global/MEM_SELECT_S->EnumLabels: "ADC0/ADC1",\ 
+tmbf/processor/global/MEM_SELECT_S->description: "Control memory capture selection"
+tmbf/processor/global/MEM_SELECT_S->EnumLabels: "ADC0/ADC1",\ 
                                                  "ADC0/FIR1",\ 
                                                  "ADC0/DAC1",\ 
                                                  "ADC0/FIR0",\ 
@@ -247,146 +254,150 @@ sr/d-mfdbk/utca-global/MEM_SELECT_S->EnumLabels: "ADC0/ADC1",\
                                                  "ADC1/FIR1",\ 
                                                  "FIR1/DAC1",\ 
                                                  "ADC1/DAC1"
-sr/d-mfdbk/utca-global/MEM_WF0->description: "Capture waveform #0"
-sr/d-mfdbk/utca-global/MEM_WF1->description: "Capture waveform #1"
-sr/d-mfdbk/utca-global/MEM_WRITE_GAIN_S->description: "Write FIR gain"
-sr/d-mfdbk/utca-global/MODE->description: "Operational mode"
-sr/d-mfdbk/utca-global/MODE->EnumLabels: TMBF,\ 
+tmbf/processor/global/MEM_WF0->description: "Capture waveform #0"
+tmbf/processor/global/MEM_WF1->description: "Capture waveform #1"
+tmbf/processor/global/MEM_WRITE_GAIN_S->description: "Write FIR gain"
+tmbf/processor/global/MODE->description: "Operational mode"
+tmbf/processor/global/MODE->EnumLabels: TMBF,\ 
                                          LMBF
-sr/d-mfdbk/utca-global/SOCKET->description: "Socket number for data server"
-sr/d-mfdbk/utca-global/STA_CLOCK->description: "ADC clock status"
-sr/d-mfdbk/utca-global/STA_CLOCK->EnumLabels: Unlocked,\ 
+tmbf/processor/global/PLL_CTRL_START_S->description: "Start tune PLL"
+tmbf/processor/global/PLL_CTRL_STOP_S->description: "Stop tune PLL"
+tmbf/processor/global/SOCKET->description: "Socket number for data server"
+tmbf/processor/global/STA_CLOCK->description: "ADC clock status"
+tmbf/processor/global/STA_CLOCK->EnumLabels: Unlocked,\ 
                                               Locked
-sr/d-mfdbk/utca-global/STA_POLL_S->description: "Poll system status"
-sr/d-mfdbk/utca-global/STA_VCO->description: "VCO clock status"
-sr/d-mfdbk/utca-global/STA_VCO->EnumLabels: "Unlocked (MAJOR)",\ 
+tmbf/processor/global/STA_POLL_S->description: "Poll system status"
+tmbf/processor/global/STA_VCO->description: "VCO clock status"
+tmbf/processor/global/STA_VCO->EnumLabels: Unlocked,\ 
                                             Locked,\ 
                                             Passthrough
-sr/d-mfdbk/utca-global/STA_VCXO->archive_abs_change: -1,\ 
+tmbf/processor/global/STA_VCXO->archive_abs_change: -1,\ 
                                                      1
-sr/d-mfdbk/utca-global/STA_VCXO->archive_period: 3600000
-sr/d-mfdbk/utca-global/STA_VCXO->description: "VCXO clock status"
-sr/d-mfdbk/utca-global/STA_VCXO->EnumLabels: "Unlocked (MAJOR)",\ 
+tmbf/processor/global/STA_VCXO->archive_period: 3600000
+tmbf/processor/global/STA_VCXO->description: "VCXO clock status"
+tmbf/processor/global/STA_VCXO->EnumLabels: Unlocked,\ 
                                              Locked,\ 
                                              Passthrough
-sr/d-mfdbk/utca-global/TRG_ADC0_IN->description: "Y ADC event input"
-sr/d-mfdbk/utca-global/TRG_ADC0_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_ADC0_IN->description: "Y ADC event input"
+tmbf/processor/global/TRG_ADC0_IN->EnumLabels: No,\ 
                                                 Yes
-sr/d-mfdbk/utca-global/TRG_ADC1_IN->description: "X ADC event input"
-sr/d-mfdbk/utca-global/TRG_ADC1_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_ADC1_IN->description: "X ADC event input"
+tmbf/processor/global/TRG_ADC1_IN->EnumLabels: No,\ 
                                                 Yes
-sr/d-mfdbk/utca-global/TRG_ARM_S->description: "Arm all shared targets"
-sr/d-mfdbk/utca-global/TRG_BLANKING_S->description: "Blanking duration"
-sr/d-mfdbk/utca-global/TRG_BLANKING_S->format: %5d
-sr/d-mfdbk/utca-global/TRG_BLANKING_S->max_value: 65535.0
-sr/d-mfdbk/utca-global/TRG_BLANKING_S->min_value: 0.0
-sr/d-mfdbk/utca-global/TRG_BLANKING_S->unit: turns
-sr/d-mfdbk/utca-global/TRG_BLNK_IN->description: "Blanking event"
-sr/d-mfdbk/utca-global/TRG_BLNK_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_ARM_S->description: "Arm all shared targets"
+tmbf/processor/global/TRG_BLANKING_S->description: "Blanking duration"
+tmbf/processor/global/TRG_BLANKING_S->format: %5d
+tmbf/processor/global/TRG_BLANKING_S->max_value: 65535.0
+tmbf/processor/global/TRG_BLANKING_S->min_value: 0.0
+tmbf/processor/global/TRG_BLANKING_S->unit: turns
+tmbf/processor/global/TRG_BLNK_IN->description: "Blanking event"
+tmbf/processor/global/TRG_BLNK_IN->EnumLabels: No,\ 
                                                 Yes
-sr/d-mfdbk/utca-global/TRG_DISARM_S->description: "Disarm all shared targets"
-sr/d-mfdbk/utca-global/TRG_EXT_IN->description: "External trigger input"
-sr/d-mfdbk/utca-global/TRG_EXT_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_DISARM_S->description: "Disarm all shared targets"
+tmbf/processor/global/TRG_EXT_IN->description: "External trigger input"
+tmbf/processor/global/TRG_EXT_IN->EnumLabels: No,\ 
                                                Yes
-sr/d-mfdbk/utca-global/TRG_IN_S->description: "Scan input events"
-sr/d-mfdbk/utca-global/TRG_MEM_ADC0_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_ADC0_BL_S->EnumLabels: All,\ 
+tmbf/processor/global/TRG_IN_S->description: "Scan input events"
+tmbf/processor/global/TRG_MEM_ADC0_BL_S->description: "Enable blanking for trigger source"
+tmbf/processor/global/TRG_MEM_ADC0_BL_S->EnumLabels: All,\ 
                                                       Blanking
-sr/d-mfdbk/utca-global/TRG_MEM_ADC0_EN_S->description: "Enable Y ADC event input"
-sr/d-mfdbk/utca-global/TRG_MEM_ADC0_EN_S->EnumLabels: Ignore,\ 
+tmbf/processor/global/TRG_MEM_ADC0_EN_S->description: "Enable Y ADC event input"
+tmbf/processor/global/TRG_MEM_ADC0_EN_S->EnumLabels: Ignore,\ 
                                                       Enable
-sr/d-mfdbk/utca-global/TRG_MEM_ADC0_HIT->description: "Y ADC event source"
-sr/d-mfdbk/utca-global/TRG_MEM_ADC0_HIT->EnumLabels: No,\ 
+tmbf/processor/global/TRG_MEM_ADC0_HIT->description: "Y ADC event source"
+tmbf/processor/global/TRG_MEM_ADC0_HIT->EnumLabels: No,\ 
                                                      Yes
-sr/d-mfdbk/utca-global/TRG_MEM_ADC1_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_ADC1_BL_S->EnumLabels: All,\ 
+tmbf/processor/global/TRG_MEM_ADC1_BL_S->description: "Enable blanking for trigger source"
+tmbf/processor/global/TRG_MEM_ADC1_BL_S->EnumLabels: All,\ 
                                                       Blanking
-sr/d-mfdbk/utca-global/TRG_MEM_ADC1_EN_S->description: "Enable X ADC event input"
-sr/d-mfdbk/utca-global/TRG_MEM_ADC1_EN_S->EnumLabels: Ignore,\ 
+tmbf/processor/global/TRG_MEM_ADC1_EN_S->description: "Enable X ADC event input"
+tmbf/processor/global/TRG_MEM_ADC1_EN_S->EnumLabels: Ignore,\ 
                                                       Enable
-sr/d-mfdbk/utca-global/TRG_MEM_ADC1_HIT->description: "X ADC event source"
-sr/d-mfdbk/utca-global/TRG_MEM_ADC1_HIT->EnumLabels: No,\ 
+tmbf/processor/global/TRG_MEM_ADC1_HIT->description: "X ADC event source"
+tmbf/processor/global/TRG_MEM_ADC1_HIT->EnumLabels: No,\ 
                                                      Yes
-sr/d-mfdbk/utca-global/TRG_MEM_ARM_S->description: "Arm trigger"
-sr/d-mfdbk/utca-global/TRG_MEM_BL_S->description: "Write blanking"
-sr/d-mfdbk/utca-global/TRG_MEM_DELAY_S->description: "Trigger delay"
-sr/d-mfdbk/utca-global/TRG_MEM_DELAY_S->max_value: 65535.0
-sr/d-mfdbk/utca-global/TRG_MEM_DELAY_S->min_value: 0.0
-sr/d-mfdbk/utca-global/TRG_MEM_DISARM_S->description: "Disarm trigger"
-sr/d-mfdbk/utca-global/TRG_MEM_EN_S->description: "Write enables"
-sr/d-mfdbk/utca-global/TRG_MEM_EXT_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_EXT_BL_S->EnumLabels: All,\ 
+tmbf/processor/global/TRG_MEM_ARM_S->description: "Arm trigger"
+tmbf/processor/global/TRG_MEM_BL_S->description: "Write blanking"
+tmbf/processor/global/TRG_MEM_DELAY_S->description: "Trigger delay"
+tmbf/processor/global/TRG_MEM_DELAY_S->format: %5d
+tmbf/processor/global/TRG_MEM_DELAY_S->max_value: 65535.0
+tmbf/processor/global/TRG_MEM_DELAY_S->min_value: 0.0
+tmbf/processor/global/TRG_MEM_DISARM_S->description: "Disarm trigger"
+tmbf/processor/global/TRG_MEM_EN_S->description: "Write enables"
+tmbf/processor/global/TRG_MEM_EXT_BL_S->description: "Enable blanking for trigger source"
+tmbf/processor/global/TRG_MEM_EXT_BL_S->EnumLabels: All,\ 
                                                      Blanking
-sr/d-mfdbk/utca-global/TRG_MEM_EXT_EN_S->description: "Enable External trigger input"
-sr/d-mfdbk/utca-global/TRG_MEM_EXT_EN_S->EnumLabels: Ignore,\ 
+tmbf/processor/global/TRG_MEM_EXT_EN_S->description: "Enable External trigger input"
+tmbf/processor/global/TRG_MEM_EXT_EN_S->EnumLabels: Ignore,\ 
                                                      Enable
-sr/d-mfdbk/utca-global/TRG_MEM_EXT_HIT->description: "External trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_EXT_HIT->EnumLabels: No,\ 
+tmbf/processor/global/TRG_MEM_EXT_HIT->description: "External trigger source"
+tmbf/processor/global/TRG_MEM_EXT_HIT->EnumLabels: No,\ 
                                                     Yes
-sr/d-mfdbk/utca-global/TRG_MEM_HIT->description: "Update source events"
-sr/d-mfdbk/utca-global/TRG_MEM_MODE_S->description: "Arming mode"
-sr/d-mfdbk/utca-global/TRG_MEM_MODE_S->EnumLabels: "One Shot",\ 
+tmbf/processor/global/TRG_MEM_HIT->description: "Update source events"
+tmbf/processor/global/TRG_MEM_MODE_S->description: "Arming mode"
+tmbf/processor/global/TRG_MEM_MODE_S->EnumLabels: "One Shot",\ 
                                                    Rearm,\ 
                                                    Shared
-sr/d-mfdbk/utca-global/TRG_MEM_PM_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_PM_BL_S->EnumLabels: All,\ 
+tmbf/processor/global/TRG_MEM_PM_BL_S->description: "Enable blanking for trigger source"
+tmbf/processor/global/TRG_MEM_PM_BL_S->EnumLabels: All,\ 
                                                     Blanking
-sr/d-mfdbk/utca-global/TRG_MEM_PM_EN_S->description: "Enable Postmortem trigger input"
-sr/d-mfdbk/utca-global/TRG_MEM_PM_EN_S->EnumLabels: Ignore,\ 
+tmbf/processor/global/TRG_MEM_PM_EN_S->description: "Enable Postmortem trigger input"
+tmbf/processor/global/TRG_MEM_PM_EN_S->EnumLabels: Ignore,\ 
                                                     Enable
-sr/d-mfdbk/utca-global/TRG_MEM_PM_HIT->description: "Postmortem trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_PM_HIT->EnumLabels: No,\ 
+tmbf/processor/global/TRG_MEM_PM_HIT->description: "Postmortem trigger source"
+tmbf/processor/global/TRG_MEM_PM_HIT->EnumLabels: No,\ 
                                                    Yes
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ0_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ0_BL_S->EnumLabels: All,\ 
+tmbf/processor/global/TRG_MEM_SEQ0_BL_S->description: "Enable blanking for trigger source"
+tmbf/processor/global/TRG_MEM_SEQ0_BL_S->EnumLabels: All,\ 
                                                       Blanking
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ0_EN_S->description: "Enable Y SEQ event input"
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ0_EN_S->EnumLabels: Ignore,\ 
+tmbf/processor/global/TRG_MEM_SEQ0_EN_S->description: "Enable Y SEQ event input"
+tmbf/processor/global/TRG_MEM_SEQ0_EN_S->EnumLabels: Ignore,\ 
                                                       Enable
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ0_HIT->description: "Y SEQ event source"
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ0_HIT->EnumLabels: No,\ 
+tmbf/processor/global/TRG_MEM_SEQ0_HIT->description: "Y SEQ event source"
+tmbf/processor/global/TRG_MEM_SEQ0_HIT->EnumLabels: No,\ 
                                                      Yes
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ1_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ1_BL_S->EnumLabels: All,\ 
+tmbf/processor/global/TRG_MEM_SEQ1_BL_S->description: "Enable blanking for trigger source"
+tmbf/processor/global/TRG_MEM_SEQ1_BL_S->EnumLabels: All,\ 
                                                       Blanking
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ1_EN_S->description: "Enable X SEQ event input"
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ1_EN_S->EnumLabels: Ignore,\ 
+tmbf/processor/global/TRG_MEM_SEQ1_EN_S->description: "Enable X SEQ event input"
+tmbf/processor/global/TRG_MEM_SEQ1_EN_S->EnumLabels: Ignore,\ 
                                                       Enable
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ1_HIT->description: "X SEQ event source"
-sr/d-mfdbk/utca-global/TRG_MEM_SEQ1_HIT->EnumLabels: No,\ 
+tmbf/processor/global/TRG_MEM_SEQ1_HIT->description: "X SEQ event source"
+tmbf/processor/global/TRG_MEM_SEQ1_HIT->EnumLabels: No,\ 
                                                      Yes
-sr/d-mfdbk/utca-global/TRG_MEM_SOFT_BL_S->description: "Enable blanking for trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_SOFT_BL_S->EnumLabels: All,\ 
+tmbf/processor/global/TRG_MEM_SOFT_BL_S->description: "Enable blanking for trigger source"
+tmbf/processor/global/TRG_MEM_SOFT_BL_S->EnumLabels: All,\ 
                                                       Blanking
-sr/d-mfdbk/utca-global/TRG_MEM_SOFT_EN_S->description: "Enable Soft trigger input"
-sr/d-mfdbk/utca-global/TRG_MEM_SOFT_EN_S->EnumLabels: Ignore,\ 
+tmbf/processor/global/TRG_MEM_SOFT_EN_S->description: "Enable Soft trigger input"
+tmbf/processor/global/TRG_MEM_SOFT_EN_S->EnumLabels: Ignore,\ 
                                                       Enable
-sr/d-mfdbk/utca-global/TRG_MEM_SOFT_HIT->description: "Soft trigger source"
-sr/d-mfdbk/utca-global/TRG_MEM_SOFT_HIT->EnumLabels: No,\ 
+tmbf/processor/global/TRG_MEM_SOFT_HIT->description: "Soft trigger source"
+tmbf/processor/global/TRG_MEM_SOFT_HIT->EnumLabels: No,\ 
                                                      Yes
-sr/d-mfdbk/utca-global/TRG_MEM_STATUS->description: "Trigger target status"
-sr/d-mfdbk/utca-global/TRG_MEM_STATUS->EnumLabels: Idle,\ 
+tmbf/processor/global/TRG_MEM_STATUS->description: "Trigger target status"
+tmbf/processor/global/TRG_MEM_STATUS->EnumLabels: Idle,\ 
                                                    Armed,\ 
                                                    Busy,\ 
                                                    Locked
-sr/d-mfdbk/utca-global/TRG_MODE_S->description: "Shared trigger mode"
-sr/d-mfdbk/utca-global/TRG_MODE_S->EnumLabels: "One Shot",\ 
+tmbf/processor/global/TRG_MODE_S->description: "Shared trigger mode"
+tmbf/processor/global/TRG_MODE_S->EnumLabels: "One Shot",\ 
                                                Rearm
-sr/d-mfdbk/utca-global/TRG_PM_IN->description: "Postmortem trigger input"
-sr/d-mfdbk/utca-global/TRG_PM_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_PM_IN->description: "Postmortem trigger input"
+tmbf/processor/global/TRG_PM_IN->EnumLabels: No,\ 
                                               Yes
-sr/d-mfdbk/utca-global/TRG_SEQ0_IN->description: "Y SEQ event input"
-sr/d-mfdbk/utca-global/TRG_SEQ0_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_SEQ0_IN->description: "Y SEQ event input"
+tmbf/processor/global/TRG_SEQ0_IN->EnumLabels: No,\ 
                                                 Yes
-sr/d-mfdbk/utca-global/TRG_SEQ1_IN->description: "X SEQ event input"
-sr/d-mfdbk/utca-global/TRG_SEQ1_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_SEQ1_IN->description: "X SEQ event input"
+tmbf/processor/global/TRG_SEQ1_IN->EnumLabels: No,\ 
                                                 Yes
-sr/d-mfdbk/utca-global/TRG_SHARED->description: "List of shared targets"
-sr/d-mfdbk/utca-global/TRG_SOFT_IN->description: "Soft trigger input"
-sr/d-mfdbk/utca-global/TRG_SOFT_IN->EnumLabels: No,\ 
+tmbf/processor/global/TRG_SHARED->description: "List of shared targets"
+tmbf/processor/global/TRG_SOFT_CMD->description: "Soft trigger"
+tmbf/processor/global/TRG_SOFT_IN->description: "Soft trigger input"
+tmbf/processor/global/TRG_SOFT_IN->EnumLabels: No,\ 
                                                 Yes
-sr/d-mfdbk/utca-global/TRG_SOFT_S->description: "Soft trigger"
-sr/d-mfdbk/utca-global/TRG_SOFT_S->EnumLabels: Passive,\ 
+tmbf/processor/global/TRG_SOFT_S->description: "Soft trigger"
+tmbf/processor/global/TRG_SOFT_S->EnumLabels: Passive,\ 
                                                Event,\ 
                                                "I/O Intr",\ 
                                                "10 s",\ 
@@ -396,14 +407,14 @@ sr/d-mfdbk/utca-global/TRG_SOFT_S->EnumLabels: Passive,\
                                                "500 ms",\ 
                                                "200 ms",\ 
                                                "100 ms"
-sr/d-mfdbk/utca-global/TRG_STATUS->description: "Shared trigger target status"
-sr/d-mfdbk/utca-global/TRG_STATUS->EnumLabels: Idle,\ 
+tmbf/processor/global/TRG_STATUS->description: "Shared trigger target status"
+tmbf/processor/global/TRG_STATUS->EnumLabels: Idle,\ 
                                                Armed,\ 
                                                Locked,\ 
                                                Busy,\ 
                                                Mixed,\ 
                                                Invalid
-sr/d-mfdbk/utca-global/VERSION->description: "Software version"
+tmbf/processor/global/VERSION->description: "Software version"
 
 #---------------------------------------------------------
 # CLASS Tango2Epics properties
@@ -430,6 +441,6 @@ CLASS/Tango2Epics->ProjectTitle: "Tango2Epics Tango Device"
 
 
 
-# --- dserver/Tango2Epics/mfdbk-global properties
+# --- dserver/Tango2Epics/tmbf-global properties
 
-dserver/Tango2Epics/mfdbk-global->polling_threads_pool_conf: "sr/d-mfdbk/utca-global"
+dserver/Tango2Epics/tmbf-global->polling_threads_pool_conf: "tmbf/processor/global"

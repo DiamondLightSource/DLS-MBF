@@ -27,9 +27,10 @@ vars_users = {
         'MEMORY_READOUT_LENGTH': '16384',
         'ADC_TAPS': '20',
         'DAC_TAPS': '20',
-        'BUNCHES_PER_TURN': '992',
+        'BUNCHES_PER_TURN': '432',
         'DETECTOR_LENGTH': '4096',
         'BUNCH_TAPS': '16',
-        'REVOLUTION_FREQUENCY': '355042' }
+        'TUNE_PLL_LENGTH': '4096',
+        'REVOLUTION_FREQUENCY': '1156606' }
 
 # vim: set filetype=python:
