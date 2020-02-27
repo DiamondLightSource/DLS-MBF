@@ -242,7 +242,7 @@ put('FIR:GAIN_S', args.gain)
 # Configure bunch bank #0 for FIR and selected operation
 put('BUN:0:FIRWF_S', BUNCH_ZEROS)
 put('BUN:0:OUTWF_S', setup.dac_output * BUNCH_ONES)
-put('BUN:0:GAINWF_S', BUNCH_ONES)
+put('BUN:0:RESET_GAINS_S', 0)
 
 # Similarly configure bank #1 for sweep as appropriate
 SWEEP_OUT = BUNCH_ENABLES * DAC_OUT_SWEEP
@@ -250,7 +250,7 @@ if setup.keep_feedback:
     SWEEP_OUT |= setup.dac_output
 put('BUN:1:FIRWF_S', BUNCH_ZEROS)
 put('BUN:1:OUTWF_S', SWEEP_OUT)
-put('BUN:1:GAINWF_S', BUNCH_ONES)
+put('BUN:1:RESET_GAINS_S', 0)
 
 
 # Disable all sequencer triggers and configure triggering on external trigger
