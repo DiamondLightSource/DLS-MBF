@@ -113,9 +113,9 @@ def configure_timing_test(mbf, compensate = False):
 
 
 # Basic configuration of MMS
-def configure_mms(mbf, part):
+def configure_mms(mbf, part, fir):
     mbf.set('%s:MMS:SCAN_S.SCAN' % part, '.1 second')
-    mbf.set('%s:MMS_SOURCE_S' % part, 'Before FIR')
+    mbf.set('%s:MMS_SOURCE_S' % part, 'Before %s' % fir)
     return mbf.PV('%s:MMS:MAX' % part)
 
 
@@ -348,7 +348,7 @@ def measure_loop(mbf, results):
     mbf.configure_dac_single_pulse()
 
     # Monitor MMS and configure for rapid update rate
-    maxdac = configure_mms(mbf, 'DAC')
+    maxdac = configure_mms(mbf, 'DAC', 'PEMPH')
 
     # Take DAC output mux select bunch zero as the reference bunch
     # and measure delays to DAC max.  This allows us to measure the closed
@@ -379,18 +379,18 @@ def measure_dac_mms(mbf, results):
     print >>sys.stderr, 'Measuring DAC MMS'
 
     mbf.configure_dac_single_pulse()
-    maxdac = configure_mms(mbf, 'DAC')
-    maxadc = configure_mms(mbf, 'ADC')
+    maxdac = configure_mms(mbf, 'DAC', 'PEMPH')
+    maxadc = configure_mms(mbf, 'ADC', 'COMP')
 
     # Measure the MMS ADC skew now we've closed the loop
-    mbf.set('ADC:MMS_SOURCE_S', 'Before FIR')
+    mbf.set('ADC:MMS_SOURCE_S', 'Before COMP')
     results.MMS_ADC_DELAY = mbf.find_mms_peak(maxadc)
-    mbf.set('ADC:MMS_SOURCE_S', 'After FIR')
+    mbf.set('ADC:MMS_SOURCE_S', 'After COMP')
     results.MMS_ADC_FIR_DELAY = mbf.find_mms_peak(maxadc)
 
     # For the fill pattern reject measurement we need to use an NCO frequency
     # that will get through the filter.
-    mbf.set('ADC:MMS_SOURCE_S', 'FIR no fill')
+    mbf.set('ADC:MMS_SOURCE_S', 'COMP no fill')
     results.MMS_ADC_REJECT_DELAY = mbf.find_mms_peak(maxadc, nco_freq = 0.51)
 
     # Measure gain skew: configure NCO1 on all bunches, but unit gain only on
@@ -400,7 +400,7 @@ def measure_dac_mms(mbf, results):
 
     # Now capture the extra FIR delay
     mbf.configure_dac_single_pulse()
-    mbf.set('DAC:MMS_SOURCE_S', 'After FIR')
+    mbf.set('DAC:MMS_SOURCE_S', 'After PEMPH')
     results.MMS_DAC_FIR_DELAY = find_mms_peak(mbf, maxdac)
 
     mbf.set('DAC:MMS_SOURCE_S', 'Feedback')
@@ -418,18 +418,18 @@ def measure_dram(mbf, results):
     mbf.configure_dac_single_pulse()
 
     # First get the baseline ADC and DAC delay.
-    mbf.set('DAC:DRAM_SOURCE_S', 'Before FIR')
-    mbf.set('ADC:DRAM_SOURCE_S', 'Before FIR')
+    mbf.set('DAC:DRAM_SOURCE_S', 'Before PEMPH')
+    mbf.set('ADC:DRAM_SOURCE_S', 'Before COMP')
     results.DRAM_ADC_DELAY, results.DRAM_DAC_DELAY = dram.get_peaks('ADC0/DAC0')
 
-    # Same, but after FIR
-    mbf.set('DAC:DRAM_SOURCE_S', 'After FIR')
-    mbf.set('ADC:DRAM_SOURCE_S', 'After FIR')
+    # Same, but after PEMPH
+    mbf.set('DAC:DRAM_SOURCE_S', 'After PEMPH')
+    mbf.set('ADC:DRAM_SOURCE_S', 'After COMP')
     results.DRAM_ADC_FIR_DELAY, results.DRAM_DAC_FIR_DELAY = \
         dram.get_peaks('ADC0/DAC0')
 
     # One last sample for the ADC fill reject delay
-    mbf.set('ADC:DRAM_SOURCE_S', 'FIR no fill')
+    mbf.set('ADC:DRAM_SOURCE_S', 'COMP no fill')
     results.DRAM_ADC_REJECT_DELAY, _ = dram.get_peaks('ADC0/DAC0', 0.51)
 
     # Now get the FIR delay

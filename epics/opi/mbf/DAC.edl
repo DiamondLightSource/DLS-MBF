@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1986
-y 404
+x 1988
+y 406
 w 641
 h 359
 font "helvetica-medium-r-18.0"
@@ -182,7 +182,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 456
+x 448
 y 232
 w 80
 h 22
@@ -209,7 +209,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 336
+x 328
 y 232
 w 81
 h 14
@@ -311,7 +311,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 336
+x 328
 y 280
 w 87
 h 14
@@ -331,7 +331,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 456
+x 448
 y 280
 w 96
 h 22
@@ -351,7 +351,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 336
+x 328
 y 304
 w 68
 h 14
@@ -371,9 +371,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 456
+x 448
 y 304
-w 96
+w 112
 h 22
 fgColor index 14
 fgAlarm
@@ -391,9 +391,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 456
+x 448
 y 328
-w 96
+w 112
 h 22
 fgColor index 14
 fgAlarm
@@ -411,7 +411,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 336
+x 328
 y 328
 w 74
 h 14
@@ -458,7 +458,7 @@ major 4
 minor 0
 release 0
 x 8
-y 304
+y 312
 w 16
 h 16
 lineColor index 14
@@ -475,7 +475,7 @@ major 4
 minor 6
 release 0
 x 32
-y 304
+y 312
 w 168
 h 14
 controlPv "$(device):$(axis):DAC:EVENT.DESC"
@@ -498,7 +498,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 456
+x 448
 y 256
 w 80
 h 20
@@ -525,7 +525,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 336
+x 328
 y 256
 w 113
 h 14
@@ -537,5 +537,46 @@ value {
   "Min/max threshold:"
 }
 autoSize
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 336
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):$(axis):DAC:MMS_OVF"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 32
+y 336
+w 168
+h 14
+controlPv "$(device):$(axis):DAC:MMS_OVF.DESC"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
 endObjectProperties
 
