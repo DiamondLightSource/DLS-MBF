@@ -136,13 +136,15 @@ static unsigned int count_value(
 }
 
 
-/* Status computation.  We support four possibilities:
- *  1.  All one value
- *  2.  All one value except for one different value
- *  3.  Something else: "It's complicated"
- *  4.  All values disabled
- * The last option can only arise if the option enables[] array is given. */
-enum complexity { ALL_SAME, ALL_BUT_ONE, COMPLICATED, ALL_DISABLED };
+/* Status computation. */
+enum complexity {
+    ALL_SAME,       // All the same value
+    ALL_BUT_ONE,    // All one value except for one different value
+    SINGLE_BUNCH,   // Only one bunch enabled (special case of ALL_SAME)
+    COMPLICATED,    // Something else
+    ALL_DISABLED    // All values disabled
+};
+
 static enum complexity assess_complexity(
     const int wf[], const bool enables[],
     int *value, int *other, unsigned int *other_ix)
@@ -156,7 +158,15 @@ static enum complexity assess_complexity(
 
     unsigned int count = count_value(wf, enables, *value, other_ix);
     if (count == enable_count)
-        return ALL_SAME;
+    {
+        if (count == 1)
+        {
+            *other_ix = first_valid;
+            return SINGLE_BUNCH;
+        }
+        else
+            return ALL_SAME;
+    }
     else if (count == enable_count - 1)
     {
         *other = wf[*other_ix];
@@ -195,6 +205,9 @@ static void update_status_core(
         case ALL_SAME:
             format_epics_string(status, "%s", value_name);
             break;
+        case SINGLE_BUNCH:
+            format_epics_string(status, "%s @%u", value_name, other_ix);
+            break;
         case ALL_BUT_ONE:
             format_epics_string(status, "%s (%s @%u)",
                 value_name, other_name, other_ix);
@@ -203,7 +216,7 @@ static void update_status_core(
             format_epics_string(status, "Mixed %s", name);
             break;
         case ALL_DISABLED:
-            format_epics_string(status, "%s disabled", name);
+            format_epics_string(status, "Off");
     }
 }
 
@@ -286,19 +299,23 @@ static bool assess_gain(struct bunch_source *source, bool *seen, int *gain)
 static void update_out_status(struct bunch_bank *bank)
 {
     /* Gather all the output enables into a waveform. */
-    int out_wf[hardware_config.bunches];
+    unsigned int bunches = hardware_config.bunches;
+    int out_wf[bunches];
+    bool enable_wf[bunches];
     FOR_BUNCHES(i)
+    {
         out_wf[i] =
             bank->fir_source.enables_wf[i]  |
             bank->nco0_source.enables_wf[i] << 1  |
             bank->nco1_source.enables_wf[i] << 2  |
             bank->nco2_source.enables_wf[i] << 3  |
             bank->nco3_source.enables_wf[i] << 4;
+        enable_wf[i] = out_wf[i];
+    }
 
     /* First gather the enabled outputs. */
     EPICS_STRING enables;
-    update_status_core(
-        "outputs", out_wf, NULL, &enables, render_outputs);
+    update_status_core("outputs", out_wf, enable_wf, &enables, render_outputs);
 
     /* Now look for gain consensus and assemble result. */
     bool seen = false;
@@ -406,6 +423,7 @@ static void write_out_wf(void *context, char out_wf_in[], unsigned int *length)
     /* Take a copy of the waveform, as we're about to trigger updates to the
      * underlying data! */
     unsigned int bunches = hardware_config.bunches;
+    *length = bunches;
     char out_wf[bunches];
     memcpy(out_wf, out_wf_in, bunches);
 
