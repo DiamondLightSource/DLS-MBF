@@ -56,6 +56,7 @@ architecture arch of dac_fir_gain is
     subtype MMS_READOUT_RANGE is natural range 33 downto 18;
     constant OUTPUT_SHIFT : natural := 2;
 
+    signal bb_gain_in : signed(17 downto 0);
     signal fir_enable_in : std_ulogic;
 
 begin
@@ -68,6 +69,8 @@ begin
             -- this for the saturation stage.
             shifted_data_out <= shifted_data;
             fir_overflow <= overflow_detect(shifted_data(OVERFLOW_RANGE));
+
+            bb_gain_in <= bb_gain_i;
         end if;
     end process;
 
@@ -89,7 +92,7 @@ begin
     ) port map (
         clk_i => clk_i,
         a_i => shifted_fir,
-        b_i => bb_gain_i,
+        b_i => bb_gain_in,
         en_ab_i => '1',
         en_c_i => '0',
         p_o => fir_data_out,
