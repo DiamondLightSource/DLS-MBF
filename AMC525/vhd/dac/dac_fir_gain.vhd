@@ -25,6 +25,9 @@ entity dac_fir_gain is
 end;
 
 architecture arch of dac_fir_gain is
+    signal fir_off : boolean := false;
+    signal fixed_gain_in : unsigned(3 downto 0);
+
     signal data_in : signed(39 downto 0) := (others => '0');
     signal shifted_data : signed(39 downto 0) := (others => '0');
     -- This signal should be interpreted as the 4.21 input signal scaled by a
@@ -63,8 +66,16 @@ begin
     -- Shift the data to apply the fixed gain
     process (clk_i) begin
         if rising_edge(clk_i) then
+            fixed_gain_in <= fixed_gain_i;
+            fir_off <= fixed_gain_i = "1111";
             data_in <= (39 downto 15 => fir_data_i, others => '0');
-            shifted_data <= shift_right(data_in, to_integer(fixed_gain_i));
+
+            if fir_off then
+                shifted_data <= (others => '0');
+            else
+                shifted_data <= shift_right(data_in, to_integer(fixed_gain_in));
+            end if;
+
             -- Compute output data and overflow detection together, we'll need
             -- this for the saturation stage.
             shifted_data_out <= shifted_data;
