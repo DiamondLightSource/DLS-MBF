@@ -50,14 +50,14 @@ static void refresh_gain_enum(struct gain_manager *manager)
     /* See if the current gain corresponds to a valid enum value.  We round and
      * will discard the bottom 2 bits while doing this test. */
     unsigned int gain = (manager->gain + 2) >> 2;
-    unsigned int gain_enum = 15;        // Fallback "others" case
+    uint16_t gain_enum = 15;        // Fallback "others" case
     if (gain > 1)
     {
         unsigned int bits = 31 - (unsigned int) __builtin_clz(gain);
         if (gain == 1U << bits)
             /* In this case the gain really is a power of 2, select the
              * corresponding enum value. */
-            gain_enum = 16 - bits;
+            gain_enum = (uint16_t) (16 - bits);
     }
     WRITE_OUT_RECORD(mbbo, manager->gain_enum, gain_enum, false);
 }
@@ -89,7 +89,7 @@ static bool set_gain_scalar(void *context, double *scalar)
     return true;
 }
 
-static bool set_gain_enum(void *context, unsigned int *value)
+static bool set_gain_enum(void *context, uint16_t *value)
 {
     struct gain_manager *manager = context;
     /* Values in range 0 to 14 correspond to scalar gains of 2^-value (though we

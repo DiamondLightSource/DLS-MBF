@@ -71,7 +71,7 @@ static struct pll_context {
 
     /* Detector configuration. */
     enum detector_input_select input_select;
-    unsigned int readout_scale;
+    uint16_t readout_scale;
     bool *bunch_enables;
     unsigned int bunch_count;
     struct epics_record *enablewf;
@@ -335,7 +335,7 @@ static int compute_detector_delay(enum detector_input_select selection)
 }
 
 
-static bool write_det_input_select(void *context, unsigned int *selection)
+static bool write_det_input_select(void *context, uint16_t *selection)
 {
     struct pll_context *pll = context;
     pll->input_select = *selection;
@@ -349,7 +349,7 @@ static bool write_det_input_select(void *context, unsigned int *selection)
     return true;
 }
 
-static bool write_det_output_scale(void *context, unsigned int *scale)
+static bool write_det_output_scale(void *context, uint16_t *scale)
 {
     struct pll_context *pll = context;
     pll->readout_scale = *scale;

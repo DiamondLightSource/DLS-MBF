@@ -102,7 +102,7 @@ void hw_write_output_enable(int axis, bool enable);
 /* DRAM capture configuration - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Configure capture pattern for data to DRAM0. */
-void hw_write_dram_mux(unsigned int mux);
+void hw_write_dram_mux(uint16_t mux);
 
 /* Configures length of DRAM0 runout after trigger event. */
 void hw_write_dram_runout(unsigned int count);
@@ -253,7 +253,7 @@ void hw_write_adc_overflow_threshold(int axis, unsigned int threshold);
 void hw_write_adc_delta_threshold(int axis, unsigned int delta);
 
 /* Sets shift factor for ADC fill pattern reject filter. */
-void hw_write_adc_reject_shift(int axis, unsigned int shift);
+void hw_write_adc_reject_shift(int axis, uint16_t shift);
 
 /* Polls the ADC events: input overflow, FIR overflow, min/max/sum overflow,
  * bunch motion event. */
@@ -264,8 +264,8 @@ void hw_read_adc_events(int axis, struct adc_events *events);
 void hw_write_adc_taps(int axis, const int taps[]);
 
 /* Set output source for ADC MMS. */
-void hw_write_adc_mms_source(int axis, unsigned int source);
-void hw_write_adc_dram_source(int axis, unsigned int source);
+void hw_write_adc_mms_source(int axis, uint16_t source);
+void hw_write_adc_dram_source(int axis, uint16_t source);
 
 /* Reads min/max/sum for ADC. */
 void hw_read_adc_mms(int axis, struct mms_result *result);
@@ -286,13 +286,13 @@ struct bunch_config {
 
 /* Write bunch configuration. */
 void hw_write_bunch_config(
-    int axis, unsigned int bank, const struct bunch_config *config);
+    int axis, uint16_t bank, const struct bunch_config *config);
 
 /* Programs bunch decimation factor. */
 void hw_write_bunch_decimation(int axis, unsigned int decimation);
 
 /* Write taps for bunch by bunch FIR. */
-void hw_write_bunch_fir_taps(int axis, unsigned int fir, const int taps[]);
+void hw_write_bunch_fir_taps(int axis, uint16_t fir, const int taps[]);
 
 /* Checks for FIR overflow on selected axis. */
 bool hw_read_bunch_overflow(int axis);
@@ -315,7 +315,7 @@ void hw_write_dac_delta_threshold(int axis, unsigned int delta);
 void hw_write_dac_delay(int axis, unsigned int delay);
 
 /* Set output FIR gain. */
-void hw_write_dac_fir_gain(int axis, unsigned int gain);
+void hw_write_dac_fir_gain(int axis, uint16_t gain);
 
 /* Set output source for DAC memory and MMS. */
 enum dac_mms_source {
@@ -343,7 +343,7 @@ struct seq_entry {
     uint64_t delta_freq;            // Frequency step for sweep
     unsigned int dwell_time;        // Dwell time at each step
     unsigned int capture_count;     // Number of sweep points to capture
-    unsigned int bunch_bank;        // Bunch bank selection
+    uint16_t bunch_bank;            // Bunch bank selection
     unsigned int nco_gain;          // Sweep output gain
     unsigned int window_rate;       // Detector window advance frequency
     bool enable_window;             // Enable detector windowing
@@ -356,7 +356,7 @@ struct seq_entry {
 };
 
 struct seq_config {
-    unsigned int bank0;
+    uint16_t bank0;
     unsigned int sequencer_pc;
     unsigned int super_seq_count;
     struct seq_entry entries[MAX_SEQUENCER_COUNT];
@@ -376,7 +376,7 @@ struct seq_state {
 void hw_write_seq_config(int axis, const struct seq_config *config);
 
 /* Updates the choice of bank0. */
-void hw_write_seq_bank0(int axis, unsigned int bank0);
+void hw_write_seq_bank0(int axis, uint16_t bank0);
 
 /* Configure state used to generate trigger event. */
 void hw_write_seq_trigger_state(int axis, unsigned int state);
@@ -393,7 +393,7 @@ void hw_read_seq_state(int axis, struct seq_state *state);
 /* Configuration for a single detector. */
 struct detector_config {
     bool enable;                // Individual detector enables
-    unsigned int scaling;       // Detector readout scaling
+    uint16_t scaling;           // Detector readout scaling
     bool *bunch_enables;        // Array of bunch enables
 };
 
@@ -404,7 +404,7 @@ struct detector_result {
 
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
-    int axis, unsigned int input_select, unsigned int delay,
+    int axis, uint16_t input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT]);
 
 /* Resets detector capture address. */
@@ -442,12 +442,12 @@ void hw_write_pll_minimum_magnitude(int axis, uint32_t magnitude);
 void hw_write_pll_maximum_offset(int axis, uint32_t offset);
 
 /* Configures the detector readout scale. */
-void hw_write_pll_det_scaling(int axis, unsigned int scaling);
+void hw_write_pll_det_scaling(int axis, uint16_t scaling);
 
 /* As the detector bunch offset and hence the bunch configuration depend on the
  * input selection, we have to write both together. */
 void hw_write_pll_det_config(
-    int axis, unsigned int input_select,
+    int axis, uint16_t input_select,
     unsigned int offset, const bool bunch_enables[]);
 
 /* Control over debug readbacks.  If captured CORDIC is set the FIFO debug data

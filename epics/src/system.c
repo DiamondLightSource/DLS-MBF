@@ -21,8 +21,8 @@
 
 
 static struct system_status system_status;
-static unsigned int vco_locked;
-static unsigned int vcxo_locked;
+static uint16_t vco_locked;
+static uint16_t vcxo_locked;
 
 static void read_system_status(void)
 {

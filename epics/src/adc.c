@@ -32,8 +32,8 @@ enum adc_output_select {
 
 static struct adc_context {
     int axis;
-    unsigned int mms_after_fir;
-    unsigned int dram_after_fir;
+    uint16_t mms_after_fir;
+    uint16_t dram_after_fir;
     bool overflow;
     struct adc_events events;
     struct mms_handler *mms;
@@ -117,7 +117,7 @@ static void update_delays(struct adc_context *adc)
     }
 }
 
-static bool write_adc_mms_source(void *context, unsigned int *source)
+static bool write_adc_mms_source(void *context, uint16_t *source)
 {
     struct adc_context *adc = context;
     adc->mms_after_fir = *source;
@@ -126,7 +126,7 @@ static bool write_adc_mms_source(void *context, unsigned int *source)
     return true;
 }
 
-static bool write_adc_dram_source(void *context, unsigned int *source)
+static bool write_adc_dram_source(void *context, uint16_t *source)
 {
     struct adc_context *adc = context;
     adc->dram_after_fir = *source;
@@ -135,7 +135,7 @@ static bool write_adc_dram_source(void *context, unsigned int *source)
     return true;
 }
 
-static bool write_adc_reject_shift(void *context, unsigned int *shift)
+static bool write_adc_reject_shift(void *context, uint16_t *shift)
 {
     struct adc_context *adc = context;
     hw_write_adc_reject_shift(adc->axis, *shift);

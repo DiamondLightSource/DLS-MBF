@@ -49,7 +49,7 @@ struct bunch_source {
 /* Bunch selection context for a single bank. */
 struct bunch_bank {
     int axis;
-    unsigned int bank;
+    uint16_t bank;
 
     struct bunch_config config;
 
@@ -59,7 +59,7 @@ struct bunch_bank {
     /* FIR selection waveform control. */
     struct epics_record *firwf;
     struct epics_record *outwf;
-    unsigned int fir_select;
+    uint16_t fir_select;
 
     /* Context for editing bunch selection waveforms. */
     struct bunch_set *bunch_set;
@@ -76,8 +76,8 @@ struct bunch_bank {
 /* Bunch selection context for a single axis. */
 static struct bunch_context {
     int axis;
-    unsigned int copy_from;
-    unsigned int copy_to;
+    uint16_t copy_from;
+    uint16_t copy_to;
     struct bunch_bank banks[BUNCH_BANKS];
 } bunch_context[AXIS_COUNT];
 
@@ -348,7 +348,7 @@ static void update_output_status(struct bunch_source *source)
 static bool read_feedback_mode(void *context, EPICS_STRING *result)
 {
     struct bunch_context *bunch = context;
-    unsigned int idle_bank = get_seq_idle_bank(bunch->axis);
+    uint16_t idle_bank = get_seq_idle_bank(bunch->axis);
     struct bunch_config *config = &bunch->banks[idle_bank].config;
 
     /* Evaluate DAC out and FIR waveforms. */
@@ -703,7 +703,7 @@ static void publish_bank(unsigned int ix, struct bunch_bank *bank)
 
 
 static void initialise_bank(
-    int axis, unsigned int ix, struct bunch_bank *bank)
+    int axis, uint16_t ix, struct bunch_bank *bank)
 {
     bank->axis = axis;
     bank->bank = ix;
@@ -730,7 +730,7 @@ error__t initialise_bunch_select(void)
         struct bunch_context *bun = &bunch_context[axis];
         bun->axis = axis;
 
-        for (unsigned int i = 0; i < BUNCH_BANKS; i ++)
+        for (uint16_t i = 0; i < BUNCH_BANKS; i ++)
         {
             initialise_bank(axis, i, &bun->banks[i]);
             publish_bank(i, &bun->banks[i]);

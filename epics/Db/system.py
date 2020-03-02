@@ -41,8 +41,7 @@ def clock_status(name, desc):
 
 def vco_status(name, desc):
     return mbbIn(name,
-        'Unlocked', 'Locked', 'Passthrough',
-        ZRSV = 'MAJOR', DESC = desc)
+        ('Unlocked', 'MAJOR'), 'Locked', 'Passthrough', DESC = desc)
 
 with name_prefix('STA'):
     Action('POLL',

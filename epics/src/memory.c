@@ -110,7 +110,7 @@ static enum chan_select find_selection(
 }
 
 
-static void write_memory_select(unsigned int mux)
+static void write_memory_select(uint16_t mux)
 {
     struct map_entry entry = select_map[mux];
     chan_selection[0] = entry.ch0;
@@ -120,13 +120,13 @@ static void write_memory_select(unsigned int mux)
     hw_write_dram_mux(mux);
 }
 
-static void write_chan0_select(unsigned int value)
+static void write_chan0_select(uint16_t value)
 {
     enum chan_select selection = find_selection(value, chan_selection[1]);
     WRITE_OUT_RECORD(mbbo, memory_select, selection, true);
 }
 
-static void write_chan1_select(unsigned int value)
+static void write_chan1_select(uint16_t value)
 {
     enum chan_select selection = find_selection(chan_selection[0], value);
     WRITE_OUT_RECORD(mbbo, memory_select, selection, true);
@@ -228,7 +228,7 @@ static void readout_memory(void)
 }
 
 
-static void write_dram_runout(unsigned int runout)
+static void write_dram_runout(uint16_t runout)
 {
     static const unsigned int runout_lookup[] = {
         0x02000000,         // 12.5 %

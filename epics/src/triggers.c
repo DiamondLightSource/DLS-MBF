@@ -226,7 +226,7 @@ static bool write_trigger_delay(void *context, unsigned int *value)
 }
 
 
-static bool write_target_mode(void *context, unsigned int *value)
+static bool write_target_mode(void *context, uint16_t *value)
 {
     trigger_target_set_mode(context, *value);
     return true;

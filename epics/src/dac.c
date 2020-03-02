@@ -121,7 +121,7 @@ static void update_delays(struct dac_context *dac)
         hardware_delays.DRAM_DAC_DELAY);
 }
 
-static bool write_dac_mms_source(void *context, unsigned int *source)
+static bool write_dac_mms_source(void *context, uint16_t *source)
 {
     struct dac_context *dac = context;
     dac->mms_source = *source;

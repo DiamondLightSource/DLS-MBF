@@ -228,7 +228,7 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-static bool set_state0_bunch_bank(void *context, unsigned int *bank)
+static bool set_state0_bunch_bank(void *context, uint16_t *bank)
 {
     struct seq_context *seq = context;
     seq->seq_config.bank0 = *bank;
@@ -237,7 +237,7 @@ static bool set_state0_bunch_bank(void *context, unsigned int *bank)
 }
 
 
-unsigned int get_seq_idle_bank(int axis)
+uint16_t get_seq_idle_bank(int axis)
 {
     return seq_context[axis].seq_config.bank0;
 }
@@ -499,7 +499,7 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
     struct seq_context *seq = context;
     struct seq_entry *entry0 = &seq->seq_config.entries[0];
     int axis = seq->axis;
-    unsigned int bank = entry0->bunch_bank;
+    uint16_t bank = entry0->bunch_bank;
 
     /* Both the detector and bunch configurations feed into the status. */
     const struct detector_config *det_config = get_detector_config(axis, 0);

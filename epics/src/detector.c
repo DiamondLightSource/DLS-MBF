@@ -69,7 +69,7 @@ static struct detector_context {
     struct detector_bank banks[DETECTOR_COUNT];
 
     /* Shared detector configuration. */
-    unsigned int input_select;
+    uint16_t input_select;
     /* Phase delay to be compensated, in bunches. */
     int phase_delay;
     /* Nominal extra FIR delay. */
