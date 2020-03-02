@@ -231,6 +231,13 @@ put('SEQ:SUPER:RESET_S', 0)
 _put('TRG:BLANKING_S', setup.blanking_interval)
 
 
+# Set memory and MMS capture sources to standard settings
+put_axes('ADC:MMS_SOURCE_S',  'After COMP')
+put_axes('ADC:DRAM_SOURCE_S', 'After COMP')
+put_axes('DAC:MMS_SOURCE_S',  'Before PEMPH')
+put_axes('DAC:DRAM_SOURCE_S', 'Before PEMPH')
+
+
 # Configure FIR as selected
 if LMBF_MODE:
     put('FIR:DECIMATION_S', setup.fir_decimation)
