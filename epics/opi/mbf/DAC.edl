@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1988
-y 406
-w 641
-h 359
+x 954
+y 147
+w 640
+h 408
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -25,6 +25,36 @@ snapToGrid
 gridSize 8
 disableScroll
 endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 328
+y 240
+w 304
+h 128
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 240
+w 312
+h 144
+lineColor index 14
+fill
+fillColor index 4
+endObjectProperties
 
 # (Static Text)
 object activeXTextClass
@@ -52,7 +82,7 @@ major 4
 minor 1
 release 0
 x 568
-y 328
+y 376
 w 64
 h 24
 fgColor index 46
@@ -93,8 +123,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 8
-y 232
+x 136
+y 256
 w 16
 h 16
 lineColor index 14
@@ -110,9 +140,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 32
-y 232
-w 168
+x 160
+y 256
+w 160
 h 16
 controlPv "$(device):$(axis):DAC:BUN_OVF.DESC"
 font "helvetica-medium-r-12.0"
@@ -141,7 +171,7 @@ w 624
 h 184
 # Appearance
 autoScaleBothDirections
-graphTitle "DAC Compensation Filter"
+graphTitle "DAC Pre-Emphasis Filter"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -182,8 +212,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 448
-y 232
+x 136
+y 328
 w 80
 h 22
 controlPv "$(device):$(axis):DAC:DELAY_S"
@@ -209,8 +239,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 328
-y 232
+x 16
+y 328
 w 81
 h 14
 font "helvetica-bold-r-12.0"
@@ -229,8 +259,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 8
-y 280
+x 136
+y 304
 w 16
 h 16
 lineColor index 14
@@ -246,9 +276,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 32
-y 280
-w 168
+x 160
+y 304
+w 160
 h 16
 controlPv "$(device):$(axis):DAC:FIR_OVF.DESC"
 font "helvetica-medium-r-12.0"
@@ -270,8 +300,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 8
-y 256
+x 136
+y 280
 w 16
 h 16
 lineColor index 14
@@ -287,9 +317,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 32
-y 256
-w 168
+x 160
+y 280
+w 160
 h 16
 controlPv "$(device):$(axis):DAC:MUX_OVF.DESC"
 font "helvetica-medium-r-12.0"
@@ -311,16 +341,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 328
-y 280
-w 87
+x 16
+y 352
+w 113
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Output enable:"
+  "DAC output enable:"
 }
 autoSize
 endObjectProperties
@@ -331,8 +361,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 448
-y 280
+x 136
+y 352
 w 96
 h 22
 fgColor index 14
@@ -351,8 +381,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 328
-y 304
+x 360
+y 256
 w 68
 h 14
 font "helvetica-bold-r-12.0"
@@ -371,8 +401,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 448
-y 304
+x 440
+y 256
 w 112
 h 22
 fgColor index 14
@@ -391,8 +421,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 448
-y 328
+x 440
+y 280
 w 112
 h 22
 fgColor index 14
@@ -411,16 +441,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 328
-y 328
-w 74
+x 344
+y 280
+w 86
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "DRAM input:"
+  "Memory input:"
 }
 autoSize
 endObjectProperties
@@ -431,8 +461,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 568
-y 304
+x 560
+y 256
 w 64
 h 22
 fgColor index 43
@@ -457,8 +487,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 8
-y 312
+x 440
+y 336
 w 16
 h 16
 lineColor index 14
@@ -474,10 +504,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 32
-y 312
-w 168
-h 14
+x 464
+y 336
+w 160
+h 16
 controlPv "$(device):$(axis):DAC:EVENT.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
@@ -498,10 +528,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 448
-y 256
-w 80
-h 20
+x 376
+y 336
+w 56
+h 24
 controlPv "$(device):$(axis):DAC:EVENT_LIMIT_S"
 font "helvetica-medium-r-14.0"
 fgColor index 14
@@ -525,16 +555,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 328
-y 256
-w 113
-h 14
+x 336
+y 336
+w 40
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Min/max threshold:"
+  "Event:"
 }
 autoSize
 endObjectProperties
@@ -545,8 +575,8 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 8
-y 336
+x 440
+y 312
 w 16
 h 16
 lineColor index 14
@@ -562,10 +592,10 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 32
-y 336
-w 168
-h 14
+x 464
+y 312
+w 160
+h 16
 controlPv "$(device):$(axis):DAC:MMS_OVF.DESC"
 font "helvetica-medium-r-12.0"
 fgColor index 14
@@ -578,5 +608,131 @@ useHexPrefix
 newPos
 objType "monitors"
 noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 256
+w 106
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "FIR early clipping:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 280
+w 102
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Output overflow:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 304
+w 113
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Preemph overflow:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 328
+y 232
+w 128
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "MMS/DRAM"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 328
+y 232
+w 128
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 232
+w 128
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Output"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 232
+w 128
+h 16
+lineColor index 14
+fillColor index 0
 endObjectProperties
 
