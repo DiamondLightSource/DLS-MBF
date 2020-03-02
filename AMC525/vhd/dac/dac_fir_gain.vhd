@@ -124,7 +124,7 @@ begin
 
     -- Shift output up to fit .35 NCO scaling calculations
     delay_enable : entity work.dlyline generic map (
-        DLY => 3        -- Matches gain delay through MAC
+        DLY => 4        -- Matches gain delay through MAC
     ) port map (
         clk_i => clk_i,
         data_i(0) => fir_enable_i,
