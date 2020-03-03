@@ -200,24 +200,27 @@ static void update_status_core(
     render(value, value_name, sizeof(value_name));
     render(other, other_name, sizeof(other_name));
 
+    bool ok = false;
     switch (complexity)
     {
         case ALL_SAME:
-            format_epics_string(status, "%s", value_name);
+            ok = format_epics_string(status, "%s", value_name);
             break;
         case SINGLE_BUNCH:
-            format_epics_string(status, "%s @%u", value_name, other_ix);
+            ok = format_epics_string(status, "%s @%u", value_name, other_ix);
             break;
         case ALL_BUT_ONE:
-            format_epics_string(status, "%s (%s @%u)",
+            ok = format_epics_string(status, "%s (%s @%u)",
                 value_name, other_name, other_ix);
             break;
         case COMPLICATED:
-            format_epics_string(status, "Mixed %s", name);
+            ok = format_epics_string(status, "Mixed %s", name);
             break;
         case ALL_DISABLED:
-            format_epics_string(status, "Off");
+            ok = format_epics_string(status, "Off");
     }
+    if (!ok)
+        format_epics_string(status, "(Summary too long)");
 }
 
 
@@ -262,13 +265,18 @@ static void render_outputs(int outputs, char result[], size_t length)
         for (unsigned int i = 0; i < 5; i ++)
             if (outputs >> i & 1)
             {
-                strncat(result, sep, length);
-                strncat(result, names[i], length);
+                int len = snprintf(result, length, "%s%s", sep, names[i]);
+                /* This assert trades a segmentation fault for an Unrecoverable
+                 * error.  In practice the result buffer in question will be
+                 * long enough. */
+                ASSERT_OK(0 <= len  &&  (size_t) len < length);
+                result += (size_t) len;
+                length -= (size_t) len;
                 sep = "+";
             }
     }
     else
-        strncpy(result, "Off", length);
+        snprintf(result, length, "Off");
 }
 
 
@@ -334,7 +342,10 @@ static void update_out_status(struct bunch_bank *bank)
     else
         render_gain(gain, gain_status, sizeof(gain_status));
 
-    format_epics_string(&bank->out_status, "%s %s", enables.s, gain_status);
+    bool ok = format_epics_string(
+        &bank->out_status, "%s %s", enables.s, gain_status);
+    if (!ok)
+        format_epics_string(&bank->out_status, "(Summary too long)");
 }
 
 
