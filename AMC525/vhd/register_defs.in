@@ -86,6 +86,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # the high 16 bits are written to the HIGH register.  The frequency is only
 # changed when the high register is written.
 :!NCO_FREQ
+    # The 32 low order bits of the frequency must be written first before
+    # writing the high order bits.
     LOW         RW
     HIGH        RW
         # High order bits, writing this field triggers frequency update.
@@ -110,8 +112,13 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         .FIRMWARE       8
 
     GIT_VERSION R
+        # This is the git SHA-1 object name for the repository HEAD at the time
+        # the firmware was built, or 0 if the firmware was not built from a git
+        # repository.
         .SHA            28
         -               3
+        # This flag is set if the sources were not in step with the repository.
+        # This flag is also set when no git repository was present.
         .DIRTY
 
     # Configuration information
@@ -167,7 +174,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # Output enable for PLL clkin sel1, if not set then output is tristate
         .PLL_SEL1_ENA
 
-    # ADC DCO IDELAY control
+    # ADC DCO IDELAY control.  Used to control phase between ADC DDR data input
+    # and data capture clock.
     :IDELAY     ADC_IDELAY
         # Set if ADC PLL not locked, write to trigger reset of ADC PLL.
         .PLL_LOCK   @31     RW
@@ -182,9 +190,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # Select device to address:
         #
         # === ================================================
-        # 0   Clock controller, LMK04826B
-        # 1   ADC, AD9684
-        # 2   DAC, AD9122
+        # 0   Clock controller: LMK04826B
+        # 1   ADC: AD9684
+        # 2   DAC: AD9122
         # === ================================================
         .SELECT     2 @29   W
         # Set to 1 to trigger a read cycle on the selected SPI address, follow
@@ -212,13 +220,13 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     CONTROL     RW
         # ADC mux: if set input to channel 1 FIR has copy of channel 0 ADC
         .ADC_MUX
-        # NCO0 mux: if set channel 1 NCO0 has sin data from channel 0
+        # NCO0 mux: if set channel 1 NCO0 has cos data from channel 0
         .NCO0_MUX
-        # NCO1 mux: if set channel 1 NCO1 has sin data from channel 0
+        # NCO1 mux: if set channel 1 NCO1 has cos data from channel 0
         .NCO1_MUX
-        # NCO2 mux: if set channel 1 NCO2 has sin data from channel 0
+        # NCO2 mux: if set channel 1 NCO2 has cos data from channel 0
         .NCO2_MUX
-        # NCO3 mux: if set channel 1 NCO3 has sin data from channel 0
+        # NCO3 mux: if set channel 1 NCO3 has cos data from channel 0
         .NCO3_MUX
         # Bank mux: if set channel 1 bank selection is copy of bank selection
         # from channel 0.
@@ -302,7 +310,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 
     # Trigger management and control.  Seven trigger sources are available, and
     # three trigger targets can be configured.  The trigger sources are defined
-    # in :TRIGGERS_IN and are managed as masks for a variety of registers below.
+    # in TRIGGERS_IN_ and are managed as masks for a variety of registers below.
     #
     # The following trigger targets are configured here:
     #
@@ -319,26 +327,31 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 .TRIGGERS   9
                 # Set if the blanking input has seen a rising edge
                 .BLANKING
-            # Pulsed trigger control events
+
+            # Pulsed trigger control events.  For each of the three trigger
+            # targets we have the following actions available:
+            #
+            # ========= =======================================================
+            # ARM       Enables triggering on any selected input trigger.
+            # DISARM    Disables triggering of target, unless forced by FIRE.
+            # FIRE      Bypasses input trigger and arming to force an output
+            #           trigger event.  Normally used for memory capture.
+            # ========= =======================================================
             CONTROL     WP
                 # Start turn clock synchronisation
                 .SYNC_TURN
                 # Request turn clock sample
                 .READ_SYNC
 
-                # Sequencer 0: arm, fire, disarm.  ARM enables triggering on
-                # any of the selected input triggers, FIRE bypasses input
-                # triggering and arming to generate an output trigger, while
-                # DISARM reverses the effect of ARM so long as no trigger has
-                # yet been seen.
+                # Sequencer 0: arm, fire, disarm.
                 .SEQ0_ARM
                 .SEQ0_FIRE
                 .SEQ0_DISARM
-                # Sequencer 1: arm, fire, disarm, as for seq 0.
+                # Sequencer 1: arm, fire, disarm.
                 .SEQ1_ARM
                 .SEQ1_FIRE
                 .SEQ1_DISARM
-                # DRAM: arm, fire, disarm, as for sequencers.
+                # DRAM: arm, fire, disarm.
                 .DRAM0_ARM
                 .DRAM0_FIRE
                 .DRAM0_DISARM
@@ -346,7 +359,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 # Generate soft trigger event
                 .TRIGGER
 
-                # Controls for the two Tune PLL units
+                # Controls for the two Tune PLL units: used to trigger tune
+                # following start and stop events.  These events are provided at
+                # this shared level to enable synchronised tune following.
                 .START_PLL0
                 .START_PLL1
                 .STOP_PLL0
@@ -513,21 +528,31 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         CONFIG      W
             # Determines bunch bank to be written, resets write pointer
             .BANK       2
-        # The each bunch configuration is packed into three overlaid registers
-        # (to reduce the number of writes required).  Once CONFIG.BANK has been
-        # set, three successive writes to the BANK register will update one
-        # bunch, and repeated writes will update successive bunches.
+        # The configuration for each bunch is packed into three overlaid
+        # registers (to reduce the number of writes required).  Once CONFIG.BANK
+        # has been set, three successive writes to the BANK register will update
+        # one bunch, and repeated writes will update successive bunches.
         # Repeated writes to this register update the configuration for
         # successive bunches.
+        #
+        # The NCO selections are mapped onto the corresponding hardware
+        # resources according to the following table:
+        #
+        # ======= ======= ====================================================
+        # NCO0    NCO1    First manually controlled NCO
+        # NCO1    SEQ     NCO controlled by sequencer
+        # NCO2    PLL     NCO controlled by PLL tune tracker
+        # NCO3    NCO2    Second manually controlled NCO
+        # ======= ======= ====================================================
         #
         # All the gain factors are scaled as 4.14 18-bit fixed point numbers,
         # packed into three registers as shown below.
         *OVERLAY    BANK        W
-            # Basic gains for NCO0 and NCO1
+            # Basic gains for NCO0 and NCO1 (high order 16 bits)
             NCO01
                 .NCO0_HIGH      16
                 .NCO1_HIGH      16
-            # Basic gains for NCO2 and NCO3
+            # Basic gains for NCO2 and NCO3 (high order 16 bits)
             NCO23
                 .NCO2_HIGH      16
                 .NCO3_HIGH      16
@@ -549,6 +574,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     !FIR
         *RW
             EVENTS      R
+                # Set if overflow detected during FIR computation.
                 .OVERFLOW
             CONFIG      W
                 # Configures which group of taps will be written when writing to

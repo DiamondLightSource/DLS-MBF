@@ -65,6 +65,8 @@ MMS Registers
 ..  register_docs::
     :group:     MMS
 
+..  _TRIGGERS_IN:
+
 Trigger Sources
 ~~~~~~~~~~~~~~~
 
