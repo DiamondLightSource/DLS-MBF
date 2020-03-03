@@ -167,3 +167,25 @@ Major firmware and control system changes, implementing the following:
 * Super sequencer frequency offsets are now 48 bits.
 
 Note that the firmware is now built with Vivado 2019.2.
+
+
+1.4.1 March 2020
+................
+
+This release will be deployed at Diamond for the run starting at the end of
+March 2020.  This release incorporates a major change to the bunch by bunch
+control of output data.
+
+The firmware for this version is incompatible with earlier releases.  The
+following changes have been implemented:
+
+* Separate bunch by bunch gain controls for FIR and all four NCOs.
+* Tango support has been moved into a separate repository, MBF-Tango_.
+* The required version of epics_device has been bumped to 2.0.
+* The lowest FIR gain control setting now sets FIR output to zero.
+* The screens now refer to the ADC and DAC FIRs as the Compensation (COMP) and
+  Pre-Emphasis (PEMPH) filters respectively to reduce confusion with the bunch
+  by bunch FIR.
+
+
+..  _MBF-Tango: https://github.com/DLS-Controls-Private-org/MBF-Tango
