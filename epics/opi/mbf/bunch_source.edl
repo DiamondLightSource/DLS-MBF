@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 376
-y 238
+x 2391
+y 433
 w 608
 h 632
 font "helvetica-medium-r-18.0"
@@ -110,7 +110,7 @@ y 176
 w 576
 h 160
 # Appearance
-graphTitle "$(source) Bunch Gains (dB)"
+graphTitle "Absolute $(source) Bunch Gains (dB)"
 fgColor index 14
 bgColor index 3
 gridColor index 14
