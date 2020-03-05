@@ -10,8 +10,8 @@ Full documentation for using the system can be found at the `MBF Documentation`_
 pages.  See the `Bringing up MBF`_ page for instructions on setting up MBF for
 first operation.
 
-..  _MBF Documentation: https://confluence.diamond.ac.uk/x/9obCB
-..  _Bringing up MBF: https://confluence.diamond.ac.uk/x/_obCB
+..  _MBF Documentation: https://diamondlightsource.atlassian.net/wiki/x/GAAN
+..  _Bringing up MBF: https://diamondlightsource.atlassian.net/wiki/x/FgAN
 
 
 LICENSING
