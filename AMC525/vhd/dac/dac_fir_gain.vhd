@@ -122,7 +122,6 @@ begin
     );
 
 
-    -- Shift output up to fit .35 NCO scaling calculations
     delay_enable : entity work.dlyline generic map (
         DLY => 4        -- Matches gain delay through MAC
     ) port map (
@@ -134,6 +133,7 @@ begin
     process (clk_i) begin
         if rising_edge(clk_i) then
             if fir_enable_in then
+                -- Shift output up to fit .35 NCO scaling calculations
                 fir_data_o <= shift_left(fir_data_out, OUTPUT_SHIFT);
             else
                 fir_data_o <= (others => '0');

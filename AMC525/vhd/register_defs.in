@@ -220,13 +220,13 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     CONTROL     RW
         # ADC mux: if set input to channel 1 FIR has copy of channel 0 ADC
         .ADC_MUX
-        # NCO0 mux: if set channel 1 NCO0 has cos data from channel 0
+        # NCO0 mux: if set channel 1 NCO0 has sin data from channel 0
         .NCO0_MUX
-        # NCO1 mux: if set channel 1 NCO1 has cos data from channel 0
+        # NCO1 mux: if set channel 1 NCO1 has sin data from channel 0
         .NCO1_MUX
-        # NCO2 mux: if set channel 1 NCO2 has cos data from channel 0
+        # NCO2 mux: if set channel 1 NCO2 has sin data from channel 0
         .NCO2_MUX
-        # NCO3 mux: if set channel 1 NCO3 has cos data from channel 0
+        # NCO3 mux: if set channel 1 NCO3 has sin data from channel 0
         .NCO3_MUX
         # Bank mux: if set channel 1 bank selection is copy of bank selection
         # from channel 0.
