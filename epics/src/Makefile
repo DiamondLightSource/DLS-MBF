@@ -62,6 +62,7 @@ mbf_SRCS += hardware.c          # Interface to FPGA
 
 # MBF components
 mbf_SRCS += system.c            # System level components
+mbf_SRCS += nco.c               # Control over fixed frequency NCOs
 mbf_SRCS += mms.c               # Min/max/sum common implementation
 mbf_SRCS += adc.c               # ADC interface and control
 mbf_SRCS += dac.c               # DAC interface and control

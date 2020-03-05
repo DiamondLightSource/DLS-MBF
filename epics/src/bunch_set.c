@@ -161,7 +161,7 @@ struct bunch_set *create_bunch_set(void)
             stringin, "SELECT_STATUS", bunch_set->status_string),
     };
 
-    PUBLISH(stringout, "BUNCH_SELECT", write_bunch_select,
-        .context = bunch_set, .init = init_bunch_select);
+    PUBLISH_C(stringout, "BUNCH_SELECT", write_bunch_select, bunch_set,
+        .init = init_bunch_select);
     return bunch_set;
 }

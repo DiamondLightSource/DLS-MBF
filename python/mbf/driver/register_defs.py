@@ -247,7 +247,11 @@ class GenerateMethods(parse.register_defs.WalkParse):
         return make_register(register, self.walk_fields(context, register))
 
     def walk_group(self, context, group):
-        return make_group(group, self.walk_subgroups(context, group))
+        subgroups = self.walk_subgroups(context, group)
+        if group.hidden:
+            return subgroups
+        else:
+            return make_group(group, subgroups)
 
     def walk_rw_pair(self, context, rw_pair):
         return [

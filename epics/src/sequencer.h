@@ -32,4 +32,4 @@ unsigned int compute_scale_info(
     unsigned int offset, unsigned int length);
 
 /* Returns currently configured bank zero for given axis. */
-unsigned int get_seq_idle_bank(int axis);
+uint16_t get_seq_idle_bank(int axis);

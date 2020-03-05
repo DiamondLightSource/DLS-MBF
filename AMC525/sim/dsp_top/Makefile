@@ -10,9 +10,14 @@ VPATH += $(VHDDIR)
 VPATH += $(VHDDIR)/nco
 VPATH += $(VHDDIR)/tune_pll
 
-vsim: nco_cos_sin_table.vhd cordic_table.vhd register_defs.vhd
+VSIM_DEPENDS = nco_cos_sin_table.vhd cordic_table.vhd register_defs.vhd
+
+vsim: $(VSIM_DEPENDS)
 	ln -sf $(SIMDIR)/do/*.do .
 	ln -sf $(COMMON_DIR)/modelsim.ini .
 	$(RUN_VSIM)
+
+depends: $(VSIM_DEPENDS)
+.PHONY: depends
 
 endif

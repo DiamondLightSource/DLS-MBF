@@ -17,9 +17,9 @@ for a in axes('ADC'):
     loopback = boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
         DESC = 'Enable DAC -> ADC loopback')
 
-    mbbOut('MMS_SOURCE', 'Before FIR', 'After FIR', 'FIR no fill',
+    mbbOut('MMS_SOURCE', 'Before COMP', 'After COMP', 'COMP no fill',
         DESC = 'Source of min/max/sum data')
-    mbbOut('DRAM_SOURCE', 'Before FIR', 'After FIR', 'FIR no fill',
+    mbbOut('DRAM_SOURCE', 'Before COMP', 'After COMP', 'COMP no fill',
         DESC = 'Source of memory data')
     mbbOut('REJECT_COUNT',
         DESC = 'Samples in fill pattern reject filter',
@@ -27,7 +27,7 @@ for a in axes('ADC'):
 
     overflows = [
         overflow('INP_OVF', 'ADC input overflow'),
-        overflow('FIR_OVF', 'ADC FIR overflow'),]
+        overflow('FIR_OVF', 'ADC COMP overflow'),]
     ovf = overflow('OVF', 'ADC overflow')   # Aggregates INP_OVF and FIR_OVF
     adc_events.extend(overflows)
     adc_events.append(ovf)

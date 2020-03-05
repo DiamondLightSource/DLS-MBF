@@ -22,22 +22,7 @@ entity dac_top is
         -- Clocking
         adc_clk_i : in std_ulogic;
         dsp_clk_i : in std_ulogic;
-        turn_clock_i : in std_ulogic;       -- start of machine revolution
-
-        -- Data inputs
-        bunch_config_i : in bunch_config_t;
-        fir_data_i : in signed;
-        nco_0_data_i : in dsp_nco_from_mux_t;
-        nco_1_data_i : in dsp_nco_from_mux_t;
-        nco_2_data_i : in dsp_nco_from_mux_t;
-
-        -- Gain controls to multiplexer
-        nco_0_gain_o : out unsigned;
-        nco_0_enable_o : out std_ulogic;
-
-        -- Outputs and overflow detection
-        data_store_o : out signed;          -- Data from intermediate processing
-        data_o : out signed;                -- at ADC data rate
+        turn_clock_i : in std_ulogic;   -- start of machine revolution
 
         -- General register interface
         write_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
@@ -45,104 +30,108 @@ entity dac_top is
         write_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
         read_strobe_i : in std_ulogic_vector(DSP_DAC_REGS);
         read_data_o : out reg_data_array_t(DSP_DAC_REGS);
-        read_ack_o : out std_ulogic_vector(DSP_DAC_REGS)
+        read_ack_o : out std_ulogic_vector(DSP_DAC_REGS);
+
+        -- Data inputs
+        bunch_config_i : in bunch_config_t;
+        fir_data_i : in signed;
+        nco_data_i : in nco_data_array_t;
+
+        -- Outputs and overflow detection
+        store_fir_o : out signed;       -- Scaled FIR data
+        store_dac_o : out signed;       -- Data from intermediate processing
+        data_o : out signed;            -- at ADC data rate
+        delta_event_o : out std_ulogic  -- bunch movement over threshold
     );
 end;
 
 architecture arch of dac_top is
-    -- Configuration settings from register
-    signal config_register : reg_data_t;
+    -- Configuration settings from registers
     signal dac_delay : bunch_count_t;
     signal fir_gain : unsigned(3 downto 0);
-    signal nco_0_enable : std_ulogic;
-    signal nco_1_enable : std_ulogic;
-    signal nco_2_enable : std_ulogic;
-    signal mms_source : std_ulogic;
+    signal mms_source : std_ulogic_vector(1 downto 0);
     signal store_source : std_ulogic;
+    signal delta_limit : unsigned(15 downto 0);
 
-    signal command_bits : reg_data_t;
     signal write_start : std_ulogic;
+    signal delta_reset : std_ulogic;
 
-    signal event_bits : reg_data_t;
+    -- Event readbacks to registers
+    signal fir_overflow_adc : std_ulogic;
+    signal mms_overflow_adc : std_ulogic;
+    signal mux_overflow_adc : std_ulogic;
     signal fir_overflow : std_ulogic;
+    signal mms_overflow : std_ulogic;
     signal mux_overflow : std_ulogic;
     signal preemph_overflow : std_ulogic;
 
-    -- Pipelined input
+    -- Pipelines
     signal fir_data_in : fir_data_i'SUBTYPE;
-    signal nco_0_data_in : nco_0_data_i'SUBTYPE;
-    signal nco_1_data_in : nco_1_data_i'SUBTYPE;
-    signal nco_2_data_in : nco_2_data_i'SUBTYPE;
-    signal bunch_config_in : bunch_config_t;
+    signal nco_data_in : nco_data_i'SUBTYPE;
+    signal bunch_config_in : bunch_config_i'SUBTYPE;
 
-    -- Overflow detection
-    signal fir_overflow_in : std_ulogic;
-
-    subtype DATA_RANGE is natural range data_o'RANGE;
-
-    signal fir_data : data_o'SUBTYPE;
-    signal nco_0_data : data_o'SUBTYPE;
-    signal nco_1_data : data_o'SUBTYPE;
-    signal nco_2_data : data_o'SUBTYPE;
+    -- Data flowing through system
+    signal fir_mms_data : data_o'SUBTYPE;
     signal data_out : data_o'SUBTYPE;
     signal filtered_data : data_o'SUBTYPE;
     signal mms_data_in : data_o'SUBTYPE;
-
-    -- Delay from gain control to data change
-    constant NCO1_GAIN_DELAY : natural := 4;
+    signal mms_delta : unsigned(data_o'RANGE);
 
     -- Input delays
-    constant INPUT_PIPELINE_DELAY : natural := 4;
+    constant INPUT_PIPELINE_DELAY : natural := 2;
 
 begin
-    -- Register mapping
-    register_file : entity work.register_file port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i(0) => write_strobe_i(DSP_DAC_CONFIG_REG),
+    -- Register interface
+    registers : entity work.dac_registers port map (
+        dsp_clk_i => dsp_clk_i,
+
+        write_strobe_i => write_strobe_i(DSP_DAC_REGISTERS_REGS),
         write_data_i => write_data_i,
-        write_ack_o(0) => write_ack_o(DSP_DAC_CONFIG_REG),
-        register_data_o(0) => config_register
-    );
-    read_data_o(DSP_DAC_CONFIG_REG) <= (others => '0');
-    read_ack_o(DSP_DAC_CONFIG_REG) <= '1';
+        write_ack_o => write_ack_o(DSP_DAC_REGISTERS_REGS),
+        read_strobe_i => read_strobe_i(DSP_DAC_REGISTERS_REGS),
+        read_data_o => read_data_o(DSP_DAC_REGISTERS_REGS),
+        read_ack_o => read_ack_o(DSP_DAC_REGISTERS_REGS),
 
-    -- Command register: start write and reset limit
-    command : entity work.strobed_bits port map (
-        clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(DSP_DAC_COMMAND_REG_W),
-        write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_DAC_COMMAND_REG_W),
-        strobed_bits_o => command_bits
-    );
+        dac_delay_o => dac_delay,
+        fir_gain_o => fir_gain,
+        mms_source_o => mms_source,
+        store_source_o => store_source,
+        delta_limit_o => delta_limit,
+        write_start_o => write_start,
+        delta_reset_o => delta_reset,
 
-    -- Event detection register
-    events : entity work.all_pulsed_bits port map (
-        clk_i => dsp_clk_i,
-        read_strobe_i => read_strobe_i(DSP_DAC_EVENTS_REG_R),
-        read_data_o => read_data_o(DSP_DAC_EVENTS_REG_R),
-        read_ack_o => read_ack_o(DSP_DAC_EVENTS_REG_R),
-        pulsed_bits_i => event_bits
+        fir_overflow_i => fir_overflow,
+        mms_overflow_i => mms_overflow,
+        mux_overflow_i => mux_overflow,
+        preemph_overflow_i => preemph_overflow,
+        delta_event_i => delta_event_o
     );
 
-    dac_delay  <= unsigned(config_register(DSP_DAC_CONFIG_DELAY_BITS));
-    fir_gain   <= unsigned(config_register(DSP_DAC_CONFIG_FIR_GAIN_BITS));
-    nco_0_gain_o <= unsigned(config_register(DSP_DAC_CONFIG_NCO0_GAIN_BITS));
-    nco_0_enable_o <= config_register(DSP_DAC_CONFIG_NCO0_ENABLE_BIT);
-    mms_source   <= config_register(DSP_DAC_CONFIG_MMS_SOURCE_BIT);
-    store_source <= config_register(DSP_DAC_CONFIG_DRAM_SOURCE_BIT);
+    -- Convert overflow events to DSP clock for readout
+    fir_to_dsp : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => fir_overflow_adc,
+        pulse_o => fir_overflow
+    );
 
-    write_start <= command_bits(DSP_DAC_COMMAND_WRITE_BIT);
+    mms_to_dsp : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => mms_overflow_adc,
+        pulse_o => mms_overflow
+    );
 
-    event_bits <= (
-        DSP_DAC_EVENTS_FIR_OVF_BIT => fir_overflow,
-        DSP_DAC_EVENTS_MUX_OVF_BIT => mux_overflow,
-        DSP_DAC_EVENTS_OUT_OVF_BIT => preemph_overflow,
-        others => '0'
+    mux_to_dsp : entity work.pulse_adc_to_dsp port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        pulse_i => mux_overflow_adc,
+        pulse_o => mux_overflow
     );
 
 
     -- -------------------------------------------------------------------------
-    -- Data input pipelines
+    -- Output generation with selected pipelines
 
     fir_delay : entity work.dlyreg generic map (
         DLY => INPUT_PIPELINE_DELAY,
@@ -153,32 +142,18 @@ begin
         signed(data_o) => fir_data_in
     );
 
-    nco0_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_0_data_i,
-        data_o => nco_0_data_in
-    );
-
-    nco1_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_1_data_i,
-        data_o => nco_1_data_in
-    );
-
-    nco2_delay : entity work.dac_nco_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i => nco_2_data_i,
-        data_o => nco_2_data_in
-    );
+    nco_delays : for i in NCO_SET generate
+        nco_delay : entity work.dac_nco_delay generic map (
+            DELAY => INPUT_PIPELINE_DELAY
+        ) port map (
+            clk_i => adc_clk_i,
+            data_i => nco_data_i(i),
+            data_o => nco_data_in(i)
+        );
+    end generate;
 
     bunch_delay : entity work.dac_bunch_config_delay generic map (
-        DELAY => INPUT_PIPELINE_DELAY + NCO1_GAIN_DELAY
+        DELAY => INPUT_PIPELINE_DELAY
     ) port map (
         clk_i => adc_clk_i,
         data_i => bunch_config_i,
@@ -186,82 +161,29 @@ begin
     );
 
 
-    -- -------------------------------------------------------------------------
-    -- Output preparation
-
-    fir_gain_control : entity work.gain_control port map (
-        clk_i => adc_clk_i,
-        gain_sel_i => fir_gain,
-        data_i => fir_data_in,
-        data_o => fir_data,
-        overflow_o => fir_overflow_in
-    );
-
-    nco_0_gain_control : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2
-    ) port map (
-        clk_i => adc_clk_i,
-        gain_sel_i => nco_0_data_in.gain,
-        data_i => nco_0_data_in.nco,
-        data_o => nco_0_data,
-        overflow_o => open
-    );
-    nco_0_enable <= nco_0_data_in.enable;
-
-    nco_1_gain_control : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2,
-        GAIN_DELAY => NCO1_GAIN_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        gain_sel_i => nco_1_data_in.gain,
-        data_i => nco_1_data_in.nco,
-        data_o => nco_1_data,
-        overflow_o => open
-    );
-
-    nco_2_gain_control : entity work.gain_control generic map (
-        EXTRA_SHIFT => 2
-    ) port map (
-        clk_i => adc_clk_i,
-        gain_sel_i => nco_2_data_in.gain,
-        data_i => nco_2_data_in.nco,
-        data_o => nco_2_data,
-        overflow_o => open
-    );
-    nco_2_enable <= nco_2_data_in.enable;
-
-
-    -- Align NCO 1 enable with gain control
-    nco_1_enable_delay : entity work.dlyline generic map (
-        DLY => NCO1_GAIN_DELAY
-    ) port map (
-        clk_i => adc_clk_i,
-        data_i(0) => nco_1_data_in.enable,
-        data_o(0) => nco_1_enable
-    );
-
-
-    -- Output multiplexer
+    -- Output gain control and selection
     dac_output_mux : entity work.dac_output_mux port map (
-        adc_clk_i => adc_clk_i,
-        dsp_clk_i => dsp_clk_i,
+        clk_i => adc_clk_i,
 
         bunch_config_i => bunch_config_in,
 
-        fir_data_i => fir_data,
-        fir_overflow_i => fir_overflow_in,
-        nco_0_enable_i => nco_0_enable,
-        nco_0_i => nco_0_data,
-        nco_1_enable_i => nco_1_enable,
-        nco_1_i => nco_1_data,
-        nco_2_enable_i => nco_2_enable,
-        nco_2_i => nco_2_data,
+        fir_data_i => fir_data_in,
+        fir_gain_i => fir_gain,
+
+        nco_data_i => nco_data_in,
 
         data_o => data_out,
-        fir_overflow_o => fir_overflow,
-        mux_overflow_o => mux_overflow
-    );
+        fir_mms_o => fir_mms_data,
 
+        fir_overflow_o => fir_overflow_adc,
+        mms_overflow_o => mms_overflow_adc,
+        mux_overflow_o => mux_overflow_adc
+    );
+    store_fir_o <= fir_mms_data;
+
+
+    -- -------------------------------------------------------------------------
+    -- MMS processing on selected data
 
     -- Select sources for stored and MMS data
     source_mux : entity work.dac_mms_dram_data_source port map (
@@ -269,17 +191,14 @@ begin
 
         unfiltered_data_i => data_out,
         filtered_data_i => filtered_data,
+        fir_data_i => fir_mms_data,
 
         mms_source_i => mms_source,
         mms_data_o => mms_data_in,
 
         dram_source_i => store_source,
-        dram_data_o => data_store_o
+        dram_data_o => store_dac_o
     );
-
-
-    -- -------------------------------------------------------------------------
-    -- Finalisation of output
 
     -- Min/Max/Sum
     min_max_sum : entity work.min_max_sum port map (
@@ -288,7 +207,7 @@ begin
         turn_clock_i => turn_clock_i,
 
         data_i => mms_data_in,
-        delta_o => open,
+        delta_o => mms_delta,
 
         read_strobe_i => read_strobe_i(DSP_DAC_MMS_REGS),
         read_data_o => read_data_o(DSP_DAC_MMS_REGS),
@@ -296,6 +215,21 @@ begin
     );
     write_ack_o(DSP_DAC_MMS_REGS) <= (others => '1');
 
+    -- Bunch movement detection
+    min_max_limit : entity work.min_max_limit port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+
+        delta_i => mms_delta,
+        limit_i => delta_limit,
+        reset_event_i => delta_reset,
+
+        limit_event_o => delta_event_o
+    );
+
+
+    -- -------------------------------------------------------------------------
+    -- Final output preparation
 
     -- Compensation filter
     fast_fir : entity work.fast_fir_top generic map (

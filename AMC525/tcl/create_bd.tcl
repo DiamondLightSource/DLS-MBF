@@ -23,6 +23,10 @@ if [file exists $bd_name] {
 }
 
 source $bd_script
+# Fixup incorrect address bus width assigned during import above.  This looks
+# like a bug in Vivado 2019.2
+set_property -dict [list CONFIG.ADDR_WIDTH {16}] [get_bd_intf_ports M_DSP_REGS]
+
 validate_bd_design
 regenerate_bd_layout
 save_bd_design

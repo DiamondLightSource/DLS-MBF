@@ -74,9 +74,9 @@ begin
 
     status_register <= (
         DSP_TUNE_PLL_READOUT_STATUS_OFFSET_COUNT_BITS =>
-            std_logic_vector(offset_fifo_depth_i),
+            std_ulogic_vector(offset_fifo_depth_i),
         DSP_TUNE_PLL_READOUT_STATUS_DEBUG_COUNT_BITS =>
-            std_logic_vector(debug_fifo_depth_i),
+            std_ulogic_vector(debug_fifo_depth_i),
         DSP_TUNE_PLL_READOUT_STATUS_OFFSET_OVERRUN_BIT => offset_fifo_overrun_i,
         DSP_TUNE_PLL_READOUT_STATUS_DEBUG_OVERRUN_BIT => debug_fifo_overrun_i,
         DSP_TUNE_PLL_READOUT_STATUS_READ_ERROR_BITS => read_error_i,

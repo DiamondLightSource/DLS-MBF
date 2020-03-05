@@ -47,7 +47,9 @@ class GenerateMethods(parse.register_defs.WalkParse):
             name = make_name(context, group.name)
             self.check_offset(name, group.range[0])
         else:
-            self.walk_subgroups(context + [group.name], group)
+            if not group.hidden:
+                context = context + [group.name]
+            self.walk_subgroups(context, group)
 
     def walk_top(self, group):
         self.top_name = group.name.lower()

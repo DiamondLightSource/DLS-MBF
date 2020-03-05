@@ -24,11 +24,16 @@ EPICS_DEVICE = /usr/local/epics/epics_device
 EPICS_BASE = /usr/local/epics/base-3.14.12.8
 
 # Directory for Tango Device Server binaries
-INSTALL_DIR = /runtime/servers/bin
+#INSTALL_DIR = /runtime/servers/bin
+
+#teporary for tests only
+INSTALL_DIR = /home/claudio/DeviceServers
 
 # Directory for python modules
-PYMOD_INSTALL_DIR = /operation/dserver/python/modules
+#PYMOD_INSTALL_DIR = /operation/dserver/python/modules
 
+#for testing on my PC
+PYMOD_INSTALL_DIR = /home/claudio/lib/python2.7/dist-packages
 # Permissions for the driver
 DRV_GROUP = comp
 

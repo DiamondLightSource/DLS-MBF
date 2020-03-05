@@ -80,6 +80,7 @@ architecture arch of tune_pll_feedback is
     signal update_offset : boolean;
     signal full_frequency_offset : signed_angle_t := (others => '0');
     signal frequency_offset : frequency_offset_o'SUBTYPE := (others => '0');
+    signal frequency_offset_out : frequency_offset_o'SUBTYPE := (others => '0');
     signal offset_overflow : std_ulogic;
 
     -- We slice out a section of the total frequency
@@ -178,16 +179,16 @@ begin
 
             if offset_override_i = '1' then
                 -- Special debug override: set offset directly
-                frequency_offset_o <= debug_offset_i;
+                frequency_offset_out <= debug_offset_i;
             else
-                frequency_offset_o <= frequency_offset;
+                frequency_offset_out <= frequency_offset;
             end if;
 
             -- Determine if the offset is ok
             offset_error_o <= to_std_ulogic(
                 offset_overflow = '1' or
-                frequency_offset_o > offset_limit_i or
-                (not frequency_offset_o) > offset_limit_i);
+                frequency_offset_out > offset_limit_i or
+                (not frequency_offset_out) > offset_limit_i);
         end if;
     end process;
 
@@ -198,4 +199,5 @@ begin
         offset => FREQUENCY_TRUNCATE_OFFSET);
 
     frequency_o <= unsigned(frequency_out);
+    frequency_offset_o <= frequency_offset_out;
 end;

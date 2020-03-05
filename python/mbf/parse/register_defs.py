@@ -9,7 +9,7 @@
 #
 #   shared_def = shared_reg_def | shared_group_def
 #
-#   group_def = "!"name { group_entry }*
+#   group_def = "!"["!"]name { group_entry }*
 #   group_entry =
 #       group_def | reg_def | reg_pair | reg_array | shared_name | reg_overlay
 #
@@ -58,7 +58,7 @@ import indent
 # The following structures are used to return the results of a parse.
 
 Group = namedtuple('Group',
-    ['name', 'range', 'content', 'definition', 'doc'])
+    ['name', 'range', 'hidden', 'content', 'definition', 'doc'])
 Register = namedtuple('Register',
     ['name', 'offset', 'rw', 'fields', 'definition', 'doc'])
 RegisterArray = namedtuple('RegisterArray',
@@ -418,7 +418,7 @@ def parse_shared_name(offset, parse, defines):
     if isinstance(define, Group):
         check_body(parse)
         length = define.range[1]
-        result = Group(name, (offset, length), [], define, doc)
+        result = Group(name, (offset, length), False, [], define, doc)
     elif isinstance(define, Register):
         fields = parse_field_defs(body)
         length = 1
@@ -456,14 +456,18 @@ def parse_group_entry(offset, parse, defines):
 # Parses a group definition, returns the resulting parse together with the
 # number of registers in the parsed group
 #
-# group_def = "!"name { group_entry }*
+# group_def = "!"["!"]name { group_entry }*
 def parse_group_def(offset, parse, defines):
     line, body, doc, line_no = parse
 
     line = line.split()
     name = line[0]
     assert name[0] == '!'
-    name = name[1:]
+    hidden = name[1] == '!'
+    if hidden:
+        name = name[2:]
+    else:
+        name = name[1:]
     check_name(name, line_no)
 
     check_args(line, 1, 1, line_no)
@@ -476,7 +480,7 @@ def parse_group_def(offset, parse, defines):
         count += entry_count
         content.append(result)
 
-    return (Group(name, (offset, count), content, None, doc), count)
+    return (Group(name, (offset, count), hidden, content, None, doc), count)
 
 
 # shared_def = shared_reg_def | shared_group_def

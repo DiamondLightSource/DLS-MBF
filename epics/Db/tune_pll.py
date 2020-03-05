@@ -2,6 +2,8 @@
 
 from common import *
 
+import nco
+
 
 def db_record(name, source, **kargs):
     return records.calc(name, PREC = 1, EGU = 'dB',
@@ -44,8 +46,7 @@ for a in axes('PLL', lmbf_mode):
         # NCO control
         aOut('FREQ', PREC = 7, EGU = 'tune',
             DESC = 'Base Tune PLL NCO frequency')
-        mbbOut('GAIN', DESC = 'Tune PLL NCO gain', *dBrange(16, -6))
-        boolOut('ENABLE', 'Off', 'On', DESC = 'Enable Tune PLL NCO output')
+        nco.create_gain_controls('tune PLL NCO')
 
     # Feedback control
     with name_prefix('CTRL'):

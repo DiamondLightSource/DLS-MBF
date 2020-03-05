@@ -3,5 +3,5 @@
 from pkg_resources import require, VersionConflict, DistributionNotFound
 
 require('numpy>=1.11.1')
-require('cothread==2.14')
-require('epicsdbbuilder==1.2')
+require('cothread>=2.14')
+#require('epicsdbbuilder>=0.0')

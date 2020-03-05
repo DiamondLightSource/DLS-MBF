@@ -6,12 +6,12 @@ entity testbench is
 end testbench;
 
 architecture arch of testbench is
-    signal clk : std_logic := '0';
+    signal clk : std_ulogic := '0';
     signal data_in : signed(15 downto 0);
     signal iir_shift : unsigned(2 downto 0);
-    signal start : std_logic := '0';
+    signal start : std_ulogic := '0';
     signal data_out : data_in'SUBTYPE;
-    signal done : std_logic;
+    signal done : std_ulogic;
 
     procedure clk_wait(count : in natural := 1) is
     begin

@@ -214,7 +214,10 @@ begin
 
         -- Initiate DRAM0 memory transfer
         write_reg(CTRL_MEM_COUNT_REG,           X"00000010");
-        write_reg(CTRL_MEM_COMMAND_REG_W,       X"00000003");
+        write_reg(CTRL_MEM_COMMAND_REG, (
+            CTRL_MEM_COMMAND_START_BIT => '1',
+            CTRL_MEM_COMMAND_STOP_BIT => '1',
+            others => '0'));
 
         read_reg(5);
         read_reg(4);

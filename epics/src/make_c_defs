@@ -98,7 +98,9 @@ class GenerateMethods(parse.register_defs.WalkParse):
             context.do_print('struct %s %s;' % (
                 group.definition.name.lower(), name))
         else:
-            self.walk_subgroups(context.extend(group.name), group)
+            if not group.hidden:
+                context = context.extend(group.name)
+            self.walk_subgroups(context, group)
 
     def walk_top(self, group):
         top_name = group.name.lower()

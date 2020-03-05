@@ -20,18 +20,16 @@ entity sequencer_counter is
         turn_clock_i : in std_ulogic;
         reset_i : in std_ulogic;
 
-        freq_base_i : in angle_t;       -- Frequency base
-        start_freq_i : in angle_t;      -- Initial output frequency
-        delta_freq_i : in angle_t;      -- Output frequency step
-        capture_count_i : in capture_count_t;   -- Number of dwells to generate
-        reset_phase_i : in std_ulogic;  -- Reset phase at start of sweep
-        add_pll_freq_i : in std_ulogic; -- Option to add Tune PLL frequency
+        freq_base_i : in angle_t;
+        seq_state_i : in seq_state_t;
         last_turn_i : in std_ulogic;     -- Dwell is in its last turn
         tune_pll_offset_i : in signed(31 downto 0);
 
         state_end_o : out std_ulogic := '0';  -- Set during last turn of state
-        hom_freq_o : out angle_t := (others => '0'); -- Output frequency
-        hom_reset_o : out std_ulogic := '0'
+
+        enable_pll_o : out std_ulogic;
+        nco_freq_o : out angle_t := (others => '0'); -- Output frequency
+        nco_reset_o : out std_ulogic := '0'
     );
 end;
 
@@ -40,19 +38,14 @@ architecture arch of sequencer_counter is
     -- count a capture on a successful completion of a dwell.  On a reset force
     -- the capture counter to zero.
     signal capture_cntr : capture_count_t := (others => '0');
-    signal hom_freq : angle_t := (others => '0');
+    signal nco_freq : angle_t := (others => '0');
+    signal nco_reset : std_ulogic := '0';
 
-    signal next_hom_freq : angle_t;
+    signal next_nco_freq : angle_t;
     signal next_capture_cntr : capture_count_t;
     signal capture_cntr_zero : std_ulogic;   -- Set when capture_cntr is zero
 
     signal turn_clock_delay : std_ulogic;
-
-    signal add_pll_freq : std_ulogic := '0';
-    signal tune_pll_offset_in : angle_t;
-
-    attribute USE_DSP : string;
-    attribute USE_DSP of hom_freq_o : signal is "yes";
 
 begin
     process (dsp_clk_i) begin
@@ -63,11 +56,15 @@ begin
             -- most of the state has already been stable for a while before that
             -- we can precompute a number of values.
             if capture_cntr_zero = '1' then
-                next_capture_cntr <= capture_count_i;
-                next_hom_freq <= start_freq_i + freq_base_i;
+                next_capture_cntr <= seq_state_i.capture_count;
+                if seq_state_i.disable_super then
+                    next_nco_freq <= seq_state_i.start_freq;
+                else
+                    next_nco_freq <= seq_state_i.start_freq + freq_base_i;
+                end if;
             else
                 next_capture_cntr <= capture_cntr - 1;
-                next_hom_freq <= hom_freq + delta_freq_i;
+                next_nco_freq <= nco_freq + seq_state_i.delta_freq;
             end if;
 
             if turn_clock_i = '1' then
@@ -75,8 +72,8 @@ begin
                     capture_cntr <= (others => '0');
                 elsif last_turn_i = '1' then
                     capture_cntr <= next_capture_cntr;
-                    hom_freq <= next_hom_freq;
-                    add_pll_freq <= add_pll_freq_i;
+                    nco_freq <= next_nco_freq;
+                    enable_pll_o <= seq_state_i.enable_tune_pll;
                 end if;
             end if;
 
@@ -88,14 +85,11 @@ begin
                 state_end_o <= last_turn_i and capture_cntr_zero;
             end if;
 
-            tune_pll_offset_in <=
-                unsigned(resize(tune_pll_offset_i & X"00", angle_t'LENGTH));
-            if add_pll_freq = '1' then
-                hom_freq_o <= hom_freq + tune_pll_offset_in;
-            else
-                hom_freq_o <= hom_freq;
-            end if;
-            hom_reset_o <= reset_phase_i and turn_clock_i and state_end_o;
+            nco_reset <=
+                seq_state_i.reset_phase and turn_clock_i and state_end_o;
         end if;
     end process;
+
+    nco_freq_o <= nco_freq;
+    nco_reset_o <= nco_reset;
 end;

@@ -25,7 +25,7 @@ architecture arch of bunch_fir_delay is
     -- with a compensation for the block memory delay
     --
     -- The figure below shows the data flow:
-    --          |     |     |     |    ...    |     |     |     |
+    --           |     |     |     |    ...    |     |     |     |
     -- ra      --X A   X------------------------------------------
     -- do_o    --------------X MA  X------------------------------
     -- wa      ---------------------   ...    -X A   X------------

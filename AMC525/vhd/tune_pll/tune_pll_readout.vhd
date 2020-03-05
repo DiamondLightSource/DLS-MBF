@@ -110,7 +110,7 @@ begin
     offset_fifo : entity work.tune_pll_readout_fifo port map (
         clk_i => clk_i,
         -- Simple read/write interface
-        data_i => std_logic_vector(frequency_offset_i),
+        data_i => std_ulogic_vector(frequency_offset_i),
         write_i => feedback_done_i,
         start_i => feedback_done_i,
         -- Data is assumed to be valid at the time of reading
@@ -156,13 +156,13 @@ begin
             if capture_cordic_i = '1' then
                 debug_done_1 <= cordic_done_i;
                 cos_data_in <= (
-                    31 downto 14 => std_logic_vector(phase_i),
+                    31 downto 14 => std_ulogic_vector(phase_i),
                     13 downto 0 => '0');
-                sin_data_in <= std_logic_vector(magnitude_i);
+                sin_data_in <= std_ulogic_vector(magnitude_i);
             else
                 debug_done_1 <= detector_done_i;
-                cos_data_in <= std_logic_vector(iq_i.cos);
-                sin_data_in <= std_logic_vector(iq_i.sin);
+                cos_data_in <= std_ulogic_vector(iq_i.cos);
+                sin_data_in <= std_ulogic_vector(iq_i.sin);
             end if;
 
             -- The debug data needs to be written as a burst of two writes.

@@ -42,7 +42,7 @@ architecture arch of bunch_select is
 
     signal bunch_index : bunch_count_t := (others => '0');
     signal bunch_config : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
-    signal config_out : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal bunch_config_out : bunch_config'SUBTYPE;
 
     -- Lookup delay
     constant STORE_DELAY : natural := 4;
@@ -52,7 +52,7 @@ architecture arch of bunch_select is
 begin
     -- bank_select_i =>
     --  =(STORE_DELAY)=> bunch_config
-    --  =(DELAY_OUT)=> config_out = bunch_config_o
+    --  =(DELAY_OUT)=> bunch_config_o
     assert BUNCH_SELECT_DELAY = STORE_DELAY + DELAY_OUT severity failure;
 
     -- Register management
@@ -103,19 +103,7 @@ begin
     ) port map (
        clk_i => adc_clk_i,
        data_i => bunch_config,
-       data_o => config_out
+       data_o => bunch_config_out
     );
-
-    bunch_config_o.fir_select <=
-        unsigned(config_out(DSP_BUNCH_BANK_FIR_SELECT_BITS));
-    bunch_config_o.gain <=
-        signed(config_out(DSP_BUNCH_BANK_GAIN_BITS));
-    bunch_config_o.fir_enable <=
-        config_out(DSP_BUNCH_BANK_FIR_ENABLE_BIT);
-    bunch_config_o.nco_0_enable <=
-        config_out(DSP_BUNCH_BANK_NCO0_ENABLE_BIT);
-    bunch_config_o.nco_1_enable <=
-        config_out(DSP_BUNCH_BANK_NCO1_ENABLE_BIT);
-    bunch_config_o.nco_2_enable <=
-        config_out(DSP_BUNCH_BANK_NCO2_ENABLE_BIT);
+    bunch_config_o <= to_bunch_config_t(bunch_config_out);
 end;

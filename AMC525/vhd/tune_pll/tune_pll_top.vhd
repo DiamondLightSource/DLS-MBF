@@ -9,6 +9,7 @@ use work.support.all;
 
 use work.register_defs.all;
 use work.nco_defs.all;
+use work.dsp_defs.all;
 
 use work.tune_pll_defs.all;
 
@@ -46,7 +47,6 @@ entity tune_pll_top is
         adc_data_i : in signed;
         adc_fill_reject_i : in signed;
         fir_data_i : in signed;
-        nco_iq_i : in cos_sin_t;
 
         -- Global start/stop.  These controls come from outside so that both
         -- Tune PLL units can be started and stopped together.
@@ -54,11 +54,13 @@ entity tune_pll_top is
         stop_i : in std_ulogic;
         blanking_i : in std_ulogic;
 
-        -- Control frequency out
-        nco_gain_o : out unsigned(3 downto 0);
-        nco_enable_o : out std_ulogic;
-        nco_reset_o : out std_ulogic;
-        nco_freq_o : out angle_t;
+        -- Excitation signal from managed PLL
+        nco_data_o : out dsp_nco_to_mux_t;
+        -- This is the frequency offset of the NCO frequency relative to the
+        -- configured base frequency.  Note however that this is a slice from
+        -- the middle of the underlying offset, covering bits [39:8].  This
+        -- means that the resolution of the offset is 0.5 mHz, and the maximum
+        -- offset is 1MHz.
         freq_offset_o : out signed(31 downto 0);
 
         -- Interrupts for readout ready
@@ -95,8 +97,9 @@ architecture arch of tune_pll_top is
     signal feedback_done : std_ulogic;
     signal frequency_offset : signed(31 downto 0);
 
-    -- Frequency out
+    -- NCO control
     signal nco_frequency : angle_t;
+    signal nco_frequency_out : angle_t;
 
     -- Interrupts
     signal offset_fifo_ready : std_ulogic;
@@ -142,7 +145,7 @@ begin
         adc_data_i => adc_data_i,
         adc_fill_reject_i => adc_fill_reject_i,
         fir_data_i => fir_data_i,
-        nco_iq_i => nco_iq_i,
+        nco_iq_i => nco_data_o.nco,
         -- Bunch selection interface
         start_write_i => bunch_start_write,
         write_strobe_i => bunch_write_strobe,
@@ -282,8 +285,8 @@ begin
         DW => angle_t'LENGTH
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => std_logic_vector(nco_frequency),
-        angle_t(data_o) => nco_freq_o
+        data_i => std_ulogic_vector(nco_frequency),
+        angle_t(data_o) => nco_frequency_out
     );
 
     -- Delay line for frequency offset out
@@ -292,13 +295,20 @@ begin
         DW => 32
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => std_logic_vector(frequency_offset),
+        data_i => std_ulogic_vector(frequency_offset),
         signed(data_o) => freq_offset_o
     );
 
-    nco_gain_o <= config.nco_gain;
-    nco_enable_o <= config.nco_enable;
-    nco_reset_o <= config.nco_reset;
+    -- NCO for PLL
+    pll_nco : entity work.nco port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        phase_advance_i => nco_frequency_out,
+        reset_phase_i => config.nco_reset,
+        cos_sin_o => nco_data_o.nco
+    );
+    nco_data_o.gain <= config.nco_gain;
+
 
     interrupt_o <= (
         0 => offset_fifo_ready,

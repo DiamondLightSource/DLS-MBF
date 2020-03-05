@@ -91,7 +91,7 @@ architecture arch of nco_cos_sin_refine is
 
     -- Pipeline signals numbered by assignment stage
     -- 0
-    signal cos_sin_in : cos_sin_19_t;
+    signal cos_sin_in : cos_sin_19_t := (others => (others => '0'));
     signal delta_in : signed(9 downto 0) := (others => '0');
     -- 1
     signal cos_in : signed(18 downto 0) := (others => '0');

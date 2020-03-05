@@ -62,14 +62,9 @@ architecture arch of dsp_control_top is
     signal control_register : reg_data_t;
 
     signal adc_mux : std_ulogic;
-    signal nco_0_mux : std_ulogic;
-    signal nco_1_mux : std_ulogic;
-    signal nco_2_mux : std_ulogic;
+    signal nco_mux : std_ulogic_vector(NCO_SET);
     signal bank_mux : std_ulogic;
     signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
-    signal mux_nco_0_out : dsp_nco_from_mux_array_t;
-    signal mux_nco_1_out : dsp_nco_from_mux_array_t;
-    signal mux_nco_2_out : dsp_nco_from_mux_array_t;
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
 
     -- DRAM1 interface
@@ -84,6 +79,7 @@ architecture arch of dsp_control_top is
 
     -- Triggering and events interface
     signal adc_trigger : std_ulogic_vector(CHANNELS);
+    signal dac_trigger : std_ulogic_vector(CHANNELS);
     signal seq_trigger : std_ulogic_vector(CHANNELS);
     signal blanking_window : std_ulogic;
     signal turn_clock : std_ulogic;
@@ -130,32 +126,27 @@ begin
 
     -- Channel data multiplexing control
     adc_mux   <= control_register(CTRL_CONTROL_ADC_MUX_BIT);
-    nco_0_mux <= control_register(CTRL_CONTROL_NCO0_MUX_BIT);
-    nco_1_mux <= control_register(CTRL_CONTROL_NCO1_MUX_BIT);
-    nco_2_mux <= control_register(CTRL_CONTROL_NCO2_MUX_BIT);
+    nco_mux(0) <= control_register(CTRL_CONTROL_NCO0_MUX_BIT);
+    nco_mux(1) <= control_register(CTRL_CONTROL_NCO1_MUX_BIT);
+    nco_mux(2) <= control_register(CTRL_CONTROL_NCO2_MUX_BIT);
+    nco_mux(3) <= control_register(CTRL_CONTROL_NCO3_MUX_BIT);
     bank_mux  <= control_register(CTRL_CONTROL_BANK_MUX_BIT);
     dsp_control_mux : entity work.dsp_control_mux port map (
         clk_i => adc_clk_i,
 
         adc_mux_i => adc_mux,
-        nco_0_mux_i => nco_0_mux,
-        nco_1_mux_i => nco_1_mux,
-        nco_2_mux_i => nco_2_mux,
+        nco_mux_i => nco_mux,
         bank_mux_i => bank_mux,
 
         dsp_to_control_i => dsp_to_control_i,
 
         adc_o => mux_adc_out,
-        nco_0_o => mux_nco_0_out,
-        nco_1_o => mux_nco_1_out,
-        nco_2_o => mux_nco_2_out,
+        nco_data_ch0_o => control_to_dsp_o(0).nco_data,
+        nco_data_ch1_o => control_to_dsp_o(1).nco_data,
         bank_select_o => bank_select_out
     );
     mux_gen : for c in CHANNELS generate
         control_to_dsp_o(c).adc_data <= mux_adc_out(c);
-        control_to_dsp_o(c).nco_0_data <= mux_nco_0_out(c);
-        control_to_dsp_o(c).nco_1_data <= mux_nco_1_out(c);
-        control_to_dsp_o(c).nco_2_data <= mux_nco_2_out(c);
         control_to_dsp_o(c).bank_select <= bank_select_out(c);
     end generate;
 
@@ -247,6 +238,7 @@ begin
         blanking_trigger_i => blanking_trigger_i,
 
         adc_trigger_i => adc_trigger,
+        dac_trigger_i => dac_trigger,
         seq_trigger_i => seq_trigger,
 
         blanking_window_o => blanking_window,
@@ -263,15 +255,13 @@ begin
 
     -- Map events to individual DSP units
     gen_channels: for c in CHANNELS generate
-        -- ADC clocked signals
         adc_trigger(c) <= dsp_to_control_i(c).adc_trigger;
+        dac_trigger(c) <= dsp_to_control_i(c).dac_trigger;
         seq_trigger(c) <= dsp_to_control_i(c).seq_trigger;
         seq_busy(c)    <= dsp_to_control_i(c).seq_busy;
         tune_pll_ready(c) <= dsp_to_control_i(c).tune_pll_ready;
         control_to_dsp_o(c).blanking <= blanking_window;
         control_to_dsp_o(c).seq_start <= seq_start(c);
-
-        -- DSP clocked signals
         control_to_dsp_o(c).turn_clock <= turn_clock;
     end generate;
 

@@ -2,10 +2,10 @@
 
 from common import *
 
+import nco
+
 
 SUPER_SEQ_STATES = 1024
-
-
 
 
 def bank_pvs(update_count):
@@ -29,8 +29,6 @@ def bank_pvs(update_count):
         FLNK = update_count, DESC = 'Single holdoff on entry to state')
     mbbOut('BANK', 'Bank 0', 'Bank 1', 'Bank 2', 'Bank 3',
         DESC = 'Bunch bank selection')
-    mbbOut('GAIN', DESC = 'Sweep NCO gain', *dBrange(16, -6))
-    boolOut('ENABLE', 'Off', 'On', DESC = 'Enable Sweep NCO')
     boolOut('ENWIN', 'Disabled', 'Windowed',
         DESC = 'Enable detector window')
     boolOut('CAPTURE', 'Discard', 'Capture',
@@ -39,6 +37,8 @@ def bank_pvs(update_count):
         DESC = 'Detector blanking control')
     boolOut('TUNE_PLL', 'Ignore', 'Follow',
         DESC = 'Track Tune PLL frequency offset')
+
+    nco.create_gain_controls('sweep NCO')
 
 
 # The super sequencer is controlled by two settings: the OFFSET waveform which

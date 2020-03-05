@@ -6,7 +6,7 @@ entity testbench is
 end testbench;
 
 architecture arch of testbench is
-    signal clk : std_logic := '0';
+    signal clk : std_ulogic := '0';
 
     procedure clk_wait(count : in natural := 1) is
     begin

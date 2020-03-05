@@ -25,6 +25,7 @@
 #include "bunch_fir.h"
 #include "bunch_set.h"
 #include "tune_pll_fifo.h"
+#include "nco.h"
 
 #include "tune_pll.h"
 
@@ -70,7 +71,7 @@ static struct pll_context {
 
     /* Detector configuration. */
     enum detector_input_select input_select;
-    unsigned int readout_scale;
+    uint16_t readout_scale;
     bool *bunch_enables;
     unsigned int bunch_count;
     struct epics_record *enablewf;
@@ -158,18 +159,10 @@ static bool write_target_phase(void *context, double *value)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* NCO management. */
 
-static bool write_nco_gain(void *context, unsigned int *gain)
+static void write_nco_gain(void *context, unsigned int gain)
 {
     struct pll_context *pll = context;
-    hw_write_pll_nco_gain(pll->axis, *gain);
-    return true;
-}
-
-static bool write_nco_enable(void *context, bool *enable)
-{
-    struct pll_context *pll = context;
-    hw_write_pll_nco_enable(pll->axis, *enable);
-    return true;
+    hw_write_pll_nco_gain(pll->axis, gain);
 }
 
 
@@ -284,8 +277,7 @@ static void publish_nco(struct pll_context *pll)
     {
         /* Setting NCO frequency and configuration. */
         PUBLISH_C_P(ao, "FREQ", write_nco_frequency, pll);
-        PUBLISH_C_P(mbbo, "GAIN", write_nco_gain, pll);
-        PUBLISH_C_P(bo, "ENABLE", write_nco_enable, pll);
+        create_gain_manager(pll, write_nco_gain);
 
         /* Offset readback FIFO. */
         unsigned int length = system_config.tune_pll_length;
@@ -343,7 +335,7 @@ static int compute_detector_delay(enum detector_input_select selection)
 }
 
 
-static bool write_det_input_select(void *context, unsigned int *selection)
+static bool write_det_input_select(void *context, uint16_t *selection)
 {
     struct pll_context *pll = context;
     pll->input_select = *selection;
@@ -357,7 +349,7 @@ static bool write_det_input_select(void *context, unsigned int *selection)
     return true;
 }
 
-static bool write_det_output_scale(void *context, unsigned int *scale)
+static bool write_det_output_scale(void *context, uint16_t *scale)
 {
     struct pll_context *pll = context;
     pll->readout_scale = *scale;

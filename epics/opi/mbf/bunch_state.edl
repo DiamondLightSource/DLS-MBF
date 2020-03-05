@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2230
-y 613
+x 2231
+y 614
 w 707
 h 180
 font "helvetica-medium-r-18.0"
@@ -101,34 +101,9 @@ minor 6
 release 0
 x 120
 y 0
-w 208
+w 360
 h 16
-controlPv "$(device):$(axis):BUN:$(bank):OUTWF:STA"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 328
-y 0
-w 144
-h 16
-controlPv "$(device):$(axis):BUN:$(bank):GAINWF:STA"
+controlPv "$(device):$(axis):BUN:$(bank):STATUS"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm

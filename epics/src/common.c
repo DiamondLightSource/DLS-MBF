@@ -125,13 +125,3 @@ double freq_to_tune_signed(uint64_t freq)
     int64_t sfreq = (int64_t) freq;
     return ldexp((double) (sfreq << 16), -64) * hardware_config.bunches;
 }
-
-
-bool format_epics_string(EPICS_STRING *s, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    int length = vsnprintf(s->s, sizeof(s->s), format, args);
-    va_end(args);
-    return (size_t) length < sizeof(s->s);
-}

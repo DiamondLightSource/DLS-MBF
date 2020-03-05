@@ -52,21 +52,6 @@ with name_prefix('MEM'):
     mbbOut('SEL1', PINI = 'NO',
         DESC = 'Channel 1 capture selection', *select_channel)
 
-    # FIR gain control
-    write_gain = Action('WRITE_GAIN', DESC = 'Write FIR gain')
-    boolOut('FIR0_GAIN', '+54dB', '0dB',
-        FLNK = write_gain,
-        DESC = 'FIR 0 capture gain')
-    boolOut('FIR1_GAIN', '+54dB', '0dB',
-        FLNK = write_gain,
-        DESC = 'FIR 1 capture gain')
-    Action('READ_OVF',
-        SCAN = '.2 second',
-        FLNK = create_fanout('READ:FAN',
-            overflow('FIR0_OVF', 'FIR 0 capture will overflow'),
-            overflow('FIR1_OVF', 'FIR 1 capture will overflow')),
-        DESC = 'Poll overflow events')
-
     longOut('OFFSET', EGU = 'turns', DESC = 'Offset of readout')
 
     # Capture control

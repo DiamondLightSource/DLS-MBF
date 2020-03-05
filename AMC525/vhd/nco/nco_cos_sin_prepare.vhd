@@ -22,7 +22,7 @@ entity nco_cos_sin_prepare is
         angle_i : in angle_t;
 
         -- Table lookup
-        lookup_o : out lookup_t := (others => '0');
+        lookup_o : out lookup_t;
         residue_o : out residue_t := (others => '0');
         -- Octant for final correction
         octant_o : out octant_t
@@ -51,7 +51,7 @@ architecture arch of nco_cos_sin_prepare is
 
     signal octant : octant_t;
     signal lookup : lookup_t;
-    signal lookup_out : lookup_t;
+    signal lookup_out : lookup_t := (others => '0');
     signal residue : residue_t;
 
 begin

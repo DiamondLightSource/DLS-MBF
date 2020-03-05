@@ -63,7 +63,9 @@ class Generate(parse.register_defs.WalkParse):
     def walk_group(self, prefix, group):
         suffix = 'REGS' if prefix else 'REGS_RANGE'
         emit_range(prefix, group.name, group.range, suffix, 'to')
-        self.walk_subgroups(prefix + [group.name], group)
+        if not group.hidden:
+            prefix = prefix + [group.name]
+        self.walk_subgroups(prefix, group)
 
     def walk_rw_pair(self, prefix, rw_pair):
         for reg in rw_pair.registers:

@@ -9,6 +9,7 @@ use work.defines.all;
 
 use work.register_defs.all;
 use work.nco_defs.all;
+use work.dsp_defs.all;
 
 use work.sim_support.all;
 
@@ -38,13 +39,10 @@ architecture arch of testbench is
     -- as a different colour from 'X' and 'U'.
     signal adc_fill_reject : signed(15 downto 0) := (others => 'Z');
     signal fir_data : signed(24 downto 0) := (others => 'Z');
-    signal nco_iq : cos_sin_18_t;
     signal start : std_ulogic := '0';
     signal stop : std_ulogic := '0';
     signal blanking : std_ulogic := '0';
-    signal nco_gain : unsigned(3 downto 0);
-    signal nco_enable : std_ulogic;
-    signal nco_freq : angle_t;
+    signal nco_data : dsp_nco_to_mux_t;
     signal freq_offset : signed(31 downto 0);
     signal interrupt : std_ulogic_vector(2 downto 0);
 
@@ -80,13 +78,10 @@ begin
         adc_data_i => adc_data,
         adc_fill_reject_i => adc_fill_reject,
         fir_data_i => fir_data,
-        nco_iq_i => nco_iq,
         start_i => start,
         stop_i => stop,
         blanking_i => blanking,
-        nco_gain_o => nco_gain,
-        nco_enable_o => nco_enable,
-        nco_freq_o => nco_freq,
+        nco_data_o => nco_data,
         freq_offset_o => freq_offset,
         interrupt_o => interrupt
     );
@@ -105,22 +100,13 @@ begin
     end process;
 
 
-    -- NCO
-    nco : entity work.sim_nco port map (
-        clk_i => adc_clk,
-        nco_freq_i => nco_freq,
-        gain_i => 16#1fffc#,
-        cos_sin_o => nco_iq
-    );
-
-
     -- Simulated resonant filter
     resonator : entity work.sim_resonator port map (
         clk_i => adc_clk,
         centre_freq_i => FILTER_CENTRE_FREQ,
         width_i => FILTER_WIDTH,
         gain_i => FILTER_GAIN,
-        data_i => nco_iq.cos(17 downto 2),
+        data_i => nco_data.nco.cos(17 downto 2),
         data_o => resonant_adc_data
     );
 

@@ -1,0 +1,235 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 2052
+y 741
+w 707
+h 360
+font "helvetica-medium-r-18.0"
+ctlFont "helvetica-medium-r-18.0"
+btnFont "helvetica-medium-r-18.0"
+fgColor index 14
+bgColor index 4
+textColor index 14
+ctlFgColor1 index 14
+ctlFgColor2 index 0
+ctlBgColor1 index 0
+ctlBgColor2 index 14
+topShadowColor index 0
+botShadowColor index 14
+showGrid
+snapToGrid
+gridSize 8
+disableScroll
+endScreenProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 0
+y 0
+w 66
+h 16
+font "helvetica-bold-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "$(source)"
+}
+autoSize
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 0
+y 20
+w 72
+h 22
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Gains"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/bunch_source.edl"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 80
+y 0
+w 360
+h 16
+controlPv "$(device):$(axis):BUN:$(bank):$(source):STATUS"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 80
+y 24
+w 472
+h 40
+# Appearance
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+xAxisSrc "fromUser"
+xMin -10
+xMax 1024
+xLabelIntervals 100
+xMajorsPerLabel 1
+xMinorsPerMajor 1
+# Y axis properties
+yAxisSrc "fromUser"
+yMin -0.5
+yMax 1.5
+yLabelIntervals 1
+yMajorsPerLabel 1
+yMinorsPerMajor 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 1
+yPv {
+  0 "$(device):$(axis):BUN:$(bank):$(source):ENABLE_S"
+}
+plotUpdateMode {
+  0 "y"
+}
+plotSymbolType {
+  0 "circle"
+}
+ySigned {
+  0 1
+}
+plotColor {
+  0 index 25
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 552
+y 48
+w 16
+h 12
+font "helvetica-medium-r-10.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Off"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 552
+y 28
+w 14
+h 12
+font "helvetica-medium-r-10.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "On"
+}
+autoSize
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 0
+y 44
+w 32
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:$(bank):$(source):SET_ENABLE_S.PROC"
+pressValue "0"
+onLabel "On"
+offLabel "On"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 40
+y 44
+w 32
+h 22
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:$(bank):$(source):SET_DISABLE_S.PROC"
+pressValue "0"
+onLabel "Off"
+offLabel "Off"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+

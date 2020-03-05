@@ -110,7 +110,7 @@ static enum chan_select find_selection(
 }
 
 
-static void write_memory_select(unsigned int mux)
+static void write_memory_select(uint16_t mux)
 {
     struct map_entry entry = select_map[mux];
     chan_selection[0] = entry.ch0;
@@ -120,13 +120,13 @@ static void write_memory_select(unsigned int mux)
     hw_write_dram_mux(mux);
 }
 
-static void write_chan0_select(unsigned int value)
+static void write_chan0_select(uint16_t value)
 {
     enum chan_select selection = find_selection(value, chan_selection[1]);
     WRITE_OUT_RECORD(mbbo, memory_select, selection, true);
 }
 
-static void write_chan1_select(unsigned int value)
+static void write_chan1_select(uint16_t value)
 {
     enum chan_select selection = find_selection(chan_selection[0], value);
     WRITE_OUT_RECORD(mbbo, memory_select, selection, true);
@@ -228,7 +228,7 @@ static void readout_memory(void)
 }
 
 
-static void write_dram_runout(unsigned int runout)
+static void write_dram_runout(uint16_t runout)
 {
     static const unsigned int runout_lookup[] = {
         0x02000000,         // 12.5 %
@@ -275,21 +275,6 @@ void prepare_memory(void)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-static bool fir_gains[AXIS_COUNT];
-static bool fir_overflow[AXIS_COUNT];
-
-
-static void write_fir_gain(void)
-{
-    hw_write_dram_fir_gains(fir_gains);
-}
-
-static void read_dram_status(void)
-{
-    hw_read_dram_status(fir_overflow);
-}
-
-
 error__t initialise_memory(void)
 {
     unsigned int readout_length = system_config.memory_readout_length;
@@ -313,14 +298,6 @@ error__t initialise_memory(void)
         memory_select = PUBLISH_WRITER_P(mbbo, "SELECT", write_memory_select);
         chan0_select = PUBLISH_WRITER(mbbo, "SEL0", write_chan0_select);
         chan1_select = PUBLISH_WRITER(mbbo, "SEL1", write_chan1_select);
-
-        /* FIR gain and status monitoring. */
-        PUBLISH_ACTION("WRITE_GAIN", write_fir_gain);
-        PUBLISH_WRITE_VAR_P(bo, "FIR0_GAIN", fir_gains[0]);
-        PUBLISH_WRITE_VAR_P(bo, "FIR1_GAIN", fir_gains[1]);
-        PUBLISH_ACTION("READ_OVF", read_dram_status);
-        PUBLISH_READ_VAR(bi, "FIR0_OVF", fir_overflow[0]);
-        PUBLISH_READ_VAR(bi, "FIR1_OVF", fir_overflow[1]);
 
         /* Capture triggering. */
         PUBLISH_WRITER_B(bo, "CAPTURE", immediate_memory_capture);

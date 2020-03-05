@@ -23,9 +23,10 @@
 #include "register_defs.h"
 #include "hardware.h"
 #include "common.h"
-#include "system.h"
 #include "configs.h"
 
+#include "system.h"
+#include "nco.h"
 #include "mms.h"
 #include "adc.h"
 #include "dac.h"
@@ -265,6 +266,7 @@ static error__t initialise_subsystems(void)
     return
         initialise_delay()  ?:
         initialise_system()  ?:
+        initialise_nco()  ?:
         initialise_adc()  ?:
         initialise_dac()  ?:
         initialise_bunch_fir()  ?:

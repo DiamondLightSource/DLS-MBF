@@ -31,7 +31,7 @@ enum turn_clock_status {
     TURN_CLOCK_SYNCED,
     TURN_CLOCK_ERRORS,
 };
-static unsigned int turn_clock_status;
+static uint16_t turn_clock_status;
 static unsigned int turn_clock_turns;
 static unsigned int turn_clock_errors;
 

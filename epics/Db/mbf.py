@@ -11,6 +11,7 @@ import memory
 import triggers
 import delay
 import tune_pll
+import nco
 
 system.create_aggregate_pvs()
 
