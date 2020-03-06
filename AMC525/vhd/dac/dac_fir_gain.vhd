@@ -108,9 +108,7 @@ begin
         clk_i => clk_i,
         a_i => shifted_fir,
         b_i => bb_gain_in,
-        en_ab_i => '1',
         c_i => ROUNDING_MASK,
-        en_c_i => '1',
         p_o => fir_data_out,
         ovf_o => mms_overflow
     );

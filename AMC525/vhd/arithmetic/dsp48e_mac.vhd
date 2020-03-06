@@ -70,12 +70,12 @@ entity dsp48e_mac is
     port (
         clk_i : in std_ulogic;
 
-        a_i : in signed(24 downto 0);
-        b_i : in signed(17 downto 0);
-        en_ab_i : in std_ulogic;
+        a_i : in signed;
+        b_i : in signed;
+        en_ab_i : in std_ulogic := '1';
 
         c_i : in signed(47 downto 0) := (others => '0');
-        en_c_i : in std_ulogic;
+        en_c_i : in std_ulogic := '1';
 
         p_o : out signed(47 downto 0);
         pc_o : out signed(47 downto 0);
@@ -94,20 +94,16 @@ architecture arch of dsp48e_mac is
 
     signal opmode : std_ulogic_vector(6 downto 0);
 
-    -- Wow.  VHDL makes this hard!  This is *supposed* to be just
-    --     constant PATTERN_MASK : bit_vector(47 downto 0) := (
-    --         47 downto TOP_RESULT_BIT => '0',
-    --         TOP_RESULT_BIT-1 downto 0 => '1');
-    -- but clearly that would be too easy to write :(
-    function pattern_mask return bit_vector is
-        variable result : bit_vector(47 downto 0);
-    begin
-        result(47 downto TOP_RESULT_BIT) := (others => '0');
-        result(TOP_RESULT_BIT-1 downto 0) := (others => '1');
-        return result;
-    end;
+    -- Overflow detection mask, zero bits are checked for equality.  We check
+    -- topmost result bit and on up.
+    constant PATTERN_MASK : bit_vector(47 downto 0) := (
+        TOP_RESULT_BIT-1 downto 0 => '1',
+        others => '0');
 
 begin
+    assert a_i'LENGTH <= 25 severity failure;
+    assert b_i'LENGTH <= 18 severity failure;
+
     -- OPMODE is documented on page 34 of UG479 (v1.10).  We configure 3 input
     -- muxes for the adder, inputs X/Y/Z.
     opmode(3 downto 0) <= "0101";       -- X/Y <= M for multiplier result
@@ -129,10 +125,10 @@ begin
         MASK => pattern_mask,
         SEL_MASK => "MASK"
     ) port map (
-        A => std_ulogic_vector(resize(a_i, 30)),
+        A => "00000" & std_ulogic_vector(resize(a_i, 25)),
         ACIN => (others => '0'),
         ALUMODE => "0000",
-        B => std_ulogic_vector(b_i),
+        B => std_ulogic_vector(resize(b_i, 18)),
         BCIN => (others => '0'),
         C => std_ulogic_vector(c_in),
         CARRYCASCIN => '0',
