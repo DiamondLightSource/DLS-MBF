@@ -59,6 +59,10 @@ architecture arch of dac_fir_gain is
     subtype MMS_READOUT_RANGE is natural range 33 downto 18;
     constant OUTPUT_SHIFT : natural := 2;
 
+    constant ROUNDING_MASK : signed(47 downto 0) := (
+        MMS_READOUT_RANGE'RIGHT-1 => '1',
+        others => '0');
+
     signal bb_gain_in : signed(17 downto 0);
     signal fir_enable_in : std_ulogic;
 
@@ -105,7 +109,8 @@ begin
         a_i => shifted_fir,
         b_i => bb_gain_in,
         en_ab_i => '1',
-        en_c_i => '0',
+        c_i => ROUNDING_MASK,
+        en_c_i => '1',
         p_o => fir_data_out,
         ovf_o => mms_overflow
     );
@@ -136,7 +141,7 @@ begin
                 -- Shift output up to fit .35 NCO scaling calculations
                 fir_data_o <= shift_left(fir_data_out, OUTPUT_SHIFT);
             else
-                fir_data_o <= (others => '0');
+                fir_data_o <= shift_left(ROUNDING_MASK, OUTPUT_SHIFT);
             end if;
         end if;
     end process;
