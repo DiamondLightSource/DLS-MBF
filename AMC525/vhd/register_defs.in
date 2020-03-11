@@ -401,11 +401,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             .DRAM0      9
 
         !CONFIG
-            # Turn clock configuration setup.  Note that DSP0_OFFSET and
-            # DSP1_OFFSET *must* be less than MAX_BUNCH.  If not, the channel
-            # turn clocks will not be generated, and as a consequence reading
-            # MMS.COUNT will never complete, which will in turn completely hang
-            # the system.
+            # Turn clock configuration setup.  Note that TURN_OFFSET *must* be
+            # less than MAX_BUNCH.  If not, the channel turn clocks will not be
+            # generated, and as a consequence reading MMS.COUNT will never
+            # complete, which will in turn completely hang the system.
             TURN        RW
                 # Configures the internal revolution clock frequency.  Set to
                 # the number of machine bunches-1
