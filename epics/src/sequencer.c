@@ -532,7 +532,7 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
     else
     {
         char gain[40];
-        sprintf(gain, "%ddB", -6 * (int) entry0->nco_gain);
+        sprintf(gain, "%.1fdB", 20 * log10(ldexp(entry0->nco_gain, -18)));
 
         if (sweeping == 1)
         {
