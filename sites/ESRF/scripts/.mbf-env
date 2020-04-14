@@ -5,7 +5,7 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/os/epics/local/lib/linux-x86_64
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/os/epics/components/pythonIoc/lib/linux-x86_64
 PYTHONPATH=$PYTHONPATH:/opt/os/epics/python-modules
 #PYTHONPATH=$PYTHONPATH:/opt/os/epics/python-modules/epicsdbbuilder-1.2-py2.7.egg
-PYTHONPATH=$PYTHONPATH:/opt/os/python/bliss_modules/debian9
+#PYTHONPATH=$PYTHONPATH:/opt/os/python/bliss_modules/debian9
 export PYTHONPATH
 export EPICS_CA_MAX_ARRAY_BYTES=1048576
 export EPICS_CA_ADDR_LIST=$HOSTNAME
