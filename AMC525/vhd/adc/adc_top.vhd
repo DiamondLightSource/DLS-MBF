@@ -70,12 +70,12 @@ begin
     registers : entity work.adc_registers port map (
         clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(DSP_ADC_CONFIG_REGS),
+        write_strobe_i => write_strobe_i(DSP_ADC_REGISTERS_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_ADC_CONFIG_REGS),
-        read_strobe_i => read_strobe_i(DSP_ADC_CONFIG_REGS),
-        read_data_o => read_data_o(DSP_ADC_CONFIG_REGS),
-        read_ack_o => read_ack_o(DSP_ADC_CONFIG_REGS),
+        write_ack_o => write_ack_o(DSP_ADC_REGISTERS_REGS),
+        read_strobe_i => read_strobe_i(DSP_ADC_REGISTERS_REGS),
+        read_data_o => read_data_o(DSP_ADC_REGISTERS_REGS),
+        read_ack_o => read_ack_o(DSP_ADC_REGISTERS_REGS),
 
         mms_source_o => mms_source,
         dram_source_o => dram_source,

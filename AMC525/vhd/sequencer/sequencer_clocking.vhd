@@ -22,13 +22,8 @@ entity sequencer_clocking is
         seq_write_dsp_i : in std_ulogic;
         seq_write_adc_o : out std_ulogic;
 
-        hom_gain_dsp_i : in unsigned;
-        hom_enable_dsp_i : in std_ulogic;
-        hom_gain_adc_o : out unsigned;
-        hom_enable_adc_o : out std_ulogic;
-
-        hom_window_dsp_i : in signed;
-        hom_window_adc_o : out signed;
+        detector_window_dsp_i : in signed;
+        detector_window_adc_o : out signed;
 
         bunch_bank_i : in unsigned;
         bunch_bank_o : out unsigned
@@ -37,12 +32,6 @@ end;
 
 architecture arch of sequencer_clocking is
     signal turn_clock_adc : std_ulogic;
-
-    -- Local declarations just so we can assign default values of zero
-    signal hom_gain_adc_out : hom_gain_adc_o'SUBTYPE := (others => '0');
-    signal hom_enable_adc_out : hom_enable_adc_o'SUBTYPE := '0';
-    signal hom_window_adc_out : hom_window_adc_o'SUBTYPE := (others => '0');
-    signal bunch_bank_out : bunch_bank_o'SUBTYPE := (others => '0');
 
 begin
     -- Delay line on turn clock
@@ -75,16 +64,23 @@ begin
         pulse_o => seq_write_adc_o
     );
 
-    process (adc_clk_i) begin
-        if rising_edge(adc_clk_i) then
-            hom_gain_adc_out <= hom_gain_dsp_i;
-            hom_enable_adc_out <= hom_enable_dsp_i;
-            hom_window_adc_out <= hom_window_dsp_i;
-            bunch_bank_out <= bunch_bank_i;
-        end if;
-    end process;
-    hom_gain_adc_o <= hom_gain_adc_out;
-    hom_enable_adc_o <= hom_enable_adc_out;
-    hom_window_adc_o <= hom_window_adc_out;
-    bunch_bank_o <= bunch_bank_out;
+    -- Simultaneously delay and reclock bunch_bank
+    bank_delay : entity work.dlyline generic map (
+        DLY => 2,
+        DW => bunch_bank_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(bunch_bank_i),
+        unsigned(data_o) => bunch_bank_o
+    );
+
+    -- Reclock the detector window
+    window_delay : entity work.dlyline generic map (
+        DLY => 1,
+        DW => detector_window_dsp_i'LENGTH
+    ) port map (
+        clk_i => adc_clk_i,
+        data_i => std_ulogic_vector(detector_window_dsp_i),
+        signed(data_o) => detector_window_adc_o
+    );
 end;

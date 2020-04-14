@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 109
-y 89
+x 369
+y 90
 w 680
 h 914
 font "helvetica-medium-r-18.0"
@@ -52,7 +52,7 @@ major 4
 minor 1
 release 0
 x 608
-y 872
+y 880
 w 64
 h 24
 fgColor index 46
@@ -159,59 +159,12 @@ minor 8
 release 0
 # Geometry
 x 8
-y 40
-w 664
-h 208
-# Appearance
-autoScaleBothDirections
-graphTitle "Fit Residue"
-fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "AutoScale"
-xMax 1
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMax 1
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 1
-xPv {
-  0 "$(tune_prefix):TUNE:SCALE"
-}
-yPv {
-  0 "$(tune_prefix):TUNE:RESIDUE"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 27
-}
-endObjectProperties
-
-# (X-Y Graph)
-object xyGraphClass
-beginObjectProperties
-major 4
-minor 8
-release 0
-# Geometry
-x 8
 y 248
 w 664
 h 208
 # Appearance
 autoScaleBothDirections
-graphTitle "Power Spectra"
+graphTitle "Phase of Response"
 fgColor index 14
 bgColor index 3
 gridColor index 14
@@ -236,8 +189,85 @@ xPv {
   1 "$(tune_prefix):TUNE:SCALE"
 }
 yPv {
-  0 "$(tune_prefix):TUNE:POWER"
-  1 "$(tune_prefix):TUNE:MPOWER"
+  0 "$(tune_prefix):TUNE:DPHASE"
+  1 "$(tune_prefix):TUNE:MPHASE"
+}
+plotStyle {
+  0 "point"
+  1 "point"
+}
+ySigned {
+  0 1
+}
+plotColor {
+  0 index 27
+  1 index 22
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 592
+y 848
+w 80
+h 24
+fgColor index 43
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Residue"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "tune_fit/tune_residue.edl"
+}
+endObjectProperties
+
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 8
+y 40
+w 664
+h 208
+# Appearance
+autoScaleBothDirections
+graphTitle "Magnitude of Response"
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+showXAxis
+xAxisSrc "AutoScale"
+xMax 1
+# Y axis properties
+showYAxis
+yAxisSrc "AutoScale"
+yMax 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 2
+xPv {
+  0 "$(tune_prefix):TUNE:SCALE"
+  1 "$(tune_prefix):TUNE:SCALE"
+}
+yPv {
+  0 "$(tune_prefix):TUNE:DMAGNITUDE"
+  1 "$(tune_prefix):TUNE:MMAGNITUDE"
 }
 ySigned {
   0 1

@@ -19,9 +19,10 @@ class DAC_OUT:
     # Any combination of the values below is valid for a DAC output selection
     OFF = 0
     FIR = 1
-    NCO = 2
+    NCO1 = 2
     SWEEP = 4
     PLL = 8
+    NCO2 = 16
 
 # We will work with two predefined FIR settings
 FIR_UNIT = 0
@@ -91,11 +92,11 @@ def configure_timing_test(mbf, compensate = False):
     mbf.fir_wf(FIR_UNIT, unit_fir(mbf.bunch_taps))
     mbf.fir_wf(FIR_ZERO, numpy.zeros(mbf.bunch_taps))
 
-    # Configure NCO for DC output at maximum gain: this makes a useful pulse
+    # Configure NCO1 for DC output at maximum gain: this makes a useful pulse
     # source when routed into a single bunch.
-    mbf.set('NCO:FREQ_S', 0)
-    mbf.set('NCO:GAIN_S', '0dB')
-    mbf.set('NCO:ENABLE_S', 'On')
+    mbf.set('NCO1:FREQ_S', 0)
+    mbf.set('NCO1:GAIN_S', '0dB')
+    mbf.set('NCO1:ENABLE_S', 'On')
 
     # Reset detector window in case it's been messed with
     mbf.set('SEQ:RESET_WIN_S.PROC', 0)
@@ -112,9 +113,9 @@ def configure_timing_test(mbf, compensate = False):
 
 
 # Basic configuration of MMS
-def configure_mms(mbf, part):
+def configure_mms(mbf, part, fir):
     mbf.set('%s:MMS:SCAN_S.SCAN' % part, '.1 second')
-    mbf.set('%s:MMS_SOURCE_S' % part, 'Before FIR')
+    mbf.set('%s:MMS_SOURCE_S' % part, 'Before %s' % fir)
     return mbf.PV('%s:MMS:MAX' % part)
 
 
@@ -179,10 +180,10 @@ def find_second_peak(value):
 @MBF.method
 def find_mms_peak(mbf, mms, nco_freq = 0):
     if nco_freq:
-        mbf.set('NCO:FREQ_S', nco_freq)
+        mbf.set('NCO1:FREQ_S', nco_freq)
     peak = mbf.find_one_peak(mms.get_new(0.25))
     if nco_freq:
-        mbf.set('NCO:FREQ_S', 0)
+        mbf.set('NCO1:FREQ_S', 0)
     return peak
 
 
@@ -190,10 +191,10 @@ def find_mms_peak(mbf, mms, nco_freq = 0):
 # Configuration functions
 
 
-# Configure bank for single pulse output from NCO
+# Configure bank for single pulse output from NCO1
 @MBF.method
 def configure_dac_single_pulse(mbf):
-    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO, DAC_OUT.OFF))
+    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO1, DAC_OUT.OFF))
 
 
 # Configure for closed loop delay measurement: pass all data except reference
@@ -201,8 +202,8 @@ def configure_dac_single_pulse(mbf):
 @MBF.method
 def configure_dac_measure_loop(mbf):
     mbf.set('DAC:DELAY_S', 0)
-    mbf.set('FIR:GAIN_S', '0dB')
-    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO, DAC_OUT.FIR))
+    mbf.set('FIR:GAIN_S', '-6dB')
+    mbf.bank_wf(0, 1, FIR_UNIT, mbf.one_bunch(DAC_OUT.NCO1, DAC_OUT.FIR))
 
 
 # Fetch DRAM buffer
@@ -249,7 +250,7 @@ def search_det_bunch(mbf, det_power, source, nco_freq = 0):
     # Configure source
     mbf.set('DET:SELECT_S', source)
     if nco_freq:
-        mbf.set('NCO:FREQ_S', nco_freq)
+        mbf.set('NCO1:FREQ_S', nco_freq)
 
     def measure():
         # Fire a capture
@@ -261,7 +262,7 @@ def search_det_bunch(mbf, det_power, source, nco_freq = 0):
     return search_detector_bunch(mbf, 'DET:0:BUNCHES_S', measure)
 
     if nco_freq:
-        mbf.set('NCO:FREQ_S', 0)
+        mbf.set('NCO1:FREQ_S', 0)
     return delay
 
 
@@ -309,7 +310,14 @@ def get_detector_delay(mbf, source, pvs):
 
     wf_i = pvs.det_i
     wf_q = pvs.det_q
-    iq = wf_i + 1j * wf_q
+    # We take the conjugate of the detector delay to restore historical
+    # behaviour for this measurement.  The story is that the firmware computes
+    # the IQ response as Sum exp(i f t) x(t) -- there is in effect a missing -
+    # sign on the exponent, which means we compute negative frequencies, or
+    # equivalently, our phases are negative.
+    #   This is now compensated for in the result measured here, but for this
+    # low level measurement we need to restore the original behaviour.
+    iq = wf_i - 1j * wf_q
     s = mbf.get('DET:SCALE')
     return compute_group_delay(mbf, s, iq)
 
@@ -323,7 +331,8 @@ def get_pll_detector_delay(mbf, source, start, step, count):
     for n in range(count):
         s[n] = start + n * step
         mbf.set('PLL:NCO:FREQ_S', s[n])
-        a[n] = pv.get_new(0.2)
+        # As above, restore historical negative phase measurement
+        a[n] = -pv.get_new(0.2)
 
     return compute_group_delay_angle(mbf, s, numpy.pi/180 * a)
 
@@ -339,7 +348,7 @@ def measure_loop(mbf, results):
     mbf.configure_dac_single_pulse()
 
     # Monitor MMS and configure for rapid update rate
-    maxdac = configure_mms(mbf, 'DAC')
+    maxdac = configure_mms(mbf, 'DAC', 'PEMPH')
 
     # Take DAC output mux select bunch zero as the reference bunch
     # and measure delays to DAC max.  This allows us to measure the closed
@@ -370,29 +379,32 @@ def measure_dac_mms(mbf, results):
     print >>sys.stderr, 'Measuring DAC MMS'
 
     mbf.configure_dac_single_pulse()
-    maxdac = configure_mms(mbf, 'DAC')
-    maxadc = configure_mms(mbf, 'ADC')
+    maxdac = configure_mms(mbf, 'DAC', 'PEMPH')
+    maxadc = configure_mms(mbf, 'ADC', 'COMP')
 
     # Measure the MMS ADC skew now we've closed the loop
-    mbf.set('ADC:MMS_SOURCE_S', 'Before FIR')
+    mbf.set('ADC:MMS_SOURCE_S', 'Before COMP')
     results.MMS_ADC_DELAY = mbf.find_mms_peak(maxadc)
-    mbf.set('ADC:MMS_SOURCE_S', 'After FIR')
+    mbf.set('ADC:MMS_SOURCE_S', 'After COMP')
     results.MMS_ADC_FIR_DELAY = mbf.find_mms_peak(maxadc)
 
     # For the fill pattern reject measurement we need to use an NCO frequency
     # that will get through the filter.
-    mbf.set('ADC:MMS_SOURCE_S', 'FIR no fill')
+    mbf.set('ADC:MMS_SOURCE_S', 'COMP no fill')
     results.MMS_ADC_REJECT_DELAY = mbf.find_mms_peak(maxadc, nco_freq = 0.51)
 
-    # Measure gain skew: configure NCO on all bunches, but unit gain only on
+    # Measure gain skew: configure NCO1 on all bunches, but unit gain only on
     # bunch zero, zero gain elsewhere.
-    mbf.bank_wf(0, mbf.one_bunch(1, 0), FIR_UNIT, DAC_OUT.NCO)
+    mbf.bank_wf(0, mbf.one_bunch(1, 0), FIR_UNIT, DAC_OUT.NCO1)
     results.BUNCH_GAIN_OFFSET = mbf.find_mms_peak(maxdac) - dac_minmax_delay
 
     # Now capture the extra FIR delay
     mbf.configure_dac_single_pulse()
-    mbf.set('DAC:MMS_SOURCE_S', 'After FIR')
+    mbf.set('DAC:MMS_SOURCE_S', 'After PEMPH')
     results.MMS_DAC_FIR_DELAY = find_mms_peak(mbf, maxdac)
+
+    mbf.set('DAC:MMS_SOURCE_S', 'Feedback')
+    results.MMS_DAC_FEEDBACK_DELAY = find_mms_peak(mbf, maxdac)
 
     maxdac.close()
     maxadc.close()
@@ -406,18 +418,18 @@ def measure_dram(mbf, results):
     mbf.configure_dac_single_pulse()
 
     # First get the baseline ADC and DAC delay.
-    mbf.set('DAC:DRAM_SOURCE_S', 'Before FIR')
-    mbf.set('ADC:DRAM_SOURCE_S', 'Before FIR')
+    mbf.set('DAC:DRAM_SOURCE_S', 'Before PEMPH')
+    mbf.set('ADC:DRAM_SOURCE_S', 'Before COMP')
     results.DRAM_ADC_DELAY, results.DRAM_DAC_DELAY = dram.get_peaks('ADC0/DAC0')
 
-    # Same, but after FIR
-    mbf.set('DAC:DRAM_SOURCE_S', 'After FIR')
-    mbf.set('ADC:DRAM_SOURCE_S', 'After FIR')
+    # Same, but after PEMPH
+    mbf.set('DAC:DRAM_SOURCE_S', 'After PEMPH')
+    mbf.set('ADC:DRAM_SOURCE_S', 'After COMP')
     results.DRAM_ADC_FIR_DELAY, results.DRAM_DAC_FIR_DELAY = \
         dram.get_peaks('ADC0/DAC0')
 
     # One last sample for the ADC fill reject delay
-    mbf.set('ADC:DRAM_SOURCE_S', 'FIR no fill')
+    mbf.set('ADC:DRAM_SOURCE_S', 'COMP no fill')
     results.DRAM_ADC_REJECT_DELAY, _ = dram.get_peaks('ADC0/DAC0', 0.51)
 
     # Now get the FIR delay
@@ -426,7 +438,7 @@ def measure_dram(mbf, results):
 
     # Now work out the FIR select skew.  Output NCO0 on all bunches, only set
     # bunch zero to non zero FIR.
-    mbf.bank_wf(0, 1, mbf.one_bunch(FIR_UNIT, FIR_ZERO), DAC_OUT.NCO)
+    mbf.bank_wf(0, 1, mbf.one_bunch(FIR_UNIT, FIR_ZERO), DAC_OUT.NCO1)
     _, fir = dram.get('ADC0/FIR0')
     results.BUNCH_FIR_OFFSET = mbf.find_one_peak(fir) - base_fir_delay
 
@@ -436,7 +448,7 @@ def measure_det_bunch(mbf, results):
 
     # Set up sequencer to do a small short sweep.  We only sweep bunch 0
     mbf.state(1, bank = 0)
-    mbf.bank_wf(0, 1, 0, mbf.one_bunch(DAC_OUT.NCO, DAC_OUT.OFF))
+    mbf.bank_wf(0, 1, 0, mbf.one_bunch(DAC_OUT.NCO1, DAC_OUT.OFF))
 
     power = mbf.PV('DET:0:MAX_POWER')
 

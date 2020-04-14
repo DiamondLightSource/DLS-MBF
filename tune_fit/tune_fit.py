@@ -1,5 +1,6 @@
 # Top level tune fitting
 
+import time
 import numpy
 from collections import namedtuple
 
@@ -102,11 +103,13 @@ def assess_fit(config, scale, fit):
     aa = peaks[:, 0]
     bb = peaks[:, 1]
     centres = bb.real
-    widths = -bb.imag
+    widths = bb.imag
 
-    # First ensure that no peaks are below the minimum width
+    # First ensure that no peaks are below the minimum width or above maximum
     if (widths < config.MINIMUM_WIDTH).any():
         return 'Peak too narrow'
+    if (widths > config.MAXIMUM_WIDTH).any():
+        return 'Peak too wide'
 
     # Check peak hasn't fallen out of range
     lr = scale[[0, -1]]
@@ -136,7 +139,7 @@ def assess_fit(config, scale, fit):
 
 def peaks_power(peaks):
     aa, bb = peaks.T
-    return support.abs2(aa) / -bb.imag
+    return support.abs2(aa) / bb.imag
 
 def sort_by_frequency(peaks):
     return peaks[numpy.argsort(peaks[:, 1].real)]
@@ -165,13 +168,13 @@ def compute_peak_info(peak):
         a, b = peak
         valid = True
 
-    width = -b.imag
+    width = b.imag
     power = support.abs2(a) / width
     height = power / width
     return support.Trace(
         valid = valid,
         tune = numpy.mod(b.real, 1),
-        phase = 180 / numpy.pi * numpy.angle(-1j * a),
+        phase = 180 / numpy.pi * numpy.angle(1j * a),
         width = width,
         power = power,
         height = numpy.sqrt(power / width))
@@ -221,10 +224,15 @@ def compute_window(config, scale, iq):
 
 
 def fit_tune(config, scale, iq):
+    start_time = time.time()
     scale, iq = compute_window(config, scale, iq)
 
     power = support.abs2(iq)
-    input_trace = support.Trace(scale = scale, iq = iq, power = power)
+    input_trace = support.Trace(
+        scale = scale,
+        iq = iq,
+        magnitude = numpy.abs(iq),
+        phase = 180/numpy.pi * numpy.angle(iq))
 
     # Find maximum point.  This is always valid!
     max_tune = numpy.mod(scale[numpy.argmax(power)], 1)
@@ -239,7 +247,8 @@ def fit_tune(config, scale, iq):
     if fit_info:
         output_trace = support.Trace(
             model = fit_info.model,
-            model_power = support.abs2(fit_info.model),
+            model_magnitude = numpy.abs(fit_info.model),
+            model_phase = 180/numpy.pi * numpy.angle(fit_info.model),
             residue = fit_info.residue)
         fit_error = fit_info.fit_error
     else:
@@ -252,6 +261,7 @@ def fit_tune(config, scale, iq):
         tune = compute_tune_result(config, fit[0] + [0, scale_offset])
     else:
         tune = None
+    end_time = time.time()
 
     return support.Trace(
         # The following values are published as PVs
@@ -262,6 +272,7 @@ def fit_tune(config, scale, iq):
         fit_error = fit_error,
         last_error = fit_status,
         fit_length = len(iq),
+        fit_time = end_time - start_time,
 
         # These are needed for extra information during development
         scale_offset = scale_offset,

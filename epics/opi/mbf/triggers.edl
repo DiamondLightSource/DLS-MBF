@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2387
-y 22
+x 512
+y 317
 w 600
-h 369
+h 392
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -35,7 +35,7 @@ release 0
 x 8
 y 48
 w 176
-h 312
+h 336
 lineColor index 14
 fill
 fillColor index 4
@@ -82,7 +82,7 @@ major 4
 minor 1
 release 0
 x 528
-y 336
+y 360
 w 64
 h 24
 fgColor index 46
@@ -124,7 +124,7 @@ major 4
 minor 1
 release 0
 x 16
-y 328
+y 352
 w 64
 h 22
 fgColor index 25
@@ -147,7 +147,7 @@ major 4
 minor 0
 release 0
 x 88
-y 328
+y 352
 w 88
 h 22
 fgColor index 14
@@ -303,9 +303,6 @@ sizeOfs 5
 numDsps 1
 displayFileName {
   0 "mbf/trigger_$(mode).edl"
-}
-symbols {
-  0 "bank=0"
 }
 noScroll
 endObjectProperties
@@ -751,7 +748,7 @@ major 4
 minor 6
 release 0
 x 80
-y 248
+y 288
 w 32
 h 16
 controlPv "$(device):TRG:BLNK:IN"
@@ -776,7 +773,7 @@ major 4
 minor 0
 release 0
 x 56
-y 248
+y 288
 w 16
 h 16
 lineColor index 14
@@ -793,7 +790,7 @@ major 4
 minor 1
 release 1
 x 16
-y 248
+y 288
 w 34
 h 14
 font "helvetica-bold-r-12.0"
@@ -1067,7 +1064,7 @@ major 4
 minor 1
 release 1
 x 16
-y 312
+y 336
 w 68
 h 14
 font "helvetica-bold-r-12.0"
@@ -1087,7 +1084,7 @@ major 4
 minor 6
 release 0
 x 56
-y 272
+y 312
 w 72
 h 22
 controlPv "$(device):TRG:BLANKING_S"
@@ -1115,7 +1112,7 @@ major 4
 minor 1
 release 1
 x 136
-y 276
+y 320
 w 31
 h 14
 font "helvetica-bold-r-12.0"
@@ -1127,5 +1124,181 @@ value {
   "turns"
 }
 autoSize
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 56
+y 232
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):TRG:DAC0:IN"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 80
+y 232
+w 32
+h 14
+controlPv "$(device):TRG:DAC0:IN"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 56
+y 256
+w 16
+h 16
+lineColor index 14
+fill
+fillColor index 16
+fillAlarm
+alarmPv "$(device):TRG:DAC1:IN"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 80
+y 256
+w 32
+h 14
+controlPv "$(device):TRG:DAC1:IN"
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+smartRefresh
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 232
+w 32
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "DAC0"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 256
+w 32
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "DAC1"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 112
+y 232
+w 64
+h 20
+controlPv "$(device):$(axis0):DAC:EVENT_LIMIT_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 112
+y 256
+w 64
+h 20
+controlPv "$(device):$(axis1):DAC:EVENT_LIMIT_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "controls"
+noExecuteClipMask
 endObjectProperties
 

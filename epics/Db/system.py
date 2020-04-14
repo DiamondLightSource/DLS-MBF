@@ -36,19 +36,12 @@ with name_prefix('INFO'):
         DESC = 'Name of second axis')
 
 
-for a in axes('NCO', lmbf_mode):
-    aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')
-    mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(16, -6))
-    boolOut('ENABLE', 'Off', 'On', DESC = 'Enable fixed NCO output')
-
-
 def clock_status(name, desc):
     return boolIn(name, 'Unlocked', 'Locked', ZSV = 'MAJOR', DESC = desc)
 
 def vco_status(name, desc):
     return mbbIn(name,
-        'Unlocked', 'Locked', 'Passthrough',
-        ZRSV = 'MAJOR', DESC = desc)
+        ('Unlocked', 'MAJOR'), 'Locked', 'Passthrough', DESC = desc)
 
 with name_prefix('STA'):
     Action('POLL',

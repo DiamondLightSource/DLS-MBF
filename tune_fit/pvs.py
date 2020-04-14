@@ -127,6 +127,7 @@ class PvSet:
     aOut    = make_config_pv_builder('aOut', float)
     longOut = make_config_pv_builder('longOut', int)
     mbbOut  = make_config_pv_builder('mbbOut', int)
+    boolOut = make_config_pv_builder('boolOut', bool)
 
 
 def publish_config(pvs):
@@ -137,6 +138,8 @@ def publish_config(pvs):
             DESC = 'Degree of smoothing for 2D peak detect')
         pvs.aOut('MINIMUM_WIDTH', 0, 1, initial_value = 1e-5, PREC = 2,
             DESC = 'Reject peaks narrower than this')
+        pvs.aOut('MAXIMUM_WIDTH', 0, 1, initial_value = 1e-2, PREC = 2,
+            DESC = 'Reject peaks wider than this')
         pvs.aOut('MINIMUM_SPACING', 0, 0.5, initial_value = 1e-3, PREC = 4,
             DESC = 'Reject peaks closer than this')
         pvs.aOut('MINIMUM_HEIGHT', 0, 1, initial_value = 0.1, PREC = 3,
@@ -147,6 +150,9 @@ def publish_config(pvs):
             DESC = 'First point to fit')
         pvs.longOut('WINDOW_LENGTH', initial_value = 0,
             DESC = 'Length of window (0 means all)')
+        pvs.boolOut('WEIGHT_DATA', 'Unweighted', 'Weighted',
+            initial_value = True,
+            DESC = 'Whether to weight data during fit')
 
 
 def publish_tune(pvs):
@@ -188,10 +194,12 @@ def publish_peaks(pvs):
 
 def publish_graphs(pvs, length):
     pvs.Waveform('input.scale', 'SCALE', length)
-    pvs.Waveform('input.power', 'POWER', length)
+    pvs.Waveform('input.magnitude', 'DMAGNITUDE', length)
+    pvs.Waveform('input.phase', 'DPHASE', length)
     pvs.Waveform('input.iq.real', 'I', length)
     pvs.Waveform('input.iq.imag', 'Q', length)
-    pvs.Waveform('output.model_power', 'MPOWER', length)
+    pvs.Waveform('output.model_magnitude', 'MMAGNITUDE', length)
+    pvs.Waveform('output.model_phase', 'MPHASE', length)
     pvs.Waveform('output.model.real', 'MI', length)
     pvs.Waveform('output.model.imag', 'MQ', length)
     pvs.Waveform('output.residue', 'RESIDUE', length)
@@ -201,6 +209,7 @@ def publish_info(pvs):
     pvs.stringIn('last_error', 'LAST_ERROR')
     pvs.aIn('fit_error', 'FIT_ERROR', PREC = 5)
     pvs.longIn('fit_length', 'FIT_LENGTH')
+    pvs.aIn('fit_time', 'FIT_TIME', PREC = 3, EGU = 's')
 
 
 def publish_pvs(persist, target, length):

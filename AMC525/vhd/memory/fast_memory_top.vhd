@@ -45,13 +45,11 @@ architecture arch of fast_memory_top is
     signal config_register : reg_data_t;
     signal count_register : reg_data_t;
     signal command_bits : reg_data_t;
-    signal pulsed_bits : reg_data_t;
     signal status_register : reg_data_t;
 
     -- Configuration
     constant COUNT_BITS : natural := 28;
     signal mux_select : std_ulogic_vector(3 downto 0);
-    signal fir_gain : unsigned_array(CHANNELS)(0 downto 0);
     signal count : unsigned(COUNT_BITS-1 downto 0);
 
     -- Command
@@ -67,8 +65,6 @@ architecture arch of fast_memory_top is
 
     -- We don't expect the error bits to ever be seen
     signal error_bits : std_ulogic_vector(2 downto 0) := "000";
-
-    signal fir_overflow : std_ulogic_vector(CHANNELS);
 
     -- We have a variety of pipelines to the AXI DRAM0 controller so that we can
     -- be instantiated some distance from the DRAM0 system.
@@ -116,22 +112,13 @@ begin
     -- Strobed command events
     strobed_bits : entity work.strobed_bits port map (
         clk_i => dsp_clk_i,
-        write_strobe_i => write_strobe_i(CTRL_MEM_COMMAND_REG_W),
+        write_strobe_i => write_strobe_i(CTRL_MEM_COMMAND_REG),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(CTRL_MEM_COMMAND_REG_W),
+        write_ack_o => write_ack_o(CTRL_MEM_COMMAND_REG),
         strobed_bits_o => command_bits
     );
-
-    -- Pulsed event capture
-    pulsed_bits_inst : entity work.all_pulsed_bits port map (
-        clk_i => dsp_clk_i,
-
-        read_strobe_i => read_strobe_i(CTRL_MEM_PULSED_REG_R),
-        read_data_o => read_data_o(CTRL_MEM_PULSED_REG_R),
-        read_ack_o => read_ack_o(CTRL_MEM_PULSED_REG_R),
-
-        pulsed_bits_i => pulsed_bits
-    );
+    read_data_o(CTRL_MEM_COMMAND_REG) <= (others => '0');
+    read_ack_o(CTRL_MEM_COMMAND_REG) <= '1';
 
 
     -- Status register
@@ -145,8 +132,6 @@ begin
 
     -- Configuration fields extracted from config registers
     mux_select <= config_register(CTRL_MEM_CONFIG_MUX_SELECT_BITS);
-    fir_gain(0) <= unsigned(config_register(CTRL_MEM_CONFIG_FIR0_GAIN_BITS));
-    fir_gain(1) <= unsigned(config_register(CTRL_MEM_CONFIG_FIR1_GAIN_BITS));
     count <= unsigned(count_register(COUNT_BITS-1 downto 0));
 
     -- Control events
@@ -154,11 +139,6 @@ begin
     stop  <= command_bits(CTRL_MEM_COMMAND_STOP_BIT);
     reset_errors <= command_bits(CTRL_MEM_COMMAND_RESET_BIT);
     snapshot_address <= command_bits(CTRL_MEM_COMMAND_ADDRESS_BIT);
-
-    pulsed_bits <= (
-        CTRL_MEM_PULSED_FIR_OVF_BITS => reverse(fir_overflow),
-        others => '0'
-    );
 
     -- Active status
     status_register <= (
@@ -240,12 +220,10 @@ begin
         dsp_clk_i => dsp_clk_i,
 
         mux_select_i => mux_select,
-        fir_gain_i => fir_gain,
 
         dsp_to_control_i => dsp_to_control_i,
         extra_i => extra_data,
 
-        fir_overflow_o => fir_overflow,
         data_o => data_out
     );
 

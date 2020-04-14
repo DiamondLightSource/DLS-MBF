@@ -42,9 +42,9 @@ def turn_sync():
         HIGH = 1, HSV = 'MINOR', DESC = 'Turn clock errors')
     turn_events = [
         mbbIn('STATUS',
-            ('Armed', 0, 'MINOR'),
-            ('Synced', 1),
-            ('Sync Errors', 2, 'MAJOR'),
+            ('Armed', 'MINOR'),
+            'Synced',
+            ('Sync Errors', 'MAJOR'),
             DESC = 'Turn clock status'),
         turn_count,
         error_count,

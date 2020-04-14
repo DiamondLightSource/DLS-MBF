@@ -21,7 +21,7 @@
 
 /* The enumeration values here must match the selections defined in Db/adc.py
  * for ADC:MMS_SOURCE and ADC:DRAM_SOURCE, and must also match the values
- * defined in register_defs.in for DSP.ADC.CONFIG.CONFIG for the corresponding
+ * defined in register_defs.in for DSP.ADC.CONFIG for the corresponding
  * fields. */
 enum adc_output_select {
     ADC_SELECT_RAW = 0,     // ADC data before compensation filter
@@ -32,8 +32,8 @@ enum adc_output_select {
 
 static struct adc_context {
     int axis;
-    unsigned int mms_after_fir;
-    unsigned int dram_after_fir;
+    uint16_t mms_after_fir;
+    uint16_t dram_after_fir;
     bool overflow;
     struct adc_events events;
     struct mms_handler *mms;
@@ -117,7 +117,7 @@ static void update_delays(struct adc_context *adc)
     }
 }
 
-static bool write_adc_mms_source(void *context, unsigned int *source)
+static bool write_adc_mms_source(void *context, uint16_t *source)
 {
     struct adc_context *adc = context;
     adc->mms_after_fir = *source;
@@ -126,7 +126,7 @@ static bool write_adc_mms_source(void *context, unsigned int *source)
     return true;
 }
 
-static bool write_adc_dram_source(void *context, unsigned int *source)
+static bool write_adc_dram_source(void *context, uint16_t *source)
 {
     struct adc_context *adc = context;
     adc->dram_after_fir = *source;
@@ -135,7 +135,7 @@ static bool write_adc_dram_source(void *context, unsigned int *source)
     return true;
 }
 
-static bool write_adc_reject_shift(void *context, unsigned int *shift)
+static bool write_adc_reject_shift(void *context, uint16_t *shift)
 {
     struct adc_context *adc = context;
     hw_write_adc_reject_shift(adc->axis, *shift);
@@ -161,21 +161,18 @@ static void compute_phase(void)
     read_mms_mean(adc_context[0].mms, mean_i);
     read_mms_mean(adc_context[1].mms, mean_q);
 
-    float max_mag = 0;
-    float sum_mag = 0;
+    double sum_mag = 0;
     FOR_BUNCHES(i)
     {
         phase.magnitude[i] = sqrtf(SQR(mean_i[i]) + SQR(mean_q[i]));
-        max_mag = MAX(max_mag, phase.magnitude[i]);
         sum_mag += phase.magnitude[i];
     }
-    phase.mean_magnitude = sum_mag / (float) bunches;
+    phase.mean_magnitude = sum_mag / bunches;
 
-    float threshold = (float) phase.threshold * max_mag;
-    float sum_i = 0, sum_q = 0;
+    double sum_i = 0, sum_q = 0;
     FOR_BUNCHES(i)
     {
-        if (phase.magnitude[i] > threshold)
+        if (phase.magnitude[i] > phase.threshold)
         {
             phase.phase[i] = 180 / (float) M_PI * atan2f(-mean_i[i], mean_q[i]);
             sum_i += mean_i[i];
@@ -184,7 +181,7 @@ static void compute_phase(void)
         else
             phase.phase[i] = 0;
     }
-    phase.mean_phase = 180 / (float) M_PI * atan2f(-sum_i, sum_q);
+    phase.mean_phase = 180 / M_PI * atan2(-sum_i, sum_q);
 }
 
 

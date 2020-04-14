@@ -35,15 +35,7 @@ begin
         DW => data_i.gain'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(data_i.gain),
+        data_i => std_ulogic_vector(data_i.gain),
         unsigned(data_o) => data_o.gain
-    );
-
-    enable_delay : entity work.dlyreg generic map (
-        DLY => DELAY
-    ) port map (
-        clk_i => clk_i,
-        data_i(0) => data_i.enable,
-        data_o(0) => data_o.enable
     );
 end;

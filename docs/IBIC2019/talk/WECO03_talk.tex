@@ -1,0 +1,406 @@
+\documentclass[aspectratio=169, xcolor=table]{beamer}
+
+\usepackage{textcomp}       % Text companion fonts
+\usepackage{tikz}           % Powerful drawing package, part of pgf
+\usepackage{graphbox}       % For centre alignment of graphics
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{items}[circle]
+
+\hyphenpenalty 4000 \sloppy
+
+\input{common.tikz}
+
+% Some commands for colouring tables
+\newcommand{\cg}{\cellcolor{green!60!blue!20}}
+\newcommand{\cy}{\cellcolor{yellow}}
+\newcommand{\co}{\cellcolor{orange!40!yellow}}
+
+\newcommand{\re}{\operatorname{re}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\R}{\mathbb{R}}
+
+\title{%
+    Tune Computation via Model Fitting\\to Swept Machine Response Measurement}
+\author{Michael Abbott}
+\date{IBIC 2019}
+\institute{Diamond Light Source}
+
+
+\begin{document}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}
+\titlepage
+\end{frame}
+
+\setbeamertemplate{footline}{%
+    \vspace*{-8pt}\hspace*{2pt}%
+    Tune Computation via Model Fitting to Swept Machine Response Measurement,
+    IBIC 2019 \hfill \insertpagenumber\hspace*{2pt}
+}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Overview of Talk}
+
+\begin{itemize}
+\item Response measurement (\emph{Beam Transfer Function}):
+
+Using multi-bunch feedback system as vector network analyser.
+
+\item Multi-pole resonator model:
+
+Note that this is \emph{not} a machine physics model.
+\item Fitting the model, finding the tune:
+
+Python code for fitter available from author.
+\item Complications!
+
+Fitting doesn't always work, some sweeps are hard to interpret.
+\end{itemize}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Overview of Tune Measurement Process}
+\input{talk_overview.tikz}
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Measuring Beam Frequency Response}
+
+\begin{centering}
+\input{detector-core.tikz}
+\end{centering}
+
+\bigskip
+
+By exciting the beam at a selected frequency $\omega$ and measuring the response
+of the beam at that frequency, we compute the \emph{transfer function} of the
+machine at the selected frequency:
+
+\begin{equation*}
+    R(\omega) = \sum_{t\in\text{dwell}(\omega)} e^{-i \omega t} x_t
+\end{equation*}
+
+This can be expressed as phase and magnitude, or equivalently as a
+complex number, or in digital processing terms as a pair (I,Q).
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{System Setup for Bunch-by-Bunch Control}
+
+\tikzset{
+    actuator/.style={circle, inner sep=1pt, highlight fill, draw=black}}
+
+\begin{centering}
+\input{overview.tikz}
+\end{centering}
+
+\bigskip
+\smallbox[actuator]{B} EBPM pickup;
+\smallbox[actuator]{C} Longitudinal cavity;
+\smallbox[actuator]{S} Transverse striplines.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Typical Machine Response Measurement}
+
+\includegraphics[width=0.95\linewidth]{typical-sweep.png}
+
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Damped Harmonic Oscillator}
+
+\raisebox{0.5\height}{
+\includegraphics[width=0.45\linewidth]{pole-model.png}}%
+\quad
+%
+\begin{overlayarea}{0.5\textwidth}{\textheight}
+\only<1>{
+\smallskip
+\includegraphics[width=0.86\linewidth]{two-pole-iq.png}%
+}%
+%
+\only<2>{
+Damped harmonic oscillator:
+\[
+    \ddot x + 2 \nu \dot x + \omega_0^2 x = y
+\]
+
+Laplace transform:
+\[
+    s^2 X + 2 \nu s X + \omega_0^2 X = Y
+\]
+
+Response:
+\[
+    \frac XY = \frac{1}{(s-b)(s-b^*)} =
+    \frac{a}{s-b} - \frac{a}{s-b^*}
+\]
+where
+\scriptsize{
+\[
+    a = \frac 1{2i\omega_c}\;, \quad
+    b = \nu + i\omega_c\;, \quad
+    \omega_c^2 = \omega_0^2 - \nu^2\;.
+\]
+}}
+\end{overlayarea}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Single Pole Resonator Model}
+
+\begin{minipage}{0.45\textwidth}
+\includegraphics[width=\linewidth]{one-pole-model.png}
+\end{minipage}
+\quad
+\begin{minipage}{0.50\textwidth}
+Our measurements are very narrow band, and we only sweep a narrow range, so we
+can ignore one pole:
+\[
+    M(\omega) = \frac XY(i\omega) \approx \frac{a}{i\omega-b}
+    = \frac{a'}{\omega-b'}
+\]
+Result is a ``Single Pole Resonator'' model.
+
+\bigskip
+\scriptsize{Example Q is 10, typical tune Q is 100s to 1000s.}
+\end{minipage}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Multi-pole Resonator Model}
+
+Modelling the raw data as a sum of one pole resonators produces a good fit to
+experimental data:
+
+\begin{center}
+\includegraphics[align=c, width=0.25\linewidth]{good-raw-fit.png}
+\qquad
+$\displaystyle
+    M(\omega) = \sum_{n=1}^N\frac{a_n}{\omega-b_n} + c
+              = \frac{P(\omega)}{Q(\omega)}
+$
+
+\end{center}
+
+\medskip
+
+This is mathematically sound, produces a convincing fit when successful, but is
+surprisingly tricky to fit numerically.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Extracting Data From Model}
+
+\begin{center}
+\includegraphics[width=0.8\linewidth]{good-peaks.png}
+\end{center}
+
+\def\arraystretch{1.2}
+\begin{tabular}{l>{$\displaystyle}c<{$}ccccl}
+ & $\cg Equation$ & \cg Peak -2 & \cg Peak -1 & \cg Tune & \cg Peak +1 \\
+\cg Tune & \re(b) &
+    0.2661 & 0.2704 & \cy 0.2737 & 0.2772 \\
+\cg Width & \im(b) &
+    0.9 & 0.7 & \cy 3.9 & 1.5 & ($\times10^{-3}$) \\
+\cg ``Power'' & \int_\R|M(\omega)|^2\,d\omega = \frac{|a|^2}{\im(b)} &
+    0.04 & 0.25 & \cy 1 & 0.5 & \footnote{Relative to tune power} \\
+\cg Phase & \angle (i\cdot a) &
+    170\textdegree & -110\textdegree & \cy 180\textdegree & 110\textdegree \\
+\end{tabular}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Algorithm}
+
+We fit as many peaks as we can up to a configured number of peaks.
+\begin{itemize}
+\item Fit one peak at a time until done
+\item Find largest peak in residual response power
+\item Simple linear fit to discovered peak
+\item Refine fit with non-linear optimisation
+\item Assess quality of resulting model, discard and stop if poor
+\end{itemize}
+When fitting is done take peak with largest ``power'' as the tune.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Peak Discovery}
+
+\begin{minipage}{0.4\textwidth}
+\includegraphics[width=\linewidth]{discover-peak.png}
+\end{minipage}%
+\quad
+\begin{minipage}{0.55\textwidth}
+\begin{itemize}
+\item Compute residue by subtracting model so far from data to fit:
+    \[
+        r(\omega) = R(\omega) - M(\omega)
+    \]
+\item Smooth and decimate power $|r|^2$, take second derivative
+    $d^2\mathcal{S}(|r|^2)/d\omega^2$.
+
+\medskip
+
+    Select point with
+    largest curvature as peak: inspired by early computer vision methods!
+\item Follow curve to define interval for initial fit.
+\end{itemize}
+
+This method tends to become brittle as more peaks are fitted.
+\end{minipage}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Overview of One Round of Fitting}
+
+\includegraphics[width=\linewidth]{fit-and-refine.png}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Fit Refinement}
+
+Fit refinement is done using the Levenberg-Marquardt algorithm to optimise the
+fit.
+
+The figure below shows the impact of this step.
+
+\medskip
+
+\includegraphics[width=\linewidth]{fit-refine.png}
+
+Dots: data to fit;\quad thin blue line: initial model;\quad thick red line:
+refined model.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Challenges}
+
+I will end with a few challenging fits.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Sometimes it fits}
+
+\includegraphics[width=0.45\linewidth]{hard-fit-ok.png}
+\includegraphics[width=0.45\linewidth]{hard-fit-fail.png}
+
+Here we see two almost identical sweeps.  Perfect fit on the left, only two
+peaks fitted on the right.  In this case we tried and failed to fit the smallest
+peak next!
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{ESRF: Vertical Tune}
+
+\includegraphics[width=\linewidth]{esrf-V.png}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{ESRF: Horizontal Tune}
+
+\includegraphics[width=\linewidth]{esrf-H.png}
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{END}
+
+\vfill
+Extra slides follow.
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Wandering Peaks}
+
+\raisebox{-0.5\height}{
+\includegraphics[width=0.45\linewidth]{hard-fit-fail-initial.png}}
+\quad
+\raisebox{-0.5\height}{
+\includegraphics[width=0.45\linewidth]{hard-fit-fail-peaks.png}}
+
+
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{Wandering During Refinement}
+
+\includegraphics[width=0.48\linewidth]{hard-fit-fail-poles.png}
+\quad
+\includegraphics[width=0.48\linewidth]{hard-fit-fail-evolve.png}
+
+\end{frame}
+
+
+\end{document}
+
+
+% ------------------------------------------------------------------------------
+%
+\begin{frame}{}
+
+
+\end{frame}
+
+

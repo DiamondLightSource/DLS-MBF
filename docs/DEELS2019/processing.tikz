@@ -1,0 +1,82 @@
+\begin{tikzpicture}[
+    switch/.style={
+        small box, inner sep=1pt,
+        node contents={\includegraphics[width=1.5em]{switch.png}},
+    },
+    x=15mm, y=15mm]
+
+\path
+    (0,1.5) node (adc) [adc-dac=west] {ADC}
+    ++(2,0) node [box] (fir) {Feedback\\FIR}
+    (5,0) node [mul] (dac sum) {$+$}
+    ++(1.5,0) node [adc-dac=east] (dac) {DAC}
+
+    (2.4,0.5) node [small box] (nco1) {NCO\textsubscript1}
+    ++(0,-1)
+    +(1ex,-1ex) node [small box] {\phantom{NCO\textsubscript2}}
+    +(0,0) node [small box] (nco2) {NCO\textsubscript2}
+    ++(0,-1)
+    +(1ex,-1ex) node [small box] {\phantom{NCO\textsubscript3}}
+    +(0,0) node [small box] (nco3) {NCO\textsubscript3}
+
+    (0.5,-0.5)
+    node [box] (sweep) {Sweep}
+
+    (0.5,-1.5)
+    node [box] (tune pll) {Tune\\Pll}
+
+    (4,1.5) node (fir enable) [switch]
+    ++(0,-1) node (nco1 enable) [switch]
+    ++(0,-1) node (nco2 enable) [switch]
+    ++(0,-1) node (nco3 enable) [switch]
+
+    (3.45,-2.6) node [box] (enables) {Bunch\\Enables}
+
+    (4.9,-1.4) node [anchor=north west] {\parbox{32mm}{
+        \scriptsize
+        Key:
+        \begin{enumerate}
+            \item[\smallbox{NCO}] Numerically Controlled Oscillator.
+            \item[{\tikz [inline text] \node [switch];}] Output enable.
+        \end{enumerate}
+    }};
+
+\begin{pgfonlayer}{background}
+    \node [fill=background colour, fit=(tune pll) (nco3 enable)] (new) {};
+\end{pgfonlayer}
+\path (new.south west) node [anchor=north west, color=black!50] {New};
+
+\draw [->] (enables.north -| fir enable)
+    +(-0.7,0) -- ($(fir enable)-0.7*(1,1)$) -- (fir enable);
+\draw [->] (enables.north -| nco1 enable)
+    +(-0.6,0) -- ($(nco1 enable)-0.6*(1,1)$) -- (nco1 enable);
+\draw [->] (enables.north -| nco2 enable)
+    +(-0.5,0) -- ($(nco2 enable)-0.5*(1,1)$) -- (nco2 enable);
+\draw [->] (enables.north -| nco3 enable)
+    +(-0.4,0) -- ($(nco3 enable)-0.4*(1,1)$) -- (nco3 enable);
+
+\draw [bus] (adc) -- (fir);
+\draw [bus]
+    (sweep.east |- nco1) node [anchor=east] {f\textsubscript1} -- (nco1);
+\draw [bus] (sweep) -- (nco2)
+    node [midway, inner sep=1pt, label=above:f\textsubscript2] {};
+\draw [bus] (tune pll) -- (nco3)
+    node [midway, inner sep=1pt, label=above:f\textsubscript3] {};
+
+\draw [bus] (fir) -- (fir enable);
+\multipath [bus] {
+    \draw (nco1) -- (nco1 enable);
+    \draw (nco2) -- (nco2 enable);}
+\multipath [bus, multipath background=background colour] {
+    \draw (nco3) -- (nco3 enable);}
+
+\draw [bus] (fir enable) -- +(0.5,0) -- (dac sum);
+\draw [bus] (nco1 enable) -- +(0.5,0) -- (dac sum);
+\draw [bus] (nco2 enable) -- +(0.5,0) -- (dac sum);
+\draw [bus] (nco3 enable) -- +(0.5,0) -- (dac sum);
+
+\draw [bus] (dac sum) -- (dac);
+
+\end{tikzpicture}
+
+% vim: filetype=tex:

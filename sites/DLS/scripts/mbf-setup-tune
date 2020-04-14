@@ -129,6 +129,9 @@ parser.add_argument(
 parser.add_argument(
     '-n', dest = 'dry_run', default = False, action = 'store_true',
     help = 'Dry run, don\'t actually write to device')
+parser.add_argument(
+    '-s', dest = 'skip_tune', default = False, action = 'store_true',
+    help = 'Omit update for TUNE settings')
 parser.add_argument('device', help = 'TMBF device name to configure')
 parser.add_argument('mode',
     help = 'Configuration mode, must be one of %s' % ', '.join(VALID_MODES))
@@ -180,7 +183,7 @@ else:
 
 # Compute best matching filter.  For LMBF mode need to scale matched target by
 # configured decimation.
-decimation = get('IQ:FIR:DECIMATION_S') if LMBF_MODE else 1
+decimation = setup.fir_decimation if LMBF_MODE else 1
 setup.cycles, setup.length = compute_filter_size(setup.tune * decimation)
 
 
@@ -228,7 +231,16 @@ put('SEQ:SUPER:RESET_S', 0)
 _put('TRG:BLANKING_S', setup.blanking_interval)
 
 
+# Set memory and MMS capture sources to standard settings
+put_axes('ADC:MMS_SOURCE_S',  'After COMP')
+put_axes('ADC:DRAM_SOURCE_S', 'After COMP')
+put_axes('DAC:MMS_SOURCE_S',  'Before PEMPH')
+put_axes('DAC:DRAM_SOURCE_S', 'Before PEMPH')
+
+
 # Configure FIR as selected
+if LMBF_MODE:
+    put('FIR:DECIMATION_S', setup.fir_decimation)
 put('FIR:0:LENGTH_S', setup.length)
 put('FIR:0:CYCLES_S', setup.cycles)
 put('FIR:0:USEWF_S', 'Settings')
@@ -237,7 +249,7 @@ put('FIR:GAIN_S', args.gain)
 # Configure bunch bank #0 for FIR and selected operation
 put('BUN:0:FIRWF_S', BUNCH_ZEROS)
 put('BUN:0:OUTWF_S', setup.dac_output * BUNCH_ONES)
-put('BUN:0:GAINWF_S', BUNCH_ONES)
+put('BUN:0:RESET_GAINS_S', 0)
 
 # Similarly configure bank #1 for sweep as appropriate
 SWEEP_OUT = BUNCH_ENABLES * DAC_OUT_SWEEP
@@ -245,11 +257,12 @@ if setup.keep_feedback:
     SWEEP_OUT |= setup.dac_output
 put('BUN:1:FIRWF_S', BUNCH_ZEROS)
 put('BUN:1:OUTWF_S', SWEEP_OUT)
-put('BUN:1:GAINWF_S', BUNCH_ONES)
+put('BUN:1:RESET_GAINS_S', 0)
 
 
 # Disable all sequencer triggers and configure triggering on external trigger
-TRIGGER_SOURCES = ['SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1']
+TRIGGER_SOURCES = [
+    'SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1', 'DAC0', 'DAC1']
 for source in TRIGGER_SOURCES:
     put('TRG:SEQ:%s:EN_S' % source, 'Ignore')
 put('TRG:SEQ:EXT:EN_S', 'Enable')
@@ -285,9 +298,10 @@ put('SEQ:1:TUNE_PLL_S', 'Ignore')
 
 # Ensure the associated tune fitter is fitting the entire sweep and is running
 # with the appropriate selection
-put('TUNE:CONFIG:WINDOW_START_S', 0)
-put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
-put('TUNE:SELECT_S', 'Fitted')
+if not args.skip_tune:
+    put('TUNE:CONFIG:WINDOW_START_S', 0)
+    put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
+    put('TUNE:SELECT_S', 'Fitted')
 
 put('SEQ:PC_S', 1)
 

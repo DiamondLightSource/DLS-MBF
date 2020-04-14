@@ -19,8 +19,16 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/memory/memory_fifo.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
+    $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/nco/nco_defs.vhd \
+    nco_cos_sin_table.vhd \
+    $vhd_dir/nco/nco_phase.vhd \
+    $vhd_dir/nco/nco_cos_sin_prepare.vhd \
+    $vhd_dir/nco/nco_cos_sin_octant.vhd \
+    $vhd_dir/nco/nco_cos_sin_refine.vhd \
+    $vhd_dir/nco/nco_core.vhd \
     $vhd_dir/nco/nco_delay.vhd \
+    $vhd_dir/nco/nco.vhd \
     $vhd_dir/detector/detector_defs.vhd \
     $vhd_dir/detector/detector_bunch_mem.vhd \
     $vhd_dir/detector/detector_bunch_select.vhd \
@@ -46,7 +54,6 @@ vcom -64 -2008 -work xil_defaultlib \
 
 vcom -64 -2008 -work xil_defaultlib \
     $bench_dir/sim_support.vhd \
-    $bench_dir/sim_nco.vhd \
     $bench_dir/sim_resonator.vhd \
     $bench_dir/sim_noise.vhd \
     $bench_dir/testbench.vhd

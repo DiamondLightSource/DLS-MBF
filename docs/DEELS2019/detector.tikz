@@ -1,0 +1,70 @@
+\begin{tikzpicture}[x=22mm, y=8mm]
+
+\path
+    +(0,-2) node (data in) [anchor=west] {Data in}
+    +(0,2.5) node (f in) [anchor=west] {Freq}
+    (2.3,0)
+    +(0,1) node [mul] (cos prod) {$\times$}
+    +(0,-1) node [mul] (sin prod) {$\times$}
+    +(0.5,-3.5) node [box] (bunch) {Bunch\\Enable}
+    +(1.5,-3.5) node [box] (dwell) {Dwell\\Counter}
+    ++(1,0)
+    +(0,1) node [small box] (cos sum) {$\sum$}
+    +(0,-1) node [small box] (sin sum) {$\sum$}
+    ++(0.8,0) coordinate (gather iq)
+    ++(0.5,0) node (iq out) {IQ};
+
+\path (f in) +(0.9,0) node [box] (nco) {NCO}
+    (nco.east) +(0,0.35) coordinate (cos in)
+    (nco.east) +(0,-0.35) coordinate (sin in)
+    (cos in -| iq out) node (cos out) {NCO\textsubscript{out}};
+
+\path [
+    anchor=north west, text width=50mm, every node/.style=, align=left]
+(data in.south west) node {
+    Can be one of:
+    \begin{itemize}
+    \item Unfiltered ADC
+    \item Feedback filtered ADC
+    \item Fill reject filtered ADC
+    \end{itemize}
+}
+(data in.west |- nco.south) node {
+    Freq from either:
+    \begin{itemize}
+    \item Sweep
+    \item Tune PLL
+    \end{itemize}
+};
+
+\path (cos sum.east) [small label] node {I};
+\path (sin sum.east) [small label] node {Q};
+
+\draw [->] (bunch) -- ($(bunch |- cos sum)-(0,0.8)$) -| (cos sum.-120);
+\draw [->] (bunch) -- ($(bunch |- sin sum)-(0,0.8)$) -| (sin sum.-120);
+\node at (bunch.north)
+    [anchor=south east, font=\scriptsize] {enable\\sums};
+\draw [->] (dwell) -- ($(dwell |- cos sum)-(0,0.8)$) -| (cos sum.-60);
+\draw [->] (dwell) -- ($(dwell |- sin sum)-(0,0.8)$) -| (sin sum.-60);
+\node at (dwell.north)
+    [anchor=south west, font=\scriptsize] {reset \&\\output};
+
+\path (cos in) [small label] node {cos};
+\path (sin in) [small label] node {sin};
+
+\path [bus] (cos in) -| ($(cos prod)-0.3*(1,-1)$) -- (cos prod);
+\path [bus] (sin in) -| ($(sin prod)-0.4*(1,-1)$) -- (sin prod);
+\multipath [bus] { \draw (data in) -| ($(cos prod)-0.6*(1,1)$) -- (cos prod); }
+\path [bus] (data in) -| ($(sin prod)-0.6*(1,1)$) -- (sin prod);
+
+\draw [bus] (cos prod) -- (cos sum);
+\multipath [bus] {
+    \draw (sin prod) -- (sin sum);
+    \draw (cos sum) -- ++(0.7,0) -- (gather iq) -- (iq out);
+    \draw (sin sum) -- ++(0.7,0) -- (gather iq) -- (iq out);}
+\draw [bus, dotted] (f in) -- (nco);
+\draw [bus, dotted] (cos in -| cos prod) +(-0.3,0) -- (cos out);
+
+\end{tikzpicture}
+
+% vim: filetype=tex:

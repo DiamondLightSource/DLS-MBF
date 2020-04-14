@@ -46,6 +46,7 @@ architecture arch of adc_fill_reject_core is
 
     signal offset_in : data_t;
     signal offset_out : data_t;
+    signal offset_out_pl : data_t;
 
     -- We need to allow for an extra bit of growth in the final result
     signal data_out : signed(DATA_WIDTH downto 0);
@@ -64,7 +65,8 @@ architecture arch of adc_fill_reject_core is
     -- offset_in    ----------------X d X--- ... ---------------X   X---- ...
     --                               _______ ... _______________
     -- write_offset ________________/                           \___ ...
-    -- offset_out   --------X e X----------- ... -------X d X------- ...
+    -- offset_out   ----X e X--------------- ... ---X d X----------- ...
+    -- offset_out_pl -------X e X----------- ... -------X d X------- ...
     -- data_o       ------------X f X------- ... -----------X g X--- ...
     --
     -- The flow is annoying complex to capture, and the timing diagram above
@@ -86,7 +88,7 @@ architecture arch of adc_fill_reject_core is
     -- two control signals.
     constant WRITE_OFFSET_DELAY : natural := 3;
     constant PROCESS_ACCUM_DELAY : natural := 2;
-    constant PROCESS_OFFSET_DELAY : natural := 2;
+    constant PROCESS_OFFSET_DELAY : natural := 3;
 
 begin
     assert data_i'LENGTH = data_o'LENGTH severity failure;
@@ -141,9 +143,10 @@ begin
             offset_in <= resize(
                 shift_right(accum_in, to_integer(shift_i)), DATA_WIDTH);
 
+            offset_out_pl <= offset_out;
             data_out <=
                 resize(data_i, DATA_WIDTH + 1) -
-                resize(offset_out, DATA_WIDTH + 1) + 1;
+                resize(offset_out_pl, DATA_WIDTH + 1) + 1;
         end if;
     end process;
 

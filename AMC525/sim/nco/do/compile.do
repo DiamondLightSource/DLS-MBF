@@ -8,7 +8,6 @@ vlib msim/xil_defaultlib
 
 vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
-    $vhd_dir/defines.vhd \
     $vhd_dir/util/dlyline.vhd \
     $vhd_dir/util/dlyreg.vhd \
     $vhd_dir/nco/nco_defs.vhd \
@@ -34,6 +33,7 @@ add wave -group "Prepare" sim:/testbench/nco/prepare/*
 add wave -group "Refine" sim:/testbench/nco/refine/*
 add wave -group "Fixup" sim:/testbench/nco/fixup_octant/*
 add wave -group "NCO" sim:/testbench/nco/*
+add wave -group "Sim NCO" sim:/testbench/sim_nco/*
 add wave sim:*
 
 add wave -noupdate \

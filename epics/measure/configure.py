@@ -127,11 +127,11 @@ class DRAM:
 
     def get_peaks(self, sources, nco_freq = 0):
         if nco_freq:
-            self.mbf.set('NCO:FREQ_S', nco_freq)
+            self.mbf.set('NCO1:FREQ_S', nco_freq)
         a, b = self.get(sources)
         peaks = self.mbf.find_one_peak(a), self.mbf.find_one_peak(b)
         if nco_freq:
-            self.mbf.set('NCO:FREQ_S', 0)
+            self.mbf.set('NCO1:FREQ_S', 0)
         return peaks
 
     def __del__(self):
@@ -158,6 +158,8 @@ def set_trigger_inputs(mbf, target, axis, *sources):
 # ------------------------------------------------------------------------------
 # Bunch Bank setup
 
+sources = ['FIR', 'NCO1', 'NCO2', 'SEQ', 'PLL']
+
 # Configure selected bank for waveform control with given gain, fir and output
 # waveform or constant values.
 @MBF.method
@@ -171,7 +173,8 @@ def bank_wf(mbf, bank, gain, fir, output):
         assert value.size == mbf.bunches, 'Invalid array length'
         return value
 
-    mbf.set('BUN:%d:GAINWF_S' % bank, bunches(gain))
+    for source in sources:
+        mbf.set('BUN:%d:%s:GAIN_S' % (bank, source), bunches(gain))
     mbf.set('BUN:%d:FIRWF_S' % bank, bunches(fir))
     mbf.set('BUN:%d:OUTWF_S' % bank, bunches(output))
 

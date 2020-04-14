@@ -46,7 +46,7 @@ begin
             DW => dac_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_ulogic_vector(dsp_to_control_i(c).dac_data),
+            data_i => std_ulogic_vector(dsp_to_control_i(c).store_dac_data),
             signed(data_o) => dac
         );
         dac_o(c) <= dac;
@@ -56,7 +56,7 @@ begin
             DW => fir_o(c)'LENGTH
         ) port map (
             clk_i => clk_i,
-            data_i => std_ulogic_vector(dsp_to_control_i(c).fir_data),
+            data_i => std_ulogic_vector(dsp_to_control_i(c).store_fir_data),
             signed(data_o) => fir
         );
         fir_o(c) <= fir;

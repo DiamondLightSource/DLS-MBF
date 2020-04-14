@@ -22,6 +22,10 @@ def parse_option(name_value):
     value_type = type(getattr(support.Config, name))
     return (name, value_type(value))
 
+def config_values():
+    config = support.Config
+    return ['%s=%s' % (key, getattr(config, key)) for key in config._keys()]
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description = 'Replay and plot')
@@ -36,52 +40,92 @@ def parse_args():
     parser.add_argument('-o', '--config',
         default = [], action = 'append', type = parse_option,
         help = '''Add config option, of form <name>=<value>.  The possible
-            option names are %s.''' % ', '.join(support.Config._keys()))
+            option names and default values are %s.''' % \
+            ', '.join(config_values()))
     parser.add_argument('-m',
         dest = 'load_replay', default = replay.load_replay,
         action = 'store_const', const = replay.load_replay_mat,
         help = '''Load replay file from matlab format file.  The file must
             contain a two dimensional array of iq values and a single matching
             one dimensional s value.''')
-
+    parser.add_argument('-p', '--plot',
+        default = False, action = 'store_true',
+        help = 'Enable plotting of results')
+    parser.add_argument('-w', '--write',
+        default = None, type = str,
+        help = 'Write conversion results to specified file')
+    parser.add_argument('-v', '--verbose',
+        default = False, action = 'store_true',
+        help = 'Enable verbose output')
+    parser.add_argument('-s', '--samples',
+        default = 0, type = int,
+        help = 'Limit number of samples to replay')
+    parser.add_argument('-c', '--conj',
+        default = False, action = 'store_true',
+        help = '''Take conjugate of iq data.''')
+    parser.add_argument('-f', '--filter_trace',
+        action = 'append_const', const = 'tune',
+        help = '''Only store final tune fit results in trace.  Not consistent
+            with plotting, as the necessary fields are not stored.  Equivalent
+            to `-t tune`.''')
+    parser.add_argument('-t', dest = 'filter_trace',
+        action = 'append',
+        help = '''Select individual top level trace elements to be stored in the
+            output trace.''')
     parser.add_argument('filename',
         help = 'Name of file to replay')
-    parser.add_argument('samples', nargs = '?', default = 0, type = int,
-        help = '''Number of samples to replay, set to 0 to load all samples in
-            replay file.''')
     parser.add_argument('subset', nargs = argparse.REMAINDER, type = int,
         help = 'Individual samples to process')
 
     return parser.parse_args()
 
 
+def save_result(filename, traces):
+    from scipy.io import savemat
+
+    output = dict(fits = [t._flatten(True) for t in traces])
+    savemat(filename, output, do_compression = True, oned_as = 'column')
+
+
+def filter_trace(trace):
+    return support.Trace(**dict(
+        (key, getattr(trace, key)) for key in args.filter_trace))
+
+
 args = parse_args()
-print args
+
 
 # Load requested number of samples from the given file and extract the replay
 # subset if requred.
-s_iq = args.load_replay(args.filename, args.samples)
+s_iq = args.load_replay(args.filename, args.samples, args.conj)
 if args.subset:
     s_iq = [s_iq[ix] for ix in args.subset]
 
-plot_each = bool(args.subset) or args.plot_all
+plot_each = (bool(args.subset) and args.plot) or args.plot_all
 
 # Perform fitting on all the requested samples.
 if args.peaks:
     args.config.append(('MAX_PEAKS', args.peaks))
 config = support.Config(**dict(args.config))
 fitter = plotting.Fitter(
-    len(s_iq), config, plot_each, args.plot_all, args.plot_dd)
+    len(s_iq), config, plot_each, args.plot_all, args.plot_dd, args.verbose)
 
 start_time = time.time()
-replay.replay_s_iq(s_iq, fitter.fit_tune)
+traces = replay.replay_s_iq(
+    s_iq, fitter.fit_tune, args.write,
+    filter_trace if args.filter_trace else None)
 duration = time.time() - start_time
-print 'Took %.3f seconds, %.2f ms per fit' % (
-    duration, 1e3 * duration / len(s_iq))
+if args.verbose:
+    print 'Took %.3f seconds, %.2f ms per fit' % (
+        duration, 1e3 * duration / len(s_iq))
+    print fitter.fits
 
 # If not plotting each individual fit, plot the final result.
-if not plot_each:
+if not plot_each and args.plot:
     plotting.plot_fits(fitter.fits, fitter.tunes, fitter.errors)
     pyplot.show()
+
+if args.write:
+    save_result(args.write, traces)
 
 # vim: set filetype=python:

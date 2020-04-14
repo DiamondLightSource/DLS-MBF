@@ -8,15 +8,14 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.support.all;
-use work.defines.all;
 use work.nco_defs.all;
 
 entity nco is
     generic (
-        IN_DELAY : natural := 4;        -- Input pipeline
-        OUT_DELAY : natural := 4;       -- Output pipeline
+        IN_DELAY : natural := 4;        -- Input pipeline in DSP clocks
+        OUT_DELAY : natural := 4;       -- Output pipeline in ADC clocks
         -- This is passed down to nco_core for validation
-        PROCESS_DELAY : natural := 16
+        PROCESS_DELAY : natural := 16   -- In ADC clocks
     );
     port (
         adc_clk_i : in std_ulogic;

@@ -7,8 +7,9 @@ else
 include $(COMMON_DIR)/USE_TOP
 
 VPATH += $(VHDDIR)
+VPATH += $(VHDDIR)/nco
 
-vsim: register_defs.vhd
+vsim: register_defs.vhd nco_cos_sin_table.vhd
 	ln -sf $(SIMDIR)/do/*.do .
 	ln -sf $(COMMON_DIR)/modelsim.ini .
 	$(RUN_VSIM)

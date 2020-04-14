@@ -7,11 +7,11 @@ MEX_FILES = mex_mbf_detector_ mex_mbf_memory_
 MEX_OPTS += -largeArrayDims
 MEX_OPTS += COPTIMFLAGS='-O2 -DNDEBUG'
 
+CFLAGS += $(CFLAGS_EXTRA)
 CFLAGS += -std=gnu99
 
 CFLAGS += -Wall
 CFLAGS += -Wextra
-CFLAGS += -Werror
 
 CFLAGS += -Wconversion
 CFLAGS += -Wsign-compare

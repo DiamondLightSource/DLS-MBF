@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 use work.support.all;
 use work.defines.all;
 
+use work.register_defs.all;
 use work.trigger_defs.all;
 
 entity trigger_setup is
@@ -23,12 +24,13 @@ entity trigger_setup is
         -- Internal trigger sources, all on DSP clock
         soft_trigger_i : in std_ulogic;
         adc_trigger_i : in std_ulogic_vector(CHANNELS);
+        dac_trigger_i : in std_ulogic_vector(CHANNELS);
         seq_trigger_i : in std_ulogic_vector(CHANNELS);
 
         -- Results
         revolution_clock_o : out std_ulogic;     -- On ADC clock
         blanking_trigger_o : out std_ulogic;
-        trigger_set_o : out std_ulogic_vector(TRIGGER_SET)
+        trigger_set_o : out trigger_set_t
     );
 end;
 
@@ -42,6 +44,7 @@ architecture arch of trigger_setup is
 
     -- Pipelined internal triggers
     signal adc_trigger_in : adc_trigger_i'SUBTYPE;
+    signal dac_trigger_in : dac_trigger_i'SUBTYPE;
     signal seq_trigger_in : seq_trigger_i'SUBTYPE;
 
 begin
@@ -89,6 +92,15 @@ begin
         data_o => adc_trigger_in
     );
 
+    dac_delay : entity work.dlyreg generic map (
+        DLY => 4,
+        DW => CHANNEL_COUNT
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => dac_trigger_i,
+        data_o => dac_trigger_in
+    );
+
     seq_delay : entity work.dlyreg generic map (
         DLY => 4,
         DW => CHANNEL_COUNT
@@ -100,12 +112,14 @@ begin
 
     -- Gather all the triggers into a single trigger source set
     trigger_set_o <= (
-        0 => soft_trigger_delay,
-        1 => event_trigger,
-        2 => postmortem_trigger,
-        3 => adc_trigger_in(0),
-        4 => adc_trigger_in(1),
-        5 => seq_trigger_in(0),
-        6 => seq_trigger_in(1)
+        TRIGGERS_IN_SOFT_BIT => soft_trigger_delay,
+        TRIGGERS_IN_EXT_BIT => event_trigger,
+        TRIGGERS_IN_PM_BIT => postmortem_trigger,
+        TRIGGERS_IN_ADC0_BIT => adc_trigger_in(0),
+        TRIGGERS_IN_ADC1_BIT => adc_trigger_in(1),
+        TRIGGERS_IN_DAC0_BIT => dac_trigger_in(0),
+        TRIGGERS_IN_DAC1_BIT => dac_trigger_in(1),
+        TRIGGERS_IN_SEQ0_BIT => seq_trigger_in(0),
+        TRIGGERS_IN_SEQ1_BIT => seq_trigger_in(1)
     );
 end;

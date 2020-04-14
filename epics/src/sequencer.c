@@ -21,6 +21,7 @@
 #include "trigger_target.h"
 #include "detector.h"
 #include "bunch_select.h"
+#include "nco.h"
 
 #include "sequencer.h"
 
@@ -187,6 +188,14 @@ static bool write_dwell_time(void *context, unsigned int *value)
 }
 
 
+/* This function is called each time the gain is changed. */
+static void set_seq_nco_gain(void *context, unsigned int gain)
+{
+    struct seq_entry *entry = context;
+    entry->nco_gain = gain;
+}
+
+
 static void publish_bank(int ix, struct sequencer_bank *bank)
 {
     char prefix[4];
@@ -195,8 +204,6 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
     {
         struct seq_entry *entry = bank->entry;
         PUBLISH_WRITE_VAR_P(mbbo, "BANK", entry->bunch_bank);
-        PUBLISH_WRITE_VAR_P(mbbo, "GAIN", entry->nco_gain);
-        PUBLISH_WRITE_VAR_P(bo, "ENABLE", entry->nco_enable);
         PUBLISH_WRITE_VAR_P(bo, "ENWIN", entry->enable_window);
         PUBLISH_WRITE_VAR_P(bo, "CAPTURE", entry->write_enable);
         PUBLISH_WRITE_VAR_P(bo, "BLANK", entry->enable_blanking);
@@ -212,6 +219,8 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
         bank->delta_freq_rec =
             PUBLISH_C_P(ao, "STEP_FREQ", write_step_freq, bank);
         bank->end_freq_rec = PUBLISH_C(ao, "END_FREQ", write_end_freq, bank);
+
+        create_gain_manager(entry, set_seq_nco_gain);
     }
 }
 
@@ -219,7 +228,7 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-static bool set_state0_bunch_bank(void *context, unsigned int *bank)
+static bool set_state0_bunch_bank(void *context, uint16_t *bank)
 {
     struct seq_context *seq = context;
     seq->seq_config.bank0 = *bank;
@@ -228,7 +237,7 @@ static bool set_state0_bunch_bank(void *context, unsigned int *bank)
 }
 
 
-unsigned int get_seq_idle_bank(int axis)
+uint16_t get_seq_idle_bank(int axis)
 {
     return seq_context[axis].seq_config.bank0;
 }
@@ -296,12 +305,9 @@ static void write_super_offsets(
 
     for (int i = 0; i < SUPER_SEQ_STATES; i ++)
     {
-        /* For the super sequencer offset we take the top 32 bits of the 48 bit
-         * frequency after rounding. */
         uint64_t freq = tune_to_freq(offsets[i]);
-        uint32_t offset = (uint32_t) ((freq + 0x8000) >> 16);
-        seq->seq_config.super_offsets[i] = offset;
-        offsets[i] = freq_to_tune((uint64_t) offset << 16);
+        seq->seq_config.super_offsets[i] = freq;
+        offsets[i] = freq_to_tune(freq);
     }
 
     seq->seq_config_dirty = true;
@@ -379,8 +385,7 @@ unsigned int compute_scale_info(
     uint64_t f0 = 0;                // Accumulates current frequency
     for (unsigned int super = 0; super < super_count; super ++)
     {
-        uint64_t super_offset =
-            (uint64_t) seq_config->super_offsets[super] << 16;
+        uint64_t super_offset = seq_config->super_offsets[super];
         for (unsigned int state = seq_count; state > 0; state --)
         {
             const struct seq_entry *entry = &seq_config->entries[state - 1];
@@ -494,17 +499,17 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
     struct seq_context *seq = context;
     struct seq_entry *entry0 = &seq->seq_config.entries[0];
     int axis = seq->axis;
-    unsigned int bank = entry0->bunch_bank;
+    uint16_t bank = entry0->bunch_bank;
 
     /* Both the detector and bunch configurations feed into the status. */
     const struct detector_config *det_config = get_detector_config(axis, 0);
-    const struct bunch_config *bunch_config = get_bunch_config(axis, bank);
+    bool nco1_enables[hardware_config.bunches];
+    get_bunch_seq_enables(axis, bank, nco1_enables);
 
     /* Cound how many bunches we're sweeping and overlap with detector. */
-    unsigned int sweeping =
-        count_bunches_equal_to(true, bunch_config->nco1_enable);
-    unsigned int overlap = count_bunches_equal(
-        bunch_config->nco1_enable, det_config->bunch_enables);
+    unsigned int sweeping = count_bunches_equal_to(true, nco1_enables);
+    unsigned int overlap =
+        count_bunches_equal(nco1_enables, det_config->bunch_enables);
 
     /* Start by evaluating the sequencer.  We expect a single sequencer state
      * with data capture, sequencer enabled, and IQ buffer capture. */
@@ -515,7 +520,7 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
         status = "Super sequencer active";
     else if (seq->seq_config.sequencer_pc > 1)
         status = "Multi-state sequencer";
-    else if (!entry0->nco_enable)
+    else if (entry0->nco_gain == 0)
         status = "Sequencer NCO off";
     else if (!det_config->enable  ||
              count_bunches_equal_to(true, det_config->bunch_enables) == 0)
@@ -527,12 +532,11 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
     else
     {
         char gain[40];
-        sprintf(gain, "%ddB", -6 * (int) entry0->nco_gain);
+        sprintf(gain, "%.1fdB", 20 * log10(ldexp(entry0->nco_gain, -18)));
 
         if (sweeping == 1)
         {
-            unsigned int single_bunch =
-                find_first_index(true, bunch_config->nco1_enable);
+            unsigned int single_bunch = find_first_index(true, nco1_enables);
             format_epics_string(result,
                 "Sweep: bunch %u (%s)", single_bunch, gain);
         }

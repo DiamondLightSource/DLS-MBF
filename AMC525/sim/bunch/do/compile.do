@@ -10,6 +10,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/support.vhd \
     $vhd_dir/defines.vhd \
     register_defs.vhd \
+    $vhd_dir/nco/nco_defs.vhd \
+    $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/util/untimed_reg.vhd \
     $vhd_dir/util/block_memory.vhd \
     $vhd_dir/util/dlyline.vhd \

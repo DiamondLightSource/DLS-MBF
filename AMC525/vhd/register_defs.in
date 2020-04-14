@@ -5,6 +5,9 @@
 ##  - register_defs.h used to build control system interface
 ##  - structured definitions used by driver.py for control debugging
 ##  - registers.pdf/.html for documentation
+##
+## Comments preceded with # go into the generated documented, comments preceded
+## with ## are ignored during document generation.
 
 # This constant is read from the firmware and is checked by software to ensure
 # that the firmware and software are compatible.
@@ -15,14 +18,16 @@
 #
 # The following values for this field are reserved:
 #
-# ======= ====================================================================
-# 0       Used for initial MBF 1.0 and 1.1 releases
-# 1       Adds Tune PLL support, used for MBF 1.2 release
-# 254     Use this for unstable MBF firmware versions under development
-# 255     Reserved for non MBF firmware with driver compatibility.  Do not use
-#         for any version of MBF firmware
-# ======= ====================================================================
-FIRMWARE_COMPAT_VERSION = 1
+# ===== ========================================================================
+# 0     Used for initial MBF 1.0 and 1.1 releases
+# 1     Adds Tune PLL support, used for MBF 1.2 release
+# 2     MBF 1.4.0 release: two fixed NCOs with scaling and tune tracking
+# 3     MBF 1.4.1 release: detailed individual bunch by bunch scaling
+# 254   Use this for unstable MBF firmware versions under development
+# 255   Reserved for non MBF firmware with kernel driver compatibility.  Do not
+#       use for any version of MBF firmware
+# ===== ========================================================================
+FIRMWARE_COMPAT_VERSION = 3
 
 ## Do not change this value, leave equal to 254
 FIRMWARE_COMPAT_UNSTABLE = 254
@@ -81,10 +86,15 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # the high 16 bits are written to the HIGH register.  The frequency is only
 # changed when the high register is written.
 :!NCO_FREQ
+    # The 32 low order bits of the frequency must be written first before
+    # writing the high order bits.
     LOW         RW
     HIGH        RW
+        # High order bits, writing this field triggers frequency update.
         .BITS           16
         -               15
+        # Setting this bit triggers a reset of the NCO phase when this is
+        # written.
         .RESET_PHASE
 
 
@@ -102,8 +112,13 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         .FIRMWARE       8
 
     GIT_VERSION R
+        # This is the git SHA-1 object name for the repository HEAD at the time
+        # the firmware was built, or 0 if the firmware was not built from a git
+        # repository.
         .SHA            28
         -               3
+        # This flag is set if the sources were not in step with the repository.
+        # This flag is also set when no git repository was present.
         .DIRTY
 
     # Configuration information
@@ -159,7 +174,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # Output enable for PLL clkin sel1, if not set then output is tristate
         .PLL_SEL1_ENA
 
-    # ADC DCO IDELAY control
+    # ADC DCO IDELAY control.  Used to control phase between ADC DDR data input
+    # and data capture clock.
     :IDELAY     ADC_IDELAY
         # Set if ADC PLL not locked, write to trigger reset of ADC PLL.
         .PLL_LOCK   @31     RW
@@ -174,9 +190,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # Select device to address:
         #
         # === ================================================
-        # 0   Clock controller, LMK04826B
-        # 1   ADC, AD9684
-        # 2   DAC, AD9122
+        # 0   Clock controller: LMK04826B
+        # 1   ADC: AD9684
+        # 2   DAC: AD9122
         # === ================================================
         .SELECT     2 @29   W
         # Set to 1 to trigger a read cycle on the selected SPI address, follow
@@ -210,6 +226,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         .NCO1_MUX
         # NCO2 mux: if set channel 1 NCO2 has sin data from channel 0
         .NCO2_MUX
+        # NCO3 mux: if set channel 1 NCO3 has sin data from channel 0
+        .NCO3_MUX
         # Bank mux: if set channel 1 bank selection is copy of bank selection
         # from channel 0.
         .BANK_MUX
@@ -247,11 +265,6 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             # 15      0                    0
             # ======= ==================== ====================
             .MUX_SELECT     4
-            # Gain selection for FIR channel 0 capture to DRAM.  Either bottom
-            # 16 bits or top 16 bits of 24 bit FIR input.
-            .FIR0_GAIN       1
-            # Gain selection for FIR channel 1 capture to DRAM.
-            .FIR1_GAIN       1
 
         COUNT       RW
             # Number of words to capture to memory after STOP event
@@ -261,25 +274,19 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # returns the write address in bytes at the time of the trigger event
         ADDRESS     R
 
-        *RW
-            # Captures single pulse events, reset on each read
-            PULSED      R
-                # Set if overflow occurs through the FIR -> DRAM scaling.
-                .FIR_OVF    2
-
-            # Write to this register to trigger the select actions
-            COMMAND     WP
-                # Starts capture to memory
-                .START
-                # Stops capture to memory after specified post trigger capture
-                # count has completed.  Has same effect as enabled external
-                # trigger event if configured.
-                .STOP
-                # Resets all error bits
-                .RESET
-                # If running updates CTRL.MEM.ADDRESS with snapshot of current
-                # address.
-                .ADDRESS
+        # Write to this register to trigger the select actions
+        COMMAND     WP
+            # Starts capture to memory
+            .START
+            # Stops capture to memory after specified post trigger capture
+            # count has completed.  Has same effect as enabled external
+            # trigger event if configured.
+            .STOP
+            # Resets all error bits
+            .RESET
+            # If running updates CTRL.MEM.ADDRESS with snapshot of current
+            # address.
+            .ADDRESS
 
         # Active status bits
         STATUS      R
@@ -302,20 +309,8 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             .ENABLE
 
     # Trigger management and control.  Seven trigger sources are available, and
-    # three trigger targets can be configured.  The following trigger sources
-    # are managed as masks for a variety of registers below:
-    #
-    # ======= ===============================================
-    # Bit     Source
-    # ======= ===============================================
-    # 0       Soft trigger
-    # 1       External event trigger
-    # 2       Postmortem trigger
-    # 3       ADC 0 motion trigger
-    # 4       ADC 1 motion trigger
-    # 5       State 0 trigger
-    # 6       State 1 trigger
-    # ======= ===============================================
+    # three trigger targets can be configured.  The trigger sources are defined
+    # in TRIGGERS_IN_ and are managed as masks for a variety of registers below.
     #
     # The following trigger targets are configured here:
     #
@@ -329,29 +324,34 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             PULSED      R
                 # Each bit records a raw trigger event from the corresponding
                 # trigger source
-                .TRIGGERS   7
+                .TRIGGERS   9
                 # Set if the blanking input has seen a rising edge
                 .BLANKING
-            # Pulsed trigger control events
+
+            # Pulsed trigger control events.  For each of the three trigger
+            # targets we have the following actions available:
+            #
+            # ========= =======================================================
+            # ARM       Enables triggering on any selected input trigger.
+            # DISARM    Disables triggering of target, unless forced by FIRE.
+            # FIRE      Bypasses input trigger and arming to force an output
+            #           trigger event.  Normally used for memory capture.
+            # ========= =======================================================
             CONTROL     WP
                 # Start turn clock synchronisation
                 .SYNC_TURN
                 # Request turn clock sample
                 .READ_SYNC
 
-                # Sequencer 0: arm, fire, disarm.  ARM enables triggering on
-                # any of the selected input triggers, FIRE bypasses input
-                # triggering and arming to generate an output trigger, while
-                # DISARM reverses the effect of ARM so long as no trigger has
-                # yet been seen.
+                # Sequencer 0: arm, fire, disarm.
                 .SEQ0_ARM
                 .SEQ0_FIRE
                 .SEQ0_DISARM
-                # Sequencer 1: arm, fire, disarm, as for seq 0.
+                # Sequencer 1: arm, fire, disarm.
                 .SEQ1_ARM
                 .SEQ1_FIRE
                 .SEQ1_DISARM
-                # DRAM: arm, fire, disarm, as for sequencers.
+                # DRAM: arm, fire, disarm.
                 .DRAM0_ARM
                 .DRAM0_FIRE
                 .DRAM0_DISARM
@@ -359,7 +359,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 # Generate soft trigger event
                 .TRIGGER
 
-                # Controls for the two Tune PLL units
+                # Controls for the two Tune PLL units: used to trigger tune
+                # following start and stop events.  These events are provided at
+                # this shared level to enable synchronised tune following.
                 .START_PLL0
                 .START_PLL1
                 .STOP_PLL0
@@ -390,20 +392,19 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # source mask is reset when the target is armed.
         SOURCES     R
             # Sequencer 0 trigger source mask
-            .SEQ0       7
+            .SEQ0       9
             -
             # Sequencer 1 trigger source mask
-            .SEQ1       7
+            .SEQ1       9
             -
             # DRAM0 trigger source mask
-            .DRAM0      7
+            .DRAM0      9
 
         !CONFIG
-            # Turn clock configuration setup.  Note that DSP0_OFFSET and
-            # DSP1_OFFSET *must* be less than MAX_BUNCH.  If not, the channel
-            # turn clocks will not be generated, and as a consequence reading
-            # MMS.COUNT will never complete, which will in turn completely hang
-            # the system.
+            # Turn clock configuration setup.  Note that TURN_OFFSET *must* be
+            # less than MAX_BUNCH.  If not, the channel turn clocks will not be
+            # generated, and as a consequence reading MMS.COUNT will never
+            # complete, which will in turn completely hang the system.
             TURN        RW
                 # Configures the internal revolution clock frequency.  Set to
                 # the number of machine bunches-1
@@ -429,27 +430,24 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 .DELAY          16
 
             # Sequencer trigger configuration
-            TRIG_SEQ    RW
+            TRIG_SEQ0   RW
                 # Sequencer 0 trigger enable mask
-                .ENABLE0        7
-                -
+                .ENABLE         9
                 # Sequencer 0 blanking enable mask
-                .BLANKING0      7
-                -
+                .BLANKING       9
+
+            TRIG_SEQ1   RW
                 # Sequencer 1 trigger enable mask
-                .ENABLE1        7
-                -
+                .ENABLE         9
                 # Sequencer 1 blanking enable mask
-                .BLANKING1      7
+                .BLANKING       9
 
             # DRAM0 trigger configuration
             TRIG_DRAM   RW
                 # Trigger enable mask
-                .ENABLE         7
-                -
+                .ENABLE         9
                 # Blanking enable mask
-                .BLANKING       7
-                -
+                .BLANKING       9
 
 
 # These occupy addresses 0x3000..0x37FF and 0x3800..3FFF
@@ -457,12 +455,25 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # Used for channel specific DSP control, each channel has its own bank of
 # registers.
 !DSP
-    # This is a fixed frequency NCO with frequency under manual control only
-    :NCO_FREQ   NCO0
+    # Two fixed frequency NCOs with manual frequency control and fine grained
+    # gain control.
+    !FIXED_NCO
+        NCO1    W
+            # Gain setting for NCO1 as a 18 bit unsigned scalar
+            .GAIN       18
+            # This bit is set to enable tune PLL tracking for NCO1
+            .ENA_TUNE_PLL
+        NCO2    W
+            # Gain setting for NCO2 as a 18 bit unsigned scalar
+            .GAIN       18
+            # This bit is set to enable tune PLL tracking for NCO2
+            .ENA_TUNE_PLL
+        :NCO_FREQ   NCO1_FREQ
+        :NCO_FREQ   NCO2_FREQ
 
     # Input signal processing
     !ADC
-        !CONFIG
+        !!REGISTERS
             CONFIG       W
                 # Choose source of MMS data: before or after FIR or after fill
                 # pattern rejection, according to the following table:
@@ -516,27 +527,53 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         CONFIG      W
             # Determines bunch bank to be written, resets write pointer
             .BANK       2
+        # The configuration for each bunch is packed into three overlaid
+        # registers (to reduce the number of writes required).  Once CONFIG.BANK
+        # has been set, three successive writes to the BANK register will update
+        # one bunch, and repeated writes will update successive bunches.
         # Repeated writes to this register update the configuration for
-        # successive bunches
-        BANK        W
-            # Selects FIR to apply to this bunch
-            .FIR_SELECT     2
-            # Output gain.  This is scaled as a 6.12 fixed point number
-            .GAIN           18
-            # Enable FIR output for this bunch
-            .FIR_ENABLE
-            # Enable NCO0 output
-            .NCO0_ENABLE
-            # Enable NCO1 output
-            .NCO1_ENABLE
-            # Enable NCO2 output
-            .NCO2_ENABLE
+        # successive bunches.
+        #
+        # The NCO selections are mapped onto the corresponding hardware
+        # resources according to the following table:
+        #
+        # ======= ======= ====================================================
+        # NCO0    NCO1    First manually controlled NCO
+        # NCO1    SEQ     NCO controlled by sequencer
+        # NCO2    PLL     NCO controlled by PLL tune tracker
+        # NCO3    NCO2    Second manually controlled NCO
+        # ======= ======= ====================================================
+        #
+        # All the gain factors are scaled as 4.14 18-bit fixed point numbers,
+        # packed into three registers as shown below.
+        *OVERLAY    BANK        W
+            # Basic gains for NCO0 and NCO1 (high order 16 bits)
+            NCO01
+                .NCO0_HIGH      16
+                .NCO1_HIGH      16
+            # Basic gains for NCO2 and NCO3 (high order 16 bits)
+            NCO23
+                .NCO2_HIGH      16
+                .NCO3_HIGH      16
+            EXTRA
+                # Selects FIR to apply to this bunch
+                .FIR_SELECT     2
+                # Output gain.  This is scaled as a 4.14 fixed point number
+                .FIR_GAIN       18
+                # Enable FIR output for this bunch
+                .FIR_ENABLE
+                # Remaining low order bits for the NCOs
+                .NCO0_LOW       2
+                .NCO1_LOW       2
+                .NCO2_LOW       2
+                .NCO3_LOW       2
 
 
     # Bunch by bunch filter
     !FIR
         *RW
             EVENTS      R
+                # Set if overflow detected during FIR computation.
                 .OVERFLOW
             CONFIG      W
                 # Configures which group of taps will be written when writing to
@@ -554,35 +591,48 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 
     # Output signal processing
     !DAC
-        # Output to DAC configuration control
-        CONFIG      W
-            # Output delay for final DAC output
-            .DELAY          10
-            # Gain for FIR output
-            .FIR_GAIN       4
-            # Gain for NCO0 output (NCO1 gain is under sequencer control)
-            .NCO0_GAIN      4
-            # Global control for NCO0 enable
-            .NCO0_ENABLE
-            # Select MMS source: before or after output FIR.  If 0 we select the
-            # output before the filter
-            .MMS_SOURCE
-            # Select stored data source, before or after output FIR.
-            .DRAM_SOURCE
-        *RW
-            EVENTS      R
-                # Set when overflow in FIR data detected in DAC output
-                .FIR_OVF
-                # Set when DAC output multiplexer detects overflow
-                .MUX_OVF
-                # Placeholder for obsolete bit
-                -
-                # Set if overflow detected during output preemphasis filter
-                .OUT_OVF
-            # Writing to this register generates a pulse on the selected bits
-            COMMAND      WP
-                # Starts block write to DAC fast FIR taps
-                .WRITE
+        !!REGISTERS
+            # Output to DAC configuration control
+            CONFIG      W
+                # Output delay for final DAC output
+                .DELAY          10
+                # Gain for FIR output
+                .FIR_GAIN       4
+                # Select MMS source: before or after output FIR or a scaled
+                # selection of the feedback FIR.  Options are:
+                #
+                # === ===============================================
+                # 0   Raw DAC output before preemphasis filter.
+                # 1   Final DAC output after filtering.
+                # 2   Scaled feedback FIR data
+                # === ===============================================
+                .MMS_SOURCE     2
+                # Select stored data source, before or after output FIR.
+                .DRAM_SOURCE
+            # MMS event threshold
+            LIMITS      W
+                # Limit threshold for min/max/sum bunch motion event detector
+                .DELTA          16
+            *RW
+                EVENTS      R
+                    # Set when FIR data is clipped before bunch by bunch scaling
+                    .FIR_OVF
+                    # Set when FIR data to MMS generates overflow
+                    .MMS_OVF
+                    # Set when DAC output multiplexer detects overflow
+                    .MUX_OVF
+                    # Set if overflow detected during output preemphasis filter
+                    .OUT_OVF
+                    # Set when DAC min/max/sum motion exceeds configured
+                    # threshold
+                    .DELTA
+                # Writing to this register generates a pulse on the selected
+                # bits
+                COMMAND      WP
+                    # Starts block write to DAC fast FIR taps
+                    .WRITE
+                    # Resets DAC min/max event detector to enable further events
+                    .RESET_DELTA
         # After triggering write start, input compensation taps are written to
         # this register in sequence.
         TAPS        W
@@ -652,19 +702,21 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # Bunch bank select for this sequencer state
                     .BANK           2
                     # Select sweep NCO gain
-                    .NCO_GAIN       4
+                    .NCO_GAIN       18
                     # If set the sweep window is enabled
                     .ENA_WINDOW
                     # Whether to store this output from the sequencer
                     .ENA_WRITE
                     # Whether to respect the blanking input
                     .ENA_BLANK
-                    # Sweep output enable
-                    .ENA_NCO
                     # Reset NCO phase
                     .RESET_PHASE
                     # Enable Tune PLL offset
                     .ENA_TUNE_PLL
+                    # This bit should be set in state zero and clear in all
+                    # other states to enable operation of the super sequencer
+                    # and to ensure no leakage into state zero operation.
+                    .DIS_SUPER
                 # Detector window advance.
                 WINDOW_RATE
                 HOLDOFF
@@ -684,7 +736,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             DET_WINDOW      W
 
             # Writing to this register updates the super sequencer offset
-            # memory, up to 1024 states can be written
+            # memory, up to 1024 offsets can be written.  Each offset is a
+            # 48-bit frequency and must be written as two separate 32-bit
+            # writes, with the low order 32-bits written first and the high
+            # order 16-bits into the bottom of the second word.
             SUPER_STATE     W
 
     # Detector control
@@ -749,21 +804,18 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             # feedback is running may confuse the controller.
             :NCO_FREQ
             *RW
-                # General status
+                # General status.  The stop bits record why the PLL has stopped
+                # operation.
                 STATUS      R
                     # Set if feedback currently enabled
                     .RUNNING
-                    # The following bits are stop reasons, recorded why the PLL
-                    # has stopped operation.
-                    #
-                    # This bit is set if stop was requested.
+                    # Set if stop was requested
                     .STOP_STOP
-                    # This bit is set if the detector overflowed
+                    # Set if the detector overflowed
                     .STOP_OVERFLOW
-                    # This bit is set if the detector magnitude is too small
+                    # Set if the detector magnitude is too small
                     .STOP_MAGNITUDE
-                    # This bit is set if the frequency offset has grown too
-                    # large.
+                    # Set if the frequency offset has grown too large
                     .STOP_OFFSET
                 # General configuration settings
                 CONFIG      W
@@ -780,9 +832,6 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     .SELECT         2
                     # Readout shift for detector
                     .DET_SHIFT      2
-                    # NCO gain and output enable
-                    .NCO_GAIN       4
-                    .NCO_ENABLE
                     # Debug setting for filtered view of CORDIC output.
                     .FILTER_CORDIC
                     # Debug setting for capturing CORDIC output.
@@ -799,6 +848,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                     # which case the input signal is ignored during the blanking
                     # interval.
                     .BLANKING
+            CONFIG_EXTRA    W
+                # NCO gain control
+                .NCO_GAIN       18
             # Target phase to track.  The top 18 bits of the phase are used
             TARGET_PHASE    W
             # Integrating factor.  The top 25 bits are used
@@ -869,6 +921,25 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             DEBUG_FIFO      R
 
 
+# The following trigger sources are defined
+:TRIGGERS_IN    R
+    # Internally generated soft trigger
+    .SOFT
+    # External event trigger
+    .EXT
+    # External postmortem trigger
+    .PM
+    # ADC min/max bunch motion triggers
+    .ADC0
+    .ADC1
+    # DAC min/max bunch motion triggers
+    .DAC0
+    .DAC1
+    # Sequencer state entry triggers
+    .SEQ0
+    .SEQ1
+
+
 # The following interrupt sources are defined
 :INTERRUPTS     R
     # DRAM0 data capture becomes busy
@@ -887,10 +958,11 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     .SEQ_DONE       2
     # Tune PLL interrupts.  Each channel supports the following interrupt
     # sources:
-    # === ======================================================================
+    #
+    # === ==================================================================
     # 0   Frequency offset readout FIFO half full.
     # 1   Debug readout FIFO half full.
     # 2   Tune PLL has stopped.
-    # === ======================================================================
+    # === ==================================================================
     .TUNE_PLL0_READY 3
     .TUNE_PLL1_READY 3

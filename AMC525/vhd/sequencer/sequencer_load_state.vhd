@@ -115,7 +115,7 @@ begin
                     when DSP_SEQ_STATE_CONFIG_OVL =>
                         seq_state_o.bunch_bank <= unsigned(
                             prog_word(DSP_SEQ_STATE_CONFIG_BANK_BITS));
-                        seq_state_o.hom_gain <= unsigned(
+                        seq_state_o.nco_gain <= unsigned(
                             prog_word(DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS));
                         seq_state_o.enable_window <=
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_WINDOW_BIT);
@@ -123,12 +123,12 @@ begin
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_WRITE_BIT);
                         seq_state_o.enable_blanking <=
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_BLANK_BIT);
-                        seq_state_o.hom_enable <=
-                            prog_word(DSP_SEQ_STATE_CONFIG_ENA_NCO_BIT);
                         seq_state_o.reset_phase <=
                             prog_word(DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT);
                         seq_state_o.enable_tune_pll <=
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_TUNE_PLL_BIT);
+                        seq_state_o.disable_super <=
+                            prog_word(DSP_SEQ_STATE_CONFIG_DIS_SUPER_BIT);
                     when DSP_SEQ_STATE_WINDOW_RATE_OVL =>
                         seq_state_o.window_rate <= window_rate_t(prog_word);
                     when DSP_SEQ_STATE_HOLDOFF_OVL =>

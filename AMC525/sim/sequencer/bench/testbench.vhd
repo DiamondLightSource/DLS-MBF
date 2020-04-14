@@ -7,6 +7,7 @@ use work.defines.all;
 
 use work.register_defs.all;
 use work.nco_defs.all;
+use work.dsp_defs.all;
 use work.sequencer_defs.all;
 
 use work.sim_support.all;
@@ -37,11 +38,8 @@ architecture arch of testbench is
     signal seq_start : std_ulogic;
     signal seq_write : std_ulogic;
     signal tune_pll_offset : signed(31 downto 0) := (others => '0');
-    signal hom_freq : angle_t;
-    signal hom_reset : std_ulogic;
-    signal hom_gain : unsigned(3 downto 0);
-    signal hom_enable : std_ulogic;
-    signal hom_window : hom_win_t;
+    signal nco_data : dsp_nco_to_mux_t;
+    signal detector_window : detector_win_t;
     signal bunch_bank : unsigned(1 downto 0);
 
 begin
@@ -64,7 +62,7 @@ begin
     blanking <= '0';
 
     sequencer : entity work.sequencer_top generic map (
-        NCO_DELAY => 20
+        BUNCH_SELECT_DELAY => 8
     ) port map (
         adc_clk_i => adc_clk,
         dsp_clk_i => dsp_clk,
@@ -87,11 +85,8 @@ begin
         seq_write_adc_o => seq_write,
 
         tune_pll_offset_i => tune_pll_offset,
-        hom_freq_o => hom_freq,
-        hom_reset_o => hom_reset,
-        hom_gain_o => hom_gain,
-        hom_enable_o => hom_enable,
-        hom_window_o => hom_window,
+        nco_data_o => nco_data,
+        detector_window_o => detector_window,
         bunch_bank_o => bunch_bank
     );
 
@@ -103,22 +98,106 @@ begin
             write_reg(dsp_clk, write_data, write_strobe, write_ack, reg, value);
         end;
 
+        procedure write_bank(
+            start_freq : angle_t := (others => '0');
+            delta_freq : angle_t := (others => '0');
+            dwell : unsigned(15 downto 0) := (others => '0');
+            capture : unsigned(15 downto 0) := (others => '0');
+            bank : unsigned(1 downto 0) := (others => '0');
+            gain : unsigned(17 downto 0) := (others => '0');
+            en_window : std_ulogic := '0';
+            en_write : std_ulogic := '0';
+            en_blank : std_ulogic := '0';
+            reset_phase : std_ulogic := '0';
+            en_tune_pll : std_ulogic := '0';
+            dis_super : std_ulogic := '0';
+            window_rate : reg_data_t := (others => '0');
+            holdoff : unsigned(15 downto 0) := (others => '0');
+            state_holdoff : unsigned(15 downto 0) := (others => '0')) is
+        begin
+            write_reg(DSP_SEQ_WRITE_REG, (              -- START_FREQ
+                DSP_SEQ_STATE_START_FREQ_LOW_BITS_BITS =>
+                    std_ulogic_vector(start_freq(31 downto 0))));
+            write_reg(DSP_SEQ_WRITE_REG, (              -- DELTA_FREQ
+                DSP_SEQ_STATE_DELTA_FREQ_LOW_BITS_BITS =>
+                    std_ulogic_vector(delta_freq(31 downto 0))));
+            write_reg(DSP_SEQ_WRITE_REG, (              -- HIGH_BITS
+                DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS =>
+                    std_ulogic_vector(start_freq(47 downto 32)),
+                DSP_SEQ_STATE_HIGH_BITS_DELTA_HIGH_BITS =>
+                    std_ulogic_vector(delta_freq(47 downto 32))));
+            write_reg(DSP_SEQ_WRITE_REG, (              -- TIME
+                DSP_SEQ_STATE_TIME_DWELL_BITS => std_ulogic_vector(dwell),
+                DSP_SEQ_STATE_TIME_CAPTURE_BITS => std_ulogic_vector(capture)));
+            write_reg(DSP_SEQ_WRITE_REG, (              -- CONFIG
+                DSP_SEQ_STATE_CONFIG_BANK_BITS => std_ulogic_vector(bank),
+                DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS => std_ulogic_vector(gain),
+                DSP_SEQ_STATE_CONFIG_ENA_WINDOW_BIT => en_window,
+                DSP_SEQ_STATE_CONFIG_ENA_WRITE_BIT => en_write,
+                DSP_SEQ_STATE_CONFIG_ENA_BLANK_BIT => en_blank,
+                DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT => reset_phase,
+                DSP_SEQ_STATE_CONFIG_ENA_TUNE_PLL_BIT => en_tune_pll,
+                DSP_SEQ_STATE_CONFIG_DIS_SUPER_BIT => dis_super,
+                others => '0'));
+            write_reg(DSP_SEQ_WRITE_REG, window_rate);  -- WINDOW_RATE
+            write_reg(DSP_SEQ_WRITE_REG, (              -- HOLDOFF
+                DSP_SEQ_STATE_HOLDOFF_HOLDOFF_BITS =>
+                    std_ulogic_vector(holdoff),
+                DSP_SEQ_STATE_HOLDOFF_STATE_HOLDOFF_BITS =>
+                    std_ulogic_vector(state_holdoff)));
+            write_reg(DSP_SEQ_WRITE_REG, X"0000_0000"); -- PADDING
+        end;
+
+        procedure write_super(angle : angle_t) is
+        begin
+            write_reg(DSP_SEQ_WRITE_REG, std_ulogic_vector(angle(31 downto 0)));
+            write_reg(DSP_SEQ_WRITE_REG, (
+                15 downto 0 => std_ulogic_vector(angle(47 downto 32)),
+                others => '0'));
+        end;
+
+        procedure write_config(
+            pc : seq_pc_t := "001";
+            super : super_count_t := (others => '0');
+            trigger : seq_pc_t := "000";
+            target : std_ulogic_vector(1 downto 0) := "00") is
+        begin
+            write_reg(DSP_SEQ_CONFIG_REG, (         -- write to seq mem
+                DSP_SEQ_CONFIG_PC_BITS => std_ulogic_vector(pc),
+                DSP_SEQ_CONFIG_TRIGGER_BITS => std_ulogic_vector(trigger),
+                DSP_SEQ_CONFIG_SUPER_COUNT_BITS => std_ulogic_vector(super),
+                DSP_SEQ_CONFIG_TARGET_BITS => target,
+                others => '0'));
+        end;
+
+        procedure start_write is
+        begin
+            write_reg(DSP_SEQ_COMMAND_REG_W, (      -- start write
+                DSP_SEQ_COMMAND_WRITE_BIT => '1',
+                others => '0'));
+        end;
+
         procedure write_bank0 is
         begin
-            write_reg(DSP_SEQ_CONFIG_REG,    X"00000001");  -- write to seq mem
-            write_reg(DSP_SEQ_COMMAND_REG_W, X"00000002");  -- start write
+            write_config(target => "00");         -- write to seq mem
+            start_write;
 
             -- First write bank 0.  This is the idle state, needs most fields
             -- zero.  We enable the phase reset bit in the idle state
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- start freq
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- delta freq
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- high bits of freq
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- dwell and capture
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000400");  -- detailed config
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- window rate
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- holdoff time
-            write_reg(DSP_SEQ_WRITE_REG,     X"00000000");  -- (padding)
+            write_bank(reset_phase => '1', dis_super => '1');
+        end;
 
+        procedure trigger_seq is
+        begin
+            trigger <= '1';
+            clk_wait(dsp_clk);
+            trigger <= '0';
+        end;
+
+        procedure wait_until_done is
+        begin
+            wait until seq_busy = '0';
+            clk_wait(dsp_clk);
         end;
 
     begin
@@ -131,105 +210,75 @@ begin
         -- Configure: PC = 1, event on completion, no super sequencer, write to
         -- sequencer memory
         write_bank0;
-
-        -- Next write bank 1
-        write_reg(DSP_SEQ_WRITE_REG,     X"56789ABC");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000001");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00001234");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00020001");  -- 2 dwell, 3 capture
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000291");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_bank(
+            start_freq => X"1235_5678_9ABC",
+            delta_freq => X"0000_0000_0001",
+            dwell => X"0001", capture => X"0002",
+            bank => "01", gain => 18X"3FFFF", en_write => '1');
 
         -- Now trigger sequencer
         clk_wait(dsp_clk);
-        trigger <= '1';
-        clk_wait(dsp_clk);
-        trigger <= '0';
+        trigger_seq;
+        wait_until_done;
 
-        -- Wait for program to complete
-        wait until seq_busy = '0';
-        clk_wait(dsp_clk);
+
+        -- Reload again, but with holdoff
+        write_bank0;
+        write_bank(
+            start_freq => X"1235_5678_9ABC",
+            delta_freq => X"0000_0000_0001",
+            dwell => X"0001", capture => X"0002",
+            bank => "01", gain => 18X"3FFFF", en_write => '1',
+            holdoff => X"0001");
+
+        -- Trigger again!
+        trigger_seq;
+        wait_until_done;
+
+
+        -- Reload again, now run the super sequencer
+        write_bank0;
+        write_bank(
+            start_freq => X"1235_5678_9ABC",
+            delta_freq => X"0000_0000_0001",
+            dwell => X"0001", capture => X"0002",
+            bank => "01", gain => 18X"3FFFF", en_write => '1');
+        -- Load two super sequencer states
+        write_config(target => "10", super => 10X"001");
+        start_write;
+        write_super(X"1111_2222_0000");
+        write_super(X"2222_1111_0000");
+
+        -- Trigger again!
+        trigger_seq;
+        wait_until_done;
+
 
         -- Reload again
         write_bank0;
-
-        write_reg(DSP_SEQ_WRITE_REG,     X"56789ABC");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000001");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00001234");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00020001");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000291");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000001");  -- 0 dwell holdoff
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
+        write_bank(
+            start_freq => X"1235_5678_9ABC",
+            delta_freq => X"0000_0000_0001",
+            dwell => X"0001", capture => X"0002",
+            bank => "01", gain => 18X"3FFFF", en_write => '1',
+            holdoff => X"0001", state_holdoff => X"0001");
 
         -- Trigger again!
-        trigger <= '1';
-        clk_wait(dsp_clk);
-        trigger <= '0';
+        trigger_seq;
+        wait_until_done;
 
-        -- Wait for program to complete
-        wait until seq_busy = '0';
-        clk_wait(dsp_clk);
 
-        -- Reload again
-        write_bank0;
-
-        write_reg(DSP_SEQ_WRITE_REG,     X"56789ABC");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000001");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00001234");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00020001");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000291");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00010000");  -- 0 holdoffs
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-
-        -- Trigger again!
-        trigger <= '1';
-        clk_wait(dsp_clk);
-        trigger <= '0';
-
-        -- Wait for program to complete
-        wait until seq_busy = '0';
-        clk_wait(dsp_clk);
-
-        -- Reload again
-        write_bank0;
-
-        write_reg(DSP_SEQ_WRITE_REG,     X"56789ABC");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000001");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00001234");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00020001");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000291");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-        write_reg(DSP_SEQ_WRITE_REG,     X"00010001");  -- 0 holdoffs
-        write_reg(DSP_SEQ_WRITE_REG,     X"00000000");
-
-        -- Trigger again!
-        trigger <= '1';
-        clk_wait(dsp_clk);
-        trigger <= '0';
-
-        -- Wait for program to complete
-        wait until seq_busy = '0';
-        clk_wait(dsp_clk);
-
-        -- Trigger again!
-        trigger <= '1';
-        clk_wait(dsp_clk);
-        trigger <= '0';
-
-        clk_wait(dsp_clk, 20);
-        write_reg(DSP_SEQ_COMMAND_REG_W, X"00000001");  -- force reset
+        -- Now trigger and force reset after a brief wait
+        trigger_seq;
+        clk_wait(dsp_clk, 100);
+        write_reg(DSP_SEQ_COMMAND_REG_W, (
+            DSP_SEQ_COMMAND_ABORT_BIT => '1',       -- force reset
+            others => '0'));
 
 
         -- Wait for program to complete and trigger again
-        wait until seq_busy = '0';
-        clk_wait(dsp_clk);
-        trigger <= '1';
-        clk_wait(dsp_clk);
-        trigger <= '0';
+        wait_until_done;
+--         trigger_seq;
 
         wait;
     end process;

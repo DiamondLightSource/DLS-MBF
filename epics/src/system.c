@@ -20,49 +20,9 @@
 #include "system.h"
 
 
-static struct nco_context {
-    int axis;
-} nco_context[AXIS_COUNT];
-
-static bool set_nco_frequency(void *context, double *tune)
-{
-    struct nco_context *nco = context;
-    uint64_t frequency = tune_to_freq(*tune);
-    *tune = freq_to_tune(frequency);
-    hw_write_nco0_frequency(nco->axis, frequency);
-    return true;
-}
-
-static bool set_nco_gain(void *context, unsigned int *gain)
-{
-    struct nco_context *nco = context;
-    hw_write_dac_nco0_gain(nco->axis, *gain);
-    return true;
-}
-
-static bool set_nco_enable(void *context, bool *enable)
-{
-    struct nco_context *nco = context;
-    hw_write_dac_nco0_enable(nco->axis, *enable);
-    return true;
-}
-
-static void publish_nco_pvs(void)
-{
-    FOR_AXIS_NAMES(axis, "NCO", system_config.lmbf_mode)
-    {
-        struct nco_context *nco = &nco_context[axis];
-        nco->axis = axis;
-        PUBLISH_C_P(ao, "FREQ", set_nco_frequency, nco);
-        PUBLISH_C_P(mbbo, "GAIN", set_nco_gain, nco);
-        PUBLISH_C_P(bo, "ENABLE", set_nco_enable, nco);
-    }
-}
-
-
 static struct system_status system_status;
-static unsigned int vco_locked;
-static unsigned int vcxo_locked;
+static uint16_t vco_locked;
+static uint16_t vcxo_locked;
 
 static void read_system_status(void)
 {
@@ -202,7 +162,6 @@ error__t initialise_system(void)
         hardware_config.bunch_taps,
         hardware_config.dac_taps);
 
-    publish_nco_pvs();
     publish_status_pvs();
     return
         initialise_constants()  ?:

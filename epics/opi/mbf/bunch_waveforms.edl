@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2999
-y 285
-w 648
-h 616
+x 73
+y 457
+w 608
+h 625
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -32,10 +32,10 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 320
-y 536
-w 320
-h 72
+x 8
+y 440
+w 592
+h 88
 lineColor index 14
 fill
 fillColor index 4
@@ -48,60 +48,12 @@ major 4
 minor 0
 release 0
 x 8
-y 536
-w 304
-h 72
+y 48
+w 592
+h 376
 lineColor index 14
 fill
 fillColor index 4
-endObjectProperties
-
-# (X-Y Graph)
-object xyGraphClass
-beginObjectProperties
-major 4
-minor 8
-release 0
-# Geometry
-x 8
-y 360
-w 488
-h 160
-# Appearance
-graphTitle "Bunch Gains"
-fgColor index 14
-bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "fromUser"
-xMin -10
-xMax 1024
-# Y axis properties
-showYAxis
-yAxisSrc "AutoScale"
-yMin -1
-yMax 1
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 1
-yPv {
-  0 "$(device):$(axis):BUN:$(bank):GAINWF_S"
-}
-plotUpdateMode {
-  0 "y"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 25
-}
 endObjectProperties
 
 # (Static Text)
@@ -112,7 +64,7 @@ minor 1
 release 1
 x 0
 y 0
-w 648
+w 608
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -146,103 +98,279 @@ command {
 includeHelpIcon
 endObjectProperties
 
-# (X-Y Graph)
-object xyGraphClass
+# (Static Text)
+object activeXTextClass
 beginObjectProperties
 major 4
-minor 8
-release 0
-# Geometry
+minor 1
+release 1
 x 8
 y 40
-w 488
-h 160
-# Appearance
-graphTitle "Bunch FIR Select"
-fgColor index 14
-bgColor index 3
-gridColor index 14
+w 120
+h 16
 font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "fromUser"
-xMin -10
-xMax 1024
-# Y axis properties
-showYAxis
-yAxisSrc "fromUser"
-yMin -0.5
-yMax 3.5
-yLabelIntervals 1
-yMajorsPerLabel 1
-yMinorsPerMajor 0
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 1
-yPv {
-  0 "$(device):$(axis):BUN:$(bank):FIRWF_S"
-}
-plotUpdateMode {
-  0 "y"
-}
-ySigned {
-  0 1
-}
-plotColor {
-  0 index 25
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Sources"
 }
 endObjectProperties
 
-# (X-Y Graph)
-object xyGraphClass
+# (Rectangle)
+object activeRectangleClass
 beginObjectProperties
 major 4
-minor 8
+minor 0
 release 0
-# Geometry
 x 8
-y 200
-w 488
-h 160
-# Appearance
-graphTitle "Output Selection: 1=FIR, 2=NCO, 4=Sweep, 8=Tune PLL"
+y 40
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 288
+y 560
+w 320
+h 16
+controlPv "$(device):$(axis):BUN:$(bank):STATUS"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 280
+y 544
+w 44
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Status:"
+}
+autoSize
+endObjectProperties
+
+# (Exit Button)
+object activeExitButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 536
+y 592
+w 64
+h 24
+fgColor index 46
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+label "EXIT"
+font "helvetica-bold-r-12.0"
+3d
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 16
+y 64
+w 576
+h 72
 fgColor index 14
 bgColor index 3
-gridColor index 14
-font "helvetica-medium-r-12.0"
-# Operating Modes
-nPts 2
-# X axis properties
-showXAxis
-xAxisSrc "fromUser"
-xMin -10
-xMax 1024
-# Y axis properties
-showYAxis
-yAxisSrc "fromUser"
-yMin -0.5
-yMax 15.5
-# Y2 axis properties
-y2AxisSrc "AutoScale"
-y2Max 1
-# Trace Properties
-numTraces 1
-yPv {
-  0 "$(device):$(axis):BUN:$(bank):OUTWF_S"
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "mbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "mbf/source_state.edl"
 }
-plotUpdateMode {
-  0 "y"
+symbols {
+  0 "source=FIR"
 }
-ySigned {
-  0 1
+noScroll
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 16
+y 136
+w 576
+h 72
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "mbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "mbf/source_state.edl"
 }
-plotColor {
-  0 index 25
+symbols {
+  0 "source=NCO1"
 }
+noScroll
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 416
+y 592
+w 112
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:$(bank):RESET_GAINS_S.PROC"
+pressValue "0"
+onLabel "Reset All Gains"
+offLabel "Reset All Gains"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 16
+y 280
+w 576
+h 72
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "mbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "mbf/source_state.edl"
+}
+symbols {
+  0 "source=SEQ"
+}
+noScroll
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 16
+y 352
+w 576
+h 72
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "mbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "mbf/source_state.edl"
+}
+symbols {
+  0 "source=PLL"
+}
+noScroll
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 16
+y 208
+w 576
+h 72
+fgColor index 14
+bgColor index 3
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\menu0=i:0"
+file "mbf/bunch_state.edl"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "mbf/source_state.edl"
+}
+symbols {
+  0 "source=NCO2"
+}
+noScroll
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 544
+w 264
+h 72
+lineColor index 14
+fill
+fillColor index 4
 endObjectProperties
 
 # (Text Control)
@@ -252,8 +380,8 @@ major 4
 minor 6
 release 0
 x 16
-y 552
-w 280
+y 560
+w 248
 h 24
 controlPv "$(device):$(axis):BUN:$(bank):BUNCH_SELECT_S"
 font "helvetica-medium-r-14.0"
@@ -280,7 +408,7 @@ major 4
 minor 1
 release 1
 x 8
-y 528
+y 536
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -288,7 +416,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "Set Bunches"
+  "Select Bunches"
 }
 endObjectProperties
 
@@ -299,538 +427,11 @@ major 4
 minor 0
 release 0
 x 8
-y 528
+y 536
 w 120
 h 16
 lineColor index 14
 fillColor index 0
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 408
-y 552
-w 224
-h 16
-controlPv "$(device):$(axis):BUN:$(bank):FIRWF:STA"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 408
-y 568
-w 224
-h 16
-controlPv "$(device):$(axis):BUN:$(bank):OUTWF:STA"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 408
-y 584
-w 224
-h 16
-controlPv "$(device):$(axis):BUN:$(bank):GAINWF:STA"
-font "helvetica-medium-r-14.0"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-fastUpdate
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 328
-y 552
-w 24
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 328
-y 568
-w 66
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Out select:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 328
-y 584
-w 31
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Gain:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 328
-y 552
-w 24
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 328
-y 552
-w 24
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 328
-y 552
-w 24
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 328
-y 552
-w 24
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "FIR:"
-}
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 320
-y 528
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Settings"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 320
-y 528
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 504
-y 48
-w 136
-h 144
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 504
-y 40
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Set FIR"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 504
-y 40
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 504
-y 208
-w 136
-h 144
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 504
-y 200
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Set DAC out"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 504
-y 200
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 504
-y 368
-w 136
-h 144
-lineColor index 14
-fill
-fillColor index 4
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 504
-y 360
-w 120
-h 16
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 1
-bgColor index 10
-value {
-  "Set DAC gain"
-}
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 504
-y 360
-w 120
-h 16
-lineColor index 14
-fillColor index 0
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 512
-y 384
-w 104
-h 20
-controlPv "$(device):$(axis):BUN:$(bank):GAIN_SELECT_S"
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-editable
-autoHeight
-motifWidget
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-inputFocusUpdates
-objType "controls"
-noExecuteClipMask
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 512
-y 64
-w 112
-h 24
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):BUN:$(bank):FIR_SELECT_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 512
-y 224
-w 112
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):BUN:$(bank):DAC_SELECT_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 512
-y 96
-w 96
-h 24
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):$(axis):BUN:$(bank):FIRWF:SET_S.PROC"
-pressValue "0"
-onLabel "Set FIR"
-offLabel "Set FIR"
-3d
-font "helvetica-bold-r-12.0"
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 512
-y 256
-w 96
-h 24
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):$(axis):BUN:$(bank):OUTWF:SET_S.PROC"
-pressValue "0"
-onLabel "Set DAC"
-offLabel "Set DAC"
-3d
-font "helvetica-bold-r-12.0"
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 512
-y 408
-w 96
-h 24
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):$(axis):BUN:$(bank):GAINWF:SET_S.PROC"
-pressValue "0"
-onLabel "Set gain"
-offLabel "Set gain"
-3d
-font "helvetica-bold-r-12.0"
 endObjectProperties
 
 # (Text Monitor)
@@ -840,8 +441,8 @@ major 4
 minor 6
 release 0
 x 64
-y 584
-w 240
+y 592
+w 208
 h 16
 controlPv "$(device):$(axis):BUN:$(bank):SELECT_STATUS"
 font "helvetica-medium-r-14.0"
@@ -864,7 +465,7 @@ major 4
 minor 1
 release 1
 x 16
-y 584
+y 592
 w 44
 h 14
 font "helvetica-bold-r-12.0"
@@ -879,22 +480,154 @@ value {
 autoSize
 endObjectProperties
 
-# (Exit Button)
-object activeExitButtonClass
+# (X-Y Graph)
+object xyGraphClass
+beginObjectProperties
+major 4
+minor 8
+release 0
+# Geometry
+x 96
+y 456
+w 496
+h 64
+# Appearance
+fgColor index 14
+bgColor index 3
+gridColor index 14
+font "helvetica-medium-r-12.0"
+# Operating Modes
+nPts 2
+# X axis properties
+xAxisSrc "fromUser"
+xMin -10
+xMax 1024
+# Y axis properties
+showYAxis
+yAxisSrc "fromUser"
+yMin 0
+yMax 3
+yLabelIntervals 1
+yMajorsPerLabel 1
+yMinorsPerMajor 3
+yUserSpecScaleDiv 1
+# Y2 axis properties
+y2AxisSrc "AutoScale"
+y2Max 1
+# Trace Properties
+numTraces 1
+yPv {
+  0 "$(device):$(axis):BUN:$(bank):FIRWF_S"
+}
+plotUpdateMode {
+  0 "y"
+}
+plotSymbolType {
+  0 "circle"
+}
+ySigned {
+  0 1
+}
+plotColor {
+  0 index 25
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 16
+y 456
+w 72
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):BUN:$(bank):FIR_SELECT_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
 beginObjectProperties
 major 4
 minor 1
 release 0
-x 576
-y 4
-w 64
+x 16
+y 488
+w 72
 h 24
-fgColor index 46
-bgColor index 3
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:$(bank):FIRWF:SET_S.PROC"
+pressValue "0"
+onLabel "Set FIR"
+offLabel "Set FIR"
+3d
+font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 432
+w 120
+h 16
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 1
+bgColor index 10
+value {
+  "Set FIR"
+}
+endObjectProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 432
+w 120
+h 16
+lineColor index 14
+fillColor index 0
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 280
+y 592
+w 72
+h 24
+fgColor index 43
+bgColor index 4
 topShadowColor index 1
 botShadowColor index 11
-label "EXIT"
 font "helvetica-bold-r-12.0"
-3d
+buttonLabel "Extra"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/bunch_extra.edl"
+}
 endObjectProperties
 

@@ -28,7 +28,7 @@ entity trigger_registers is
 
         -- Trigger control
         soft_trigger_o : out std_ulogic;
-        triggers_i : in std_ulogic_vector(TRIGGER_SET);
+        triggers_i : in trigger_set_t;
         blanking_trigger_i : in std_ulogic;
 
         blanking_interval_o : out unsigned;
@@ -67,8 +67,10 @@ architecture arch of trigger_registers is
         config_registers(CTRL_TRG_CONFIG_SEQ1_REG);
     alias config_delay_dram : reg_data_t is
         config_registers(CTRL_TRG_CONFIG_DRAM0_REG);
-    alias config_trig_seq : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_TRIG_SEQ_REG);
+    alias config_trig_seq_0 : reg_data_t is
+        config_registers(CTRL_TRG_CONFIG_TRIG_SEQ0_REG);
+    alias config_trig_seq_1 : reg_data_t is
+        config_registers(CTRL_TRG_CONFIG_TRIG_SEQ1_REG);
     alias config_trig_dram : reg_data_t is
         config_registers(CTRL_TRG_CONFIG_TRIG_DRAM_REG);
 
@@ -184,15 +186,15 @@ begin
     seq_setup_o(0).delay <=
         unsigned(config_delay_seq_0(CTRL_TRG_CONFIG_SEQ0_DELAY_BITS));
     seq_setup_o(0).enables <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE0_BITS);
+        config_trig_seq_0(CTRL_TRG_CONFIG_TRIG_SEQ0_ENABLE_BITS);
     seq_setup_o(0).blanking <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_BLANKING0_BITS);
+        config_trig_seq_0(CTRL_TRG_CONFIG_TRIG_SEQ0_BLANKING_BITS);
     seq_setup_o(1).delay <=
         unsigned(config_delay_seq_1(CTRL_TRG_CONFIG_SEQ1_DELAY_BITS));
     seq_setup_o(1).enables <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE1_BITS);
+        config_trig_seq_1(CTRL_TRG_CONFIG_TRIG_SEQ1_ENABLE_BITS);
     seq_setup_o(1).blanking <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_BLANKING1_BITS);
+        config_trig_seq_1(CTRL_TRG_CONFIG_TRIG_SEQ1_BLANKING_BITS);
 
     dram0_setup_o.delay <=
         unsigned(config_delay_dram(CTRL_TRG_CONFIG_DRAM0_DELAY_BITS));

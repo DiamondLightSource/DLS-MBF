@@ -5,7 +5,7 @@
 IOC="${1:?Must specify IOC to capture from}"
 
 if [[ $IOC = -h ]]; then
-cat <<EOF
+    cat <<EOF
 Usage: capture <ioc-name> >logfile
 
 The IOC name should be the device name for an old style Libera TMBF and should
