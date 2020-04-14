@@ -30,7 +30,7 @@ EPICS_BASE = /operation/control/os/debian9/epics/local
 INSTALL_DIR = /home/dserver/bin
 
 # Directory for python modules
-PYMOD_INSTALL_DIR = /operation/dserver/python/modules
+PYMOD_INSTALL_DIR = /opt/os/epics/python-modules
 
 # Permissions for the driver
 DRV_GROUP = comp
