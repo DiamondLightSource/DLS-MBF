@@ -74,7 +74,7 @@ clean-driver:
 # Miscellanous self contained targets
 
 # All the targets below are implemented by simple recursive calls to make.
-DIR_TARGETS = epics matlab tune_fit opi iocs python tango
+DIR_TARGETS = epics matlab tune_fit opi iocs python
 
 $(DIR_TARGETS):
 	make -C $@
