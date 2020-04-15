@@ -135,7 +135,7 @@ static int64_t add_overflow_int64_t(int64_t a, int64_t b, bool *overflow)
         "movq    %[a], %[result]" "\n\t"
         "addq    %[b], %[result]" "\n\t"
         "seto    %[ovf]"
-        : [result] "=&r" (result), [ovf] "r" (ovf)
+        : [result] "=&r" (result), [ovf] "=r" (ovf)
         : [a] "r" (a), [b] "r" (b)
         : "cc" );
 #endif
