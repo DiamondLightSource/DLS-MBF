@@ -95,10 +95,6 @@ opi: epics
 # The db files are required to built Epics to Tango bridges
 tango: epics
 
-install-python:
-	make -C python install
-.PHONY: install-python
-
 
 # Note that because we use pattern matching for our subdirectory clean targets,
 # we can't mark these targets as .PHONY, because it seems that .PHONY targets
