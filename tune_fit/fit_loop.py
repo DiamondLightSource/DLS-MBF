@@ -1,5 +1,7 @@
 # Top level fitter loop for IOC
 
+from __future__ import print_function
+
 import traceback
 import numpy
 
@@ -93,7 +95,7 @@ class TuneFitLoop:
             trace = tune_fit.fit_tune(config, s, iq)
         except:
             trace = support.Trace(last_error = 'Fitter raised exception')
-            print 'Fitter exception'
+            print('Fitter exception')
             traceback.print_exc(1)
         self.pvs.update(timestamp, trace)
         self.mux.update(timestamp, trace)
@@ -105,7 +107,7 @@ class TuneFitLoop:
             except:
                 # If we have an exception here we've got a bit of a problem, but
                 # let's not actually die right now.
-                print 'Fitter raised unexpected exception'
+                print('Fitter raised unexpected exception')
                 traceback.print_exc()
 
     def start(self):
