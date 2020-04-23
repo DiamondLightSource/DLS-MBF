@@ -74,7 +74,7 @@ clean-driver:
 # Miscellanous self contained targets
 
 # All the targets below are implemented by simple recursive calls to make.
-DIR_TARGETS = epics matlab tune_fit opi iocs python tango
+DIR_TARGETS = epics matlab tune_fit opi iocs python
 
 $(DIR_TARGETS):
 	make -C $@
@@ -92,8 +92,6 @@ tune_fit: $(DEFS_PATH)
 # it's more manageable this way.
 opi: epics
 
-# The db files are required to built Epics to Tango bridges
-tango: epics
 
 
 # Note that because we use pattern matching for our subdirectory clean targets,
