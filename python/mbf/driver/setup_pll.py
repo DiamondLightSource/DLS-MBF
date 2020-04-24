@@ -3,7 +3,9 @@
 # SNAS605 and the datasheet is avaliable at http://www.ti.com/lit/pdf/snas605
 # Revision SNAS605AR dated December 2015 was used for this script.
 
-from config_pll import SettingsBase, Const
+from __future__ import print_function
+
+from .config_pll import SettingsBase, Const
 import time
 
 
@@ -202,7 +204,7 @@ def setup_pll_ratios(pll, n1r1, vco, d, p2, n2, r2):
     pll.out12_13.DCLK_DIV = d   # ADC CLK
 
     # Set up dividers for phase advance for DAC, only.
-    cntl = (d + 1) / 2
+    cntl = (d + 1) // 2
     cnth = d + 1 - cntl
     pll.out4_5.DCLK_DDLY_CNTL = cntl
     pll.out4_5.DCLK_DDLYd_CNTL = cntl
@@ -248,7 +250,7 @@ def decode_mode(mode):
 
 
 def setup_pll(regs, mode):
-    print 'Setting clock mode', mode
+    print('Setting clock mode', mode)
     pll = SettingsBase(regs.PLL_SPI)
     if mode == 'Passthrough':
         setup_passthrough(pll)

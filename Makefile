@@ -92,12 +92,6 @@ tune_fit: $(DEFS_PATH)
 # it's more manageable this way.
 opi: epics
 
-# The db files are required to built Epics to Tango bridges
-tango: epics
-
-install-python:
-	make -C python install
-.PHONY: install-python
 
 
 # Note that because we use pattern matching for our subdirectory clean targets,

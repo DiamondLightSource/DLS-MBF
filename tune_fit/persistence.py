@@ -1,5 +1,7 @@
 # Simple implementation of PV persistence
 
+from __future__ import print_function
+
 import atexit
 import os
 import traceback
@@ -30,9 +32,9 @@ class Persistence:
                     pv, type = self.pvs[name]
                     pv.set(type(value))
                 else:
-                    print 'Unknown key', name
+                    print('Unknown key', name)
         except:
-            print 'Unable to load', self.persistence_file
+            print('Unable to load', self.persistence_file)
             traceback.print_exc()
         else:
             self.state = self.__compute_state()
@@ -48,7 +50,7 @@ class Persistence:
                     state_file.write('%s=%s\n' % (name, pv.get()))
             os.rename(new_file, self.persistence_file)
         except:
-            print 'Unable to write', self.persistence_file
+            print('Unable to write', self.persistence_file)
             traceback.print_exc()
         else:
             self.state = state

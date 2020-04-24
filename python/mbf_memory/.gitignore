@@ -1,9 +1,0 @@
-*.pyc
-
-/mbf_memory/__init__.py
-
-# Dist build output
-/build
-/dist
-/mbf_memory.egg-info/
-/installed.files

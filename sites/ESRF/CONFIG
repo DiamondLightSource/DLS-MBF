@@ -4,7 +4,7 @@ SITE = ESRF
 
 # Override default and install targets for make
 DEFAULT_TARGETS = driver python epics matlab tune_fit iocs tango
-INSTALL_TARGETS = $(DEFAULT_TARGETS) install-python
+INSTALL_TARGETS = $(DEFAULT_TARGETS)
 
 # Place the driver build on the local filesystem
 # so that root have write access

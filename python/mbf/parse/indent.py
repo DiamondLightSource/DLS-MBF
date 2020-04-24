@@ -27,6 +27,8 @@
 #       ], doc = [], line_no = 1)
 #   ]
 
+from __future__ import print_function
+
 import sys
 from collections import namedtuple
 
@@ -50,13 +52,14 @@ class read_lines:
 
 
     def fail(self, message):
-        print >>sys.stderr, 'Error: %s on line %d' % (message, self.line_no)
+        print('Error: %s on line %d' % (message, self.line_no),
+            file = sys.stderr)
         sys.exit(1)
 
     def warn(self, message):
         if self.__warn:
-            print >>sys.stderr, \
-                'Warning: %s on line %d' % (message, self.line_no)
+            print('Warning: %s on line %d' % (message, self.line_no),
+                file = sys.stderr)
 
 
     def __read_line(self):
@@ -178,8 +181,8 @@ def parse_file(input, warn = True):
 def print_parse(prefix, parse):
     for line, body, doc, line_no in parse:
         for c in doc:
-            print '     %s#%s' % (prefix, c)
-        print '% 4d %s%s' % (line_no, prefix, line)
+            print('     %s#%s' % (prefix, c))
+        print('% 4d %s%s' % (line_no, prefix, line))
         print_parse(prefix + '    ', body)
 
 
