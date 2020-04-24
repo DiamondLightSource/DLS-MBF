@@ -1,5 +1,7 @@
 # Plotting of fits
 
+from __future__ import print_function
+
 import numpy
 import matplotlib
 # matplotlib.use('PDF')
@@ -91,7 +93,7 @@ def plot_refine(iq, trace):
     plot_complex(numpy.mean(aa * bb.imag) / numpy.mean(bb.imag), 'x')
     pyplot.axis('equal')
 
-    print 'fit', fit_out
+    print('fit', fit_out)
 
 
 def plot_dd(trace):
@@ -173,7 +175,7 @@ def plot_fits(fits, tunes, errors):
     max_height = numpy.nanmax(height, 1)
     pyplot.semilogy(height / max_height[:, None], '.')
 
-    print numpy.nonzero(numpy.isnan(fits[:,0,0]))[0]
+    print(numpy.nonzero(numpy.isnan(fits[:,0,0]))[0])
 
 
 class Fitter:
@@ -200,12 +202,12 @@ class Fitter:
     def fit_tune(self, scale, iq):
         n = self.n
         if self.verbose:
-            print 'fit_tune', n
+            print('fit_tune', n)
         self.n = n + 1
 
         trace = tune_fit.fit_tune(self.config, scale, iq)
         if trace.last_error and self.verbose:
-            print trace.last_error
+            print(trace.last_error)
 
         if self.plot_each:
             dd_traces     = [t.fit_trace.dd for t in trace.traces]
