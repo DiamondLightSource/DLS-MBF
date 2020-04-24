@@ -188,4 +188,14 @@ following changes have been implemented:
   by bunch FIR.
 
 
+1.4.2 April 2020
+................
+
+This release contains a bug fix to the string displayed in the ``:SEQ:MODE`` PV.
+Other changes include making the core Python scripts work with Python 3 and
+moving the ``mbf_memory`` module to a separate repository PyMBF_read_.  There
+are no firmware changes in this release.
+
+
 ..  _MBF-Tango: https://github.com/DLS-Controls-Private-org/MBF-Tango
+..  _PyMBF_read: https://github.com/DLS-Controls-Private-org/PyMBF_read
