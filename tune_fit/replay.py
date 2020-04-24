@@ -84,7 +84,7 @@ def replay_s_iq(s_iq, fit_tune, keep_traces, filter_trace=None):
         except KeyboardInterrupt:
             raise
         except:
-            print('Fit failed', file=sys.stderr)
+            print('Fit failed', file = sys.stderr)
             traceback.print_exc()
 
         if filter_trace:
