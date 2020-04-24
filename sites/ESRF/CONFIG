@@ -3,9 +3,12 @@
 SITE = ESRF
 
 # Override default and install targets for make
-DEFAULT_TARGETS = driver python epics matlab tune_fit iocs tango
+DEFAULT_TARGETS = driver python epics matlab tune_fit iocs
 INSTALL_TARGETS = $(DEFAULT_TARGETS)
 
+# Place the driver build on the local filesystem
+# so that root have write access
+DRIVER_BUILD_DIR = /tmp/mbf/build
 
 # Place the FPGA build in /scratch
 FPGA_BUILD_DIR = /segfs/tango/cppserver/machine/diagnostic/MBF/build/fpga
@@ -20,11 +23,8 @@ AMC525_SERVER = l-c31-3 199
 
 # Definitions needed for EPICS driver build
 #
-EPICS_DEVICE = /opt/dserver/epics/epics_device
-EPICS_BASE = /opt/dserver/epics/base-3.14.12.7
-
-# Directory for python modules
-PYMOD_INSTALL_DIR = /operation/dserver/python/modules
+EPICS_DEVICE = /opt/os/epics/components/epics_device
+EPICS_BASE = /operation/control/os/debian9/epics/local
 
 # Permissions for the driver
 DRV_GROUP = comp
@@ -33,6 +33,6 @@ DRV_GROUP = comp
 MEX = /sware/com/matlab_2017a/bin/mex
 
 # Path to Python Soft IOC
-PYTHON_IOC = /opt/dserver/epics/pythonIoc/pythonIoc
+PYTHON_IOC = ~/pythonIoc/pythonIoc
 
 # vim: set filetype=make:

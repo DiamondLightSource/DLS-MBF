@@ -1,0 +1,6 @@
+# Internal Administration Network
+allow-hotplug enp1s0f1
+iface enp1s0f1 inet static
+  address 192.168.40.1
+  netmask 255.255.255.0
+  
