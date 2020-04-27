@@ -1,9 +1,9 @@
 # EPICS build process drops a lot of files in the source directory
-
 /db
 /dbd
 /bin
 O.*
 
-# This file is specially built by the top Makefile
-/configure/RELEASE
+# These files specially built by the top EPICS Makefile
+/opi/mbf/overview.edl
+/opi/scripts/site

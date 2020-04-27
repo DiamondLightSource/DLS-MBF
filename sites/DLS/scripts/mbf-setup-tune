@@ -1,0 +1,336 @@
+#!/usr/bin/env python
+
+# Simple script for setting the MBF into the appropriate tune measurement
+# mode.
+#
+# This script is called from the front panel screen with the device name and one
+# of the following three actions:
+#
+#   TUNE    Tune Only           Tune measurement, no feedback
+#   AP      Tune Special        Multibunch tune only measurement
+#   FB      Feedback On & Tune  Feedback and tune measurement, normal operation
+
+import mbf.requires
+
+import sys
+import numpy
+import argparse
+
+import cothread
+from cothread import catools
+
+
+DEFAULT_CONFIG = '/home/ops/diagnostics/config/MBF_tune.config'
+
+
+DEVICE_TO_CONFIG_AXIS = {
+    'SR23C-DI-TMBF-01:X': 'X',
+    'SR23C-DI-TMBF-01:Y': 'Y',
+    'SR23C-DI-LMBF-01:IQ': 'L',
+    'TS-DI-TMBF-02:X': 'X',
+    'TS-DI-TMBF-02:Y': 'Y',
+    'TS-DI-LMBF-01:IQ': 'L',
+}
+
+VALID_MODES = ['TUNE', 'AP', 'FB']
+
+DAC_OUT_FIR = 1
+DAC_OUT_NCO = 2
+DAC_OUT_SWEEP = 4
+
+
+def _put(pv, value, axis = None):
+    if axis:
+        target = '%s:%s:%s' % (DEVICE, axis, pv)
+    else:
+        target = '%s:%s' % (DEVICE, pv)
+    if args.debug:
+        print '%s <= %s' % (target, repr(value))
+    if not args.dry_run:
+        catools.caput(target, value)
+
+def put(pv, value):
+    _put(pv, value, AXIS)
+
+def put_axes(pv, value):
+    if LMBF_MODE:
+        _put(pv, value, AXIS0)
+        _put(pv, value, AXIS1)
+    else:
+        _put(pv, value, AXIS)
+
+def get(pv, **kargs):
+    return catools.caget('%s:%s' % (DEVICE, pv), **kargs)
+
+def wait_for_pv(pv, value):
+    while get(pv) != value:
+        print 'waiting for', pv
+        cothread.Sleep(0.1)
+
+
+
+def get_config(config, key):
+    if CONFIG_AXIS == 'T':
+        key = '%s_%s' % (CONFIG_AXIS, key)
+    else:
+        key = '%s_%s_%s' % (CONFIG_AXIS, key, RING_MODE)
+    try:
+        return getattr(config, key)
+    except AttributeError:
+        print >>sys.stderr, 'Configuration for %s:%s in mode %s not found' % (
+            CONFIG_AXIS, key, RING_MODE)
+        raise
+
+def compute_filter_size(tune):
+    # Search for best filter size.  In this search we prefer shorter filters
+    # over longer filters.
+    best_error = 1
+    filter = (0, 0)
+    for length in range(3, N_TAPS + 1):
+        for cycles in range(1, length):
+            error = abs(tune - float(cycles) / length)
+            if error < best_error:
+                best_error = error
+                filter = (cycles, length)
+    return filter
+
+def apply_overrides(setup, config_key):
+    match = config_key + '_'
+    l = len(match)
+    for key in dir(setup):
+        if key[:l] == match:
+            print 'override: [%s] %s %s <= %s' % (
+                key[:l], key[l:],
+                getattr(setup, key[l:], None), getattr(setup, key))
+            setattr(setup, key[l:], getattr(setup, key))
+            delattr(setup, key)
+
+
+# ------------------------------------------------------------------------------
+# Argument parsing
+
+parser = argparse.ArgumentParser(
+    description = 'Configure device in specified setup mode.')
+parser.add_argument(
+    '-c', dest = 'config', default = DEFAULT_CONFIG,
+    help = 'Alternative configuration file')
+parser.add_argument(
+    '-d', dest = 'debug', default = False, action = 'store_true',
+    help = 'Enable debug mode')
+parser.add_argument(
+    '-m', dest = 'ring_mode', default = None,
+    help = 'Specify ring mode, otherwise PV will be consulted')
+parser.add_argument(
+    '-t', dest = 'tune', default = None, type = float,
+    help = 'Specify tune, otherwise config file will be consulted')
+parser.add_argument(
+    '-g', dest = 'gain', default = '-42dB',
+    help = 'Specify FIR gain, otherwise default -42dB will be used')
+parser.add_argument(
+    '-n', dest = 'dry_run', default = False, action = 'store_true',
+    help = 'Dry run, don\'t actually write to device')
+parser.add_argument(
+    '-s', dest = 'skip_tune', default = False, action = 'store_true',
+    help = 'Omit update for TUNE settings')
+parser.add_argument('device', help = 'TMBF device name to configure')
+parser.add_argument('mode',
+    help = 'Configuration mode, must be one of %s' % ', '.join(VALID_MODES))
+args = parser.parse_args()
+
+MODE = args.mode
+CONFIG_FILE = args.config
+DEVICE, AXIS = args.device.split(':')
+
+try:
+    CONFIG_AXIS = DEVICE_TO_CONFIG_AXIS[args.device]
+except:
+    parser.error('Device \'%s\' not known' % args.device)
+if MODE not in VALID_MODES:
+    parser.error('Setup mode \'%s\' is invalid' % MODE)
+
+if args.ring_mode is None:
+    RING_MODE = catools.caget('SR-CS-RING-01:MODE', datatype = str)
+else:
+    RING_MODE = args.ring_mode
+
+# Read fundamental parameters from device
+LMBF_MODE = get('INFO:MODE')
+if LMBF_MODE:
+    AXIS0 = get('INFO:AXIS0')
+    AXIS1 = get('INFO:AXIS1')
+N_TAPS = get('INFO:BUNCH_TAPS')
+BUNCH_COUNT = get('INFO:BUNCHES')
+
+
+# ------------------------------------------------------------------------------
+# Assemble final configuration to apply
+
+# Load setup defaults
+import setup_defaults as setup
+
+# Load the specified configuration file and use definitions to override the
+# default setup.  This contains overrides for the globals below together with
+# settings for the mode specific default tune in a backwards compatible format.
+config = {}
+execfile(CONFIG_FILE, {}, config)
+setup.__dict__.update(config)
+
+# Load tune from config file in its strange compatibility format
+if args.tune is None:
+    setup.tune = float(get_config(setup, 'tune'))
+else:
+    setup.tune = args.tune
+
+# Compute best matching filter.  For LMBF mode need to scale matched target by
+# configured decimation.
+decimation = setup.fir_decimation if LMBF_MODE else 1
+setup.cycles, setup.length = compute_filter_size(setup.tune * decimation)
+
+
+# Apply mode specific overrides.
+apply_overrides(setup, MODE)
+
+# Apply any ring mode/axis specific overrides.
+apply_overrides(setup, '%s_%s' % (CONFIG_AXIS, RING_MODE))
+apply_overrides(setup, CONFIG_AXIS)
+
+
+# Compute desired bunch enable pattern.
+BUNCH_ENABLES = numpy.zeros(BUNCH_COUNT, dtype = int)
+if setup.single_bunch:
+    BUNCH_ENABLES[setup.bunch] = 1
+else:
+    BUNCH_ENABLES[:] = 1
+
+BUNCH_ONES = numpy.ones(BUNCH_COUNT, dtype = int)
+BUNCH_ZEROS = numpy.zeros(BUNCH_COUNT, dtype = int)
+
+
+# ------------------------------------------------------------------------------
+# Write computed configuration
+
+# First a bunch of sanity settings, in case somebody has been messing with
+# stuff.
+put_axes('DAC:ENABLE_S', 'Off')        # Turn off while we mess with settings
+
+# Make sure we're sane.
+put_axes('ADC:LOOPBACK_S', 'Normal')
+put('SEQ:0:BANK_S', 'Bank 0')
+put('SEQ:RESET_WIN_S', 0)
+
+# Ensure no triggers are running and the sequencer and Tune PLL are stopped
+put('TRG:SEQ:DISARM_S', 0)
+put('SEQ:RESET_S', 0)
+put('PLL:CTRL:STOP_S', 0)
+
+# Ensure super sequencer isn't in a strange state
+put('SEQ:SUPER:COUNT_S', 1)
+put('SEQ:SUPER:RESET_S', 0)
+
+# Ensure the blanking interval is right (this is not axis specific)
+_put('TRG:BLANKING_S', setup.blanking_interval)
+
+
+# Set memory and MMS capture sources to standard settings
+put_axes('ADC:MMS_SOURCE_S',  'After COMP')
+put_axes('ADC:DRAM_SOURCE_S', 'After COMP')
+put_axes('DAC:MMS_SOURCE_S',  'Before PEMPH')
+put_axes('DAC:DRAM_SOURCE_S', 'Before PEMPH')
+
+
+# Configure FIR as selected
+if LMBF_MODE:
+    put('FIR:DECIMATION_S', setup.fir_decimation)
+put('FIR:0:LENGTH_S', setup.length)
+put('FIR:0:CYCLES_S', setup.cycles)
+put('FIR:0:USEWF_S', 'Settings')
+put('FIR:GAIN_S', args.gain)
+
+# Configure bunch bank #0 for FIR and selected operation
+put('BUN:0:FIRWF_S', BUNCH_ZEROS)
+put('BUN:0:OUTWF_S', setup.dac_output * BUNCH_ONES)
+put('BUN:0:RESET_GAINS_S', 0)
+
+# Similarly configure bank #1 for sweep as appropriate
+SWEEP_OUT = BUNCH_ENABLES * DAC_OUT_SWEEP
+if setup.keep_feedback:
+    SWEEP_OUT |= setup.dac_output
+put('BUN:1:FIRWF_S', BUNCH_ZEROS)
+put('BUN:1:OUTWF_S', SWEEP_OUT)
+put('BUN:1:RESET_GAINS_S', 0)
+
+
+# Disable all sequencer triggers and configure triggering on external trigger
+TRIGGER_SOURCES = [
+    'SOFT', 'EXT', 'PM', 'ADC0', 'ADC1', 'SEQ0', 'SEQ1', 'DAC0', 'DAC1']
+for source in TRIGGER_SOURCES:
+    put('TRG:SEQ:%s:EN_S' % source, 'Ignore')
+put('TRG:SEQ:EXT:EN_S', 'Enable')
+put('TRG:SEQ:EXT:BL_S', 'All')
+put('TRG:SEQ:MODE_S', 'Rearm')
+put('TRG:SEQ:DELAY_S', 0)
+
+# Configure detector 0
+put('DET:0:ENABLE_S', 'Enabled')
+put('DET:0:SCALING_S', setup.det_gain)
+put('DET:SELECT_S', setup.detector_input)
+put('DET:FIR_DELAY_S', 0)       # Safer than any other setting!
+put('DET:0:BUNCHES_S', BUNCH_ENABLES)
+
+# Configure sequencer for tune measurement
+sweep_start = setup.harmonic + setup.tune - setup.sweep_range
+sweep_end = sweep_start + 2 * setup.sweep_range
+if setup.tune_reverse:
+    sweep_start, sweep_end = sweep_end, sweep_start
+put('SEQ:1:COUNT_S', 4096)
+put('SEQ:1:START_FREQ_S', sweep_start)
+put('SEQ:1:END_FREQ_S', sweep_end)
+put('SEQ:1:CAPTURE_S', 'Capture')
+put('SEQ:1:BANK_S', 'Bank 1')
+put('SEQ:1:HOLDOFF_S', setup.sweep_holdoff)
+put('SEQ:1:STATE_HOLDOFF_S', setup.state_holdoff)
+put('SEQ:1:DWELL_S', setup.sweep_dwell_time)
+put('SEQ:1:GAIN_S', setup.sweep_gain)
+put('SEQ:1:ENABLE_S', 'On')
+put('SEQ:1:ENWIN_S', 'Windowed')
+put('SEQ:1:BLANK_S', 'Blanking')
+put('SEQ:1:TUNE_PLL_S', 'Ignore')
+
+# Ensure the associated tune fitter is fitting the entire sweep and is running
+# with the appropriate selection
+if not args.skip_tune:
+    put('TUNE:CONFIG:WINDOW_START_S', 0)
+    put('TUNE:CONFIG:WINDOW_LENGTH_S', 0)
+    put('TUNE:SELECT_S', 'Fitted')
+
+put('SEQ:PC_S', 1)
+
+# Now we can go!
+put_axes('DAC:ENABLE_S', 'On')
+put('TRG:SEQ:ARM_S', 0)
+
+
+# ------------------------------------------------------------------------------
+# Finally, enable and arm memory postmortem trigger
+
+# Start by disarm memory in case it's already running
+_put('TRG:MEM:DISARM_S', 0)
+wait_for_pv('MEM:BUSY', 0)
+
+# Configure sources for PM only and ignore blanking for PM
+for source in TRIGGER_SOURCES:
+    _put('TRG:MEM:%s:EN_S' % source, 'Ignore')
+_put('TRG:MEM:PM:EN_S', 'Enable')
+_put('TRG:MEM:PM:BL_S', 'All')
+_put('TRG:MEM:DELAY_S', 0)
+
+# Configure capture of ADC into both channels, set 25% runout, configure one
+# shot capture (we'll want to readout and rearm elsewhere).
+_put('MEM:SELECT_S', 'ADC0/ADC1')
+_put('MEM:RUNOUT_S', '25%')
+_put('TRG:MEM:MODE_S', 'One Shot')
+
+# Go!
+_put('TRG:MEM:ARM_S', 0)
+
+# vim: set filetype=python:

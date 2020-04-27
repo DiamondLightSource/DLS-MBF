@@ -1,0 +1,73 @@
+This file lists loose ends and ideas of work to do.
+
+New Functionality
+-----------------
+
+*   It might be worth revisiting the ADC phase adjustment.  This can be
+    implemented via delays on the LMK feedback path, but this process is
+    inclined to trigger clock unlocking, so DAC and zero bunch resynchronisation
+    would probably need to be integrated into the process.
+
+*   Playing recorded patterns from DRAM0 to the DAC is a very interesting idea.
+    This would be a very substantial update to the firmware and would require
+    driver support to write to DRAM0 from the CPU.
+
+*   Occasionally we wonder if an extra sweep engine would be useful.  We
+    currently have 3 NCOs, one of which can be swept;  presumably an extra
+    sweepable NCO (and simplified sequencer) could be provided.
+
+    In the past I have considered integrating the NCO and the four detectors
+    more closely.  However, this is unlikely to be implemented.
+
+*   Continuous turn clock resynchronisation has been mooted as a possible
+    feature.  My main concern with implementing this is how MBF should cope with
+    clock skips; in particular I'm not sure if two turn clocks close together
+    can trigger misbehaviour in any existing subsystems.
+
+
+Other Issues
+------------
+
+*   The current treatment of the LMBF IQ output is rather simple minded, and it
+    seems that more attention to balancing I and Q may be needed.  Without a
+    practical drive for this at DLS this is unlikely to go any further.
+
+*   At present the feedback FIRs are not scaled in any sensible way.  This means
+    that when the length of the FIR is changed the associated gain also changes,
+    which can be confusing.
+
+*   In a related issue, if an FIR with more than 8 taps is configured this can
+    lead to overflow in the FIR.  This can be avoided either in software or in
+    firmware, or both.
+
+*   It would be good to add a driver-deb target to build a dkms .deb for the
+    driver.  There are good instructions on doing this here:
+
+    https://vincent.bernat.ch/en/blog/2018-packaging-driver-debian-dkms
+    https://wiki.debian.org/HowToPackageForDebian
+    https://askubuntu.com/a/1451
+
+
+Firmware Fixes
+--------------
+
+*   I would like to create a fallback ADC/DSP clock when there is no clock
+    available.  Creating such a clock is easy enough, and the PLL locked signal
+    should be enough to do the appropriate fallover.  The main issue is in
+    getting the clocking constraints right.
+
+*   At present reading the MMS COUNT register waits for the machine turn to
+    complete before returning.  This means that if an invalid (unreachable) turn
+    clock offset is configured then reading this register will lock up the PCIe
+    interface to the CPU!
+
+    This needs to be fixed so that the MMS switching over is triggered by, let's
+    say, writing to MMS COUNT and then software will need to poll until the
+    switch is complete.
+
+*   At present back to back SPI writes are not properly managed, so it is
+    necessary to following a write with a read.  This is not the right way to do
+    this and should be fixed.
+
+*   The LEDs on the AMC front panel are not very useful.  A more helpful set of
+    LEDs could probably be defined and implemented.

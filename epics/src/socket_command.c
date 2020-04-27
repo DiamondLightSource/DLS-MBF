@@ -454,13 +454,13 @@ static void send_float32_memory_data(
 /* Holds the evolving state required to perform tune shifted decimation. */
 struct tune_decimate_state {
     /* Copies of relevant parameters. */
-    unsigned int tune;          /* Converted into 2^32 revolutions per bunch. */
+    uint64_t tune;          /* Converted into 2^48 revolutions per bunch. */
     unsigned int decimation;
 
-    /* Current rotation angle, in units of rotation per 2^32. */
-    unsigned int angle;
+    /* Current rotation angle, in units of rotation per 2^48. */
+    uint64_t angle;
     /* Angle advance per turn. */
-    unsigned int turn_advance;
+    uint64_t turn_advance;
     /* Fixup buffer. */
     float complex *turn_fixup;
 };
@@ -472,10 +472,10 @@ static float complex cisf(float angle)
 }
 
 
-static float complex angle_to_rotate(unsigned int angle)
+static float complex angle_to_rotate(uint64_t angle)
 {
-    /* The angle is in units of rotation per 2^32, so multiply by 2 pi. */
-    return cisf((float) (M_PI * ldexp(angle, -31)));
+    /* The angle is in units of rotation per 2^48, so multiply by 2 pi. */
+    return cisf((float) (2*M_PI * ldexp((double) angle, -48)));
 }
 
 
@@ -486,7 +486,7 @@ static void prepare_tune_decimate(
     const struct channels_context *channels)
 {
     unsigned int bunches_per_turn = system_config.bunches_per_turn;
-    unsigned int tune = tune_to_freq(args->tune);
+    uint64_t tune = tune_to_freq(args->tune);
     *state = (struct tune_decimate_state) {
         .tune = tune,
         .decimation = args->decimation,
@@ -496,7 +496,7 @@ static void prepare_tune_decimate(
     };
 
     /* Compute the turn fixup array. */
-    unsigned int angle = 0;
+    uint64_t angle = 0;
     for (unsigned int i = 0; i < bunches_per_turn; i ++)
     {
         float complex rotate = angle_to_rotate(angle);
@@ -725,7 +725,7 @@ struct detector_frame {
 /* This structure captures the parsed results of a detector request command of
  * the form:
  *
- *      [R] D axis [F] [S] [T] [L [W timeout]]
+ *      [R] D axis [F] [S [L]] [T] [L [W timeout]]
  *
  * Returns detector readout with the following options:
  *
@@ -737,6 +737,7 @@ struct detector_frame {
  *          before sending the raw data.
  *      S   Request that the frequency scale for the detector is transmitted
  *          after sending the axis data.
+ *      SL  The frequency scale is sent as 64-bit values.
  *      T   Request that the timebase for the detector is transmitted after the
  *          axis data, and after the frequency scale if requested.
  *      L   If set then lock readout
@@ -748,10 +749,23 @@ struct detector_args {
     int axis;                       //      Detector axis
     bool framed;                    // F    Send header frame
     bool scale;                     // S    Send frequency scale
+    bool long_scale;                // SL       (optionally as 64-bit values)
     bool timebase;                  // T    Send timebase
     struct lock_parse locking;      // L,W  Locking request
 };
 
+
+/* Parses the [F] [S [L]] [T] options. */
+static error__t parse_detector_opts(
+    const char **command, struct detector_args *args)
+{
+    args->framed = read_char(command, 'F');
+    args->scale = read_char(command, 'S');
+    if (args->scale)
+        args->long_scale = read_char(command, 'L');
+    args->timebase = read_char(command, 'T');
+    return ERROR_OK;
+}
 
 /* Parsing of detector readout command. */
 static error__t parse_detector_args(
@@ -761,9 +775,7 @@ static error__t parse_detector_args(
     *args = (struct detector_args) { };
     error__t error =
         parse_int(&command, &args->axis)  ?:
-        DO(args->framed = read_char(&command, 'F'))  ?:
-        DO(args->scale = read_char(&command, 'S'))  ?:
-        DO(args->timebase = read_char(&command, 'T'))  ?:
+        parse_detector_opts(&command, args)  ?:
         parse_lock(&command, &args->locking)  ?:
         parse_eos(&command);
 
@@ -797,6 +809,17 @@ static void read_detector_samples(
 }
 
 static void read_detector_scale(
+    int axis, void *buffer, unsigned int sample_size,
+    unsigned int offset, unsigned int samples)
+{
+    uint64_t frequencies[samples];
+    compute_scale_info(axis, frequencies, NULL, offset, samples);
+    unsigned int *buf_out = buffer;
+    for (unsigned int i = 0; i < samples; i ++)
+        *buf_out++ = (unsigned int) (frequencies[i] >> 16);
+}
+
+static void read_detector_scale_long(
     int axis, void *buffer, unsigned int sample_size,
     unsigned int offset, unsigned int samples)
 {
@@ -847,9 +870,16 @@ static void send_detector_result(
         info->detector_count * (unsigned int) sizeof(struct detector_result),
         read_detector_samples);
     if (args->scale)
-        send_detector_data(
-            file, args->axis, info->samples,
-            sizeof(uint32_t), read_detector_scale);
+    {
+        if (args->long_scale)
+            send_detector_data(
+                file, args->axis, info->samples,
+                sizeof(uint64_t), read_detector_scale_long);
+        else
+            send_detector_data(
+                file, args->axis, info->samples,
+                sizeof(uint32_t), read_detector_scale);
+    }
     if (args->timebase)
         send_detector_data(
             file, args->axis, info->samples,
@@ -871,14 +901,18 @@ error__t process_detector_command(
         DO(lock = get_sequencer_trigger_target(args.axis))  ?:
         wait_for_lock(lock, file, args.locking);
 
+    /* Now we have the lock we are committed to releasing the lock. */
     if (!error)
     {
-        if (!raw_mode)
-            write_char(file, '\0');
-
         struct detector_info info;
         get_detector_info(args.axis, &info);
-        send_detector_result(file, &args, &info);
+        error = TEST_OK_(info.detector_count > 0, "No detectors enabled");
+        if (!error)
+        {
+            if (!raw_mode)
+                write_char(file, '\0');
+            send_detector_result(file, &args, &info);
+        }
 
         release_lock(lock, args.locking);
     }

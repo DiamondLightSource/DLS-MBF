@@ -12,27 +12,27 @@ use work.register_defs.all;
 
 entity detector_registers is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector(DSP_DET_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_DET_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_DET_REGS);
-        read_strobe_i : in std_logic_vector(DSP_DET_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_DET_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_DET_REGS);
         read_data_o : out reg_data_array_t(DSP_DET_REGS);
-        read_ack_o : out std_logic_vector(DSP_DET_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_DET_REGS);
 
         -- Controls
-        data_select_o : out std_logic;
-        start_write_o : out std_logic;
-        bunch_write_o : out std_logic_vector(DETECTOR_RANGE);
+        data_select_o : out std_ulogic_vector;
+        start_write_o : out std_ulogic;
+        bunch_write_o : out std_ulogic_vector(DETECTOR_RANGE);
         output_scaling_o : out unsigned_array(DETECTOR_RANGE)(0 downto 0);
-        address_reset_o : out std_logic;
-        input_enable_o : out std_logic_vector(DETECTOR_RANGE);
+        address_reset_o : out std_ulogic;
+        input_enable_o : out std_ulogic_vector(DETECTOR_RANGE);
 
         -- Error event inputs
-        detector_overflow_i : in std_logic_vector(DETECTOR_RANGE);
-        output_underrun_i : in std_logic_vector(DETECTOR_RANGE)
+        detector_overflow_i : in std_ulogic_vector(DETECTOR_RANGE);
+        output_underrun_i : in std_ulogic_vector(DETECTOR_RANGE)
     );
 end;
 
@@ -97,7 +97,7 @@ begin
     address_reset_o <= command_bits(DSP_DET_COMMAND_RESET_BIT);
 
     -- Control fields
-    data_select_o <= register_file(DSP_DET_CONFIG_SELECT_BIT);
+    data_select_o <= register_file(DSP_DET_CONFIG_SELECT_BITS);
     output_scaling_o(0) <= unsigned(register_file(DSP_DET_CONFIG_SCALE0_BITS));
     input_enable_o(0) <= register_file(DSP_DET_CONFIG_ENABLE0_BIT);
     output_scaling_o(1) <= unsigned(register_file(DSP_DET_CONFIG_SCALE1_BITS));

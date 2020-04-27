@@ -17,6 +17,16 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/system/pulse_adc_to_dsp.vhd \
     $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/nco/nco_defs.vhd \
+    nco_cos_sin_table.vhd \
+    $vhd_dir/nco/nco_phase.vhd \
+    $vhd_dir/nco/nco_cos_sin_prepare.vhd \
+    $vhd_dir/nco/nco_cos_sin_octant.vhd \
+    $vhd_dir/nco/nco_cos_sin_refine.vhd \
+    $vhd_dir/nco/nco_core.vhd \
+    $vhd_dir/nco/nco_delay.vhd \
+    $vhd_dir/nco/nco.vhd \
+    $vhd_dir/dsp/dsp_defs.vhd \
+    $vhd_dir/tune_pll/tune_pll_offset.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/sequencer/sequencer_defs.vhd \
@@ -27,6 +37,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/sequencer/sequencer_dwell.vhd \
     $vhd_dir/sequencer/sequencer_counter.vhd \
     $vhd_dir/sequencer/sequencer_window.vhd \
+    $vhd_dir/sequencer/sequencer_nco.vhd \
     $vhd_dir/sequencer/sequencer_delays.vhd \
     $vhd_dir/sequencer/sequencer_clocking.vhd \
     $vhd_dir/sequencer/sequencer_top.vhd \
@@ -50,9 +61,9 @@ add wave -group "Window" sim:sequencer/window/*
 add wave -group "Delays" sim:sequencer/delays/*
 add wave -group "Clocking" sim:sequencer/clocking/*
 add wave -group "Sequencer" sim:sequencer/*
-add wave sim:*
+add wave -group "Bench" sim:*
 
 
-run 500 ns
+run 8 us
 
 # vim: set filetype=tcl:

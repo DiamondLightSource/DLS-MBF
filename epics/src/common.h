@@ -10,7 +10,9 @@
 /* This macro is a little tricky: it's intended to be used for iterating over
  * the set of axis names together with a prefix thus:
  *
- *  FOR_AXIS_NAME(axis, "ADC") { create pvs ...; }
+ *  FOR_AXIS_NAMES(axis, "ADC") { create pvs ...; }
+ * or
+ *  FOR_AXIS_NAMES(axis, "ADC", lmbf_mode) { create pvs ...; }
  *
  * The trickery is in the calling of the exit and enter methods. */
 #define FOR_AXIS_NAMES(axis, prefix, mode...) \
@@ -20,20 +22,6 @@
 
 bool _enter_axis_step(int axis, const char *prefix, bool lmbf_mode);
 void _exit_axis_step(void);
-
-
-/* Similar tricksy code to wrap enter and leave functions around a block of
- * code. */
-#define _id_WITH_ENTER_LEAVE(loop, enter, leave) \
-    for (bool loop = (enter, true); loop; leave, loop = false)
-#define _WITH_ENTER_LEAVE(enter, leave) \
-    _id_WITH_ENTER_LEAVE(UNIQUE_ID(), enter, leave) \
-
-
-/* This executes a block of code with the given record name prefix and ensures
- * that the prefix is safely popped when done. */
-#define WITH_NAME_PREFIX(prefix) \
-    _WITH_ENTER_LEAVE(push_record_name_prefix(prefix), pop_record_name_prefix())
 
 
 
@@ -56,30 +44,31 @@ const char *get_axis_name(int axis, bool lmbf_mode);
 
 
 /* This function converts an array of floats into the corresponding array of
- * integer values by multiplying each value by 2^(bits-high_bits-1).  The
+ * integer values by multiplying each value by 2^fraction_bits.  The
  * floating point values are clipped to the extreme possible values as
  * determined by bits.
  *    The parameter bits determines the total number of bits available, so the
- * output will be in the range [-2^(bits-1)..2^(bits-1)-1].  The parameter
- * high_bits determines the range of valid input values, so the input will be
- * forced into the range [-2^high_bits..2^high_bits).
+ * output will be in the range [-2^(bits-1)..2^(bits-1)-1].  The range of valid
+ * input values is determined by the total number of bits, so the input will be
+ * forced into the range [-2^high_bits..2^high_bits] where high_bits is
+ * calculated as bits-fraction_bits-1 (one bit is dedicated to the sign).
  *    This function rewrites in[] to correspond to the values written to out[].
  */
 void float_array_to_int(
-    size_t count, float in[], int out[], int bits, int high_bits);
+    size_t count, float in[], int out[], int bits, int fraction_bits);
 /* Similar to float_array_to_int, but for a single double argument and producing
  * an unsigned result. */
-unsigned int double_to_uint(double *in, int bits, int high_bits);
+unsigned int double_to_uint(double *in, int bits, int fraction_bits);
 
 /* Convert fractional tune in cycles per machine revolution to phase advance per
  * bunch in hardware units. */
-unsigned int _pure tune_to_freq(double tune);
+uint64_t _pure tune_to_freq(double tune);
 
 /* Reverse computation: hardware units to tune frequency. */
-double _pure freq_to_tune(unsigned int freq);
+double _pure freq_to_tune(uint64_t freq);
 
 /* As for freq_to_tune, but treats freq as a signed number. */
-double _pure freq_to_tune_signed(unsigned int freq);
+double _pure freq_to_tune_signed(uint64_t freq);
 
 
 /* A loop for counting down: surprisingly tricksy for something so simple.
@@ -88,13 +77,6 @@ double _pure freq_to_tune_signed(unsigned int freq);
     for (unsigned int i = n; ( { bool loop = i > 0; i --; loop; } ); )
 #define FOR_DOWN_FROM(i, n) \
     _id_FOR_DOWN_FROM(UNIQUE_ID(), i, n)
-
-
-/* Mutex locking is common and doesn't need to be so long winded. */
-#define LOCK(mutex)     pthread_mutex_lock(&mutex)
-#define UNLOCK(mutex)   pthread_mutex_unlock(&mutex)
-
-#define WITH_MUTEX(mutex)   _WITH_ENTER_LEAVE(LOCK(mutex), UNLOCK(mutex))
 
 
 /* Generic squaring function. */

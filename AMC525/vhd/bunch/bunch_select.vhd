@@ -11,18 +11,22 @@ use work.register_defs.all;
 use work.bunch_defs.all;
 
 entity bunch_select is
+    generic (
+        -- Delay from bank_select_i to bunch_config_o for validation
+        BUNCH_SELECT_DELAY : natural
+    );
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;       -- Revolution clock
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;       -- Revolution clock
 
         -- Bunch configuration SBC interface for writing configuration
-        write_strobe_i : in std_logic_vector(DSP_BUNCH_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_BUNCH_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_BUNCH_REGS);
-        read_strobe_i : in std_logic_vector(DSP_BUNCH_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_BUNCH_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_BUNCH_REGS);
         read_data_o : out reg_data_array_t(DSP_BUNCH_REGS);
-        read_ack_o : out std_logic_vector(DSP_BUNCH_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_BUNCH_REGS);
 
         -- Bunch configuration readout
         bank_select_i : in unsigned(1 downto 0);       -- Current bunch bank
@@ -33,14 +37,24 @@ end;
 architecture arch of bunch_select is
     signal config_register : reg_data_t;
 
-    signal write_start : std_logic;
+    signal write_start : std_ulogic;
     signal write_bank : unsigned(BUNCH_BANK_BITS-1 downto 0);
 
     signal bunch_index : bunch_count_t := (others => '0');
-    signal bunch_config : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
-    signal config_out : std_logic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal bunch_config : std_ulogic_vector(BUNCH_CONFIG_BITS-1 downto 0);
+    signal bunch_config_out : bunch_config'SUBTYPE;
+
+    -- Lookup delay
+    constant STORE_DELAY : natural := 4;
+    -- Pipeline for output
+    constant DELAY_OUT : natural := 4;
 
 begin
+    -- bank_select_i =>
+    --  =(STORE_DELAY)=> bunch_config
+    --  =(DELAY_OUT)=> bunch_config_o
+    assert BUNCH_SELECT_DELAY = STORE_DELAY + DELAY_OUT severity failure;
+
     -- Register management
     register_file : entity work.register_file port map (
         clk_i => dsp_clk_i,
@@ -65,7 +79,9 @@ begin
     );
 
     -- Bunch bank memory
-    bunch_store : entity work.bunch_store port map (
+    bunch_store : entity work.bunch_store generic map (
+        BUNCH_STORE_DELAY => STORE_DELAY
+    ) port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
@@ -82,22 +98,12 @@ begin
 
     -- Pipeline the bunch configuration
     bunch_delay : entity work.dlyreg generic map (
-        DLY => 4,
+        DLY => DELAY_OUT,
         DW  => BUNCH_CONFIG_BITS
     ) port map (
        clk_i => adc_clk_i,
        data_i => bunch_config,
-       data_o => config_out
+       data_o => bunch_config_out
     );
-
-    bunch_config_o.fir_select <=
-        unsigned(config_out(DSP_BUNCH_BANK_FIR_SELECT_BITS));
-    bunch_config_o.gain <=
-        signed(config_out(DSP_BUNCH_BANK_GAIN_BITS));
-    bunch_config_o.fir_enable <=
-        config_out(DSP_BUNCH_BANK_FIR_ENABLE_BIT);
-    bunch_config_o.nco_0_enable <=
-        config_out(DSP_BUNCH_BANK_NCO0_ENABLE_BIT);
-    bunch_config_o.nco_1_enable <=
-        config_out(DSP_BUNCH_BANK_NCO1_ENABLE_BIT);
+    bunch_config_o <= to_bunch_config_t(bunch_config_out);
 end;

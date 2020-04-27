@@ -15,43 +15,43 @@ end testbench;
 
 architecture arch of testbench is
     -- DSP Main signals
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
 
     signal adc_data : signed_array(CHANNELS)(13 downto 0)
         := (others => (others => '0'));
     signal dac_data : signed_array(CHANNELS)(15 downto 0);
 
-    signal write_strobe : std_logic;
+    signal write_strobe : std_ulogic;
     signal write_address : unsigned(12 downto 0);
     signal write_data : reg_data_t;
-    signal write_ack : std_logic;
-    signal read_strobe : std_logic;
+    signal write_ack : std_ulogic;
+    signal read_strobe : std_ulogic;
     signal read_address : unsigned(12 downto 0);
     signal read_data : reg_data_t;
-    signal read_ack : std_logic;
+    signal read_ack : std_ulogic;
 
-    signal dram0_capture_enable : std_logic;
-    signal dram0_data_ready : std_logic;
-    signal dram0_capture_address : std_logic_vector(30 downto 0);
-    signal dram0_data : std_logic_vector(63 downto 0);
-    signal dram0_data_valid : std_logic;
-    signal dram0_data_error : std_logic;
-    signal dram0_addr_error : std_logic;
-    signal dram0_brsp_error : std_logic;
+    signal dram0_capture_enable : std_ulogic;
+    signal dram0_data_ready : std_ulogic;
+    signal dram0_capture_address : std_ulogic_vector(30 downto 0);
+    signal dram0_data : std_ulogic_vector(63 downto 0);
+    signal dram0_data_valid : std_ulogic;
+    signal dram0_data_error : std_ulogic;
+    signal dram0_addr_error : std_ulogic;
+    signal dram0_brsp_error : std_ulogic;
 
     signal dram1_address : unsigned(23 downto 0);
-    signal dram1_data : std_logic_vector(63 downto 0);
-    signal dram1_data_valid : std_logic;
-    signal dram1_data_ready : std_logic;
-    signal dram1_brsp_error : std_logic;
+    signal dram1_data : std_ulogic_vector(63 downto 0);
+    signal dram1_data_valid : std_ulogic;
+    signal dram1_data_ready : std_ulogic;
+    signal dram1_brsp_error : std_ulogic;
 
-    signal revolution_clock : std_logic := '0';
-    signal event_trigger : std_logic := '0';
-    signal postmortem_trigger : std_logic := '0';
-    signal blanking_trigger : std_logic := '0';
-    signal dsp_events : std_logic_vector(CHANNELS);
-    signal interrupts : std_logic_vector(30 downto 0);
+    signal revolution_clock : std_ulogic := '0';
+    signal event_trigger : std_ulogic := '0';
+    signal postmortem_trigger : std_ulogic := '0';
+    signal blanking_trigger : std_ulogic := '0';
+    signal dsp_events : std_ulogic_vector(CHANNELS);
+    signal interrupts : std_ulogic_vector(30 downto 0);
 
     signal dram1_ready_delay : natural := 5;
 
@@ -142,7 +142,7 @@ begin
         while dram0_capture_enable = '1' loop
             clk_wait(dsp_clk);
             if dram0_data_valid = '1' then
-                dram0_capture_address <= std_logic_vector(
+                dram0_capture_address <= std_ulogic_vector(
                     signed(dram0_capture_address) + 1);
             end if;
         end loop;
@@ -214,7 +214,10 @@ begin
 
         -- Initiate DRAM0 memory transfer
         write_reg(CTRL_MEM_COUNT_REG,           X"00000010");
-        write_reg(CTRL_MEM_COMMAND_REG_W,       X"00000003");
+        write_reg(CTRL_MEM_COMMAND_REG, (
+            CTRL_MEM_COMMAND_START_BIT => '1',
+            CTRL_MEM_COMMAND_STOP_BIT => '1',
+            others => '0'));
 
         read_reg(5);
         read_reg(4);

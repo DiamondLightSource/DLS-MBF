@@ -8,6 +8,8 @@ trigger_sources = [
     ('PM',   'Postmortem trigger'),
     ('ADC0', '%s ADC event' % AXIS0),
     ('ADC1', '%s ADC event' % AXIS1),
+    ('DAC0', '%s DAC event' % AXIS0),
+    ('DAC1', '%s DAC event' % AXIS1),
     ('SEQ0', '%s SEQ event' % AXIS0),
     ('SEQ1', '%s SEQ event' % AXIS1),
 ]

@@ -3,10 +3,13 @@
 # Syntax of register_defs.in as parsed by parse_register_defs.py
 #
 #   register_defs = { register_def_entry }*
-#   register_def_entry = group_def | shared_def
+#   register_def_entry = group_def | shared_def | constant_def
+#
+#   constant_def = name "=" value
+#
 #   shared_def = shared_reg_def | shared_group_def
 #
-#   group_def = "!"name { group_entry }*
+#   group_def = "!"["!"]name { group_entry }*
 #   group_entry =
 #       group_def | reg_def | reg_pair | reg_array | shared_name | reg_overlay
 #
@@ -44,18 +47,20 @@
 #   field = (name, range, is_bit, rw, doc)
 #   register_array = (name, range, rw, doc)
 
+from __future__ import print_function
+
 import sys
 from collections import namedtuple, OrderedDict
 import re
 
-import indent
+from . import indent
 
 
 # ------------------------------------------------------------------------------
 # The following structures are used to return the results of a parse.
 
 Group = namedtuple('Group',
-    ['name', 'range', 'content', 'definition', 'doc'])
+    ['name', 'range', 'hidden', 'content', 'definition', 'doc'])
 Register = namedtuple('Register',
     ['name', 'offset', 'rw', 'fields', 'definition', 'doc'])
 RegisterArray = namedtuple('RegisterArray',
@@ -68,8 +73,11 @@ Overlay = namedtuple('Overlay',
     ['name', 'offset', 'rw', 'registers', 'doc'])
 Union = namedtuple('Union',
     ['name', 'range', 'content', 'doc'])
+Constant = namedtuple('Constant',
+    ['name', 'value', 'doc'])
 
-Parse = namedtuple('Parse', ['group_defs', 'register_defs', 'groups'])
+Parse = namedtuple('Parse',
+    ['group_defs', 'register_defs', 'groups', 'constants'])
 
 
 # ------------------------------------------------------------------------------
@@ -87,6 +95,7 @@ class WalkParse:
         def walk_rw_pair(self, context, rw_pair):
         def walk_overlay(self, context, overlay):
         def walk_union(self, context, union):
+        def walk_constant(self, context, constant):
 
     '''
 
@@ -116,6 +125,9 @@ class WalkParse:
             self.walk_field(context, field)
             for field in register.fields]
 
+    def walk_constant(self, context, constant):
+        pass
+
 
 # ------------------------------------------------------------------------------
 # Debug function for printing result of parse
@@ -126,61 +138,64 @@ class PrintMethods(WalkParse):
 
     def __print_prefix(self, n, prefix):
         sys.stdout.write(n * '    ')
-        print prefix,
+        print(prefix, end = ' ')
 
     def __print_doc(self, n, doc):
         for d in doc:
             self.__print_prefix(n, '#')
-            print d
+            print(d)
 
     def __do_print(self, n, prefix, value, *fields):
         self.__print_doc(n, value.doc)
         self.__print_prefix(n, prefix)
-        print '%s%s' % (self.__name_prefix, value.name),
+        print('%s%s' % (self.__name_prefix, value.name), end = ' ')
         for field in fields:
-            print field,
+            print(field, end = ' ')
 
 
     # WalkParse interface methods
 
     def walk_register_array(self, n, array):
         self.__do_print(n, 'A', array, array.range, array.rw)
-        print
+        print()
 
     def walk_field(self, n, field):
         self.__do_print(n, 'F', field, field.range, field.is_bit, field.rw)
-        print
+        print()
 
     def walk_group(self, n, group):
         self.__do_print(n, 'G', group, group.range)
         if group.definition:
-            print ':', group.definition.name,
-        print
+            print(':', group.definition.name, end = ' ')
+        print()
         self.walk_subgroups(n + 1, group)
 
     def walk_register(self, n, reg):
         self.__do_print(n, 'R', reg, reg.offset, reg.rw)
         if reg.definition:
-            print ':', reg.definition.name,
-        print
+            print(':', reg.definition.name, end = ' ')
+        print()
         self.walk_fields(n + 1, reg)
 
     def walk_rw_pair(self, n, rw_pair):
         self.__print_prefix(n, 'P')
-        print
+        print()
         for reg in rw_pair.registers:
             self.walk_register(n + 1, reg)
 
     def walk_overlay(self, n, overlay):
         self.__do_print(n, 'O', overlay, overlay.offset, overlay.rw)
-        print
+        print()
         for reg in overlay.registers:
             self.walk_register(n + 1, reg)
 
     def walk_union(self, n, union):
         self.__do_print(n, 'U', union, union.range)
-        print
+        print()
         self.walk_subgroups(n + 1, union)
+
+    def walk_constant(self, n, constant):
+        self.__do_print(n, 'K', constant, constant.value)
 
 
 def print_parse(parse):
@@ -193,6 +208,8 @@ def print_parse(parse):
     methods = PrintMethods()
     for g in parse.groups:
         methods.walk_group(0, g)
+    for k in parse.constants:
+        methods.walk_constant(0, k)
 
 
 # ------------------------------------------------------------------------------
@@ -200,7 +217,7 @@ def print_parse(parse):
 
 
 def fail_parse(message, line_no):
-    print >>sys.stderr, 'Parse error: %s at line %d' % (message, line_no)
+    print('Parse error: %s at line %d' % (message, line_no), file = sys.stderr)
     sys.exit(1)
 
 def parse_int(value, line_no):
@@ -403,7 +420,7 @@ def parse_shared_name(offset, parse, defines):
     if isinstance(define, Group):
         check_body(parse)
         length = define.range[1]
-        result = Group(name, (offset, length), [], define, doc)
+        result = Group(name, (offset, length), False, [], define, doc)
     elif isinstance(define, Register):
         fields = parse_field_defs(body)
         length = 1
@@ -441,14 +458,18 @@ def parse_group_entry(offset, parse, defines):
 # Parses a group definition, returns the resulting parse together with the
 # number of registers in the parsed group
 #
-# group_def = "!"name { group_entry }*
+# group_def = "!"["!"]name { group_entry }*
 def parse_group_def(offset, parse, defines):
     line, body, doc, line_no = parse
 
     line = line.split()
     name = line[0]
     assert name[0] == '!'
-    name = name[1:]
+    hidden = name[1] == '!'
+    if hidden:
+        name = name[2:]
+    else:
+        name = name[1:]
     check_name(name, line_no)
 
     check_args(line, 1, 1, line_no)
@@ -461,7 +482,7 @@ def parse_group_def(offset, parse, defines):
         count += entry_count
         content.append(result)
 
-    return (Group(name, (offset, count), content, None, doc), count)
+    return (Group(name, (offset, count), hidden, content, None, doc), count)
 
 
 # shared_def = shared_reg_def | shared_group_def
@@ -476,17 +497,34 @@ def parse_shared_def(parse, defines):
     defines[result.name] = result
 
 
+# constant_def = name "=" value
+def parse_constant_def(parse, constants):
+    check_body(parse)
+
+    line, _, doc, line_no = parse
+
+    name, value = line.split('=', 1)
+    name = name.strip()
+    check_name(name, line_no)
+    value = int(value)
+
+    constants[name] = Constant(name, value, doc)
+
+
 # Parse for a top level entry -- either a reusable name definition, if prefixed
 # with :, or a top level group definition.
 #
-# register_def_entry = group_def | shared_def
-def parse_register_def_entry(parse, defines):
+# register_def_entry = group_def | shared_def | constant_def
+def parse_register_def_entry(parse, defines, constants):
     if parse.line[0] == ':':
         parse_shared_def(parse, defines)
         return []
     elif parse.line[0] == '!':
         group, count = parse_group_def(0, parse, defines)
         return [group]
+    elif '=' in parse.line:
+        parse_constant_def(parse, constants)
+        return []
     else:
         fail_parse(
             'Ungrouped register definition not expected here', parse.line_no)
@@ -507,16 +545,17 @@ def separate_defines(defines):
 
 
 # Converts a list of indented parses into a list of Group definitions
-def parse(parse):
+def parse_defs(parse):
     defines = OrderedDict()
     groups = []
+    constants = OrderedDict()
 
     # The incoming parse is a list of (line, [parse], doc, line_no) parses
     for entry in parse:
-        groups.extend(parse_register_def_entry(entry, defines))
+        groups.extend(parse_register_def_entry(entry, defines, constants))
 
     group_defs, register_defs = separate_defines(defines)
-    return Parse(group_defs, register_defs, groups)
+    return Parse(group_defs, register_defs, groups, constants)
 
 
 # ------------------------------------------------------------------------------
@@ -580,5 +619,5 @@ if __name__ == '__main__':
     indent_parse = indent.parse_file(file(sys.argv[1]))
     parse = parse(indent_parse)
     print_parse(parse)
-    print
+    print()
     print_parse(flatten(parse))

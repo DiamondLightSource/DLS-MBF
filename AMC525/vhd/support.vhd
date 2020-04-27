@@ -8,7 +8,7 @@ package support is
     type signed_array is array(natural range <>) of signed;
     type signed_array_array is array(natural range <>) of signed_array;
     type unsigned_array is array(natural range <>) of unsigned;
-    type vector_array is array(natural range <>) of std_logic_vector;
+    type vector_array is array(natural range <>) of std_ulogic_vector;
 
 
     -- Returns the number of bits required to represent the value x.  Note that,
@@ -55,68 +55,68 @@ package support is
     --
     procedure truncate_result(
         signal output : out signed;
-        signal overflow : out std_logic;
+        signal overflow : out std_ulogic;
         input : signed; offset : natural := 0);
 
     -- Same for unsigned.  In this case of course overflow detection is simpler.
     procedure truncate_result(
         signal output : out unsigned;
-        signal overflow : out std_logic;
+        signal overflow : out std_ulogic;
         input : unsigned; offset : natural := 0);
 
 
     -- Checks data for consistency, returns '1' if all bits are not the same, ie
     -- '0' is returned if data is all zeros or all ones.
-    function overflow_detect(data : signed) return std_logic;
+    function overflow_detect(data : signed) return std_ulogic;
 
 
     -- Taking overflow into account returns saturated value if necessary.
     function saturate(
-        data : signed; overflow : std_logic; sign : std_logic) return signed;
-    function saturate(data : unsigned; overflow : std_logic) return unsigned;
+        data : signed; overflow : std_ulogic; sign : std_ulogic) return signed;
+    function saturate(data : unsigned; overflow : std_ulogic) return unsigned;
 
     -- Helper function for extracting sign bit for data
-    function sign_bit(data : signed) return std_logic;
+    function sign_bit(data : signed) return std_ulogic;
 
-    -- Sign extend a std_logic_vector
-    function sign_extend(data : std_logic_vector; width : natural)
-        return std_logic_vector;
+    -- Sign extend a std_ulogic_vector
+    function sign_extend(data : std_ulogic_vector; width : natural)
+        return std_ulogic_vector;
 
 
     -- Vectorised functions for mapping logic operations over bit arrays
-    function vector_and(data : std_logic_vector) return std_logic;
-    function vector_or(data : std_logic_vector) return std_logic;
-    function vector_xor(data : std_logic_vector) return std_logic;
+    function vector_and(data : std_ulogic_vector) return std_ulogic;
+    function vector_or(data : std_ulogic_vector) return std_ulogic;
+    function vector_xor(data : std_ulogic_vector) return std_ulogic;
     -- Overloads for arithmetic types
-    function vector_and(data : signed) return std_logic;
-    function vector_or(data : signed) return std_logic;
-    function vector_xor(data : signed) return std_logic;
-    function vector_and(data : unsigned) return std_logic;
-    function vector_or(data : unsigned) return std_logic;
-    function vector_xor(data : unsigned) return std_logic;
+    function vector_and(data : signed) return std_ulogic;
+    function vector_or(data : signed) return std_ulogic;
+    function vector_xor(data : signed) return std_ulogic;
+    function vector_and(data : unsigned) return std_ulogic;
+    function vector_or(data : unsigned) return std_ulogic;
+    function vector_xor(data : unsigned) return std_ulogic;
 
 
     -- Simple type conversions
-    function to_std_logic(bool : boolean) return std_logic;
-    function to_std_logic(nat : natural range 0 to 1) return std_logic;
-    function to_integer(data : std_logic) return natural;
-    function to_boolean(data : std_logic) return boolean;
-    function to_std_logic_vector(nat : natural; width : natural)
-        return std_logic_vector;
+    function to_std_ulogic(bool : boolean) return std_ulogic;
+    function to_std_ulogic(nat : natural range 0 to 1) return std_ulogic;
+    function to_integer(data : std_ulogic) return natural;
+    function to_boolean(data : std_ulogic) return boolean;
+    function to_std_ulogic_vector(nat : natural; width : natural)
+        return std_ulogic_vector;
 
 
     -- Helpers for reading and writing bit fields.
 
     -- Returns field of specified width starting at offset start in data
     function read_field(
-        data : std_logic_vector;
-        width : natural; start : natural) return std_logic_vector;
+        data : std_ulogic_vector;
+        width : natural; start : natural) return std_ulogic_vector;
 
     -- Treats data as an array of fields of width bits and returns the field
     -- selected by index.
     function read_field_ix(
-        data : std_logic_vector;
-        width : natural; index : natural) return std_logic_vector;
+        data : std_ulogic_vector;
+        width : natural; index : natural) return std_ulogic_vector;
 
 
     -- Functions for signed max and min int values.  For unsigned we don't need
@@ -127,14 +127,14 @@ package support is
 
     -- Returns array of length bits with the indexed bit set
     function compute_strobe(index : natural; length : natural)
-        return std_logic_vector;
+        return std_ulogic_vector;
 
     procedure compute_strobe(
-        signal output : out std_logic_vector;
-        index : natural; value : std_logic := '1');
+        signal output : out std_ulogic_vector;
+        index : natural; value : std_ulogic := '1');
 
     -- Reverses order of bits in vector
-    function reverse(data : in std_logic_vector) return std_logic_vector;
+    function reverse(data : in std_ulogic_vector) return std_ulogic_vector;
 
 end;
 
@@ -178,7 +178,7 @@ package body support is
     end function;
 
 
-    function overflow_detect(data : signed) return std_logic is
+    function overflow_detect(data : signed) return std_ulogic is
     begin
         -- Detect overflow unless all the bits in top_bits are identical.
         -- If not all ones or not all zeros then we have an overflow.
@@ -187,7 +187,7 @@ package body support is
 
     procedure truncate_result(
         signal output : out signed;
-        signal overflow : out std_logic;
+        signal overflow : out std_ulogic;
         input : signed; offset : natural := 0)
     is
         constant output_left : natural := output'length - 1 + offset;
@@ -198,7 +198,7 @@ package body support is
 
     procedure truncate_result(
         signal output : out unsigned;
-        signal overflow : out std_logic;
+        signal overflow : out std_ulogic;
         input : unsigned; offset : natural := 0)
     is
         constant output_left : natural := output'length - 1 + offset;
@@ -209,7 +209,8 @@ package body support is
 
 
     function saturate(
-        data : signed; overflow : std_logic; sign : std_logic) return signed is
+        data : signed; overflow : std_ulogic; sign : std_ulogic) return signed
+    is
     begin
         if overflow = '1' then
             if sign = '1' then
@@ -222,7 +223,7 @@ package body support is
         end if;
     end;
 
-    function saturate(data : unsigned; overflow : std_logic) return unsigned
+    function saturate(data : unsigned; overflow : std_ulogic) return unsigned
     is
         constant max_val : data'SUBTYPE := (others => '1');
     begin
@@ -233,19 +234,19 @@ package body support is
         end if;
     end;
 
-    function sign_bit(data : signed) return std_logic is
+    function sign_bit(data : signed) return std_ulogic is
     begin
         return data(data'left);
     end;
 
-    function sign_extend(data : std_logic_vector; width : natural)
-        return std_logic_vector is
+    function sign_extend(data : std_ulogic_vector; width : natural)
+        return std_ulogic_vector is
     begin
-        return std_logic_vector(resize(signed(data), width));
+        return std_ulogic_vector(resize(signed(data), width));
     end;
 
-    function vector_and(data : std_logic_vector) return std_logic is
-        variable result : std_logic := '1';
+    function vector_and(data : std_ulogic_vector) return std_ulogic is
+        variable result : std_ulogic := '1';
     begin
         for i in data'range loop
             result := result and data(i);
@@ -253,8 +254,8 @@ package body support is
         return result;
     end function;
 
-    function vector_or(data : std_logic_vector) return std_logic is
-        variable result : std_logic := '0';
+    function vector_or(data : std_ulogic_vector) return std_ulogic is
+        variable result : std_ulogic := '0';
     begin
         for i in data'range loop
             result := result or data(i);
@@ -262,8 +263,8 @@ package body support is
         return result;
     end function;
 
-    function vector_xor(data : std_logic_vector) return std_logic is
-        variable result : std_logic := '0';
+    function vector_xor(data : std_ulogic_vector) return std_ulogic is
+        variable result : std_ulogic := '0';
     begin
         for i in data'range loop
             result := result xor data(i);
@@ -271,27 +272,27 @@ package body support is
         return result;
     end function;
 
-    function vector_and(data : signed) return std_logic is begin
-        return vector_and(std_logic_vector(data));
+    function vector_and(data : signed) return std_ulogic is begin
+        return vector_and(std_ulogic_vector(data));
     end;
-    function vector_or(data : signed) return std_logic is begin
-        return vector_or(std_logic_vector(data));
+    function vector_or(data : signed) return std_ulogic is begin
+        return vector_or(std_ulogic_vector(data));
     end;
-    function vector_xor(data : signed) return std_logic is begin
-        return vector_xor(std_logic_vector(data));
+    function vector_xor(data : signed) return std_ulogic is begin
+        return vector_xor(std_ulogic_vector(data));
     end;
-    function vector_and(data : unsigned) return std_logic is begin
-        return vector_and(std_logic_vector(data));
+    function vector_and(data : unsigned) return std_ulogic is begin
+        return vector_and(std_ulogic_vector(data));
     end;
-    function vector_or(data : unsigned) return std_logic is begin
-        return vector_or(std_logic_vector(data));
+    function vector_or(data : unsigned) return std_ulogic is begin
+        return vector_or(std_ulogic_vector(data));
     end;
-    function vector_xor(data : unsigned) return std_logic is begin
-        return vector_xor(std_logic_vector(data));
+    function vector_xor(data : unsigned) return std_ulogic is begin
+        return vector_xor(std_ulogic_vector(data));
     end;
 
 
-    function to_std_logic(bool : boolean) return std_logic is
+    function to_std_ulogic(bool : boolean) return std_ulogic is
     begin
         if bool then
             return '1';
@@ -300,7 +301,7 @@ package body support is
         end if;
     end;
 
-    function to_std_logic(nat : natural range 0 to 1) return std_logic is
+    function to_std_ulogic(nat : natural range 0 to 1) return std_ulogic is
     begin
         case nat is
             when 0 => return '0';
@@ -308,7 +309,7 @@ package body support is
         end case;
     end;
 
-    function to_integer(data : std_logic) return natural is begin
+    function to_integer(data : std_ulogic) return natural is begin
         if data = '1' then
             return 1;
         else
@@ -316,44 +317,44 @@ package body support is
         end if;
     end;
 
-    function to_boolean(data : std_logic) return boolean is begin
+    function to_boolean(data : std_ulogic) return boolean is begin
         return data = '1';
     end;
 
-    function to_std_logic_vector(nat : natural; width : natural)
-        return std_logic_vector
+    function to_std_ulogic_vector(nat : natural; width : natural)
+        return std_ulogic_vector
     is begin
-        return std_logic_vector(to_signed(nat, width));
+        return std_ulogic_vector(to_signed(nat, width));
     end;
 
 
     function read_field(
-        data : std_logic_vector;
-        width : natural; start : natural) return std_logic_vector
+        data : std_ulogic_vector;
+        width : natural; start : natural) return std_ulogic_vector
     is
-        variable result : std_logic_vector(width-1 downto 0);
+        variable result : std_ulogic_vector(width-1 downto 0);
     begin
         result := data(start + width - 1 downto start);
         return result;
     end;
 
     function read_field_ix(
-        data : std_logic_vector;
-        width : natural; index : natural) return std_logic_vector is
+        data : std_ulogic_vector;
+        width : natural; index : natural) return std_ulogic_vector is
     begin
         return read_field(data, width, index * width);
     end;
 
 
     function max_int(size : natural) return signed is
-        variable result : std_logic_vector(size-1 downto 0) := (others => '1');
+        variable result : std_ulogic_vector(size-1 downto 0) := (others => '1');
     begin
         result(size-1) := '0';
         return signed(result);
     end;
 
     function min_int(size : natural) return signed is
-        variable result : std_logic_vector(size-1 downto 0) := (others => '0');
+        variable result : std_ulogic_vector(size-1 downto 0) := (others => '0');
     begin
         result(size-1) := '1';
         return signed(result);
@@ -361,9 +362,9 @@ package body support is
 
 
     function compute_strobe(index : natural; length : natural)
-        return std_logic_vector
+        return std_ulogic_vector
     is
-        variable result : std_logic_vector(0 to length-1) := (others => '0');
+        variable result : std_ulogic_vector(0 to length-1) := (others => '0');
     begin
         result(index) := '1';
         return result;
@@ -371,8 +372,8 @@ package body support is
 
 
     procedure compute_strobe(
-        signal output : out std_logic_vector;
-        index : natural; value : std_logic := '1') is
+        signal output : out std_ulogic_vector;
+        index : natural; value : std_ulogic := '1') is
     begin
         for n in output'RANGE loop
             output(n) <= value when index = n else '0';
@@ -380,8 +381,9 @@ package body support is
     end;
 
 
-    function reverse(data : in std_logic_vector) return std_logic_vector is
-        variable result : std_logic_vector(data'REVERSE_RANGE);
+    function reverse(data : in std_ulogic_vector) return std_ulogic_vector
+    is
+        variable result : std_ulogic_vector(data'REVERSE_RANGE);
     begin
         for i in data'RANGE loop
             result(i) := data(i);

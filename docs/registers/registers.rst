@@ -29,6 +29,14 @@ written.
     :file:      AMC525/vhd/register_defs.in
 
 
+Constant Definitions
+--------------------
+
+The following constants are defined as part of the firmware build.
+
+..  constant_docs::
+
+
 System Registers
 ----------------
 
@@ -56,6 +64,14 @@ MMS Registers
 
 ..  register_docs::
     :group:     MMS
+
+..  _TRIGGERS_IN:
+
+Trigger Sources
+~~~~~~~~~~~~~~~
+
+..  register_docs::
+    :register:  TRIGGERS_IN
 
 Interrupt definitions
 ~~~~~~~~~~~~~~~~~~~~~

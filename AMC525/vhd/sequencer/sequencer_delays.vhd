@@ -4,9 +4,6 @@
 -- control outputs we need to add some delays to the bank output, the window
 -- control and the detector start stop events.
 
--- NOTE: This code has not been updated since porting from TMBF and is out of
--- date!!!
-
 library ieee;
 
 use ieee.std_logic_1164.all;
@@ -15,37 +12,36 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 
+use work.dsp_defs.all;
 use work.sequencer_defs.all;
 
 entity sequencer_delays is
+    generic (
+        BANK_DELAY : natural
+    );
     port (
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
 
         seq_state_i : in seq_state_t;
         seq_pc_i : in seq_pc_t;
 
         seq_pc_o : out seq_pc_t := (others => '0');
-        hom_gain_o : out unsigned(3 downto 0) := (others => '0');
-        hom_enable_o : out std_logic;
         bunch_bank_o : out unsigned(1 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of sequencer_delays is
-    signal load_bunch_bank : std_logic;
-    signal load_hom_gain : std_logic;
+    signal load_bunch_bank : std_ulogic;
 
 begin
-    bunch_bank_delay:
-    entity work.dlyline generic map (DLY => 6) port map (
+    bunch_bank_delay : entity work.dlyline generic map (
+        DLY => BANK_DELAY
+    ) port map (
         clk_i => dsp_clk_i,
-        data_i(0) => turn_clock_i, data_o(0) => load_bunch_bank);
-
-    hom_gain_delay:
-    entity work.dlyline generic map (DLY => 1) port map (
-        clk_i => dsp_clk_i,
-        data_i(0) => turn_clock_i, data_o(0) => load_hom_gain);
+        data_i(0) => turn_clock_i,
+        data_o(0) => load_bunch_bank
+    );
 
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
@@ -55,11 +51,6 @@ begin
 
             if load_bunch_bank = '1' then
                 bunch_bank_o <= seq_state_i.bunch_bank;
-            end if;
-
-            if load_hom_gain = '1' then
-                hom_gain_o <= seq_state_i.hom_gain;
-                hom_enable_o <= seq_state_i.hom_enable;
             end if;
         end if;
     end process;

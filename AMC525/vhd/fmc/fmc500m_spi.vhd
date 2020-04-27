@@ -26,65 +26,65 @@ use work.defines.all;
 
 entity fmc500m_spi is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Register control
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic;
+        write_ack_o : out std_ulogic;
         --
-        read_strobe_i : in std_logic;
+        read_strobe_i : in std_ulogic;
         read_data_o : out reg_data_t;
-        read_ack_o : out std_logic;
+        read_ack_o : out std_ulogic;
 
         -- PLL SPI
-        pll_spi_csn_o : out std_logic;
-        pll_spi_sclk_o : out std_logic;
-        pll_spi_sdi_o : out std_logic;
-        pll_spi_sdo_i : in std_logic;
+        pll_spi_csn_o : out std_ulogic;
+        pll_spi_sclk_o : out std_ulogic;
+        pll_spi_sdi_o : out std_ulogic;
+        pll_spi_sdo_i : in std_ulogic;
         -- ADC SPI
-        adc_spi_csn_o : out std_logic;
-        adc_spi_sclk_o : out std_logic;
-        adc_spi_sdio_o : out std_logic;
-        adc_spi_sdio_i : in std_logic;
-        adc_spi_sdio_en_o : out std_logic;
+        adc_spi_csn_o : out std_ulogic;
+        adc_spi_sclk_o : out std_ulogic;
+        adc_spi_sdio_o : out std_ulogic;
+        adc_spi_sdio_i : in std_ulogic;
+        adc_spi_sdio_en_o : out std_ulogic;
         -- DAC SPI
-        dac_spi_csn_o : out std_logic;
-        dac_spi_sclk_o : out std_logic;
-        dac_spi_sdi_o : out std_logic;
-        dac_spi_sdo_i : in std_logic
+        dac_spi_csn_o : out std_ulogic;
+        dac_spi_sclk_o : out std_ulogic;
+        dac_spi_sdi_o : out std_ulogic;
+        dac_spi_sdo_i : in std_ulogic
     );
 end;
 
 architecture arch of fmc500m_spi is
 
     -- Internal SPI signals
-    signal spi15_start : std_logic := '0';
-    signal spi15_busy : std_logic;
-    signal spi15_response : std_logic_vector(7 downto 0);
-    signal spi15_csn : std_logic;
-    signal spi15_sclk : std_logic;
-    signal spi15_mosi : std_logic;
-    signal spi15_moen : std_logic;
-    signal spi15_miso : std_logic;
-    signal spi7_start : std_logic;
-    signal spi7_busy : std_logic;
-    signal spi7_response : std_logic_vector(7 downto 0);
-    signal spi7_csn : std_logic;
-    signal spi7_sclk : std_logic;
-    signal spi7_mosi : std_logic;
-    signal spi7_moen : std_logic;
-    signal spi7_miso : std_logic;
+    signal spi15_start : std_ulogic := '0';
+    signal spi15_busy : std_ulogic;
+    signal spi15_response : std_ulogic_vector(7 downto 0);
+    signal spi15_csn : std_ulogic;
+    signal spi15_sclk : std_ulogic;
+    signal spi15_mosi : std_ulogic;
+    signal spi15_moen : std_ulogic;
+    signal spi15_miso : std_ulogic;
+    signal spi7_start : std_ulogic;
+    signal spi7_busy : std_ulogic;
+    signal spi7_response : std_ulogic_vector(7 downto 0);
+    signal spi7_csn : std_ulogic;
+    signal spi7_sclk : std_ulogic;
+    signal spi7_mosi : std_ulogic;
+    signal spi7_moen : std_ulogic;
+    signal spi7_miso : std_ulogic;
 
     -- Selected SPI target
     type spi_selection_t is (PLL, ADC, DAC);
     signal selection : spi_selection_t;
 
     -- Decode of input
-    signal read_write_n : std_logic;
+    signal read_write_n : std_ulogic;
     signal selection_in : spi_selection_t;
-    signal address : std_logic_vector(14 downto 0);
-    signal write_data : std_logic_vector(7 downto 0);
+    signal address : std_ulogic_vector(14 downto 0);
+    signal write_data : std_ulogic_vector(7 downto 0);
 
     -- Delayed read if necessary.
     signal reading : boolean;
@@ -220,9 +220,9 @@ begin
     adc_cs <= spi15_csn = '0' and selection = ADC;
     dac_cs <= spi7_csn = '0'  and selection = DAC;
 
-    pll_spi_csn_o <= to_std_logic(not pll_cs);
-    adc_spi_csn_o <= to_std_logic(not adc_cs);
-    dac_spi_csn_o <= to_std_logic(not dac_cs);
+    pll_spi_csn_o <= to_std_ulogic(not pll_cs);
+    adc_spi_csn_o <= to_std_ulogic(not adc_cs);
+    dac_spi_csn_o <= to_std_ulogic(not dac_cs);
 
     pll_spi_sclk_o <= spi15_sclk when pll_cs else '0';
     adc_spi_sclk_o <= spi15_sclk when adc_cs else '0';

@@ -1,33 +1,40 @@
 # Table of help pages for MBF.  First column is OPI script name, second column
 # is URL for help page.
 
-ADC             https://confluence.diamond.ac.uk/x/ex5VB
-DAC             https://confluence.diamond.ac.uk/x/WR9VB
-bunch_waveforms https://confluence.diamond.ac.uk/x/bx9VB
-control         https://confluence.diamond.ac.uk/x/Xx9VB
-delay           https://confluence.diamond.ac.uk/x/2pLkB
-det_bunches     https://confluence.diamond.ac.uk/x/hh9VB
-det_waveforms   https://confluence.diamond.ac.uk/x/gx9VB
-detector        https://confluence.diamond.ac.uk/x/gB9VB
-fir_lmbf        https://confluence.diamond.ac.uk/x/-B5VB
-fir_tmbf        https://confluence.diamond.ac.uk/x/-B5VB
-fir_waveforms   https://confluence.diamond.ac.uk/x/Ah9VB
-info            https://confluence.diamond.ac.uk/x/orKNB
-lmbf            https://confluence.diamond.ac.uk/x/yx5VB
-memory          https://confluence.diamond.ac.uk/x/eh9VB
-minmax          https://confluence.diamond.ac.uk/x/xB5VB
-overview        https://confluence.diamond.ac.uk/x/9LGNB
-seq_window      https://confluence.diamond.ac.uk/x/Yh9VB
-sequencer       https://confluence.diamond.ac.uk/x/aB9VB
-status          https://confluence.diamond.ac.uk/x/ix9VB
-super_seq       https://confluence.diamond.ac.uk/x/bB9VB
-tmbf            https://confluence.diamond.ac.uk/x/yx5VB
-trigger_target  https://confluence.diamond.ac.uk/x/cx9VB
-triggers        https://confluence.diamond.ac.uk/x/dx9VB
+ADC             https://diamondlightsource.atlassian.net/wiki/x/HgAN
+DAC             https://diamondlightsource.atlassian.net/wiki/x/FQAN
+bunch_extra     https://diamondlightsource.atlassian.net/wiki/x/JYFMAQ
+bunch_source    https://diamondlightsource.atlassian.net/wiki/x/IABdAQ
+bunch_waveforms https://diamondlightsource.atlassian.net/wiki/x/JAAN
+control         https://diamondlightsource.atlassian.net/wiki/x/EwAN
+delay           https://diamondlightsource.atlassian.net/wiki/x/GgAN
+det_bunches     https://diamondlightsource.atlassian.net/wiki/x/JwAN
+det_waveforms   https://diamondlightsource.atlassian.net/wiki/x/KAAN
+detector        https://diamondlightsource.atlassian.net/wiki/x/HQAN
+fir_lmbf        https://diamondlightsource.atlassian.net/wiki/x/AwAN
+fir_tmbf        https://diamondlightsource.atlassian.net/wiki/x/AwAN
+fir_waveforms   https://diamondlightsource.atlassian.net/wiki/x/DAAN
+info            https://diamondlightsource.atlassian.net/wiki/x/CAAN
+lmbf            https://diamondlightsource.atlassian.net/wiki/x/AgAN
+memory          https://diamondlightsource.atlassian.net/wiki/x/IQAN
+minmax          https://diamondlightsource.atlassian.net/wiki/x/LQAN
+nco_gain        https://diamondlightsource.atlassian.net/wiki/x/XoFMAQ
+overview        https://diamondlightsource.atlassian.net/wiki/x/KwAN
+phase           https://diamondlightsource.atlassian.net/wiki/x/EQAN
+seq_window      https://diamondlightsource.atlassian.net/wiki/x/IwAN
+sequencer       https://diamondlightsource.atlassian.net/wiki/x/IgAN
+status          https://diamondlightsource.atlassian.net/wiki/x/KgAN
+super_seq       https://diamondlightsource.atlassian.net/wiki/x/JQAN
+tmbf            https://diamondlightsource.atlassian.net/wiki/x/AgAN
+trigger_target  https://diamondlightsource.atlassian.net/wiki/x/HAAN
+triggers        https://diamondlightsource.atlassian.net/wiki/x/GwAN
+tune_pll        https://diamondlightsource.atlassian.net/wiki/x/FAAN
+tune_pll_debug  https://diamondlightsource.atlassian.net/wiki/x/HwAN
 
 # The following pages are part of tune fitting
-tune_peaks      https://confluence.diamond.ac.uk/x/pbONB
-tune_waveforms  https://confluence.diamond.ac.uk/x/qLONB
+tune_config     https://diamondlightsource.atlassian.net/wiki/x/CwAN
+tune_peaks      https://diamondlightsource.atlassian.net/wiki/x/BQAN
+tune_waveforms  https://diamondlightsource.atlassian.net/wiki/x/BAAN
 
 # The following default target is searched for if none of the above are valid
-*               https://confluence.diamond.ac.uk/x/eR5VB
+*               https://diamondlightsource.atlassian.net/wiki/x/IAAN

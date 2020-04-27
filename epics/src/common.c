@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include <math.h>
 #include <string.h>
 
@@ -60,10 +61,9 @@ void _exit_axis_step(void)
 
 
 void float_array_to_int(
-    size_t count, float in[], int out[], int bits, int high_bits)
+    size_t count, float in[], int out[], int bits, int fraction_bits)
 {
-    int fraction_bits = bits - high_bits - 1;
-    float top_bit = ldexpf(1, high_bits);
+    float top_bit = ldexpf(1, bits - fraction_bits - 1);
     float min_val = -top_bit;
     /* We have to be a bit careful with max_val.  If bits is larger than can be
      * represented in a float then simply subtracting 2^-fraction_bits will do
@@ -84,10 +84,9 @@ void float_array_to_int(
 }
 
 /* Much as above, but double, unsigned, one result. */
-unsigned int double_to_uint(double *in, int bits, int high_bits)
+unsigned int double_to_uint(double *in, int bits, int fraction_bits)
 {
-    int fraction_bits = bits - high_bits;
-    double top_bit = ldexp(1, high_bits);
+    double top_bit = ldexp(1, bits - fraction_bits);
     double min_val = 0;
     double max_val = nextafter(top_bit, 0) - ldexp(1, -fraction_bits);
 
@@ -103,7 +102,7 @@ unsigned int double_to_uint(double *in, int bits, int high_bits)
 
 /* Convert fractional tune in cycles per machine revolution to phase advance per
  * bunch in hardware units. */
-unsigned int tune_to_freq(double tune)
+uint64_t tune_to_freq(double tune)
 {
     /* Convert the incoming tune in cycles per machine revolution into phase
      * advance per bunch by scaling and reducing to the half open interval
@@ -113,16 +112,16 @@ unsigned int tune_to_freq(double tune)
     if (fraction < 0.0)
         fraction += 1.0;
     /* Can now scale up to hardware units. */
-    return (unsigned int) round(ldexp(fraction, 32));
+    return (uint64_t) llround(ldexp(fraction, 48));
 }
 
-double freq_to_tune(unsigned int freq)
+double freq_to_tune(uint64_t freq)
 {
-    return ldexp(freq, -32) * hardware_config.bunches;
+    return ldexp((double) (freq << 16), -64) * hardware_config.bunches;
 }
 
-double freq_to_tune_signed(unsigned int freq)
+double freq_to_tune_signed(uint64_t freq)
 {
-    int sfreq = (int) freq;
-    return ldexp(sfreq, -32) * hardware_config.bunches;
+    int64_t sfreq = (int64_t) freq;
+    return ldexp((double) (sfreq << 16), -64) * hardware_config.bunches;
 }

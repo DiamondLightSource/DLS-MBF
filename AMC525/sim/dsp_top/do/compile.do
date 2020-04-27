@@ -30,6 +30,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/arithmetic/extract_signed.vhd \
     $vhd_dir/arithmetic/gain_control.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
+    $vhd_dir/arithmetic/dsp48e_mac.vhd \
+    $vhd_dir/arithmetic/saturate.vhd \
     $vhd_dir/fast_fir/fast_fir.vhd \
     $vhd_dir/fast_fir/fast_fir_top.vhd \
     $vhd_dir/min_max_sum/min_max_sum_defs.vhd \
@@ -38,6 +40,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/min_max_sum/min_max_sum_update.vhd \
     $vhd_dir/min_max_sum/min_max_sum_readout.vhd \
     $vhd_dir/min_max_sum/min_max_sum_bank.vhd \
+    $vhd_dir/min_max_sum/min_max_sum_core.vhd \
     $vhd_dir/min_max_sum/min_max_sum.vhd \
     $vhd_dir/min_max_sum/min_max_limit.vhd \
     $vhd_dir/bunch/bunch_defs.vhd \
@@ -55,9 +58,13 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/nco/nco.vhd \
     $vhd_dir/dsp/dsp_to_adc.vhd \
     $vhd_dir/dsp/dsp_defs.vhd \
-    $vhd_dir/dsp/mms_dram_data_source.vhd \
+    $vhd_dir/dac/dac_mms_dram_data_source.vhd \
     $vhd_dir/dac/dac_nco_delay.vhd \
+    $vhd_dir/dac/dac_bunch_config_delay.vhd \
+    $vhd_dir/dac/dac_fir_gain.vhd \
+    $vhd_dir/dac/dac_nco_gains.vhd \
     $vhd_dir/dac/dac_output_mux.vhd \
+    $vhd_dir/dac/dac_registers.vhd \
     $vhd_dir/dac/dac_top.vhd \
     $vhd_dir/bunch_fir/bunch_fir_dsp.vhd \
     $vhd_dir/bunch_fir/bunch_fir_taps.vhd \
@@ -69,6 +76,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/memory/memory_buffer_fast.vhd \
     $vhd_dir/memory/memory_buffer_simple.vhd \
     $vhd_dir/memory/memory_buffer.vhd \
+    $vhd_dir/memory/memory_fifo.vhd \
+    $vhd_dir/tune_pll/tune_pll_offset.vhd \
     $vhd_dir/sequencer/sequencer_defs.vhd \
     $vhd_dir/sequencer/sequencer_registers.vhd \
     $vhd_dir/sequencer/sequencer_super.vhd \
@@ -78,6 +87,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/sequencer/sequencer_counter.vhd \
     $vhd_dir/sequencer/sequencer_window.vhd \
     $vhd_dir/sequencer/sequencer_delays.vhd \
+    $vhd_dir/sequencer/sequencer_nco.vhd \
     $vhd_dir/sequencer/sequencer_clocking.vhd \
     $vhd_dir/sequencer/sequencer_top.vhd \
     $vhd_dir/detector/detector_defs.vhd \
@@ -91,9 +101,31 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_input.vhd \
     $vhd_dir/detector/detector_dram_output.vhd \
     $vhd_dir/detector/detector_top.vhd \
+    $vhd_dir/dsp/nco_register.vhd \
+    $vhd_dir/dsp/dsp_fixed_nco.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
-    $vhd_dir/dsp/adc_overflow.vhd \
-    $vhd_dir/dsp/adc_top.vhd \
+    $vhd_dir/dsp/dsp_nco_to_mux_delay.vhd \
+    $vhd_dir/dsp/dsp_control_mux.vhd \
+    $vhd_dir/adc/adc_registers.vhd \
+    $vhd_dir/adc/adc_fill_reject_counter.vhd \
+    $vhd_dir/adc/adc_fill_reject_core.vhd \
+    $vhd_dir/adc/adc_fill_reject.vhd \
+    $vhd_dir/adc/adc_mms_dram_data_source.vhd \
+    $vhd_dir/adc/adc_overflow.vhd \
+    $vhd_dir/adc/adc_top.vhd \
+    $vhd_dir/tune_pll/tune_pll_defs.vhd \
+    $vhd_dir/tune_pll/tune_pll_registers.vhd \
+    $vhd_dir/tune_pll/tune_pll_detector.vhd \
+    cordic_table.vhd \
+    $vhd_dir/tune_pll/tune_pll_cordic.vhd \
+    $vhd_dir/tune_pll/tune_pll_feedback.vhd \
+    $vhd_dir/tune_pll/tune_pll_control.vhd \
+    $vhd_dir/tune_pll/one_pole_iir.vhd \
+    $vhd_dir/tune_pll/tune_pll_filtered.vhd \
+    $vhd_dir/tune_pll/tune_pll_readout_registers.vhd \
+    $vhd_dir/tune_pll/tune_pll_readout_fifo.vhd \
+    $vhd_dir/tune_pll/tune_pll_readout.vhd \
+    $vhd_dir/tune_pll/tune_pll_top.vhd \
     $vhd_dir/dsp/dsp_top.vhd \
 
 vcom -64 -2008 -work xil_defaultlib \

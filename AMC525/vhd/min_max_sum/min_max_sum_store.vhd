@@ -14,10 +14,10 @@ entity min_max_sum_store is
         UPDATE_DELAY : natural
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Selects bank used for updates and for readout
-        bank_select_i : in std_logic;
+        bank_select_i : in std_ulogic;
 
         -- Continuous bunch by bunch update interface
         update_addr_i : in unsigned;
@@ -27,10 +27,10 @@ entity min_max_sum_store is
         -- Readout and reset interface.  Pulsing readout_strobe_i will advance
         -- the read pointer and reset the previously read value.  The current
         -- readout is valid until after this strobe is seen.
-        readout_strobe_i : in std_logic;
+        readout_strobe_i : in std_ulogic;
         readout_addr_i : in unsigned;
         readout_data_o : out mms_row_t;
-        readout_ack_o : out std_logic
+        readout_ack_o : out std_ulogic
     );
 end;
 
@@ -42,7 +42,7 @@ architecture arch of min_max_sum_store is
     signal read_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)
         := (others => (others => '0'));
     signal read_data : mms_row_array_t;
-    signal write_strobe : std_logic_vector(0 to 1) := "00";
+    signal write_strobe : std_ulogic_vector(0 to 1) := "00";
     signal write_addr : unsigned_array(0 to 1)(update_addr_i'RANGE)
         := (others => (others => '0'));
     signal write_data : mms_row_array_t := (others => mms_reset_value);
@@ -51,10 +51,10 @@ architecture arch of min_max_sum_store is
 
     -- Bank selection
     signal read_addr_bank : natural range 0 to 1;
-    signal read_data_bank_std : std_logic;
+    signal read_data_bank_std : std_ulogic;
     signal read_data_bank : natural range 0 to 1;
     signal write_bank : natural range 0 to 1;
-    signal write_bank_std : std_logic;
+    signal write_bank_std : std_ulogic;
 
     -- Delay read_addr => read_data
     constant READ_DELAY : natural := 4;
@@ -145,7 +145,7 @@ begin
         DLY => READ_DELAY + 1
     ) port map (
         clk_i => clk_i,
-        data_i(0) => to_std_logic(read_addr_bank),
+        data_i(0) => to_std_ulogic(read_addr_bank),
         data_o(0) => read_data_bank_std
     );
     read_data_bank <= to_integer(read_data_bank_std);
@@ -154,7 +154,7 @@ begin
         DLY => WRITE_DELAY
     ) port map (
         clk_i => clk_i,
-        data_i(0) => to_std_logic(read_addr_bank),
+        data_i(0) => to_std_ulogic(read_addr_bank),
         data_o(0) => write_bank_std
     );
     write_bank <= to_integer(write_bank_std);
@@ -164,7 +164,7 @@ begin
         DW => update_addr_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(update_addr_i),
+        data_i => std_ulogic_vector(update_addr_i),
         unsigned(data_o) => update_write_addr
     );
 

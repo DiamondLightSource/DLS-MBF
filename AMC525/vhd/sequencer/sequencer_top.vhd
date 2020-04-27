@@ -6,12 +6,11 @@
 -- Output control:
 --
 --  bunch_bank_o    Determines FIR selection, DAC output selection, output gain
---  hom_freq_o      Determines sweep NCO frequency
---  hom_gain_o      Determines sweep NCO output gain
+--  nco_data_o      Generated NCO for output and detector
 --
 -- Detector control:
 --
---  hom_window_o    Detector window
+--  detector_window_o    Detector window
 --  seq_start_o     Detector dwell start accumulator reset
 --  seq_write_o     Detector dwell end
 --
@@ -29,48 +28,52 @@ use work.defines.all;
 use work.support.all;
 
 use work.nco_defs.all;
+use work.dsp_defs.all;
 use work.sequencer_defs.all;
 use work.register_defs.all;
 
 entity sequencer_top is
+    generic (
+        -- Delay from bunch bank selection to bank configuration
+        BUNCH_SELECT_DELAY : natural
+    );
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Clocking
-        turn_clock_adc_i : in std_logic;    -- Start of a machine revolution
-        blanking_i : in std_logic;      -- Can be used to disable sequence
+        turn_clock_adc_i : in std_ulogic;    -- Start of a machine revolution
+        blanking_i : in std_ulogic;      -- Can be used to disable sequence
 
         -- Register interface
-        write_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
+        write_strobe_i : in std_ulogic_vector(DSP_SEQ_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(DSP_SEQ_REGS);
-        read_strobe_i : in std_logic_vector(DSP_SEQ_REGS);
+        write_ack_o : out std_ulogic_vector(DSP_SEQ_REGS);
+        read_strobe_i : in std_ulogic_vector(DSP_SEQ_REGS);
         read_data_o : out reg_data_array_t(DSP_SEQ_REGS);
-        read_ack_o : out std_logic_vector(DSP_SEQ_REGS);
+        read_ack_o : out std_ulogic_vector(DSP_SEQ_REGS);
 
         -- Triggering control for starting sequencer
-        trigger_i : in std_logic;       -- Sequencer trigger
+        trigger_i : in std_ulogic;       -- Sequencer trigger
 
         -- Event generation on entering selected sequencer state, available as
         -- internal event for event generation elsewhere.
-        state_trigger_o : out std_logic; -- Sequencer about to start state
-        seq_busy_o : out std_logic;     -- Set during sequencer operation
+        state_trigger_o : out std_ulogic; -- Sequencer about to start state
+        seq_busy_o : out std_ulogic;     -- Set during sequencer operation
 
-        seq_start_adc_o : out std_logic;    -- Resets detector at start of dwell
-        seq_write_adc_o : out std_logic;    -- End of dwell interval
+        seq_start_adc_o : out std_ulogic;   -- Resets detector at start of dwell
+        seq_write_adc_o : out std_ulogic;   -- End of dwell interval
 
-        hom_freq_o : out angle_t;       -- NCO frequency
-        hom_gain_o : out unsigned(3 downto 0);  -- NCO gain
-        hom_enable_o : out std_logic;   -- Enable NCO out
-        hom_window_o : out hom_win_t;   -- Detector input window
+        tune_pll_offset_i : in signed(31 downto 0); -- Tune PLL frequency offset
+        nco_data_o : out dsp_nco_to_mux_t;
+        detector_window_o : out detector_win_t; -- Detector input window
         bunch_bank_o : out unsigned(1 downto 0) -- Bunch bank selection
     );
 end;
 
 architecture arch of sequencer_top is
     -- Register configuration
-    signal seq_abort : std_logic;
+    signal seq_abort : std_ulogic;
     signal target_seq_pc : seq_pc_t;
     signal target_super_count : super_count_t;
     signal trigger_state : seq_pc_t;
@@ -78,46 +81,66 @@ architecture arch of sequencer_top is
     constant MEM_PROGRAM : natural := 0;
     constant MEM_WINDOW : natural := 1;
     constant MEM_FREQUENCY : natural := 2;
-    signal mem_write_strobe : std_logic_vector(0 to 2);
-    signal mem_write_addr : unsigned(9 downto 0);
+    signal mem_write_strobe : std_ulogic_vector(0 to 2);
+    -- We allow an extra address bit
+    signal mem_write_addr : unsigned(BUNCH_NUM_BITS downto 0);
     signal mem_write_data : reg_data_t;
 
-    signal turn_clock : std_logic;
-    signal hom_gain : hom_gain_o'SUBTYPE;
-    signal hom_enable : std_logic;
-    signal hom_window : hom_window_o'SUBTYPE;
+    signal turn_clock : std_ulogic;
+    signal enable_pll : std_ulogic;
+    signal nco_freq : angle_t;
+    signal nco_reset : std_ulogic;
+    signal detector_window : detector_window_o'SUBTYPE;
     signal bunch_bank : bunch_bank_o'SUBTYPE;
 
     -- Program Counter interface
     --
     -- Valid from shortly after turn_clock, a rising edge on this signal
     -- triggers the program counter to advance.
-    signal state_end : std_logic;
+    signal state_end : std_ulogic;
     -- Program counter and reset, also triggers loading of next state.
-    signal start_load : std_logic;  -- Command to load next state
+    signal start_load : std_ulogic;  -- Command to load next state
     signal seq_pc : seq_pc_t;       -- Current program counter
     signal seq_pc_out : seq_pc_t;   -- Reported program counter
-    signal reset_turn : std_logic;  -- Reset counters to abort current state.
+    signal reset_turn : std_ulogic;  -- Reset counters to abort current state.
     -- Frequency offset from super sequencer
     signal nco_freq_base : angle_t;
     signal super_count : super_count_t;
+    signal tune_pll_offset : signed(31 downto 0);
 
     -- Seq state loading
     --
     -- Next program state loaded at end of dwell: start_load is generated by
     -- sequencer_pc in response to state_end generated by dwell module.
     signal seq_state : seq_state_t;
-    signal blanking_in : std_logic;
+    signal blanking_in : std_ulogic;
 
     -- Dwell engine
-    signal first_turn : std_logic;
-    signal last_turn : std_logic;
+    signal first_turn : std_ulogic;
+    signal last_turn : std_ulogic;
 
     -- Pipelined outputs
-    signal seq_start : std_logic;
-    signal seq_write : std_logic;
+    signal seq_start : std_ulogic;
+    signal seq_write : std_ulogic;
+
+    -- Delay from turn_clock to NCO output, validated by sequencer_nco
+    constant NCO_PROCESS_DELAY : natural := 14;
+
+    -- Extra delay for the bunch bank select taking NCO delays into account.
+    -- There is an extra 1 here I can't account for yet...
+    constant BANK_DELAY : natural :=
+        NCO_PROCESS_DELAY - BUNCH_SELECT_DELAY/2 + 1;
 
 begin
+    pll_freq_delay : entity work.dlyreg generic map (
+        DLY => 2,
+        DW => 32
+    ) port map (
+        clk_i => dsp_clk_i,
+        data_i => std_ulogic_vector(tune_pll_offset_i),
+        signed(data_o) => tune_pll_offset
+    );
+
     registers : entity work.sequencer_registers port map (
         dsp_clk_i => dsp_clk_i,
 
@@ -190,11 +213,15 @@ begin
     dwell : entity work.sequencer_dwell port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock,
+
         reset_i => reset_turn,
+        blanking_i => blanking_in,
 
         dwell_count_i => seq_state.dwell_count,
         holdoff_count_i => seq_state.holdoff_count,
-        blanking_i => blanking_in,
+        state_holdoff_i => seq_state.state_holdoff,
+
+        state_end_i => state_end,
 
         first_turn_o => first_turn,
         last_turn_o => last_turn
@@ -207,13 +234,15 @@ begin
         reset_i => reset_turn,
 
         freq_base_i => nco_freq_base,
-        start_freq_i => seq_state.start_freq,
-        delta_freq_i => seq_state.delta_freq,
-        capture_count_i => seq_state.capture_count,
+        seq_state_i => seq_state,
         last_turn_i => last_turn,
+        tune_pll_offset_i => tune_pll_offset,
 
         state_end_o => state_end,
-        hom_freq_o => hom_freq_o
+
+        enable_pll_o => enable_pll,
+        nco_freq_o => nco_freq,
+        nco_reset_o => nco_reset
     );
 
     -- Generates detector window.
@@ -234,19 +263,36 @@ begin
 
         seq_start_o => seq_start,
         seq_write_o => seq_write,
-        hom_window_o => hom_window
+        detector_window_o => detector_window
     );
 
     -- Fine tuning to output
-    delays : entity work.sequencer_delays port map (
+    delays : entity work.sequencer_delays generic map (
+        BANK_DELAY => BANK_DELAY
+    ) port map (
         dsp_clk_i => dsp_clk_i,
         turn_clock_i => turn_clock,
         seq_state_i => seq_state,
         seq_pc_i => seq_pc,
         seq_pc_o => seq_pc_out,
-        hom_gain_o => hom_gain,
-        hom_enable_o => hom_enable,
         bunch_bank_o => bunch_bank
+    );
+
+    -- NCO output
+    seq_nco : entity work.sequencer_nco generic map (
+        PROCESS_DELAY => NCO_PROCESS_DELAY
+    ) port map (
+        adc_clk_i => adc_clk_i,
+        dsp_clk_i => dsp_clk_i,
+        turn_clock_i => turn_clock,
+
+        tune_pll_offset_i => tune_pll_offset_i,
+        enable_pll_i => enable_pll,
+        nco_freq_i => nco_freq,
+        reset_phase_i => nco_reset,
+        nco_gain_i => seq_state.nco_gain,
+
+        nco_data_o => nco_data_o
     );
 
 
@@ -263,13 +309,8 @@ begin
         seq_write_dsp_i => seq_write,
         seq_write_adc_o => seq_write_adc_o,
 
-        hom_gain_dsp_i => hom_gain,
-        hom_enable_dsp_i => hom_enable,
-        hom_gain_adc_o => hom_gain_o,
-        hom_enable_adc_o => hom_enable_o,
-
-        hom_window_dsp_i => hom_window,
-        hom_window_adc_o => hom_window_o,
+        detector_window_dsp_i => detector_window,
+        detector_window_adc_o => detector_window_o,
 
         bunch_bank_i => bunch_bank,
         bunch_bank_o => bunch_bank_o

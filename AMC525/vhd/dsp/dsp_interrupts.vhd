@@ -11,21 +11,22 @@ use work.register_defs.all;
 
 entity dsp_interrupts is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
         -- Interrupt sources
-        dram0_capture_enable_i : in std_logic;
-        dram0_trigger_i : in std_logic;
-        seq_start_i : in std_logic_vector(CHANNELS);
-        seq_busy_i : in std_logic_vector(CHANNELS);
+        dram0_capture_enable_i : in std_ulogic;
+        dram0_trigger_i : in std_ulogic;
+        seq_start_i : in std_ulogic_vector(CHANNELS);
+        seq_busy_i : in std_ulogic_vector(CHANNELS);
+        tune_pll_ready_i : in vector_array(CHANNELS);
 
-        interrupts_o : out std_logic_vector
+        interrupts_o : out std_ulogic_vector
     );
 end;
 
 architecture arch of dsp_interrupts is
-    signal dram0_trigger : std_logic;
-    signal seq_start : std_logic_vector(CHANNELS);
+    signal dram0_trigger : std_ulogic;
+    signal seq_start : std_ulogic_vector(CHANNELS);
     signal interrupts : interrupts_o'SUBTYPE;
 
     constant INTERRUPT_PIPELINE : natural := 8;
@@ -55,15 +56,17 @@ begin
         INTERRUPTS_SEQ_TRIGGER_BITS => reverse(seq_start),
         INTERRUPTS_SEQ_BUSY_BITS => reverse(seq_busy_i),
         INTERRUPTS_SEQ_DONE_BITS => reverse(not seq_busy_i),
+        INTERRUPTS_TUNE_PLL0_READY_BITS => tune_pll_ready_i(0),
+        INTERRUPTS_TUNE_PLL1_READY_BITS => tune_pll_ready_i(1),
         others => '0'
     );
 
-    -- Interrupt assignment and pipeline to help with placement.
-    interrupt_delay : entity work.dlyreg generic map (
-        DLY => INTERRUPT_PIPELINE,
-        DW => interrupts'LENGTH
+    -- Put all interrupts on untimed registers to avoid pointless timing issues
+    interrupt_out : entity work.untimed_reg generic map (
+        WIDTH => interrupts'LENGTH
     ) port map (
         clk_i => dsp_clk_i,
+        write_i => '1',
         data_i => interrupts,
         data_o => interrupts_o
     );

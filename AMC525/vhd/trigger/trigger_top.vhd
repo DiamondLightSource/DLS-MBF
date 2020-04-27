@@ -13,52 +13,59 @@ use work.register_defs.all;
 entity trigger_top is
     port (
         -- Clocking
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Register control interface (clocked by dsp_clk_i)
-        write_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        write_strobe_i : in std_ulogic_vector(CTRL_TRG_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(CTRL_TRG_REGS);
-        read_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        write_ack_o : out std_ulogic_vector(CTRL_TRG_REGS);
+        read_strobe_i : in std_ulogic_vector(CTRL_TRG_REGS);
         read_data_o : out reg_data_array_t(CTRL_TRG_REGS);
-        read_ack_o : out std_logic_vector(CTRL_TRG_REGS);
+        read_ack_o : out std_ulogic_vector(CTRL_TRG_REGS);
 
         -- External trigger sources
-        revolution_clock_i : in std_logic;
-        event_trigger_i : in std_logic;
-        postmortem_trigger_i : in std_logic;
-        blanking_trigger_i : in std_logic;
+        revolution_clock_i : in std_ulogic;
+        event_trigger_i : in std_ulogic;
+        postmortem_trigger_i : in std_ulogic;
+        blanking_trigger_i : in std_ulogic;
 
         -- Internal trigger sources
-        adc_trigger_i : in std_logic_vector(CHANNELS);
-        seq_trigger_i : in std_logic_vector(CHANNELS);
+        adc_trigger_i : in std_ulogic_vector(CHANNELS);
+        dac_trigger_i : in std_ulogic_vector(CHANNELS);
+        seq_trigger_i : in std_ulogic_vector(CHANNELS);
 
         -- Trigger outputs
-        blanking_window_o : out std_logic;
-        turn_clock_o : out std_logic;
-        seq_start_o : out std_logic_vector(CHANNELS);
-        dram0_trigger_o : out std_logic;
-        dram0_phase_o : out std_logic
+        blanking_window_o : out std_ulogic;
+        turn_clock_o : out std_ulogic;
+        seq_start_o : out std_ulogic_vector(CHANNELS);
+        dram0_trigger_o : out std_ulogic;
+        dram0_phase_o : out std_ulogic;
+
+        -- Tune PLL global control
+        start_tune_pll0_o : out std_ulogic;
+        start_tune_pll1_o : out std_ulogic;
+        stop_tune_pll0_o : out std_ulogic;
+        stop_tune_pll1_o : out std_ulogic
     );
 end;
 
 architecture arch of trigger_top is
     -- Input signals converted to synchronous rising edge pulse
-    signal revolution_clock : std_logic;    -- On ADC clock
-    signal blanking_trigger : std_logic;
+    signal revolution_clock : std_ulogic;    -- On ADC clock
+    signal blanking_trigger : std_ulogic;
 
     -- Revolution clock control
     signal turn_setup : turn_clock_setup_t;
     signal turn_readback : turn_clock_readback_t;
-    signal turn_clock_dsp : std_logic;
+    signal turn_clock_dsp : std_ulogic;
 
     -- Blanking
     signal blanking_interval : unsigned(15 downto 0);
 
     -- Triggers
-    signal soft_trigger : std_logic;
-    signal triggers : std_logic_vector(TRIGGER_SET);
+    signal soft_trigger : std_ulogic;
+    signal triggers : trigger_set_t;
 
     -- Sequencer triggering
     signal seq_setup : trigger_setup_channels;
@@ -68,7 +75,7 @@ architecture arch of trigger_top is
     signal dram0_setup : trigger_setup_t;
     signal dram0_readback : trigger_readback_t;
 
-    signal dram0_trigger : std_logic;
+    signal dram0_trigger : std_ulogic;
 
 begin
     -- Register control interface
@@ -95,7 +102,12 @@ begin
         seq_readback_i => seq_readback,
 
         dram0_setup_o => dram0_setup,
-        dram0_readback_i => dram0_readback
+        dram0_readback_i => dram0_readback,
+
+        start_tune_pll0_o => start_tune_pll0_o,
+        start_tune_pll1_o => start_tune_pll1_o,
+        stop_tune_pll0_o => stop_tune_pll0_o,
+        stop_tune_pll1_o => stop_tune_pll1_o
     );
 
 
@@ -111,6 +123,7 @@ begin
 
         soft_trigger_i => soft_trigger,
         adc_trigger_i => adc_trigger_i,
+        dac_trigger_i => dac_trigger_i,
         seq_trigger_i => seq_trigger_i,
 
         blanking_trigger_o => blanking_trigger,
@@ -154,7 +167,7 @@ begin
 
     -- Sequence triggers
     gen : for c in CHANNELS generate
-        signal seq_start : std_logic;
+        signal seq_start : std_ulogic;
 
     begin
         seq_trigger : entity work.trigger_target port map (

@@ -1,6 +1,8 @@
 # Functions for searching for the correct relationship between the ADC data and
 # clock.
 
+from __future__ import print_function
+
 import math
 import numpy
 
@@ -39,11 +41,11 @@ def complete_scan(regs):
 def capture(regs, count):
     # Each counted capture corresponds to 8 captured bytes
     bytes = 8 * count
-    regs.CTRL.MEM.COUNT = count + 32
+    regs.CTRL.MEM.COUNT.COUNT = count + 32
     regs.CTRL.MEM.COMMAND._write_fields_wo(START = 1, STOP = 1)
     while regs.CTRL.MEM.STATUS.ENABLE:
         pass
-    with open(regs.DDR0_NAME) as ddr0:
+    with open(regs.DDR0_NAME, 'rb') as ddr0:
         buf = numpy.frombuffer(ddr0.read(bytes), dtype = numpy.uint16)
     return buf.reshape((-1, 2, 2))
 
@@ -106,5 +108,5 @@ def scan_idelay(regs, f_rf, count):
     complete_scan(regs)
 
     idelay, eye = find_idelay(scan)
-    print 'Setting IDELAY = %d, eye = %s' % (idelay, eye)
+    print('Setting IDELAY = %d, eye = %s' % (idelay, eye))
     set_idelay(regs, idelay)

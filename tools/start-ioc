@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Helper script for launching an IOC via a soft-link from the IOC name.
+#
+# The IOC name is used to locate the configuration file, and the configuration
+# file is read to determine which launcher application to use to run the IOC.
+
+# Simple minded error handling: all steps in this script must succeed.
+set -e
+
+# Reads key from given config file.  Called thus:
+#
+#   read_key file key
+read_key()
+{
+    sed -n "/^$2 *= */{s///; p; q;}" "$1"
+}
+
+TOP="$(dirname "$(readlink -f "$0")")"/..
+IOC_NAME="$(basename "$0")"
+
+# Figure out the path to the config directory
+SITE=$(read_key $TOP/CONFIG SITE)
+CONFIG="$TOP"/sites/$SITE/iocs/"$IOC_NAME".config
+
+# Try EPICS beacon override
+ETH_PORT="$(read_key "$CONFIG" broadcast_port)"
+if [[ -n "$ETH_PORT" ]]; then
+    # It would appear that EPICS 3.14 normally generates bogus beacon messages
+    # in the presence of multiple network adapters (particularly if the active
+    # network isn't the first one).  Fortunately this can be suppressed by
+    # setting two EPICS_CAS_ variables, as below, using the configured broadcast
+    # network address.
+    BCAST="$(
+        ip address show "$ETH_PORT" |
+        sed -n '/ inet /{ s/.* brd //; s/ .*//; p}')"
+    if [[ -n $BCAST ]]; then
+        export EPICS_CAS_AUTO_BEACON_ADDR_LIST=NO
+        export EPICS_CAS_BEACON_ADDR_LIST=$BCAST
+    fi
+fi
+
+# Determine the IOC launcher and run it
+RUNIOC="$(read_key "$CONFIG" ioc)"
+exec "$TOP/$RUNIOC" "$@" "$CONFIG"

@@ -7,7 +7,7 @@ end testbench;
 
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural := 1) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural := 1) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -29,16 +29,16 @@ architecture arch of testbench is
     signal mul : signed(17 downto 0);
     signal overflow_mask : signed(95 downto 0) := (others => '0');
     signal preload : signed(95 downto 0) := (others => '0');
-    signal enable : std_logic;
-    signal start : std_logic;
+    signal enable : std_ulogic;
+    signal start : std_ulogic;
 
     signal sim_sum : signed(95 downto 0);
-    signal sim_overflow : std_logic;
+    signal sim_overflow : std_ulogic;
     signal dsp_sum : signed(95 downto 0);
-    signal dsp_overflow : std_logic;
+    signal dsp_overflow : std_ulogic;
 
     signal diff : signed(95 downto 0);
-    signal start_dly : std_logic;
+    signal start_dly : std_ulogic;
 
     signal sum_ok : boolean;
     signal ovf_ok : boolean;
@@ -47,7 +47,9 @@ begin
     clk <= not clk after 1 ns;
 
     -- Device under test
-    dsp96 : entity work.detector_dsp96 port map (
+    dsp96 : entity work.detector_dsp96 generic map (
+        WRITE_DELAY => 3
+    ) port map (
         clk_i => clk,
 
         data_i => data,

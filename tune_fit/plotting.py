@@ -1,5 +1,7 @@
 # Plotting of fits
 
+from __future__ import print_function
+
 import numpy
 import matplotlib
 # matplotlib.use('PDF')
@@ -88,10 +90,10 @@ def plot_refine(iq, trace):
     plot_complex(aa.reshape(1, N), 'o')
     pyplot.legend(['p%d' % n for n in range(N)])
     plot_complex(numpy.stack([numpy.zeros(N), aa]), ':k')
-    plot_complex(numpy.mean(aa * -bb.imag) / numpy.mean(-bb.imag), 'x')
+    plot_complex(numpy.mean(aa * bb.imag) / numpy.mean(bb.imag), 'x')
     pyplot.axis('equal')
 
-    print 'fit', fit_out
+    print('fit', fit_out)
 
 
 def plot_dd(trace):
@@ -143,7 +145,7 @@ def plot_fits(fits, tunes, errors):
 
     pyplot.subplot(512)
     pyplot.title('Normalised peak power')
-    power = support.abs2(aa) / -bb.imag
+    power = support.abs2(aa) / bb.imag
     max_power = numpy.nanmax(power, 1)
     pyplot.semilogy(power / max_power[:, None], '.')
 
@@ -161,27 +163,28 @@ def plot_fits(fits, tunes, errors):
         mask = numpy.zeros(deltas.shape, dtype = bool)
         numpy.fill_diagonal(mask, True)
         deltas = numpy.ma.array(deltas, mask = mask)
-        dmax[n] = numpy.min(deltas / numpy.maximum(-bb1.imag, -bb2.imag))
-        dsum[n] = numpy.min(deltas / - (bb1.imag + bb2.imag))
+        dmax[n] = numpy.min(deltas / numpy.minimum(bb1.imag, bb2.imag))
+        dsum[n] = numpy.min(deltas / (bb1.imag + bb2.imag))
     pyplot.plot(dmax)
     pyplot.plot(dsum)
     pyplot.legend(['max', 'sum'])
 
     pyplot.subplot(515)
     pyplot.title('Normalised peak height')
-    height = numpy.abs(aa) / -bb.imag
+    height = numpy.abs(aa) / bb.imag
     max_height = numpy.nanmax(height, 1)
     pyplot.semilogy(height / max_height[:, None], '.')
 
-    print numpy.nonzero(numpy.isnan(fits[:,0,0]))[0]
+    print(numpy.nonzero(numpy.isnan(fits[:,0,0]))[0])
 
 
 class Fitter:
-    def __init__(self, samples, config, plot_each, plot_all, plot_dd):
+    def __init__(self, samples, config, plot_each, plot_all, plot_dd, verbose):
         self.config = config
         self.plot_each = plot_each
         self.plot_all = plot_all
         self.plot_dd = plot_dd
+        self.verbose = verbose
 
         self.fits = numpy.empty(
             (samples, config.MAX_PEAKS, 2), dtype = numpy.complex)
@@ -198,16 +201,17 @@ class Fitter:
 
     def fit_tune(self, scale, iq):
         n = self.n
-        print 'fit_tune', n
+        if self.verbose:
+            print('fit_tune', n)
         self.n = n + 1
 
         trace = tune_fit.fit_tune(self.config, scale, iq)
-        if trace.last_error:
-            print trace.last_error
+        if trace.last_error and self.verbose:
+            print(trace.last_error)
 
         if self.plot_each:
-            dd_traces = trace.dd
-            refine_traces = trace.refine
+            dd_traces     = [t.fit_trace.dd for t in trace.traces]
+            refine_traces = [t.fit_trace.refine for t in trace.traces]
             if not self.plot_all:
                 dd_traces = dd_traces[-1:]
                 refine_traces = refine_traces[-1:]
@@ -218,13 +222,18 @@ class Fitter:
                 plot_refine(iq, refine)
             pyplot.show()
 
-        fit, offset = trace.models[-1]
-        self.fits[n, :len(fit)] = fit
-        self.offsets[n] = offset
+        if trace.fit:
+            fit, offset = trace.fit
+            self.fits[n, :len(fit)] = fit
+            self.offsets[n] = offset
+            self.tunes[n] = [
+                trace.tune.left.tune,
+                trace.tune.centre.tune,
+                trace.tune.right.tune]
         self.scale_offsets[n] = trace.scale_offset
-        self.tunes[n] = [
-            trace.tune.left.tune, trace.tune.centre.tune, trace.tune.right.tune]
         self.errors[n] = trace.fit_error
+
+        return trace
 
 
 # f.set_size_inches(11.69, 8.27)

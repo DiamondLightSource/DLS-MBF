@@ -6,7 +6,7 @@ import support
 
 
 def smooth_waveform(wf, n):
-    wf = wf[:n * (len(wf) / n)]
+    wf = wf[:n * (len(wf) // n)]
     return wf.reshape(-1, n).mean(1)
 
 
@@ -41,9 +41,13 @@ def find_peak_limits(power, peak_ix):
     return (left, right)
 
 
-def get_next_peak(power, smoothing):
+def get_next_peak(power, smoothing, exclude):
     smoothed = smooth_waveform(power, smoothing)
     dd = compute_dd(smoothed)
+
+    # Knock out the exclusion regions
+    for l, r in exclude // smoothing:
+        dd[l:r] = 0
 
     peak_ix = numpy.argmin(dd)
     left, right = find_peak_limits(smoothed, peak_ix)

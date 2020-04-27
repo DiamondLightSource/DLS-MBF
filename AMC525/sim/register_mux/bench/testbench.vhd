@@ -10,7 +10,7 @@ use work.support.all;
 use work.defines.all;
 
 architecture arch of testbench is
-    procedure clk_wait(signal clk_i : in std_logic; count : in natural) is
+    procedure clk_wait(signal clk_i : in std_ulogic; count : in natural) is
         variable i : natural;
     begin
         for i in 0 to count-1 loop
@@ -18,7 +18,7 @@ architecture arch of testbench is
         end loop;
     end procedure;
 
-    signal reg_clk : std_logic := '0';
+    signal reg_clk : std_ulogic := '0';
 
     procedure tick_wait(count : natural) is
     begin
@@ -31,20 +31,20 @@ architecture arch of testbench is
     end procedure;
 
 
-    signal read_strobe_in : std_logic;
+    signal read_strobe_in : std_ulogic;
     signal read_address : unsigned(4 downto 0);
     signal read_data_out : reg_data_t;
-    signal read_ack_out : std_logic;
+    signal read_ack_out : std_ulogic;
     signal read_data_in : reg_data_array_t(0 to 15);
-    signal read_strobe_out : std_logic_vector(0 to 15);
-    signal read_ack_in : std_logic_vector(0 to 15);
-    signal write_strobe_in : std_logic;
+    signal read_strobe_out : std_ulogic_vector(0 to 15);
+    signal read_ack_in : std_ulogic_vector(0 to 15);
+    signal write_strobe_in : std_ulogic;
     signal write_address : unsigned(4 downto 0);
     signal write_data_in : reg_data_t;
-    signal write_ack_out : std_logic;
-    signal write_strobe_out : std_logic_vector(0 to 15);
+    signal write_ack_out : std_ulogic;
+    signal write_strobe_out : std_ulogic_vector(0 to 15);
     signal write_data_out : reg_data_t;
-    signal write_ack_in : std_logic_vector(0 to 15);
+    signal write_ack_in : std_ulogic_vector(0 to 15);
 
 begin
     -- Basic register clock
@@ -77,7 +77,7 @@ begin
     -- value.
     process begin
         for i in 0 to 15 loop
-            read_data_in(i) <= std_logic_vector(to_unsigned(i, 16)) & X"0000";
+            read_data_in(i) <= std_ulogic_vector(to_unsigned(i, 16)) & X"0000";
         end loop;
         write_data_in <= (others => '0');
         while true loop

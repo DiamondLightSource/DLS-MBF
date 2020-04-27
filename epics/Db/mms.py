@@ -2,8 +2,8 @@
 
 from common import *
 
-def mms_waveform(name, desc):
-    return Waveform(name, BUNCHES_PER_TURN, 'FLOAT', DESC = desc)
+def mms_waveform(name, desc, **kargs):
+    return Waveform(name, BUNCHES_PER_TURN, 'FLOAT', DESC = desc, **kargs)
 
 
 def do_mms_pvs(source):
@@ -23,24 +23,17 @@ def do_mms_pvs(source):
         std_mean,
         std_mean_db,
         longIn('TURNS', DESC = 'Number of turns in this sample'),
-        mbbIn('OVERFLOW',
-            ('Ok',                       0, 'NO_ALARM'),
-            ('Turns Overflow',           1, 'MAJOR'),
-            ('Sum Overflow',             2, 'MAJOR'),
-            ('Turns+Sum Overflow',       3, 'MAJOR'),
-            ('Sum2 Overflow',            4, 'MAJOR'),
-            ('Turns+Sum2 Overflow',      5, 'MAJOR'),
-            ('Sum+Sum2 Overflow',        6, 'MAJOR'),
-            ('Turns+Sum+Sum2 Overflow',  7, 'MAJOR'),
-            DESC = 'MMS capture overflow status'),
     ]
     Action('SCAN',
         SCAN = '.2 second',
         FLNK = create_fanout('FAN', *pvs),
         DESC = '%s min/max scanning' % source)
 
-    # If an MMS fault is detected this will reset
-    boolOut('RESET_FAULT', DESC = 'Resets MMS fault accumulation')
+    # Archival PVs for standard deviation
+    Trigger('ARCHIVE',
+        mms_waveform('STD_MEAN_WF', 'Power average of standard deviation'),
+        mms_waveform('STD_MIN_WF', 'Minimum of standard deviation'),
+        mms_waveform('STD_MAX_WF', 'Maximum of standard deviation'))
 
 
 def mms_pvs(source):

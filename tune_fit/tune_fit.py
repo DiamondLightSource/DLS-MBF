@@ -1,6 +1,8 @@
 # Top level tune fitting
 
+import time
 import numpy
+from collections import namedtuple
 
 import support
 import dd_peaks
@@ -11,29 +13,71 @@ import refine
 MAXIMUM_ANGLE = 100.0
 
 
-def fit_multiple_peaks(config, scale, iq):
-    models = []
-    dd_traces = []
-    refine_traces = []
-    model = (numpy.zeros((0, 2)), 0)
-    models.append(model)
-    last_error = 'Nothing fitted'
-    for n in range(config.MAX_PEAKS):
-        model, dd_trace, refine_trace = \
-            refine.add_one_pole(config, scale, iq, model)
+def compute_fit_info(scale, iq, new_fit):
+    model, residue, fit_error = refine.compute_fit_error(scale, iq, new_fit)
+    return support.Trace(
+        model = model, residue = residue, fit_error = fit_error)
 
-        if model is None:
-            last_error = 'Adding new pole failed'
-        else:
-            last_error = assess_model(config, scale, model)
-        if last_error:
+
+# Performs one stage of fitting.  Returns:
+#   status      Status string if fit failed, empty string if successful
+#   new_fit     Updated fit, or None if fit failed
+#   fit_trace   The new fit plus trace of fit process
+#   fit_info    Model, residue and fit error.  Can be none if fit failed
+def fit_one_peak(config, scale, iq, fit):
+    new_fit, dd, refine_trace = refine.add_one_pole(config, scale, iq, fit)
+    fit_trace = support.Trace(dd = dd, refine = refine_trace)
+
+    if new_fit is None:
+        # Fit failed completely, return nothing
+        status = 'Adding new pole failed'
+        fit_info = None
+    else:
+        # See how the new fit fares
+        status = assess_fit(config, scale, new_fit)
+        fit_info = compute_fit_info(scale, iq, new_fit)
+
+    return (status, new_fit, fit_trace, fit_info)
+
+
+# Fits up to as many fits as configured, returns the following:
+#   status          Error code associated with last failing fit
+#   best_fit        The last successful fit
+#   best_fit_info   Trace for the successful fit
+#   results         List of traces of fits and associated information
+def fit_multiple_peaks(config, scale, iq):
+    fit = (numpy.zeros((0, 2)), 0)
+    results = []
+
+    last_fit_error = numpy.inf
+    best_fit = fit
+    best_fit_info = compute_fit_info(scale, iq, fit)
+
+    for n in range(config.MAX_PEAKS):
+        status, fit, fit_trace, fit_info = fit_one_peak(config, scale, iq, fit)
+        results.append(support.Trace(
+            fit = fit, fit_trace = fit_trace, info = fit_info))
+
+        if status:
             break
 
-        models.append(model)
-        dd_traces.append(dd_trace)
-        refine_traces.append(refine_trace)
+        # If we get here we were happy with the fit so far and are ready to
+        # refine it further if possible.
+        last_fit_error = fit_info.fit_error
+        best_fit = fit
+        best_fit_info = fit_info
 
-    return (models, dd_traces, refine_traces, last_error)
+
+    # Finally check the overall fit error; if this is too large then just bail
+    fit_error = best_fit_info.fit_error
+    if fit_error > config.MAXIMUM_FIT_ERROR or not numpy.isfinite(fit_error):
+        status = 'Fit error too large'
+        best_fit = None
+
+    if status == '':
+        status = 'All peaks fitted'
+
+    return (status, best_fit, best_fit_info, results)
 
 
 # Checks whether the model is convincing.  There are four checks that can fail:
@@ -54,16 +98,18 @@ def fit_multiple_peaks(config, scale, iq):
 #
 #   4.  Finally, relatively small peaks represent fitting errors and can be
 #       discarded.
-def assess_model(config, scale, model):
-    peaks, _ = model
+def assess_fit(config, scale, fit):
+    peaks, _ = fit
     aa = peaks[:, 0]
     bb = peaks[:, 1]
     centres = bb.real
-    widths = -bb.imag
+    widths = bb.imag
 
-    # First ensure that no peaks are below the minimum width
+    # First ensure that no peaks are below the minimum width or above maximum
     if (widths < config.MINIMUM_WIDTH).any():
         return 'Peak too narrow'
+    if (widths > config.MAXIMUM_WIDTH).any():
+        return 'Peak too wide'
 
     # Check peak hasn't fallen out of range
     lr = scale[[0, -1]]
@@ -93,7 +139,7 @@ def assess_model(config, scale, model):
 
 def peaks_power(peaks):
     aa, bb = peaks.T
-    return support.abs2(aa) / -bb.imag
+    return support.abs2(aa) / bb.imag
 
 def sort_by_frequency(peaks):
     return peaks[numpy.argsort(peaks[:, 1].real)]
@@ -122,13 +168,13 @@ def compute_peak_info(peak):
         a, b = peak
         valid = True
 
-    width = -b.imag
+    width = b.imag
     power = support.abs2(a) / width
     height = power / width
     return support.Trace(
         valid = valid,
         tune = numpy.mod(b.real, 1),
-        phase = 180 / numpy.pi * numpy.angle(-1j * a),
+        phase = 180 / numpy.pi * numpy.angle(1j * a),
         width = width,
         power = power,
         height = numpy.sqrt(power / width))
@@ -148,9 +194,7 @@ def compute_delta_info(centre, side):
         height = side.height / centre.height)
 
 
-def compute_tune_result(config, peaks, fit_error):
-    if fit_error > config.MAXIMUM_FIT_ERROR or not numpy.isfinite(fit_error):
-        peaks = []
+def compute_tune_result(config, peaks):
     left, centre, right = find_three_peaks(peaks)
 
     left = compute_peak_info(left)
@@ -168,41 +212,70 @@ def compute_tune_result(config, peaks, fit_error):
         delta_left = delta_left, delta_right = delta_right)
 
 
+# Clip the data to the requested window
+def compute_window(config, scale, iq):
+    start = config.WINDOW_START
+    length = config.WINDOW_LENGTH
+    if length <= 0:
+        window = slice(start, None)
+    else:
+        window = slice(start, start + length)
+    return scale[window], iq[window]
+
+
 def fit_tune(config, scale, iq):
+    start_time = time.time()
+    scale, iq = compute_window(config, scale, iq)
+
     power = support.abs2(iq)
-    input_trace = support.Trace(scale = scale, iq = iq, power = power)
+    input_trace = support.Trace(
+        scale = scale,
+        iq = iq,
+        magnitude = numpy.abs(iq),
+        phase = 180/numpy.pi * numpy.angle(iq))
+
+    # Find maximum point.  This is always valid!
+    max_tune = numpy.mod(scale[numpy.argmax(power)], 1)
 
     # For subsequent processing remove the mean value from the scale
     scale_offset = scale.mean()
     scale = scale - scale_offset
 
     # Incrementally fit the required number of peaks
-    models, dd_traces, refine_traces, last_error = \
-        fit_multiple_peaks(config, scale, iq)
-    model = models[-1]
+    fit_status, fit, fit_info, traces = fit_multiple_peaks(config, scale, iq)
 
-    model_iq, residue, fit_error = refine.compute_fit_error(scale, iq, model)
-    output_trace = support.Trace(
-        fit_error = fit_error,
-        model = model_iq,
-        model_power = support.abs2(model_iq),
-        residue = residue)
+    if fit_info:
+        output_trace = support.Trace(
+            model = fit_info.model,
+            model_magnitude = numpy.abs(fit_info.model),
+            model_phase = 180/numpy.pi * numpy.angle(fit_info.model),
+            residue = fit_info.residue)
+        fit_error = fit_info.fit_error
+    else:
+        output_trace = None
+        fit_error = numpy.inf
 
-    # Compute final peak result after first extracting the peaks part of the
-    # final fitted model and restoring the scale offset.
-    peaks, _ = model
-    peaks = peaks + [0, scale_offset]
-    tune = compute_tune_result(config, peaks, fit_error)
+    if fit:
+        # Compute final peak result after first extracting the peaks part of the
+        # final fitted model and restoring the scale offset.
+        tune = compute_tune_result(config, fit[0] + [0, scale_offset])
+    else:
+        tune = None
+    end_time = time.time()
 
-    if not last_error:
-        last_error = 'Fit ok'
     return support.Trace(
+        # The following values are published as PVs
+        max_tune = max_tune,
+        tune = tune,
         input = input_trace,
         output = output_trace,
-        scale_offset = scale_offset,
-        dd = dd_traces,
-        refine = refine_traces,
-        models = models,
         fit_error = fit_error,
-        last_error = last_error,
-        tune = tune)
+        last_error = fit_status,
+        fit_length = len(iq),
+        fit_time = end_time - start_time,
+
+        # These are needed for extra information during development
+        scale_offset = scale_offset,
+        fit = fit,
+        fit_info = fit_info,
+        traces = traces)

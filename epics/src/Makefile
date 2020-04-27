@@ -18,7 +18,7 @@ USR_CFLAGS += -mavx
 
 
 # Pass version information through to build
-USR_CFLAGS += -DMBF_VERSION='"$(VERSION_EXTRA)$(MBF_VERSION)"'
+USR_CFLAGS += -DMBF_VERSION='"$(MBF_VERSION)$(VERSION_EXTRA)"'
 USR_CFLAGS += -DGIT_VERSION='"$(GIT_VERSION)"'
 
 # Compute a sensible format of build date
@@ -49,7 +49,7 @@ mbf_DBD += base.dbd
 mbf_DBD += epics_device.dbd
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
-mbf_SRCS += mbf_registerRecordDeviceDriver.c
+mbf_SRCS += mbf_registerRecordDeviceDriver.cpp
 mbf_SRCS += main.c              # Entry point and initialisation
 
 mbf_SRCS += common.c            # Miscellaneous shared helper functions
@@ -62,6 +62,7 @@ mbf_SRCS += hardware.c          # Interface to FPGA
 
 # MBF components
 mbf_SRCS += system.c            # System level components
+mbf_SRCS += nco.c               # Control over fixed frequency NCOs
 mbf_SRCS += mms.c               # Min/max/sum common implementation
 mbf_SRCS += adc.c               # ADC interface and control
 mbf_SRCS += dac.c               # DAC interface and control
@@ -73,10 +74,13 @@ mbf_SRCS += trigger_target.c    # Trigger target specific control
 mbf_SRCS += triggers.c          # Trigger control and selection
 mbf_SRCS += detector.c          # I/Q detector
 mbf_SRCS += delay.c             # Fine control over clocking delays
+mbf_SRCS += tune_pll_fifo.c     # Readout FIFO for Tune PLL
+mbf_SRCS += tune_pll.c          # Tune PLL functionality
 
 mbf_SRCS += buffered_file.c     # Helper for buffered file access
 mbf_SRCS += socket_command.c    # Command implementation for high speed data
 mbf_SRCS += socket_server.c     # Socket connection for high speed data
+mbf_SRCS += bunch_set.c         # Manages bunch selection set for GUI updates
 
 
 mbf_LIBS += epics_device

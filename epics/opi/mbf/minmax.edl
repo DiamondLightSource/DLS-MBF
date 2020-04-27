@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 266
-y 155
+x 2344
+y 75
 w 641
 h 849
 font "helvetica-medium-r-18.0"
@@ -50,7 +50,7 @@ nPts 2
 showXAxis
 xAxisSrc "fromUser"
 xMin -10
-xMax 1000
+xMax 1024
 # Y axis properties
 showYAxis
 yAxisSrc "AutoScale"
@@ -163,7 +163,7 @@ nPts 2
 showXAxis
 xAxisSrc "fromUser"
 xMin -10
-xMax 1000
+xMax 1024
 # Y axis properties
 showYAxis
 yAxisSrc "AutoScale"
@@ -231,7 +231,7 @@ nPts 2
 showXAxis
 xAxisSrc "fromUser"
 xMin -10
-xMax 1000
+xMax 1024
 # Y axis properties
 showYAxis
 yAxisSrc "AutoScale"
@@ -280,7 +280,7 @@ nPts 2
 showXAxis
 xAxisSrc "fromUser"
 xMin -10
-xMax 1000
+xMax 1024
 # Y axis properties
 showYAxis
 yAxisSrc "AutoScale"
@@ -290,18 +290,27 @@ y2AxisSrc "AutoScale"
 y2Min 8300
 y2Max 16600
 # Trace Properties
-numTraces 1
+numTraces 4
 yPv {
   0 "$(device):$(axis):$(part):MMS:STD"
+  1 "$(device):$(axis):$(part):MMS:STD_MEAN_WF"
+  2 "$(device):$(axis):$(part):MMS:STD_MIN_WF"
+  3 "$(device):$(axis):$(part):MMS:STD_MAX_WF"
 }
 plotUpdateMode {
   0 "y"
+  1 "y"
+  2 "y"
+  3 "y"
 }
 ySigned {
   0 1
 }
 plotColor {
   0 index 27
+  1 index 18
+  2 index 33
+  3 index 33
 }
 endObjectProperties
 
@@ -346,31 +355,6 @@ nullColor index 0
 useHexPrefix
 newPos
 objType "monitors"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 6
-release 0
-x 288
-y 784
-w 160
-h 14
-controlPv "$(device):$(axis):$(part):MMS:OVERFLOW"
-font "helvetica-medium-r-12.0"
-fgColor index 14
-fgAlarm
-bgColor index 0
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 0
-useHexPrefix
-newPos
-objType "monitors"
-noExecuteClipMask
 endObjectProperties
 
 # (Message Button)
@@ -537,49 +521,6 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 240
-y 784
-w 44
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "Status:"
-}
-autoSize
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 240
-y 800
-w 72
-h 22
-fgColor index 25
-onColor index 4
-offColor index 3
-topShadowColor index 1
-botShadowColor index 14
-controlPv "$(device):$(axis):$(part):MMS:RESET_FAULT_S.PROC"
-pressValue "0"
-onLabel "Reset"
-offLabel "Reset"
-3d
-font "helvetica-bold-r-12.0"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
 x 152
 y 824
 w 4
@@ -590,6 +531,46 @@ bgColor index 0
 useDisplayBg
 value {
   "/"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 360
+y 816
+w 112
+h 24
+fgColor index 14
+fgAlarm
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):$(part):MMS_SOURCE_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 304
+y 824
+w 46
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Source:"
 }
 autoSize
 endObjectProperties

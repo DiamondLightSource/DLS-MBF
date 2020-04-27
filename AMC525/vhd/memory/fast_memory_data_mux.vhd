@@ -10,35 +10,32 @@ use work.dsp_defs.all;
 
 entity fast_memory_data_mux is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
 
         -- Input control
-        mux_select_i : in std_logic_vector(3 downto 0);
-        fir_gain_i : in unsigned_array(CHANNELS)(0 downto 0);
+        mux_select_i : in std_ulogic_vector(3 downto 0);
 
         dsp_to_control_i : in dsp_to_control_array_t;
-        extra_i : in std_logic_vector(63 downto 0);
+        extra_i : in std_ulogic_vector(63 downto 0);
 
-        fir_overflow_o : out std_logic_vector(CHANNELS);
-        data_o : out std_logic_vector(63 downto 0) := (others => '0')
+        data_o : out std_ulogic_vector(63 downto 0) := (others => '0')
     );
 end;
 
 architecture arch of fast_memory_data_mux is
-    signal adc_phase : std_logic;
+    signal adc_phase : std_ulogic;
 
     -- Incoming data
     signal adc    : signed_array(CHANNELS)(15 downto 0);
-    signal fir_in : signed_array(CHANNELS)(FIR_DATA_RANGE);
     signal fir    : signed_array(CHANNELS)(15 downto 0);
     signal dac    : signed_array(CHANNELS)(15 downto 0);
     signal extra  : signed_array(CHANNELS)(15 downto 0);
     -- Outgoing data
     signal data   : signed_array(CHANNELS)(15 downto 0)
         := (others => (others => '0'));
-    signal data_out : std_logic_vector(31 downto 0);
-    signal wide_data : std_logic_vector(63 downto 0) := (others => '0');
+    signal data_out : std_ulogic_vector(31 downto 0);
+    signal wide_data : std_ulogic_vector(63 downto 0) := (others => '0');
 
 begin
     phase : entity work.adc_dsp_phase port map (
@@ -54,7 +51,7 @@ begin
 
         dsp_to_control_i => dsp_to_control_i,
         adc_o => adc,
-        fir_o => fir_in,
+        fir_o => fir,
         dac_o => dac
     );
 
@@ -63,34 +60,7 @@ begin
     extra(0) <= signed(extra_i(15 downto  0));
     extra(1) <= signed(extra_i(31 downto 16));
 
-    -- Gain control on FIR data
-    chans_gen : for c in CHANNELS generate
-        signal fir_overflow : std_logic;
-        -- There is only one gain shift available, so make the gain control
-        -- interval enough to span the data input.
-        constant GAIN_SHIFT : natural := fir_in(c)'LENGTH - fir(c)'LENGTH;
-
-    begin
-        fir_gain_inst : entity work.gain_control generic map (
-            INTERVAL => GAIN_SHIFT
-        ) port map (
-            clk_i => adc_clk_i,
-            gain_sel_i => fir_gain_i(c),
-            data_i => fir_in(c),
-            data_o => fir(c),
-            overflow_o => fir_overflow
-        );
-
-        pulse_to_dsp : entity work.pulse_adc_to_dsp port map (
-            adc_clk_i => adc_clk_i,
-            dsp_clk_i => dsp_clk_i,
-            pulse_i => fir_overflow,
-            pulse_o => fir_overflow_o(c)
-        );
-    end generate;
-
     -- Output data selection
-    fast_mux :
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
             case mux_select_i is
@@ -120,8 +90,8 @@ begin
     end process;
 
     -- Flatten the data to a single 32-bit value
-    data_out(15 downto  0) <= std_logic_vector(data(0));
-    data_out(31 downto 16) <= std_logic_vector(data(1));
+    data_out(15 downto  0) <= std_ulogic_vector(data(0));
+    data_out(31 downto 16) <= std_ulogic_vector(data(1));
 
     -- Retime the data across to the DSP clock domain
     process (adc_clk_i) begin

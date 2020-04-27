@@ -12,24 +12,24 @@ use work.trigger_defs.all;
 
 entity trigger_registers is
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         -- Register interface
-        write_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        write_strobe_i : in std_ulogic_vector(CTRL_TRG_REGS);
         write_data_i : in reg_data_t;
-        write_ack_o : out std_logic_vector(CTRL_TRG_REGS);
-        read_strobe_i : in std_logic_vector(CTRL_TRG_REGS);
+        write_ack_o : out std_ulogic_vector(CTRL_TRG_REGS);
+        read_strobe_i : in std_ulogic_vector(CTRL_TRG_REGS);
         read_data_o : out reg_data_array_t(CTRL_TRG_REGS);
-        read_ack_o : out std_logic_vector(CTRL_TRG_REGS);
+        read_ack_o : out std_ulogic_vector(CTRL_TRG_REGS);
 
         -- Revolution clock synchronisation
         turn_setup_o : out turn_clock_setup_t;
         turn_readback_i : in turn_clock_readback_t;
 
         -- Trigger control
-        soft_trigger_o : out std_logic;
-        triggers_i : in std_logic_vector(TRIGGER_SET);
-        blanking_trigger_i : in std_logic;
+        soft_trigger_o : out std_ulogic;
+        triggers_i : in trigger_set_t;
+        blanking_trigger_i : in std_ulogic;
 
         blanking_interval_o : out unsigned;
 
@@ -39,7 +39,13 @@ entity trigger_registers is
 
         -- DRAM0 triggering
         dram0_setup_o : out trigger_setup_t;
-        dram0_readback_i : in trigger_readback_t
+        dram0_readback_i : in trigger_readback_t;
+
+        -- Tune PLL global control
+        start_tune_pll0_o : out std_ulogic;
+        start_tune_pll1_o : out std_ulogic;
+        stop_tune_pll0_o : out std_ulogic;
+        stop_tune_pll1_o : out std_ulogic
     );
 end;
 
@@ -61,8 +67,10 @@ architecture arch of trigger_registers is
         config_registers(CTRL_TRG_CONFIG_SEQ1_REG);
     alias config_delay_dram : reg_data_t is
         config_registers(CTRL_TRG_CONFIG_DRAM0_REG);
-    alias config_trig_seq : reg_data_t is
-        config_registers(CTRL_TRG_CONFIG_TRIG_SEQ_REG);
+    alias config_trig_seq_0 : reg_data_t is
+        config_registers(CTRL_TRG_CONFIG_TRIG_SEQ0_REG);
+    alias config_trig_seq_1 : reg_data_t is
+        config_registers(CTRL_TRG_CONFIG_TRIG_SEQ1_REG);
     alias config_trig_dram : reg_data_t is
         config_registers(CTRL_TRG_CONFIG_TRIG_DRAM_REG);
 
@@ -110,7 +118,7 @@ begin
 
     read_data_o(CTRL_TRG_TURN_COUNT_REG) <= (
         CTRL_TRG_TURN_COUNT_COUNT_BITS =>
-            std_logic_vector(turn_readback_i.turn_counter),
+            std_ulogic_vector(turn_readback_i.turn_counter),
         others => '0'
     );
     read_ack_o(CTRL_TRG_TURN_COUNT_REG) <= '1';
@@ -118,7 +126,7 @@ begin
 
     read_data_o(CTRL_TRG_ERROR_COUNT_REG) <= (
         CTRL_TRG_ERROR_COUNT_COUNT_BITS =>
-            std_logic_vector(turn_readback_i.error_counter),
+            std_ulogic_vector(turn_readback_i.error_counter),
         others => '0'
     );
     read_ack_o(CTRL_TRG_ERROR_COUNT_REG) <= '1';
@@ -141,6 +149,10 @@ begin
     dram0_setup_o.disarm     <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_DISARM_BIT);
     dram0_setup_o.fire       <= strobed_bits(CTRL_TRG_CONTROL_DRAM0_FIRE_BIT);
     soft_trigger_o           <= strobed_bits(CTRL_TRG_CONTROL_TRIGGER_BIT);
+    start_tune_pll0_o        <= strobed_bits(CTRL_TRG_CONTROL_START_PLL0_BIT);
+    start_tune_pll1_o        <= strobed_bits(CTRL_TRG_CONTROL_START_PLL1_BIT);
+    stop_tune_pll0_o         <= strobed_bits(CTRL_TRG_CONTROL_STOP_PLL0_BIT);
+    stop_tune_pll1_o         <= strobed_bits(CTRL_TRG_CONTROL_STOP_PLL1_BIT);
 
     pulsed_bits <= (
         CTRL_TRG_PULSED_TRIGGERS_BITS => triggers_i,
@@ -174,15 +186,15 @@ begin
     seq_setup_o(0).delay <=
         unsigned(config_delay_seq_0(CTRL_TRG_CONFIG_SEQ0_DELAY_BITS));
     seq_setup_o(0).enables <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE0_BITS);
+        config_trig_seq_0(CTRL_TRG_CONFIG_TRIG_SEQ0_ENABLE_BITS);
     seq_setup_o(0).blanking <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_BLANKING0_BITS);
+        config_trig_seq_0(CTRL_TRG_CONFIG_TRIG_SEQ0_BLANKING_BITS);
     seq_setup_o(1).delay <=
         unsigned(config_delay_seq_1(CTRL_TRG_CONFIG_SEQ1_DELAY_BITS));
     seq_setup_o(1).enables <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_ENABLE1_BITS);
+        config_trig_seq_1(CTRL_TRG_CONFIG_TRIG_SEQ1_ENABLE_BITS);
     seq_setup_o(1).blanking <=
-        config_trig_seq(CTRL_TRG_CONFIG_TRIG_SEQ_BLANKING1_BITS);
+        config_trig_seq_1(CTRL_TRG_CONFIG_TRIG_SEQ1_BLANKING_BITS);
 
     dram0_setup_o.delay <=
         unsigned(config_delay_dram(CTRL_TRG_CONFIG_DRAM0_DELAY_BITS));

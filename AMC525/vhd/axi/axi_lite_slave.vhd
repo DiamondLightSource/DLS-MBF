@@ -60,46 +60,46 @@ use work.support.all;
 
 entity axi_lite_slave is
     port (
-        clk_i : in std_logic;
-        rstn_i : in std_logic;
+        clk_i : in std_ulogic;
+        rstn_i : in std_ulogic;
 
         -- AXI-Lite read interface
-        araddr_i : in std_logic_vector;
-        arprot_i : in std_logic_vector(2 downto 0);                 -- Ignored
-        arready_o : out std_logic;
-        arvalid_i : in std_logic;
+        araddr_i : in std_ulogic_vector;
+        arprot_i : in std_ulogic_vector(2 downto 0);                 -- Ignored
+        arready_o : out std_ulogic;
+        arvalid_i : in std_ulogic;
         --
-        rdata_o : out std_logic_vector;
-        rresp_o : out std_logic_vector(1 downto 0);
-        rready_i : in std_logic;
-        rvalid_o : out std_logic;
+        rdata_o : out std_ulogic_vector;
+        rresp_o : out std_ulogic_vector(1 downto 0);
+        rready_i : in std_ulogic;
+        rvalid_o : out std_ulogic;
 
         -- AXI-Lite write interface
-        awaddr_i : in std_logic_vector;
-        awprot_i : in std_logic_vector(2 downto 0);                 -- Ignored
-        awready_o : out std_logic;
-        awvalid_i : in std_logic;
+        awaddr_i : in std_ulogic_vector;
+        awprot_i : in std_ulogic_vector(2 downto 0);                 -- Ignored
+        awready_o : out std_ulogic;
+        awvalid_i : in std_ulogic;
         --
-        wdata_i : in std_logic_vector;
-        wstrb_i : in std_logic_vector;
-        wready_o : out std_logic;
-        wvalid_i : in std_logic;
+        wdata_i : in std_ulogic_vector;
+        wstrb_i : in std_ulogic_vector;
+        wready_o : out std_ulogic;
+        wvalid_i : in std_ulogic;
         --
-        bresp_o : out std_logic_vector(1 downto 0);
-        bready_i : in std_logic;
-        bvalid_o : out std_logic;
+        bresp_o : out std_ulogic_vector(1 downto 0);
+        bready_i : in std_ulogic;
+        bvalid_o : out std_ulogic;
 
         -- Internal read interface
-        read_strobe_o : out std_logic;          -- Read request strobe
+        read_strobe_o : out std_ulogic;          -- Read request strobe
         read_address_o : out unsigned;
-        read_data_i : in std_logic_vector;
-        read_ack_i : in std_logic;              -- Read data valid acknowledge
+        read_data_i : in std_ulogic_vector;
+        read_ack_i : in std_ulogic;              -- Read data valid acknowledge
 
         -- Internal write interface
-        write_strobe_o : out std_logic;         -- Write request strobe
+        write_strobe_o : out std_ulogic;         -- Write request strobe
         write_address_o : out unsigned;
-        write_data_o : out std_logic_vector;
-        write_ack_i : in std_logic              -- Write complete acknowledge
+        write_data_o : out std_ulogic_vector;
+        write_ack_i : in std_ulogic              -- Write complete acknowledge
     );
 end;
 
@@ -115,11 +115,11 @@ architecture arch of axi_lite_slave is
     -- The data and address for writes can come separately.
     type write_state_t is (WRITE_IDLE, WRITE_START, WRITE_WRITING, WRITE_DONE);
     signal write_state : write_state_t;
-    signal valid_write : std_logic;
+    signal valid_write : std_ulogic;
 
 
     -- Extracts register address from AXI address
-    function register_address(addr : std_logic_vector) return unsigned
+    function register_address(addr : std_ulogic_vector) return unsigned
     is begin
         return unsigned(read_field(addr, ADDR_WIDTH, BYTE_BITS));
     end;
@@ -161,8 +161,8 @@ begin
             end case;
         end if;
     end process;
-    arready_o <= to_std_logic(read_state = READ_IDLE);
-    rvalid_o  <= to_std_logic(read_state = READ_DONE);
+    arready_o <= to_std_ulogic(read_state = READ_IDLE);
+    rvalid_o  <= to_std_ulogic(read_state = READ_DONE);
     rresp_o <= "00";
 
 
@@ -207,9 +207,9 @@ begin
             end case;
         end if;
     end process;
-    awready_o <= to_std_logic(write_state = WRITE_START);
-    wready_o  <= to_std_logic(write_state = WRITE_START);
-    bvalid_o  <= to_std_logic(write_state = WRITE_DONE);
+    awready_o <= to_std_ulogic(write_state = WRITE_START);
+    wready_o  <= to_std_ulogic(write_state = WRITE_START);
+    bvalid_o  <= to_std_ulogic(write_state = WRITE_DONE);
     bresp_o <= "00";
 
 end;

@@ -5,15 +5,21 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.support.all;
-use work.defines.all;
 use work.nco_defs.all;
 
 use ieee.math_real.all;
 
 entity sim_nco is
+    generic (
+        -- This delay must match the NCO core delay.  This is the sum of
+        -- LOOKUP_DELAY and REFINE_DELAY defined in nco_core plus any delay
+        -- added by nco_cos_sin_prepare and nco_cos_sin_octant.
+        PROCESS_DELAY : natural
+    );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
         phase_advance_i : in angle_t;
+        reset_phase_i : in std_ulogic;
         cos_sin_o : out cos_sin_18_t  -- 18 bit unscaled cos/sin
     );
 end;
@@ -27,20 +33,22 @@ architecture arch of sim_nco is
 
     signal cos_sin : cos_sin_18_t;
 
-    -- This delay must match the NCO core delay.  This is the sum of
-    -- LOOKUP_DELAY and REFINE_DELAY defined in nco_core plus any delay added
-    -- by nco_cos_sin_prepare and nco_cos_sin_octant.
-    constant OUT_DELAY : natural := 14;
+    constant PHASE_DELAY : natural := 3;
+    constant FIXUP_DELAY : natural := PROCESS_DELAY - PHASE_DELAY;
 
 begin
     -- Use the hardware phase calculation
-    nco_phase : entity work.nco_phase port map (
+    nco_phase : entity work.nco_phase generic map (
+        PHASE_DELAY => PHASE_DELAY
+    ) port map (
         clk_i => clk_i,
         phase_advance_i => phase_advance_i,
+        reset_phase_i => reset_phase_i,
         phase_o => int_phase
     );
 
-    phase <= 2.0 * MATH_PI * real(to_integer(int_phase)) / 2.0**32;
+    phase <= 2.0 * MATH_PI *
+        real(to_integer(int_phase(47 downto 17))) / 2.0**31;
     cosine <= cos(phase);
     sine <= sin(phase);
 
@@ -49,20 +57,20 @@ begin
 
     -- Delay result to match hardware
     cos_dly : entity work.dlyreg generic map (
-        DLY => OUT_DELAY,
+        DLY => FIXUP_DELAY,
         DW => 18
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin.cos),
+        data_i => std_ulogic_vector(cos_sin.cos),
         signed(data_o) => cos_sin_o.cos
     );
 
     sin_dly : entity work.dlyreg generic map (
-        DLY => OUT_DELAY,
+        DLY => FIXUP_DELAY,
         DW => 18
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(cos_sin.sin),
+        data_i => std_ulogic_vector(cos_sin.sin),
         signed(data_o) => cos_sin_o.sin
     );
 end;

@@ -6,18 +6,18 @@ use ieee.numeric_std.all;
 
 entity trigger_phase is
     port (
-        adc_clk_i : in std_logic;
-        dsp_clk_i : in std_logic;
-        turn_clock_i : in std_logic;        -- On ADC clock
-        trigger_i : in std_logic;           -- On DSP clock
-        phase_o : out std_logic := '0'      -- On DSP clock
+        adc_clk_i : in std_ulogic;
+        dsp_clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;        -- On ADC clock
+        trigger_i : in std_ulogic;           -- On DSP clock
+        phase_o : out std_ulogic := '0'      -- On DSP clock
     );
 end;
 
 architecture arch of trigger_phase is
-    signal adc_phase : std_logic;
-    signal turn_clock_phase_adc : std_logic := '0';
-    signal turn_clock_phase : std_logic := '0';
+    signal adc_phase : std_ulogic;
+    signal turn_clock_phase_adc : std_ulogic := '0';
+    signal turn_clock_phase : std_ulogic := '0';
 
 begin
     adc_dsp_phase : entity work.adc_dsp_phase port map (

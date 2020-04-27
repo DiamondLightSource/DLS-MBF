@@ -11,8 +11,6 @@
 #define DRAM0_LENGTH        0x80000000U     // 2GB
 #define DRAM1_LENGTH        0x08000000U     // 128M
 
-#define TRIGGER_SOURCE_COUNT    7   // Seven distinct possible trigger sources
-
 #define MEM_CHANNEL_COUNT   2       // Memory capture uses two channels
 
 
@@ -62,6 +60,7 @@ struct fpga_version {
     unsigned int major;
     unsigned int minor;
     unsigned int patch;
+    unsigned int firmware;
     unsigned int git_sha;
     bool git_dirty;
 };
@@ -103,10 +102,7 @@ void hw_write_output_enable(int axis, bool enable);
 /* DRAM capture configuration - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Configure capture pattern for data to DRAM0. */
-void hw_write_dram_mux(unsigned int mux);
-
-/* Configure FIR gain when capturing FIR data to DRAM0. */
-void hw_write_dram_fir_gains(bool gains[AXIS_COUNT]);
+void hw_write_dram_mux(uint16_t mux);
 
 /* Configures length of DRAM0 runout after trigger event. */
 void hw_write_dram_runout(unsigned int count);
@@ -119,9 +115,6 @@ void hw_write_dram_capture_command(bool start, bool stop);
 
 /* Returns true while capture to DRAM in progress. */
 bool hw_read_dram_active(void);
-
-/* Reads memory events. */
-void hw_read_dram_status(bool fir_overflow[AXIS_COUNT]);
 
 /* Reads the specified number of samples from DRAM0 starting at the given offset
  * into the given result array, which must be at least samples entries long. */
@@ -146,6 +139,21 @@ struct trigger_status {
     bool dram_armed;
 };
 
+/* Array of trigger sources.  Used for configuring trigger sources and capturing
+ * trigger source events.  This must matche the trigger_in structure in
+ * register_defs.h, but with each bit mapped to a separate boolean. */
+struct trigger_sources {
+    bool soft;
+    bool ext;
+    bool pm;
+    bool adc0;
+    bool adc1;
+    bool dac0;
+    bool dac1;
+    bool seq0;
+    bool seq1;
+};
+
 /* Triggers synchronisation of turn clock to external trigger. */
 void hw_write_turn_clock_sync(void);
 
@@ -157,7 +165,7 @@ void hw_read_turn_clock_counts(
 void hw_write_turn_clock_offset(unsigned int offset);
 
 /* Returns which incoming trigger events have occurred since the last call. */
-void hw_read_trigger_events(bool sources[TRIGGER_SOURCE_COUNT], bool *blanking);
+void hw_read_trigger_events(struct trigger_sources *sources, bool *blanking);
 
 /* Simultaneous arming of the selected trigger targets. */
 void hw_write_trigger_arm(const bool arm[TRIGGER_TARGET_COUNT]);
@@ -176,8 +184,7 @@ void hw_read_trigger_status(struct trigger_status *status);
 
 /* Reads which trigger sources fired the selected target. */
 void hw_read_trigger_sources(
-    enum trigger_target_id target,
-    bool sources[TRIGGER_SOURCE_COUNT]);
+    enum trigger_target_id target, struct trigger_sources *sources);
 
 /* Program duration of blanking window. */
 void hw_write_trigger_blanking_duration(unsigned int duration);
@@ -189,13 +196,11 @@ void hw_write_trigger_delay(
 /* Configure which trigger sources will be used to trigger the selected
  * target. */
 void hw_write_trigger_enable_mask(
-    enum trigger_target_id target,
-    const bool sources[TRIGGER_SOURCE_COUNT]);
+    enum trigger_target_id target, const struct trigger_sources *sources);
 
 /* Configure which trigger sources are blanked for the selected target. */
 void hw_write_trigger_blanking_mask(
-    enum trigger_target_id target,
-    const bool sources[TRIGGER_SOURCE_COUNT]);
+    enum trigger_target_id target, const struct trigger_sources *sources);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -217,8 +222,20 @@ struct mms_result {
     uint64_t *sum2;         // Sum of squares of bunch
 };
 
+
+/* Fixed NCO configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+enum fixed_nco {
+    FIXED_NCO1,
+    FIXED_NCO2
+};
+
 /* Directly sets the fixed frequency oscillator. */
-void hw_write_nco0_frequency(int axis, unsigned int frequency);
+void hw_write_nco_frequency(int axis, enum fixed_nco nco, uint64_t frequency);
+
+/* Set output NCO gain and enable tune PLL tracking. */
+void hw_write_nco_gain(int axis, enum fixed_nco nco, unsigned int gain);
+void hw_write_nco_track_pll(int axis, enum fixed_nco nco, bool enable);
 
 
 /* ADC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -235,6 +252,9 @@ void hw_write_adc_overflow_threshold(int axis, unsigned int threshold);
 /* Sets the threshold for generating ADC bunch motion event. */
 void hw_write_adc_delta_threshold(int axis, unsigned int delta);
 
+/* Sets shift factor for ADC fill pattern reject filter. */
+void hw_write_adc_reject_shift(int axis, uint16_t shift);
+
 /* Polls the ADC events: input overflow, FIR overflow, min/max/sum overflow,
  * bunch motion event. */
 void hw_read_adc_events(int axis, struct adc_events *events);
@@ -244,8 +264,8 @@ void hw_read_adc_events(int axis, struct adc_events *events);
 void hw_write_adc_taps(int axis, const int taps[]);
 
 /* Set output source for ADC MMS. */
-void hw_write_adc_mms_source(int axis, bool after_fir);
-void hw_write_adc_dram_source(int axis, bool after_fir);
+void hw_write_adc_mms_source(int axis, uint16_t source);
+void hw_write_adc_dram_source(int axis, uint16_t source);
 
 /* Reads min/max/sum for ADC. */
 void hw_read_adc_mms(int axis, struct mms_result *result);
@@ -256,21 +276,23 @@ void hw_read_adc_mms(int axis, struct mms_result *result);
 struct bunch_config {
     /* Each of these points to an array of bunches. */
     char *fir_select;       // Select FIR for this bunch
-    int *gain;              // Output gain for this bunch
     bool *fir_enable;       // Enable FIR output for this bunch
-    bool *nco0_enable;      // Enable NCO0 output for this bunch
-    bool *nco1_enable;      // Enable NCO1 output (swept NCO) for this bunch
+    int *fir_gains;         // Gains array for FIR
+    int *nco0_gains;        // Gains array for NCO1
+    int *nco1_gains;        // Gains array for SEQ NCO
+    int *nco2_gains;        // Gains array for PLL NCO
+    int *nco3_gains;        // Gains array for NCO2
 };
 
 /* Write bunch configuration. */
 void hw_write_bunch_config(
-    int axis, unsigned int bank, const struct bunch_config *config);
+    int axis, uint16_t bank, const struct bunch_config *config);
 
 /* Programs bunch decimation factor. */
 void hw_write_bunch_decimation(int axis, unsigned int decimation);
 
 /* Write taps for bunch by bunch FIR. */
-void hw_write_bunch_fir_taps(int axis, unsigned int fir, const int taps[]);
+void hw_write_bunch_fir_taps(int axis, uint16_t fir, const int taps[]);
 
 /* Checks for FIR overflow on selected axis. */
 bool hw_read_bunch_overflow(int axis);
@@ -280,22 +302,28 @@ bool hw_read_bunch_overflow(int axis);
 
 struct dac_events {
     bool fir_ovf;
+    bool mms_ovf;
     bool mux_ovf;
     bool out_ovf;
+    bool delta_event;
 };
+
+/* Sets the threshold for generating ADC bunch motion event. */
+void hw_write_dac_delta_threshold(int axis, unsigned int delta);
 
 /* Set DAC output delay. */
 void hw_write_dac_delay(int axis, unsigned int delay);
 
 /* Set output FIR gain. */
-void hw_write_dac_fir_gain(int axis, unsigned int gain);
-
-/* Set output NCO0 gain and enable. */
-void hw_write_dac_nco0_gain(int axis, unsigned int gain);
-void hw_write_dac_nco0_enable(int axis, bool enable);
+void hw_write_dac_fir_gain(int axis, uint16_t gain);
 
 /* Set output source for DAC memory and MMS. */
-void hw_write_dac_mms_source(int axis, bool after_fir);
+enum dac_mms_source {
+    DAC_MMS_BEFORE_PREEMPH,
+    DAC_MMS_AFTER_PREEMPH,
+    DAC_MMS_BB_FIR,
+};
+void hw_write_dac_mms_source(int axis, enum dac_mms_source source);
 void hw_write_dac_dram_source(int axis, bool after_fir);
 
 /* Returns bunch by bunch, accumulator, min/max/sum, DAC FIR overflow events. */
@@ -311,27 +339,29 @@ void hw_read_dac_mms(int axis, struct mms_result *result);
 /* Sequencer configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 struct seq_entry {
-    unsigned int start_freq;        // NCO start frequency
-    unsigned int delta_freq;        // Frequency step for sweep
+    uint64_t start_freq;            // NCO start frequency
+    uint64_t delta_freq;            // Frequency step for sweep
     unsigned int dwell_time;        // Dwell time at each step
     unsigned int capture_count;     // Number of sweep points to capture
-    unsigned int bunch_bank;        // Bunch bank selection
+    uint16_t bunch_bank;            // Bunch bank selection
     unsigned int nco_gain;          // Sweep output gain
     unsigned int window_rate;       // Detector window advance frequency
-    bool nco_enable;                // Enable sweep output
     bool enable_window;             // Enable detector windowing
     bool write_enable;              // Enable data capture of sequence
     bool enable_blanking;           // Observe trigger holdoff control
+    bool reset_phase;               // If set sweep phase is reset at start
+    bool use_tune_pll;              // Enable Tune PLL frequency offset
     unsigned int holdoff;           // Detector holdoff
+    unsigned int state_holdoff;     // Holdoff at start of state
 };
 
 struct seq_config {
-    unsigned int bank0;
+    uint16_t bank0;
     unsigned int sequencer_pc;
     unsigned int super_seq_count;
     struct seq_entry entries[MAX_SEQUENCER_COUNT];
     int32_t window[DET_WINDOW_LENGTH];
-    uint32_t super_offsets[SUPER_SEQ_STATES];
+    uint64_t super_offsets[SUPER_SEQ_STATES];
 };
 
 struct seq_state {
@@ -346,7 +376,7 @@ struct seq_state {
 void hw_write_seq_config(int axis, const struct seq_config *config);
 
 /* Updates the choice of bank0. */
-void hw_write_seq_bank0(int axis, unsigned int bank0);
+void hw_write_seq_bank0(int axis, uint16_t bank0);
 
 /* Configure state used to generate trigger event. */
 void hw_write_seq_trigger_state(int axis, unsigned int state);
@@ -363,7 +393,7 @@ void hw_read_seq_state(int axis, struct seq_state *state);
 /* Configuration for a single detector. */
 struct detector_config {
     bool enable;                // Individual detector enables
-    unsigned int scaling;       // Detector readout scaling
+    uint16_t scaling;           // Detector readout scaling
     bool *bunch_enables;        // Array of bunch enables
 };
 
@@ -374,7 +404,7 @@ struct detector_result {
 
 /* Writes the complete detector configuration. */
 void hw_write_det_config(
-    int axis, bool input_select, unsigned int delay,
+    int axis, uint16_t input_select, unsigned int delay,
     const struct detector_config config[DETECTOR_COUNT]);
 
 /* Resets detector capture address. */
@@ -388,3 +418,81 @@ void hw_read_det_events(int axis,
 void hw_read_det_memory(
     int axis, unsigned int result_count, unsigned int offset,
     struct detector_result result[]);
+
+
+/* Tune PLL configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Directly sets Tune PLL NCO frequency.  Note that setting this during feedback
+ * will interfere with feedback! */
+void hw_write_pll_nco_frequency(int axis, uint64_t frequency);
+
+/* Reads current Tune PLL frequency. */
+uint64_t hw_read_pll_nco_frequency(int axis);
+
+/* Control over Tune PLL NCO gain. */
+void hw_write_pll_nco_gain(int axis, unsigned int gain);
+
+/* Control over operational parameters. */
+void hw_write_pll_dwell_time(int axis, unsigned int dwell);
+void hw_write_pll_blanking(int axis, bool blanking);
+void hw_write_pll_target_phase(int axis, int32_t phase);
+void hw_write_pll_integral_factor(int axis, int32_t integral);
+void hw_write_pll_proportional_factor(int axis, int32_t proportional);
+void hw_write_pll_minimum_magnitude(int axis, uint32_t magnitude);
+void hw_write_pll_maximum_offset(int axis, uint32_t offset);
+
+/* Configures the detector readout scale. */
+void hw_write_pll_det_scaling(int axis, uint16_t scaling);
+
+/* As the detector bunch offset and hence the bunch configuration depend on the
+ * input selection, we have to write both together. */
+void hw_write_pll_det_config(
+    int axis, uint16_t input_select,
+    unsigned int offset, const bool bunch_enables[]);
+
+/* Control over debug readbacks.  If captured CORDIC is set the FIFO debug data
+ * will be CORDIC data.  Only intended for CORDIC validation. */
+void hw_write_pll_captured_cordic(int axis, bool cordic);
+
+/* Start and stop Tune PLL feedback. */
+void hw_write_pll_start(bool axis0, bool axis1);
+void hw_write_pll_stop(bool axis0, bool axis1);
+
+
+/* Read back error events. */
+struct tune_pll_events {
+    bool det_overflow;
+    bool magnitude_error;
+    bool offset_error;
+};
+void hw_read_pll_events(int axis, struct tune_pll_events *events);
+
+/* Read running status and stop reasons. */
+struct tune_pll_status {
+    bool running;               // Set if feedback currently running
+    /* The following bits are stop reasons recording why feedback is stopped. */
+    bool stopped;               // Stop requested
+    bool overflow;              // Detector overflow
+    bool too_small;             // Magnitude too small
+    bool bad_offset;            // Offset too large
+};
+void hw_read_pll_status(int axis, struct tune_pll_status *status);
+
+/* Readbacks for filtered live data. */
+struct detector_result hw_read_pll_filtered_detector(int axis);
+int32_t hw_read_pll_filtered_offset(int axis);
+
+/* Rather strangely, the maximum possible PLL readback FIFO capture is 1025
+ * samples.  In practice this will *never* occur, but it is safest to leave the
+ * space anyway. */
+#define PLL_FIFO_SIZE       1025
+
+/* Read debug and offset FIFO.  If a reset is required then *reset is set.  If
+ * enable_interrupt is set then read ready interrupts are enabled on return. */
+enum pll_readout_fifo {
+    PLL_FIFO_DEBUG,         // Returns pairs of debug values
+    PLL_FIFO_OFFSET,        // Returns frequency offsets
+};
+unsigned int hw_read_pll_readout_fifo(
+    int axis, enum pll_readout_fifo fifo,
+    bool enable_interrupt, bool *reset, int32_t data[PLL_FIFO_SIZE]);

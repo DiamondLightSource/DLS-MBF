@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 use work.defines.all;
 use work.support.all;
 use work.bunch_defs.all;
+use work.dsp_defs.all;
 
 use work.register_defs.all;
 
@@ -14,27 +15,30 @@ entity testbench is
 end testbench;
 
 architecture arch of testbench is
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
 
     constant TURN_COUNT : natural := 7;
-    signal turn_clock : std_logic := '0';
+    signal turn_clock : std_ulogic := '0';
 
-    signal write_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal write_strobe : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
     signal write_data : reg_data_t;
-    signal write_ack : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
-    signal read_strobe : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal write_ack : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal read_strobe : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
     signal read_data : reg_data_array_t(DSP_REGS_RANGE);
-    signal read_ack : std_logic_vector(DSP_REGS_RANGE) := (others => '0');
+    signal read_ack : std_ulogic_vector(DSP_REGS_RANGE) := (others => '0');
 
     signal bank_select : unsigned(1 downto 0) := "00";
     signal bunch_config : bunch_config_t;
 
-    signal data_in : signed(15 downto 0) := X"0000";
-    signal data_out : signed(23 downto 0);
+    signal data_in : signed(ADC_DATA_RANGE) := X"0000";
+    signal data_out : signed(FIR_DATA_RANGE);
 
     constant TAP_COUNT : natural := 16;
     constant HEADROOM_OFFSET : natural := 2;
+
+    constant BUNCH_SELECT_DELAY : natural := 8;
+
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -51,7 +55,9 @@ begin
     end process;
 
 
-    bunch_select : entity work.bunch_select port map (
+    bunch_select : entity work.bunch_select generic map (
+        BUNCH_SELECT_DELAY => BUNCH_SELECT_DELAY
+    ) port map (
         dsp_clk_i => dsp_clk,
         adc_clk_i => adc_clk,
         turn_clock_i => turn_clock,
@@ -110,6 +116,16 @@ begin
             clk_wait(dsp_clk, ticks);
         end;
 
+        -- Writes fir selection for a single bunch
+        procedure write_bunch_fir(fir : std_ulogic_vector(1 downto 0)) is
+        begin
+            write_reg(DSP_BUNCH_BANK_REG, X"00000000");
+            write_reg(DSP_BUNCH_BANK_REG, X"00000000");
+            write_reg(DSP_BUNCH_BANK_REG, (
+                DSP_BUNCH_BANK_EXTRA_FIR_SELECT_BITS => fir,
+                others => '0'));
+        end;
+
     begin
         clk_wait(10);
 
@@ -138,13 +154,13 @@ begin
 
         -- Configure banks with differing FIR selections
         write_reg(DSP_BUNCH_CONFIG_REG, X"00000000");
-        write_reg(DSP_BUNCH_BANK_REG, X"00000000");
-        write_reg(DSP_BUNCH_BANK_REG, X"00000000");
-        write_reg(DSP_BUNCH_BANK_REG, X"00000001");
-        write_reg(DSP_BUNCH_BANK_REG, X"00000001");
-        write_reg(DSP_BUNCH_BANK_REG, X"00000002");
-        write_reg(DSP_BUNCH_BANK_REG, X"00000002");
-        write_reg(DSP_BUNCH_BANK_REG, X"00000003");
+        write_bunch_fir("00");
+        write_bunch_fir("00");
+        write_bunch_fir("01");
+        write_bunch_fir("01");
+        write_bunch_fir("10");
+        write_bunch_fir("10");
+        write_bunch_fir("11");
 
         wait;
     end process;

@@ -1,7 +1,9 @@
 # Definition of PVs
 
+import numpy
 import epicsdbbuilder
-from softioc import builder
+from softioc import builder, alarm
+from cothread.catools import *
 
 
 # Helper for DB name prefix.
@@ -42,6 +44,42 @@ class Config:
     pass
 
 
+# Computes a suitable invalid value from the given value.  Kind of tricky given
+# the number of edge cases!
+def invalid_value(value):
+    if isinstance(value, int):
+        return 0
+    elif isinstance(value, str):
+        return ''
+    elif isinstance(value, numpy.ndarray):
+        # Ok, we have a numpy array ... but alas, it might be a singleton value
+        # masquerading as an array.
+        if value.shape == ():
+            return numpy.nan
+        else:
+            return numpy.empty(0)
+    elif isinstance(value, float):
+        # Ordinary floating point
+        return numpy.nan
+    elif hasattr(value, '__iter__'):
+        # Iterable but not a numpy value.  Return a numpy empty value, as it
+        # turns out that the Python IOC can choke if we feed a tuple back.
+        return numpy.empty(0)
+    else:
+        # Not a clue, none of the above.  Go with what we have
+        return value
+
+def update_pv_value(trace, timestamp, pv, name):
+    try:
+        value = trace._get(name)
+        severity = alarm.NO_ALARM
+    except AttributeError:
+        # Invalid value.  Compute an appropriate invalid value
+        value = invalid_value(pv.get())
+        severity = alarm.INVALID_ALARM
+    pv.set(value, severity = severity, timestamp = timestamp)
+
+
 class PvSet:
     def __init__(self, persist):
         self.__persist = persist
@@ -60,7 +98,7 @@ class PvSet:
 
     def update(self, timestamp, trace):
         for name, pv in self.__in_pvs.items():
-            pv.set(trace._get(name), timestamp = timestamp)
+            update_pv_value(trace, timestamp, pv, name)
 
     def get_config(self):
         config = Config()
@@ -89,6 +127,7 @@ class PvSet:
     aOut    = make_config_pv_builder('aOut', float)
     longOut = make_config_pv_builder('longOut', int)
     mbbOut  = make_config_pv_builder('mbbOut', int)
+    boolOut = make_config_pv_builder('boolOut', bool)
 
 
 def publish_config(pvs):
@@ -99,23 +138,25 @@ def publish_config(pvs):
             DESC = 'Degree of smoothing for 2D peak detect')
         pvs.aOut('MINIMUM_WIDTH', 0, 1, initial_value = 1e-5, PREC = 2,
             DESC = 'Reject peaks narrower than this')
+        pvs.aOut('MAXIMUM_WIDTH', 0, 1, initial_value = 1e-2, PREC = 2,
+            DESC = 'Reject peaks wider than this')
         pvs.aOut('MINIMUM_SPACING', 0, 0.5, initial_value = 1e-3, PREC = 4,
             DESC = 'Reject peaks closer than this')
         pvs.aOut('MINIMUM_HEIGHT', 0, 1, initial_value = 0.1, PREC = 3,
             DESC = 'Reject peaks shorter than this')
         pvs.aOut('MAXIMUM_FIT_ERROR', 0, 1, initial_value = 0.2, PREC = 3,
-            DESC = 'Reject overall fit if error this large')
+            DESC = 'Reject overall fit if error too large')
+        pvs.longOut('WINDOW_START', initial_value = 0,
+            DESC = 'First point to fit')
+        pvs.longOut('WINDOW_LENGTH', initial_value = 0,
+            DESC = 'Length of window (0 means all)')
+        pvs.boolOut('WEIGHT_DATA', 'Unweighted', 'Weighted',
+            initial_value = True,
+            DESC = 'Whether to weight data during fit')
 
 
-def publish_tune(pvs, tune_aliases):
+def publish_tune(pvs):
     with pvs.name_prefix(None, 'tune.tune'):
-        tune = pvs.aIn('tune', 'TUNE', 0, 1, PREC = 5,
-            DESC = 'Measured tune')
-        for alias in tune_aliases:
-            tune.add_alias(alias)
-        pvs.aIn('phase', 'PHASE', -180, 180,
-            EGU = 'deg', PREC = 1,
-            DESC = 'Measured tune phase')
         pvs.aIn('synctune', 'SYNCTUNE', 0, 1, PREC = 5,
             DESC = 'Synchrotron tune')
 
@@ -153,10 +194,12 @@ def publish_peaks(pvs):
 
 def publish_graphs(pvs, length):
     pvs.Waveform('input.scale', 'SCALE', length)
-    pvs.Waveform('input.power', 'POWER', length)
+    pvs.Waveform('input.magnitude', 'DMAGNITUDE', length)
+    pvs.Waveform('input.phase', 'DPHASE', length)
     pvs.Waveform('input.iq.real', 'I', length)
     pvs.Waveform('input.iq.imag', 'Q', length)
-    pvs.Waveform('output.model_power', 'MPOWER', length)
+    pvs.Waveform('output.model_magnitude', 'MMAGNITUDE', length)
+    pvs.Waveform('output.model_phase', 'MPHASE', length)
     pvs.Waveform('output.model.real', 'MI', length)
     pvs.Waveform('output.model.imag', 'MQ', length)
     pvs.Waveform('output.residue', 'RESIDUE', length)
@@ -164,16 +207,69 @@ def publish_graphs(pvs, length):
 
 def publish_info(pvs):
     pvs.stringIn('last_error', 'LAST_ERROR')
-    pvs.aIn('output.fit_error', 'FIT_ERROR', PREC = 5)
+    pvs.aIn('fit_error', 'FIT_ERROR', PREC = 5)
+    pvs.longIn('fit_length', 'FIT_LENGTH')
+    pvs.aIn('fit_time', 'FIT_TIME', PREC = 3, EGU = 's')
 
 
-def publish_pvs(persist, target, tune_aliases, length):
+def publish_pvs(persist, target, length):
     pvs = PvSet(persist)
     with pvs.name_prefix(target + ':TUNE'):
         publish_config(pvs)
 
-        publish_tune(pvs, tune_aliases)
+        pvs.aIn('max_tune', 'ATMAX', 0, 1, PREC = 5,
+            DESC = 'Tune at maximum power')
+        publish_tune(pvs)
         publish_peaks(pvs)
         publish_graphs(pvs, length)
         publish_info(pvs)
     return pvs
+
+
+class TuneMux:
+    # Selection options for tune selector mux
+    SEL_FITTED = 0
+    SEL_MAXIMUM = 1
+    SEL_TUNE_PLL = 2
+
+    def __init__(self, target, tune_pll, tune_aliases):
+        if tune_pll:
+            camonitor(tune_pll, self.update_pll, format = FORMAT_TIME)
+        with NamePrefix(None, target + ':TUNE', None):
+            selectors = ['Fitted', 'Maximum']
+            if tune_pll:
+                selectors.append('Tune PLL')
+            self.selector = builder.mbbOut('SELECT_S',
+                initial_value = 0, on_update = self.update_selector,
+                *selectors)
+            self.tune = builder.aIn('TUNE', 0, 1, PREC = 5,
+                DESC = 'Measured tune')
+            for alias in tune_aliases:
+                self.tune.add_alias(alias)
+            self.phase = builder.aIn('PHASE', -180, 180,
+                EGU = 'deg', PREC = 1,
+                DESC = 'Measured tune phase')
+
+    def update_selector(self, value):
+        self.tune.set(numpy.nan)
+        self.phase.set(numpy.nan)
+
+    def update(self, timestamp, trace):
+        selector = self.selector.get()
+        if selector == self.SEL_FITTED:
+            # Use measured tune, as far as possible
+            update_pv_value(trace, timestamp, self.tune, 'tune.tune.tune')
+            update_pv_value(trace, timestamp, self.phase, 'tune.tune.phase')
+        elif selector == self.SEL_MAXIMUM:
+            # Fall back to maximum value
+            update_pv_value(trace, timestamp, self.tune, 'max_tune')
+            self.phase.set(numpy.nan,
+                severity = alarm.INVALID_ALARM, timestamp = timestamp)
+
+    def update_pll(self, value):
+        if self.selector.get() == self.SEL_TUNE_PLL:
+            self.tune.set(
+                value, severity = value.severity, timestamp = value.timestamp)
+            self.phase.set(
+                numpy.nan, severity = alarm.INVALID_ALARM,
+                timestamp = value.timestamp)

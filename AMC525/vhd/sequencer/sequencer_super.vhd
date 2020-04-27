@@ -12,9 +12,9 @@ use work.sequencer_defs.all;
 
 entity sequencer_super is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_addr_i : in unsigned;
         write_data_i : in reg_data_t;
 
@@ -24,18 +24,39 @@ entity sequencer_super is
 end;
 
 architecture arch of sequencer_super is
-    type freq_memory_t is array(0 to 2**super_count_t'LENGTH-1) of angle_t;
-    signal freq_memory : freq_memory_t := (others => (others => '0'));
-    attribute ram_style : string;
-    attribute ram_style of freq_memory : signal is "BLOCK";
+    signal write_data : std_ulogic_vector(angle_t'RANGE);
+    signal write_strobe : std_ulogic;
 
 begin
+    super_memory : entity work.block_memory generic map (
+        ADDR_BITS => super_count_t'LENGTH,
+        DATA_BITS => 48
+    ) port map (
+        read_clk_i => dsp_clk_i,
+        read_addr_i => super_state_i,
+        unsigned(read_data_o) => nco_freq_base_o,
+
+        write_clk_i => dsp_clk_i,
+        write_strobe_i => write_strobe,
+        write_addr_i => write_addr_i(super_count_t'LENGTH downto 1),
+        write_data_i => write_data
+    );
+
+    -- We gather successive pairs of 32-bit writes into a 48-bit angle_t, and
+    -- trigger a write each time we have a complete word.
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
+            -- Only trigger write on writing to second word in group of two
+            write_strobe <= write_strobe_i and write_addr_i(0);
             if write_strobe_i = '1' then
-                freq_memory(to_integer(write_addr_i)) <= angle_t(write_data_i);
+                case write_addr_i(0) is
+                    when '0' =>
+                        write_data(31 downto 0) <= write_data_i;
+                    when '1' =>
+                        write_data(47 downto 32) <= write_data_i(15 downto 0);
+                    when others =>
+                end case;
             end if;
-            nco_freq_base_o <= freq_memory(to_integer(super_state_i));
         end if;
     end process;
 end;

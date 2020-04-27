@@ -10,9 +10,9 @@ use work.support.all;
 
 entity bunch_fir_interpolate is
     port (
-        clk_i : in std_logic;
-        turn_clock_i : in std_logic;
-        data_valid_i : in std_logic;
+        clk_i : in std_ulogic;
+        turn_clock_i : in std_ulogic;
+        data_valid_i : in std_ulogic;
         data_i : in signed;
         data_o : out signed
     );
@@ -22,7 +22,7 @@ architecture arch of bunch_fir_interpolate is
     -- Input pipeline
     constant INPUT_DELAY : natural := 4;
     signal data_in : data_i'SUBTYPE;
-    signal data_valid_in : std_logic;
+    signal data_valid_in : std_ulogic;
 
     signal read_data : data_i'SUBTYPE := (others => '0');
     signal data_out : data_o'SUBTYPE := (others => '0');
@@ -36,7 +36,7 @@ begin
         DW => data_i'LENGTH
     ) port map (
         clk_i => clk_i,
-        data_i => std_logic_vector(data_i),
+        data_i => std_ulogic_vector(data_i),
         signed(data_o) => data_in
     );
 

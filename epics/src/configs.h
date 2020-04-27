@@ -5,11 +5,14 @@ extern const struct hardware_delays {
     bool valid;                         // If not set, all fields are zero
 
     unsigned int MMS_ADC_DELAY;
+    unsigned int MMS_ADC_REJECT_DELAY;
     unsigned int MMS_ADC_FIR_DELAY;
     unsigned int MMS_DAC_DELAY;
     unsigned int MMS_DAC_FIR_DELAY;
+    unsigned int MMS_DAC_FEEDBACK_DELAY;
 
     unsigned int DRAM_ADC_DELAY;
+    unsigned int DRAM_ADC_REJECT_DELAY;
     unsigned int DRAM_ADC_FIR_DELAY;
     unsigned int DRAM_DAC_DELAY;
     unsigned int DRAM_FIR_DELAY;
@@ -19,10 +22,20 @@ extern const struct hardware_delays {
     unsigned int BUNCH_FIR_OFFSET;
 
     unsigned int DET_ADC_OFFSET;
+    unsigned int DET_ADC_REJECT_OFFSET;
     unsigned int DET_FIR_OFFSET;
 
-    int DET_FIR_DELAY;
     int DET_ADC_DELAY;
+    int DET_ADC_REJECT_DELAY;
+    int DET_FIR_DELAY;
+
+    unsigned int PLL_ADC_OFFSET;
+    unsigned int PLL_FIR_OFFSET;
+    unsigned int PLL_ADC_REJECT_OFFSET;
+
+    int PLL_ADC_DELAY;
+    int PLL_FIR_DELAY;
+    int PLL_ADC_REJECT_DELAY;
 } hardware_delays;
 
 extern const struct system_config {
@@ -38,9 +51,11 @@ extern const struct system_config {
     const char *persistence_file;       // Where to save the persistent state
     int persistence_interval;           // How often to update state (in secs)
     int pv_log_array_length;            // Manages PV logging verbosity
+    int archive_interval;               // Interval for special archive PVs
     unsigned int memory_readout_length; // Length of MEM readout PVs
     unsigned int detector_length;       // Length of DET readout PVs
     unsigned int data_port;             // Socket port for fast data readout
+    unsigned int tune_pll_length;       // Readout length for Tune PLL
 } system_config;
 
 

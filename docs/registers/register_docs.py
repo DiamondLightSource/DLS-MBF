@@ -5,7 +5,7 @@ import os
 from docutils import nodes, statemachine
 from docutils.parsers import rst
 
-import mbf
+from mbf import parse, defs_path
 
 
 def trim_text(text):
@@ -29,7 +29,7 @@ def format_range(range, bits = False):
         return '%d' % start
 
 
-class GenerateMethods(mbf.parse.register_defs.WalkParse):
+class GenerateMethods(parse.register_defs.WalkParse):
     def __init__(self, table):
         self.table = table
 
@@ -72,7 +72,9 @@ class GenerateMethods(mbf.parse.register_defs.WalkParse):
                 [[format_range(group.range)],
                  trim_text(group.doc)],
                 more_cols = [0, 3])
-        self.walk_subgroups(context + [group.name], group)
+        if not group.hidden:
+            context = context + [group.name]
+        self.walk_subgroups(context, group)
 
     def walk_rw_pair(self, context, rw_pair):
         for register in rw_pair.registers:
@@ -166,8 +168,8 @@ class register_docs_file(rst.Directive):
     def run(self):
         filename = self.options['file']
 
-        global register_groups, group_defs, register_defs
-        register_groups, group_defs, register_defs = \
+        global register_groups, group_defs, register_defs, constant_defs
+        register_groups, group_defs, register_defs, constant_defs = \
             self.load_groups(filename)
 
         return []
@@ -179,54 +181,19 @@ class register_docs_file(rst.Directive):
         return result
 
     def load_groups(self, filename):
-        full_filename = os.path.join(mbf.MBF_TOP, filename)
-        defs = mbf.parse.register_defs.parse(
-            mbf.parse.indent.parse_file(file(full_filename)))
-        defs = mbf.parse.register_defs.flatten(defs)
+        full_filename = os.path.join(defs_path.MBF_TOP, filename)
+        defs = parse.register_defs.parse_defs(
+            parse.indent.parse_file(file(full_filename)))
+        defs = parse.register_defs.flatten(defs)
         groups = self.list_to_dict(defs.groups)
         group_defs = self.list_to_dict(defs.group_defs)
         register_defs = self.list_to_dict(defs.register_defs)
-        return groups, group_defs, register_defs
+        return groups, group_defs, register_defs, defs.constants.values()
 
 register_groups = {}
 
 
-class register_docs(rst.Directive):
-    option_spec = {
-        'section' : str,
-        'group' : str,
-        'register' : str,
-    }
-
-
-    def lookup_option(self):
-        if 'section' in self.options:
-            return (register_groups[self.options['section']], True)
-        elif 'group' in self.options:
-            return (group_defs[self.options['group']], True)
-        elif 'register' in self.options:
-            return (register_defs[self.options['register']], False)
-
-    def run(self):
-        definition, is_group = self.lookup_option()
-
-        header = self.doc_text(definition)
-
-        table = Table(self, [11, 9, 11, 25, 80])
-        table.add_header(
-            [['Reg'], [], ['Field'], ['Name'], ['Description']])
-        methods = GenerateMethods(table)
-        if is_group:
-            methods.walk_group([], definition)
-        else:
-            methods.walk_register([], definition)
-
-        return header + [table.table]
-
-    def doc_text(self, entity):
-        text = [s[1:] for s in entity.doc]
-        return self.parse_text(text)
-
+class RegisterDocs(rst.Directive):
     # This dance appears to be how we parse arbitrary RST text.  Note that the
     # Element is just a placeholder for doing the parse, and in fact we return
     # the list of children from the parse.
@@ -236,24 +203,60 @@ class register_docs(rst.Directive):
         self.state.nested_parse(text, self.content_offset, node)
         return node.children
 
-    def create_table(self):
-        col_widths = [1, 2, 3, 4]
-        table = Table(self, col_widths)
 
-        table.add_header(test_line)
+class register_docs(RegisterDocs):
+    option_spec = {
+        'section' : str,
+        'group' : str,
+        'register' : str,
+    }
 
-        table.add_row(test_line)
-        table.add_row(test_line[:2])
-        table.add_row(
-            [['short'], paragraph_text, long_text],
-            more_rows = [0, 1, 0], more_cols = [0, 1, 0])
-        table.add_row([['one'], ['two']])
-        table.add_row(
-            test_line[1:], more_cols = [1, 0, 0])
-        table.add_row(
-            test_line[0:2] + [compound_table, paragraph_text])
+    def doc_text(self, entity):
+        text = [s[1:] for s in entity.doc]
+        return self.parse_text(text)
+
+    def run_group(self, group):
+        table = Table(self, [12, 9, 12, 30, 80])
+        table.add_header(
+            [['Reg'], [], ['Field'], ['Name'], ['Description']])
+        methods = GenerateMethods(table)
+        methods.walk_group([], group)
         return table.table
+
+    def run_register(self, register):
+        table = Table(self, [12, 30, 80])
+        table.add_header([['Field'], ['Name'], ['Description']])
+        for field in register.fields:
+            table.add_row(
+                [[format_range(field.range, True)],
+                 format_name(field), trim_text(field.doc)])
+        return table.table
+
+    def lookup_option(self):
+        if 'section' in self.options:
+            return (register_groups[self.options['section']], self.run_group)
+        elif 'group' in self.options:
+            return (group_defs[self.options['group']], self.run_group)
+        elif 'register' in self.options:
+            return (register_defs[self.options['register']], self.run_register)
+
+    def run(self):
+        definition, make_table = self.lookup_option()
+        header = self.doc_text(definition)
+        return header + [make_table(definition)]
+
+
+class constant_docs(RegisterDocs):
+    def run(self):
+        table = Table(self, [50, 15])
+        table.add_header([['Name'], ['Value']])
+        for constant in constant_defs:
+            if constant.doc:
+                table.add_row([trim_text(constant.doc)], more_cols = [1])
+            table.add_row([format_name(constant), ['%d' % constant.value]])
+        return [table.table]
 
 
 rst.directives.register_directive('register_docs_file', register_docs_file)
 rst.directives.register_directive('register_docs', register_docs)
+rst.directives.register_directive('constant_docs', constant_docs)

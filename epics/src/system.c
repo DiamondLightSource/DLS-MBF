@@ -20,49 +20,9 @@
 #include "system.h"
 
 
-static struct nco_context {
-    int axis;
-} nco_context[AXIS_COUNT];
-
-static bool set_nco_frequency(void *context, double *tune)
-{
-    struct nco_context *nco = context;
-    unsigned int frequency = tune_to_freq(*tune);
-    *tune = freq_to_tune(frequency);
-    hw_write_nco0_frequency(nco->axis, frequency);
-    return true;
-}
-
-static bool set_nco_gain(void *context, unsigned int *gain)
-{
-    struct nco_context *nco = context;
-    hw_write_dac_nco0_gain(nco->axis, *gain);
-    return true;
-}
-
-static bool set_nco_enable(void *context, bool *enable)
-{
-    struct nco_context *nco = context;
-    hw_write_dac_nco0_enable(nco->axis, *enable);
-    return true;
-}
-
-static void publish_nco_pvs(void)
-{
-    FOR_AXIS_NAMES(axis, "NCO", system_config.lmbf_mode)
-    {
-        struct nco_context *nco = &nco_context[axis];
-        nco->axis = axis;
-        PUBLISH_C_P(ao, "FREQ", set_nco_frequency, nco);
-        PUBLISH_C_P(mbbo, "GAIN", set_nco_gain, nco);
-        PUBLISH_C_P(bo, "ENABLE", set_nco_enable, nco);
-    }
-}
-
-
 static struct system_status system_status;
-static unsigned int vco_locked;
-static unsigned int vcxo_locked;
+static uint16_t vco_locked;
+static uint16_t vcxo_locked;
 
 static void read_system_status(void)
 {
@@ -101,43 +61,58 @@ static char hostname[256];
 static EPICS_STRING device_name;
 
 
-static error__t get_driver_version(EPICS_STRING *version)
+static error__t get_hostname(char name[], size_t length)
 {
     struct utsname utsname;
-    FILE *file;
     return
         TEST_IO(uname(&utsname))  ?:
-        DO(strncpy(hostname, utsname.nodename, sizeof(hostname)))  ?:
-        TEST_OK(file = fopen("/sys/module/amc525_mbf/version", "r"))  ?:
+        DO(strncpy(name, utsname.nodename, length));
+}
+
+
+static error__t get_driver_version(EPICS_STRING *version)
+{
+    FILE *file = fopen("/sys/module/amc525_mbf/version", "r");
+    return
+        TEST_OK(file)  ?:
         DO_FINALLY(
             TEST_OK(fgets(version->s, sizeof(version->s), file))  ?:
             DO(*strchrnul(version->s, '\n') = '\0'),
         // finally
-            fclose(file));
+            fclose(file))  ?:
+        DO(log_message("Driver version %s", version->s));
 }
 
 
 static error__t initialise_constants(void)
 {
-    PUBLISH_READ_VAR(stringin, "VERSION", version_string);
-    PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
-    PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
-    PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
-    PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
-    PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
-    PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
-    PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
-    PUBLISH_READ_VAR(stringin, "DRIVER_VERSION", driver_version);
+    WITH_NAME_PREFIX("INFO")
+    {
+        PUBLISH_READ_VAR(stringin, "VERSION", version_string);
+        PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
+        PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
+        PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
+        PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
+        PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
+        PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
+        PUBLISH_READ_VAR(stringin, "DEVICE", device_name);
+        PUBLISH_READ_VAR(stringin, "DRIVER_VERSION", driver_version);
+    }
 
     struct fpga_version fpga;
     hw_read_fpga_version(&fpga);
-    sprintf(fpga_version.s, "%u.%u.%u", fpga.major, fpga.minor, fpga.patch);
-    sprintf(fpga_git_version.s, "%07x%s",
-        fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
-    strncpy(device_name.s, system_config.device_address, sizeof(device_name.s));
+    format_epics_string(&fpga_version,
+        "%u.%u.%u", fpga.major, fpga.minor, fpga.patch);
+    format_epics_string(&fpga_git_version,
+        "%07x%s", fpga.git_sha, fpga.git_dirty ? "-dirty" : "");
+    format_epics_string(&device_name, "%s", system_config.device_address);
+    log_message("FPGA version %s, git %s, API %d",
+        fpga_version.s, fpga_git_version.s, fpga.firmware);
 
-    return IF(!hardware_config.no_hardware,
-        get_driver_version(&driver_version));
+    return
+        get_hostname(hostname, sizeof(hostname))  ?:
+        IF(!hardware_config.no_hardware,
+            get_driver_version(&driver_version));
 }
 
 
@@ -187,7 +162,6 @@ error__t initialise_system(void)
         hardware_config.bunch_taps,
         hardware_config.dac_taps);
 
-    publish_nco_pvs();
     publish_status_pvs();
     return
         initialise_constants()  ?:

@@ -34,13 +34,14 @@
 
 /* User interface for trigger target. */
 struct trigger_target_state {
+    int axis;                        // Not valid for DRAM target
     struct in_epics_record_mbbi *state_pv;
 
     struct epics_record *update_sources;    // Used to read sources[]
-    bool sources[TRIGGER_SOURCE_COUNT];     // Interrupt sources seen on trigger
+    struct trigger_sources sources;         // Interrupt sources seen on trigger
 
-    bool enables[TRIGGER_SOURCE_COUNT];     // Which sources are enabled
-    bool blanking[TRIGGER_SOURCE_COUNT];    // Which sources respect blanking
+    struct trigger_sources enables;         // Which sources are enabled
+    struct trigger_sources blanking;        // Which sources respect blanking
 
     /* Our interrupt sources.  We see two events of interest: trigger to target,
      * and target becomes idle.  The arming event is delivered separately
@@ -58,44 +59,70 @@ static struct in_epics_record_mbbi *shared_state_pv;
 static struct in_epics_record_stringin *shared_targets_pv;
 
 /* Used for monitoring the status of the trigger sources and blanking input. */
-static bool sources_in[TRIGGER_SOURCE_COUNT];
+static struct trigger_sources sources_in;
 static bool blanking_in;
 
+
+#define TRIGGER_SOURCE_COUNT sizeof(struct trigger_sources)
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Trigger event handling. */
+
+/* This is called during target arming to reset the trigger sources. */
+static void reset_trigger_sources(struct trigger_target_state *target)
+{
+    memset(&target->sources, 0, TRIGGER_SOURCE_COUNT);
+    trigger_record(target->update_sources);
+}
+
+
+/* When a trigger has been processed, update the sources to show where the
+ * trigger came from. */
+static void update_trigger_sources(struct trigger_target_state *target)
+{
+    hw_read_trigger_sources(target->config.target_id, &target->sources);
+    trigger_record(target->update_sources);
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Target specific configuration and implementation. */
 
 
-static size_t get_seq_name(int axis, char name[], size_t length)
+static size_t get_seq_name(
+    struct trigger_target_state *target, char name[], size_t length)
 {
     return (size_t) snprintf(name, length, "%s:SEQ",
-        get_axis_name(axis, system_config.lmbf_mode));
+        get_axis_name(target->axis, system_config.lmbf_mode));
 }
 
 
-static void prepare_seq_target(int axis)
+static void prepare_seq_target(struct trigger_target_state *target)
 {
-    prepare_sequencer(axis);
-    prepare_detector(axis);
+    reset_trigger_sources(target);
+    prepare_sequencer(target->axis);
+    prepare_detector(target->axis);
 }
 
-static enum target_state stop_seq_target(int axis)
+static enum target_state stop_seq_target(struct trigger_target_state *target)
 {
     return TARGET_IDLE;
 }
 
-static size_t get_mem_name(int axis, char name[], size_t length)
+static size_t get_mem_name(
+    struct trigger_target_state *target, char name[], size_t length)
 {
     return (size_t) snprintf(name, length, "MEM");
 }
 
-static void prepare_mem_target(int axis)
+static void prepare_mem_target(struct trigger_target_state *target)
 {
+    reset_trigger_sources(target);
     prepare_memory();
 }
 
-static enum target_state stop_mem_target(int axis)
+static enum target_state stop_mem_target(struct trigger_target_state *target)
 {
     /* Stop the memory target by actually forcing a trigger! */
     bool fire[TRIGGER_TARGET_COUNT] = { [TRIGGER_DRAM] = true, };
@@ -104,9 +131,9 @@ static enum target_state stop_mem_target(int axis)
 }
 
 
-static void set_target_state(void *context, enum target_state state)
+static void set_target_state(
+    struct trigger_target_state *target, enum target_state state)
 {
-    struct trigger_target_state *target = context;
     WRITE_IN_RECORD(mbbi, target->state_pv, state);
 }
 
@@ -114,9 +141,9 @@ static void set_target_state(void *context, enum target_state state)
 /* Array of possible targets. */
 static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_SEQ0] = {
+        .axis = 0,
         .config = {
             .target_id = TRIGGER_SEQ0,
-            .axis = 0,
             .get_target_name = get_seq_name,
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
@@ -126,9 +153,9 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
         .complete_interrupt = { .seq_done = 1, },
     },
     [TRIGGER_SEQ1] = {
+        .axis = 1,
         .config = {
             .target_id = TRIGGER_SEQ1,
-            .axis = 1,
             .get_target_name = get_seq_name,
             .prepare_target = prepare_seq_target,
             .stop_target = stop_seq_target,
@@ -140,7 +167,6 @@ static struct trigger_target_state targets[TRIGGER_TARGET_COUNT] = {
     [TRIGGER_DRAM] = {
         .config = {
             .target_id = TRIGGER_DRAM,
-            .axis = -1,          // Not valid for this target
             .get_target_name = get_mem_name,
             .prepare_target = prepare_mem_target,
             .stop_target = stop_mem_target,
@@ -158,57 +184,28 @@ static struct trigger_target_state *sequencer_targets[AXIS_COUNT] = {
 };
 
 
-/* Helper macros for looping through targets. */
-#define _FOR_ALL_TARGETS(i, target) \
-    for (unsigned int i = 0; i < TRIGGER_TARGET_COUNT; i ++) \
-        for (struct trigger_target_state *target = &targets[i]; \
-            target; target = NULL)
-#define FOR_ALL_TARGETS(target) _FOR_ALL_TARGETS(UNIQUE_ID(), target)
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-/* When a trigger has been processed, update the sources to show where the
- * trigger came from. */
-static void update_trigger_sources(struct trigger_target_state *target)
-{
-    hw_read_trigger_sources(target->config.target_id, target->sources);
-    trigger_record(target->update_sources);
-}
-
-
-/* Called in response to hardware interrupt events signalling trigger and target
- * complete events. */
-static void dispatch_target_events(void *context, struct interrupts interrupts)
-{
-    FOR_ALL_TARGETS(target)
-    {
-        /* If we get both trigger and complete simultaneously we can process
-         * them in sequence. */
-        if (test_intersect(interrupts, target->trigger_interrupt))
-        {
-            update_trigger_sources(target);
-            trigger_target_trigger(target->target);
-        }
-        if (test_intersect(interrupts, target->complete_interrupt))
-            trigger_target_complete(target->target);
-    }
-}
-
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Trigger target specific configuration */
 
 
+/* This list must match order of definitions in register_defs.in for the
+ * TRIGGERS_IN register. */
 static const char *source_names[] = {
-    "SOFT", "EXT", "PM", "ADC0", "ADC1", "SEQ0", "SEQ1", };
+    "SOFT", "EXT", "PM", "ADC0", "ADC1", "DAC0", "DAC1", "SEQ0", "SEQ1", };
+STATIC_COMPILE_ASSERT(ARRAY_SIZE(source_names) == TRIGGER_SOURCE_COUNT);
+
+/* Helper function for looking up a source boolean by offset, used for iterating
+ * over the arrays of sources. */
+static bool *get_source(struct trigger_sources *sources, unsigned int ix)
+{
+    return &((bool *) sources)[ix];
+}
 
 
 static bool write_enables(void *context, bool *value)
 {
     struct trigger_target_state *target = context;
-    hw_write_trigger_enable_mask(target->config.target_id, target->enables);
+    hw_write_trigger_enable_mask(target->config.target_id, &target->enables);
     return true;
 }
 
@@ -216,7 +213,7 @@ static bool write_enables(void *context, bool *value)
 static bool write_blanking(void *context, bool *value)
 {
     struct trigger_target_state *target = context;
-    hw_write_trigger_blanking_mask(target->config.target_id, target->blanking);
+    hw_write_trigger_blanking_mask(target->config.target_id, &target->blanking);
     return true;
 }
 
@@ -229,7 +226,7 @@ static bool write_trigger_delay(void *context, unsigned int *value)
 }
 
 
-static bool write_target_mode(void *context, unsigned int *value)
+static bool write_target_mode(void *context, uint16_t *value)
 {
     trigger_target_set_mode(context, *value);
     return true;
@@ -261,9 +258,10 @@ static void create_target(
         {
             WITH_NAME_PREFIX(source_names[i])
             {
-                PUBLISH_READ_VAR(bi, "HIT", target->sources[i]);
-                PUBLISH_WRITE_VAR_P(bo, "EN", target->enables[i]);
-                PUBLISH_WRITE_VAR_P(bo, "BL", target->blanking[i]);
+                PUBLISH_READ_VAR(bi, "HIT", *get_source(&target->sources, i));
+                PUBLISH_WRITE_VAR_P(bo, "EN", *get_source(&target->enables, i));
+                PUBLISH_WRITE_VAR_P(bo, "BL",
+                    *get_source(&target->blanking, i));
             }
         }
 
@@ -302,13 +300,13 @@ struct trigger_target *get_sequencer_trigger_target(int axis)
 
 
 static void create_event_set(
-    bool sources[TRIGGER_SOURCE_COUNT], const char *suffix)
+    struct trigger_sources *sources, const char *suffix)
 {
     for (unsigned int i = 0; i < TRIGGER_SOURCE_COUNT; i ++)
     {
         char name[20];
         sprintf(name, "%s:%s", source_names[i], suffix);
-        PUBLISH_READ_VAR(bi, name, sources[i]);
+        PUBLISH_READ_VAR(bi, name, *get_source(sources, i));
     }
 }
 
@@ -316,11 +314,38 @@ static void create_event_set(
 /* This is polled at 5Hz so that incoming trigger events can be seen. */
 static void read_input_events(void)
 {
-    hw_read_trigger_events(sources_in, &blanking_in);
+    hw_read_trigger_events(&sources_in, &blanking_in);
 }
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+/* Helper macro for looping through targets. */
+#define _FOR_ALL_TARGETS(i, target) \
+    for (unsigned int i = 0; i < TRIGGER_TARGET_COUNT; i ++) \
+        for (struct trigger_target_state *target = &targets[i]; \
+            target; target = NULL)
+#define FOR_ALL_TARGETS(target) _FOR_ALL_TARGETS(UNIQUE_ID(), target)
+
+
+/* Called in response to hardware interrupt events signalling trigger and target
+ * complete events. */
+static void dispatch_target_events(void *context, struct interrupts interrupts)
+{
+    FOR_ALL_TARGETS(target)
+    {
+        /* If we get both trigger and complete simultaneously we can process
+         * them in sequence. */
+        if (test_intersect(interrupts, target->trigger_interrupt))
+        {
+            update_trigger_sources(target);
+            trigger_target_trigger(target->target);
+        }
+        if (test_intersect(interrupts, target->complete_interrupt))
+            trigger_target_complete(target->target);
+    }
+}
 
 
 static void set_shared_state(enum shared_target_state state)
@@ -331,7 +356,7 @@ static void set_shared_state(enum shared_target_state state)
 static void set_shared_targets(const char *value)
 {
     EPICS_STRING s;
-    snprintf(s.s, sizeof(s.s), "%s", value);
+    format_epics_string(&s, "%s", value);
     WRITE_IN_RECORD(stringin, shared_targets_pv, s);
 }
 
@@ -350,7 +375,7 @@ error__t initialise_triggers(void)
     {
         create_target("MEM", &targets[TRIGGER_DRAM]);
 
-        create_event_set(sources_in, "IN");
+        create_event_set(&sources_in, "IN");
         PUBLISH_READ_VAR(bi, "BLNK:IN", blanking_in);
         PUBLISH_ACTION("IN", read_input_events);
         PUBLISH_ACTION("SOFT", hw_write_trigger_soft_trigger);

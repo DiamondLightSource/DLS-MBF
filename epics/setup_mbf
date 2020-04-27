@@ -2,6 +2,8 @@
 
 # This script initialises the given MBF target
 
+from __future__ import print_function
+
 import sys
 import os
 import re
@@ -32,6 +34,16 @@ if not device_address:
     device_address = 0
 regs = driver.Registers(device_address)
 
+# Check firmware version first
+FIRMWARE_COMPAT_VERSION = driver.constants.FIRMWARE_COMPAT_VERSION
+assert regs.SYS.VERSION.FIRMWARE == FIRMWARE_COMPAT_VERSION, \
+    'Firmware version mismatch: read %u, expected %u' % (
+        regs.SYS.VERSION.FIRMWARE, FIRMWARE_COMPAT_VERSION)
+if FIRMWARE_COMPAT_VERSION == driver.constants.FIRMWARE_COMPAT_UNSTABLE:
+    print('UNSTABLE FIRMWARE VERSION')
+
+# Before touching the hardware and clocks ensure the DAC output is off
+regs.CTRL.CONTROL.OUTPUT = 0
 
 # Hardware initialisation
 setup_pll.setup_pll(regs, clock_mode)

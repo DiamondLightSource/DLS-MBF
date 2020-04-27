@@ -27,7 +27,7 @@ class PV:
     # Waits for a reasonably fresh value to arrive.  No guarantees, but it will
     # be fresher than the last value!
     def get(self):
-        return self.event.Wait(1)
+        return self.event.Wait(2)
 
     # Waits for a value at least as old as the given age to arrive.
     def get_new(self, age = 0, now = None):
@@ -66,12 +66,12 @@ class MBF:
     def __init__(self, name):
         self.mbf = name
 
-        self.adc_taps = self.get_shared('ADC_TAPS')
-        self.dac_taps = self.get_shared('DAC_TAPS')
-        self.bunch_taps = self.get_shared('BUNCH_TAPS')
+        self.adc_taps = self.get_shared('INFO:ADC_TAPS')
+        self.dac_taps = self.get_shared('INFO:DAC_TAPS')
+        self.bunch_taps = self.get_shared('INFO:BUNCH_TAPS')
 
-        self.axes = [self.get_shared('AXIS%d' % a) for a in self.CHANNELS]
-        self.bunches = self.get_shared('BUNCHES')
+        self.axes = [self.get_shared('INFO:AXIS%d' % a) for a in self.CHANNELS]
+        self.bunches = self.get_shared('INFO:BUNCHES')
 
     def pv(self, name, axis = 0):
         if axis is None:
@@ -125,9 +125,14 @@ class DRAM:
         b = self.wf1.get()[:length]
         return a, b
 
-    def get_peaks(self, sources):
+    def get_peaks(self, sources, nco_freq = 0):
+        if nco_freq:
+            self.mbf.set('NCO1:FREQ_S', nco_freq)
         a, b = self.get(sources)
-        return self.mbf.find_one_peak(a), self.mbf.find_one_peak(b)
+        peaks = self.mbf.find_one_peak(a), self.mbf.find_one_peak(b)
+        if nco_freq:
+            self.mbf.set('NCO1:FREQ_S', 0)
+        return peaks
 
     def __del__(self):
         self.wf0.close()
@@ -153,6 +158,8 @@ def set_trigger_inputs(mbf, target, axis, *sources):
 # ------------------------------------------------------------------------------
 # Bunch Bank setup
 
+sources = ['FIR', 'NCO1', 'NCO2', 'SEQ', 'PLL']
+
 # Configure selected bank for waveform control with given gain, fir and output
 # waveform or constant values.
 @MBF.method
@@ -166,7 +173,8 @@ def bank_wf(mbf, bank, gain, fir, output):
         assert value.size == mbf.bunches, 'Invalid array length'
         return value
 
-    mbf.set('BUN:%d:GAINWF_S' % bank, bunches(gain))
+    for source in sources:
+        mbf.set('BUN:%d:%s:GAIN_S' % (bank, source), bunches(gain))
     mbf.set('BUN:%d:FIRWF_S' % bank, bunches(fir))
     mbf.set('BUN:%d:OUTWF_S' % bank, bunches(output))
 

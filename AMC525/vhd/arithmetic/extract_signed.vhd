@@ -18,11 +18,11 @@ entity extract_signed is
         PROCESS_DELAY : natural := 3
     );
     port (
-        clk_i : in std_logic;
+        clk_i : in std_ulogic;
 
         data_i : in signed;
         data_o : out signed;
-        overflow_o : out std_logic := '0'
+        overflow_o : out std_ulogic := '0'
     );
 end;
 
@@ -31,11 +31,11 @@ architecture arch of extract_signed is
     constant BIT_WIDTH_OUT : natural := data_o'LENGTH;
     constant ROUNDED_WIDTH : natural := BIT_WIDTH_IN - OFFSET + EXTRA;
 
-    signal sign : std_logic := '0';
+    signal sign : std_ulogic := '0';
     signal rounded : signed(ROUNDED_WIDTH-1 downto 0) := (others => '0');
     signal truncated : data_o'SUBTYPE := (others => '0');
     signal data_out : data_o'SUBTYPE := (others => '0');
-    signal overflow : std_logic := '0';
+    signal overflow : std_ulogic := '0';
 
 begin
     -- Process delay check when needed by caller

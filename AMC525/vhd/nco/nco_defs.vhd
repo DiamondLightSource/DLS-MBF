@@ -3,7 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.support.all;
-use work.defines.all;
 
 package nco_defs is
 
@@ -21,13 +20,13 @@ package nco_defs is
     subtype cos_sin_19_t is cos_sin_t(cos(18 downto 0), sin(18 downto 0));
 
     -- Global phase and phase advance
-    subtype angle_t is unsigned(31 downto 0);
+    subtype angle_t is unsigned(47 downto 0);
 
     -- For calculation the angle is split into three parts: octant, lookup, and
     -- residue.
     subtype octant_t is unsigned(2 downto 0);
     subtype lookup_t is unsigned(9 downto 0);
-    subtype residue_t is unsigned(18 downto 0);
+    subtype residue_t is unsigned(34 downto 0);
 
     -- 10 bit lookup
     subtype cos_sin_addr_t is unsigned(9 downto 0);

@@ -20,10 +20,12 @@
 #include "bunch_fir.h"
 
 
+#define MAX_FIR_GAIN     15
+
 /* Represents the internal state of a single FIR bank. */
 struct fir_bank {
     int axis;
-    unsigned int index;
+    uint16_t index;
     unsigned int cycles;
     unsigned int length;
     double phase;
@@ -37,6 +39,7 @@ struct fir_bank {
 static struct fir_context {
     int axis;
     bool overflow;
+    struct epics_record *fir_gain;
     struct fir_bank banks[FIR_BANKS];
 } fir_context[AXIS_COUNT];
 
@@ -150,7 +153,7 @@ static void set_fir_taps(void *context, float *taps, unsigned int *length)
     struct fir_bank *bank = context;
     *length = hardware_config.bunch_taps;
 
-    float_array_to_int(*length, taps, bank->set_taps, 32, 0);
+    float_array_to_int(*length, taps, bank->set_taps, 32, 31);
     if (bank->use_waveform)
         update_bank_taps(bank);
 }
@@ -166,8 +169,7 @@ static void get_fir_taps(void *context, float *taps, unsigned int *length)
 }
 
 
-static void publish_bank_waveforms(
-    int axis, unsigned int ix, struct fir_bank *bank)
+static void publish_bank_waveforms(int axis, uint16_t ix, struct fir_bank *bank)
 {
     bank->axis = axis;
     bank->index = ix;
@@ -187,7 +189,7 @@ static void publish_bank_waveforms(
 }
 
 
-static void publish_bank(unsigned int ix, struct fir_bank *bank)
+static void publish_bank(uint16_t ix, struct fir_bank *bank)
 {
     char prefix[4];
     sprintf(prefix, "%d", ix);
@@ -209,17 +211,41 @@ static void publish_bank(unsigned int ix, struct fir_bank *bank)
 
 static void publish_banks(struct fir_context *fir)
 {
-    for (unsigned int i = 0; i < FIR_BANKS; i ++)
+    for (uint16_t i = 0; i < FIR_BANKS; i ++)
         publish_bank(i, &fir->banks[i]);
 }
 
 
-static bool write_fir_gain(void *context, unsigned int *value)
+static bool write_fir_gain(void *context, uint16_t *value)
 {
     struct fir_context *fir = context;
     hw_write_dac_fir_gain(fir->axis, *value);
     if (system_config.lmbf_mode)
         hw_write_dac_fir_gain(1, *value);
+    return true;
+}
+
+
+static bool increment_fir_gain(void *context, bool *value)
+{
+    struct fir_context *fir = context;
+    uint16_t new_gain =
+        (uint16_t) (READ_RECORD_VALUE(mbbo, fir->fir_gain) - 1U);
+    /* Note: here we rely on 0-1>MAX_FIR_GAIN, which does work because we're
+     * dealing with unsigned. */
+    if (new_gain <= MAX_FIR_GAIN)
+        WRITE_OUT_RECORD(mbbo, fir->fir_gain, new_gain, true);
+    return true;
+}
+
+
+static bool decrement_fir_gain(void *context, bool *value)
+{
+    struct fir_context *fir = context;
+    uint16_t new_gain =
+        (uint16_t) (READ_RECORD_VALUE(mbbo, fir->fir_gain) + 1U);
+    if (new_gain <= MAX_FIR_GAIN)
+        WRITE_OUT_RECORD(mbbo, fir->fir_gain, new_gain, true);
     return true;
 }
 
@@ -257,7 +283,7 @@ error__t initialise_bunch_fir(void)
         struct fir_context *fir = &fir_context[axis];
         fir->axis = axis;
 
-        for (unsigned int i = 0; i < FIR_BANKS; i ++)
+        for (uint16_t i = 0; i < FIR_BANKS; i ++)
             publish_bank_waveforms(axis, i, &fir->banks[i]);
 
         PUBLISH_READ_VAR(bi, "OVF", fir->overflow);
@@ -269,7 +295,9 @@ error__t initialise_bunch_fir(void)
     {
         struct fir_context *fir = &fir_context[axis];
         publish_banks(fir);
-        PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
+        fir->fir_gain = PUBLISH_C_P(mbbo, "GAIN", write_fir_gain, fir);
+        PUBLISH_C(bo, "GAIN:UP", increment_fir_gain, fir);
+        PUBLISH_C(bo, "GAIN:DN", decrement_fir_gain, fir);
 
         if (system_config.lmbf_mode)
             PUBLISH_WRITER_P(ulongout, "DECIMATION", write_fir_decimation);

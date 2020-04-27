@@ -8,7 +8,7 @@ BIT_FILE=amc525_mbf.bit
 while getopts 'f:h' option; do
     case "$option" in
         f)  BIT_FILE="$OPTARG" ;;
-        h)  cat <<'EOF'
+        h)  cat <<EOF
 Usage: load_fpga [-f bit-file] addresses
     -f bit-file
         Optionally specify location of bit file, otherwise $BIT_FILE will

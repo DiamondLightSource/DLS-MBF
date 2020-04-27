@@ -17,14 +17,17 @@ for a in axes('ADC'):
     loopback = boolOut('LOOPBACK', 'Normal', 'Loopback', OSV = 'MAJOR', VAL = 0,
         DESC = 'Enable DAC -> ADC loopback')
 
-    boolOut('MMS_SOURCE', 'Before FIR', 'After FIR',
+    mbbOut('MMS_SOURCE', 'Before COMP', 'After COMP', 'COMP no fill',
         DESC = 'Source of min/max/sum data')
-    boolOut('DRAM_SOURCE', 'Before FIR', 'After FIR',
+    mbbOut('DRAM_SOURCE', 'Before COMP', 'After COMP', 'COMP no fill',
         DESC = 'Source of memory data')
+    mbbOut('REJECT_COUNT',
+        DESC = 'Samples in fill pattern reject filter',
+        *['%d turns' % (2**n) for n in range(13)])
 
     overflows = [
         overflow('INP_OVF', 'ADC input overflow'),
-        overflow('FIR_OVF', 'ADC FIR overflow'),]
+        overflow('FIR_OVF', 'ADC COMP overflow'),]
     ovf = overflow('OVF', 'ADC overflow')   # Aggregates INP_OVF and FIR_OVF
     adc_events.extend(overflows)
     adc_events.append(ovf)
@@ -42,3 +45,22 @@ with name_prefix('ADC'):
         SCAN = '.1 second',
         FLNK = create_fanout('EVENTS:FAN', *adc_events),
         DESC = 'ADC event detect scan')
+
+
+if lmbf_mode:
+    for a in axes('ADC', lmbf_mode):
+        # Create bunch phase and magnitude measurement PVs derived from MMS
+        # waveforms.
+        phase_pvs = [
+            mms.mms_waveform('MAGNITUDE', 'Bunch magnitude'),
+            mms.mms_waveform('PHASE', 'Bunch phase', EGU = 'deg'),
+            aIn('PHASE_MEAN', -180, 180, EGU = 'deg', PREC = 2,
+                DESC = 'Average bunch phase'),
+            aIn('MAGNITUDE_MEAN', 0, 1, PREC = 6,
+                DESC = 'Average bunch magnitude'),
+        ]
+        Action('TRIGGER',
+            SCAN = '.2 second',
+            FLNK = create_fanout('FAN', *phase_pvs),
+            DESC = 'Update bunch phase')
+        aOut('THRESHOLD', 0, 1, PREC = 3, DESC = 'Magnitude phase threshold')

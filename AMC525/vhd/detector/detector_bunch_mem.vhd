@@ -12,14 +12,14 @@ use work.defines.all;
 
 entity detector_bunch_mem is
     port (
-        write_clk_i : in std_logic;
+        write_clk_i : in std_ulogic;
         write_addr_i : in unsigned;
         write_data_i : in reg_data_t;
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
 
-        read_clk_i : in std_logic;
+        read_clk_i : in std_ulogic;
         read_addr_i : in unsigned;
-        read_data_o : out std_logic := '0'
+        read_data_o : out std_ulogic := '0'
     );
 end;
 
@@ -30,6 +30,10 @@ architecture arch of detector_bunch_mem is
     signal read_addr_bit : unsigned(4 downto 0);
     signal read_word : reg_data_t;
     signal read_word_bits : reg_data_t := (others => '0');
+
+    signal write_strobe_in : std_ulogic;
+    signal write_addr_in : write_addr_i'SUBTYPE;
+    signal write_data_in : write_data_i'SUBTYPE;
 
     -- Delay read_addr =(2)=> read_word
     constant READ_WORD_DELAY : natural := 2;
@@ -51,9 +55,9 @@ begin
         read_data_o => read_word,
 
         write_clk_i => write_clk_i,
-        write_strobe_i => write_strobe_i,
-        write_addr_i => write_addr_i,
-        write_data_i => write_data_i
+        write_strobe_i => write_strobe_in,
+        write_addr_i => write_addr_in,
+        write_data_i => write_data_in
     );
 
     delay : entity work.dlyline generic map (
@@ -61,7 +65,7 @@ begin
         DW => read_addr_bit'LENGTH
     ) port map (
         clk_i => read_clk_i,
-        data_i => std_logic_vector(read_addr_bit_in),
+        data_i => std_ulogic_vector(read_addr_bit_in),
         unsigned(data_o) => read_addr_bit
     );
 
@@ -72,6 +76,15 @@ begin
         if rising_edge(read_clk_i) then
             read_word_bits <= read_word;
             read_data_o <= read_word_bits(to_integer(read_addr_bit));
+        end if;
+    end process;
+
+    -- Pipeline the write
+    process (write_clk_i) begin
+        if rising_edge(write_clk_i) then
+            write_strobe_in <= write_strobe_i;
+            write_addr_in <= write_addr_i;
+            write_data_in <= write_data_i;
         end if;
     end process;
 end;

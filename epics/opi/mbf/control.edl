@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 655
-y 44
-w 544
-h 433
+x 630
+y 235
+w 584
+h 512
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-18.0"
 btnFont "helvetica-medium-r-18.0"
@@ -34,8 +34,8 @@ minor 0
 release 0
 x 8
 y 224
-w 528
-h 136
+w 568
+h 168
 lineColor index 14
 fill
 fillColor index 4
@@ -49,7 +49,7 @@ minor 1
 release 1
 x 0
 y 0
-w 544
+w 584
 h 32
 font "helvetica-medium-r-18.0"
 fontAlign "center"
@@ -66,8 +66,8 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 472
-y 400
+x 512
+y 480
 w 64
 h 24
 fgColor index 46
@@ -142,26 +142,6 @@ value {
 autoSize
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 320
-y 240
-w 53
-h 14
-font "helvetica-bold-r-12.0"
-fgColor index 14
-bgColor index 0
-useDisplayBg
-value {
-  "DAC gain"
-}
-autoSize
-endObjectProperties
-
 # (Embedded Window)
 object activePipClass
 beginObjectProperties
@@ -170,7 +150,7 @@ minor 1
 release 0
 x 16
 y 256
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -198,7 +178,7 @@ minor 1
 release 0
 x 16
 y 280
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -226,7 +206,7 @@ minor 1
 release 0
 x 16
 y 304
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -254,7 +234,7 @@ minor 1
 release 0
 x 16
 y 328
-w 512
+w 552
 h 24
 fgColor index 14
 bgColor index 3
@@ -315,7 +295,7 @@ minor 0
 release 0
 x 8
 y 48
-w 528
+w 568
 h 160
 lineColor index 14
 fill
@@ -363,7 +343,7 @@ minor 1
 release 0
 x 16
 y 80
-w 512
+w 552
 h 48
 fgColor index 14
 bgColor index 3
@@ -389,7 +369,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 40
+x 16
 y 64
 w 74
 h 14
@@ -409,7 +389,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 120
+x 96
 y 64
 w 71
 h 14
@@ -429,7 +409,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 184
+x 104
 y 128
 w 63
 h 14
@@ -449,7 +429,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 40
+x 32
 y 128
 w 46
 h 14
@@ -469,16 +449,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 304
+x 264
 y 64
-w 61
+w 92
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Magnitude"
+  "NCO Magnitude"
 }
 autoSize
 endObjectProperties
@@ -489,7 +469,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 440
+x 400
 y 64
 w 69
 h 14
@@ -529,7 +509,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 208
+x 184
 y 64
 w 66
 h 14
@@ -549,16 +529,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 120
+x 184
 y 128
-w 43
+w 125
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Holdoff"
+  "Holdoff (state/dwell)"
 }
 autoSize
 endObjectProperties
@@ -569,7 +549,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 360
+x 400
 y 128
 w 78
 h 14
@@ -589,7 +569,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 448
+x 488
 y 128
 w 77
 h 14
@@ -609,7 +589,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 440
+x 480
 y 152
 w 88
 h 22
@@ -628,7 +608,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 352
+x 392
 y 152
 w 82
 h 14
@@ -648,7 +628,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 440
+x 480
 y 176
 w 88
 h 22
@@ -672,9 +652,9 @@ major 4
 minor 0
 release 0
 x 8
-y 376
-w 320
-h 48
+y 408
+w 400
+h 96
 lineColor index 14
 fill
 fillColor index 4
@@ -686,16 +666,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 16
-y 392
-w 30
+x 64
+y 424
+w 62
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Freq:"
+  "Frequency"
 }
 autoSize
 endObjectProperties
@@ -706,16 +686,16 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 152
-y 392
-w 31
+x 160
+y 424
+w 27
 h 14
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
 useDisplayBg
 value {
-  "Gain:"
+  "Gain"
 }
 autoSize
 endObjectProperties
@@ -726,11 +706,11 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 56
-y 392
+x 64
+y 440
 w 88
-h 22
-controlPv "$(device):$(axis):NCO:FREQ_S"
+h 24
+controlPv "$(device):$(axis):NCO1:FREQ_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -748,25 +728,6 @@ objType "controls"
 noExecuteClipMask
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 192
-y 392
-w 70
-h 22
-fgColor index 14
-bgColor index 3
-inconsistentColor index 0
-topShadowColor index 1
-botShadowColor index 11
-controlPv "$(device):$(axis):NCO:GAIN_S"
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
@@ -774,7 +735,7 @@ major 4
 minor 1
 release 1
 x 8
-y 368
+y 400
 w 120
 h 16
 font "helvetica-medium-r-12.0"
@@ -782,7 +743,7 @@ fontAlign "center"
 fgColor index 1
 bgColor index 10
 value {
-  "NCO"
+  "NCOs"
 }
 endObjectProperties
 
@@ -793,7 +754,7 @@ major 4
 minor 0
 release 0
 x 8
-y 368
+y 400
 w 120
 h 16
 lineColor index 14
@@ -806,7 +767,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 280
+x 320
 y 128
 w 50
 h 14
@@ -826,8 +787,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 88
-y 152
+x 96
+y 156
 w 16
 h 16
 controlPv "$(device):$(axis):SEQ:PC"
@@ -850,7 +811,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 56
+x 64
 y 152
 w 24
 h 22
@@ -899,7 +860,7 @@ beginObjectProperties
 major 4
 minor 1
 release 0
-x 120
+x 144
 y 152
 w 72
 h 22
@@ -922,7 +883,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 56
+x 64
 y 176
 w 56
 h 22
@@ -951,8 +912,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 120
-y 176
+x 128
+y 180
 w 64
 h 16
 controlPv "$(device):$(axis):SEQ:SUPER:COUNT"
@@ -976,7 +937,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 296
 y 152
 w 88
 h 16
@@ -1001,7 +962,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 200
+x 232
 y 152
 w 50
 h 14
@@ -1021,7 +982,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 200
+x 232
 y 168
 w 54
 h 14
@@ -1041,9 +1002,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 296
 y 168
-w 120
+w 104
 h 16
 controlPv "$(device):$(axis):SEQ:TOTAL:DURATION:S"
 font "helvetica-medium-r-14.0"
@@ -1087,9 +1048,9 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 264
+x 296
 y 184
-w 120
+w 104
 h 16
 controlPv "$(device):$(axis):SEQ:SUPER:OFFSET_S"
 font "helvetica-medium-r-14.0"
@@ -1113,7 +1074,7 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 200
+x 232
 y 184
 w 43
 h 14
@@ -1133,16 +1094,16 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 264
-y 392
+x 256
+y 440
 w 56
-h 22
+h 24
 fgColor index 14
 bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(axis):NCO:ENABLE_S"
+controlPv "$(device):$(axis):NCO1:ENABLE_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -1152,7 +1113,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 368
+x 408
 y 176
 w 70
 h 22
@@ -1175,8 +1136,8 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 464
-y 368
+x 504
+y 424
 w 72
 h 22
 fgColor index 43
@@ -1201,8 +1162,8 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 424
-y 368
+x 544
+y 400
 w 32
 h 22
 controlPv "$(device):$(axis):SEQ:TRIGGER_S"
@@ -1229,8 +1190,8 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 352
-y 368
+x 464
+y 400
 w 65
 h 14
 font "helvetica-bold-r-12.0"
@@ -1241,5 +1202,390 @@ value {
   "Seq event:"
 }
 autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 488
+y 64
+w 55
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Tune PLL"
+}
+autoSize
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 160
+y 440
+w 88
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 3
+botShadowColor index 3
+font "helvetica-bold-r-12.0"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/nco_gain.edl"
+}
+setPosition {
+  0 "button"
+}
+symbols {
+  0 "nco=$(device):$(axis):NCO1"
+}
+replaceSymbols {
+  0 1
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 320
+y 440
+w 80
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):NCO1:TUNE_PLL_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 168
+y 444
+w 72
+h 16
+controlPv "$(device):$(axis):NCO1:GAIN_DB_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+showUnits
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 320
+y 424
+w 60
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Track PLL"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 256
+y 424
+w 39
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "Enable"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 64
+y 472
+w 88
+h 20
+controlPv "$(device):$(axis):NCO2:FREQ_S"
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+inputFocusUpdates
+objType "controls"
+noExecuteClipMask
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 256
+y 472
+w 56
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):NCO2:ENABLE_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 160
+y 472
+w 88
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 3
+botShadowColor index 3
+font "helvetica-bold-r-12.0"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/nco_gain.edl"
+}
+setPosition {
+  0 "button"
+}
+symbols {
+  0 "nco=$(device):$(axis):NCO2"
+}
+replaceSymbols {
+  0 1
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 320
+y 472
+w 80
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):NCO2:TUNE_PLL_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 6
+release 0
+x 168
+y 476
+w 72
+h 16
+controlPv "$(device):$(axis):NCO2:GAIN_DB_S"
+font "helvetica-medium-r-14.0"
+fgColor index 14
+fgAlarm
+bgColor index 0
+useDisplayBg
+autoHeight
+limitsFromDb
+nullColor index 0
+fastUpdate
+useHexPrefix
+showUnits
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 440
+w 34
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "NCO1"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 472
+w 34
+h 14
+font "helvetica-bold-r-12.0"
+fgColor index 14
+bgColor index 0
+useDisplayBg
+value {
+  "NCO2"
+}
+autoSize
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 96
+y 360
+w 80
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):BUN:COPY_FROM_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 384
+y 360
+w 80
+h 24
+fgColor index 14
+bgColor index 3
+inconsistentColor index 0
+topShadowColor index 1
+botShadowColor index 11
+controlPv "$(device):$(axis):BUN:COPY_TO_S"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Lines)
+object activeLineClass
+beginObjectProperties
+major 4
+minor 0
+release 1
+x 184
+y 372
+w 184
+h 0
+lineColor index 9
+fillColor index 0
+lineWidth 5
+arrows "to"
+numPoints 2
+xPoints {
+  0 184
+  1 368
+}
+yPoints {
+  0 372
+  1 372
+}
+endObjectProperties
+
+# (Message Button)
+object activeMessageButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 232
+y 360
+w 96
+h 24
+fgColor index 25
+onColor index 4
+offColor index 3
+topShadowColor index 1
+botShadowColor index 14
+controlPv "$(device):$(axis):BUN:COPY_BANK_S.PROC"
+pressValue "0"
+onLabel "Copy Bank"
+offLabel "Copy Bank"
+3d
+font "helvetica-bold-r-12.0"
 endObjectProperties
 

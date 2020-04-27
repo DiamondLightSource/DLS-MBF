@@ -16,7 +16,7 @@
 
 
 #define NAME_LENGTH 40
-#define LINE_SIZE   100
+#define LINE_SIZE   200
 
 
 static error__t lookup_name(

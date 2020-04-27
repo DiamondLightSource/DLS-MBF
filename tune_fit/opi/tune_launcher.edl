@@ -3,10 +3,10 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 2588
-y 488
+x 2589
+y 489
 w 296
-h 105
+h 136
 font "helvetica-medium-r-14.0"
 ctlFont "helvetica-medium-r-14.0"
 btnFont "helvetica-bold-r-14.0"
@@ -64,7 +64,7 @@ buttonLabel "LMBF-01"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/peaks.edl"
+  0 "tune_fit/tune_peaks.edl"
 }
 symbols {
   0 "tune_prefix=SR23C-DI-LMBF-01:IQ"
@@ -90,7 +90,7 @@ buttonLabel "TMBF-01:Y"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/peaks.edl"
+  0 "tune_fit/tune_peaks.edl"
 }
 symbols {
   0 "tune_prefix=SR23C-DI-TMBF-01:Y"
@@ -116,10 +116,62 @@ buttonLabel "TMBF-01:X"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "tune_fit/peaks.edl"
+  0 "tune_fit/tune_peaks.edl"
 }
 symbols {
   0 "tune_prefix=SR23C-DI-TMBF-01:X"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 24
+y 104
+w 96
+h 24
+fgColor index 43
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "TS:X"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "tune_fit/tune_peaks.edl"
+}
+symbols {
+  0 "tune_prefix=TS-DI-TMBF-02:X"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 176
+y 104
+w 96
+h 24
+fgColor index 43
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "TS:Y"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "tune_fit/tune_peaks.edl"
+}
+symbols {
+  0 "tune_prefix=TS-DI-TMBF-02:Y"
 }
 endObjectProperties
 

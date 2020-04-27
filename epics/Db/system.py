@@ -5,40 +5,35 @@ import sys
 from common import *
 
 
-# System identification PVs
-stringIn('VERSION', PINI = 'YES', DESC = 'Software version')
-stringIn('GIT_VERSION', PINI = 'YES', DESC = 'Software git version')
-stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'Firmware version')
-stringIn('FPGA_GIT_VERSION', PINI = 'YES', DESC = 'Firmware git version')
-stringIn('DRIVER_VERSION', PINI = 'YES', DESC = 'Kernel driver version')
+with name_prefix('INFO'):
+    # System identification PVs
+    stringIn('VERSION', PINI = 'YES', DESC = 'Software version')
+    stringIn('GIT_VERSION', PINI = 'YES', DESC = 'Software git version')
+    stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'Firmware version')
+    stringIn('FPGA_GIT_VERSION', PINI = 'YES', DESC = 'Firmware git version')
+    stringIn('DRIVER_VERSION', PINI = 'YES', DESC = 'Kernel driver version')
 
-Waveform('HOSTNAME', 256,
-    PINI = 'YES', FTVL = 'CHAR', DESC = 'Host name of MBF IOC')
-longIn('SOCKET', PINI = 'YES', DESC = 'Socket number for data server')
-stringIn('DEVICE', PINI = 'YES', DESC = 'Name of AMC525 device')
-boolIn('MODE', 'TMBF', 'LMBF', PINI = 'YES', DESC = 'Operational mode')
+    Waveform('HOSTNAME', 256,
+        PINI = 'YES', FTVL = 'CHAR', DESC = 'Host name of MBF IOC')
+    longIn('SOCKET', PINI = 'YES', DESC = 'Socket number for data server')
+    stringIn('DEVICE', PINI = 'YES', DESC = 'Name of AMC525 device')
+    boolIn('MODE', 'TMBF', 'LMBF', PINI = 'YES', DESC = 'Operational mode')
 
-# A variety of constants
-records.longin('BUNCHES', VAL = BUNCHES_PER_TURN, PINI = 'YES',
-    DESC = 'Number of bunches per revolution')
-records.longin('ADC_TAPS', VAL = ADC_TAPS, PINI = 'YES',
-    DESC = 'Length of ADC compensation filter')
-records.longin('DAC_TAPS', VAL = DAC_TAPS, PINI = 'YES',
-    DESC = 'Length of DAC pre-emphasis filter')
-records.longin('BUNCH_TAPS', VAL = BUNCH_TAPS, PINI = 'YES',
-    DESC = 'Length of bunch-by-bunch feedback filter')
+    # A variety of constants
+    records.longin('BUNCHES', VAL = BUNCHES_PER_TURN, PINI = 'YES',
+        DESC = 'Number of bunches per revolution')
+    records.longin('ADC_TAPS', VAL = ADC_TAPS, PINI = 'YES',
+        DESC = 'Length of ADC compensation filter')
+    records.longin('DAC_TAPS', VAL = DAC_TAPS, PINI = 'YES',
+        DESC = 'Length of DAC pre-emphasis filter')
+    records.longin('BUNCH_TAPS', VAL = BUNCH_TAPS, PINI = 'YES',
+        DESC = 'Length of bunch-by-bunch feedback filter')
 
-# Names of the two axes
-records.stringin('AXIS0', VAL = AXIS0, PINI = 'YES',
-    DESC = 'Name of first axis')
-records.stringin('AXIS1', VAL = AXIS1, PINI = 'YES',
-    DESC = 'Name of second axis')
-
-
-for a in axes('NCO', lmbf_mode):
-    aOut('FREQ', PREC = 5, DESC = 'Fixed NCO frequency')
-    mbbOut('GAIN', DESC = 'Fixed NCO gain', *dBrange(16, -6))
-    boolOut('ENABLE', 'Off', 'On', DESC = 'Enable fixed NCO output')
+    # Names of the two axes
+    records.stringin('AXIS0', VAL = AXIS0, PINI = 'YES',
+        DESC = 'Name of first axis')
+    records.stringin('AXIS1', VAL = AXIS1, PINI = 'YES',
+        DESC = 'Name of second axis')
 
 
 def clock_status(name, desc):
@@ -46,8 +41,7 @@ def clock_status(name, desc):
 
 def vco_status(name, desc):
     return mbbIn(name,
-        'Unlocked', 'Locked', 'Passthrough',
-        ZRSV = 'MAJOR', DESC = desc)
+        ('Unlocked', 'MAJOR'), 'Locked', 'Passthrough', DESC = desc)
 
 with name_prefix('STA'):
     Action('POLL',
@@ -66,7 +60,6 @@ def add_aggregate(axis, *pvs):
     aggregate_pvs.setdefault(axis, []).extend(pvs)
 
 def create_aggregate_pvs():
-    for axis, pvs in aggregate_pvs.items():
-        pvs = map(CP, pvs)
-        AggregateSeverity(
-            '%s:STATUS' % axis, 'Axis %s signal health' % axis, pvs)
+    for axis in axes('STA', lmbf_mode):
+        pvs = map(CP, aggregate_pvs[axis])
+        AggregateSeverity('STATUS', 'Axis %s signal health' % axis, pvs)

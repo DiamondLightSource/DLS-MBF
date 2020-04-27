@@ -18,25 +18,25 @@ use work.register_defs.all;
 entity idelay_control is
     port (
         -- Clocking: must be 200 MHz clock
-        ref_clk_i : in std_logic;
+        ref_clk_i : in std_ulogic;
 
         -- Signal being delayed.  Must be a physical input.
-        signal_i : in std_logic;
-        signal_o : out std_logic;
+        signal_i : in std_ulogic;
+        signal_o : out std_ulogic;
 
         -- Control over IDELAY: we have a single register
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_data_i : in reg_data_t;
         read_data_o : out reg_data_t
     );
 end;
 
 architecture arch of idelay_control is
-    signal delay_in : std_logic_vector(4 downto 0);
-    signal delay_strobe : std_logic;
-    signal inc_decn : std_logic;
-    signal inc_decn_strobe : std_logic;
-    signal delay_out : std_logic_vector(4 downto 0);
+    signal delay_in : std_ulogic_vector(4 downto 0);
+    signal delay_strobe : std_ulogic;
+    signal inc_decn : std_ulogic;
+    signal inc_decn_strobe : std_ulogic;
+    signal delay_out : std_ulogic_vector(4 downto 0);
 
 begin
     -- Clock control

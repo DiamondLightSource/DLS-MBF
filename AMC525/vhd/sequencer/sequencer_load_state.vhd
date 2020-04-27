@@ -16,13 +16,13 @@ use work.sequencer_defs.all;
 
 entity sequencer_load_state is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
-        write_strobe_i : in std_logic;
+        write_strobe_i : in std_ulogic;
         write_addr_i : in unsigned;
         write_data_i : in reg_data_t;
 
-        start_load_i : in std_logic;   -- Trigger load of next state
+        start_load_i : in std_ulogic;   -- Trigger load of next state
         seq_pc_i : in seq_pc_t;       -- Program counter to load from
         seq_state_o : out seq_state_t := initial_seq_state
     );
@@ -32,15 +32,15 @@ architecture arch of sequencer_load_state is
     -- The following state is used to load the parameters for the next state.
     -- This needs to be triggered early as we'll need eight clock cycles to
     -- load the necessary state from the program memory.
-    signal loading : std_logic := '0';
-    signal loading_dly : std_logic;
+    signal loading : std_ulogic := '0';
+    signal loading_dly : std_ulogic;
     signal load_ctr : unsigned(2 downto 0) := "000";
     signal load_ctr_dly : unsigned(2 downto 0);
     signal prog_word : reg_data_t;
 
     -- Loading is delayed to so that seq_state_o remains valid for a few more
     -- ticks after the start of the next state.
-    signal start_load : std_logic;
+    signal start_load : std_ulogic;
 
     constant READ_DELAY : natural := 2;
 
@@ -77,7 +77,7 @@ begin
         DW => load_ctr'LENGTH
     ) port map (
         clk_i => dsp_clk_i,
-        data_i => std_logic_vector(load_ctr),
+        data_i => std_ulogic_vector(load_ctr),
         unsigned(data_o) => load_ctr_dly
     );
 
@@ -97,9 +97,16 @@ begin
             if loading_dly = '1' then
                 case to_integer(load_ctr_dly) is
                     when DSP_SEQ_STATE_START_FREQ_OVL =>
-                        seq_state_o.start_freq <= angle_t(prog_word);
+                        seq_state_o.start_freq(31 downto 0)
+                            <= unsigned(prog_word);
                     when DSP_SEQ_STATE_DELTA_FREQ_OVL =>
-                        seq_state_o.delta_freq <= angle_t(prog_word);
+                        seq_state_o.delta_freq(31 downto 0)
+                            <= unsigned(prog_word);
+                    when DSP_SEQ_STATE_HIGH_BITS_OVL =>
+                        seq_state_o.start_freq(47 downto 32) <= unsigned(
+                            prog_word(DSP_SEQ_STATE_HIGH_BITS_START_HIGH_BITS));
+                        seq_state_o.delta_freq(47 downto 32) <= unsigned(
+                            prog_word(DSP_SEQ_STATE_HIGH_BITS_DELTA_HIGH_BITS));
                     when DSP_SEQ_STATE_TIME_OVL =>
                         seq_state_o.dwell_count <= dwell_count_t(
                             prog_word(DSP_SEQ_STATE_TIME_DWELL_BITS));
@@ -108,7 +115,7 @@ begin
                     when DSP_SEQ_STATE_CONFIG_OVL =>
                         seq_state_o.bunch_bank <= unsigned(
                             prog_word(DSP_SEQ_STATE_CONFIG_BANK_BITS));
-                        seq_state_o.hom_gain <= unsigned(
+                        seq_state_o.nco_gain <= unsigned(
                             prog_word(DSP_SEQ_STATE_CONFIG_NCO_GAIN_BITS));
                         seq_state_o.enable_window <=
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_WINDOW_BIT);
@@ -116,13 +123,19 @@ begin
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_WRITE_BIT);
                         seq_state_o.enable_blanking <=
                             prog_word(DSP_SEQ_STATE_CONFIG_ENA_BLANK_BIT);
-                        seq_state_o.hom_enable <=
-                            prog_word(DSP_SEQ_STATE_CONFIG_ENA_NCO_BIT);
+                        seq_state_o.reset_phase <=
+                            prog_word(DSP_SEQ_STATE_CONFIG_RESET_PHASE_BIT);
+                        seq_state_o.enable_tune_pll <=
+                            prog_word(DSP_SEQ_STATE_CONFIG_ENA_TUNE_PLL_BIT);
+                        seq_state_o.disable_super <=
+                            prog_word(DSP_SEQ_STATE_CONFIG_DIS_SUPER_BIT);
                     when DSP_SEQ_STATE_WINDOW_RATE_OVL =>
-                        seq_state_o.window_rate <= angle_t(prog_word);
+                        seq_state_o.window_rate <= window_rate_t(prog_word);
                     when DSP_SEQ_STATE_HOLDOFF_OVL =>
                         seq_state_o.holdoff_count <= dwell_count_t(
                             prog_word(DSP_SEQ_STATE_HOLDOFF_HOLDOFF_BITS));
+                        seq_state_o.state_holdoff <= dwell_count_t(prog_word(
+                            DSP_SEQ_STATE_HOLDOFF_STATE_HOLDOFF_BITS));
                     when others =>
                 end case;
             end if;

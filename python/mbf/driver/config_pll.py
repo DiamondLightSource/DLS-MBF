@@ -1,6 +1,6 @@
 # Helper file for PLL configuration
 
-import copy
+from __future__ import print_function
 
 
 # This rather convoluted code is concerned with providing a bridge between the
@@ -91,7 +91,7 @@ class FieldWriter(object):
         self.__registers[reg] = value
         if self.__live:
             if self.__verbose:
-                print 'PLL[%03x] <= %02x' % (self.__base + reg, value)
+                print('PLL[%03x] <= %02x' % (self.__base + reg, value))
             self.__PLL[self.__base + reg] = value
             self.__dirty.discard(reg)
         else:
@@ -102,7 +102,7 @@ class FieldWriter(object):
         if self.__live:
             value = self.__PLL[self.__base + reg]
             if self.__verbose:
-                print 'PLL[%03x] => %02x' % (self.__base + reg, value)
+                print('PLL[%03x] => %02x' % (self.__base + reg, value))
             self.__registers[reg] = value
             self.__dirty.discard(reg)
             return value
@@ -359,45 +359,13 @@ class SettingsBase(FieldWriter):
         self._Outputs = []
 
         # Bases for output fields
-        #
-        # Output level definitions taken from Malibu Fmc_500_Mb.cpp, function
-        # Fmc500_Pll::OnInit().
-
-        #   0   LVDS        FMC GBTCLK1_M2C     Unused
-        #  S1   HSDS 8mA    ADC SYNC
-        self.__add_output('out0_1', Output(PLL, base = 0x100))
-        self.out0_1.SDCLK_FMT = Const.FMT_HSDS8
-
-        #   2   LVDS        FMC HB[0]           pll_dclkout2
-        #  S3   LVDS        FMC LA[19]          pll_sdclkout3
-        # Temporary testing outputs, will be unused in working system.
-        self.__add_output('out2_3', Output(PLL, base = 0x108))
-        self.out2_3.DCLK_FMT  = Const.FMT_LVDS
-        self.out2_3.SDCLK_FMT = Const.FMT_LVDS
-
-        #   4   LVDS        DAC DACCLK
-        #  S5                                   Unused
-        self.__add_output('out4_5', Output(PLL, base = 0x110))
-        self.out4_5.DCLK_FMT = Const.FMT_LVDS
-
-        #   6   LVDS        DAC REFCLK
-        #  S7                                   Unused
-        self.__add_output('out6_7', Output(PLL, base = 0x118))
-        self.out6_7.DCLK_FMT = Const.FMT_LVDS
-
-        #   8   Used for internal 0-delay feedback
-        #  S9                                   Unused
-        self.__add_output('out8_9', Output(PLL, base = 0x120))
-
-        #   10  HSDS 8mA    J12
-        #  S11                                  Unused
+        self.__add_output('out0_1',   Output(PLL, base = 0x100))
+        self.__add_output('out2_3',   Output(PLL, base = 0x108))
+        self.__add_output('out4_5',   Output(PLL, base = 0x110))
+        self.__add_output('out6_7',   Output(PLL, base = 0x118))
+        self.__add_output('out8_9',   Output(PLL, base = 0x120))
         self.__add_output('out10_11', Output(PLL, base = 0x128))
-        self.out10_11.DCLK_FMT = Const.FMT_HSDS8
-
-        #   12  LVDS        FMC GBTCLK0_M2C     Unused
-        #  S13  HSDS 8mA    ADC CLK
         self.__add_output('out12_13', Output(PLL, base = 0x130))
-        self.out12_13.SDCLK_FMT = Const.FMT_HSDS8
 
 
     def verbose(self, verbose = True):

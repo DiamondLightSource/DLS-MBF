@@ -21,6 +21,7 @@
 #include "trigger_target.h"
 #include "detector.h"
 #include "bunch_select.h"
+#include "nco.h"
 
 #include "sequencer.h"
 
@@ -28,6 +29,9 @@
 /* These are the sequencer states for states 1 to 7.  State 0 is special and
  * is not handled in this array. */
 struct sequencer_bank {
+    /* Parent state. */
+    struct seq_context *seq;
+
     /* Much of our state is as written to hardware. */
     struct seq_entry *entry;
 
@@ -44,6 +48,14 @@ static struct seq_context {
     struct sequencer_bank banks[MAX_SEQUENCER_COUNT];   // EPICS management
     struct seq_config seq_hw_config;    // Configuration written to hardware
 
+    /* The seq_config_dirty flag is set whenever the seq_config is changed via
+     * EPICS.  This flag is copied to seq_hw_config_dirty and reset when arming
+     * the sequencer, and is used to determine whether the frequency scale and
+     * timebase may have changed. */
+    pthread_mutex_t mutex;
+    bool seq_config_dirty;
+    bool seq_hw_config_dirty;
+
     struct seq_state seq_state;     // Current state as read from hardware
 
     unsigned int capture_count;     // Number of IQ points to capture
@@ -51,7 +63,12 @@ static struct seq_context {
 
     bool reset_offsets;             // Reset super sequencer offsets
     bool reset_window;              // Reset detector window
-} seq_context[AXIS_COUNT];
+} seq_context[AXIS_COUNT] = {
+    [0 ... AXIS_COUNT-1] = {
+        .mutex = PTHREAD_MUTEX_INITIALIZER,
+        .seq_config_dirty = true,
+    },
+};
 
 
 
@@ -89,12 +106,32 @@ static struct seq_context {
  * 32-bit numbers -- so both STEP_FREQ and END_FREQ may end up as values
  * different from what the user has written! */
 
+/* Compute the end frequency so that it always satisfies the equation above. */
+static double compute_end_freq(struct sequencer_bank *bank)
+{
+    struct seq_entry *entry = bank->entry;
+    return
+        freq_to_tune(entry->start_freq) +
+        entry->capture_count * freq_to_tune_signed(entry->delta_freq);
+}
+
+
+/* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
+ * END_FREQ is updated. */
+static void update_end_freq(struct sequencer_bank *bank)
+{
+    WRITE_OUT_RECORD(ao, bank->end_freq_rec, compute_end_freq(bank), false);
+    bank->seq->seq_config_dirty = true;
+}
+
+
 static bool write_start_freq(void *context, double *value)
 {
     struct sequencer_bank *bank = context;
     struct seq_entry *entry = bank->entry;
     entry->start_freq = tune_to_freq(*value);
     *value = freq_to_tune(entry->start_freq);
+    update_end_freq(bank);
     return true;
 }
 
@@ -104,6 +141,7 @@ static bool write_step_freq(void *context, double *value)
     struct seq_entry *entry = bank->entry;
     entry->delta_freq = tune_to_freq(*value);
     *value = freq_to_tune_signed(entry->delta_freq);
+    update_end_freq(bank);
     return true;
 }
 
@@ -115,20 +153,11 @@ static bool write_end_freq(void *context, double *value)
         (*value - freq_to_tune(entry->start_freq)) / entry->capture_count;
     entry->delta_freq = tune_to_freq(target_delta_freq);
     double actual_delta_freq = freq_to_tune_signed(entry->delta_freq);
+
     WRITE_OUT_RECORD(ao, bank->delta_freq_rec, actual_delta_freq, false);
-    return true;
-}
+    *value = compute_end_freq(bank);
 
-
-/* This is called when any of START_FREQ, STEP_FREQ, COUNT have changed.
- * END_FREQ is updated. */
-static bool update_end_freq(void *context, bool *value)
-{
-    struct sequencer_bank *bank = context;
-    struct seq_entry *entry = bank->entry;
-    unsigned int end_freq =
-        entry->start_freq + entry->capture_count * entry->delta_freq;
-    WRITE_OUT_RECORD(ao, bank->end_freq_rec, freq_to_tune(end_freq), false);
+    bank->seq->seq_config_dirty = true;
     return true;
 }
 
@@ -138,7 +167,8 @@ static bool write_bank_count(void *context, unsigned int *value)
     struct sequencer_bank *bank = context;
     struct seq_entry *entry = bank->entry;
     entry->capture_count = *value;
-    return update_end_freq(context, NULL);
+    update_end_freq(bank);
+    return true;
 }
 
 
@@ -158,6 +188,14 @@ static bool write_dwell_time(void *context, unsigned int *value)
 }
 
 
+/* This function is called each time the gain is changed. */
+static void set_seq_nco_gain(void *context, unsigned int gain)
+{
+    struct seq_entry *entry = context;
+    entry->nco_gain = gain;
+}
+
+
 static void publish_bank(int ix, struct sequencer_bank *bank)
 {
     char prefix[4];
@@ -166,12 +204,12 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
     {
         struct seq_entry *entry = bank->entry;
         PUBLISH_WRITE_VAR_P(mbbo, "BANK", entry->bunch_bank);
-        PUBLISH_WRITE_VAR_P(mbbo, "GAIN", entry->nco_gain);
-        PUBLISH_WRITE_VAR_P(bo, "ENABLE", entry->nco_enable);
         PUBLISH_WRITE_VAR_P(bo, "ENWIN", entry->enable_window);
         PUBLISH_WRITE_VAR_P(bo, "CAPTURE", entry->write_enable);
         PUBLISH_WRITE_VAR_P(bo, "BLANK", entry->enable_blanking);
+        PUBLISH_WRITE_VAR_P(bo, "TUNE_PLL", entry->use_tune_pll);
         PUBLISH_WRITE_VAR_P(ulongout, "HOLDOFF", entry->holdoff);
+        PUBLISH_WRITE_VAR_P(ulongout, "STATE_HOLDOFF", entry->state_holdoff);
 
         PUBLISH_C_P(ulongout, "DWELL", write_dwell_time, bank);
 
@@ -182,7 +220,7 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
             PUBLISH_C_P(ao, "STEP_FREQ", write_step_freq, bank);
         bank->end_freq_rec = PUBLISH_C(ao, "END_FREQ", write_end_freq, bank);
 
-        PUBLISH_C(bo, "UPDATE_END", update_end_freq, bank);
+        create_gain_manager(entry, set_seq_nco_gain);
     }
 }
 
@@ -190,7 +228,7 @@ static void publish_bank(int ix, struct sequencer_bank *bank)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-static bool set_state0_bunch_bank(void *context, unsigned int *bank)
+static bool set_state0_bunch_bank(void *context, uint16_t *bank)
 {
     struct seq_context *seq = context;
     seq->seq_config.bank0 = *bank;
@@ -199,7 +237,7 @@ static bool set_state0_bunch_bank(void *context, unsigned int *bank)
 }
 
 
-unsigned int get_seq_idle_bank(int axis)
+uint16_t get_seq_idle_bank(int axis)
 {
     return seq_context[axis].seq_config.bank0;
 }
@@ -216,9 +254,12 @@ static bool update_capture_count(void *context, bool *value)
         if (bank->entry->write_enable)
             seq->capture_count += bank->entry->capture_count;
         seq->sequencer_duration +=
+            bank->entry->state_holdoff +
             bank->entry->capture_count *
             (bank->entry->dwell_time + bank->entry->holdoff);
     }
+
+    seq->seq_config_dirty = true;
     return true;
 }
 
@@ -264,10 +305,12 @@ static void write_super_offsets(
 
     for (int i = 0; i < SUPER_SEQ_STATES; i ++)
     {
-        unsigned int freq = tune_to_freq(offsets[i]);
+        uint64_t freq = tune_to_freq(offsets[i]);
         seq->seq_config.super_offsets[i] = freq;
         offsets[i] = freq_to_tune(freq);
     }
+
+    seq->seq_config_dirty = true;
 }
 
 static bool reset_super_offsets(void *context, bool *value)
@@ -304,7 +347,7 @@ static void write_detector_window(
 
     *length = DET_WINDOW_LENGTH;
     float_array_to_int(
-        DET_WINDOW_LENGTH, window, seq->seq_config.window, 16, 0);
+        DET_WINDOW_LENGTH, window, seq->seq_config.window, 16, 15);
 }
 
 
@@ -318,8 +361,8 @@ static bool reset_detector_window(void *context, bool *value)
 
 /* Helper function for compute_scale_info() below. */
 static inline void write_scale_point(
-    unsigned int frequency[], unsigned int timebase[],
-    unsigned int i, unsigned int f0, unsigned int total_time)
+    uint64_t frequency[], unsigned int timebase[],
+    unsigned int i, uint64_t f0, unsigned int total_time)
 {
     if (frequency) frequency[i] = f0;
     if (timebase)  timebase[i] = total_time;
@@ -327,7 +370,7 @@ static inline void write_scale_point(
 
 /* Computes frequency and timebase scales from detector configuration. */
 unsigned int compute_scale_info(
-    int axis, unsigned int frequency[], unsigned int timebase[],
+    int axis, uint64_t frequency[], unsigned int timebase[],
     unsigned int start_offset, unsigned int length)
 {
     const struct seq_context *seq = &seq_context[axis];
@@ -339,18 +382,18 @@ unsigned int compute_scale_info(
     /* Iterate through super sequencer. */
     unsigned int ix = 0;            // Index into generated vectors
     unsigned int total_time = 0;    // Accumulates time base
-    unsigned int gap_time = 0;      // For non-captured states
-    unsigned int f0 = 0;            // Accumulates current frequency
+    uint64_t f0 = 0;                // Accumulates current frequency
     for (unsigned int super = 0; super < super_count; super ++)
+    {
+        uint64_t super_offset = seq_config->super_offsets[super];
         for (unsigned int state = seq_count; state > 0; state --)
         {
             const struct seq_entry *entry = &seq_config->entries[state - 1];
+            total_time += entry->state_holdoff;
             unsigned int dwell_time = entry->dwell_time + entry->holdoff;
             if (entry->write_enable)
             {
-                f0 = entry->start_freq + seq_config->super_offsets[super];
-                total_time += gap_time;
-                gap_time = 0;
+                f0 = entry->start_freq + super_offset;
                 for (unsigned int i = 0; i < entry->capture_count; i ++)
                 {
                     if (start_offset <= ix  &&  ix < end_offset)
@@ -363,8 +406,9 @@ unsigned int compute_scale_info(
                 }
             }
             else
-                gap_time += dwell_time * entry->capture_count;
+                total_time += dwell_time * entry->capture_count;
         }
+    }
 
     /* Fill in the rest of the waveforms. */
     for (unsigned int i = ix; i < end_offset; i ++)
@@ -383,8 +427,20 @@ unsigned int compute_scale_info(
 void prepare_sequencer(int axis)
 {
     struct seq_context *seq = &seq_context[axis];
-    seq->seq_hw_config = seq->seq_config;
+    WITH_MUTEX(seq->mutex)
+    {
+        seq->seq_hw_config = seq->seq_config;
+        seq->seq_hw_config_dirty = seq->seq_config_dirty;
+        seq->seq_config_dirty = false;
+    }
     hw_write_seq_config(seq->axis, &seq->seq_hw_config);
+}
+
+
+bool detector_scale_changed(int axis)
+{
+    struct seq_context *seq = &seq_context[axis];
+    return seq->seq_hw_config_dirty;
 }
 
 
@@ -394,7 +450,7 @@ void read_detector_scale_info(
     int axis, unsigned int length, struct scale_info *scale_info)
 {
     /* Need buffer for frequency data so we can covert to tune afterwards. */
-    unsigned int frequency[length];
+    uint64_t frequency[length];
     scale_info->samples = compute_scale_info(
         axis, frequency, (unsigned int *) scale_info->timebase, 0, length);
     for (unsigned int i = 0; i < length; i ++)
@@ -443,17 +499,17 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
     struct seq_context *seq = context;
     struct seq_entry *entry0 = &seq->seq_config.entries[0];
     int axis = seq->axis;
-    unsigned int bank = entry0->bunch_bank;
+    uint16_t bank = entry0->bunch_bank;
 
     /* Both the detector and bunch configurations feed into the status. */
     const struct detector_config *det_config = get_detector_config(axis, 0);
-    const struct bunch_config *bunch_config = get_bunch_config(axis, bank);
+    bool nco1_enables[hardware_config.bunches];
+    get_bunch_seq_enables(axis, bank, nco1_enables);
 
     /* Cound how many bunches we're sweeping and overlap with detector. */
-    unsigned int sweeping =
-        count_bunches_equal_to(true, bunch_config->nco1_enable);
-    unsigned int overlap = count_bunches_equal(
-        bunch_config->nco1_enable, det_config->bunch_enables);
+    unsigned int sweeping = count_bunches_equal_to(true, nco1_enables);
+    unsigned int overlap =
+        count_bunches_equal(nco1_enables, det_config->bunch_enables);
 
     /* Start by evaluating the sequencer.  We expect a single sequencer state
      * with data capture, sequencer enabled, and IQ buffer capture. */
@@ -464,7 +520,7 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
         status = "Super sequencer active";
     else if (seq->seq_config.sequencer_pc > 1)
         status = "Multi-state sequencer";
-    else if (!entry0->nco_enable)
+    else if (entry0->nco_gain == 0)
         status = "Sequencer NCO off";
     else if (!det_config->enable  ||
              count_bunches_equal_to(true, det_config->bunch_enables) == 0)
@@ -476,22 +532,23 @@ static bool read_sequencer_mode(void *context, EPICS_STRING *result)
     else
     {
         char gain[40];
-        sprintf(gain, "%ddB", -6 * (int) entry0->nco_gain);
+        sprintf(gain, "%.1fdB", 20 * log10(ldexp(entry0->nco_gain, -18)));
 
         if (sweeping == 1)
         {
-            unsigned int single_bunch =
-                find_first_index(true, bunch_config->nco1_enable);
-            snprintf(result->s, 40, "Sweep: bunch %u (%s)", single_bunch, gain);
+            unsigned int single_bunch = find_first_index(true, nco1_enables);
+            format_epics_string(result,
+                "Sweep: bunch %u (%s)", single_bunch, gain);
         }
         else if (sweeping == system_config.bunches_per_turn)
-            snprintf(result->s, 40, "Sweep: all bunches (%s)", gain);
+            format_epics_string(result, "Sweep: all bunches (%s)", gain);
         else
-            snprintf(result->s, 40, "Sweep: %u bunches (%s)", sweeping, gain);
+            format_epics_string(result,
+                "Sweep: %u bunches (%s)", sweeping, gain);
         return true;
     }
 
-    snprintf(result->s, 40, "%s", status);
+    format_epics_string(result, "%s", status);
     return true;
 }
 
@@ -507,9 +564,16 @@ error__t initialise_sequencer(void)
         struct seq_context *seq = &seq_context[axis];
         seq->axis = axis;
 
+        /* All PVs which modify the hardware configuration are modified under a
+         * mutex to ensure we don't have surprises if settings are changed while
+         * rearming. */
+        pthread_mutex_t *old_mutex =
+            set_default_epics_device_mutex(&seq->mutex);
+
         PUBLISH_C_P(mbbo, "0:BANK", set_state0_bunch_bank, seq);
         for (int i = 0; i < MAX_SEQUENCER_COUNT; i ++)
         {
+            seq->banks[i].seq = seq;
             seq->banks[i].entry = &seq->seq_config.entries[i];
             publish_bank(i, &seq->banks[i]);
         }
@@ -544,6 +608,9 @@ error__t initialise_sequencer(void)
         PUBLISH_C(bo, "RESET_WIN", reset_detector_window, seq);
 
         PUBLISH_C(stringin, "MODE", read_sequencer_mode, seq);
+
+        /* Don't forget to restore the default! */
+        set_default_epics_device_mutex(old_mutex);
     }
 
     return ERROR_OK;

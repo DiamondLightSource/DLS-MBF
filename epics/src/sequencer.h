@@ -16,6 +16,9 @@ struct scale_info {
     unsigned int samples;
 };
 
+/* Checks whether the scale info has changed and will need to be reread. */
+bool detector_scale_changed(int axis);
+
 /* Reads the current scale info.  This is valid for the current acquisition
  * after prepare_sequencer() has been called. */
 void read_detector_scale_info(
@@ -25,8 +28,8 @@ void read_detector_scale_info(
  * destination waveform can be NULL, and only samples starting at position
  * offset are written. */
 unsigned int compute_scale_info(
-    int axis, unsigned int frequency[], unsigned int timebase[],
+    int axis, uint64_t frequency[], unsigned int timebase[],
     unsigned int offset, unsigned int length);
 
 /* Returns currently configured bank zero for given axis. */
-unsigned int get_seq_idle_bank(int axis);
+uint16_t get_seq_idle_bank(int axis);

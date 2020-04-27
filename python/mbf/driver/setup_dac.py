@@ -1,5 +1,7 @@
 # Configuration for Analog Devices AD9122 DAC.
 
+from __future__ import print_function
+
 import time
 
 def setup_dac(regs):
@@ -38,7 +40,7 @@ def setup_dac(regs):
     # This is the relative FIFO reset process documented on p34 of the AD9122
     # manual (Rev. B).  Depending on our clocks this may still leave an
     # uncertainty of one clock tick, to be investigated...
-    print 'Setting DAC FIFO synchronisation'
+    print('Setting DAC FIFO synchronisation')
     DAC_SPI[0x17] = 0x05            # Set nominal FIFO phase offset to 5
     status = DAC_SPI[0X18]
     DAC_SPI[0x18] = status | 2      # Set soft alignment request bit
@@ -48,5 +50,5 @@ def setup_dac(regs):
     status = DAC_SPI[0X18]
     assert not (status & 0x04)      # Validate FIFO acknowlege
     spacing = DAC_SPI[0X19]
-    print 'spacing: %02x' % spacing
+    print('spacing: %02x' % spacing)
     assert spacing in [0x07, 0x0F]  # Validate programmed spacing

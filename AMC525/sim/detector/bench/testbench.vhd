@@ -15,29 +15,30 @@ entity testbench is
 end testbench;
 
 architecture arch of testbench is
-    signal adc_clk : std_logic := '1';
-    signal dsp_clk : std_logic := '0';
-    signal turn_clock : std_logic;
+    signal adc_clk : std_ulogic := '1';
+    signal dsp_clk : std_ulogic := '0';
+    signal turn_clock : std_ulogic;
 
     constant TURN_COUNT : natural := 33;
 
     -- detector_top parameters
-    signal write_strobe : std_logic_vector(DSP_DET_REGS);
+    signal write_strobe : std_ulogic_vector(DSP_DET_REGS);
     signal write_data : reg_data_t;
-    signal write_ack : std_logic_vector(DSP_DET_REGS);
-    signal read_strobe : std_logic_vector(DSP_DET_REGS);
+    signal write_ack : std_ulogic_vector(DSP_DET_REGS);
+    signal read_strobe : std_ulogic_vector(DSP_DET_REGS);
     signal read_data : reg_data_array_t(DSP_DET_REGS);
-    signal read_ack : std_logic_vector(DSP_DET_REGS);
+    signal read_ack : std_ulogic_vector(DSP_DET_REGS);
     signal adc_data : signed(15 downto 0);
+    signal adc_fill_reject : signed(15 downto 0);
     signal fir_data : signed(35 downto 0);
     signal nco_iq : cos_sin_18_t;
     signal window : signed(17 downto 0);
-    signal start : std_logic;
-    signal write : std_logic;
-    signal mem_valid : std_logic;
-    signal mem_ready : std_logic;
+    signal start : std_ulogic;
+    signal write : std_ulogic;
+    signal mem_valid : std_ulogic;
+    signal mem_ready : std_ulogic;
     signal mem_addr : unsigned(19 downto 0);
-    signal mem_data : std_logic_vector(63 downto 0);
+    signal mem_data : std_ulogic_vector(63 downto 0);
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -80,6 +81,7 @@ begin
         read_data_o => read_data,
         read_ack_o => read_ack,
         adc_data_i => adc_data,
+        adc_fill_reject_i => adc_fill_reject,
         fir_data_i => fir_data,
         nco_iq_i => nco_iq,
         window_i => window,
@@ -137,14 +139,32 @@ begin
                 dsp_clk, write_data, write_strobe, write_ack, reg, value);
         end;
 
-        procedure write_config(value : reg_data_t) is
+        procedure write_config(
+            bank : std_ulogic_vector(1 downto 0) := "00";
+            enables : std_ulogic_vector(3 downto 0) := "0000";
+            scaling : std_ulogic_vector(3 downto 0) := "0000";
+            select_in : std_ulogic_vector(1 downto 0) := "00") is
         begin
-            write_reg(DSP_DET_CONFIG_REG, value);
+            write_reg(DSP_DET_CONFIG_REG, (
+            DSP_DET_CONFIG_SELECT_BITS => select_in,
+                DSP_DET_CONFIG_SCALE0_BITS => scaling(0),
+                DSP_DET_CONFIG_ENABLE0_BIT => enables(0),
+                DSP_DET_CONFIG_SCALE1_BITS => scaling(1),
+                DSP_DET_CONFIG_ENABLE1_BIT => enables(1),
+                DSP_DET_CONFIG_SCALE2_BITS => scaling(2),
+                DSP_DET_CONFIG_ENABLE2_BIT => enables(2),
+                DSP_DET_CONFIG_SCALE3_BITS => scaling(3),
+                DSP_DET_CONFIG_ENABLE3_BIT => enables(3),
+                DSP_DET_CONFIG_BANK_BITS => bank,
+                others => '0'));
         end;
 
-        procedure write_command(value : reg_data_t) is
+        procedure write_command(write : std_ulogic; reset : std_ulogic) is
         begin
-            write_reg(DSP_DET_COMMAND_REG_W, value);
+            write_reg(DSP_DET_COMMAND_REG_W, (
+                DSP_DET_COMMAND_WRITE_BIT => write,
+                DSP_DET_COMMAND_RESET_BIT => reset,
+                others => '0'));
         end;
 
         procedure write_bunch(value : reg_data_t) is
@@ -164,20 +184,20 @@ begin
         read_strobe <= (others => '0');
 
         -- Write the bunch memories
-        write_command(X"0000_0003");
-        write_config(X"0000_0000");
+        write_command(write => '1', reset => '1');
+        write_config(bank => "00");
         write_bunch(X"0000_0055");
         write_bunch(X"FFFF_FFFF");
-        write_config(X"4000_0000");
+        write_config(bank => "01");
         write_bunch(X"0000_0055");
-        write_config(X"8000_0000");
+        write_config(bank => "10");
         write_bunch(X"0000_0055");
-        write_config(X"C000_0000");
+        write_config(bank => "11");
         write_bunch(X"0000_0055");
 
         -- Enable all four outputs with different scaling, select FIR input with
         -- attenuation.
-        write_config(X"00_092B_03");
+        write_config(enables => "1111", scaling => "0011", select_in => "01");
 
         read_events;
 

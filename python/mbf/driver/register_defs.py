@@ -1,10 +1,12 @@
 # Use register definitions to create API
 
+from __future__ import print_function
+
 import os
 import sys
 import numpy
 
-import mbf
+from mbf import parse
 
 
 # Reads and writes a bit-field in a register
@@ -50,8 +52,29 @@ def make_register(register, fields):
         __offset = register.offset
         __rw = register.rw
 
+        # This is a dictionary of field accessor methods indexed by field name.
+        # We would use property attributes, but they don't play well with
+        # __setattr__, in particular we can't block assignment to non-existent
+        # fields.
+        __fields = {}
+
         def __init__(self, parent):
-            self.__parent = parent
+            self.__dict__['_Register__parent'] = parent
+
+        def __getattr__(self, name):
+            try:
+                read, write = self.__fields[name]
+            except KeyError:
+                # If no support in fields, look for this in the dictionary
+                return self.__dict__[name]
+            else:
+                # Delegate named fields to their associated read method
+                return read(self)
+
+        def __setattr__(self, name, value):
+            # Only allow existing fields to be updated
+            read, write = self.__fields[name]
+            write(self, value)
 
 
         def _read_value(self):
@@ -59,9 +82,6 @@ def make_register(register, fields):
 
         def _write_value(self, value):
             self.__parent._write_value(self.__offset, self.__rw, value)
-
-        # _value returns the underlying register value
-        _value = property(_read_value, _write_value)
 
 
         def _get_fields(self, read = True):
@@ -71,9 +91,6 @@ def make_register(register, fields):
         def __set_fields(self, value):
             self._value = value._value
 
-        # _fields returns an updatable image of the current register settings as
-        # a group of settable fields
-        _fields = property(_get_fields, __set_fields)
 
         @property
         def _fields_wo(self):
@@ -103,8 +120,20 @@ def make_register(register, fields):
             else:
                 assert False
 
-
+        # Populate all the fields including the two special fields
+        #
+        # _value returns the underlying register value
+        __fields['_value'] = (_read_value, _write_value)
+        # _fields returns an updatable image of the current register settings as
+        # a group of settable fields
+        __fields['_fields'] = (_get_fields, __set_fields)
+        # Populate the rest of the fields and remember the field names
         _field_names = []
+        for field in fields:
+            __fields[field._name] = (field._read, field._write)
+            _field_names.append(field._name)
+
+
         def __repr__(self):
             if self._field_names:
                 fields = self._fields
@@ -115,22 +144,22 @@ def make_register(register, fields):
                 values = '%d' % self._value
             return '<Reg %s @%d %s>' % (self._name, self.__offset, values)
 
-    for field in fields:
-        setattr(Register, field._name, property(field._read, field._write))
-        Register._field_names.append(field._name)
-
     return Register
 
 
 class Delegator(object):
     def __init__(self, parent):
-        self.__parent = parent
+        self.__dict__['_Delegator__parent'] = parent
 
     def _read_value(self, offset, rw):
         return self.__parent._read_value(offset, rw)
 
     def _write_value(self, offset, rw, value):
         self.__parent._write_value(offset, rw, value)
+
+    def __setattr__(self, name, value):
+        # Block accidential assignment to non-existent fields
+        assert False, 'Cannot assign to field %s' % name
 
 
 def make_array(array):
@@ -209,7 +238,7 @@ def make_top(group, attributes):
     return Top
 
 
-class GenerateMethods(mbf.parse.register_defs.WalkParse):
+class GenerateMethods(parse.register_defs.WalkParse):
     def walk_field(self, context, field):
         return Field(field)
 
@@ -220,7 +249,11 @@ class GenerateMethods(mbf.parse.register_defs.WalkParse):
         return make_register(register, self.walk_fields(context, register))
 
     def walk_group(self, context, group):
-        return make_group(group, self.walk_subgroups(context, group))
+        subgroups = self.walk_subgroups(context, group)
+        if group.hidden:
+            return subgroups
+        else:
+            return make_group(group, subgroups)
 
     def walk_rw_pair(self, context, rw_pair):
         return [
@@ -248,11 +281,17 @@ generate = GenerateMethods()
 
 
 # Read the definitions in parsed form
-defs = mbf.parsed_defs(flatten = True)
+defs = parse.parsed_defs(flatten = True)
 
 register_groups = {}
 for group in defs.groups:
     register_groups[group.name] = generate.walk_top(group)
+
+class Constants:
+    def __init__(self):
+        for constant in defs.constants.values():
+            setattr(self, constant.name, constant.value)
+constants = Constants()
 
 
 class BaseAddress:
@@ -263,38 +302,38 @@ class BaseAddress:
 
     def _read_value(self, offset):
         result = self.values.setdefault(offset, 0)
-        print '%04x[%d] => %d' % (self.base_address, offset, result)
+        print('%04x[%d] => %d' % (self.base_address, offset, result))
         return result
 
     def _write_value(self, offset, value):
-        print '%04x[%d] <= %d' % (self.base_address, offset, value)
+        print('%04x[%d] <= %d' % (self.base_address, offset, value))
         self.values[offset] = value
 
 
 if __name__ == '__main__':
     sys = register_groups['SYS'](BaseAddress(0))
 
-    print sys.VERSION
-    print sys.STATUS
-    print sys.CONTROL
-    print sys.ADC_IDELAY
-    print sys.FMC_SPI
-    print sys.DAC_TEST
-    print sys.REV_IDELAY
+    print(sys.VERSION)
+    print(sys.STATUS)
+    print(sys.CONTROL)
+    print(sys.ADC_IDELAY)
+    print(sys.FMC_SPI)
+    print(sys.DAC_TEST)
+    print(sys.REV_IDELAY)
 
     dsp0 = register_groups['DSP'](BaseAddress(0x3000))
 
-    print dsp0.MISC.PULSED
-    print dsp0.MISC.STROBE
-    print dsp0.MISC.NCO0_FREQ
+    print(dsp0.MISC.PULSED)
+    print(dsp0.MISC.STROBE)
+    print(dsp0.MISC.NCO0_FREQ)
     dsp0.ADC.CONFIG.THRESHOLD = 1234
-    print dsp0.ADC.CONFIG
-    print dsp0.ADC.TAPS
-    print dsp0.ADC.MMS
-    print dsp0.ADC.MMS.COUNT
-    print dsp0.ADC.MMS.READOUT
+    print(dsp0.ADC.CONFIG)
+    print(dsp0.ADC.TAPS)
+    print(dsp0.ADC.MMS)
+    print(dsp0.ADC.MMS.COUNT)
+    print(dsp0.ADC.MMS.READOUT)
 
-    print
+    print()
     dsp0.MISC.STROBE.WRITE = 1
     dsp0.MISC.STROBE.RESET_DELTA = 1
 
@@ -302,14 +341,14 @@ if __name__ == '__main__':
     strobe.WRITE = 1
     strobe.RESET_DELTA = 1
     dsp0.MISC.STROBE._fields = strobe
-    print dsp0.MISC.STROBE
+    print(dsp0.MISC.STROBE)
     dsp0.MISC.STROBE._fields = strobe
     dsp0.MISC.STROBE._write_fields_wo(WRITE = 1, RESET_DELTA = 1)
 
-    print
+    print()
     dsp0.ADC.CONFIG.THRESHOLD = 1234
-    print dsp0.ADC.CONFIG
+    print(dsp0.ADC.CONFIG)
 
-    print
+    print()
     dsp0.ADC.TAPS = 1234
     dsp0.MISC.STROBE = strobe

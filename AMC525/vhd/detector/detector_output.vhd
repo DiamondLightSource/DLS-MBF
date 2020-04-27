@@ -12,20 +12,20 @@ use work.detector_defs.all;
 
 entity detector_output is
     port (
-        dsp_clk_i : in std_logic;
+        dsp_clk_i : in std_ulogic;
 
-        write_i : in std_logic;
+        write_i : in std_ulogic;
         data_i : in cos_sin_32_t;
 
-        output_valid_o : out std_logic := '0';
-        output_ready_i : in std_logic;
-        output_data_o : out std_logic_vector(63 downto 0);
-        output_underrun_o : out std_logic := '0'
+        output_valid_o : out std_ulogic := '0';
+        output_ready_i : in std_ulogic;
+        output_data_o : out std_ulogic_vector(63 downto 0);
+        output_underrun_o : out std_ulogic := '0'
     );
 end;
 
 architecture arch of detector_output is
-    signal output_valid : std_logic := '0';
+    signal output_valid : std_ulogic := '0';
 
 begin
     process (dsp_clk_i) begin
@@ -49,6 +49,6 @@ begin
     end process;
 
     output_valid_o <= output_valid;
-    output_data_o(31 downto  0) <= std_logic_vector(data_i.cos);
-    output_data_o(63 downto 32) <= std_logic_vector(data_i.sin);
+    output_data_o(31 downto  0) <= std_ulogic_vector(data_i.cos);
+    output_data_o(63 downto 32) <= std_ulogic_vector(data_i.sin);
 end;

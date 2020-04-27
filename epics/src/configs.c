@@ -40,11 +40,14 @@ const struct system_config system_config;
 
 static const struct config_entry hardware_delays_entries[] = {
     DELAY_ENTRY(MMS_ADC_DELAY),
+    DELAY_ENTRY(MMS_ADC_REJECT_DELAY),
     DELAY_ENTRY(MMS_ADC_FIR_DELAY),
     DELAY_ENTRY(MMS_DAC_DELAY),
     DELAY_ENTRY(MMS_DAC_FIR_DELAY),
+    DELAY_ENTRY(MMS_DAC_FEEDBACK_DELAY),
 
     DELAY_ENTRY(DRAM_ADC_DELAY),
+    DELAY_ENTRY(DRAM_ADC_REJECT_DELAY),
     DELAY_ENTRY(DRAM_ADC_FIR_DELAY),
     DELAY_ENTRY(DRAM_DAC_DELAY),
     DELAY_ENTRY(DRAM_FIR_DELAY),
@@ -54,10 +57,20 @@ static const struct config_entry hardware_delays_entries[] = {
     DELAY_ENTRY(BUNCH_FIR_OFFSET),
 
     DELAY_ENTRY(DET_ADC_OFFSET),
+    DELAY_ENTRY(DET_ADC_REJECT_OFFSET),
     DELAY_ENTRY(DET_FIR_OFFSET),
 
-    DELAY_ENTRY(DET_FIR_DELAY),
     DELAY_ENTRY(DET_ADC_DELAY),
+    DELAY_ENTRY(DET_ADC_REJECT_DELAY),
+    DELAY_ENTRY(DET_FIR_DELAY),
+
+    DELAY_ENTRY(PLL_ADC_OFFSET),
+    DELAY_ENTRY(PLL_FIR_OFFSET),
+    DELAY_ENTRY(PLL_ADC_REJECT_OFFSET),
+
+    DELAY_ENTRY(PLL_ADC_DELAY),
+    DELAY_ENTRY(PLL_ADC_REJECT_DELAY),
+    DELAY_ENTRY(PLL_FIR_DELAY),
 };
 
 
@@ -81,9 +94,11 @@ static const struct config_entry system_config_entries[] = {
     SYSTEM_ENTRY(string, persistence_file),
     SYSTEM_ENTRY(int, persistence_interval),
     SYSTEM_ENTRY(int, pv_log_array_length),
+    SYSTEM_ENTRY(int, archive_interval),
     SYSTEM_ENTRY(uint, memory_readout_length),
     SYSTEM_ENTRY(uint, detector_length),
     SYSTEM_ENTRY(uint, data_port),
+    SYSTEM_ENTRY(uint, tune_pll_length),
 };
 
 
@@ -112,11 +127,14 @@ static void convert_hardware_config(void)
     ASSIGN_FIELD(hardware_delays.valid, true);
 
     CONVERT_FIELD(MMS_ADC_DELAY);
+    CONVERT_FIELD(MMS_ADC_REJECT_DELAY);
     CONVERT_FIELD(MMS_ADC_FIR_DELAY);
     CONVERT_FIELD(MMS_DAC_DELAY);
     CONVERT_FIELD(MMS_DAC_FIR_DELAY);
+    CONVERT_FIELD(MMS_DAC_FEEDBACK_DELAY),
 
     CONVERT_FIELD(DRAM_ADC_DELAY);
+    CONVERT_FIELD(DRAM_ADC_REJECT_DELAY),
     CONVERT_FIELD(DRAM_ADC_FIR_DELAY),
     CONVERT_FIELD(DRAM_DAC_DELAY);
     CONVERT_FIELD(DRAM_FIR_DELAY);
@@ -126,7 +144,14 @@ static void convert_hardware_config(void)
     CONVERT_FIELD(BUNCH_FIR_OFFSET);
 
     CONVERT_FIELD(DET_ADC_OFFSET);
+    CONVERT_FIELD(DET_ADC_REJECT_OFFSET);
     CONVERT_FIELD(DET_FIR_OFFSET);
+
+    CONVERT_FIELD(PLL_ADC_OFFSET);
+    CONVERT_FIELD(PLL_FIR_OFFSET);
+    CONVERT_FIELD(PLL_ADC_REJECT_OFFSET);
+
+    // Note that the delays are *not* converted
 }
 
 

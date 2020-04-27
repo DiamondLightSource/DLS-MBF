@@ -3,7 +3,9 @@
 # SNAS605 and the datasheet is avaliable at http://www.ti.com/lit/pdf/snas605
 # Revision SNAS605AR dated December 2015 was used for this script.
 
-from config_pll import SettingsBase
+from __future__ import print_function
+
+from .config_pll import SettingsBase, Const
 import time
 
 
@@ -27,6 +29,7 @@ PLL_ratios = {
     '499_682' : ( 13,   0,  5,  2,  381,    61 ),   # DLS (post DDBA)
     '352_202' : ( 9,    0,  7,  2,  339,    55 ),   # ESRF (pre upgrade)
     '352_372' : ( 9,    0,  7,  2,  37,     6 ),    # ESRF-EBS (post upgrade)
+    '499_654' : ( 13,   0,  5,  2,  356,    57 ),   # ELETTRA
 }
 
 
@@ -79,6 +82,20 @@ def delayed_output(output):
 #   DCLKout12   => CLK0_M2C
 #
 def setup_reclocked(pll):
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Configure outputs for FMC 500.
+
+    # Output level definitions taken from Malibu Fmc_500_Mb.cpp, function
+    # Fmc500_Pll::OnInit().
+    pll.out0_1.SDCLK_FMT = Const.FMT_HSDS8      # S1  ADC SYNC
+    pll.out2_3.DCLK_FMT  = Const.FMT_LVDS       # D2  FMC HB[9] (unused)
+    pll.out2_3.SDCLK_FMT = Const.FMT_LVDS       # S3  FMC LA[19] (unused)
+    pll.out4_5.DCLK_FMT  = Const.FMT_LVDS       # D4  DAC DACCLK
+    pll.out6_7.DCLK_FMT  = Const.FMT_LVDS       # D6  DAC REFCLK
+    pll.out10_11.DCLK_FMT = Const.FMT_HSDS8     # D10 J12 front panel
+    pll.out12_13.SDCLK_FMT = Const.FMT_HSDS8    # S13 ADC CLK
+
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Output configuration
 
@@ -187,7 +204,7 @@ def setup_pll_ratios(pll, n1r1, vco, d, p2, n2, r2):
     pll.out12_13.DCLK_DIV = d   # ADC CLK
 
     # Set up dividers for phase advance for DAC, only.
-    cntl = (d + 1) / 2
+    cntl = (d + 1) // 2
     cnth = d + 1 - cntl
     pll.out4_5.DCLK_DDLY_CNTL = cntl
     pll.out4_5.DCLK_DDLYd_CNTL = cntl
@@ -233,7 +250,7 @@ def decode_mode(mode):
 
 
 def setup_pll(regs, mode):
-    print 'Setting clock mode', mode
+    print('Setting clock mode', mode)
     pll = SettingsBase(regs.PLL_SPI)
     if mode == 'Passthrough':
         setup_passthrough(pll)

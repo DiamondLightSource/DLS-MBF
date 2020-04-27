@@ -1,25 +1,26 @@
 # Configuration settings for building at DLS
 
+SITE = DLS
+
 # Place the FPGA build in /scratch
-FPGA_BUILD_DIR = /scratch/mga83/tmp/MBF/build/fpga
-SIM_BUILD_DIR = /scratch/mga83/tmp/MBF/build/sim
+FPGA_BUILD_DIR = /scratch/$(USER)/tmp/MBF/build/fpga
+SIM_BUILD_DIR = /scratch/$(USER)/tmp/MBF/build/sim
 
 # Definitions needed for FPGA build
-VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2016.4/settings64.sh
+VIVADO = /dls_sw/FPGA/Xilinx/Vivado/2019.2/settings64.sh
 VSIM = /dls_sw/FPGA/Questa/10.6/questasim/bin/vsim
 LM_LICENSE_FILE = \
     2100@diamcslicserv01.dc.diamond.ac.uk \
     1717@diamcslicserv01.dc.diamond.ac.uk
 
 # Server to connect to for loading FPGA image followed by IP of card
-AMC525_SERVER = ts-di-lmbf-01 199
+AMC525_SERVER = ts-di-mserv-02 199
 
 
 # Definitions needed for EPICS driver build
 #
-# EPICS_DEVICE = /home/mga83/epics/epics_device
-EPICS_DEVICE = /dls_sw/prod/R3.14.12.3/support/epics_device/1-4
-EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
+EPICS_DEVICE = /dls_sw/prod/R3.14.12.7/support/epics_device/2.0
+EPICS_BASE = /dls_sw/epics/R3.14.12.7/base
 
 CFLAGS_EXTRA += -Werror
 
@@ -27,9 +28,9 @@ CFLAGS_EXTRA += -Werror
 DRV_GROUP = 500
 
 # Location of Matlab compiler
-MEX = /dls_sw/prod/tools/RHEL6-x86_64/matlab/R2014a/prefix/bin/mex
+MEX = /dls_sw/prod/tools/RHEL7-x86_64/matlab/R2019a/prefix/bin/mex
 
 # Path to Python Soft IOC
-PYTHON_IOC = /dls_sw/prod/R3.14.12.3/support/pythonSoftIoc/2-11/pythonIoc
+PYTHON_IOC = /dls_sw/prod/R3.14.12.7/support/pythonIoc/2-15/pythonIoc
 
 # vim: set filetype=make:
