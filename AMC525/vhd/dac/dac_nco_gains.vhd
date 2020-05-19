@@ -94,11 +94,9 @@ begin
         -- Compute scalar as product of fixed and bunch by bunch gains
         scale : entity work.dsp48e_mac port map (
             clk_i => clk_i,
-            a_i => resize('0' & signed(nco_data(i)(i).gain), 25),
+            a_i => "0" & signed(nco_data(i)(i).gain),
             b_i => bb_gains(i)(i),
-            en_ab_i => '1',
             c_i => ROUND_SCALAR,
-            en_c_i => '1',
             p_o => full_scalar
         );
 
@@ -131,9 +129,7 @@ begin
             clk_i => clk_i,
             a_i => scalar,
             b_i => nco_in,
-            en_ab_i => '1',
             c_i => accum_array(i),
-            en_c_i => '1',
             p_o => p_out,
             pc_o => accum_array(i + 1),
             ovf_o => ovf_out

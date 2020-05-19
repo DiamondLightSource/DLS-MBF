@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily backup of MBF
+After=network.target
+
+[Service]
+Type=oneshot
+
+User=dserver
+Group=comp
+
+ExecStart=/home/dserver/script/mbf-backup.sh
+

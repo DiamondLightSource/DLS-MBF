@@ -9,7 +9,7 @@ if os.path.isfile(requires_file):
     # This will define require() which may be used to add further unversioned
     # required.  All versioned requires need to be explictly listed in
     # versions.py
-    execfile(requires_file)
+    exec(open(requires_file).read())
 
 else:
     # If no requires.py then create a dummy no-op require() function.

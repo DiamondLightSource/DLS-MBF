@@ -1,0 +1,12 @@
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/os/epics/local/lib/linux-x86_64
+export EPICS_CA_MAX_ARRAY_BYTES=1048576
+export EPICS_CA_ADDR_LIST=$HOSTNAME
+export EPICS_CAS_AUTO_BEACON_ADDR_LIST=NO
+export EPICS_CAS_BEACON_ADDR_LIST=$HOSTNAME
+export EPICS_BASE=/opt/os/epics/local
+export EPICS_HOST_ARCH='linux-x86_64'
+
+# For caget, caput, etc.
+export PATH=$EPICS_BASE/bin/linux-x86_64:$PATH
+
+conda activate mbf

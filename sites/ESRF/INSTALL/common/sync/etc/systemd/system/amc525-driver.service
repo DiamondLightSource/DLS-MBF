@@ -1,0 +1,23 @@
+[Unit]
+Description=ESRF unit service for manage AMC 525 dkms module
+
+Before=tango-starter.service
+
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+
+
+ExecStart=/sbin/modprobe amc525_mbf
+
+ExecStop=/sbin/rmmod amc525_mbf
+
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=100
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target
+

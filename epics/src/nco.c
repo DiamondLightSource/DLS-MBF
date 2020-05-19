@@ -147,7 +147,6 @@ void create_gain_manager(
 static struct nco_context {
     int axis;
     enum fixed_nco nco;
-    struct gain_manager *gain;
 } nco_context[AXIS_COUNT][2] = {
     [0] = {
         [0] = { .axis = 0, .nco = FIXED_NCO1, },

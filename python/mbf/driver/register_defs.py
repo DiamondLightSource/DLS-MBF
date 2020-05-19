@@ -1,5 +1,7 @@
 # Use register definitions to create API
 
+from __future__ import print_function
+
 import os
 import sys
 import numpy
@@ -300,38 +302,38 @@ class BaseAddress:
 
     def _read_value(self, offset):
         result = self.values.setdefault(offset, 0)
-        print '%04x[%d] => %d' % (self.base_address, offset, result)
+        print('%04x[%d] => %d' % (self.base_address, offset, result))
         return result
 
     def _write_value(self, offset, value):
-        print '%04x[%d] <= %d' % (self.base_address, offset, value)
+        print('%04x[%d] <= %d' % (self.base_address, offset, value))
         self.values[offset] = value
 
 
 if __name__ == '__main__':
     sys = register_groups['SYS'](BaseAddress(0))
 
-    print sys.VERSION
-    print sys.STATUS
-    print sys.CONTROL
-    print sys.ADC_IDELAY
-    print sys.FMC_SPI
-    print sys.DAC_TEST
-    print sys.REV_IDELAY
+    print(sys.VERSION)
+    print(sys.STATUS)
+    print(sys.CONTROL)
+    print(sys.ADC_IDELAY)
+    print(sys.FMC_SPI)
+    print(sys.DAC_TEST)
+    print(sys.REV_IDELAY)
 
     dsp0 = register_groups['DSP'](BaseAddress(0x3000))
 
-    print dsp0.MISC.PULSED
-    print dsp0.MISC.STROBE
-    print dsp0.MISC.NCO0_FREQ
+    print(dsp0.MISC.PULSED)
+    print(dsp0.MISC.STROBE)
+    print(dsp0.MISC.NCO0_FREQ)
     dsp0.ADC.CONFIG.THRESHOLD = 1234
-    print dsp0.ADC.CONFIG
-    print dsp0.ADC.TAPS
-    print dsp0.ADC.MMS
-    print dsp0.ADC.MMS.COUNT
-    print dsp0.ADC.MMS.READOUT
+    print(dsp0.ADC.CONFIG)
+    print(dsp0.ADC.TAPS)
+    print(dsp0.ADC.MMS)
+    print(dsp0.ADC.MMS.COUNT)
+    print(dsp0.ADC.MMS.READOUT)
 
-    print
+    print()
     dsp0.MISC.STROBE.WRITE = 1
     dsp0.MISC.STROBE.RESET_DELTA = 1
 
@@ -339,14 +341,14 @@ if __name__ == '__main__':
     strobe.WRITE = 1
     strobe.RESET_DELTA = 1
     dsp0.MISC.STROBE._fields = strobe
-    print dsp0.MISC.STROBE
+    print(dsp0.MISC.STROBE)
     dsp0.MISC.STROBE._fields = strobe
     dsp0.MISC.STROBE._write_fields_wo(WRITE = 1, RESET_DELTA = 1)
 
-    print
+    print()
     dsp0.ADC.CONFIG.THRESHOLD = 1234
-    print dsp0.ADC.CONFIG
+    print(dsp0.ADC.CONFIG)
 
-    print
+    print()
     dsp0.ADC.TAPS = 1234
     dsp0.MISC.STROBE = strobe

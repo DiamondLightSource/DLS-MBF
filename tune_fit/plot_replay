@@ -2,6 +2,8 @@
 
 # Plotting of fits
 
+from __future__ import print_function
+
 from mbf.requires import require
 
 require('matplotlib')
@@ -116,9 +118,9 @@ traces = replay.replay_s_iq(
     filter_trace if args.filter_trace else None)
 duration = time.time() - start_time
 if args.verbose:
-    print 'Took %.3f seconds, %.2f ms per fit' % (
-        duration, 1e3 * duration / len(s_iq))
-    print fitter.fits
+    print('Took %.3f seconds, %.2f ms per fit' % (
+        duration, 1e3 * duration / len(s_iq)))
+    print(fitter.fits)
 
 # If not plotting each individual fit, plot the final result.
 if not plot_each and args.plot:

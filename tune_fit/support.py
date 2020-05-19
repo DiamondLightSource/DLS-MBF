@@ -1,5 +1,7 @@
 # Miscellanous stuff.  This will probably be renamed to support in a bit.
 
+from __future__ import print_function
+
 import re
 import numpy
 
@@ -17,10 +19,10 @@ class Trace:
     def _print(self, indent = ''):
         for k, v in self.__dict__.items():
             if isinstance(v, Trace):
-                print '%s%s:' % (indent, k)
+                print('%s%s:' % (indent, k))
                 v._print(indent + '    ')
             else:
-                print '%s%s: %s' % (indent, k, v)
+                print('%s%s: %s' % (indent, k, v))
 
     @staticmethod
     def _is_trace_list(v):

@@ -47,7 +47,9 @@ begin
     clk <= not clk after 1 ns;
 
     -- Device under test
-    dsp96 : entity work.detector_dsp96 port map (
+    dsp96 : entity work.detector_dsp96 generic map (
+        WRITE_DELAY => 3
+    ) port map (
         clk_i => clk,
 
         data_i => data,

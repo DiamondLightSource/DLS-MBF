@@ -1,5 +1,7 @@
 #!/bin/env python
 
+from __future__ import print_function
+
 import sys
 import traceback
 import numpy
@@ -82,7 +84,7 @@ def replay_s_iq(s_iq, fit_tune, keep_traces, filter_trace=None):
         except KeyboardInterrupt:
             raise
         except:
-            print >>sys.stderr, 'Fit failed'
+            print('Fit failed', file = sys.stderr)
             traceback.print_exc()
 
         if filter_trace:

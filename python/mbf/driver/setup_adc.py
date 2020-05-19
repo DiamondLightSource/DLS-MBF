@@ -1,5 +1,7 @@
 # Configuration for Analog Devices AD9684 ADC.
 
+from __future__ import print_function
+
 import time
 import sys
 
@@ -12,9 +14,9 @@ def setup_adc(regs):
     assert status.DAC_OK, "DAC power good not detected"
     assert status.DSP_OK, "ADC clock not locked"
     if not status.PLL_LD2:
-        print >>sys.stderr, "Warning: VCO not locked"
+        print("Warning: VCO not locked", file=sys.stderr)
     if not status.PLL_LD1:
-        print >>sys.stderr, "Warning: clock not locked"
+        print("Warning: clock not locked", file=sys.stderr)
 
 
     # Start by resetting the ADC, must sleep for 5ms before doing anything more.

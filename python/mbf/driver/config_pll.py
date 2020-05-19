@@ -1,5 +1,7 @@
 # Helper file for PLL configuration
 
+from __future__ import print_function
+
 
 # This rather convoluted code is concerned with providing a bridge between the
 # nearly 300 field and register definitions for this device so that at the end
@@ -89,7 +91,7 @@ class FieldWriter(object):
         self.__registers[reg] = value
         if self.__live:
             if self.__verbose:
-                print 'PLL[%03x] <= %02x' % (self.__base + reg, value)
+                print('PLL[%03x] <= %02x' % (self.__base + reg, value))
             self.__PLL[self.__base + reg] = value
             self.__dirty.discard(reg)
         else:
@@ -100,7 +102,7 @@ class FieldWriter(object):
         if self.__live:
             value = self.__PLL[self.__base + reg]
             if self.__verbose:
-                print 'PLL[%03x] => %02x' % (self.__base + reg, value)
+                print('PLL[%03x] => %02x' % (self.__base + reg, value))
             self.__registers[reg] = value
             self.__dirty.discard(reg)
             return value

@@ -47,11 +47,13 @@
 #   field = (name, range, is_bit, rw, doc)
 #   register_array = (name, range, rw, doc)
 
+from __future__ import print_function
+
 import sys
 from collections import namedtuple, OrderedDict
 import re
 
-import indent
+from . import indent
 
 
 # ------------------------------------------------------------------------------
@@ -136,60 +138,60 @@ class PrintMethods(WalkParse):
 
     def __print_prefix(self, n, prefix):
         sys.stdout.write(n * '    ')
-        print prefix,
+        print(prefix, end = ' ')
 
     def __print_doc(self, n, doc):
         for d in doc:
             self.__print_prefix(n, '#')
-            print d
+            print(d)
 
     def __do_print(self, n, prefix, value, *fields):
         self.__print_doc(n, value.doc)
         self.__print_prefix(n, prefix)
-        print '%s%s' % (self.__name_prefix, value.name),
+        print('%s%s' % (self.__name_prefix, value.name), end = ' ')
         for field in fields:
-            print field,
+            print(field, end = ' ')
 
 
     # WalkParse interface methods
 
     def walk_register_array(self, n, array):
         self.__do_print(n, 'A', array, array.range, array.rw)
-        print
+        print()
 
     def walk_field(self, n, field):
         self.__do_print(n, 'F', field, field.range, field.is_bit, field.rw)
-        print
+        print()
 
     def walk_group(self, n, group):
         self.__do_print(n, 'G', group, group.range)
         if group.definition:
-            print ':', group.definition.name,
-        print
+            print(':', group.definition.name, end = ' ')
+        print()
         self.walk_subgroups(n + 1, group)
 
     def walk_register(self, n, reg):
         self.__do_print(n, 'R', reg, reg.offset, reg.rw)
         if reg.definition:
-            print ':', reg.definition.name,
-        print
+            print(':', reg.definition.name, end = ' ')
+        print()
         self.walk_fields(n + 1, reg)
 
     def walk_rw_pair(self, n, rw_pair):
         self.__print_prefix(n, 'P')
-        print
+        print()
         for reg in rw_pair.registers:
             self.walk_register(n + 1, reg)
 
     def walk_overlay(self, n, overlay):
         self.__do_print(n, 'O', overlay, overlay.offset, overlay.rw)
-        print
+        print()
         for reg in overlay.registers:
             self.walk_register(n + 1, reg)
 
     def walk_union(self, n, union):
         self.__do_print(n, 'U', union, union.range)
-        print
+        print()
         self.walk_subgroups(n + 1, union)
 
     def walk_constant(self, n, constant):
@@ -215,7 +217,7 @@ def print_parse(parse):
 
 
 def fail_parse(message, line_no):
-    print >>sys.stderr, 'Parse error: %s at line %d' % (message, line_no)
+    print('Parse error: %s at line %d' % (message, line_no), file = sys.stderr)
     sys.exit(1)
 
 def parse_int(value, line_no):
@@ -617,5 +619,5 @@ if __name__ == '__main__':
     indent_parse = indent.parse_file(file(sys.argv[1]))
     parse = parse(indent_parse)
     print_parse(parse)
-    print
+    print()
     print_parse(flatten(parse))

@@ -123,18 +123,23 @@ static uint64_t add_overflow_uint64_t(uint64_t a, uint64_t b, bool *overflow)
 
 static int64_t add_overflow_int64_t(int64_t a, int64_t b, bool *overflow)
 {
+    int64_t result;
+    bool ovf;
+#if __GNUC__ >= 5
+    /* From gcc version 5 and up we have a builtin for this operation. */
+    ovf = __builtin_add_overflow(a, b, &result);
+#else
     /* Writing C to work around this problem produces truly nasty code.
      * Fortunately the following assembler is pretty straightforward. */
-    int64_t result;
     __asm__(
         "movq    %[a], %[result]" "\n\t"
         "addq    %[b], %[result]" "\n\t"
-        "jno     1f" "\n\t"
-        "movb    $1, (%[overflow])" "\n"
-        "1:"
-        : [result] "=&r" (result), "+m" (*overflow)
-        : [a] "r" (a), [b] "r" (b), [overflow] "r" (overflow)
+        "seto    %[ovf]"
+        : [result] "=&r" (result), [ovf] "=r" (ovf)
+        : [a] "r" (a), [b] "r" (b)
         : "cc" );
+#endif
+    *overflow |= ovf;
     return result;
 }
 
