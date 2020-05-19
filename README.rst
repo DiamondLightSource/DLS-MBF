@@ -188,8 +188,8 @@ following changes have been implemented:
   by bunch FIR.
 
 
-1.4.2 April 2020
-................
+1.4.2 May 2020
+..............
 
 This release contains a bug fix to the string displayed in the ``:SEQ:MODE`` PV.
 Other changes include making the core Python scripts work with Python 3 and
