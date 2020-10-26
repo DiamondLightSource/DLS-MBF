@@ -6,8 +6,8 @@ try_max=120
 try_wait=3
 try_nbr=1
 
-mbf_esrf=/home/dserver/mbf/sites/ESRF
-mbf_tools=/home/dserver/mbf/tools
+mbf_esrf=/home/esrf/dserver/mbf/sites/ESRF
+mbf_tools=/home/esrf/dserver/mbf/tools
 
 case "$1" in
 

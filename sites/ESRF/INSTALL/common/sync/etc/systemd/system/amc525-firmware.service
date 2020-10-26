@@ -3,10 +3,11 @@ Description=ESRF Unit service load Xilinx firmware in FPGA
 
 Wants=network-online.target
 Wants=autofs.service
+Wants=home-esrf-dserver.mount
 
 After=network-online.target
-After=mntdirect-_operation_control.mount
-After=mntdirect-_users_dserver.mount
+After=home-esrf-dserver.mount
+After=host-startup.service
 
 Wants=amc525-driver.service
 After=amc525-driver.service
@@ -16,9 +17,9 @@ Before=tango-starter.service
 Type=simple
 RemainAfterExit=yes
 
-ExecStartPre=/home/dserver/script/amc525-firmware.sh startpre
+ExecStartPre=/home/esrf/dserver/script/amc525-firmware.sh startpre
 
-ExecStart=/home/dserver/script/amc525-firmware.sh start
+ExecStart=/home/esrf/dserver/script/amc525-firmware.sh start
 
 Restart=on-failure
 RestartSec=5

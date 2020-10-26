@@ -53,16 +53,15 @@ if [[ "$ENV" == "EMPTY" ]]; then
 fi
 
 # Symlink creation
-fn_create_link_file /home/dserver/mbf/sites/ESRF/CONFIG /home/dserver/mbf/CONFIG
-fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/.bashrc /home/dserver/
-fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/.mbf-env /home/dserver/
-fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/amc525-firmware.sh /home/dserver/script/
-fn_create_link_file /home/dserver/mbf/sites/ESRF/scripts/mbf-backup.sh /home/dserver/script/
-fn_create_link_file /home/dserver/mbf/sites/ESRF/tango/config.py.$HOSTNAME /home/dserver/mbf/tango/tools/config.py
+fn_create_link_file /home/esrf/dserver/mbf/sites/ESRF/CONFIG /home/esrf/dserver/mbf/CONFIG
+fn_create_link_file /home/esrf/dserver/mbf/sites/ESRF/scripts/.bashrc /home/esrf/dserver/
+fn_create_link_file /home/esrf/dserver/mbf/sites/ESRF/scripts/.mbf-env /home/esrf/dserver/
+fn_create_link_file /home/esrf/dserver/mbf/sites/ESRF/scripts/amc525-firmware.sh /home/esrf/dserver/script/
+fn_create_link_file /home/esrf/dserver/mbf/sites/ESRF/scripts/mbf-backup.sh /home/esrf/dserver/script/
 
 # Copy MBF file to host
-fn_sync_files /home/dserver/mbf/sites/ESRF/INSTALL/common/ /home/dserver/
-fn_sync_files /home/dserver/mbf/sites/ESRF/INSTALL/$HOSTNAME/ /home/dserver/
+fn_sync_files /home/dserver/mbf/sites/ESRF/INSTALL/common/ /home/esrf/dserver/
+fn_sync_files /home/dserver/mbf/sites/ESRF/INSTALL/$HOSTNAME/ /home/esrf/dserver/
 
 
 
