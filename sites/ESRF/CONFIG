@@ -11,7 +11,7 @@ INSTALL_TARGETS = $(DEFAULT_TARGETS)
 DRIVER_BUILD_DIR = /tmp/mbf/build
 
 # Place the FPGA build in /scratch
-FPGA_BUILD_DIR = /segfs/tango/cppserver/machine/diagnostic/MBF/build/fpga
+FPGA_BUILD_DIR = /users/beroche/Desktop/MBF-fpga/cleaning-sy
 
 # Definitions needed for FPGA build
 VIVADO = /cae/soft/viv174/Vivado/2017.4/settings64.sh

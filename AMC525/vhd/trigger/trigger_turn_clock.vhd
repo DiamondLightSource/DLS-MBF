@@ -33,11 +33,13 @@ architecture arch of trigger_turn_clock is
     signal start_sync : std_ulogic;
     signal read_sync : std_ulogic;
     signal zero_detect : boolean;
+    signal mod32_detect : boolean;
     signal bunch_counter : bunch_count_t := (others => '0');
     signal revolution_clock : std_ulogic := '0';
     signal sync_request : boolean := false;
     signal bunch_counter_delay : bunch_count_t := (others => '0');
     signal zero_detect_delay : boolean := false;
+    signal mod32_detect_delay : boolean := false;
     signal revolution_clock_delay : boolean := false;
     signal turn_clock : std_ulogic := '0';
 
@@ -64,6 +66,7 @@ begin
     );
 
     zero_detect <= bunch_counter = 0;
+    mod32_detect <= bunch_counter(4 downto 0) /= "00000";
 
     process (adc_clk_i) begin
         if rising_edge(adc_clk_i) then
@@ -77,7 +80,7 @@ begin
             end if;
 
             -- Bunch counter
-            if zero_detect or (sync_request and revolution_clock = '1') then
+            if zero_detect or (revolution_clock = '1') then
                 bunch_counter <= setup_i.max_bunch;
             else
                 bunch_counter <= bunch_counter - 1;
@@ -86,6 +89,7 @@ begin
 
             -- Clock phase check
             zero_detect_delay <= zero_detect;
+            mod32_detect_delay <= mod32_detect;
             revolution_clock_delay <= revolution_clock = '1';
 
             -- Output of turn clock
@@ -97,10 +101,19 @@ begin
                 turn_counter_out <= turn_counter;
                 error_counter_out <= error_counter;
                 turn_counter <= (others => '0');
-                error_counter <= (others => '0');
             elsif zero_detect_delay then
                 turn_counter <= turn_counter + 1;
-                if revolution_clock_delay /= zero_detect_delay then
+            end if;
+
+            -- Use sync button to reset error_counter
+            if sync_request then
+                error_counter <= (others => '0');
+            end if;
+
+            -- Check for an error when a revolution clock pulse occurs,
+            -- the definition of error is: bunch_counter is not a multiple of 32
+            if revolution_clock_delay then
+                if mod32_detect_delay then
                     error_counter <= error_counter + 1;
                 end if;
             end if;
@@ -111,7 +124,7 @@ begin
     -- Bring register readbacks onto DSP clock
     process (dsp_clk_i) begin
         if rising_edge(dsp_clk_i) then
-            readback_o.sync_busy <= to_std_ulogic(sync_request);
+            readback_o.sync_busy <= to_std_ulogic(false);
             readback_o.turn_counter <= turn_counter_out;
             readback_o.error_counter <= error_counter_out;
         end if;
