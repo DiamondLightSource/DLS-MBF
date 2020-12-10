@@ -6,8 +6,8 @@ source /opt/host/.mbf-env
 
 # Make sure state backup folder exists
 if [ -d /opt/host/mbf ]; then
-	[[ ! /opt/host/autosave/TMBF ]] && mkdir -p /opt/host/autosave/TMBF
-	[[ ! /opt/host/autosave/TFIT ]] && mkdir -p /opt/host/autosave/TFIT
+        [[ ! /opt/host/autosave/TMBF ]] && mkdir -p /opt/host/autosave/TMBF
+        [[ ! /opt/host/autosave/TFIT ]] && mkdir -p /opt/host/autosave/TFIT
 fi
 
 padding='                                        '

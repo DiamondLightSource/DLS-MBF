@@ -19,23 +19,6 @@ EPICS_HOST_ARCH=linux-x86_64
 #IP_ON_INTF=$(ip addr show enp1s0f3 | grep inet | cut -d' ' -f6 | cut -d'/' -f1)
 ORBendPoint=giop:tcp:160.103.10.64:
 
-PATH=/usr/local/bin:\
-/usr/bin:\
-/bin:\
-/bin/linux-x86_64:\
-/opt/puppetlabs/bin:\
-/opt/os/bin:\
-/opt/os/script:\
-/opt/os/util:\
-/opt/os/python/scripts:\
-/opt/os/epics/local:\
-/opt/os/epics/local/bin/linux-x86_64:\
-/operation/common/miniconda3/bin:\
-/operation/common/miniconda3/condabin:
+PATH=/opt/os/epics/local:bin/linux-x86_64:/opt/os/epics/local/bin/linux-x86_64:/operation/common/miniconda3/bin:/operation/common/miniconda3/condabin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/opt/os/bin:/opt/os/script:/opt/os/util:/opt/os/python/scripts:/opt/puppetlabs/bin
 
 CONDA_ENV=mbf
-
-# Line below for systemd conf
-LogLevelMax=4
-StandardOutput=null
-#StandardError=null

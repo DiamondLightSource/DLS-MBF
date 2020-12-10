@@ -12,20 +12,6 @@ mbf_tools=/opt/host/mbf/tools
 case "$1" in
 
    startpre)
-      #wait end of host-statup.service
-      # test=$(systemctl status host-startup.service | grep -qx "Active: active (exited)")
-      # while ! $test &> /dev/null ; do
-      #    echo "host-startup.service not ready" >&2
-      #    (( try_nbr++ ))
-      #    if [[ $try_nbr -le $try_max ]]; then
-      #       sleep $try_wait
-      #    else
-      #       echo "Fail to wait host-startup aborting"
-      #       exit 1
-      #    fi
-      # done
-
-
       if ! lspci -v | grep -q "Xilinx"; then
          echo "Xilinx not found, check AMC525 network availibility..."
          
