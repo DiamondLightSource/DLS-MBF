@@ -2,11 +2,13 @@
 # but it creates much more problems
 #[[ $- == *i* ]] && stty erase '^?'
 
-. ./.mbf-env
+source /opt/host/.mbf-env
 
 # Make sure state backup folder exists
-mkdir -p /home/dserver/autosave/TMBF
-mkdir -p /home/dserver/autosave/TFIT
+if [ -d /opt/host/mbf ]; then
+	[[ ! /opt/host/autosave/TMBF ]] && mkdir -p /opt/host/autosave/TMBF
+	[[ ! /opt/host/autosave/TFIT ]] && mkdir -p /opt/host/autosave/TFIT
+fi
 
 padding='                                        '
 PADDED_HOSTNAME=$(printf "%s %s" "$HOSTNAME" "${padding:${#HOSTNAME}}")

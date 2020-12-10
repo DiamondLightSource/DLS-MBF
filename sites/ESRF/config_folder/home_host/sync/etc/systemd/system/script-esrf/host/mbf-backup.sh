@@ -8,8 +8,8 @@ save_state () {
         fi
 }
 
-cd /home/dserver/autosave/TMBF
+cd /opt/host/autosave/TMBF
 save_state
-cd /home/dserver/autosave/TFIT
+cd /opt/host/autosave/TFIT
 save_state
 
