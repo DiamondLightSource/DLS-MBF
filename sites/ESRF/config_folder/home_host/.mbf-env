@@ -1,4 +1,4 @@
-TANGO_HOST=acs:10000,acs:11000
+TANGO_HOST=acs.esrf.fr:10000,acs.esrf.fr:11000
 LD_LIBRARY_PATH=/opt/os/lib:/opt/os/lib/classes:/lib:/usr/lib:/usr/local/lib:/opt/os/epics/local/lib/linux-x86_64
 
 EPICS_CA_MAX_ARRAY_BYTES=1048576
