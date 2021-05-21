@@ -10,7 +10,7 @@ def setup_adc(regs):
     # Check that the VCXO and ADC power good signals are ok
     status = regs.SYS.STATUS._fields
     assert status.VCXO_OK, "VCXO power good not detected"
-    assert status.ADC_OK, "ADC power good not detected"
+#    assert status.ADC_OK, "ADC power good not detected"
     assert status.DAC_OK, "DAC power good not detected"
     assert status.DSP_OK, "ADC clock not locked"
     if not status.PLL_LD2:
