@@ -327,7 +327,7 @@ static void hw_write_bunch_count(unsigned int bunches)
 {
     WITH_MUTEX(ctrl_lock)
     {
-        ctrl_mirror.trg_config_turn.max_bunch = (bunches - 1) & 0x3FF;
+        ctrl_mirror.trg_config_turn.max_bunch = (bunches - 1) & 0x7FF;
         WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
     }
 }
@@ -353,7 +353,7 @@ void hw_write_turn_clock_offset(unsigned int offset)
     ASSERT_OK(offset < hardware_config.bunches);
     WITH_MUTEX(ctrl_lock)
     {
-        ctrl_mirror.trg_config_turn.turn_offset = offset & 0x3FF;
+        ctrl_mirror.trg_config_turn.turn_offset = offset & 0x7FF;
         WRITEL(ctrl_regs->trg_config_turn, ctrl_mirror.trg_config_turn);
     }
 }
@@ -734,7 +734,7 @@ void hw_write_dac_delta_threshold(int axis, unsigned int delta)
 void hw_write_dac_delay(int axis, unsigned int delay)
 {
     WITH_MUTEX(dsp_locks[axis])
-        WRITE_DSP_MIRROR(axis, dac_config, .delay = delay & 0x3FF);
+        WRITE_DSP_MIRROR(axis, dac_config, .delay = delay & 0x7FF);
 }
 
 void hw_write_dac_fir_gain(int axis, uint16_t gain)
@@ -853,7 +853,7 @@ static void write_sequencer_super_entries(
 {
     WRITE_FIELDS(dsp_regs[axis]->seq_command, .write = 1);
     dsp_mirror[axis].seq_config.target = 2;
-    dsp_mirror[axis].seq_config.super_count = (super_count - 1) & 0x3FF;
+    dsp_mirror[axis].seq_config.super_count = (super_count - 1) & 0x7FF;
     WRITEL(dsp_regs[axis]->seq_config, dsp_mirror[axis].seq_config);
 
     /* When writing the offsets memory we have to write in reverse order to

@@ -5,7 +5,7 @@ from common import *
 import nco
 
 
-SUPER_SEQ_STATES = 1024
+SUPER_SEQ_STATES = 2048
 
 
 def bank_pvs(update_count):
