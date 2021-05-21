@@ -32,9 +32,23 @@ set_property FILE_TYPE "VHDL 2008" [get_files *.vhd]
 
 
 # Ensure we've read the block design and generated the associated files.
-read_bd interconnect/interconnect.bd
-make_wrapper -files [get_files interconnect/interconnect.bd] -top
+load_features ipintegrator
+set bd interconnect/interconnect.bd
+set bd_file [get_files $bd]
+
+read_bd $bd
+reset_target all $bd_file
+export_ip_user_files -of_objects  $bd_file -sync -no_script -force -quiet
+delete_ip_run [get_files -of_objects [get_fileset sources_1] $bd]
+set_property synth_checkpoint_mode None [get_files $bd]
+generate_target all $bd_file
+export_ip_user_files -of_objects $bd_file -no_script -sync -force -quiet
+
+make_wrapper -files [get_files $bd] -top
 add_files -norecurse interconnect/hdl/interconnect_wrapper.vhd
+
+update_compile_order -fileset sources_1
+
 
 # Load the constraints
 read_xdc built/top_pins.xdc
