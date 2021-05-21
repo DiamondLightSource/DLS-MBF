@@ -27,6 +27,7 @@ import time
 PLL_ratios = {
     # name        N1/R1 VCO D   P2  N2      R2
     '499_682' : ( 13,   0,  5,  2,  381,    61 ),   # DLS (post DDBA)
+    '499_624' : ( 13,   0,  5,  2,  331,    53 ),   # BESSY-II
     '352_202' : ( 9,    0,  7,  2,  339,    55 ),   # ESRF (pre upgrade)
     '352_372' : ( 9,    0,  7,  2,  37,     6 ),    # ESRF-EBS (post upgrade)
     '499_654' : ( 13,   0,  5,  2,  356,    57 ),   # ELETTRA
