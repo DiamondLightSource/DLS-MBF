@@ -408,9 +408,9 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             TURN        RW
                 # Configures the internal revolution clock frequency.  Set to
                 # the number of machine bunches-1
-                .MAX_BUNCH      10
+                .MAX_BUNCH      11
                 # Turn clock offset from sync trigger
-                .TURN_OFFSET    10
+                .TURN_OFFSET    11
 
             # Blanking window
             BLANKING    RW
@@ -595,7 +595,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             # Output to DAC configuration control
             CONFIG      W
                 # Output delay for final DAC output
-                .DELAY          10
+                .DELAY          11
                 # Gain for FIR output
                 .FIR_GAIN       4
                 # Select MMS source: before or after output FIR or a scaled
@@ -648,7 +648,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
                 # Set if sequencer busy
                 .BUSY
                 # Current super sequencer counter
-                .SUPER      10
+                .SUPER      11
             COMMAND     WP
                 # Interrupts sequencer if running and resets to state 0
                 .ABORT
@@ -661,7 +661,7 @@ FIRMWARE_COMPAT_UNSTABLE = 254
             # Sequencer state to generate trigger event
             .TRIGGER        3
             # Starting super sequencer counter when triggered
-            .SUPER_COUNT    10
+            .SUPER_COUNT    11
             # Identifies which memory block is written when writing to the WRITE
             # register:
             #
