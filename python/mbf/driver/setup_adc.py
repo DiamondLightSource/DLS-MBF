@@ -6,13 +6,13 @@ import time
 import sys
 
 
-def setup_adc(regs):
+def setup_adc(regs, passthrough):
     # Check that the VCXO and ADC power good signals are ok
     status = regs.SYS.STATUS._fields
     assert status.VCXO_OK, "VCXO power good not detected"
-#    assert status.ADC_OK, "ADC power good not detected"
+    assert status.ADC_OK, "ADC power good not detected"
     assert status.DAC_OK, "DAC power good not detected"
-    assert status.DSP_OK, "ADC clock not locked"
+    assert passthrough or status.DSP_OK, "ADC clock not locked"
     if not status.PLL_LD2:
         print("Warning: VCO not locked", file=sys.stderr)
     if not status.PLL_LD1:

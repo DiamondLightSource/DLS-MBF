@@ -268,8 +268,13 @@ class TuneMux:
 
     def update_pll(self, value):
         if self.selector.get() == self.SEL_TUNE_PLL:
-            self.tune.set(
-                value, severity = value.severity, timestamp = value.timestamp)
-            self.phase.set(
-                numpy.nan, severity = alarm.INVALID_ALARM,
-                timestamp = value.timestamp)
+            if numpy.isfinite(value):
+                self.tune.set(
+                    value, severity = value.severity,
+                    timestamp = value.timestamp)
+                self.phase.set(
+                    numpy.nan, severity = alarm.INVALID_ALARM,
+                    timestamp = value.timestamp)
+            else:
+                # On invalid tune reset selector to fitted
+                self.selector.set(self.SEL_FITTED)

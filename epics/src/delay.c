@@ -347,6 +347,10 @@ static void step_coarse_delay(void)
 
 static void reset_coarse_delay(void)
 {
+    /* In passthrough mode do nothing. */
+    if (clock_passthrough)
+        return;
+
     pll_sync();
     reset_dac_pll();
     WRITE_OUT_RECORD(ulongout, coarse_delay_pv, 0, false);

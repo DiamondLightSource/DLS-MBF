@@ -23,7 +23,8 @@ fi
 
 # Now pick up the version file.  This is in makefile format, so we get make to
 # convert it for us
-eval "$(make -C "$MBF_TOP" print_version --no-print-directory)"
+VERSION="$(make -C "$MBF_TOP" print_version --no-print-directory)"
+eval "$VERSION"
 
 cat <<EOF >"$TARGET_FILE"
 package version is

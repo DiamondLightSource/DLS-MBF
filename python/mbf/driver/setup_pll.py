@@ -82,7 +82,7 @@ def delayed_output(output):
 #   DCLKout0    => CLK1_M2C
 #   DCLKout12   => CLK0_M2C
 #
-def setup_reclocked(pll):
+def setup_common(pll):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Configure outputs for FMC 500.
 
@@ -97,6 +97,7 @@ def setup_reclocked(pll):
     pll.out12_13.SDCLK_FMT = Const.FMT_HSDS8    # S13 ADC CLK
 
 
+def setup_reclocked(pll):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Output configuration
 
@@ -253,6 +254,7 @@ def decode_mode(mode):
 def setup_pll(regs, mode):
     print('Setting clock mode', mode)
     pll = SettingsBase(regs.PLL_SPI)
+    setup_common(pll)
     if mode == 'Passthrough':
         setup_passthrough(pll)
     else:
