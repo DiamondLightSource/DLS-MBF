@@ -15,6 +15,7 @@ proc dirname {n path} {
 set src_dir [dirname 2 [file normalize [info script]]]
 set build_dir [dirname 3 [pwd]]
 set version_file "$build_dir/built/version.vhd"
+set seed_file "$build_dir/built/seed_file"
 
 # The following dance with `file mtime ...` is used to advise Vivado that
 # nothing has really changed.  This approach is described as a workaround by
@@ -25,6 +26,6 @@ set version_file "$build_dir/built/version.vhd"
 # really doesn't matter.
 set temp_time [file mtime $version_file]
 
-exec "$src_dir/tcl/make_version.sh" $version_file
+exec "$src_dir/tcl/make_version.sh" $version_file $seed_file
 
 file mtime $version_file $temp_time
