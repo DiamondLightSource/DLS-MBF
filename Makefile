@@ -39,7 +39,8 @@ DEFS_PATH = python/mbf/defs_path.py
 
 # The following targets are passed through to the FPGA build
 FPGA_TARGETS = \
-    fpga fpga_project runvivado edit_bd save_bd create_bd load_fpga fpga_built
+    fpga fpga_project runvivado edit_bd save_bd create_bd load_fpga fpga_built \
+    reseed
 .PHONY: $(FPGA_TARGETS)
 
 $(FPGA_TARGETS): $(FPGA_BUILD_DIR) $(DEFS_PATH)

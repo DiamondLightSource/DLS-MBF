@@ -8,6 +8,7 @@ use work.defines.all;
 use work.support.all;
 
 use work.register_defs.all;
+use work.version.all;
 
 entity system_registers is
     port (
@@ -84,6 +85,12 @@ begin
         data_i => status_read_data_i,
         data_o => status_read_data
     );
+
+    -- Seed register, read only
+    write_ack_o(SYS_SEED_VALUE_REG) <= '1';
+    read_data_o(SYS_SEED_VALUE_REG) <=
+        to_std_ulogic_vector(FPGA_SEED_VALUE, 32);
+    read_ack_o(SYS_SEED_VALUE_REG) <= '1';
 
     -- Control bits register
     control_inst : entity work.register_file port map (

@@ -202,6 +202,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     # Revolution clock IDELAY control
     :IDELAY     REV_IDELAY
 
+    # This register exists purely so that we can reseed the FPGA build in order
+    # to search for timing closure.
+    SEED_VALUE  R
+
 
 # These occupy addresses 0x2000..02x7FF
 #
