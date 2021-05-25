@@ -8,6 +8,9 @@
 *.pyc
 *~
 *.state
+*.bak
+*.cmd
+*.o
 
 # Site configuration files built by the top level Makefile
 /python/mbf/defs_path.py
