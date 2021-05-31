@@ -15,7 +15,7 @@ create_project amc525_mbf amc525_mbf -part xc7vx690tffg1761-2
 
 set_param project.enableVHDL2008 1
 set_property target_language VHDL [current_project]
-set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
+#set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
 
 # Ensure undriven pins are treated as errors
 #set_msg_config -id "Synth 8-3295" -new_severity ERROR
@@ -32,19 +32,15 @@ set_property FILE_TYPE "VHDL 2008" [get_files *.vhd]
 
 
 # Ensure we've read the block design and generated the associated files.
-## make bd commands accessible
 load_features ipintegrator
 set bd interconnect/interconnect.bd
 set bd_file [get_files $bd]
 
 read_bd $bd
-## reset output produas a precaution
 reset_target all $bd_file
 export_ip_user_files -of_objects  $bd_file -sync -no_script -force -quiet
 delete_ip_run [get_files -of_objects [get_fileset sources_1] $bd]
-## set global synthesis
 set_property synth_checkpoint_mode None [get_files $bd]
-## generate output products for the block diagram
 generate_target all $bd_file
 export_ip_user_files -of_objects $bd_file -no_script -sync -force -quiet
 
@@ -78,6 +74,7 @@ set_property flow {Vivado Implementation 2019} [get_runs impl_1]
 set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
 set_property STEPS.OPT_DESIGN.ARGS.DIRECTIVE ExploreSequentialArea \
     [get_runs impl_1]
+set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE ExtraPostPlacementOpt [get_runs impl_1]
 
 launch_runs impl_1 -to_step write_bitstream -jobs 6
 wait_on_run impl_1
