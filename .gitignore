@@ -3,7 +3,7 @@
 
 # Default build directory
 /build
-
+/AMC525/built
 # Miscellaneous scattered built files
 *.pyc
 *~
@@ -12,6 +12,8 @@
 *.cmd
 *.o
 *.log
+*.jou
+*.str
 # Site configuration files built by the top level Makefile
 /python/mbf/defs_path.py
 /epics/configure/RELEASE
