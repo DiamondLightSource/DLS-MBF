@@ -94,13 +94,10 @@ static error__t do_parse_line(
         DO(skip_whitespace(&string))  ?:
         parse_eos(&string);
 
-    /* Report parse error. */
-    if (error)
-        error_extend(error, "Error parsing %s, line %d, offset %zd",
-            file_name, line_number, string - line_buffer);
-
     return
-        error ?:
+        /* Report parse error. */
+        error_extend(error, "Error parsing %s, line %d, offset %zd",
+            file_name, line_number, string - line_buffer)  ?:
         /* Perform post parse validation. */
         TEST_OK_(!seen[ix],
             "Parameter %s repeated on line %d", name, line_number)  ?:

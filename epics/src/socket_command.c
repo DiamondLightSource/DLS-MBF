@@ -35,9 +35,7 @@ static error__t fixup_parse_error(
     /* For the offset take account of the leading command character and any
      * preceding R mark. */
     ssize_t offset = parsed - command + 1 + raw_mode;
-    if (error)
-        error_extend(error, "Parse error at offset %zu", offset);
-    return error;
+    return error_extend(error, "Parse error at offset %zu", offset);
 }
 
 
