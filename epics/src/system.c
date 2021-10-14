@@ -72,9 +72,18 @@ static error__t get_hostname(char name[], size_t length)
 
 static error__t get_driver_version(EPICS_STRING *version)
 {
-    FILE *file = fopen("/sys/module/amc525_mbf/version", "r");
+    /* For backwards compatibility with the original amc525_mbf driver, look in
+     * two separate places for the driver. */
+    static const char *version_paths[] = {
+        "/sys/module/amc_pci/version",      // Preferred new driver
+        "/sys/module/amc525_mbf/version",   // Legacy driver
+    };
+
+    FILE *file = NULL;
+    for (size_t i = 0; file == NULL  &&  i < ARRAY_SIZE(version_paths); i++)
+        file = fopen(version_paths[i], "r");
     return
-        TEST_OK(file)  ?:
+        TEST_OK_(file, "Unable to open driver version node")  ?:
         DO_FINALLY(
             TEST_OK(fgets(version->s, sizeof(version->s), file))  ?:
             DO(*strchrnul(version->s, '\n') = '\0'),
