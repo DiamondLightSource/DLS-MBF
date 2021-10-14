@@ -14,7 +14,7 @@ LM_LICENSE_FILE = \
     1717@diamcslicserv01.dc.diamond.ac.uk
 
 # Server to connect to for loading FPGA image followed by IP of card
-AMC525_SERVER = ts-di-mserv-02 199
+AMC525_SERVER = ts-di-mserv-01 199
 
 
 # Definitions needed for EPICS driver build
