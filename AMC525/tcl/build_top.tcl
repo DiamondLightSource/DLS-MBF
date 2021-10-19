@@ -15,7 +15,6 @@ create_project amc525_mbf amc525_mbf -part xc7vx690tffg1761-2
 
 set_param project.enableVHDL2008 1
 set_property target_language VHDL [current_project]
-set_msg_config -severity "CRITICAL WARNING" -new_severity ERROR
 
 # Ensure undriven pins are treated as errors
 #set_msg_config -id "Synth 8-3295" -new_severity ERROR
