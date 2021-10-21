@@ -563,6 +563,28 @@ static void write_gains(void *context, float gains[], unsigned int *length)
 }
 
 
+static void update_waveform_all(struct epics_record *record, bool value)
+{
+    unsigned int bunches = hardware_config.bunches;
+    char waveform[bunches];
+    memset(waveform, value, bunches);
+    WRITE_OUT_RECORD_WF(char, record, waveform, bunches, true);
+}
+
+static bool set_enables_all(void *context, bool *_value)
+{
+    struct bunch_source *source = context;
+    update_waveform_all(source->enables, true);
+    return true;
+}
+
+static bool reset_enables_all(void *context, bool *_value)
+{
+    struct bunch_source *source = context;
+    update_waveform_all(source->enables, false);
+    return true;
+}
+
 static bool set_enables(void *context, bool *_value)
 {
     struct bunch_source *source = context;
@@ -624,6 +646,8 @@ static void publish_bank_source(
     source->gains = PUBLISH_WAVEFORM(float, "GAIN", bunches,
         write_gains, .context = source, .persist = true);
 
+    PUBLISH_C(bo, "SET_ENABLE_ALL", set_enables_all, source);
+    PUBLISH_C(bo, "SET_DISABLE_ALL", reset_enables_all, source);
     PUBLISH_C(bo, "SET_ENABLE", set_enables, source);
     PUBLISH_C(bo, "SET_DISABLE", reset_enables, source);
     PUBLISH_WRITE_VAR(ao, "GAIN_SELECT", source->gain_select);

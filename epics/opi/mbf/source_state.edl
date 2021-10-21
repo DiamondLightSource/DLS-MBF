@@ -202,7 +202,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):$(axis):BUN:$(bank):$(source):SET_ENABLE_S.PROC"
+controlPv "$(device):$(axis):BUN:$(bank):$(source):SET_ENABLE_ALL_S.PROC"
 pressValue "0"
 onLabel "On"
 offLabel "On"
@@ -225,7 +225,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):$(axis):BUN:$(bank):$(source):SET_DISABLE_S.PROC"
+controlPv "$(device):$(axis):BUN:$(bank):$(source):SET_DISABLE_ALL_S.PROC"
 pressValue "0"
 onLabel "Off"
 offLabel "Off"
