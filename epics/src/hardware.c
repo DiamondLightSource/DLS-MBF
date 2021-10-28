@@ -151,6 +151,7 @@ void hw_read_fpga_version(struct fpga_version *version)
         .firmware = sys_version.firmware,
         .git_sha = git_version.sha,
         .git_dirty = git_version.dirty,
+        .build_seed = READL(sys_regs->seed_value),
     };
 }
 

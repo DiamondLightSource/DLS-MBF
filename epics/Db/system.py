@@ -11,6 +11,7 @@ with name_prefix('INFO'):
     stringIn('GIT_VERSION', PINI = 'YES', DESC = 'Software git version')
     stringIn('FPGA_VERSION', PINI = 'YES', DESC = 'Firmware version')
     stringIn('FPGA_GIT_VERSION', PINI = 'YES', DESC = 'Firmware git version')
+    longIn('FPGA_SEED', PINI = 'YES', DESC = 'Firmware build seed')
     stringIn('DRIVER_VERSION', PINI = 'YES', DESC = 'Kernel driver version')
 
     Waveform('HOSTNAME', 256,

@@ -63,6 +63,7 @@ struct fpga_version {
     unsigned int firmware;
     unsigned int git_sha;
     bool git_dirty;
+    unsigned int build_seed;
 };
 
 /* Returns firmware version code from FPGA. */

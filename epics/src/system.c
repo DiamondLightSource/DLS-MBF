@@ -56,6 +56,7 @@ static EPICS_STRING version_string = { MBF_VERSION };
 static EPICS_STRING git_version_string = { GIT_VERSION };
 static EPICS_STRING fpga_version = { };
 static EPICS_STRING fpga_git_version = { };
+static unsigned int fpga_seed;
 static EPICS_STRING driver_version = { };
 static char hostname[256];
 static EPICS_STRING device_name;
@@ -101,6 +102,7 @@ static error__t initialise_constants(void)
         PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
         PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
         PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
+        PUBLISH_READ_VAR(ulongin, "FPGA_SEED", fpga_seed);
         PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
         PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
         PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
@@ -117,6 +119,7 @@ static error__t initialise_constants(void)
     format_epics_string(&device_name, "%s", system_config.device_address);
     log_message("FPGA version %s, git %s, API %d",
         fpga_version.s, fpga_git_version.s, fpga.firmware);
+    fpga_seed = fpga.build_seed;
 
     return
         get_hostname(hostname, sizeof(hostname))  ?:
