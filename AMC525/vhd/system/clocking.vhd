@@ -34,12 +34,6 @@ entity clocking is
         -- coming out of nCOLDRST).
         dsp_reset_n_o : out std_ulogic;
 
-        -- Register control interface: one register for clock management.  The
-        -- register interface is clocked by ref_clk_o
-        write_strobe_i : in std_ulogic;
-        write_data_i : in reg_data_t;
-        read_data_o : out reg_data_t;
-
         -- This is a diagnostic signal, shouldn't need to be checked!
         adc_pll_ok_o : out std_ulogic
     );
@@ -48,7 +42,6 @@ end;
 architecture arch of clocking is
     -- Processed incoming signals
     signal clk125mhz : std_ulogic;
-    signal adc_dco_delay : std_ulogic;
 
     -- Generated clocks
     signal ref_clk_pll : std_ulogic;
@@ -70,7 +63,6 @@ architecture arch of clocking is
     signal ref_pll_ok : std_ulogic;
 
     -- ADC clock PLL
-    signal adc_pll_reset_request : std_ulogic;
     signal adc_pll_reset_timer : unsigned(2 downto 0);
     signal adc_pll_reset : std_ulogic := '1';
     signal adc_pll_feedback : std_ulogic;
@@ -80,26 +72,10 @@ architecture arch of clocking is
 
     signal read_data : reg_data_t;
 
+    -- This function is not currently available
+    signal adc_pll_reset_request : std_ulogic := '0';
+
 begin
-    -- ADC PLL reset request
-    adc_pll_reset_request <=
-        write_data_i(SYS_ADC_IDELAY_PLL_LOCK_BIT) and write_strobe_i;
-
-    -- Programmable delay for adc_dco input
-    idelay_inst : entity work.idelay_control port map (
-        ref_clk_i => ref_clk,
-        signal_i => adc_dco_i,
-        signal_o => adc_dco_delay,
-
-        write_strobe_i => write_strobe_i,
-        write_data_i => write_data_i,
-        read_data_o => read_data
-    );
-
-    -- Add our ADC PLL lock status to the IDELAY readback
-    read_data_o(30 downto 0) <= read_data(30 downto 0);
-    read_data_o(SYS_ADC_IDELAY_PLL_LOCK_BIT) <= not dsp_clk_ok;
-
     -- We do seem to need this IDELAYCTRL instance so that our IDELAYE2 works.
     idelayctrl_inst : IDELAYCTRL port map (
         REFCLK => ref_clk,
@@ -197,7 +173,7 @@ begin
         CLKOUT1_DIVIDE => 6     -- DSP clock at 250 MHz
     ) port map (
         -- Inputs
-        CLKIN1  => adc_dco_delay,
+        CLKIN1  => adc_dco_i,
         CLKFBIN => adc_pll_feedback_bufg,
         RST     => adc_pll_reset,
         PWRDWN  => '0',

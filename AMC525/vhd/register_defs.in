@@ -23,11 +23,12 @@
 # 1     Adds Tune PLL support, used for MBF 1.2 release
 # 2     MBF 1.4.0 release: two fixed NCOs with scaling and tune tracking
 # 3     MBF 1.4.1 release: detailed individual bunch by bunch scaling
+# 4     (Work in progress: extra bunches, seed register)
 # 254   Use this for unstable MBF firmware versions under development
 # 255   Reserved for non MBF firmware with kernel driver compatibility.  Do not
 #       use for any version of MBF firmware
 # ===== ========================================================================
-FIRMWARE_COMPAT_VERSION = 3
+FIRMWARE_COMPAT_VERSION = 4
 
 ## Do not change this value, leave equal to 254
 FIRMWARE_COMPAT_UNSTABLE = 254
@@ -177,8 +178,6 @@ FIRMWARE_COMPAT_UNSTABLE = 254
     # ADC DCO IDELAY control.  Used to control phase between ADC DDR data input
     # and data capture clock.
     :IDELAY     ADC_IDELAY
-        # Set if ADC PLL not locked, write to trigger reset of ADC PLL.
-        .PLL_LOCK   @31     RW
 
     # FMC500 SPI control.  Reads and writes to the three SPI devices on the
     # FMC500M ADC/DAC card.

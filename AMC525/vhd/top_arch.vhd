@@ -287,18 +287,14 @@ begin
         reg_clk_ok_o => reg_clk_ok,
         dsp_reset_n_o => dsp_reset_n,
 
-        write_strobe_i => adc_idelay_write_strobe,
-        write_data_i => adc_idelay_write_data,
-        read_data_o => adc_idelay_read_data,
-
         adc_pll_ok_o => adc_pll_ok
     );
 
     -- Controllable delay for revolution clock
     rev_clk_idelay : entity work.idelay_control port map (
         ref_clk_i => ref_clk,
-        signal_i => fast_ext_trigger,
-        signal_o => revolution_clock,
+        signal_i(0) => fast_ext_trigger,
+        signal_o(0) => revolution_clock,
         write_strobe_i => rev_idelay_write_strobe,
         write_data_i => rev_idelay_write_data,
         read_data_o => rev_idelay_read_data
@@ -562,6 +558,7 @@ begin
     fmc500m_top : entity work.fmc500m_top port map (
         adc_clk_i => adc_clk,
         reg_clk_i => reg_clk,
+        ref_clk_i => ref_clk,
 
         FMC_LA_P => FMC1_LA_P,
         FMC_LA_N => FMC1_LA_N,
@@ -574,6 +571,10 @@ begin
         spi_read_strobe_i => fmc500m_spi_read_strobe,
         spi_read_data_o => fmc500m_spi_read_data,
         spi_read_ack_o => fmc500m_spi_read_ack,
+
+        adc_idelay_write_strobe_i => adc_idelay_write_strobe,
+        adc_idelay_write_data_i => adc_idelay_write_data,
+        adc_idelay_read_data_o => adc_idelay_read_data,
 
         adc_dco_o => adc_dco,
         adc_data_a_o => dsp_adc_data(0),
