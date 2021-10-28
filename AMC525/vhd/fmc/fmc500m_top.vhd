@@ -31,8 +31,6 @@ entity fmc500m_top is
         adc_dco_o : out std_ulogic;      -- Raw data clock from ADC
         adc_data_a_o : out signed;
         adc_data_b_o : out signed;
-        adc_status_a_o : out std_ulogic;
-        adc_status_b_o : out std_ulogic;
 
         -- DAC clock and data (clocked by ADC clock)
         dac_data_a_i : in signed;
@@ -69,7 +67,6 @@ architecture arch of fmc500m_top is
 
     -- ADC
     signal adc_data : std_ulogic_vector(13 downto 0);
-    signal adc_status : std_ulogic;
     signal adc_fd_a : std_ulogic;
     signal adc_fd_b : std_ulogic;
     signal adc_spi_csn : std_ulogic;
@@ -126,7 +123,6 @@ begin
         -- ADC
         adc_dco_o => adc_dco_o,
         adc_data_o => adc_data,
-        adc_status_o => adc_status,
         adc_fd_a_o => adc_fd_a,
         adc_fd_b_o => adc_fd_b,
         adc_spi_csn_i => adc_spi_csn,
@@ -197,12 +193,6 @@ begin
         d_i => adc_data,
         signed(q1_o) => adc_data_a_o,
         signed(q2_o) => adc_data_b_o
-    );
-    adc_status_inst : entity work.iddr_array port map (
-        clk_i => adc_clk_i,
-        d_i(0) => adc_status,
-        q1_o(0) => adc_status_a_o,
-        q2_o(0) => adc_status_b_o
     );
 
     -- DDR data to DAC output

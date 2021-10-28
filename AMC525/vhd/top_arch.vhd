@@ -133,7 +133,6 @@ architecture arch of top is
     -- Connections to FMC500M on FMC0
     signal adc_dco : std_ulogic;
     signal dsp_adc_data : signed_array(CHANNELS)(13 downto 0);
-    signal dsp_adc_status : std_ulogic_vector(CHANNELS);
     signal dsp_dac_data : signed_array(CHANNELS)(15 downto 0);
     signal fast_ext_trigger : std_ulogic;
     signal fmc500_outputs : fmc500_outputs_t;
@@ -579,8 +578,6 @@ begin
         adc_dco_o => adc_dco,
         adc_data_a_o => dsp_adc_data(0),
         adc_data_b_o => dsp_adc_data(1),
-        adc_status_a_o => dsp_adc_status(0),
-        adc_status_b_o => dsp_adc_status(1),
 
         dac_data_a_i => dsp_dac_data(0),
         dac_data_b_i => dsp_dac_data(1),
