@@ -104,11 +104,22 @@ static const struct config_entry system_config_entries[] = {
 
 static unsigned int convert_field(unsigned int value)
 {
+    /* As noted above, the incoming values started life as signed numbers and
+     * were read as such into unsigned int fields.  Here we cast back to the
+     * original value. */
     int result = (int) value;
+    int bunches_per_turn = (int) system_config.bunches_per_turn;
+
+    /* We simply want to convert each number into its remainder modulo the
+     * number of bunches per turn, but negative numbers will need special
+     * treatment. */
     if (result < 0)
-        result += (int) system_config.bunches_per_turn;
-    ASSERT_OK(0 <= result  &&  result < (int) system_config.bunches_per_turn);
-    return (unsigned int) result;
+        /* A tricksy dance to ensure that we compute the remainder using
+         * positive numbers, but come out with the correct remainder. */
+        return (unsigned int) (
+            bunches_per_turn - 1 - ((-result - 1) % bunches_per_turn));
+    else
+        return (unsigned int) (result % bunches_per_turn);
 }
 
 
