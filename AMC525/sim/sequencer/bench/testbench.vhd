@@ -244,7 +244,7 @@ begin
             dwell => X"0001", capture => X"0002",
             bank => "01", gain => 18X"3FFFF", en_write => '1');
         -- Load two super sequencer states
-        write_config(target => "10", super => 10X"001");
+        write_config(target => "10", super => 11X"001");
         start_write;
         write_super(X"1111_2222_0000");
         write_super(X"2222_1111_0000");

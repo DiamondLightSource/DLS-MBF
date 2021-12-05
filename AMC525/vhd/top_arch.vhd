@@ -133,7 +133,6 @@ architecture arch of top is
     -- Connections to FMC500M on FMC0
     signal adc_dco : std_ulogic;
     signal dsp_adc_data : signed_array(CHANNELS)(13 downto 0);
-    signal dsp_adc_status : std_ulogic_vector(CHANNELS);
     signal dsp_dac_data : signed_array(CHANNELS)(15 downto 0);
     signal fast_ext_trigger : std_ulogic;
     signal fmc500_outputs : fmc500_outputs_t;
@@ -288,18 +287,14 @@ begin
         reg_clk_ok_o => reg_clk_ok,
         dsp_reset_n_o => dsp_reset_n,
 
-        write_strobe_i => adc_idelay_write_strobe,
-        write_data_i => adc_idelay_write_data,
-        read_data_o => adc_idelay_read_data,
-
         adc_pll_ok_o => adc_pll_ok
     );
 
     -- Controllable delay for revolution clock
     rev_clk_idelay : entity work.idelay_control port map (
         ref_clk_i => ref_clk,
-        signal_i => fast_ext_trigger,
-        signal_o => revolution_clock,
+        signal_i(0) => fast_ext_trigger,
+        signal_o(0) => revolution_clock,
         write_strobe_i => rev_idelay_write_strobe,
         write_data_i => rev_idelay_write_data,
         read_data_o => rev_idelay_read_data
@@ -563,6 +558,7 @@ begin
     fmc500m_top : entity work.fmc500m_top port map (
         adc_clk_i => adc_clk,
         reg_clk_i => reg_clk,
+        ref_clk_i => ref_clk,
 
         FMC_LA_P => FMC1_LA_P,
         FMC_LA_N => FMC1_LA_N,
@@ -576,11 +572,13 @@ begin
         spi_read_data_o => fmc500m_spi_read_data,
         spi_read_ack_o => fmc500m_spi_read_ack,
 
+        adc_idelay_write_strobe_i => adc_idelay_write_strobe,
+        adc_idelay_write_data_i => adc_idelay_write_data,
+        adc_idelay_read_data_o => adc_idelay_read_data,
+
         adc_dco_o => adc_dco,
         adc_data_a_o => dsp_adc_data(0),
         adc_data_b_o => dsp_adc_data(1),
-        adc_status_a_o => dsp_adc_status(0),
-        adc_status_b_o => dsp_adc_status(1),
 
         dac_data_a_i => dsp_dac_data(0),
         dac_data_b_i => dsp_dac_data(1),

@@ -6,6 +6,9 @@ set -e
 
 # First argument specifies where to place the file we're going to build
 TARGET_FILE="${1?:Must specify target file}"
+SEED_FILE="${2?:Must specify seed file}"
+
+SEED_VALUE="$(cat "$SEED_FILE")"
 
 MBF_TOP="$(dirname "$0")"/../..
 
@@ -23,7 +26,8 @@ fi
 
 # Now pick up the version file.  This is in makefile format, so we get make to
 # convert it for us
-eval "$(make -C "$MBF_TOP" print_version --no-print-directory)"
+VERSION="$(make -C "$MBF_TOP" print_version --no-print-directory)"
+eval "$VERSION"
 
 cat <<EOF >"$TARGET_FILE"
 package version is
@@ -32,5 +36,6 @@ package version is
     constant VERSION_MAJOR : natural := $VERSION_MAJOR;
     constant VERSION_MINOR : natural := $VERSION_MINOR;
     constant VERSION_PATCH : natural := $VERSION_PATCH;
+    constant FPGA_SEED_VALUE : natural := $SEED_VALUE;
 end;
 EOF

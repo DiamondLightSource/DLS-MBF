@@ -30,7 +30,7 @@ package defines is
     -- This determines the maximum number of bunches in a machine turn, equal to
     -- 2**BUNCH_NUM_BITS.  At DLS with our 936 bunches a value of 10 is
     -- sufficient.
-    constant BUNCH_NUM_BITS : natural := 10;
+    constant BUNCH_NUM_BITS : natural := 11;
     subtype bunch_count_t is unsigned(BUNCH_NUM_BITS-1 downto 0);
 
 end;

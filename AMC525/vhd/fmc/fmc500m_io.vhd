@@ -41,7 +41,6 @@ entity fmc500m_io is
         -- Data and clocking
         adc_dco_o : out std_ulogic;          -- Will be master DSP clock
         adc_data_o : out std_ulogic_vector(13 downto 0);
-        adc_status_o : out std_ulogic;
         adc_fd_a_o : out std_ulogic;
         adc_fd_b_o : out std_ulogic;
         -- SPI
@@ -199,7 +198,7 @@ begin
     -- ADC overflow detect signal
     adc_status_inst : entity work.ibufds_array port map (
         p_i(0)  => FMC_LA_P(14),    n_i(0)  => FMC_LA_N(14),
-        o_o(0) => adc_status_o
+        o_o(0) => open      -- Not used
     );
     -- Fast detect inputs
     adc_fd_a_inst : entity work.ibuf_array port map (

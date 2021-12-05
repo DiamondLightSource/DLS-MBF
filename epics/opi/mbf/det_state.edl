@@ -129,12 +129,6 @@ numDsps 1
 displayFileName {
   0 "mbf/det_bunches.edl"
 }
-symbols {
-  0 "device=$(device),axis=$(axis),det=DET:$(det)"
-}
-replaceSymbols {
-  0 1
-}
 endObjectProperties
 
 # (Menu Button)

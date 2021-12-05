@@ -6,6 +6,8 @@ endif
 
 include $(MBF_TOP)/Makefile.common
 
+SEED_VALUE ?= 0
+
 # Command to run vivado
 RUN_VIVADO = source $(VIVADO) && vivado
 
@@ -25,6 +27,7 @@ BUILT_FILES += built/register_defs.vhd
 BUILT_FILES += built/nco_cos_sin_table.vhd
 BUILT_FILES += built/version.vhd
 BUILT_FILES += built/cordic_table.vhd
+BUILT_FILES += built/seed_file
 
 SOURCES += $(wildcard $(SRCDIR)/vhd/*.vhd)
 SOURCES += $(wildcard $(SRCDIR)/vhd/*/*.vhd)
@@ -54,12 +57,20 @@ built/top_entity.vhd: constr/signals constr/pins constr/used
 	mkdir -p built
 	cd built  &&  $(PYTHON) $(PYTHONDIR)/make_entity.py $^ top
 
-built/version.vhd: $(MBF_TOP)/VERSION
-	$(TCLDIR)/make_version.sh $@
+built/version.vhd: built/seed_file $(MBF_TOP)/VERSION
+	$(TCLDIR)/make_version.sh $@ $<
 
 # Other generated vhd files
 built/%.vhd: %.py %.in
 	$(PYTHON) $^ >$@
+
+built/seed_file:
+	echo "$(SEED_VALUE)" >$@
+
+reseed:
+	echo "$(SEED_VALUE)" >built/seed_file
+	touch built/version.vhd
+.PHONY: reseed
 
 # Build final target
 amc525_mbf.bit: $(BUILT_FILES) $(INTERCONNECT_BD) $(SOURCES)

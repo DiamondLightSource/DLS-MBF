@@ -1,0 +1,39 @@
+# Configuration settings for building at DLS
+
+SITE = BESSY-II
+
+# Place the FPGA build in /tmp
+FPGA_BUILD_DIR = /tmp/MBF/build/fpga
+# No sim so far
+SIM_BUILD_DIR = 
+
+# Definitions needed for FPGA build
+VIVADO = /opt/Xilinx/Vivado/2019.2/settings64.sh
+# No sim so far
+VSIM = 
+
+# Licnsese File location
+LM_LICENSE_FILE = 3700@divlicense2.basisit.de
+
+# Server to connect to for loading FPGA image followed by IP of card
+AMC525_SERVER = mb1qs7g 199
+
+
+# Definitions needed for EPICS driver build
+#
+EPICS_DEVICE = /home/guenther/epics_device
+EPICS_BASE = /home/guenther/base-3.14.12.8
+
+# The next one breaks compiling on Ubuntu 18.4
+#CFLAGS_EXTRA += -Werror
+
+# Permissions for the driver
+DRV_GROUP = 4
+
+# Location of Matlab compiler
+MEX = /home/guenther/bin/mex
+
+# Path to Python Soft IOC
+PYTHON_IOC = /home/guenther/pythonIoc
+
+# vim: set filetype=make:

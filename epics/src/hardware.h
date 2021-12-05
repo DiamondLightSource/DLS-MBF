@@ -5,7 +5,7 @@
 #define BUNCH_BANKS         4       // Four selectable bunch configurations
 #define DETECTOR_COUNT      4       // Four independed detectors
 #define MAX_SEQUENCER_COUNT 7       // Steps in sequencer, not counting state 0
-#define SUPER_SEQ_STATES    1024    // Max super sequencer states
+#define SUPER_SEQ_STATES    2048    // Max super sequencer states
 #define DET_WINDOW_LENGTH   1024    // Length of sequencer detector window
 
 #define DRAM0_LENGTH        0x80000000U     // 2GB
@@ -63,6 +63,7 @@ struct fpga_version {
     unsigned int firmware;
     unsigned int git_sha;
     bool git_dirty;
+    unsigned int build_seed;
 };
 
 /* Returns firmware version code from FPGA. */

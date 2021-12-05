@@ -33,8 +33,10 @@ AMC525_IPS=("$@")
 USERS="$(lsof -t /dev/amc525_mbf.* 2>/dev/null)" || true
 [[ -n $USERS ]]  &&  kill -9 $USERS
 
+SSH_OPTS='-o StrictHostKeyChecking=no'
+
 for ip in "${AMC525_IPS[@]}"; do
     ip=192.168.40.$ip
-    scp "$BIT_FILE" root@$ip:/tmp/amc525_mbf.bit
-    ssh -x root@$ip amc525_lbtool fpga_load /tmp/amc525_mbf.bit
+    scp $SSH_OPTS "$BIT_FILE" root@$ip:/tmp/amc525_mbf.bit
+    ssh -x $SSH_OPTS root@$ip amc525_lbtool fpga_load /tmp/amc525_mbf.bit
 done

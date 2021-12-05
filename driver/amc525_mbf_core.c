@@ -27,23 +27,6 @@ MODULE_DESCRIPTION("Driver for MBF AMC525 FPGA MTCA card");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(S(VERSION));
 
-/* The following module alias supports the automatic loading of this kernel
- * module at system boot.  As documented at
- *  https://wiki.archlinux.org/index.php/Modalias
- *
- * we have the following fields here:
- *  v  000010EE     Vendor ID (Xilinx)
- *  d  00007038     Device ID (Xilinx default: PCIe3 8 lanes)
- *  sv 000010EE     Subsystem Vendor ID, also default
- *  sd 00000007     Subsystem ID
- *  bc 11           Base Class (Signal processing controller)
- *  sc 80           Subclass (Signal processing controller)
- *  i  00           Interface code
- *
- * This alias needs to match the settings in the pci_driver .id_table below in
- * this file, and the definitions in the the block device definition in
- * AMC525/bd/interconnect.tcl. */
-MODULE_ALIAS("pci:v000010EEd00007038sv000010EEsd00000007bc11sc80i00");
 
 /* Card identification. */
 #define XILINX_VID      0x10EE
@@ -402,12 +385,16 @@ static void amc525_mbf_remove(struct pci_dev *pdev)
 }
 
 
+static struct pci_device_id amc525_pci_ids[] = {
+    { PCI_DEVICE_SUB(XILINX_VID, AMC525_DID, XILINX_VID, AMC525_SID) },
+    { 0 }
+};
+
+MODULE_DEVICE_TABLE(pci, amc525_pci_ids);
+
 static struct pci_driver amc525_mbf_driver = {
     .name = DEVICE_NAME,
-    .id_table = (const struct pci_device_id[]) {
-        { PCI_DEVICE_SUB(XILINX_VID, AMC525_DID, XILINX_VID, AMC525_SID) },
-        { 0 }
-    },
+    .id_table = amc525_pci_ids,
     .probe = amc525_mbf_probe,
     .remove = amc525_mbf_remove,
 };

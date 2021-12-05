@@ -34,7 +34,7 @@ package sequencer_defs is
 
     -- Sequencer specific types
     subtype seq_pc_t is unsigned(2 downto 0);
-    subtype super_count_t is unsigned(9 downto 0);
+    subtype super_count_t is unsigned(10 downto 0);
 
     subtype detector_win_t is signed(15 downto 0);
 

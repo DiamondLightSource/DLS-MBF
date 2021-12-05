@@ -12,6 +12,7 @@ entity fmc500m_top is
     port (
         adc_clk_i : in std_ulogic;       -- Derived ADC clock
         reg_clk_i : in std_ulogic;       -- Register clock
+        ref_clk_i : in std_ulogic;       -- Hardware reference clock
 
         -- FMC
         FMC_LA_P : inout std_ulogic_vector(0 to 33);
@@ -27,12 +28,15 @@ entity fmc500m_top is
         spi_read_data_o : out reg_data_t;
         spi_read_ack_o : out std_ulogic;
 
+        -- ADC IDELAY Register control (on ref_clk)
+        adc_idelay_write_strobe_i : in std_ulogic;
+        adc_idelay_write_data_i : in reg_data_t;
+        adc_idelay_read_data_o : out reg_data_t;
+
         -- ADC clock and data
         adc_dco_o : out std_ulogic;      -- Raw data clock from ADC
         adc_data_a_o : out signed;
         adc_data_b_o : out signed;
-        adc_status_a_o : out std_ulogic;
-        adc_status_b_o : out std_ulogic;
 
         -- DAC clock and data (clocked by ADC clock)
         dac_data_a_i : in signed;
@@ -69,7 +73,7 @@ architecture arch of fmc500m_top is
 
     -- ADC
     signal adc_data : std_ulogic_vector(13 downto 0);
-    signal adc_status : std_ulogic;
+    signal adc_data_delay : std_ulogic_vector(13 downto 0);
     signal adc_fd_a : std_ulogic;
     signal adc_fd_b : std_ulogic;
     signal adc_spi_csn : std_ulogic;
@@ -126,7 +130,6 @@ begin
         -- ADC
         adc_dco_o => adc_dco_o,
         adc_data_o => adc_data,
-        adc_status_o => adc_status,
         adc_fd_a_o => adc_fd_a,
         adc_fd_b_o => adc_fd_b,
         adc_spi_csn_i => adc_spi_csn,
@@ -189,21 +192,25 @@ begin
     );
 
 
-    -- DDR data from ADC input
+    -- DDR data from ADC input: first IDELAY then IDDR
+    idelay_inst : entity work.idelay_control port map (
+        ref_clk_i => ref_clk_i,
+        signal_i => adc_data,
+        signal_o => adc_data_delay,
+        write_strobe_i => adc_idelay_write_strobe_i,
+        write_data_i => adc_idelay_write_data_i,
+        read_data_o => adc_idelay_read_data_o
+    );
+
     adc_data_inst : entity work.iddr_array generic map (
         COUNT => adc_data'LENGTH
     ) port map (
         clk_i => adc_clk_i,
-        d_i => adc_data,
+        d_i => adc_data_delay,
         signed(q1_o) => adc_data_a_o,
         signed(q2_o) => adc_data_b_o
     );
-    adc_status_inst : entity work.iddr_array port map (
-        clk_i => adc_clk_i,
-        d_i(0) => adc_status,
-        q1_o(0) => adc_status_a_o,
-        q2_o(0) => adc_status_b_o
-    );
+
 
     -- DDR data to DAC output
     dac_data_inst : entity work.oddr_array generic map (

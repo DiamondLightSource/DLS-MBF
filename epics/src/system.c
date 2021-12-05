@@ -56,6 +56,7 @@ static EPICS_STRING version_string = { MBF_VERSION };
 static EPICS_STRING git_version_string = { GIT_VERSION };
 static EPICS_STRING fpga_version = { };
 static EPICS_STRING fpga_git_version = { };
+static unsigned int fpga_seed;
 static EPICS_STRING driver_version = { };
 static char hostname[256];
 static EPICS_STRING device_name;
@@ -72,9 +73,18 @@ static error__t get_hostname(char name[], size_t length)
 
 static error__t get_driver_version(EPICS_STRING *version)
 {
-    FILE *file = fopen("/sys/module/amc525_mbf/version", "r");
+    /* For backwards compatibility with the original amc525_mbf driver, look in
+     * two separate places for the driver. */
+    static const char *version_paths[] = {
+        "/sys/module/amc_pci/version",      // Preferred new driver
+        "/sys/module/amc525_mbf/version",   // Legacy driver
+    };
+
+    FILE *file = NULL;
+    for (size_t i = 0; file == NULL  &&  i < ARRAY_SIZE(version_paths); i++)
+        file = fopen(version_paths[i], "r");
     return
-        TEST_OK(file)  ?:
+        TEST_OK_(file, "Unable to open driver version node")  ?:
         DO_FINALLY(
             TEST_OK(fgets(version->s, sizeof(version->s), file))  ?:
             DO(*strchrnul(version->s, '\n') = '\0'),
@@ -92,6 +102,7 @@ static error__t initialise_constants(void)
         PUBLISH_READ_VAR(stringin, "GIT_VERSION", git_version_string);
         PUBLISH_READ_VAR(stringin, "FPGA_VERSION", fpga_version);
         PUBLISH_READ_VAR(stringin, "FPGA_GIT_VERSION", fpga_git_version);
+        PUBLISH_READ_VAR(ulongin, "FPGA_SEED", fpga_seed);
         PUBLISH_WF_READ_VAR(char, "HOSTNAME", sizeof(hostname), hostname);
         PUBLISH_READ_VAR(bi, "MODE", system_config.lmbf_mode);
         PUBLISH_READ_VAR(ulongin, "SOCKET", system_config.data_port);
@@ -108,6 +119,7 @@ static error__t initialise_constants(void)
     format_epics_string(&device_name, "%s", system_config.device_address);
     log_message("FPGA version %s, git %s, API %d",
         fpga_version.s, fpga_git_version.s, fpga.firmware);
+    fpga_seed = fpga.build_seed;
 
     return
         get_hostname(hostname, sizeof(hostname))  ?:

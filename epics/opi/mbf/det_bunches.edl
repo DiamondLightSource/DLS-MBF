@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(axis):$(det) Bunch Enables"
+  "$(device):$(axis):DET:$(det) Bunch Enables"
 }
 endObjectProperties
 
@@ -125,7 +125,7 @@ y2Max 1
 # Trace Properties
 numTraces 1
 yPv {
-  0 "$(device):$(axis):$(det):BUNCHES_S"
+  0 "$(device):$(axis):DET:$(det):BUNCHES_S"
 }
 plotUpdateMode {
   0 "y"
@@ -163,7 +163,7 @@ x 16
 y 232
 w 184
 h 20
-controlPv "$(device):$(axis):$(det):BUNCH_SELECT_S"
+controlPv "$(device):$(axis):DET:$(det):BUNCH_SELECT_S"
 font "helvetica-medium-r-14.0"
 fontAlign "right"
 fgColor index 14
@@ -229,7 +229,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):$(axis):$(det):SET_SELECT_S.PROC"
+controlPv "$(device):$(axis):DET:$(det):SET_SELECT_S.PROC"
 pressValue "0"
 onLabel "Enable"
 offLabel "Enable"
@@ -247,7 +247,7 @@ x 64
 y 264
 w 240
 h 16
-controlPv "$(device):$(axis):$(det):SELECT_STATUS"
+controlPv "$(device):$(axis):DET:$(det):SELECT_STATUS"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 bgColor index 0
@@ -276,7 +276,7 @@ fgColor index 14
 fgAlarm
 bgColor index 0
 useDisplayBg
-alarmPv "$(device):$(axis):$(det):SELECT_STATUS"
+alarmPv "$(device):$(axis):DET:$(det):SELECT_STATUS"
 value {
   "Status:"
 }
@@ -298,7 +298,7 @@ onColor index 4
 offColor index 3
 topShadowColor index 1
 botShadowColor index 14
-controlPv "$(device):$(axis):$(det):RESET_SELECT_S.PROC"
+controlPv "$(device):$(axis):DET:$(det):RESET_SELECT_S.PROC"
 pressValue "0"
 onLabel "Disable"
 offLabel "Disable"
