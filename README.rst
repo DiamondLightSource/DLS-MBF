@@ -28,11 +28,11 @@ Build FPGA's Firmware
 
 The last known possibilities to build FPGA's firmware without errors are:
 
-    ======== =======
-    commit   seed_value
-    ======== =======
-    29ced38  17
-    ======== =======
+======== =======
+commit   seed_value
+======== =======
+29ced38  17
+======== =======
 
 LICENSING
 ---------
