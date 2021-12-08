@@ -1,5 +1,5 @@
-Diamond Light Source Multi-Bunch Feedback Processor (MBF)
-=========================================================
+Diamond Light Source Multi-Bunch Feedback Processor (MBF) for ESRF's booster
+============================================================================
 
 This repository contains the firmware and software sources for running bunch by
 bunch feedback on a synchrotron.  The firmware and software was developed at
@@ -13,6 +13,26 @@ first operation.
 ..  _MBF Documentation: https://diamondlightsource.atlassian.net/wiki/x/GAAN
 ..  _Bringing up MBF: https://diamondlightsource.atlassian.net/wiki/x/FgAN
 
+
+About this version (MBF for ESRF's booster)
+-------------------------------------------
+
+This version of the MBF is designed for ESRF's booster. FPGA's firmware includes three main modifications linked with the synchronisation mechanism and error detection, which makes it incompatible with a different accelerator ring. The differences are:
+
+* a synchronise command is issued at each EXT TRG rising edge,
+* the definition of a synchro error is changed: an error is detected at a rising edge of EXT TRG if the `bunch_counter` is not a multiple of 32 (before reset it to 0),
+* the sync button's purpose is to reset synchro errors.
+
+Build FPGA's Firmware
+.....................
+
+The last known possibilities to build FPGA's firmware without errors are:
+
+    ======== =======
+    commit   seed_value
+    ======== =======
+    29ced38  17
+    ======== =======
 
 LICENSING
 ---------
