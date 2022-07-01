@@ -1,0 +1,216 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+   sudo=sudo
+else
+   sudo=""
+fi
+
+amc525_driv=amc525-driver
+amc525_firm=amc525-firmware
+mbf_bkp=mbf-backup
+module=amc525
+
+# Set color variable
+
+c_res=$(tput sgr0)     #Reset
+f_bol=$(tput bold)     #Front test in Bold
+
+f_bla=$(tput setaf 0)  #Front text in Black
+f_red=$(tput setaf 1)  #Front text in Red
+f_gre=$(tput setaf 2)  #Front text in Green
+f_yel=$(tput setaf 3)  #Front text in Yellow
+f_blu=$(tput setaf 4)  #Front text in Blue
+f_mag=$(tput setaf 5)  #Front text in Magenta
+f_cya=$(tput setaf 6)  #Front text in Cyan
+f_whi=$(tput setaf 7)  #Front text in White
+
+b_bla=$(tput setab 0)  #Background in Black
+b_red=$(tput setab 1)  #Background in Red
+b_gre=$(tput setab 2)  #Background in Green
+b_yel=$(tput setab 3)  #Background in Yellow
+b_blu=$(tput setab 4)  #Background in Blue
+b_mag=$(tput setab 5)  #Background in Magenta
+b_cya=$(tput setab 6)  #Background in Cyan
+b_whi=$(tput setab 7)  #Background in White
+
+show_menu() {
+
+   echo -e "${f_cya}***** MBF MGMT ******************************************${c_res}"
+   echo -e "${f_yel} amc525-driver info:                                           ${c_res}"
+   echo -e "${f_yel}   1)${f_cya} status  ${f_yel}   4)${f_cya} stop ${c_res}"
+   echo -e "${f_yel}   2)${f_cya} start   ${f_yel}   5)${f_cya} show ${c_res}"
+   echo -e "${f_yel}   3)${f_cya} restart ${f_yel}   6)${f_cya} journal ${c_res}"
+   echo -e "${f_yel} amc525-firmware info:                                          ${c_res}"
+   echo -e "${f_yel}   7)${f_cya} status  ${f_yel}  10)${f_cya} stop ${c_res}"
+   echo -e "${f_yel}   8)${f_cya} start   ${f_yel}  11)${f_cya} show ${c_res}"
+   echo -e "${f_yel}   9)${f_cya} restart ${f_yel}  12)${f_cya} journal ${c_res}"
+   echo -e "${f_yel} mbf-backup.service info:                                          ${c_res}"
+   echo -e "${f_yel}  13)${f_cya} status  ${f_yel}  16)${f_cya} stop ${c_res}"
+   echo -e "${f_yel}  14)${f_cya} start   ${f_yel}  17)${f_cya} show ${c_res}"
+   echo -e "${f_yel}  15)${f_cya} restart ${f_yel}  18)${f_cya} journal ${c_res}"
+   echo -e "${f_yel} mbf-backup.timer info:                                          ${c_res}"
+   echo -e "${f_yel}  19)${f_cya} status  ${f_yel}  22)${f_cya} stop ${c_res}"
+   echo -e "${f_yel}  20)${f_cya} start   ${f_yel}  23)${f_cya} show ${c_res}"
+   echo -e "${f_yel}  21)${f_cya} restart ${f_yel}  24)${f_cya} journal ${c_res}"
+   echo ""
+   echo -e "${f_yel}  25)${f_cya} lsmod | grep ...                       ${c_res}"
+   echo -e "${f_yel}  26)${f_cya} lspci | grep 'Xilinx'                      ${c_res}"
+   echo ""
+   echo -e "${f_yel}Please enter a menu ${f_red}number${f_yel} option or ${f_red}enter${f_yel} key to exit.${c_res}"
+   read opt
+}
+
+
+
+show_menu
+while [ opt != '' ]
+   do
+   if [[ $opt = "" ]]; then
+      exit;
+   else
+      case $opt in
+         1)
+         systemctl --no-pager status amc525-driver;
+         show_menu;
+         ;;
+
+         2)
+         $sudo systemctl start amc525-driver;
+         show_menu;
+         ;;
+
+         3)
+         $sudo systemctl restart amc525-driver;
+         show_menu;
+         ;;
+
+         4)
+         $sudo systemctl stop amc525-driver;
+         show_menu;
+         ;;
+
+         5)
+         systemctl show amc525-driver;
+         show_menu;
+         ;;
+
+         6)
+         $sudo journalctl -n 50 --no-pager -u amc525-driver;
+         show_menu;
+         ;;
+
+         7)
+         systemctl --no-pager status amc525-firmware;
+         show_menu;
+         ;;
+
+         8)
+         $sudo systemctl start amc525-firmware;
+         show_menu;
+         ;;
+
+         9)
+         $sudo systemctl restart amc525-firmware;
+         show_menu;
+         ;;
+
+         10)
+         $sudo systemctl stop amc525-firmware;
+         show_menu;
+         ;;
+
+         11)
+         systemctl show amc525-firmware;
+         show_menu;
+         ;;
+
+         12)
+         $sudo journalctl -n 50 --no-pager -u amc525-firmware;
+         show_menu;
+         ;;
+
+         13)
+         systemctl --no-pager status mbf-backup.service;
+         show_menu;
+         ;;
+
+         14)
+         $sudo systemctl start mbf-backup.service;
+         show_menu;
+         ;;
+
+         15)
+         $sudo systemctl restart mbf-backup.service;
+         show_menu;
+         ;;
+
+         16)
+         $sudo systemctl stop mbf-backup.service;
+         show_menu;
+         ;;
+
+         17)
+         systemctl show mbf-backup.service;
+         show_menu;
+         ;;
+
+         18)
+         $sudo journalctl -n 50 --no-pager -u mbf-backup.service;
+         show_menu;
+         ;;
+
+         19)
+         systemctl --no-pager status mbf-backup.timer;
+         show_menu;
+         ;;
+
+         20)
+         $sudo systemctl start mbf-backup.timer;
+         show_menu;
+         ;;
+
+         21)
+         $sudo systemctl restart mbf-backup.timer;
+         show_menu;
+         ;;
+
+         22)
+         $sudo systemctl stop mbf-backup.timer;
+         show_menu;
+         ;;
+
+         23)
+         systemctl show mbf-backup.timer;
+         show_menu;
+         ;;
+
+         24)
+         $sudo journalctl -n 50 --no-pager -u mbf-backup.timer;
+         show_menu;
+         ;;
+
+         25)
+         lsmod | grep -i "amc525";
+         show_menu;
+         ;;
+
+         26)
+         lspci | grep "Xilinx";
+         show_menu;
+         ;;
+
+         x)
+         exit;
+         ;;
+
+         \n)
+         exit;
+         ;;
+
+         *)
+         exit;
+         ;;
+      esac
+   fi
+done

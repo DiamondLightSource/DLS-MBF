@@ -1,18 +1,24 @@
-TANGO_HOST=acs:10000,acs:11000
+TANGO_HOST=acs.esrf.fr:10000,acs.esrf.fr:11000
 LD_LIBRARY_PATH=/opt/os/lib:/opt/os/lib/classes:/lib:/usr/lib:/usr/local/lib:/opt/os/epics/local/lib/linux-x86_64
 
 EPICS_CA_MAX_ARRAY_BYTES=1048576
-#EPICS_CA_ADDR_LIST=$HOSTNAME
-EPICS_CA_ADDR_LIST=l-c31-3
 
-EPICS_CAS_AUTO_BEACON_ADDR_LIST=NO
-#EPICS_CAS_BEACON_ADDR_LIST=$HOSTNAME
-EPICS_CAS_BEACON_ADDR_LIST=l-c31-3
+# This is important to avoid a flood of messages in journalctl
+EPICS_CA_AUTO_ADDR_LIST=NO
+EPICS_CA_ADDR_LIST=160.103.11.255
+
+# This is not necessary with the previous two lines
+#EPICS_CAS_AUTO_BEACON_ADDR_LIST=NO
+#EPICS_CAS_BEACON_ADDR_LIST=160.103.11.255
+#EPICS_CAS_INTF_ADDR_LIST=enp1s0f3
 
 EPICS_BASE=/opt/os/epics/local
 EPICS_HOST_ARCH=linux-x86_64
-ORBendPoint=giop:tcp:160.103.10.29:
 
-#PATH=$EPICS_BASE/bin/linux-x86_64:$PATH
+# This is not a shell file...
+#IP_ON_INTF=$(ip addr show enp1s0f3 | grep inet | cut -d' ' -f6 | cut -d'/' -f1)
+ORBendPoint=giop:tcp:160.103.10.64:
+
 PATH=/opt/os/epics/local:bin/linux-x86_64:/opt/os/epics/local/bin/linux-x86_64:/operation/common/miniconda3/bin:/operation/common/miniconda3/condabin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/opt/os/bin:/opt/os/script:/opt/os/util:/opt/os/python/scripts:/opt/puppetlabs/bin
+
 CONDA_ENV=mbf

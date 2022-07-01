@@ -1,0 +1,149 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+   sudo=sudo
+else
+   sudo=""
+fi
+
+unit=amc525_mbf
+module=amc525_mbf
+
+# Set color variable
+
+c_res=$(tput sgr0)      #Reset
+f_bol=$(tput bold)      #Front test in Bold
+
+f_bla=$(tput setaf 0)  #Front text in Black
+f_red=$(tput setaf 1)  #Front text in Red
+f_gre=$(tput setaf 2)  #Front text in Green
+f_yel=$(tput setaf 3)  #Front text in Yellow
+f_blu=$(tput setaf 4)  #Front text in Blue
+f_mag=$(tput setaf 5)  #Front text in Magenta
+f_cya=$(tput setaf 6)  #Front text in Cyan
+f_whi=$(tput setaf 7)  #Front text in White
+
+b_bla=$(tput setab 0)  #Background in Black
+b_red=$(tput setab 1)  #Background in Red
+b_gre=$(tput setab 2)  #Background in Green
+b_yel=$(tput setab 3)  #Background in Yellow
+b_blu=$(tput setab 4)  #Background in Blue
+b_mag=$(tput setab 5)  #Background in Magenta
+b_cya=$(tput setab 6)  #Background in Cyan
+b_whi=$(tput setab 7)  #Background in White
+
+show_menu() {
+   echo -e "${f_cya}*****CHECK AMC525 driver*************${c_res}"
+   echo -e "${f_yel}   1)${f_cya} systemctl status $unit                     ${c_res}"
+   echo -e "${f_yel}   2)${f_cya} systemctl start $unit                      ${c_res}"
+   echo -e "${f_yel}   3)${f_cya} systemctl restart $unit                    ${c_res}"
+   echo -e "${f_yel}   4)${f_cya} systemctl stop $unit                       ${c_res}"
+   echo -e "${f_yel}   5)${f_cya} systemctl enable $unit                     ${c_res}"
+   echo -e "${f_yel}   6)${f_cya} systemctl disable $unit                    ${c_res}"
+   echo -e "${f_yel}   7)${f_cya} systemctl show $unit                       ${c_res}"
+   echo -e "${f_yel}   8)${f_cya} journalctl -n 50 --no-pager -u $unit       ${c_res}"
+   echo ""
+   echo -e "${f_yel}   9)${f_cya} lsmod | grep $module                       ${c_res}"
+   echo -e "${f_yel}  10)${f_cya} modinfo $module | grep -v \"alias\"        ${c_res}"
+   echo -e "${f_yel}  11)${f_cya} modprobe $module (load)                    ${c_res}"
+   echo -e "${f_yel}  12)${f_cya} rmmod $module    (unload)                  ${c_res}"
+   echo -e "${f_yel}  13)${f_cya} dmesg | egrep '$module'                    ${c_res}"
+   echo ""
+   echo -e "${f_yel}  14)${f_cya} show MSC unit override                     ${c_res}"
+   echo -e ""
+   echo -e "${f_yel}Please enter a menu ${f_red}number${f_yel} option or ${f_red}enter${f_yel} key to exit.${c_res}"
+   read opt
+}
+
+
+show_menu
+while [ opt != '' ]
+   do
+   if [[ $opt = "" ]]; then
+      exit;
+   else
+      case $opt in
+         1)
+         systemctl status $unit;
+         show_menu;
+         ;;
+
+         2)
+         $sudo systemctl start $unit;
+         show_menu;
+         ;;
+
+         3)
+         $sudo systemctl restart $unit;
+         show_menu;
+         ;;
+
+         4)
+         $sudo systemctl stop $unit;
+         show_menu;
+         ;;
+
+         5)
+         $sudo systemctl enable $unit;
+         show_menu;
+         ;;
+
+         6)
+         $sudo systemctl disable $unit;
+         show_menu;
+         ;;
+
+         7)
+         systemctl show $unit;
+         show_menu;
+         ;;
+
+         8)
+         $sudo journalctl -n 50 --no-pager -u $unit;
+         show_menu;
+         ;;
+
+         9)
+         lsmod | grep $module;
+         show_menu;
+         ;;
+
+         10)
+         modinfo $module | grep -v "alias";
+         show_menu;
+         ;;
+
+         11)
+         modprobe $module;
+         show_menu;
+         ;;
+
+         12)
+         rmmod $module;
+         show_menu;
+         ;;
+
+         13)
+         dmesg | egrep '$module';
+         show_menu;
+         ;;
+
+         14)
+         systemd-delta --type=extended | grep "etc/systemd";
+         show_menu;
+         ;;
+
+         x)
+         exit;
+         ;;
+
+         \n)
+         exit;
+         ;;
+
+         *)
+         exit;
+         ;;
+      esac
+   fi
+done
