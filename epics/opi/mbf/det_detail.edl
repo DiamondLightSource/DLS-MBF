@@ -19,7 +19,7 @@ ctlBgColor1 index 0
 ctlBgColor2 index 14
 topShadowColor index 0
 botShadowColor index 14
-title "$(device):$(axis):DET:$(det) IQ"
+title "$(device):$(axis):$(det) IQ"
 showGrid
 snapToGrid
 gridSize 8
@@ -41,7 +41,7 @@ fontAlign "center"
 fgColor index 14
 bgColor index 73
 value {
-  "$(device):$(axis):DET:$(det) IQ"
+  "$(device):$(axis):$(det) IQ"
 }
 endObjectProperties
 
@@ -121,10 +121,10 @@ y2Max 1
 # Trace Properties
 numTraces 1
 xPv {
-  0 "$(device):$(axis):DET:$(det):I"
+  0 "$(device):$(axis):$(det):I"
 }
 yPv {
-  0 "$(device):$(axis):DET:$(det):Q"
+  0 "$(device):$(axis):$(det):Q"
 }
 plotStyle {
   0 "point"
@@ -154,7 +154,7 @@ lineColor index 14
 fill
 fillColor index 16
 fillAlarm
-alarmPv "$(device):$(axis):DET:$(det):OUT_OVF"
+alarmPv "$(device):$(axis):$(det):OUT_OVF"
 endObjectProperties
 
 # (Text Monitor)
@@ -167,7 +167,7 @@ x 136
 y 496
 w 48
 h 16
-controlPv "$(device):$(axis):DET:$(det):OUT_OVF"
+controlPv "$(device):$(axis):$(det):OUT_OVF"
 font "helvetica-medium-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -191,7 +191,7 @@ x 56
 y 496
 w 56
 h 16
-controlPv "$(device):$(axis):DET:$(det):MAX_POWER"
+controlPv "$(device):$(axis):$(det):MAX_POWER"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm
@@ -243,7 +243,7 @@ bgColor index 3
 inconsistentColor index 0
 topShadowColor index 1
 botShadowColor index 11
-controlPv "$(device):$(axis):DET:$(det):SCALING_S"
+controlPv "$(device):$(axis):$(det):SCALING_S"
 font "helvetica-medium-r-12.0"
 endObjectProperties
 
@@ -277,7 +277,7 @@ x 392
 y 496
 w 32
 h 16
-controlPv "$(device):$(axis):DET:$(det):COUNT"
+controlPv "$(device):$(axis):$(det):COUNT"
 font "helvetica-medium-r-14.0"
 fgColor index 14
 fgAlarm

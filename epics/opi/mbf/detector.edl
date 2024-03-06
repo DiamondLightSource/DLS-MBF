@@ -212,7 +212,7 @@ displayFileName {
   0 "mbf/det_state.edl"
 }
 symbols {
-  0 "det=0"
+  0 "det=DET:0"
 }
 noScroll
 endObjectProperties
@@ -240,7 +240,7 @@ displayFileName {
   0 "mbf/det_state.edl"
 }
 symbols {
-  0 "det=1"
+  0 "det=DET:1"
 }
 noScroll
 endObjectProperties
@@ -268,7 +268,7 @@ displayFileName {
   0 "mbf/det_state.edl"
 }
 symbols {
-  0 "det=2"
+  0 "det=DET:2"
 }
 noScroll
 endObjectProperties
@@ -296,7 +296,7 @@ displayFileName {
   0 "mbf/det_state.edl"
 }
 symbols {
-  0 "det=3"
+  0 "det=DET:3"
 }
 noScroll
 endObjectProperties
