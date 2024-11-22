@@ -351,6 +351,13 @@ static void reset_coarse_delay(void)
     if (clock_passthrough)
         return;
 
+    /* Fine delay is set to zero before performing a reset on the coarse delay,
+     * its value is set back after.
+     * This procedure ensures a better reproducibility of the DAC FIFO
+     * alignment across all possible values for the fine delay. */
+    unsigned int dac_fine_delay_setpoint = dac_fine_delay;
+    slew_dac_fine_delay(0);
+
     pll_sync();
     reset_dac_pll();
     WRITE_OUT_RECORD(ulongout, coarse_delay_pv, 0, false);
@@ -359,6 +366,7 @@ static void reset_coarse_delay(void)
     /* After this reset trigger a turn resync.  Need to wait a little for the
      * dust to settle first! */
     usleep(50000);
+    slew_dac_fine_delay(dac_fine_delay_setpoint);
     hw_write_turn_clock_sync();
 }
 
