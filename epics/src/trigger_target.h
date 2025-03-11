@@ -11,6 +11,7 @@ enum target_mode {
     MODE_ONE_SHOT,      // Normal single shot operation
     MODE_REARM,         // Rearm this target after trigger complete
     MODE_SHARED,        // Shared trigger operation
+    MODE_FREE_RUN,      // Rearm and automatically fire soft trigger
 };
 
 

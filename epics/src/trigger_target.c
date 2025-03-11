@@ -403,6 +403,12 @@ void trigger_target_complete(struct trigger_target *target)
             else if (target->mode == MODE_REARM  &&  !target->dont_rearm)
                 /* Automatically re-arm where requested and possible. */
                 arm_target(target);
+            else if (target->mode == MODE_FREE_RUN  &&  !target->dont_rearm)
+            {
+                /* Automatically re-arm where requested and possible. */
+                arm_target(target);
+                hw_write_trigger_soft_trigger();
+            }
 
             /* On completion let all listening locks know that something may
              * have changed. */
