@@ -106,10 +106,10 @@ begin
             end if;
         end process;
 
-        -- We need to delay the SEQ NCO data a further 4 clock ticks so that the
+        -- We need to delay the NCO data a further 4 clock ticks so that the
         -- scalar computed above and the NCO value align.  This correction is
-        -- not applied to the other NCOs.
-        delay_nco : if i = NCO_SEQ generate
+        -- not applied to NCO_PLL.
+        delay_nco : if i = NCO_SEQ or i = NCO_NCO1 or i = NCO_NCO2 generate
             delay : entity work.dlyline generic map (
                 DLY => 4,
                 DW => 18

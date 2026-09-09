@@ -23,7 +23,6 @@ entity sequencer_counter is
         freq_base_i : in angle_t;
         seq_state_i : in seq_state_t;
         last_turn_i : in std_ulogic;     -- Dwell is in its last turn
-        tune_pll_offset_i : in signed(31 downto 0);
 
         state_end_o : out std_ulogic := '0';  -- Set during last turn of state
 

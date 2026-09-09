@@ -101,8 +101,11 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_input.vhd \
     $vhd_dir/detector/detector_dram_output.vhd \
     $vhd_dir/detector/detector_top.vhd \
-    $vhd_dir/dsp/nco_register.vhd \
-    $vhd_dir/dsp/dsp_fixed_nco.vhd \
+    $vhd_dir/dsp/swept_nco_defs.vhd \
+    $vhd_dir/dsp/swept_nco_register.vhd \
+    $vhd_dir/dsp/swept_nco_repeat.vhd \
+    $vhd_dir/dsp/swept_nco_seq_signals.vhd \
+    $vhd_dir/dsp/dsp_swept_nco.vhd \
     $vhd_dir/dsp/dsp_loopback.vhd \
     $vhd_dir/dsp/dsp_nco_to_mux_delay.vhd \
     $vhd_dir/dsp/dsp_control_mux.vhd \
@@ -113,6 +116,7 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/adc/adc_mms_dram_data_source.vhd \
     $vhd_dir/adc/adc_overflow.vhd \
     $vhd_dir/adc/adc_top.vhd \
+    $vhd_dir/tune_pll/nco_register.vhd \
     $vhd_dir/tune_pll/tune_pll_defs.vhd \
     $vhd_dir/tune_pll/tune_pll_registers.vhd \
     $vhd_dir/tune_pll/tune_pll_detector.vhd \

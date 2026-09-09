@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 630
-y 235
+x 638
+y 190
 w 584
 h 512
 font "helvetica-medium-r-18.0"
@@ -110,8 +110,8 @@ minor 1
 release 1
 x 48
 y 240
-w 60
-h 14
+w 58
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -131,7 +131,7 @@ release 1
 x 136
 y 240
 w 90
-h 14
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -371,8 +371,8 @@ minor 1
 release 1
 x 16
 y 64
-w 74
-h 14
+w 70
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -391,8 +391,8 @@ minor 1
 release 1
 x 96
 y 64
-w 71
-h 14
+w 69
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -411,8 +411,8 @@ minor 1
 release 1
 x 104
 y 128
-w 63
-h 14
+w 60
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -431,8 +431,8 @@ minor 1
 release 1
 x 32
 y 128
-w 46
-h 14
+w 48
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -451,8 +451,8 @@ minor 1
 release 1
 x 264
 y 64
-w 92
-h 14
+w 94
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -471,8 +471,8 @@ minor 1
 release 1
 x 400
 y 64
-w 69
-h 14
+w 73
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -491,8 +491,8 @@ minor 1
 release 1
 x 16
 y 240
-w 25
-h 12
+w 26
+h 14
 font "helvetica-bold-r-10.0"
 fgColor index 14
 bgColor index 0
@@ -512,7 +512,7 @@ release 1
 x 184
 y 64
 w 66
-h 14
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -531,8 +531,8 @@ minor 1
 release 1
 x 184
 y 128
-w 125
-h 14
+w 118
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -551,8 +551,8 @@ minor 1
 release 1
 x 400
 y 128
-w 78
-h 14
+w 77
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -571,8 +571,8 @@ minor 1
 release 1
 x 488
 y 128
-w 77
-h 14
+w 76
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -610,8 +610,8 @@ minor 1
 release 1
 x 392
 y 152
-w 82
-h 14
+w 77
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -653,7 +653,7 @@ minor 0
 release 0
 x 8
 y 408
-w 400
+w 456
 h 96
 lineColor index 14
 fill
@@ -666,10 +666,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 64
+x 56
 y 424
-w 62
-h 14
+w 65
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -686,10 +686,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 160
+x 152
 y 424
-w 27
-h 14
+w 28
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -706,7 +706,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 64
+x 56
 y 440
 w 88
 h 24
@@ -769,8 +769,8 @@ minor 1
 release 1
 x 320
 y 128
-w 50
-h 14
+w 53
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -842,8 +842,8 @@ minor 1
 release 1
 x 16
 y 152
-w 35
-h 14
+w 32
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -964,8 +964,8 @@ minor 1
 release 1
 x 232
 y 152
-w 50
-h 14
+w 52
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -984,8 +984,8 @@ minor 1
 release 1
 x 232
 y 168
-w 54
-h 14
+w 56
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1030,8 +1030,8 @@ minor 1
 release 1
 x 16
 y 176
-w 39
-h 14
+w 40
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1076,8 +1076,8 @@ minor 1
 release 1
 x 232
 y 184
-w 43
-h 14
+w 40
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1094,7 +1094,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 256
+x 248
 y 440
 w 56
 h 24
@@ -1190,10 +1190,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 464
+x 472
 y 400
-w 65
-h 14
+w 63
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1212,8 +1212,8 @@ minor 1
 release 1
 x 488
 y 64
-w 55
-h 14
+w 58
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1230,7 +1230,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 160
+x 152
 y 440
 w 88
 h 24
@@ -1261,9 +1261,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 320
+x 312
 y 440
-w 80
+w 72
 h 24
 fgColor index 14
 bgColor index 3
@@ -1280,7 +1280,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 168
+x 160
 y 444
 w 72
 h 16
@@ -1306,10 +1306,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 320
+x 312
 y 424
-w 60
-h 14
+w 61
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1326,10 +1326,10 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 256
+x 248
 y 424
-w 39
-h 14
+w 41
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1346,7 +1346,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 64
+x 56
 y 472
 w 88
 h 20
@@ -1374,7 +1374,7 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 256
+x 248
 y 472
 w 56
 h 24
@@ -1393,7 +1393,7 @@ beginObjectProperties
 major 4
 minor 4
 release 0
-x 160
+x 152
 y 472
 w 88
 h 24
@@ -1424,9 +1424,9 @@ beginObjectProperties
 major 4
 minor 0
 release 0
-x 320
+x 312
 y 472
-w 80
+w 72
 h 24
 fgColor index 14
 bgColor index 3
@@ -1443,7 +1443,7 @@ beginObjectProperties
 major 4
 minor 6
 release 0
-x 168
+x 160
 y 476
 w 72
 h 16
@@ -1471,8 +1471,8 @@ minor 1
 release 1
 x 16
 y 440
-w 34
-h 14
+w 35
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1491,8 +1491,8 @@ minor 1
 release 1
 x 16
 y 472
-w 34
-h 14
+w 35
+h 16
 font "helvetica-bold-r-12.0"
 fgColor index 14
 bgColor index 0
@@ -1587,5 +1587,57 @@ onLabel "Copy Bank"
 offLabel "Copy Bank"
 3d
 font "helvetica-bold-r-12.0"
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 400
+y 440
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Sweep"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/nco_sweep.edl"
+}
+symbols {
+  0 "nco=NCO1"
+}
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 400
+y 472
+w 56
+h 24
+fgColor index 43
+bgColor index 4
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-12.0"
+buttonLabel "Sweep"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "mbf/nco_sweep.edl"
+}
+symbols {
+  0 "nco=NCO2"
+}
 endObjectProperties
 

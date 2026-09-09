@@ -59,17 +59,19 @@ architecture arch of dsp_top is
     constant BUNCH_SELECT_DELAY : natural := 8;
 
 begin
-    -- Fixed frequency NCOs
-    fixed_ncos : entity work.dsp_fixed_nco port map (
+    -- Swept NCOs
+    swept_ncos : entity work.dsp_swept_nco port map (
         adc_clk_i => adc_clk_i,
         dsp_clk_i => dsp_clk_i,
 
-        write_strobe_i => write_strobe_i(DSP_FIXED_NCO_REGS),
+        turn_clock_adc_i => control_to_dsp_i.turn_clock,
+
+        write_strobe_i => write_strobe_i(DSP_NCO_REGS),
         write_data_i => write_data_i,
-        write_ack_o => write_ack_o(DSP_FIXED_NCO_REGS),
-        read_strobe_i => read_strobe_i(DSP_FIXED_NCO_REGS),
-        read_data_o => read_data_o(DSP_FIXED_NCO_REGS),
-        read_ack_o => read_ack_o(DSP_FIXED_NCO_REGS),
+        write_ack_o => write_ack_o(DSP_NCO_REGS),
+        read_strobe_i => read_strobe_i(DSP_NCO_REGS),
+        read_data_o => read_data_o(DSP_NCO_REGS),
+        read_ack_o => read_ack_o(DSP_NCO_REGS),
 
         tune_pll_offset_i => tune_pll_offset,
         nco1_data_o => dsp_to_control_o.nco_iq(NCO_NCO1),

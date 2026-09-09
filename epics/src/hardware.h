@@ -224,19 +224,47 @@ struct mms_result {
 };
 
 
-/* Fixed NCO configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Swept NCO configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-enum fixed_nco {
-    FIXED_NCO1,
-    FIXED_NCO2
+enum swept_nco_id {
+    SWEPT_NCO1,
+    SWEPT_NCO2
 };
 
-/* Directly sets the fixed frequency oscillator. */
-void hw_write_nco_frequency(int axis, enum fixed_nco nco, uint64_t frequency);
+/* Set repeat mode for NCO. */
+enum nco_repeat_mode {
+    NCO_MODE_COUNT,
+    NCO_MODE_INFINITE,
+};
+
+struct nco_config {
+    uint64_t start_freq;              // NCO start frequency
+    uint64_t delta_freq;              // Frequency step for sweep
+    unsigned int dwell_time;          // Dwell time at each step
+    unsigned int point_count;         // Number of sweep points
+    enum nco_repeat_mode repeat_mode; // Continuous repeat or not
+};
+
+/* Directly sets NCO sweep parameters. */
+void hw_write_nco_config(int axis, enum swept_nco_id nco,
+    const struct nco_config *nco_config);
+
+/* Dedicated function to write repeat parameters. */
+void hw_write_nco_repeat_count(int axis, enum swept_nco_id nco, uint32_t value);
+void hw_write_nco_repeat_mode(int axis, enum swept_nco_id nco,
+    enum nco_repeat_mode repeat_mode);
+
+/* Commands */
+void hw_write_nco_start(int axis, enum swept_nco_id nco, bool reset,
+    bool abort);
+void hw_write_nco_abort(int axis, enum swept_nco_id nco);
+
+/* Read repeat readout value */
+uint32_t hw_read_nco_repeat_count(int axis, enum swept_nco_id nco);
 
 /* Set output NCO gain and enable tune PLL tracking. */
-void hw_write_nco_gain(int axis, enum fixed_nco nco, unsigned int gain);
-void hw_write_nco_track_pll(int axis, enum fixed_nco nco, bool enable);
+void hw_write_nco_gain(int axis, enum swept_nco_id nco, unsigned int gain);
+void hw_write_nco_track_pll(int axis, enum swept_nco_id nco, bool enable);
 
 
 /* ADC configuration - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

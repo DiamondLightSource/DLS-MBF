@@ -23,12 +23,13 @@
 # 1     Adds Tune PLL support, used for MBF 1.2 release
 # 2     MBF 1.4.0 release: two fixed NCOs with scaling and tune tracking
 # 3     MBF 1.4.1 release: detailed individual bunch by bunch scaling
-# 4     (Work in progress: extra bunches, seed register)
+# 4     MBF 1.4.2 release: extra bunches, seed register
+# 5     MBF 1.4.3 release: swept NCOs
 # 254   Use this for unstable MBF firmware versions under development
 # 255   Reserved for non MBF firmware with kernel driver compatibility.  Do not
 #       use for any version of MBF firmware
 # ===== ========================================================================
-FIRMWARE_COMPAT_VERSION = 4
+FIRMWARE_COMPAT_VERSION = 5
 
 ## Do not change this value, leave equal to 254
 FIRMWARE_COMPAT_UNSTABLE = 254
@@ -97,6 +98,47 @@ FIRMWARE_COMPAT_UNSTABLE = 254
         # Setting this bit triggers a reset of the NCO phase when this is
         # written.
         .RESET_PHASE
+
+
+:!SWEPT_NCO
+    GAIN_TUNE    W
+        # Gain setting for the NCO as a 18 bit unsigned scalar
+        .GAIN       18
+        # This bit is set to enable tune PLL tracking for the NCO
+        .ENA_TUNE_PLL
+    # The 32 low order bits of the frequency must be written first before
+    # writing the high order bits.
+    FREQ_LOW         W
+    FREQ_HIGH        W
+        # High order bits, writing this field triggers frequency update.
+        .BITS           16
+        # Setting this bit triggers a reset of the NCO phase when this is
+        # written.
+        .RESET_PHASE
+    DELTA_FREQ_LOW     W
+    DELTA_FREQ_HIGH    W
+        # High order bits, writing this field triggers delta_freq update.
+        .BITS           16
+    TIME               W
+        # Number of turns between frequency sweep steps
+        .DWELL          16
+        # Total number of sweep steps
+        .COUNT          16
+    REPEAT    RW
+        .COUNT          16
+        # Repeat frequency sweeps indefinitely
+        .CONTINUOUS
+    # Write to this register to trigger the select actions
+    COMMAND     WP
+        # Starts a repetition of frequency sweeps.
+        # The NCO phase is reset when both the START and RESET bits are
+        # asserted simultaneously.
+        .START
+        # The NCO phase is reset when both the START and RESET_PHASE bits are
+        # set simultaneously.
+        .RESET_PHASE
+        # Abort sweep repetitions
+        .ABORT
 
 
 # These occupy addresses 0x0000..0x1FFF
@@ -458,21 +500,10 @@ FIRMWARE_COMPAT_UNSTABLE = 254
 # Used for channel specific DSP control, each channel has its own bank of
 # registers.
 !DSP
-    # Two fixed frequency NCOs with manual frequency control and fine grained
-    # gain control.
-    !FIXED_NCO
-        NCO1    W
-            # Gain setting for NCO1 as a 18 bit unsigned scalar
-            .GAIN       18
-            # This bit is set to enable tune PLL tracking for NCO1
-            .ENA_TUNE_PLL
-        NCO2    W
-            # Gain setting for NCO2 as a 18 bit unsigned scalar
-            .GAIN       18
-            # This bit is set to enable tune PLL tracking for NCO2
-            .ENA_TUNE_PLL
-        :NCO_FREQ   NCO1_FREQ
-        :NCO_FREQ   NCO2_FREQ
+    # Two NCOs with manual frequency control and fine grained gain control.
+    !NCO
+        :SWEPT_NCO   NCO1
+        :SWEPT_NCO   NCO2
 
     # Input signal processing
     !ADC

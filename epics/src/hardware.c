@@ -547,52 +547,147 @@ static void read_mms(
 }
 
 
-/* Fixed NCO configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Swept NCO configuration - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-void hw_write_nco_frequency(int axis, enum fixed_nco nco, uint64_t frequency)
+static volatile struct swept_nco* select_nco(int axis, enum swept_nco_id nco)
 {
-    volatile struct nco_freq *nco_freq = NULL;
+    volatile struct swept_nco *swept_nco = NULL;
+
     switch (nco)
-    {
-        case FIXED_NCO1:
-            nco_freq = &dsp_regs[axis]->fixed_nco_nco1_freq;
-            break;
-        case FIXED_NCO2:
-            nco_freq = &dsp_regs[axis]->fixed_nco_nco2_freq;
-            break;
-    }
-    WRITEL(nco_freq->low, frequency & 0xFFFFFFFF);
-    WRITE_FIELDS(nco_freq->high,
-        .bits = (frequency >> 32) & 0xFFFF,
-        .reset_phase = frequency == 0);
+        {
+            case SWEPT_NCO1:
+                swept_nco = &dsp_regs[axis]->nco_nco1;
+                break;
+            case SWEPT_NCO2:
+                swept_nco = &dsp_regs[axis]->nco_nco2;
+                break;
+        }
+
+    return swept_nco;
 }
 
 
-void hw_write_nco_gain(int axis, enum fixed_nco nco, unsigned int gain)
+void hw_write_nco_config(int axis, enum swept_nco_id nco,
+    const struct nco_config *nco_config)
+{
+    volatile uint32_t *delta_freq_low = NULL;
+    volatile struct swept_nco_delta_freq_high *delta_freq_high = NULL;
+    volatile struct swept_nco_time *time = NULL;
+    volatile struct swept_nco *swept_nco = NULL;
+
+    swept_nco = select_nco(axis, nco);
+
+    WITH_MUTEX(dsp_locks[axis])
+    {
+        delta_freq_low = &swept_nco->delta_freq_low;
+        delta_freq_high = &swept_nco->delta_freq_high;
+        time = &swept_nco->time;
+
+        WRITE_FIELDS(*time,
+            .dwell = (nco_config->dwell_time - 1) & 0xFFFF,
+            .count = (nco_config->point_count - 1) & 0xFFFF);
+        WRITEL(*delta_freq_low, nco_config->delta_freq & 0xFFFFFFFF);
+        // delta_freq_high has to be set after delta_freq_low
+        WRITE_FIELDS(*delta_freq_high,
+            .bits = (nco_config->delta_freq >> 32) & 0xFFFF);
+        WRITEL(swept_nco->freq_low, nco_config->start_freq & 0xFFFFFFFF);
+        // freq_high is written at the end to reset the phase, if needed.
+        WRITE_FIELDS(swept_nco->freq_high,
+            .bits = (nco_config->start_freq >> 32) & 0xFFFF,
+            .reset_phase = nco_config->start_freq == 0);
+    }
+}
+
+
+void hw_write_nco_gain(int axis, enum swept_nco_id nco, unsigned int gain)
 {
     WITH_MUTEX(dsp_locks[axis])
         switch (nco)
         {
-            case FIXED_NCO1:
-                WRITE_DSP_MIRROR(axis, fixed_nco_nco1, .gain = gain & 0x3FFFF);
+            case SWEPT_NCO1:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco1.gain_tune, .gain = gain & 0x3FFFF);
                 break;
-            case FIXED_NCO2:
-                WRITE_DSP_MIRROR(axis, fixed_nco_nco2, .gain = gain & 0x3FFFF);
+            case SWEPT_NCO2:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco2.gain_tune, .gain = gain & 0x3FFFF);
                 break;
         }
 }
 
 
-void hw_write_nco_track_pll(int axis, enum fixed_nco nco, bool enable)
+void hw_write_nco_repeat_count(int axis, enum swept_nco_id nco, uint32_t value)
 {
     WITH_MUTEX(dsp_locks[axis])
         switch (nco)
         {
-            case FIXED_NCO1:
-                WRITE_DSP_MIRROR(axis, fixed_nco_nco1, .ena_tune_pll = enable);
+            case SWEPT_NCO1:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco1.repeat, .count = value & 0xFFFF);
                 break;
-            case FIXED_NCO2:
-                WRITE_DSP_MIRROR(axis, fixed_nco_nco2, .ena_tune_pll = enable);
+            case SWEPT_NCO2:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco2.repeat, .count = value & 0xFFFF);
+                break;
+        }
+}
+
+
+uint32_t hw_read_nco_repeat_count(int axis, enum swept_nco_id nco)
+{
+    volatile struct swept_nco *swept_nco = NULL;
+    swept_nco = select_nco(axis, nco);
+    return READL(swept_nco->repeat).count;
+}
+
+
+void hw_write_nco_repeat_mode(int axis, enum swept_nco_id nco,
+    enum nco_repeat_mode repeat_mode)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        switch (nco)
+        {
+            case SWEPT_NCO1:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco1.repeat, .continuous = repeat_mode);
+                break;
+            case SWEPT_NCO2:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco2.repeat, .continuous = repeat_mode);
+                break;
+        }
+}
+
+
+void hw_write_nco_start(int axis, enum swept_nco_id nco, bool reset, bool abort)
+{
+    volatile struct swept_nco *swept_nco = NULL;
+    swept_nco = select_nco(axis, nco);
+    WRITE_FIELDS(
+        swept_nco->command, .start = 1, .reset_phase = reset, .abort = abort);
+}
+
+
+void hw_write_nco_abort(int axis, enum swept_nco_id nco)
+{
+    volatile struct swept_nco *swept_nco = NULL;
+    swept_nco = select_nco(axis, nco);
+    WRITE_FIELDS(swept_nco->command, .abort = 1);
+}
+
+
+void hw_write_nco_track_pll(int axis, enum swept_nco_id nco, bool enable)
+{
+    WITH_MUTEX(dsp_locks[axis])
+        switch (nco)
+        {
+            case SWEPT_NCO1:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco1.gain_tune, .ena_tune_pll = enable);
+                break;
+            case SWEPT_NCO2:
+                WRITE_DSP_MIRROR(
+                    axis, nco_nco2.gain_tune, .ena_tune_pll = enable);
                 break;
         }
 }

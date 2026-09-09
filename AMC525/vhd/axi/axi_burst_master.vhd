@@ -151,7 +151,7 @@ begin
     --
     -- The first address (and subsequent burst) is generated in response to
     -- capture_enable_i high when the controller is idle, and subsequent
-    -- addressesses are generated half way through the preceding burst, if
+    -- addresses are generated half way through the preceding burst, if
     -- capture_enable_i is still high.
 
     -- Initial startup timing:

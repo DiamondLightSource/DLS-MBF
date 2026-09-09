@@ -199,3 +199,14 @@ are no firmware changes in this release.
 
 ..  _MBF-Tango: https://github.com/DLS-Controls-Private-org/MBF-Tango
 ..  _PyMBF_read: https://github.com/DLS-Controls-Private-org/PyMBF_read
+
+
+1.4.3 September 2026
+..............
+
+This release extends the fixed-frequency NCOs with a frequency sweep function.
+In addition, a configurable number of sweep repetitions can be generated.
+
+Backward compatibility is maintained: writing to the ``FREQ`` PV configures
+the sweep NCO to behave like the legacy fixed-frequency NCO.  However,
+the firmware is not compatible with the previous release.

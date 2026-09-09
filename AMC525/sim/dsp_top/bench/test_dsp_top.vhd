@@ -2,6 +2,9 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
+library std;
+use std.env.all;
+
 use work.support.all;
 use work.defines.all;
 use work.dsp_defs.all;
@@ -38,6 +41,42 @@ architecture arch of testbench is
     signal mux_adc_out   : signed_array(CHANNELS)(ADC_DATA_RANGE);
     signal mux_nco_out : nco_data_array_t;
     signal bank_select_out : unsigned_array(CHANNELS)(1 downto 0);
+
+    -- NCO1 registers
+    constant REG_NCO1_FREQ_LOW : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_FREQ_LOW_REG;
+    constant REG_NCO1_FREQ_HIGH : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_FREQ_HIGH_REG;
+    constant REG_NCO1_DELTA_FREQ_LOW : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_DELTA_FREQ_LOW_REG;
+    constant REG_NCO1_DELTA_FREQ_HIGH : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_DELTA_FREQ_HIGH_REG;
+    constant REG_NCO1_GAIN_TUNE : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_GAIN_TUNE_REG;
+    constant REG_NCO1_TIME : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_TIME_REG;
+    constant REG_NCO1_COMMAND : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_COMMAND_REG;
+    constant REG_NCO1_REPEAT : natural := DSP_NCO_NCO1_REGS'LOW +
+        SWEPT_NCO_REPEAT_REG;
+
+    -- NCO2 registers
+    constant REG_NCO2_FREQ_LOW : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_FREQ_LOW_REG;
+    constant REG_NCO2_FREQ_HIGH : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_FREQ_HIGH_REG;
+    constant REG_NCO2_DELTA_FREQ_LOW : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_DELTA_FREQ_LOW_REG;
+    constant REG_NCO2_DELTA_FREQ_HIGH : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_DELTA_FREQ_HIGH_REG;
+    constant REG_NCO2_GAIN_TUNE : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_GAIN_TUNE_REG;
+    constant REG_NCO2_TIME : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_TIME_REG;
+    constant REG_NCO2_COMMAND : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_COMMAND_REG;
+    constant REG_NCO2_REPEAT : natural := DSP_NCO_NCO2_REGS'LOW +
+        SWEPT_NCO_REPEAT_REG;
 
 begin
     adc_clk <= not adc_clk after 1 ns;
@@ -183,24 +222,81 @@ begin
         write_reg(DSP_DAC_CONFIG_REG, (
             DSP_DAC_CONFIG_FIR_GAIN_BITS => "0111", others => '0'));
 
-        -- Set a sensible NCO frequency, reset the phase
-        write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW, X"00000000");
-        write_reg(DSP_FIXED_NCO_NCO1_FREQ_REGS'LOW + 1, (
-            NCO_FREQ_HIGH_BITS_BITS => X"1800",
-            NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
+        -- Configure NCO1 with a fixed frequency, in continous mode
+        write_reg(REG_NCO1_DELTA_FREQ_LOW, X"00000000");
+        write_reg(REG_NCO1_DELTA_FREQ_HIGH, (
+            SWEPT_NCO_DELTA_FREQ_HIGH_BITS_BITS => X"0000",
             others => '0'));
-        write_reg(DSP_FIXED_NCO_NCO1_REG, (
-            DSP_FIXED_NCO_NCO1_GAIN_BITS => 18X"15555",
+        write_reg(REG_NCO1_GAIN_TUNE, (
+            SWEPT_NCO_GAIN_TUNE_GAIN_BITS => 18X"15555",
+            others => '0'));
+        write_reg(REG_NCO1_TIME, (
+            SWEPT_NCO_TIME_DWELL_BITS => X"0000",
+            SWEPT_NCO_TIME_COUNT_BITS => X"0000"));
+        write_reg(REG_NCO1_FREQ_LOW, X"00000000");
+        write_reg(REG_NCO1_FREQ_HIGH, (
+            SWEPT_NCO_FREQ_HIGH_BITS_BITS => X"1900",
+            SWEPT_NCO_FREQ_HIGH_RESET_PHASE_BIT => '1',
+            others => '0'));
+        write_reg(REG_NCO1_REPEAT, (
+            SWEPT_NCO_REPEAT_COUNT_BITS => X"0000",
+            SWEPT_NCO_REPEAT_CONTINUOUS_BIT => '1',
             others => '0'));
 
-        -- Enable second NCO
-        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW, X"00000000");
-        write_reg(DSP_FIXED_NCO_NCO2_FREQ_REGS'LOW + 1, (
-            NCO_FREQ_HIGH_BITS_BITS => X"0F00",
+        -- Configure bunch control: bank 0 for NCO
+        write_reg(DSP_BUNCH_CONFIG_REG, (
+            DSP_BUNCH_CONFIG_BANK_BITS => "00",
             others => '0'));
-        write_reg(DSP_FIXED_NCO_NCO2_REG, (
-            DSP_FIXED_NCO_NCO2_GAIN_BITS => 18X"3FFFF",
+        for n in 1 to TURN_COUNT loop
+            write_bank_bunch(
+                fir_gain => 18X"00000", fir_enable => '0',
+                nco0_gain => 18X"06000");
+         end loop;
+
+        -- wait 20 turns
+        for i in 0 to 19 loop
+            clk_wait(adc_clk, TURN_COUNT);
+        end loop;
+        clk_wait(dsp_clk);
+
+        -- Configure NCO1 with a frequency sweep, and 2 repetitions
+        write_reg(REG_NCO1_DELTA_FREQ_LOW, X"00000000");
+        write_reg(REG_NCO1_DELTA_FREQ_HIGH, (
+            SWEPT_NCO_DELTA_FREQ_HIGH_BITS_BITS => X"1900",
             others => '0'));
+        write_reg(REG_NCO1_TIME, (
+            SWEPT_NCO_TIME_DWELL_BITS => X"0001",
+            SWEPT_NCO_TIME_COUNT_BITS => X"0002"));
+        write_reg(REG_NCO1_REPEAT, (
+            SWEPT_NCO_REPEAT_COUNT_BITS => X"0002",
+            SWEPT_NCO_REPEAT_CONTINUOUS_BIT => '0',
+            others => '0'));
+        -- START, ABORT and RESET_PHASE
+        write_reg(REG_NCO1_COMMAND, (
+            SWEPT_NCO_COMMAND_START_BIT => '1',
+            SWEPT_NCO_COMMAND_ABORT_BIT => '1',
+            SWEPT_NCO_COMMAND_RESET_PHASE_BIT => '1',
+            others => '0'));
+
+        -- wait 5 turns
+        for i in 0 to 4 loop
+            clk_wait(adc_clk, TURN_COUNT);
+        end loop;
+        clk_wait(dsp_clk);
+
+        -- just a START
+        write_reg(REG_NCO1_COMMAND, (
+            SWEPT_NCO_COMMAND_START_BIT => '1',
+            SWEPT_NCO_COMMAND_ABORT_BIT => '0',
+            others => '0'));
+
+        -- wait 20 turns
+        for i in 0 to 19 loop
+            clk_wait(adc_clk, TURN_COUNT);
+        end loop;
+        clk_wait(dsp_clk);
+
+        -- NCO is now off after completing the repetition.
 
         -- Configure bunch control: bank 0 for NCO
         write_reg(DSP_BUNCH_CONFIG_REG, (
@@ -280,9 +376,13 @@ begin
                 others => '0'));
         end loop;
 
-        -- Finally turn NCO1 off
+        -- wait 40 turns
+        for i in 0 to 39 loop
+            clk_wait(adc_clk, TURN_COUNT);
+        end loop;
         clk_wait(dsp_clk);
-        write_reg(DSP_FIXED_NCO_NCO1_REG, (others => '0'));
+
+        stop;
 
         wait;
     end process;

@@ -236,7 +236,6 @@ begin
         freq_base_i => nco_freq_base,
         seq_state_i => seq_state,
         last_turn_i => last_turn,
-        tune_pll_offset_i => tune_pll_offset,
 
         state_end_o => state_end,
 

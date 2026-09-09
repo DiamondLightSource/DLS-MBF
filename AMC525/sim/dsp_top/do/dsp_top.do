@@ -10,7 +10,9 @@ view wave
 add wave -group "Bunch Store" sim:dsp_top/bunch_select/bunch_store/*
 add wave -group "Bunch Select" sim:dsp_top/bunch_select/*
 add wave -group "ADC Top" sim:dsp_top/adc_top/*
-add wave -group "Fixed NCOs" sim:dsp_top/fixed_ncos/*
+add wave -group "Swept NCOs" sim:dsp_top/swept_ncos/*
+add wave -group "Swept NCOs" sim:dsp_top/swept_ncos/gen_nco(1)/*
+add wave -group "Swept NCOs" sim:dsp_top/swept_ncos/gen_nco(2)/*
 add wave -group "Bunch FIR Top" sim:dsp_top/bunch_fir_top/*
 add wave -group "DAC FIR Gain" sim:dsp_top/dac_top/dac_output_mux/fir_gain/*
 add wave -group "DAC NCO Gain" sim:dsp_top/dac_top/dac_output_mux/nco_gain/*
@@ -23,6 +25,6 @@ add wave -group "DSP Top" sim:dsp_top/*
 add wave -group "Bench" *
 
 
-run 3.5 us
+run -all
 
 # vim: set filetype=tcl:

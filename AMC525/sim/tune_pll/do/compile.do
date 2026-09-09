@@ -19,8 +19,8 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/system/pulse_dsp_to_adc.vhd \
     $vhd_dir/memory/memory_fifo.vhd \
     $vhd_dir/arithmetic/rounded_product.vhd \
-    $vhd_dir/dsp/dsp_defs.vhd \
     $vhd_dir/nco/nco_defs.vhd \
+    $vhd_dir/dsp/dsp_defs.vhd \
     nco_cos_sin_table.vhd \
     $vhd_dir/nco/nco_phase.vhd \
     $vhd_dir/nco/nco_cos_sin_prepare.vhd \
@@ -35,10 +35,10 @@ vcom -64 -2008 -work xil_defaultlib \
     $vhd_dir/detector/detector_input.vhd \
     $vhd_dir/detector/detector_dsp96.vhd \
     $vhd_dir/detector/detector_core.vhd \
-    $vhd_dir/dsp/nco_register.vhd \
     $vhd_dir/registers/register_file.vhd \
     $vhd_dir/registers/all_pulsed_bits.vhd \
     $vhd_dir/registers/strobed_bits.vhd \
+    $vhd_dir/tune_pll/nco_register.vhd \
     $vhd_dir/tune_pll/tune_pll_defs.vhd \
     $vhd_dir/tune_pll/tune_pll_registers.vhd \
     $vhd_dir/tune_pll/tune_pll_detector.vhd \
