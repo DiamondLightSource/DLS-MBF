@@ -1,40 +1,40 @@
 # Table of help pages for MBF.  First column is OPI script name, second column
 # is URL for help page.
 
-ADC             https://diamondlightsource.atlassian.net/wiki/x/HgAN
-DAC             https://diamondlightsource.atlassian.net/wiki/x/FQAN
-bunch_extra     https://diamondlightsource.atlassian.net/wiki/x/JYFMAQ
-bunch_source    https://diamondlightsource.atlassian.net/wiki/x/IABdAQ
-bunch_waveforms https://diamondlightsource.atlassian.net/wiki/x/JAAN
-control         https://diamondlightsource.atlassian.net/wiki/x/EwAN
-delay           https://diamondlightsource.atlassian.net/wiki/x/GgAN
-det_bunches     https://diamondlightsource.atlassian.net/wiki/x/JwAN
-det_waveforms   https://diamondlightsource.atlassian.net/wiki/x/KAAN
-detector        https://diamondlightsource.atlassian.net/wiki/x/HQAN
-fir_lmbf        https://diamondlightsource.atlassian.net/wiki/x/AwAN
-fir_tmbf        https://diamondlightsource.atlassian.net/wiki/x/AwAN
-fir_waveforms   https://diamondlightsource.atlassian.net/wiki/x/DAAN
-info            https://diamondlightsource.atlassian.net/wiki/x/CAAN
-lmbf            https://diamondlightsource.atlassian.net/wiki/x/AgAN
-memory          https://diamondlightsource.atlassian.net/wiki/x/IQAN
-minmax          https://diamondlightsource.atlassian.net/wiki/x/LQAN
-nco_gain        https://diamondlightsource.atlassian.net/wiki/x/XoFMAQ
-overview        https://diamondlightsource.atlassian.net/wiki/x/KwAN
-phase           https://diamondlightsource.atlassian.net/wiki/x/EQAN
-seq_window      https://diamondlightsource.atlassian.net/wiki/x/IwAN
-sequencer       https://diamondlightsource.atlassian.net/wiki/x/IgAN
-status          https://diamondlightsource.atlassian.net/wiki/x/KgAN
-super_seq       https://diamondlightsource.atlassian.net/wiki/x/JQAN
-tmbf            https://diamondlightsource.atlassian.net/wiki/x/AgAN
-trigger_target  https://diamondlightsource.atlassian.net/wiki/x/HAAN
-triggers        https://diamondlightsource.atlassian.net/wiki/x/GwAN
-tune_pll        https://diamondlightsource.atlassian.net/wiki/x/FAAN
-tune_pll_debug  https://diamondlightsource.atlassian.net/wiki/x/HwAN
+ADC             https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-ADC-Setup
+DAC             https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-DAC-Setup
+bunch_extra     https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Legacy-OUTWF-View
+bunch_source    https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Bunch-Source-Gain-Control
+bunch_waveforms https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Bunch-Bank-Control
+control         https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Sequencer-and-Bunch-Control
+delay           https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Clock-Fine-Delay-Control
+det_bunches     https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Detector-Bunch-Enables
+det_waveforms   https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Detector-Waveforms
+detector        https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Detector-Overview
+fir_lmbf        https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Bunch-by-Bunch-FIR
+fir_tmbf        https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Bunch-by-Bunch-FIR
+fir_waveforms   https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Bunch-by-Bunch-FIR-Waveform-Control
+info            https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-System-Info
+lmbf            https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-MBF-System-View
+memory          https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Fast-Memory-Capture
+minmax          https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Min-Max-Sum
+nco_gain        https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-NCO-Gain-Configuration
+overview        https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-MBF-Overview
+phase           https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Bunch-Phase
+seq_window      https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Detector-Window-Setup
+sequencer       https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Sequencer-Setup
+status          https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-System-Status
+super_seq       https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Super-Sequencer-Setup
+tmbf            https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-MBF-System-View
+trigger_target  https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Trigger-Target-Setup
+triggers        https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Trigger-Configuration
+tune_pll        https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Tune-PLL
+tune_pll_debug  https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Tune-PLL-Debug
 
 # The following pages are part of tune fitting
-tune_config     https://diamondlightsource.atlassian.net/wiki/x/CwAN
-tune_peaks      https://diamondlightsource.atlassian.net/wiki/x/BQAN
-tune_waveforms  https://diamondlightsource.atlassian.net/wiki/x/BAAN
+tune_config     https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Tune-Configuration
+tune_peaks      https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Tune-Fitting-Overview
+tune_waveforms  https://github.com/DiamondLightSource/DLS-MBF/wiki/mbf-Tune-Fitting-Graphs
 
 # The following default target is searched for if none of the above are valid
-*               https://diamondlightsource.atlassian.net/wiki/x/IAAN
+*               https://github.com/DiamondLightSource/DLS-MBF/wiki/home-Help-Pages-for-Multi-Bunch-Feedback
